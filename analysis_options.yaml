@@ -1,0 +1,9 @@
+
+include: package:flutter_lints/flutter.yaml
+
+linter:
+
+  rules:
+    prefer_const_declarations: false
+    constant_identifier_names: false
+

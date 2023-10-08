@@ -1,0 +1,45 @@
+name: flutter_bloc_advance
+description: flutter_bloc_advance
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.2 <4.0.0'
+  flutter: '>3.13.0'
+dependencies:
+  #Flutter core related
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  http:
+  dart_json_mapper:
+  dart_json_mapper_flutter:
+  flutter_secure_storage:
+  url_launcher:
+  datetime_picker_formfield:
+  cupertino_icons:
+  flutter_intl:
+
+  #BLoC pattern related
+  flutter_bloc:
+  equatable:
+  formz:
+
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+  build_runner:
+
+flutter_intl:
+  enabled: true
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+

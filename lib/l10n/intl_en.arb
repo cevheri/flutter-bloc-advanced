@@ -1,0 +1,39 @@
+{
+  "locale": "en",
+  "firstName": "First name",
+  "lastName": "Last name",
+  "email": "Email",
+  "password": "Password",
+  "active": "Active",
+  "accountPage": {
+    "title": "Account",
+    "changePassword": "Change password",
+    "logout": "Logout"
+  },
+  "changePasswordPage": {
+    "title": "Change password",
+    "submit": "Change password"
+  },
+  "forgotPasswordPage": {
+    "title": "Forgot your password?",
+    "submit": "Reset password"
+  },
+  "homePage": {
+    "title": "Home",
+    "logout": "Logout"
+  },
+  "loginPage": {
+    "title": "Login",
+    "submit": "Login",
+    "forgot": "Forgot your password?",
+    "register": "Register"
+  },
+  "registerPage": {
+    "title": "Register",
+    "submit": "Register",
+    "login": "Login"
+  },
+  "taskPage": {
+    "title": "Task"
+  }
+}
