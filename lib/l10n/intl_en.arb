@@ -1,10 +1,30 @@
 {
   "locale": "en",
+
+  "global": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "close": "Close",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "search": "Search",
+    "yes": "Yes",
+    "no": "No",
+    "loading": "Loading..."
+  },
+  "error": {
+    "title": "Error",
+    "message": "An error occurred"
+  },
+
   "firstName": "First name",
   "lastName": "Last name",
   "email": "Email",
   "password": "Password",
   "active": "Active",
+
   "accountPage": {
     "title": "Account",
     "changePassword": "Change password",

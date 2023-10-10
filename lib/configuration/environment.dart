@@ -3,7 +3,7 @@ enum Environment { DEV, PROD }
 
 /// This class is used to store all environment variables
 ///
-/// It is used in the main.dart file to set the environment
+/// It is used in the main-local.dart file to set the environment
 class Constants {
 
   static Map<String, dynamic>? _config;

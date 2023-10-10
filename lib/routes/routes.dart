@@ -14,16 +14,14 @@ class AppRoutes {
   static final admin = '/admin';
   static final userManagement = '/admin/user-management';
   static final userManagementDetail = '/admin/user-management/:login';
-  static final entityAudit = '/admin/entity-audit';
-  static final entityAuditDetail = '/admin/entity-audit/:entityName/:entityId';
   static final logs = '/admin/logs';
   static final logsDetail = '/admin/logs/:logId';
-  static final health = '/admin/health';
-  static final healthDetail = '/admin/health/:healthkey';
-  static final metrics = '/admin/metrics';
-  static final metricsDetail = '/admin/metrics/:metricName';
   static final configuration = '/admin/configuration';
-  static final docs = '/admin/docs';
-
+  static final tasks = '/tasks';
+  static final tasksDetail = '/tasks/:id';
+  static final taskNew = '/tasks/new';
+  static final taskEdit = '/tasks/:id/edit';
+  static final taskDelete = '/tasks/:id/delete';
+  static final taskComplete = '/tasks/:id/complete';
 
 }
