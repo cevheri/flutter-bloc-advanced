@@ -1,59 +1,17 @@
 {
+  "@@locale": "en",
   "locale": "en",
+  "title": "Task Management App",
+  "homeScreenTitle": "Home",
+  "loginScreenTitle": "Login",
+  "settingsScreenTitle": "Settings",
+  "accountScreenTitle": "Account",
+  "tasksScreenTitle": "Tasks",
+  "drawerMenuHome": "Home",
+  "drawerSettingsTitle": "Settings",
+  "drawerLogoutTitle": "Logout",
+  "drawerTasks": "Tasks",
+  "pageSettingsTitle": "Settings",
+  "firstName": "First Name"
 
-  "global": {
-    "submit": "Submit",
-    "cancel": "Cancel",
-    "close": "Close",
-    "save": "Save",
-    "delete": "Delete",
-    "edit": "Edit",
-    "add": "Add",
-    "search": "Search",
-    "yes": "Yes",
-    "no": "No",
-    "loading": "Loading..."
-  },
-  "error": {
-    "title": "Error",
-    "message": "An error occurred"
-  },
-
-  "firstName": "First name",
-  "lastName": "Last name",
-  "email": "Email",
-  "password": "Password",
-  "active": "Active",
-
-  "accountPage": {
-    "title": "Account",
-    "changePassword": "Change password",
-    "logout": "Logout"
-  },
-  "changePasswordPage": {
-    "title": "Change password",
-    "submit": "Change password"
-  },
-  "forgotPasswordPage": {
-    "title": "Forgot your password?",
-    "submit": "Reset password"
-  },
-  "homePage": {
-    "title": "Home",
-    "logout": "Logout"
-  },
-  "loginPage": {
-    "title": "Login",
-    "submit": "Login",
-    "forgot": "Forgot your password?",
-    "register": "Register"
-  },
-  "registerPage": {
-    "title": "Register",
-    "submit": "Register",
-    "login": "Login"
-  },
-  "taskPage": {
-    "title": "Task"
-  }
 }

@@ -21,6 +21,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
-
+    "accountScreenTitle" : MessageLookupByLibrary.simpleMessage("Hesapım"),
+    "drawerLogoutTitle" : MessageLookupByLibrary.simpleMessage("Çıkış Yap"),
+    "drawerMenuHome" : MessageLookupByLibrary.simpleMessage("Ana Sayfa"),
+    "drawerTasks" : MessageLookupByLibrary.simpleMessage("Görevler"),
+    "homeScreenTitle" : MessageLookupByLibrary.simpleMessage("Ana Sayfa"),
+    "locale" : MessageLookupByLibrary.simpleMessage("tr"),
+    "loginScreenTitle" : MessageLookupByLibrary.simpleMessage("Giriş Sayfası"),
+    "settingsScreenTitle" : MessageLookupByLibrary.simpleMessage("Ayarlar"),
+    "tasksScreenTitle" : MessageLookupByLibrary.simpleMessage("Görevler"),
+    "title" : MessageLookupByLibrary.simpleMessage("Görev Yönetim Sistemi")
   };
 }

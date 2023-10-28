@@ -21,6 +21,15 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static _notInlinedMessages(_) => <String, Function> {
-
+    "accountScreenTitle" : MessageLookupByLibrary.simpleMessage("Compte"),
+    "drawerLogoutTitle" : MessageLookupByLibrary.simpleMessage("Déconnexion"),
+    "drawerMenuHome" : MessageLookupByLibrary.simpleMessage("Accueil"),
+    "drawerSettingsTitle" : MessageLookupByLibrary.simpleMessage("Paramètres"),
+    "homeScreenTitle" : MessageLookupByLibrary.simpleMessage("Tâches"),
+    "locale" : MessageLookupByLibrary.simpleMessage("fr"),
+    "loginScreenTitle" : MessageLookupByLibrary.simpleMessage("Connexion"),
+    "settingsScreenTitle" : MessageLookupByLibrary.simpleMessage("Paramètres"),
+    "tasksScreenTitle" : MessageLookupByLibrary.simpleMessage("Tâches"),
+    "title" : MessageLookupByLibrary.simpleMessage("Application de gestion des tâches")
   };
 }

@@ -47,7 +47,135 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
+  /// `en`
+  String get locale {
+    return Intl.message(
+      'en',
+      name: 'locale',
+      desc: '',
+      args: [],
+    );
+  }
 
+  /// `Task Management App`
+  String get title {
+    return Intl.message(
+      'Task Management App',
+      name: 'title',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Home`
+  String get homeScreenTitle {
+    return Intl.message(
+      'Home',
+      name: 'homeScreenTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login`
+  String get loginScreenTitle {
+    return Intl.message(
+      'Login',
+      name: 'loginScreenTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get settingsScreenTitle {
+    return Intl.message(
+      'Settings',
+      name: 'settingsScreenTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account`
+  String get accountScreenTitle {
+    return Intl.message(
+      'Account',
+      name: 'accountScreenTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tasks`
+  String get tasksScreenTitle {
+    return Intl.message(
+      'Tasks',
+      name: 'tasksScreenTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Home`
+  String get drawerMenuHome {
+    return Intl.message(
+      'Home',
+      name: 'drawerMenuHome',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get drawerSettingsTitle {
+    return Intl.message(
+      'Settings',
+      name: 'drawerSettingsTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Logout`
+  String get drawerLogoutTitle {
+    return Intl.message(
+      'Logout',
+      name: 'drawerLogoutTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tasks`
+  String get drawerTasks {
+    return Intl.message(
+      'Tasks',
+      name: 'drawerTasks',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Settings`
+  String get pageSettingsTitle {
+    return Intl.message(
+      'Settings',
+      name: 'pageSettingsTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First Name`
+  String get firstName {
+    return Intl.message(
+      'First Name',
+      name: 'firstName',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

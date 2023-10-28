@@ -1,3 +1,14 @@
 {
-  "locale": "fr"
+  "@@locale": "fr",
+  "locale": "fr",
+  "title": "Application de gestion des tâches",
+  "homeScreenTitle": "Tâches",
+  "loginScreenTitle": "Connexion",
+  "settingsScreenTitle": "Paramètres",
+  "accountScreenTitle": "Compte",
+  "tasksScreenTitle": "Tâches",
+  "drawerMenuHome": "Accueil",
+  "drawerSettingsTitle": "Paramètres",
+  "drawerLogoutTitle": "Déconnexion",
+  "drawerMenuTasks": "Tâches"
 }

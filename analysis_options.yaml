@@ -6,4 +6,8 @@ linter:
   rules:
     prefer_const_declarations: false
     constant_identifier_names: false
+    # Unnecessary 'new' keyword. (Documentation)
+    unnecessary_new: false
+    #    Use 'const' with the constructor to improve performance
+    prefer_const_constructors: false
 

@@ -1,5 +1,6 @@
 import 'user.dart';
 
+// TODO
 class Task {
   final String id;
   final String title;
@@ -26,20 +27,5 @@ class Task {
         description: task.description,
       );
 
-factory Task.fromJson(Map<String, dynamic> json) => Task(
-      DateTime.parse(json['date']),
-      json['isDone'],
-      User.fromJson(json['assignee']),
-      id: json['id'],
-      title: json['title'],
-      description: json['description'],
-    );
 
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'title': title,
-        'description': description,
-        'date': date.toIso8601String(),
-        'isDone': isDone,
-      };
 }

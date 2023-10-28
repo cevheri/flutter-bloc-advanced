@@ -1,40 +1,52 @@
-class User{
-  final String id;
-  final String login;
-  final String firstName;
-  final String lastName;
-  final String email;
+import 'package:dart_json_mapper/dart_json_mapper.dart';
 
+/// ApplicationUser model that represents the user entity in this application.
+@jsonSerializable
+class User {
+  @JsonProperty(name: 'id')
+  final String? id;
+
+  @JsonProperty(name: 'login')
+  final String? login;
+
+  @JsonProperty(name: 'first_name')
+  final String? firstName;
+
+  @JsonProperty(name: 'last_name')
+  final String? lastName;
+
+  @JsonProperty(name: 'email')
+  final String? email;
+
+  @JsonProperty(name: 'lang_key')
+  final String? langKey;
 
   User({
-    required this.id,
-    required this.login,
-    required this.firstName,
-    required this.lastName,
-    required this.email,
+    this.id = '',
+    this.login = '',
+    this.firstName = '',
+    this.lastName = '',
+    this.email = '',
+    this.langKey = 'en',
   });
 
-  factory User.copy(User user) => User(
-    id: user.id,
-    login: user.login,
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-  );
+  /// Creates a copy of this ApplicationUser but with the given fields
+  User copyWith({
+    String? id,
+    String? login,
+    String? firstName,
+    String? lastName,
+    String? email,
+    String? langKey,
+  }) {
+    return User(
+      id: id ?? this.id,
+      login: login ?? this.login,
+      firstName: firstName ?? this.firstName,
+      lastName: lastName ?? this.lastName,
+      email: email ?? this.email,
+      langKey: langKey ?? this.langKey,
+    );
+  }
 
-  factory User.fromJson(Map<String, dynamic> json) => User(
-    id: json['id'],
-    login: json['login'],
-    firstName: json['firstName'],
-    lastName: json['lastName'],
-    email: json['email'],
-  );
-
-  Map<String, dynamic> toJson() => {
-    'id': id,
-    'login': login,
-    'firstName': firstName,
-    'lastName': lastName,
-    'email': email,
-  };
 }

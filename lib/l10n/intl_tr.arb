@@ -1,3 +1,14 @@
 {
-  "locale": "tr"
+  "@@locale": "tr",
+  "locale": "tr",
+  "title": "Görev Yönetim Sistemi",
+  "homeScreenTitle": "Ana Sayfa",
+  "loginScreenTitle": "Giriş Sayfası",
+  "settingsScreenTitle": "Ayarlar",
+  "accountScreenTitle": "Hesapım",
+  "tasksScreenTitle": "Görevler",
+  "drawerMenuHome": "Ana Sayfa",
+  "drawerTasks": "Görevler",
+  "drawerMenuSettings": "Ayarlar",
+  "drawerLogoutTitle": "Çıkış Yap"
 }
