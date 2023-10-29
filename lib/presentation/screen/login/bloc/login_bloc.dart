@@ -32,6 +32,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
+    log("LoginBloc.onSubmit start: ${event.username}, ${event.password}");
     emit(state.copyWith(
       username: event.username,
       password: event.password,
@@ -41,13 +42,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     try {
       var token = await _loginRepository.authenticate(userJWT);
       if (token.idToken != null) {
+        log("LoginBloc.onSubmit token: ${token.idToken}");
         FlutterSecureStorage storage = new FlutterSecureStorage();
         await storage.delete(key: HttpUtils.keyForJWTToken);
         await storage.write(key: HttpUtils.keyForJWTToken, value: token.idToken);
         emit(state.copyWith(status: LoginStatus.authenticated));
+        log("LoginBloc.onSubmit end: ${state.status}");
       } else {}
     } catch (e) {
-      log("onSubmit error: ${e.toString()}");
+      log("LoginBloc.onSubmit ERROR: ${e.toString()}");
     }
   }
 }

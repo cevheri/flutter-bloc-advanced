@@ -1,43 +1,53 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:equatable/equatable.dart';
 
 /// ApplicationUser model that represents the user entity in this application.
+///
+/// this is an immutable class that extends [Equatable] so that it can be compared
 @jsonSerializable
-class User {
+class User extends Equatable {
   @JsonProperty(name: 'id')
-  final String? id;
+  final int? id;
 
   @JsonProperty(name: 'login')
   final String? login;
 
-  @JsonProperty(name: 'first_name')
+  @JsonProperty(name: 'firstName')
   final String? firstName;
 
-  @JsonProperty(name: 'last_name')
+  @JsonProperty(name: 'lastName')
   final String? lastName;
 
   @JsonProperty(name: 'email')
   final String? email;
 
-  @JsonProperty(name: 'lang_key')
+  @JsonProperty(name: 'langKey')
   final String? langKey;
 
-  User({
-    this.id = '',
+  final bool? activated;
+
+  final String? imageUrl;
+
+  const User({
+    this.id = 0,
     this.login = '',
     this.firstName = '',
     this.lastName = '',
     this.email = '',
     this.langKey = 'en',
+    this.activated = false,
+    this.imageUrl = '',
   });
 
-  /// Creates a copy of this ApplicationUser but with the given fields
   User copyWith({
-    String? id,
+    int? id,
     String? login,
     String? firstName,
     String? lastName,
     String? email,
     String? langKey,
+    bool? activated,
+    String? imageUrl,
   }) {
     return User(
       id: id ?? this.id,
@@ -46,7 +56,23 @@ class User {
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
       langKey: langKey ?? this.langKey,
+      activated: activated ?? this.activated,
+      imageUrl: imageUrl ?? this.imageUrl,
     );
   }
 
+  @override
+  List<Object?> get props => [
+        id,
+        login,
+        firstName,
+        lastName,
+        email,
+        langKey,
+        activated,
+        imageUrl,
+      ];
+
+  @override
+  bool get stringify => true;
 }

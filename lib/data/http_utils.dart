@@ -58,7 +58,7 @@ class HttpUtils {
 
   static Future<Response> getRequest(String endpoint) async {
     var headers = await HttpUtils.headers();
-    log('GET REQUEST: ${ProfileConstants.api}$endpoint');
+    //log('GET REQUEST: ${ProfileConstants.api}$endpoint');
     try {
       var result = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
       if(result.statusCode == 401) {

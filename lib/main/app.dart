@@ -1,6 +1,9 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/data/repository/task_repository.dart';
+import 'package:flutter_bloc_advance/presentation/screen/task/list/bloc/task_list.dart';
+import 'package:flutter_bloc_advance/presentation/screen/task/list/task_list_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../configuration/environment.dart';
@@ -67,7 +70,10 @@ class TaskManagementApp extends StatelessWidget {
             ApplicationRoutes.settings: (context) {
               return BlocProvider<SettingsBloc>(create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
             },
-            //TODO task provider
+            ApplicationRoutes.tasks: (context) {
+              return BlocProvider<TaskListBloc>(
+                  create: (context) => TaskListBloc(taskRepository: TaskRepository())..add(TaskListLoad()), child: const TaskListScreen());
+            },
           },
         );
       },

@@ -21,6 +21,7 @@ class LoginScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) async {
+        log("LoginBloc listener: ${state.status}");
         if (state.status == LoginStatus.authenticated) {
           Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
         }

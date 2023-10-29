@@ -1,4 +1,6 @@
 
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -28,6 +30,7 @@ class HomeScreen extends StatelessWidget {
   Widget _buildBody(BuildContext context) {
     return BlocListener<AccountBloc, AccountState>(
       listener: (context, state) {
+        log("AccountBloc listener: ${state.status}");
         if (state.status == AccountStatus.failure) {
           Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
         } else {}
@@ -35,7 +38,7 @@ class HomeScreen extends StatelessWidget {
       child: BlocBuilder<AccountBloc, AccountState>(
         buildWhen: (previous, current) => previous.status != current.status,
         builder: (context, state) {
-          if (state.status == AccountStatus.loaded) {
+          if (state.status == AccountStatus.success) {
             return Scaffold(
               appBar: AppBar(
                 title: Text("Home Page"),

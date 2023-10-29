@@ -7,7 +7,6 @@ class ApplicationRoutes {
   static final home = '/';
   static final login = '/login';
   static final register = '/register';
-  static final main = '/main';
   static final settings = '/settings';
   static final forgotPassword = '/forgot-password';
   static final changePassword = '/change-password';
