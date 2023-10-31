@@ -7,9 +7,4 @@ class TaskListEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class TaskListLoad extends TaskListEvent {
-  const TaskListLoad();
-
-  @override
-  List<Object> get props => [];
-}
+class TaskListLoad extends TaskListEvent { }

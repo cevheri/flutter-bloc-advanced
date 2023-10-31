@@ -1,30 +1,31 @@
 part of 'task_list_bloc.dart';
 
-enum TaskListStatus { initial, loading, loaded }
+enum TaskListStatus { initial, success, failure }
 
 class TaskListState extends Equatable {
-  final String name;
-  final int price;
-
-  /// Default constructor for this class
   const TaskListState({
-    this.name = '',
-    this.price = 0,
+    this.status = TaskListStatus.initial,
+    this.tasks = const <Task>[],
   });
 
+  final List<Task> tasks;
+  final TaskListStatus status;
+
   TaskListState copyWith({
-    String? name,
-    int? price,
+    TaskListStatus? status,
+    List<Task>? tasks
   }) {
     return TaskListState(
-      name: name ?? this.name,
-      price: price ?? this.price,
+        status: status ?? this.status,
+        tasks: tasks ?? this.tasks,
     );
   }
 
   @override
-  List<Object> get props => [name, price];
+  List<Object> get props => [status, tasks];
 
   @override
-  bool get stringify => true;
+  String toString() {
+    return 'TaskListState { status: $status, tasks: ${tasks.length} }';
+  }
 }

@@ -3,7 +3,7 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 @jsonSerializable
 class Task {
   @JsonProperty(name: 'id')
-  final String? id;
+  final int? id;
 
   @JsonProperty(name: 'name')
   final String? name;
@@ -12,13 +12,13 @@ class Task {
   final int? price;
 
   Task({
-    this.id = '',
+    this.id = 0,
     this.name = '',
     this.price = 0,
   });
 
   Task copyWith({
-    String? id,
+    int? id,
     String? name,
     int? price,
   }) {

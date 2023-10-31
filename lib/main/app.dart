@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/repository/task_repository.dart';
 import 'package:flutter_bloc_advance/presentation/screen/task/list/bloc/task_list.dart';
 import 'package:flutter_bloc_advance/presentation/screen/task/list/task_list_screen.dart';
+import 'package:flutter_bloc_advance/presentation/screen/task/save/bloc/task_save.dart';
+import 'package:flutter_bloc_advance/presentation/screen/task/save/task_save_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../configuration/environment.dart';
@@ -73,6 +75,10 @@ class TaskManagementApp extends StatelessWidget {
             ApplicationRoutes.tasks: (context) {
               return BlocProvider<TaskListBloc>(
                   create: (context) => TaskListBloc(taskRepository: TaskRepository())..add(TaskListLoad()), child: const TaskListScreen());
+            },
+            ApplicationRoutes.taskNew: (context) {
+              return BlocProvider<TaskSaveBloc>(
+                  create: (context) => TaskSaveBloc(taskRepository: TaskRepository())..add(TaskFormSubmitted()), child: TaskSaveScreen());
             },
           },
         );

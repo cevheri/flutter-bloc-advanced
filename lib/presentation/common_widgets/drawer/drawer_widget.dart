@@ -68,6 +68,11 @@ class ApplicationDrawer extends StatelessWidget {
             onTap: () => Navigator.pushNamed(context, ApplicationRoutes.home),
           ),
           ListTile(
+            leading: Icon(Icons.task, size: iconSize,),
+            title: Text(S.of(context).drawerTasks),
+            onTap: () => Navigator.pushNamed(context, ApplicationRoutes.tasks),
+          ),
+          ListTile(
             leading: Icon(Icons.settings, size: iconSize,),
             title: Text(S.of(context).drawerSettingsTitle),
             onTap: () => Navigator.pushNamed(context, ApplicationRoutes.settings),
