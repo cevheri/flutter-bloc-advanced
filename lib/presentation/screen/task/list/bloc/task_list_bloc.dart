@@ -1,10 +1,8 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:stream_transform/stream_transform.dart';
 
 import '../../../../../data/models/task.dart';
 import '../../../../../data/repository/task_repository.dart';
@@ -15,6 +13,7 @@ part 'task_list_state.dart';
 const _postLimit = 20;
 const throttleDuration = Duration(milliseconds: 100);
 
+// TODO - implement throttling with infinite scroll list
 // EventTransformer<E> throttleDroppable<E>(Duration duration) {
 //   return (events, mapper) {
 //     return droppable<E>().call(events.throttle(duration), mapper);
@@ -31,11 +30,9 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     on<TaskListEvent>((event, emit) {});
     on<TaskListLoad>(
         _onLoad,
-        transformer: null
+        // transformer: throttleDroppable(throttleDuration),
     );
   }
-
-
 
   final TaskRepository _taskRepository;
 
@@ -44,10 +41,14 @@ class TaskListBloc extends Bloc<TaskListEvent, TaskListState> {
     emit(state.copyWith(status: TaskListStatus.initial));
     try {
       final tasks = await _taskRepository.getTasks();
-      emit(state.copyWith(
-        tasks: tasks,
-        status: TaskListStatus.success,
-      ));
+      if (tasks.isEmpty) {
+        emit(state.copyWith(status: TaskListStatus.failure));
+      } else {
+        emit(state.copyWith(
+          tasks: tasks,
+          status: TaskListStatus.success,
+        ));
+      }
     } catch (e) {
       log(e.toString());
       emit(state.copyWith(status: TaskListStatus.failure));

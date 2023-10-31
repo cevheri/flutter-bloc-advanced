@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -91,10 +93,11 @@ class TaskSaveScreen extends StatelessWidget {
             child: Text(S.of(context).save),
             onPressed: () {
               if (_taskSaveFormKey.currentState!.saveAndValidate()) {
-                context.read<TaskSaveBloc>().add(TaskSave(
-                      id: state.id,
+                context.read<TaskSaveBloc>().add(TaskFormSubmitted(
+                      context: context,
+                      id: null,
                       name: _taskSaveFormKey.currentState!.value['name'],
-                      price: int.tryParse(_taskSaveFormKey.currentState!.value['price']) ?? 0,
+                      price: int.tryParse(_taskSaveFormKey.currentState!.value['price'] ?? '') ?? 0,
                     ));
               } else {
                 print("validation failed");

@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -9,8 +7,21 @@ import '../../../../data/models/task.dart';
 import '../../../../generated/l10n.dart';
 import 'bloc/task_list_bloc.dart';
 
-class TaskListScreen extends StatelessWidget {
+class TaskListScreen extends StatefulWidget {
   const TaskListScreen() : super(key: ApplicationKeys.taskListScreen);
+
+  @override
+  State<TaskListScreen> createState() => _TaskListState();
+}
+
+class _TaskListState extends State<TaskListScreen> {
+  final _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +38,6 @@ class TaskListScreen extends StatelessWidget {
       actions: [
         IconButton(
           icon: Icon(Icons.add),
-          // onTap: () => Navigator.pushNamed(context, ApplicationRoutes.tasks),
           onPressed: () {
             Navigator.pushNamed(context, ApplicationRoutes.taskNew);
           },
@@ -49,21 +59,46 @@ class TaskListScreen extends StatelessWidget {
             return ListView.builder(
               itemBuilder: (BuildContext context, int index) {
                 return index >= state.tasks.length
-                    ? const Center(child: CircularProgressIndicator())
+                    ? const BottomLoader()
                     : TaskListItem(task: state.tasks[index]);
               },
+              itemCount: state.hasReachedMax
+                  ? state.tasks.length
+                  : state.tasks.length + 1,
+              controller: _scrollController,
             );
           case TaskListStatus.initial:
-            log("TaskListStatus.initial");
             return const Center(child: CircularProgressIndicator());
         }
       },
     );
   }
+
+  // TODO: implement dispose with infinite scroll
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_onScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  // TODO: implement onScroll with infinite scroll
+  void _onScroll() {
+    if (_isBottom) context.read<TaskListBloc>().add(TaskListLoad());
+  }
+
+  // TODO: implement _isBottom with infinite scroll
+  bool get _isBottom {
+    if (!_scrollController.hasClients) return false;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.offset;
+    return currentScroll >= (maxScroll * 0.9);
+  }
 }
 
 class TaskListItem extends StatelessWidget {
-  const TaskListItem({super.key, required this.task});
+  const TaskListItem({required this.task, super.key});
 
   final Task task;
 
@@ -74,7 +109,7 @@ class TaskListItem extends StatelessWidget {
       child: ListTile(
         leading: Text(
           '${task.id}',
-          style: textTheme.caption,
+          style: textTheme.bodySmall,
         ),
         title: task.name != null
             ? Text(
@@ -83,11 +118,32 @@ class TaskListItem extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
               )
             : null,
+        isThreeLine: true,
         subtitle: Text(
           '${task.price}',
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
+        dense: true,
+        onTap: () {
+          // TODO: implement onTap
+          Navigator.pushNamed(context, ApplicationRoutes.tasksDetail, arguments: task.id);
+        }
+      ),
+    );
+  }
+}
+
+class BottomLoader extends StatelessWidget {
+  const BottomLoader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Center(
+      child: SizedBox(
+        height: 24,
+        width: 24,
+        child: CircularProgressIndicator(strokeWidth: 1.5),
       ),
     );
   }

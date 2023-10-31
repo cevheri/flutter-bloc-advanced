@@ -7,19 +7,17 @@ class TaskSaveEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class TaskSave extends TaskSaveEvent {
+class TaskFormSubmitted extends TaskSaveEvent {
   final int? id;
   final String? name;
   final int? price;
+  final BuildContext context;
 
-  const TaskSave({
+
+  const TaskFormSubmitted({
     required this.id,
     required this.name,
     required this.price,
+    required this.context,
   });
-
-  @override
-  List<Object> get props => [id!, name!, price!];
 }
-
-class TaskFormSubmitted extends TaskSaveEvent {}

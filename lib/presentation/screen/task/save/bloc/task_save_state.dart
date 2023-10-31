@@ -3,17 +3,20 @@ part of 'task_save_bloc.dart';
 enum TaskSaveStatus { none, loading, loaded, failure }
 
 class TaskSaveState extends Equatable {
-  final int? id;
-  final String? name;
-  final int? price;
-  final TaskSaveStatus? status;
+  final int id;
+  final String name;
+  final int price;
+  final TaskSaveStatus status;
 
   const TaskSaveState({
-    this.id,
-    this.name,
-    this.price,
+    this.id = 0,
+    this.name = '',
+    this.price = 0,
     this.status = TaskSaveStatus.none,
   });
+
+  @override
+  List<Object> get props => [id, name, price, status];
 
   TaskSaveState copyWith({
     int? id,
@@ -28,9 +31,6 @@ class TaskSaveState extends Equatable {
       status: status ?? this.status,
     );
   }
-
-  @override
-  List<Object> get props => [id!, name!, price!, status!];
 
   @override
   bool get stringify => true;

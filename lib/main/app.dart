@@ -78,7 +78,7 @@ class TaskManagementApp extends StatelessWidget {
             },
             ApplicationRoutes.taskNew: (context) {
               return BlocProvider<TaskSaveBloc>(
-                  create: (context) => TaskSaveBloc(taskRepository: TaskRepository())..add(TaskFormSubmitted()), child: TaskSaveScreen());
+                  create: (context) => TaskSaveBloc(taskRepository: TaskRepository())..add(TaskSaveEvent()), child: TaskSaveScreen());
             },
           },
         );
