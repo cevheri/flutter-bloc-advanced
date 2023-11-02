@@ -37,6 +37,8 @@ class _Config {
 
   static Map<String, dynamic> devConstants = {
     API: "http://localhost:8080/api",
+    // API: "https://618251ce84c2020017d89dcb.mockapi.io/api/v1",
+    // API: "https://cevheri.free.beeceptor.com",
   };
 
   static Map<String, dynamic> prodConstants = {

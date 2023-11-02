@@ -3,15 +3,29 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 import '../http_utils.dart';
 import '../models/task.dart';
 
+import 'package:flutter/services.dart' show rootBundle;
+
 /// task repository
 ///
 /// This class is responsible for all the task related operations
 /// list, create, update, delete etc.
 class TaskRepository {
   /// Retrieve all tasks method that retrieves all the tasks
-  Future<List<Task>> getTasks() async {
+  Future<List<Task>> getTasksRemote() async {
     final tasksRequest = await HttpUtils.getRequest("/tasks");
     return JsonMapper.deserialize<List<Task>>(tasksRequest.body)!;
+  }
+
+  /// Retrieve all tasks from assets/mock/tasks.json
+  Future<List<Task>> getTasks() async {
+    try {
+      String content = await rootBundle.loadString('assets/mock/tasks.json');
+      // deserialize json to Task object
+      return JsonMapper.deserialize<List<Task>>(content)!;
+    } catch (e) {
+      print(e);
+      return [];
+    }
   }
 
   /// Retrieve task method that retrieves a task by id

@@ -9,7 +9,12 @@
   "tasksScreenTitle": "Görevler",
   "taskSaveScreenTitle": "Görev Kaydet/Güncelle",
   "drawerMenuHome": "Ana Sayfa",
+  "drawerSettingsTitle": "Ayarlar",
+  "drawerLogoutTitle": "Çıkış Yap",
   "drawerTasks": "Görevler",
-  "drawerMenuSettings": "Ayarlar",
-  "drawerLogoutTitle": "Çıkış Yap"
+  "pageSettingsTitle": "Settings",
+  "firstName": "Adı",
+  "taskPrice": "Fiyat",
+  "taskName": "Adı",
+  "save": "Kaydet"
 }

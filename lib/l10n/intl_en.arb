@@ -13,6 +13,10 @@
   "drawerLogoutTitle": "Logout",
   "drawerTasks": "Tasks",
   "pageSettingsTitle": "Settings",
-  "firstName": "First Name"
+  "firstName": "First Name",
+  "taskPrice": "Task Price",
+  "taskName": "Task Name",
+  "save": "Save"
+
 
 }

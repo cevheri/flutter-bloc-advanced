@@ -12,10 +12,10 @@ class ApplicationRoutes {
   static final changePassword = '/change-password';
   static final account = '/account';
   static final tasks = '/tasks';
-  static final tasksDetail = '/tasks/:id';
-  static final taskNew = '/tasks/new';
-  static final taskEdit = '/tasks/:id/edit';
-  static final taskDelete = '/tasks/:id/delete';
-  static final taskComplete = '/tasks/:id/complete';
+  // static final tasksDetail = '/tasks/:id';
+  // static final taskNew = '/tasks/new';
+  // static final taskEdit = '/tasks/:id/edit';
+  // static final taskDelete = '/tasks/:id/delete';
+  // static final taskComplete = '/tasks/:id/complete';
 
 }

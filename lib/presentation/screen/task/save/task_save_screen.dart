@@ -54,7 +54,7 @@ class TaskSaveScreen extends StatelessWidget {
         builder: (context, state) {
           return FormBuilderTextField(
               name: 'name',
-              decoration: InputDecoration(labelText: S.of(context).name),
+              decoration: InputDecoration(labelText: S.of(context).taskName),
               validator: (value) {
                 if (value == null || value.isEmpty) {
                   return 'Please enter name';
@@ -70,7 +70,7 @@ class TaskSaveScreen extends StatelessWidget {
         builder: (context, state) {
           return FormBuilderTextField(
             name: 'price',
-            decoration: InputDecoration(labelText: S.of(context).price),
+            decoration: InputDecoration(labelText: S.of(context).taskPrice),
             validator: (value) {
               if (value == null || value.isEmpty) {
                 return 'Please enter price';

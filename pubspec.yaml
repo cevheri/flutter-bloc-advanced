@@ -23,6 +23,8 @@ dependencies:
   device_preview:
   getwidget:
   flutter_form_builder:
+  loadmore: ^2.0.1
+  infinite_scroll_pagination:
 
 dependency_overrides:
   reflectable:
@@ -49,4 +51,7 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/Icon-192.png
+    - assets/mock/users.json
+    - assets/mock/tasks.json
+    - assets/mock/id_token.json
 

@@ -11,5 +11,11 @@
   "drawerMenuHome": "Accueil",
   "drawerSettingsTitle": "Paramètres",
   "drawerLogoutTitle": "Déconnexion",
-  "drawerMenuTasks": "Tâches"
+  "drawerTasks": "Tâches",
+  "pageSettingsTitle": "",
+  "firstName": "",
+  "taskPrice": "",
+  "taskName" : "",
+  "save": ""
+
 }

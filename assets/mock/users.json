@@ -1,0 +1,10 @@
+{
+  "id": 123456,
+  "login": "jamesjara",
+  "firstName": "James",
+  "lastName": "Jara",
+  "email": "jara@localhost.com",
+  "langKey": "en",
+  "activated": true,
+  "imageUrl": "http://placehold.it/50x50"
+}

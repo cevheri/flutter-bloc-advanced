@@ -1,10 +1,7 @@
 part of 'task_list_bloc.dart';
 
-class TaskListEvent extends Equatable {
-  const TaskListEvent();
+class TaskListEvent {}
 
-  @override
-  List<Object> get props => [];
-}
+class TaskListLoad extends TaskListEvent {}
 
-class TaskListLoad extends TaskListEvent { }
+class LoadMoreTasks extends TaskListEvent {}

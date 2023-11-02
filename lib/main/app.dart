@@ -73,13 +73,11 @@ class TaskManagementApp extends StatelessWidget {
               return BlocProvider<SettingsBloc>(create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
             },
             ApplicationRoutes.tasks: (context) {
-              return BlocProvider<TaskListBloc>(
-                  create: (context) => TaskListBloc(taskRepository: TaskRepository())..add(TaskListLoad()), child: const TaskListScreen());
+              return BlocProvider<TaskListBloc>(create: (context) => TaskListBloc(taskRepository: TaskRepository()), child: TaskListScreen());
             },
-            ApplicationRoutes.taskNew: (context) {
-              return BlocProvider<TaskSaveBloc>(
-                  create: (context) => TaskSaveBloc(taskRepository: TaskRepository())..add(TaskSaveEvent()), child: TaskSaveScreen());
-            },
+            // ApplicationRoutes.taskNew: (context) {
+            //   return BlocProvider<TaskSaveBloc>(create: (context) => TaskSaveBloc(taskRepository: TaskRepository()), child: TaskSaveScreen());
+            // },
           },
         );
       },
