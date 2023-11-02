@@ -7,6 +7,7 @@
   "settingsScreenTitle": "Settings",
   "accountScreenTitle": "Account",
   "tasksScreenTitle": "Tasks",
+  "taskSaveScreenTitle": "Save or Update Task",
   "drawerMenuHome": "Home",
   "drawerSettingsTitle": "Settings",
   "drawerLogoutTitle": "Logout",

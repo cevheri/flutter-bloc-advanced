@@ -1,31 +1,31 @@
-import 'user.dart';
+import 'package:dart_json_mapper/dart_json_mapper.dart';
 
-// TODO
+@jsonSerializable
 class Task {
-  final String id;
-  final String title;
-  final String description;
-  final DateTime date;
-  final bool isDone;
-  final User assignee;
+  @JsonProperty(name: 'id')
+  final int? id;
 
-  Task(
-    this.date,
-    this.isDone,
-    this.assignee, {
-    required this.id,
-    required this.title,
-    required this.description,
+  @JsonProperty(name: 'name')
+  final String? name;
+
+  @JsonProperty(name: 'price')
+  final int? price;
+
+  Task({
+    this.id = 0,
+    this.name = '',
+    this.price = 0,
   });
 
-  factory Task.copy(Task task) => Task(
-        task.date,
-        task.isDone,
-        task.assignee,
-        id: task.id,
-        title: task.title,
-        description: task.description,
-      );
-
-
+  Task copyWith({
+    int? id,
+    String? name,
+    int? price,
+  }) {
+    return Task(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      price: price ?? this.price,
+    );
+  }
 }
