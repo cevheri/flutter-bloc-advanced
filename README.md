@@ -7,10 +7,13 @@
 - [x] Add Themes
 - [x] Add Internationalization
 - [ ] Add Firebase
-- [ ] Add Home Page
+- [x] Add Home Page
+- [x] Add Login Page
 - [ ] Add User Management
 - [ ] Add Roles and Permissions
 - [ ] Add Task Management
+  - [x] dummy task list with bloc
+  - [ ]      
 - [ ] Add CI/CD
 
 # Advanced Flutter BLoC Project
