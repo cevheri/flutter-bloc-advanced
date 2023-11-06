@@ -14,5 +14,5 @@ void main() async {
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
   AdaptiveThemeMode? savedThemeMode = await AdaptiveTheme.getThemeMode();
-  runApp(TaskManagementApp(savedThemeMode: savedThemeMode));
+  runApp(App(savedThemeMode: savedThemeMode));
 }

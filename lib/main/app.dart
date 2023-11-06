@@ -4,8 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/repository/task_repository.dart';
 import 'package:flutter_bloc_advance/presentation/screen/task/list/bloc/task_list.dart';
 import 'package:flutter_bloc_advance/presentation/screen/task/list/task_list_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/task/save/bloc/task_save.dart';
-import 'package:flutter_bloc_advance/presentation/screen/task/save/task_save_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../configuration/environment.dart';
@@ -14,6 +12,7 @@ import '../data/repository/account_repository.dart';
 import '../data/repository/login_repository.dart';
 import '../generated/l10n.dart';
 import '../presentation/common_blocs/account/account_bloc.dart';
+import '../presentation/screen/account/account_screen.dart';
 import '../presentation/screen/home/home_screen.dart';
 import '../presentation/screen/login/bloc/login_bloc.dart';
 import '../presentation/screen/login/login_screen.dart';
@@ -26,10 +25,10 @@ import '../presentation/screen/settings/settings_screen.dart';
 /// [AdaptiveThemeMode] and to provide a [MaterialApp] with the
 /// [AdaptiveThemeMode] as the initial theme mode.
 ///
-class TaskManagementApp extends StatelessWidget {
+class App extends StatelessWidget {
   final AdaptiveThemeMode? savedThemeMode;
 
-  const TaskManagementApp({super.key, this.savedThemeMode});
+  const App({super.key, this.savedThemeMode});
 
   @override
   Widget build(BuildContext context) {
@@ -58,20 +57,40 @@ class TaskManagementApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: const [
-            Locale('en'),
+            Locale('en'), // English
+            Locale('tr'), // Turkish
           ],
-          locale: const Locale('en', 'US'),
+          locale: Locale('tr'),
+          //supportedLocales: context.supportedLocales,
+          //localizationsDelegates: context.localizationDelegates,
           routes: {
             ApplicationRoutes.home: (context) {
               return BlocProvider<AccountBloc>(
-                  create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: HomeScreen());
+                  create: (context) =>
+                      AccountBloc(accountRepository: AccountRepository())
+                        ..add(AccountLoad()),
+                  child: HomeScreen());
             },
             ApplicationRoutes.login: (context) {
-              return BlocProvider<LoginBloc>(create: (context) => LoginBloc(loginRepository: LoginRepository()), child: LoginScreen());
+              return BlocProvider<LoginBloc>(
+                  create: (context) =>
+                      LoginBloc(loginRepository: LoginRepository()),
+                  child: LoginScreen());
             },
             ApplicationRoutes.settings: (context) {
-              return BlocProvider<SettingsBloc>(create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
+              return BlocProvider<SettingsBloc>(
+                  create: (context) =>
+                      SettingsBloc(accountRepository: AccountRepository()),
+                  child: SettingsScreen());
             },
+            ApplicationRoutes.account: (context) {
+              return BlocProvider<AccountBloc>(
+                  create: (context) =>
+                      AccountBloc(accountRepository: AccountRepository())
+                        ..add(AccountLoad()),
+                  child: AccountsScreen());
+            },
+
             ApplicationRoutes.tasks: (context) {
               return BlocProvider<TaskListBloc>(create: (context) => TaskListBloc(taskRepository: TaskRepository()), child: TaskListScreen());
             },

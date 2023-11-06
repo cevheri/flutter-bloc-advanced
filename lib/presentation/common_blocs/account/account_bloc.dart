@@ -3,9 +3,13 @@ import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/environment.dart';
 
 import '../../../data/models/user.dart';
 import '../../../data/repository/account_repository.dart';
+
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:dart_json_mapper/dart_json_mapper.dart';
 
 part 'account_event.dart';
 
@@ -25,18 +29,41 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     on<AccountDelete>(_onDelete);
   }
 
+  // get account from local json
+  Future<User> _getUserFromLocal() async {
+    try {
+      // read json file from ./mock/users.json
+      // String content = await File('assets/mock/users.json').readAsString();
+      String content = await rootBundle.loadString('assets/mock/users.json');
+      // deserialize json to User object
+      return JsonMapper.deserialize<User>(content)!;
+    } catch (e) {
+      log("AccountBloc._getUserFromLocal error : $e");
+      return User();
+    }
+  }
+
   /// Load the current account.
   FutureOr<void> _onLoad(AccountLoad event, Emitter<AccountState> emit) async {
-    log("AccountBloc._onLoad 1 start : ${event}");
+    log("AccountBloc._onLoad 1 start : $event");
     emit(state.copyWith(account: User(), status: AccountStatus.loading));
+    User user = User();
     try {
-      User user = await _accountRepository.getAccount();
+
+      if (ProfileConstants.isDevelopment) {
+        user = await _getUserFromLocal();
+      } else {
+        user = await _accountRepository.getAccount();
+      }
+
       log("AccountBloc._onLoad 2 user : $user");
       emit(state.copyWith(
         account: user,
         status: AccountStatus.success,
       ));
+
       log("AccountBloc._onLoad 3 end : ${state.account}, ${state.status}");
+
     } catch (e) {
       emit(state.copyWith(status: AccountStatus.failure));
       log("AccountBloc._onLoad ERROR :$e");

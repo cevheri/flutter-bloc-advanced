@@ -9,6 +9,7 @@ class ApplicationKeys {
   static const homeScreen = Key('__homeScreen__');
   static const splashScreen = Key('__splashScreen__');
   static const profileScreen = Key('__profileScreen__');
+  static const accountsScreen = Key('__accountsScreen__');
   static const taskSaveScreen = Key('__taskSaveScreen__');
   static const taskListScreen = Key('__taskListScreen__');
   static const taskDetailScreen = Key('__taskDetailScreen__');

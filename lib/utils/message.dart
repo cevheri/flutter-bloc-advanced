@@ -15,7 +15,7 @@ class Message {
   /// param [message] is required MessageBody
   /// param [color] is optional messagebox color
   /// param [duration] is optional messagebox duration in seconds
-  static void info({required BuildContext context, required String message, Color color = Colors.blue, int duration = 3}) {
+  static void info({required BuildContext context, required String message, Color color = Colors.blueGrey, int duration = 3}) {
     //wrap the message inside a SnackBar
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(

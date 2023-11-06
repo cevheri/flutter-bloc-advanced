@@ -10,6 +10,7 @@ import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
 
 part 'login_event.dart';
+
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
@@ -43,13 +44,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       var token = await _loginRepository.authenticate(userJWT);
       if (token.idToken != null) {
         log("LoginBloc.onSubmit token: ${token.idToken}");
-        FlutterSecureStorage storage = new FlutterSecureStorage();
+        FlutterSecureStorage storage = FlutterSecureStorage();
         await storage.delete(key: HttpUtils.keyForJWTToken);
         await storage.write(key: HttpUtils.keyForJWTToken, value: token.idToken);
         emit(state.copyWith(status: LoginStatus.authenticated));
         log("LoginBloc.onSubmit end: ${state.status}");
-      } else {}
+      } else {
+        emit(state.copyWith(status: LoginStatus.failure));
+      }
     } catch (e) {
+      emit(state.copyWith(status: LoginStatus.failure));
       log("LoginBloc.onSubmit ERROR: ${e.toString()}");
     }
   }

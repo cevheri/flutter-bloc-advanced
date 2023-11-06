@@ -290,10 +290,10 @@ packages:
     dependency: "direct dev"
     description:
       name: flutter_lints
-      sha256: ad76540d21c066228ee3f9d1dad64a9f7e46530e8bb7c85011a88bc1fd874bc5
+      sha256: e2a421b7e59244faef694ba7b30562e489c2b489866e505074eb005cd7060db7
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   flutter_localizations:
     dependency: "direct main"
     description: flutter
@@ -347,14 +347,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  flutter_staggered_grid_view:
-    dependency: transitive
-    description:
-      name: flutter_staggered_grid_view
-      sha256: "19e7abb550c96fbfeb546b23f3ff356ee7c59a019a651f8f102a4ba9b7349395"
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.7.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -365,6 +357,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  form_builder_validators:
+    dependency: "direct main"
+    description:
+      name: form_builder_validators
+      sha256: "19aa5282b7cede82d0025ab031a98d0554b84aa2ba40f12013471a3b3e22bf02"
+      url: "https://pub.dev"
+    source: hosted
+    version: "9.1.0"
   freezed_annotation:
     dependency: transitive
     description:
@@ -429,16 +429,8 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.2"
-  infinite_scroll_pagination:
-    dependency: "direct main"
-    description:
-      name: infinite_scroll_pagination
-      sha256: b68bce20752fcf36c7739e60de4175494f74e99e9a69b4dd2fe3a1dd07a7f16a
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.0.0"
   intl:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       name: intl
       sha256: "3bc132a9dbce73a7e4a21a17d06e1878839ffbf975568bc875c60537824b0c4d"
@@ -477,14 +469,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.0"
-  loadmore:
-    dependency: "direct main"
-    description:
-      name: loadmore
-      sha256: "4a9d60cf1182f9a91449502b4ab2bad53aaf292124382c7e29e36a61468b027f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   logging:
     dependency: transitive
     description:
@@ -509,6 +493,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.5.0"
+  material_design_icons_flutter:
+    dependency: transitive
+    description:
+      name: material_design_icons_flutter
+      sha256: "8c54c21cf336052193559abc64715e4885d6c9220a6dbdfc561a087266cc5385"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.6996"
   meta:
     dependency: transitive
     description:
@@ -730,14 +722,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
-  sliver_tools:
-    dependency: transitive
-    description:
-      name: sliver_tools
-      sha256: eae28220badfb9d0559207badcbbc9ad5331aac829a88cb0964d330d2a4636a6
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.2.12"
   source_span:
     dependency: transitive
     description:
@@ -770,6 +754,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.0"
+  string_2_icon:
+    dependency: "direct main"
+    description:
+      name: string_2_icon
+      sha256: c971529236f06f73c0a0abeb3403fe91a1c6bb8c8fa6e910801afdad65be4fa8
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.2"
   string_scanner:
     dependency: transitive
     description:

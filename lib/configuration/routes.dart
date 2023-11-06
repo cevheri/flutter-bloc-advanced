@@ -11,6 +11,7 @@ class ApplicationRoutes {
   static final forgotPassword = '/forgot-password';
   static final changePassword = '/change-password';
   static final account = '/account';
+  static final users = '/users';
   static final tasks = '/tasks';
   // static final tasksDetail = '/tasks/:id';
   // static final taskNew = '/tasks/new';

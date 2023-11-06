@@ -20,10 +20,9 @@ class AccountState extends Equatable {
     User? account,
     AccountStatus? status,
   }) {
-    log("AccountState.copyWith : $account, $status");
     return AccountState(
       status: status ?? this.status,
-      account: account ?? this.account,
+      account: account ?? this.account
     );
   }
 
@@ -34,3 +33,5 @@ class AccountState extends Equatable {
   bool get stringify => true;
 
 }
+
+
