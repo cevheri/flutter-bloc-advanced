@@ -60,4 +60,5 @@ flutter:
     - assets/mock/users.json
     - assets/mock/tasks.json
     - assets/mock/id_token.json
+    - assets/mock/menu.json
 
