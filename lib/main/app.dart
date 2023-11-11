@@ -2,6 +2,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/repository/task_repository.dart';
+import 'package:flutter_bloc_advance/presentation/screen/settings/language_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/task/list/bloc/task_list.dart';
 import 'package:flutter_bloc_advance/presentation/screen/task/list/task_list_screen.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -94,6 +95,10 @@ class App extends StatelessWidget {
             ApplicationRoutes.tasks: (context) {
               return BlocProvider<TaskListBloc>(create: (context) => TaskListBloc(taskRepository: TaskRepository()), child: TaskListScreen());
             },
+            ApplicationRoutes.language: (context) {
+              return BlocProvider<TaskListBloc>(create: (context) => TaskListBloc(taskRepository: TaskRepository()), child: LanguageScreen());
+            },
+
             // ApplicationRoutes.taskNew: (context) {
             //   return BlocProvider<TaskSaveBloc>(create: (context) => TaskSaveBloc(taskRepository: TaskRepository()), child: TaskSaveScreen());
             // },

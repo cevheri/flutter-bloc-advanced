@@ -16,5 +16,9 @@
   "firstName": "Adı",
   "taskPrice": "Fiyat",
   "taskName": "Adı",
-  "save": "Kaydet"
+  "save": "Kaydet",
+  "translate_menu_title": "{translate, select,customer{Müşteriler} tasks{Tasklar} account{Hesabım} settings{Ayarlar}  dashboard{Grafikler} reports{Raporlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  createOffer{Temsilci Oluştur}  editOffer{Listele/Düzenle }  other{Diğer}}",
+  "language_select": "Dil Seçimi",
+  "turkish": "Türkçe",
+  "english": "İngilizce"
 }

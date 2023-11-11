@@ -16,7 +16,9 @@
   "firstName": "First Name",
   "taskPrice": "Task Price",
   "taskName": "Task Name",
-  "save": "Save"
-
-
+  "save": "Save",
+  "translate_menu_title": "{translate, select, customer{Customers} tasks{Tasks} account{Account} settings{Settings} dashboard{Dashboard}reports{Reports} logout{Logout}  info{Info} language{Language}  theme{Theme}  createOffer{Create Offer}  editOffer{List/Edit} other{Other}}",
+  "language_select": "Select Language",
+  "turkish": "Turkish",
+  "english": "English"
 }

@@ -13,4 +13,6 @@ class ApplicationKeys {
   static const taskSaveScreen = Key('__taskSaveScreen__');
   static const taskListScreen = Key('__taskListScreen__');
   static const taskDetailScreen = Key('__taskDetailScreen__');
+  static const languageScreen = Key('__languageScreen__');
+
 }

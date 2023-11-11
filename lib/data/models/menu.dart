@@ -1,17 +1,11 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
-/// menu object
-/// example:
-/// id	name	description	url	icon	order_priority	active	parent_id	level
-// 1	home	home	/	icon	0	1		0
-// 2	account	account	branch	icon	4	1	1	1
-// 3	logout	logout	/logout	icon	1	1	2	2
-// 4	login	login	/login	icon	2	1	2	2
-// 5	settings	settings	branch	icon	3	1	1	1
+import 'package:dart_json_mapper/dart_json_mapper.dart';
 
 @jsonSerializable
 class Menu extends Equatable {
+
   @JsonProperty(name: 'id')
   final int id;
 
@@ -33,36 +27,25 @@ class Menu extends Equatable {
   @JsonProperty(name: 'active')
   final bool active;
 
-  @JsonProperty(name: 'parentId')
-  final int? parentId;
+  @JsonProperty(name: 'parent')
+  final Menu? parent;
 
   @JsonProperty(name: 'level')
   final int level;
 
+  // salesPersonCode and salesPersonName
+
   const Menu({
-    this.id = 1,
+    this.id = 0,
     this.name = '',
     this.description = '',
     this.url = '',
     this.icon = '',
     this.orderPriority = 0,
     this.active = false,
-    this.parentId,
+    this.parent,
     this.level = 0,
   });
-
-  @override
-  List<Object?> get props => [
-        id,
-        name,
-        description,
-        url,
-        icon,
-        orderPriority,
-        active,
-        parentId,
-        level,
-      ];
 
   Menu copyWith({
     int? id,
@@ -72,7 +55,7 @@ class Menu extends Equatable {
     String? icon,
     int? orderPriority,
     bool? active,
-    int? parentId,
+    Menu? parent,
     int? level,
   }) {
     return Menu(
@@ -83,8 +66,24 @@ class Menu extends Equatable {
       icon: icon ?? this.icon,
       orderPriority: orderPriority ?? this.orderPriority,
       active: active ?? this.active,
-      parentId: parentId ?? this.parentId,
+      parent: parent ?? this.parent,
       level: level ?? this.level,
     );
   }
+
+  @override
+  List<Object?> get props => [
+        id,
+        name,
+        description,
+        url,
+        icon,
+        orderPriority,
+        active,
+        parent,
+        level,
+      ];
+
+  @override
+  bool get stringify => true;
 }
