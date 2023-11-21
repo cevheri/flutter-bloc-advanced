@@ -1,8 +1,8 @@
-
 import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/data/repository/menu_repository.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
@@ -32,7 +32,8 @@ class HomeScreen extends StatelessWidget {
       listener: (context, state) {
         log("AccountBloc listener: ${state.status}");
         if (state.status == AccountStatus.failure) {
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+              context, ApplicationRoutes.login, (route) => false);
         } else {}
       },
       child: BlocBuilder<AccountBloc, AccountState>(
@@ -58,7 +59,8 @@ class HomeScreen extends StatelessWidget {
     return BlocProvider<DrawerBloc>(
         create: (context) => DrawerBloc(
               loginRepository: LoginRepository(),
-            ),
+              menuRepository: MenuRepository(),
+            )..add(LoadMenus()),
         child: ApplicationDrawer());
   }
 

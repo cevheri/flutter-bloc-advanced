@@ -19,16 +19,6 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  List<DropdownMenuItem<String>> createDropdownLanguageItems(Map<String, String> languages) {
-    return languages.keys
-        .map<DropdownMenuItem<String>>(
-          (String key) => DropdownMenuItem<String>(
-            value: key,
-            child: Text(languages[key]!),
-          ),
-        )
-        .toList();
-  }
 
   submit(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(builder: (context, state) {
@@ -61,7 +51,6 @@ class SettingsScreen extends StatelessWidget {
           _firstNameField(context),
           _lastNameNameField(context),
           _emailField(context),
-          _languageField(context),
           _submit(context),
         ],
       ),
@@ -141,33 +130,6 @@ class SettingsScreen extends StatelessWidget {
         });
   }
 
-  Widget _languageField(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-        buildWhen: (previous, current) => previous.language != current.language,
-        builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.only(left: 3.0),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: <Widget>[
-                Text(
-                  "S.of(context).pageSettingsFormLanguages",
-                 // style: Theme.of(context).textTheme.bodyLarge,
-                ),
-                state.status == SettingsStatus.loaded
-                    ? DropdownButton<String>(
-                        value: state.language,
-                        onChanged: (value) {
-                          context.read<SettingsBloc>().add(SettingsLanguageChanged(language: value!));
-                        },
-                        items: createDropdownLanguageItems(LocaleConstants.languages),
-                      )
-                    : Container(),
-              ],
-            ),
-          );
-        });
-  }
 
   Widget _submit(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(

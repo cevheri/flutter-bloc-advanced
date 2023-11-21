@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../data/repository/login_repository.dart';
+import '../../data/repository/menu_repository.dart';
 import 'drawer/bloc/drawer.dart';
 import 'drawer/drawer_widget.dart';
 
@@ -26,6 +27,7 @@ class InternalScaffold extends StatelessWidget {
     return BlocProvider<DrawerBloc>(
         create: (context) => DrawerBloc(
               loginRepository: LoginRepository(),
+          menuRepository: MenuRepository(),
             ),
         child: ApplicationDrawer());
   }

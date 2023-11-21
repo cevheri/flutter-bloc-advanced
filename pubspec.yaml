@@ -26,6 +26,7 @@ dependencies:
   form_builder_validators:
   intl: ^0.18.1
   string_2_icon:
+  expansion_tile_card:
 
 dependency_overrides:
   reflectable:
@@ -35,6 +36,7 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  json_serializable:
 
 
   flutter_lints:
