@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:flutter/services.dart';
 
 import '../http_utils.dart';
 import '../models/station.dart';
@@ -64,21 +65,24 @@ class StationRepository {
     String? corporationId,
   ) async {
     if (cityId == "0" && corporationId == "0") {
-      final saveRequest =
-          await HttpUtils.getRequest("/stations?page=0&size=100");
-      return JsonMapper.deserialize<List<Station>>(saveRequest)!;
+      // final saveRequest = await HttpUtils.getRequest("/stations?page=0&size=100");
+      return JsonMapper.deserialize<List<Station>>(
+          await rootBundle.loadString('mock/alt_firmalar.json'))!;
     } else if (cityId != "0" && corporationId == "0") {
-      final saveRequest = await HttpUtils.getRequest(
-          "/stations?cityId.equals=$cityId&page=0&size=100");
-      return JsonMapper.deserialize<List<Station>>(saveRequest)!;
+      //final saveRequest = await HttpUtils.getRequest("/stations?cityId.equals=$cityId&page=0&size=100");
+      //return JsonMapper.deserialize<List<Station>>(saveRequest)!;
+      return JsonMapper.deserialize<List<Station>>(
+          await rootBundle.loadString('mock/alt_firmalar.json'))!;
     } else if (cityId == "0" && corporationId != "0") {
-      final saveRequest = await HttpUtils.getRequest(
-          "/stations?corporationId.equals=$corporationId&page=0&size=100");
-      return JsonMapper.deserialize<List<Station>>(saveRequest)!;
+      //final saveRequest = await HttpUtils.getRequest( "/stations?corporationId.equals=$corporationId&page=0&size=100");
+      //return JsonMapper.deserialize<List<Station>>(saveRequest)!;
+      return JsonMapper.deserialize<List<Station>>(
+          await rootBundle.loadString('mock/alt_firmalar.json'))!;
     } else {
-      final saveRequest = await HttpUtils.getRequest(
-          "/stations?cityId.equals=$cityId&corporationId.equals=$corporationId&page=0&size=100");
-      return JsonMapper.deserialize<List<Station>>(saveRequest)!;
+      //final saveRequest = await HttpUtils.getRequest("/stations?cityId.equals=$cityId&corporationId.equals=$corporationId&page=0&size=100");
+      //return JsonMapper.deserialize<List<Station>>(saveRequest)!;
+      return JsonMapper.deserialize<List<Station>>(
+          await rootBundle.loadString('mock/alt_firmalar.json'))!;
     }
   }
 
@@ -105,9 +109,10 @@ class StationRepository {
   }
 
   /// ListStation with corporationId method that lists all the stations
-///
-/// @param station the station object
-  Future<List<Station>> listStationWithCorporationId(String corporationId) async {
+  ///
+  /// @param station the station object
+  Future<List<Station>> listStationWithCorporationId(
+      String corporationId) async {
     final saveRequest = await HttpUtils.getRequest(
         "/stations?corporationId.equals=$corporationId&page=0&size=100");
     return JsonMapper.deserialize<List<Station>>(saveRequest)!;

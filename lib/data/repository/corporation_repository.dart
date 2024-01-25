@@ -1,4 +1,5 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:flutter/services.dart';
 
 import '../http_utils.dart';
 import '../models/corporation.dart';
@@ -58,9 +59,9 @@ class CorporationRepository {
 
   /// Find user method that findCorporationByAuthorities a user
   Future<List<Corporation>> list() async {
-    final userRequest = await HttpUtils.getRequest(
-        "/corporations?page=0&size=1000&eagerload=false");
-    var result = JsonMapper.deserialize<List<Corporation>>(userRequest)!;
+    //final userRequest = await HttpUtils.getRequest("/corporations?page=0&size=1000&eagerload=false");
+    //var result = JsonMapper.deserialize<List<Corporation>>(userRequest)!;
+    var result = JsonMapper.deserialize<List<Corporation>>(await rootBundle.loadString('mock/ana_firmalar.json'))!;
     return result;
   }
 

@@ -1,0 +1,38 @@
+[
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+    "id": 1,
+    "name": "Ana Firma 1 ",
+    "description": "Ana Firma 1 ",
+    "active": true,
+    "city": null,
+    "district": null
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+    "id": 2,
+    "name": "Ana Firma 2 ",
+    "description": "Ana Firma 2 ",
+    "active": true,
+    "city": null,
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:24:12.753Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+    "id": 5,
+    "name": "Ana Firma 3 ",
+    "description": "Ana Firma 3 ",
+    "active": true,
+    "city": null,
+    "district": null
+  }
+]

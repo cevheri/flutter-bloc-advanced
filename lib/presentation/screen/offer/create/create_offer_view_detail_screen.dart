@@ -110,7 +110,7 @@ class EditOfferScreen extends StatelessWidget {
                         RowWidget(
                             title: S.of(context).transport_distance, content: "${offerSerializeList[0].transportDistance.toString()} Km"),
                         RowWidget(title: S.of(context).transport_cost, content: "${offerSerializeList[0].transportCost.toString()} ₺"),
-                        RowWidget(title: S.of(context).litre, content: "${offerSerializeList[0].liter.toString()} Lt"),
+                        RowWidget(title: S.of(context).birim, content: "${offerSerializeList[0].liter.toString()} Lt"),
                         offerSerializeList[0].description.toString() != "null"
                             ? RowWidget(title: S.of(context).description_offer, content: offerSerializeList[0].description.toString())
                             : Container(),

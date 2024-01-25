@@ -257,7 +257,7 @@ Padding tableHeader(BuildContext context) {
         SizedBox(width: 5),
         Expanded(flex: 5, child: Text(S.of(context).transport_cost_tl, textAlign: TextAlign.left, style: TextStyle(fontSize: 10))),
         SizedBox(width: 5),
-        Expanded(flex: 5, child: Text(S.of(context).litre, textAlign: TextAlign.left, style: TextStyle(fontSize: 10))),
+        Expanded(flex: 5, child: Text(S.of(context).birim, textAlign: TextAlign.left, style: TextStyle(fontSize: 10))),
         SizedBox(width: 5),
         Expanded(flex: 5, child: Text(S.of(context).maturity, textAlign: TextAlign.left, style: TextStyle(fontSize: 10))),
         SizedBox(width: 5),

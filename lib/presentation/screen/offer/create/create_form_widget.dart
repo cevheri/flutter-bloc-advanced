@@ -375,27 +375,27 @@ class OfferCreateFormTransportCost extends StatelessWidget {
   }
 }
 
-//offerCreateFormLitre
-class OfferCreateFormLitre extends StatelessWidget {
+//offerCreateFormbirim
+class OfferCreateFormbirim extends StatelessWidget {
   final GlobalKey<FormBuilderState>? createOfferFormKey;
 
-  const OfferCreateFormLitre({super.key, required this.createOfferFormKey});
+  const OfferCreateFormbirim({super.key, required this.createOfferFormKey});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 10.0),
       child: FormBuilderTextField(
-        name: 'offerCreateFormLitre',
+        name: 'offerCreateFormbirim',
         decoration: InputDecoration(
-          labelText: S.of(context).litre,
+          labelText: S.of(context).birim,
         ),
         validator: FormBuilderValidators.compose(
           [
             FormBuilderValidators.required(
-                errorText: S.of(context).litre_required),
+                errorText: S.of(context).birim_required),
             FormBuilderValidators.numeric(
-                errorText: S.of(context).litre_numeric),
+                errorText: S.of(context).birim_numeric),
           ],
         ),
         inputFormatters: [
@@ -620,7 +620,7 @@ class OfferCreateFormSubmitButton extends StatelessWidget {
                         .value!
                         .replaceAll(".", "");
                     String literReplace = createOfferFormKey!
-                        .currentState!.fields['offerCreateFormLitre']!.value!
+                        .currentState!.fields['offerCreateFormbirim']!.value!
                         .replaceAll(".", "");
                     increase = (double.parse(createOfferFormKey!.currentState!
                             .fields['offerCreateFormIncrease']?.value ??

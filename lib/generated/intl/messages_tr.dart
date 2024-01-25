@@ -21,12 +21,12 @@ class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'tr';
 
   static String m0(translate) => "${Intl.select(translate, {
-            'station': 'Dolum Tesisleri',
+            'station': 'Alt Firmalar',
             'maturityCalculate': 'Vade Hesaplama',
-            'stationMaturity': 'Dolum Tesisi Vadeleri',
-            'corporation': 'Dağıtım Firmaları',
-            'corporationMaturity': 'Dağıtım Firması Vadeleri',
-            'refinery': 'Rafineriler',
+            'stationMaturity': 'Alt Firma Vadeleri',
+            'corporation': 'Ana Firmaları',
+            'corporationMaturity': 'Ana Firma Vadeleri',
+            'refinery': 'Üreticiler',
             'offer': 'Teklifler',
             'customer': 'Müşteriler',
             'salesPerson': 'Satış Temsilcisi',
@@ -70,6 +70,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "authorities": MessageLookupByLibrary.simpleMessage("Yetkiler"),
         "authorities_required":
             MessageLookupByLibrary.simpleMessage("Yetki gereklidir"),
+        "birim": MessageLookupByLibrary.simpleMessage("birim"),
+        "birim_numeric":
+            MessageLookupByLibrary.simpleMessage("birim sayısal olmalıdır"),
+        "birim_required":
+            MessageLookupByLibrary.simpleMessage("birim gereklidir"),
         "calculate": MessageLookupByLibrary.simpleMessage("Hesapla"),
         "calculated_maturity_screen":
             MessageLookupByLibrary.simpleMessage("Vade Hesaplama"),
@@ -98,25 +103,24 @@ class MessageLookup extends MessageLookupByLibrary {
         "corporation": MessageLookupByLibrary.simpleMessage("Dağıtım Firması"),
         "corporation_required":
             MessageLookupByLibrary.simpleMessage("Dağıtım Firması gereklidir"),
-        "corporations":
-            MessageLookupByLibrary.simpleMessage("Dağıtım Firmaları"),
+        "corporations": MessageLookupByLibrary.simpleMessage("Ana Firmaları"),
         "cost": MessageLookupByLibrary.simpleMessage("Maliyet"),
         "create": MessageLookupByLibrary.simpleMessage("Oluştur"),
         "createNewOffer":
             MessageLookupByLibrary.simpleMessage("Yeni Teklif Oluştur"),
         "create_corporation":
             MessageLookupByLibrary.simpleMessage("Dağıtım Firması Oluştur"),
-        "create_corporation_maturity": MessageLookupByLibrary.simpleMessage(
-            "Dağıtım Firması Vade Oluştur"),
+        "create_corporation_maturity":
+            MessageLookupByLibrary.simpleMessage("Ana Firma Vade Oluştur"),
         "create_offer": MessageLookupByLibrary.simpleMessage("Teklif Oluştur"),
         "create_record_error": MessageLookupByLibrary.simpleMessage(
             "Kayıt Oluşturulamadı. Bilgileri kontrol ediniz.!"),
         "create_refinery":
-            MessageLookupByLibrary.simpleMessage("Rafineri Oluştur"),
+            MessageLookupByLibrary.simpleMessage("Üretici Oluştur"),
         "create_station":
-            MessageLookupByLibrary.simpleMessage("Dolum Tesisi Oluştur"),
+            MessageLookupByLibrary.simpleMessage("Alt Firma Oluştur"),
         "create_station_maturity":
-            MessageLookupByLibrary.simpleMessage("Dolum Tesisi Vade Oluştur"),
+            MessageLookupByLibrary.simpleMessage("Alt Firma Vade Oluştur"),
         "create_user":
             MessageLookupByLibrary.simpleMessage("Kullanıcı Oluştur"),
         "credit": MessageLookupByLibrary.simpleMessage("Kredi"),
@@ -163,11 +167,11 @@ class MessageLookup extends MessageLookupByLibrary {
             "Dağıtım Şirketi Vade Düzenle"),
         "edit_offer": MessageLookupByLibrary.simpleMessage("Teklif Düzenle"),
         "edit_refinery":
-            MessageLookupByLibrary.simpleMessage("Rafineri Düzenle"),
+            MessageLookupByLibrary.simpleMessage("Üretici Düzenle"),
         "edit_station":
-            MessageLookupByLibrary.simpleMessage("Dolum Tesisi Düzenle"),
+            MessageLookupByLibrary.simpleMessage("Alt Firma Düzenle"),
         "edit_station_maturity":
-            MessageLookupByLibrary.simpleMessage("Dolum Tesisi Vade Düzenle"),
+            MessageLookupByLibrary.simpleMessage("Alt Firma Vade Düzenle"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Düzenle"),
         "email": MessageLookupByLibrary.simpleMessage("E-posta"),
         "email_error":
@@ -253,16 +257,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "list": MessageLookupByLibrary.simpleMessage("Listele"),
         "listOffer": MessageLookupByLibrary.simpleMessage("Teklifler"),
         "list_corporation":
-            MessageLookupByLibrary.simpleMessage("Dağıtım Firmaları"),
+            MessageLookupByLibrary.simpleMessage("Ana Firmaları"),
         "list_offer": MessageLookupByLibrary.simpleMessage("Teklifler"),
-        "list_refinery": MessageLookupByLibrary.simpleMessage("Rafineriler"),
-        "list_station": MessageLookupByLibrary.simpleMessage("Dolum Tesisleri"),
+        "list_refinery": MessageLookupByLibrary.simpleMessage("Üreticiler"),
+        "list_station": MessageLookupByLibrary.simpleMessage("Alt Firmalar"),
         "list_user": MessageLookupByLibrary.simpleMessage("Kullanıcılar"),
-        "litre": MessageLookupByLibrary.simpleMessage("Litre"),
-        "litre_numeric":
-            MessageLookupByLibrary.simpleMessage("Litre sayısal olmalıdır"),
-        "litre_required":
-            MessageLookupByLibrary.simpleMessage("Litre gereklidir"),
         "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
         "logging_in":
             MessageLookupByLibrary.simpleMessage("Giriş yapılıyor..."),
@@ -339,12 +338,12 @@ class MessageLookup extends MessageLookupByLibrary {
             "Vergi dahil Fiyat gereklidir"),
         "range": MessageLookupByLibrary.simpleMessage("Aralık"),
         "rate": MessageLookupByLibrary.simpleMessage("Oran"),
-        "refineries": MessageLookupByLibrary.simpleMessage("Rafineriler"),
+        "refineries": MessageLookupByLibrary.simpleMessage("Üreticiler"),
         "refineries_description":
             MessageLookupByLibrary.simpleMessage("Açıklama"),
-        "refinery": MessageLookupByLibrary.simpleMessage("Rafineri"),
+        "refinery": MessageLookupByLibrary.simpleMessage("Üretici"),
         "refinery_required":
-            MessageLookupByLibrary.simpleMessage("Rafineri gereklidir"),
+            MessageLookupByLibrary.simpleMessage("Üretici gereklidir"),
         "rejected_status": MessageLookupByLibrary.simpleMessage("Reddedilen"),
         "reports": MessageLookupByLibrary.simpleMessage("Raporlar"),
         "required_cost":
@@ -377,10 +376,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
         "station": MessageLookupByLibrary.simpleMessage("Dolum Tesisi"),
         "station_rate":
-            MessageLookupByLibrary.simpleMessage("Dolum Tesisleri Oran"),
+            MessageLookupByLibrary.simpleMessage("Alt Firmalar Oran"),
         "station_required":
-            MessageLookupByLibrary.simpleMessage("Dolum Tesisi gereklidir"),
-        "stations": MessageLookupByLibrary.simpleMessage("Dolum Tesisleri"),
+            MessageLookupByLibrary.simpleMessage("Alt Firma gereklidir"),
+        "stations": MessageLookupByLibrary.simpleMessage("Alt Firmalar"),
         "status": MessageLookupByLibrary.simpleMessage("Durum"),
         "success":
             MessageLookupByLibrary.simpleMessage("Password reset successfully"),

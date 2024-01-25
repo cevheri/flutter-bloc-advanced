@@ -71,6 +71,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
         "authorities_required":
             MessageLookupByLibrary.simpleMessage("Authorities is required"),
+        "birim": MessageLookupByLibrary.simpleMessage("birim"),
+        "birim_numeric":
+            MessageLookupByLibrary.simpleMessage("birim must be a valid"),
+        "birim_required":
+            MessageLookupByLibrary.simpleMessage("birim is required"),
         "calculate": MessageLookupByLibrary.simpleMessage("Calculate"),
         "calculated_maturity_screen":
             MessageLookupByLibrary.simpleMessage("Calculated Maturity Screen"),
@@ -256,11 +261,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "list_refinery": MessageLookupByLibrary.simpleMessage("List Refinery"),
         "list_station": MessageLookupByLibrary.simpleMessage("List Station"),
         "list_user": MessageLookupByLibrary.simpleMessage("List User"),
-        "litre": MessageLookupByLibrary.simpleMessage("Litre"),
-        "litre_numeric":
-            MessageLookupByLibrary.simpleMessage("Litre must be a valid"),
-        "litre_required":
-            MessageLookupByLibrary.simpleMessage("Litre is required"),
         "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
         "logging_in": MessageLookupByLibrary.simpleMessage("Logging in..."),
         "login": MessageLookupByLibrary.simpleMessage("Login"),

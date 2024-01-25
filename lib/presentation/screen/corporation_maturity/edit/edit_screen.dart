@@ -68,11 +68,6 @@ class EditCorporationMaturityScreen extends StatelessWidget {
           CorporationMaturityEditForm(
               corporation: corporation,
               formKey: corporationMaturityEditFormKey),
-          ListView.builder(
-            itemBuilder: (context, index) {
-              return SizedBox(height: 20);
-            },
-          ),
         ],
       ),
     );

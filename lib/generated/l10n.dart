@@ -2218,31 +2218,31 @@ class S {
     );
   }
 
-  /// `Litre`
-  String get litre {
+  /// `birim`
+  String get birim {
     return Intl.message(
-      'Litre',
-      name: 'litre',
+      'birim',
+      name: 'birim',
       desc: '',
       args: [],
     );
   }
 
-  /// `Litre is required`
-  String get litre_required {
+  /// `birim is required`
+  String get birim_required {
     return Intl.message(
-      'Litre is required',
-      name: 'litre_required',
+      'birim is required',
+      name: 'birim_required',
       desc: '',
       args: [],
     );
   }
 
-  /// `Litre must be a valid`
-  String get litre_numeric {
+  /// `birim must be a valid`
+  String get birim_numeric {
     return Intl.message(
-      'Litre must be a valid',
-      name: 'litre_numeric',
+      'birim must be a valid',
+      name: 'birim_numeric',
       desc: '',
       args: [],
     );

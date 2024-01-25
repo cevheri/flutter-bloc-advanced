@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:flutter/services.dart';
 
 import '../http_utils.dart';
 import '../models/refinery.dart';
@@ -72,9 +73,10 @@ class RefineryRepository {
 
   /// Find user method that findRefineryByName a user
   Future<List<Refinery>> findRefineryByName() async {
-    final userRequest = await HttpUtils.getRequest(
-        "/refineries?page=0&size=1000&eagerload=false");
-    var result = JsonMapper.deserialize<List<Refinery>>(userRequest)!;
+    //final userRequest = await HttpUtils.getRequest("/refineries?page=0&size=1000&eagerload=false");
+    //var result = JsonMapper.deserialize<List<Refinery>>(userRequest)!;
+    var result = JsonMapper.deserialize<List<Refinery>>(await rootBundle.loadString('mock/ureticiler.json'))!;
+
     return result;
   }
 

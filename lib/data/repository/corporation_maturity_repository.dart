@@ -1,6 +1,7 @@
 import 'dart:developer';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:flutter/services.dart';
 
 import '../http_utils.dart';
 import '../models/corporation_maturity.dart';
@@ -22,12 +23,11 @@ class CorporationMaturityRepository {
   ///
   /// @param id the corporationMaturity id
   Future<List<CorporationMaturity>> getCorporationMaturity(String id) async {
-    final result = await HttpUtils.getRequest(
-        "/corporation-maturity-dates/corporation/$id?page=0&size=1000");
-    var defaultCityList =
-        JsonMapper.deserialize<List<CorporationMaturity>>(result)!;
-    var sortWithNameResult = defaultCityList
-      ..sort((a, b) => a.id!.compareTo(b.id!));
+    //final result = await HttpUtils.getRequest("/corporation-maturity-dates/corporation/$id?page=0&size=1000");
+    //var defaultCityList = JsonMapper.deserialize<List<CorporationMaturity>>(result)!;
+    var result = JsonMapper.deserialize<List<CorporationMaturity>>(await rootBundle.loadString('mock/ana_firma_vadeler.json'))!;
+    print(result.length);
+    var sortWithNameResult = result ..sort((a, b) => a.id!.compareTo(b.id!));
     return sortWithNameResult;
   }
 

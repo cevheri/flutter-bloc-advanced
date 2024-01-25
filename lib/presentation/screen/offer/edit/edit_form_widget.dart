@@ -56,7 +56,7 @@ Future<dynamic> offerEditFormScreen(
                   content:
                       "${NumberFormat.currency(locale: 'tr_TR', decimalDigits: 0, symbol: "").format(int.parse(offer.transportCost.toString()))} ₺"),
               RowWidget(
-                  title: S.of(context).litre,
+                  title: S.of(context).birim,
                   content:
                       "${NumberFormat.currency(locale: 'tr_TR', decimalDigits: 0, symbol: "").format(int.parse(offer.liter.toString()))} Lt"),
               RowWidget(

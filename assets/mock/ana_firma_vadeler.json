@@ -1,0 +1,325 @@
+[
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-02T07:13:22.027Z",
+    "id": 1,
+    "maturity": 1,
+    "rate": 0.4,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-13T08:35:25.463Z",
+    "id": 2,
+    "maturity": 5,
+    "rate": 0.5,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-05T19:14:19.420Z",
+    "id": 3,
+    "maturity": 7,
+    "rate": 0.5,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-12T17:12:54.087Z",
+    "id": 4,
+    "maturity": -1,
+    "rate": 2.8,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-05T19:14:28.753Z",
+    "id": 5,
+    "maturity": 15,
+    "rate": 0.75,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": null,
+    "lastModifiedDate": null,
+    "id": 6,
+    "maturity": 30,
+    "rate": 1.5,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": null,
+    "lastModifiedDate": null,
+    "id": 7,
+    "maturity": 45,
+    "rate": 2.25,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": null,
+    "lastModifiedDate": null,
+    "id": 8,
+    "maturity": 50,
+    "rate": 2.5,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": null,
+    "lastModifiedDate": null,
+    "id": 9,
+    "maturity": 60,
+    "rate": 3,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": null,
+    "lastModifiedDate": null,
+    "id": 10,
+    "maturity": 75,
+    "rate": 3.75,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": null,
+    "createdDate": null,
+    "lastModifiedBy": null,
+    "lastModifiedDate": null,
+    "id": 11,
+    "maturity": 90,
+    "rate": 4.5,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": "test user 1",
+    "createdDate": "2024-01-02T07:17:11.047Z",
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-02T07:17:11.047Z",
+    "id": 39,
+    "maturity": 3,
+    "rate": 0.4,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": "test user 1",
+    "createdDate": "2024-01-02T07:21:00.423Z",
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-02T07:21:00.423Z",
+    "id": 40,
+    "maturity": 10,
+    "rate": 0.65,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": "test user 1",
+    "createdDate": "2024-01-02T07:21:32.677Z",
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-02T07:21:32.677Z",
+    "id": 41,
+    "maturity": 20,
+    "rate": 1,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": "test user 1",
+    "createdDate": "2024-01-02T07:22:07.867Z",
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-02T07:22:07.867Z",
+    "id": 42,
+    "maturity": 35,
+    "rate": 1.65,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": "test user 1",
+    "createdDate": "2024-01-02T07:22:25.197Z",
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-02T07:22:25.197Z",
+    "id": 43,
+    "maturity": 40,
+    "rate": 2,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  },
+  {
+    "createdBy": "test user 1",
+    "createdDate": "2024-01-02T07:22:47.617Z",
+    "lastModifiedBy": "test user 1",
+    "lastModifiedDate": "2024-01-02T07:22:47.617Z",
+    "id": 44,
+    "maturity": 65,
+    "rate": 3.25,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma",
+      "description": "Ana Firma",
+      "active": true
+    }
+  }
+]
