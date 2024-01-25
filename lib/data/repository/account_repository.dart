@@ -1,13 +1,14 @@
 import 'dart:developer';
 
-import 'dart:io';
-
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:flutter/services.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../utils/app_constants.dart';
 import '../http_utils.dart';
-import '../models/user.dart';
 import '../models/change_password.dart';
 import '../models/menu.dart';
+import '../models/user.dart';
 
 /// Account repository that handles all the account related operations
 /// register, login, logout, getAccount, saveAccount, updateAccount
@@ -35,7 +36,6 @@ class AccountRepository {
   ) async {
     final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>(
         "/account/change-password", passwordChangeDTO);
-    print(authenticateRequest.statusCode);
     return authenticateRequest.statusCode;
   }
 
@@ -45,11 +45,9 @@ class AccountRepository {
     final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
 
     String? result;
-    print(resetRequest.statusCode);
     if (resetRequest.statusCode != 200) {
       if (resetRequest.headers[HttpUtils.errorHeader] != null) {
         result = resetRequest.headers[HttpUtils.errorHeader];
-        print(result);
       } else {
         result = HttpUtils.errorServerKey;
       }
@@ -62,8 +60,13 @@ class AccountRepository {
 
   /// Retrieve current account method that retrieves the current user
   Future<User> getAccount() async {
-    final saveRequest = await HttpUtils.getRequest("/account");
-    return JsonMapper.deserialize<User>(saveRequest.body)!;
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    // final response = await HttpUtils.getRequest("/account");
+    // var result = JsonMapper.deserialize<User>(response)!;
+    var result = JsonMapper.deserialize<User>(await rootBundle.loadString('mock/account.json'))!;
+    await prefs.setString('role', result.authorities?[0] ?? "");
+    AppConstants.role = prefs.getString('role') ?? "";
+    return result;
   }
 
   /// Save account method that saves the current user
@@ -100,7 +103,7 @@ class AccountRepository {
 
   Future<List<Menu>> getMenus() async {
     final menusRequest = await HttpUtils.getRequest("/menus/current-user");
-    log("getMenus: ${menusRequest.body}");
-    return JsonMapper.deserialize<List<Menu>>(menusRequest.body)!;
+    log("getMenus: ${menusRequest}");
+    return JsonMapper.deserialize<List<Menu>>(menusRequest)!;
   }
 }

@@ -4,13 +4,20 @@ import 'dart:developer';
 import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
 import '../configuration/environment.dart';
-import '../utils/constants.dart';
+import '../utils/app_constants.dart';
 import 'app_api_exception.dart';
+
+class MyHttpOverrides extends HttpOverrides {
+  @override
+  HttpClient createHttpClient(SecurityContext? context) {
+    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+  }
+}
 
 class HttpUtils {
   static String errorHeader = 'x-${AppConstants.APP_KEY}App-error';
@@ -19,13 +26,10 @@ class HttpUtils {
   static String badRequestServerKey = 'error.400';
   static String errorServerKey = 'error.500';
   static const String generalNoErrorKey = 'none';
-  static int timeout = 5;
+  static int timeout = 30;
 
   /// Default headers for all requests (can be overridden with [addCustomHttpHeader])
-  static final _defaultHttpHeaders = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  };
+  static final _defaultHttpHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json'};
 
   static final _customHttpHeaders = <String, String>{};
 
@@ -40,8 +44,7 @@ class HttpUtils {
   }
 
   static Future<Map<String, String>> headers() async {
-    FlutterSecureStorage storage = new FlutterSecureStorage();
-    String? jwt = await storage.read(key: HttpUtils.keyForJWTToken);
+    String? jwt = AppConstants.jwtToken;
     Map<String, String> headerParameters = <String, String>{};
 
     //custom http headers entries
@@ -63,21 +66,29 @@ class HttpUtils {
     return headerParameters;
   }
 
-  static Future<Response> postRequest<T>(String endpoint, T body,
-      {Map<String, String>? headers}) async {
+  static Future<Response> postRequest<T>(String endpoint, T body, {Map<String, String>? headers}) async {
     var headers = await HttpUtils.headers();
-
     String messageBody = "";
 
-    if(headers['Content-Type'] == 'application/json'){
-      messageBody = JsonMapper.serialize(body, SerializationOptions(indent: ''));
-    }else{
+    if (headers['Content-Type'] == 'application/json') {
+      messageBody = JsonMapper.serialize(
+        body,
+        SerializationOptions(
+          indent: '',
+          ignoreDefaultMembers: true,
+          ignoreNullMembers: true,
+          ignoreUnknownTypes: true,
+        ),
+      );
+
+    } else {
       messageBody = body as String;
     }
 
     Response? response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
+
       response = await http
           .post(
             url,
@@ -86,7 +97,11 @@ class HttpUtils {
             encoding: Encoding.getByName('utf-8'),
           )
           .timeout(Duration(seconds: timeout));
-
+      debugPrint("###########################");
+      debugPrint("postRequest url: $url");
+      debugPrint("postRequest header: $headers");
+      debugPrint("postRequest body: $messageBody");
+      debugPrint("###########################");
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -95,16 +110,40 @@ class HttpUtils {
     return response;
   }
 
-  static Future<Response> getRequest(String endpoint) async {
+  static Future<String> getRequest(String endpoint) async {
     var headers = await HttpUtils.headers();
     try {
-      var result = await http
-          .get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers)
-          .timeout(Duration(seconds: timeout));
+
+      var result = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
+
+      debugPrint("###########################");
+      debugPrint("postRequest url: ${ProfileConstants.api}$endpoint");
+      debugPrint("postRequest header: ${result.headers}");
+      debugPrint("postRequest body: ${result.body}");
+      debugPrint("###########################");
       if (result.statusCode == 401) {
         throw UnauthorisedException(result.body.toString());
       }
-      return result;
+      return encodeUTF8(result.body.toString());
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    } on TimeoutException {
+      throw FetchDataException('Request timeout');
+    }
+  }
+
+  static Future<int> getRequestHeader(String endpoint) async {
+    print(endpoint);
+    var headers = await HttpUtils.headers();
+    try {
+      var result = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
+      if (result.statusCode == 401) {
+        throw UnauthorisedException(result.headers.toString());
+      }
+      Map<String, dynamic> pageable = <String, dynamic>{};
+      pageable['x-total-count'] = result.headers['x-total-count'];
+      int countOffers = int.parse(result.headers['x-total-count']!);
+      return countOffers;
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -114,15 +153,43 @@ class HttpUtils {
 
   static Future<Response> putRequest<T>(String endpoint, T body) async {
     var headers = await HttpUtils.headers();
-    final String json =
-        JsonMapper.serialize(body, SerializationOptions(indent: ''));
+    final String json = JsonMapper.serialize(
+      body,
+      SerializationOptions(
+        indent: '',
+        ignoreDefaultMembers: true,
+        ignoreNullMembers: true,
+        ignoreUnknownTypes: true,
+      ),
+    );
     Response response;
     try {
       response = await http
-          .put(Uri.parse('${ProfileConstants.api}$endpoint'),
-              headers: headers,
-              body: json,
-              encoding: Encoding.getByName('utf-8'))
+          .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
+          .timeout(Duration(seconds: timeout));
+    } on SocketException {
+      throw FetchDataException('No Internet connection');
+    } on TimeoutException {
+      throw FetchDataException('Request timeout');
+    }
+    return response;
+  }
+
+  static Future<Response> patchRequest<T>(String endpoint, T body) async {
+    var headers = await HttpUtils.headers();
+    final String json = JsonMapper.serialize(
+      body,
+      SerializationOptions(
+        indent: '',
+        ignoreDefaultMembers: true,
+        ignoreNullMembers: true,
+        ignoreUnknownTypes: true,
+      ),
+    );
+    Response response;
+    try {
+      response = await http
+          .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
           .timeout(Duration(seconds: timeout));
     } on SocketException {
       throw FetchDataException('No Internet connection');
@@ -135,10 +202,7 @@ class HttpUtils {
   static Future<Response> deleteRequest(String endpoint) async {
     var headers = await HttpUtils.headers();
     try {
-      return await http
-          .delete(Uri.parse('${ProfileConstants.api}$endpoint'),
-              headers: headers)
-          .timeout(Duration(seconds: timeout));
+      return await http.delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -160,8 +224,7 @@ class HttpUtils {
             .toString()); //TODO cevheri: handle http.417 exception and throw ApiBusinessException with translated error messages
       case 500:
       default:
-        throw FetchDataException(
-            'Error occured while Communication with Server with StatusCode : ${response.statusCode}');
+        throw FetchDataException('Error occured while Communication with Server with StatusCode : ${response.statusCode}');
     }
   }
 }

@@ -1,44 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
-/// Message class for common functions
-///
-/// ```dart
-/// Message.info(context, "Hello World");
-///
-/// Message.error(context, "Hello World");
-///
-/// ```
 class Message {
-  /// Show a message with scaffold messenger
-  ///
-  /// param [context] is required BuildContext
-  /// param [message] is required MessageBody
-  /// param [color] is optional messagebox color
-  /// param [duration] is optional messagebox duration in seconds
-  static void info({required BuildContext context, required String message, Color color = Colors.blueGrey, int duration = 3}) {
-    //wrap the message inside a SnackBar
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: Duration(seconds: duration),
-      ),
+
+
+
+
+  static Future getMessage({required BuildContext context, required String title,required String content}) async {
+    Get.snackbar(
+      title,
+      content,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.fromLTRB(100, 20, 100, 20),
+      isDismissible: true,
     );
   }
 
-  /// Show a error message with scaffold messenger
-  ///
-  /// param [context] is required BuildContext
-  /// param [message] is required MessageBody
-  /// param [color] is optional messagebox color
-  /// param [duration] is optional messagebox duration in seconds
-  static void error({required BuildContext context, required String message, Color color = Colors.red, int duration = 3}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: color,
-        duration: Duration(seconds: duration),
-      ),
+  //errorMessage
+  static Future errorMessage({required BuildContext context, required String title,required String content}) async {
+    Get.snackbar(
+      title,
+
+      content,
+      snackPosition: SnackPosition.BOTTOM,
+      margin: const EdgeInsets.fromLTRB(100, 20, 100, 20),
+      isDismissible: true,
+      colorText: Colors.red,
+    );
+  }
+
+  static Future calculated({
+    required BuildContext context,
+    required String title,
+    required String message,
+    required int duration,
+    Color color = Colors.blueGrey,
+  }) async {
+    Get.snackbar(
+      title,
+      message,
+      animationDuration: const Duration(milliseconds: 500),
+      snackPosition: SnackPosition.BOTTOM,
+      backgroundColor: Theme.of(context).colorScheme.primary,
+      borderRadius: 10,
+      margin: const EdgeInsets.fromLTRB(100, 10, 100, 350),
+      colorText: Colors.white,
+      duration: Duration(seconds: duration),
+      isDismissible: false,
+      forwardAnimationCurve: Curves.easeOutBack,
+      overlayBlur: 1.5,
     );
   }
 }

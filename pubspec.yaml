@@ -5,7 +5,7 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.1.2 <4.0.0'
-  flutter: '>3.13.0'
+  flutter: '>3.0.0'
 
 dependencies:
   flutter:
@@ -16,17 +16,25 @@ dependencies:
   cupertino_icons:
   flutter_bloc:
   equatable:
-  flutter_secure_storage:
+  pdf:
+  printing:
   dart_json_mapper:
-  dart_json_mapper_flutter:
+  expansion_tile_card:
   http:
   device_preview:
   getwidget:
   flutter_form_builder:
+  get:
   form_builder_validators:
-  intl: ^0.18.1
+  intl:
   string_2_icon:
-  expansion_tile_card:
+  shared_preferences:
+  intl_utils: ^2.8.5
+  pattern_formatter:
+  http_certificate_pinning:
+  bloc_concurrency:
+  modbus_client_tcp:
+
 
 dependency_overrides:
   reflectable:
@@ -36,13 +44,8 @@ dependency_overrides:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  json_serializable:
-
-
   flutter_lints:
   build_runner: any
-
-
 
 flutter_intl:
   enabled: true
@@ -55,12 +58,8 @@ flutter_secure_storage:
   main_locale: en
 
 flutter:
-  generate: true
   uses-material-design: true
   assets:
-    - assets/images/Icon-192.png
-    - assets/mock/users.json
-    - assets/mock/tasks.json
-    - assets/mock/id_token.json
-    - assets/mock/menu.json
+    - assets/mock/
+    - assets/image/img.png
 

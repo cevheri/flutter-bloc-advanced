@@ -17,7 +17,7 @@ class SettingsFirstNameChanged extends SettingsEvent {
   const SettingsFirstNameChanged({required this.firstName});
 
   @override
-  List<Object> get props => [firstName];
+  List<Object> get props => [];
 }
 
 class SettingsLastNameChanged extends SettingsEvent {
@@ -26,7 +26,7 @@ class SettingsLastNameChanged extends SettingsEvent {
   const SettingsLastNameChanged({required this.lastName});
 
   @override
-  List<Object> get props => [lastName];
+  List<Object> get props => [];
 }
 
 class SettingsEmailChanged extends SettingsEvent {
@@ -35,7 +35,7 @@ class SettingsEmailChanged extends SettingsEvent {
   const SettingsEmailChanged({required this.email});
 
   @override
-  List<Object> get props => [email];
+  List<Object> get props => [];
 }
 
 class SettingsLanguageChanged extends SettingsEvent {
@@ -44,7 +44,7 @@ class SettingsLanguageChanged extends SettingsEvent {
   const SettingsLanguageChanged({required this.language});
 
   @override
-  List<Object> get props => [language];
+  List<Object> get props => [];
 }
 
 class SettingsFormSubmitted extends SettingsEvent {}

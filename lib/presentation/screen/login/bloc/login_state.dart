@@ -37,3 +37,15 @@ class LoginState extends Equatable {
   @override
   bool get stringify => true;
 }
+
+class LoginInitialState extends LoginState {}
+
+class LoginLoadingState extends LoginState {}
+
+class LoginLoadedState extends LoginState {}
+
+class LoginErrorState extends LoginState {
+  final String message;
+
+  const LoginErrorState({required this.message});
+}

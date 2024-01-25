@@ -36,12 +36,12 @@ class _Config {
   static const API = "API";
 
   static Map<String, dynamic> devConstants = {
-    API: "http://localhost:8080/api",
-    // API: "https://618251ce84c2020017d89dcb.mockapi.io/api/v1",
-    // API: "https://cevheri.free.beeceptor.com",
+    API: "mock_data",
+    //API: "http://192.168.1.1:8081/api",
   };
 
   static Map<String, dynamic> prodConstants = {
-    API: "http://server:port/api",
+    API: "mock_data",
+    //API: "http://192.168.1.1:8081/api",
   };
 }

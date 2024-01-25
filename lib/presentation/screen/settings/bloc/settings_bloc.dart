@@ -8,11 +8,9 @@ import '../../../../data/models/user.dart';
 import '../../../../data/repository/account_repository.dart';
 
 part 'settings_event.dart';
-
 part 'settings_state.dart';
 
-/// Bloc responsible for managing the settings.
-/// It is used to loadCurrentUser and update the settings.
+/// Bloc responsible for managing the Settings.
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   SettingsBloc({
     required AccountRepository accountRepository,
