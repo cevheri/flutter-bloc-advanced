@@ -53,6 +53,7 @@ class OfferRepository {
         await rootBundle.loadString('mock/teklifler.json'))!;
   }
 
+
   Future<int> getOffersHeaders([int startIndex = 0, int limit = 10]) async {
     final offersRequest = await HttpUtils.getRequestHeader(
         "/offerings?createdDate.greaterThanOrEqual=${ConstOfferStationMaturity.startDate}&createdDate.lessThanOrEqual=${ConstOfferStationMaturity.endDate}&${ConstOfferStationMaturity.urlString}page=0&size=10&sort=id%2Cdesc");
