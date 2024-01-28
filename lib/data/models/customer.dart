@@ -5,35 +5,6 @@ import 'package:flutter_bloc_advance/data/models/sales_person.dart';
 /// ApplicationCustomer model that represents the customer entity in this application.
 ///
 /// this is an immutable class that extends [Equatable] so that it can be compared
-
-/*
-[
-  {
-    "id": "120-03-004",
-    "name": "KA BETON PARKE BORU VE PREFABRİK İNŞ.SAN.VE TAAH.A.Ş.",
-    "customerShortName": "KA BETON PARKE BORU VE PREFABRİK İNŞ.SAN.VE TAAH.A.Ş.",
-    "cariKodu": "120-03-004",
-    "official": "",
-    "phone": "0272 213 27 31",
-    "email": null,
-    "vatNo": "4841547722",
-    "taxOffice": "TINAZTEPE",
-    "cityName": "AFYON",
-    "districtName": "MERKEZ",
-    "address": "BURMALI MAH.MİLLİ EGEMENLİK CAD.ÖZEL İDARE NO:20",
-    "active": true,
-    "salesPersonCode": "06",
-    "debt": 0,
-    "credit": 0,
-    "salesPerson": {
-      "id": "06",
-      "name": "S.YILMAZ KALENDER",
-      "code": "06",
-      "active": true
-    }
-  },
-]
- */
 @jsonSerializable
 class Customer extends Equatable {
   @JsonProperty(name: 'id')

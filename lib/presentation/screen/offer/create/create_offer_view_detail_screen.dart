@@ -41,7 +41,7 @@ class EditOfferScreen extends StatelessWidget {
   }
 
   _buildBody(BuildContext context, List<Offer> offer) {
-    //offer.lenght
+    //offer.length
     List<Offer> offerSerializeList = [];
     for (var i = 0; i < offer.length; i++) {
       String offerEncode = "";

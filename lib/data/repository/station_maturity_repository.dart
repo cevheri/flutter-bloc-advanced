@@ -11,7 +11,7 @@ import '../models/station_maturity.dart';
 /// This class is responsible for all the stationMaturity related operations
 /// list, create, update, delete etc.
 class StationMaturityRepository {
-  /// Retrieve all stationMaturitys method that retrieves all the stationMaturitys
+  /// Retrieve all stationMaturities method that retrieves all the stationMaturitys
   Future<List<StationMaturity>> getStationMaturitys() async {
     final stationMaturitysRequest =
         await HttpUtils.getRequest("/stationMaturitys");

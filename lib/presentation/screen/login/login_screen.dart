@@ -14,9 +14,9 @@ class LoginScreen extends StatelessWidget {
 
   final _loginFormKey = GlobalKey<FormBuilderState>();
 
-  Future<bool> _onWillPop() async {
-    return false;
-  }
+  // Future<bool> _onWillPop() async {
+  //   return false;
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class LoginScreen extends StatelessWidget {
   _buildBody(BuildContext context) {
     return FormBuilder(
       key: _loginFormKey,
-      onWillPop: _onWillPop,
+      // onWillPop: _onWillPop,
       child: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -67,7 +67,6 @@ class LoginScreen extends StatelessWidget {
 
   _logo(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      //beyaz  renk buraya konulacak
       return Image.asset(
         'assets/images/logoLight.png',
         width: 200,

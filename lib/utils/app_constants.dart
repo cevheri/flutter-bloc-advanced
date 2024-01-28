@@ -3,12 +3,12 @@ import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 class AppConstants{
-  static const String APP_KEY = "SekoyaApi";
+  static const String APP_KEY = "Sekoya Api";
   static const String APP_NAME = "User-Offering-Management";
   static const String APP_VERSION = "1.0.0";
   static const String APP_DESCRIPTION = "User Roles and Offering Management mobile and web application";
   static const String APP_AUTHOR = "---";
-  static const String APP_AUTHOR_EMAIL = "test@gmail.com";
+  static const String APP_AUTHOR_EMAIL = "sekoyatech@gmail.com";
   static String jwtToken = "";
   static String role = "";
   Future<pw.MemoryImage> getBackground() async {

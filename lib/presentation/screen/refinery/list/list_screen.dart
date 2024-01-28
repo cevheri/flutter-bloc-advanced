@@ -136,7 +136,7 @@ class ListRefineriesScreen extends StatelessWidget {
     );
   }
 
-  // circle or edit icon buton
+  // circle or edit icon button
   IconButton buildIconButton(
       BuildContext context, RefinerySearchSuccessState state, int index) {
     return IconButton(

@@ -143,8 +143,6 @@ class ListCorporationMaturityScreen extends StatelessWidget {
     );
   }
 
-//tekrar bağlansana koptun
-
   BoxDecoration buildTableRowDecoration(int index, BuildContext context) {
     // dark or light mode row decoration
     if (Theme.of(context).brightness == Brightness.dark) {

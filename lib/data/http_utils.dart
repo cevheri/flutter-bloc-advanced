@@ -224,7 +224,7 @@ class HttpUtils {
             .toString()); //TODO cevheri: handle http.417 exception and throw ApiBusinessException with translated error messages
       case 500:
       default:
-        throw FetchDataException('Error occured while Communication with Server with StatusCode : ${response.statusCode}');
+        throw FetchDataException('Error occurred while Communication with Server with StatusCode : ${response.statusCode}');
     }
   }
 }
