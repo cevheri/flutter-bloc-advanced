@@ -72,8 +72,7 @@ class UserRepository {
     String authorities,
   ) async {
     final userRequest = await HttpUtils.get(_path, "/filter?name=$name&authorities=$authorities&page=$page&size=$size");
-    var result = JsonMapper.deserialize<List<User>>(userRequest)!;
-    return result;
+    return JsonMapper.deserialize<List<User>>(userRequest)!;
   }
 
   /// Edit user method that editUser a user

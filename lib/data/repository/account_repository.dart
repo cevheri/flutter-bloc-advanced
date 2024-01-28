@@ -17,6 +17,7 @@ import '../models/user.dart';
 class AccountRepository {
   AccountRepository();
 
+  final _path = "/account";
 
   /// Register account method that registers a new user
   Future<String?> register(User newUser) async {
@@ -35,16 +36,16 @@ class AccountRepository {
     PasswordChangeDTO passwordChangeDTO,
   ) async {
     final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>(
-        "/account/change-password", passwordChangeDTO);
+        "$_path/change-password", passwordChangeDTO);
     return authenticateRequest.statusCode;
   }
 
   Future<int> resetPassword(String mailAddress) async {
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
-    final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
+    final resetRequest = await HttpUtils.postRequest<String>("$_path/reset-password/init", mailAddress);
 
-    String? result;
+    late String? result;
     if (resetRequest.statusCode != 200) {
       if (resetRequest.headers[HttpUtils.errorHeader] != null) {
         result = resetRequest.headers[HttpUtils.errorHeader];
@@ -61,9 +62,8 @@ class AccountRepository {
   /// Retrieve current account method that retrieves the current user
   Future<User> getAccount() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    // final response = await HttpUtils.getRequest("/account");
-    // var result = JsonMapper.deserialize<User>(response)!;
-    var result = JsonMapper.deserialize<User>(await rootBundle.loadString('mock/account.json'))!;
+    final response = await HttpUtils.get(_path);
+    var result = JsonMapper.deserialize<User>(response)!;
     await prefs.setString('role', result.authorities?[0] ?? "");
     AppConstants.role = prefs.getString('role') ?? "";
     return result;
@@ -73,7 +73,7 @@ class AccountRepository {
   ///
   /// @param account the user object
   Future<String?> saveAccount(User user) async {
-    final saveRequest = await HttpUtils.postRequest<User>("/account", user);
+    final saveRequest = await HttpUtils.postRequest<User>(_path, user);
     String? result;
     if (saveRequest.statusCode != 200) {
       if (saveRequest.headers[HttpUtils.errorHeader] != null) {
@@ -92,18 +92,18 @@ class AccountRepository {
   ///
   /// @param account the user object
   updateAccount(User account) {
-    return HttpUtils.putRequest<User>("/account", account);
+    return HttpUtils.putRequest<User>(_path, account);
   }
 
   //TODO not implemented yet in API
   /// Delete current account method that deletes the current user
   deleteAccount() {
-    return HttpUtils.deleteRequest("/account");
+    return HttpUtils.deleteRequest(_path);
   }
 
   Future<List<Menu>> getMenus() async {
-    final menusRequest = await HttpUtils.get("/menus/current-user");
-    log("getMenus: ${menusRequest}");
-    return JsonMapper.deserialize<List<Menu>>(menusRequest)!;
+    final response = await HttpUtils.get("/menus/current-user");
+    log("getMenus: $response");
+    return JsonMapper.deserialize<List<Menu>>(response)!;
   }
 }

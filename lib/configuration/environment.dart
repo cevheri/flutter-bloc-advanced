@@ -49,7 +49,7 @@ class ProfileConstants {
 class _Config {
   static const API = "API";
   static Map<String, dynamic> mockServerConstants = {
-    API: " https://virtserver.swaggerhub.com/cevheri/flutter-bloc-template/0.0.1",
+    API: "https://virtserver.swaggerhub.com/cevheri/flutter-bloc-template/0.0.1/api",
   };
 
   static Map<String, dynamic> mockJsonConstants = {

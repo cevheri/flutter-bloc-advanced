@@ -125,7 +125,8 @@ class HttpUtils {
 
     var headers = await HttpUtils.headers();
     try {
-      var result = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
+      final uri = Uri.parse('${ProfileConstants.api}$endpoint');
+      var result = await http.get(uri, headers: headers).timeout(Duration(seconds: timeout));
 
       debugPrint("###########################");
       debugPrint("postRequest url: ${ProfileConstants.api}$endpoint");
@@ -140,6 +141,8 @@ class HttpUtils {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
       throw FetchDataException('Request timeout');
+    } on Exception catch (e) {
+      throw FetchDataException(e.toString());
     }
   }
 
