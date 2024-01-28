@@ -94,7 +94,7 @@ class App extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
       ),
       debugShowFloatingThemeButton: false,
-      initial: AdaptiveThemeMode.light,
+      initial: AdaptiveThemeMode.system,
       builder: (light, dark) {
         return MultiBlocProvider(
           providers: [
