@@ -15,14 +15,14 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 /// main entry point of local computer development
 void main() async {
 
-  ProfileConstants.setEnvironment(Environment.PROD);
+  ProfileConstants.setEnvironment(Environment.DEV);
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? language = prefs.getString('lang');
   if (language == null) {
-    prefs.setString('lang', 'tr');
-    language = 'tr';
+    prefs.setString('lang', 'en');
+    language = 'en';
   }
   AppConstants.jwtToken = prefs.getString('jwtToken') ?? "";
   AppConstants.role = prefs.getString('role') ?? "";
