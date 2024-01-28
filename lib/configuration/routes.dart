@@ -8,7 +8,7 @@ class ApplicationRoutes {
   static final logout = '/logout';
   static final register = '/register';
   static final settings = '/settings';
-  //static final language = '/settings/language';
+  static final language = '/settings/language';
   static final forgotPassword = '/forgot-password';
   static final changePassword = '/settings/change-password';
   static final account = '/account';

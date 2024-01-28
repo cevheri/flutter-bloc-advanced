@@ -45,18 +45,18 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(translate) => "${Intl.select(translate, {
             'selected': 'All',
-            'CALCULATED': 'Hesaplandı',
-            'APPROVAL_IN_PROGRESS': 'Onay Sürecinde',
-            'TO_BE_ORDERED': 'Onaylandı',
-            'APPROVAL_REJECTED': 'Reddedildi',
-            'IN_NEGOTIATION': 'Müşteriye önerildi',
-            'ACCEPTED': 'Kabul Edildi',
-            'RESCINDED': 'Red edildi',
+            'CALCULATED': 'Hesaplanan Teklif',
+            'APPROVAL_IN_PROGRESS': 'Teklif Onay',
+            'TO_BE_ORDERED': 'Teklif onaylandı',
+            'APPROVAL_REJECTED': 'Teklif reddedildi',
+            'IN_NEGOTIATION': 'Güncel teklif müşteriye önerildi',
+            'ACCEPTED': 'Güncel teklifi müşteri kabul etti',
+            'RESCINDED': 'Güncel teklifi müşteri red etti',
             'SHIPPED': 'Tamamlandı',
-            'CANCELLED': 'Geri çekildi',
-            'DRAFT': 'İlk Kayıt',
-            'APPROVED': 'Onaylandı',
-            'ORDERED': 'Siparişe Gönderildi',
+            'CANCELLED': 'Teklif geri çekildi ve iptal edildi',
+            'DRAFT': 'Kaydet',
+            'APPROVED': 'Teklif müşteriye gönderilmeye hazır',
+            'ORDERED': 'Sipariş hazırlandı',
             'other': 'Diğer',
           })}";
 
@@ -66,8 +66,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "address": MessageLookupByLibrary.simpleMessage("Address"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
-        "approved_status":
-            MessageLookupByLibrary.simpleMessage("Approved Offers"),
+        "approved_status": MessageLookupByLibrary.simpleMessage("Approved"),
         "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
         "authorities_required":
             MessageLookupByLibrary.simpleMessage("Authorities is required"),
@@ -78,7 +77,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("birim is required"),
         "calculate": MessageLookupByLibrary.simpleMessage("Calculate"),
         "calculated_maturity_screen":
-            MessageLookupByLibrary.simpleMessage("Calculated Maturity Screen"),
+            MessageLookupByLibrary.simpleMessage("Calculated Maturity"),
         "calculated_status": MessageLookupByLibrary.simpleMessage("Calculated"),
         "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
         "cancelled_status": MessageLookupByLibrary.simpleMessage("Cancelled"),

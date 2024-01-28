@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
@@ -57,7 +58,7 @@ class HttpUtils {
       log("default headers");
     }
 
-    if (jwt != null) {
+    if (jwt.isNotEmpty) {
       headerParameters['Authorization'] = 'Bearer $jwt';
     } else {
       headerParameters.remove('Authorization');
@@ -80,7 +81,6 @@ class HttpUtils {
           ignoreUnknownTypes: true,
         ),
       );
-
     } else {
       messageBody = body as String;
     }
@@ -110,10 +110,17 @@ class HttpUtils {
     return response;
   }
 
-  static Future<String> getRequest(String endpoint) async {
+  static Future<String> getRequest(String endpoint, [String? parameters]) async {
+    if (ProfileConstants.isMockJson) {
+      return await loadJsonMockData(parameters, endpoint);
+    }
+
+    if (parameters != null) {
+      endpoint = endpoint + parameters;
+    }
+
     var headers = await HttpUtils.headers();
     try {
-
       var result = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
 
       debugPrint("###########################");
@@ -130,6 +137,18 @@ class HttpUtils {
     } on TimeoutException {
       throw FetchDataException('Request timeout');
     }
+  }
+
+  static Future<String> loadJsonMockData(String? parameters, String endpoint) async {
+    if (parameters == null) {
+      throw new ApiBusinessException("Parameters cannot be null when using mock json");
+    }
+    final removedPath = endpoint.replaceFirst("/", "").split("?")[0];
+    final replacedPath = removedPath.replaceAll("/", "_");
+    final jsonPath = "assets/mock/$replacedPath.json";
+    final result = await rootBundle.loadString(jsonPath);
+    final encodedResult = encodeUTF8(result);
+    return encodedResult;
   }
 
   static Future<int> getRequestHeader(String endpoint) async {

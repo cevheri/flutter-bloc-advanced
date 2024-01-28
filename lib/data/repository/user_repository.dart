@@ -62,8 +62,10 @@ class UserRepository {
     int rangeEnd,
     String authorities,
   ) async {
-    //final userRequest = await HttpUtils.getRequest("/admin/users/authorities/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
-    var result = JsonMapper.deserialize<List<User>>(await rootBundle.loadString('mock/sales_man.json'))!;
+    final path = "/admin/users/authorities";
+    final pathParameter ="/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}";
+    final userRequest = await HttpUtils.getRequest(path, pathParameter);
+    var result = JsonMapper.deserialize<List<User>>(userRequest)!;
     return result;
   }
 
@@ -74,8 +76,9 @@ class UserRepository {
     String name,
     String authorities,
   ) async {
-    //final userRequest = await HttpUtils.getRequest("/admin/users/filter?name=$name&authorities=$authorities&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
-    var result = JsonMapper.deserialize<List<User>>(await rootBundle.loadString('mock/sales_man.json'))!;
+    final userRequest = await HttpUtils.getRequest("/admin/users/filter?name=$name&authorities=$authorities&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    var result = JsonMapper.deserialize<List<User>>(userRequest)!;
+    //var result = JsonMapper.deserialize<List<User>>(await rootBundle.loadString('mock/sales_man.json'))!;
     return result;
   }
 

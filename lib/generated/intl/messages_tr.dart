@@ -82,7 +82,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "cancel": MessageLookupByLibrary.simpleMessage("İptal"),
         "cancelled_status":
             MessageLookupByLibrary.simpleMessage("İptal Edildi"),
-        "cari_kod": MessageLookupByLibrary.simpleMessage("Cari Kodu"),
+        "cari_kod": MessageLookupByLibrary.simpleMessage("Müşteri Kodu"),
         "change": MessageLookupByLibrary.simpleMessage("Change Password"),
         "change_nothing":
             MessageLookupByLibrary.simpleMessage("Değişiklik bulunamadı"),
@@ -95,9 +95,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "code": MessageLookupByLibrary.simpleMessage("Code"),
         "company_name": MessageLookupByLibrary.simpleMessage("Firma ismi"),
         "completed_status": MessageLookupByLibrary.simpleMessage("Tamamlandı"),
-        "confirm": MessageLookupByLibrary.simpleMessage("Passwords must match"),
+        "confirm": MessageLookupByLibrary.simpleMessage("Onaylandı"),
         "confirm_new":
-            MessageLookupByLibrary.simpleMessage("Confirm New Password"),
+            MessageLookupByLibrary.simpleMessage("Şifre değiştirildi"),
         "confirmation_status":
             MessageLookupByLibrary.simpleMessage("Teklif Onaylandı"),
         "corporation": MessageLookupByLibrary.simpleMessage("Dağıtım Firması"),
@@ -242,7 +242,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "http_500":
             MessageLookupByLibrary.simpleMessage("Internal Server Error"),
         "id": MessageLookupByLibrary.simpleMessage("ID"),
-        "increase": MessageLookupByLibrary.simpleMessage("Bindirim"),
+        "increase": MessageLookupByLibrary.simpleMessage("Revize"),
         "increase_unit_price":
             MessageLookupByLibrary.simpleMessage("Revize Fiyat"),
         "indicator": MessageLookupByLibrary.simpleMessage("Loading..."),

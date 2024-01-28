@@ -1,23 +1,20 @@
-import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../configuration/environment.dart';
-import '../data/http_utils.dart';
 import '../utils/app_constants.dart';
 import 'app.dart';
-import 'main_prod.mapper.g.dart' show initializeJsonMapper;
+import 'main_local.mapper.g.dart' show initializeJsonMapper;
 
 /// IMPORTANT!! run this command to generate main_prod.mapper.g.dart
 // dart run build_runner build --delete-conflicting-outputs
+// /home/cevheri/snap/flutter/common/flutter/bin/flutter --no-color pub global run intl_utils:generate
 
-/// main entry point of production environment
+/// main entry point of local computer development with mock server
 void main() async {
-  HttpOverrides.global = MyHttpOverrides();
-  ProfileConstants.setEnvironment(Environment.PROD);
+  ProfileConstants.setEnvironment(Environment.MOCK_SERVER);
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -31,6 +28,6 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]).then((_){
-    runApp(App(language: language??'tr'));
+  runApp(App(language: language??'tr'));
   });
 }

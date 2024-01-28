@@ -60,6 +60,16 @@ class S {
     );
   }
 
+  /// `Active`
+  String get active {
+    return Intl.message(
+      'Active',
+      name: 'active',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Address`
   String get address {
     return Intl.message(
@@ -80,11 +90,121 @@ class S {
     );
   }
 
+  /// `Approved`
+  String get approved_status {
+    return Intl.message(
+      'Approved',
+      name: 'approved_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authorities`
+  String get authorities {
+    return Intl.message(
+      'Authorities',
+      name: 'authorities',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authorities is required`
+  String get authorities_required {
+    return Intl.message(
+      'Authorities is required',
+      name: 'authorities_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `birim`
+  String get birim {
+    return Intl.message(
+      'birim',
+      name: 'birim',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `birim must be a valid`
+  String get birim_numeric {
+    return Intl.message(
+      'birim must be a valid',
+      name: 'birim_numeric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `birim is required`
+  String get birim_required {
+    return Intl.message(
+      'birim is required',
+      name: 'birim_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculate`
+  String get calculate {
+    return Intl.message(
+      'Calculate',
+      name: 'calculate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculated Maturity`
+  String get calculated_maturity_screen {
+    return Intl.message(
+      'Calculated Maturity',
+      name: 'calculated_maturity_screen',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Calculated`
+  String get calculated_status {
+    return Intl.message(
+      'Calculated',
+      name: 'calculated_status',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Cancel`
   String get cancel {
     return Intl.message(
       'Cancel',
       name: 'cancel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cancelled`
+  String get cancelled_status {
+    return Intl.message(
+      'Cancelled',
+      name: 'cancelled_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Account Code`
+  String get cari_kod {
+    return Intl.message(
+      'Account Code',
+      name: 'cari_kod',
       desc: '',
       args: [],
     );
@@ -100,21 +220,21 @@ class S {
     );
   }
 
-  /// `Change Password`
-  String get change_password {
+  /// `Nothing changed`
+  String get change_nothing {
     return Intl.message(
-      'Change Password',
-      name: 'change_password',
+      'Nothing changed',
+      name: 'change_nothing',
       desc: '',
       args: [],
     );
   }
 
-  /// `City`
-  String get city {
+  /// `Change Password`
+  String get change_password {
     return Intl.message(
-      'City',
-      name: 'city',
+      'Change Password',
+      name: 'change_password',
       desc: '',
       args: [],
     );
@@ -130,11 +250,51 @@ class S {
     );
   }
 
+  /// `City`
+  String get city {
+    return Intl.message(
+      'City',
+      name: 'city',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `City is required`
+  String get city_required {
+    return Intl.message(
+      'City is required',
+      name: 'city_required',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Code`
   String get code {
     return Intl.message(
       'Code',
       name: 'code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Company Name`
+  String get company_name {
+    return Intl.message(
+      'Company Name',
+      name: 'company_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Completed`
+  String get completed_status {
+    return Intl.message(
+      'Completed',
+      name: 'completed_status',
       desc: '',
       args: [],
     );
@@ -160,11 +320,61 @@ class S {
     );
   }
 
+  /// `Confirmation Offers`
+  String get confirmation_status {
+    return Intl.message(
+      'Confirmation Offers',
+      name: 'confirmation_status',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Corporation`
+  String get corporation {
+    return Intl.message(
+      'Corporation',
+      name: 'corporation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Corporation is required`
+  String get corporation_required {
+    return Intl.message(
+      'Corporation is required',
+      name: 'corporation_required',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Corporations`
   String get corporations {
     return Intl.message(
       'Corporations',
       name: 'corporations',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Cost`
+  String get cost {
+    return Intl.message(
+      'Cost',
+      name: 'cost',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create`
+  String get create {
+    return Intl.message(
+      'Create',
+      name: 'create',
       desc: '',
       args: [],
     );
@@ -180,11 +390,101 @@ class S {
     );
   }
 
+  /// `Create Corporation`
+  String get create_corporation {
+    return Intl.message(
+      'Create Corporation',
+      name: 'create_corporation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create Corporation Maturity`
+  String get create_corporation_maturity {
+    return Intl.message(
+      'Create Corporation Maturity',
+      name: 'create_corporation_maturity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create Offer`
+  String get create_offer {
+    return Intl.message(
+      'Create Offer',
+      name: 'create_offer',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Kayıt Oluşturulamadı. Bilgileri kontrol ediniz.!`
   String get create_record_error {
     return Intl.message(
       'Kayıt Oluşturulamadı. Bilgileri kontrol ediniz.!',
       name: 'create_record_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create Refinery`
+  String get create_refinery {
+    return Intl.message(
+      'Create Refinery',
+      name: 'create_refinery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create Station`
+  String get create_station {
+    return Intl.message(
+      'Create Station',
+      name: 'create_station',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create Station Maturity`
+  String get create_station_maturity {
+    return Intl.message(
+      'Create Station Maturity',
+      name: 'create_station_maturity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Create User`
+  String get create_user {
+    return Intl.message(
+      'Create User',
+      name: 'create_user',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Credit`
+  String get credit {
+    return Intl.message(
+      'Credit',
+      name: 'credit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Credit Card`
+  String get credit_card {
+    return Intl.message(
+      'Credit Card',
+      name: 'credit_card',
       desc: '',
       args: [],
     );
@@ -250,6 +550,56 @@ class S {
     );
   }
 
+  /// `Date`
+  String get date {
+    return Intl.message(
+      'Date',
+      name: 'date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Day`
+  String get day {
+    return Intl.message(
+      'Day',
+      name: 'day',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Debt`
+  String get debt {
+    return Intl.message(
+      'Debt',
+      name: 'debt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete`
+  String get delete {
+    return Intl.message(
+      'Delete',
+      name: 'delete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to delete?`
+  String get delete_confirmation {
+    return Intl.message(
+      'Are you sure you want to delete?',
+      name: 'delete_confirmation',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `CRM`
   String get description {
     return Intl.message(
@@ -260,11 +610,101 @@ class S {
     );
   }
 
+  /// `Description cannot be more than 20 characters long`
+  String get description_max_length {
+    return Intl.message(
+      'Description cannot be more than 20 characters long',
+      name: 'description_max_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Description must be at least 5 characters long`
+  String get description_min_length {
+    return Intl.message(
+      'Description must be at least 5 characters long',
+      name: 'description_min_length',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Description`
   String get description_offer {
     return Intl.message(
       'Description',
       name: 'description_offer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Description must be a valid`
+  String get description_regex_pattern {
+    return Intl.message(
+      'Description must be a valid',
+      name: 'description_regex_pattern',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Description is required`
+  String get description_required {
+    return Intl.message(
+      'Description is required',
+      name: 'description_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Destination Address`
+  String get destination_address {
+    return Intl.message(
+      'Destination Address',
+      name: 'destination_address',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Destination City`
+  String get destination_city {
+    return Intl.message(
+      'Destination City',
+      name: 'destination_city',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Destination City is required`
+  String get destination_city_required {
+    return Intl.message(
+      'Destination City is required',
+      name: 'destination_city_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Destination District`
+  String get destination_district {
+    return Intl.message(
+      'Destination District',
+      name: 'destination_district',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Detail`
+  String get detail {
+    return Intl.message(
+      'Detail',
+      name: 'detail',
       desc: '',
       args: [],
     );
@@ -285,6 +725,96 @@ class S {
     return Intl.message(
       'Districts',
       name: 'districts',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Document`
+  String get document {
+    return Intl.message(
+      'Document',
+      name: 'document',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit`
+  String get edit {
+    return Intl.message(
+      'Edit',
+      name: 'edit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Corporation`
+  String get edit_corporation {
+    return Intl.message(
+      'Edit Corporation',
+      name: 'edit_corporation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Corporation Maturity`
+  String get edit_corporation_maturity {
+    return Intl.message(
+      'Edit Corporation Maturity',
+      name: 'edit_corporation_maturity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Offer`
+  String get edit_offer {
+    return Intl.message(
+      'Edit Offer',
+      name: 'edit_offer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Refinery`
+  String get edit_refinery {
+    return Intl.message(
+      'Edit Refinery',
+      name: 'edit_refinery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Station`
+  String get edit_station {
+    return Intl.message(
+      'Edit Station',
+      name: 'edit_station',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit Station Maturity`
+  String get edit_station_maturity {
+    return Intl.message(
+      'Edit Station Maturity',
+      name: 'edit_station_maturity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Edit User`
+  String get edit_user {
+    return Intl.message(
+      'Edit User',
+      name: 'edit_user',
       desc: '',
       args: [],
     );
@@ -405,6 +935,66 @@ class S {
     return Intl.message(
       'Email address not found',
       name: 'error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Exit`
+  String get exit {
+    return Intl.message(
+      'Exit',
+      name: 'exit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// ` Find `
+  String get find {
+    return Intl.message(
+      ' Find ',
+      name: 'find',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `First Name`
+  String get first_name {
+    return Intl.message(
+      'First Name',
+      name: 'first_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Firstname cannot be more than 20 characters long`
+  String get firstname_max_length {
+    return Intl.message(
+      'Firstname cannot be more than 20 characters long',
+      name: 'firstname_max_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Firstname must be at least 5 characters long`
+  String get firstname_min_length {
+    return Intl.message(
+      'Firstname must be at least 5 characters long',
+      name: 'firstname_min_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Firstname is required`
+  String get firstname_required {
+    return Intl.message(
+      'Firstname is required',
+      name: 'firstname_required',
       desc: '',
       args: [],
     );
@@ -710,6 +1300,36 @@ class S {
     );
   }
 
+  /// `ID`
+  String get id {
+    return Intl.message(
+      'ID',
+      name: 'id',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Increase`
+  String get increase {
+    return Intl.message(
+      'Increase',
+      name: 'increase',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Increase Price`
+  String get increase_unit_price {
+    return Intl.message(
+      'Increase Price',
+      name: 'increase_unit_price',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Loading...`
   String get indicator {
     return Intl.message(
@@ -730,11 +1350,111 @@ class S {
     );
   }
 
+  /// `Last Name`
+  String get last_name {
+    return Intl.message(
+      'Last Name',
+      name: 'last_name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lastname cannot be more than 20 characters long`
+  String get lastname_max_length {
+    return Intl.message(
+      'Lastname cannot be more than 20 characters long',
+      name: 'lastname_max_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lastname must be at least 5 characters long`
+  String get lastname_min_length {
+    return Intl.message(
+      'Lastname must be at least 5 characters long',
+      name: 'lastname_min_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Lastname is required`
+  String get lastname_required {
+    return Intl.message(
+      'Lastname is required',
+      name: 'lastname_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `List`
+  String get list {
+    return Intl.message(
+      'List',
+      name: 'list',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `List Offer`
   String get listOffer {
     return Intl.message(
       'List Offer',
       name: 'listOffer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `List Corporation`
+  String get list_corporation {
+    return Intl.message(
+      'List Corporation',
+      name: 'list_corporation',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `List Offer`
+  String get list_offer {
+    return Intl.message(
+      'List Offer',
+      name: 'list_offer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `List Refinery`
+  String get list_refinery {
+    return Intl.message(
+      'List Refinery',
+      name: 'list_refinery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `List Station`
+  String get list_station {
+    return Intl.message(
+      'List Station',
+      name: 'list_station',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `List User`
+  String get list_user {
+    return Intl.message(
+      'List User',
+      name: 'list_user',
       desc: '',
       args: [],
     );
@@ -755,6 +1475,16 @@ class S {
     return Intl.message(
       'Logging in...',
       name: 'logging_in',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login`
+  String get login {
+    return Intl.message(
+      'Login',
+      name: 'login',
       desc: '',
       args: [],
     );
@@ -820,6 +1550,36 @@ class S {
     );
   }
 
+  /// `Maturity`
+  String get maturity {
+    return Intl.message(
+      'Maturity',
+      name: 'maturity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maturity Type`
+  String get maturity_type {
+    return Intl.message(
+      'Maturity Type',
+      name: 'maturity_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Maturity Types`
+  String get maturity_types {
+    return Intl.message(
+      'Maturity Types',
+      name: 'maturity_types',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Menu`
   String get menu {
     return Intl.message(
@@ -860,6 +1620,56 @@ class S {
     );
   }
 
+  /// `Name cannot be more than 20 characters long`
+  String get name_max_length {
+    return Intl.message(
+      'Name cannot be more than 20 characters long',
+      name: 'name_max_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name must be at least 5 characters long`
+  String get name_min_length {
+    return Intl.message(
+      'Name must be at least 5 characters long',
+      name: 'name_min_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name must be a valid`
+  String get name_regex_pattern {
+    return Intl.message(
+      'Name must be a valid',
+      name: 'name_regex_pattern',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Name is required`
+  String get name_required {
+    return Intl.message(
+      'Name is required',
+      name: 'name_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New Increase`
+  String get new_increase {
+    return Intl.message(
+      'New Increase',
+      name: 'new_increase',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `No`
   String get no {
     return Intl.message(
@@ -875,6 +1685,16 @@ class S {
     return Intl.message(
       'Passwords do not match',
       name: 'not_match',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Offer Form`
+  String get offer_form {
+    return Intl.message(
+      'Offer Form',
+      name: 'offer_form',
       desc: '',
       args: [],
     );
@@ -980,11 +1800,211 @@ class S {
     );
   }
 
+  /// `Phone Number`
+  String get phone_number {
+    return Intl.message(
+      'Phone Number',
+      name: 'phone_number',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Plasiyer`
+  String get plasiyer {
+    return Intl.message(
+      'Plasiyer',
+      name: 'plasiyer',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price`
+  String get price {
+    return Intl.message(
+      'Price',
+      name: 'price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price cannot be empty`
+  String get price_empty {
+    return Intl.message(
+      'Price cannot be empty',
+      name: 'price_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price cannot be more than 10 characters long`
+  String get price_max_length {
+    return Intl.message(
+      'Price cannot be more than 10 characters long',
+      name: 'price_max_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price must be at least 1 characters long`
+  String get price_min_length {
+    return Intl.message(
+      'Price must be at least 1 characters long',
+      name: 'price_min_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price must be a valid`
+  String get price_regex_pattern {
+    return Intl.message(
+      'Price must be a valid',
+      name: 'price_regex_pattern',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Price is required`
+  String get price_required {
+    return Intl.message(
+      'Price is required',
+      name: 'price_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With Wat Price`
+  String get price_with_vat {
+    return Intl.message(
+      'With Wat Price',
+      name: 'price_with_vat',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With Wat Price cannot be empty`
+  String get price_with_vat_empty {
+    return Intl.message(
+      'With Wat Price cannot be empty',
+      name: 'price_with_vat_empty',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With Wat Price cannot be more than 10 characters long`
+  String get price_with_vat_max_length {
+    return Intl.message(
+      'With Wat Price cannot be more than 10 characters long',
+      name: 'price_with_vat_max_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With Wat Price must be at least 1 characters long`
+  String get price_with_vat_min_length {
+    return Intl.message(
+      'With Wat Price must be at least 1 characters long',
+      name: 'price_with_vat_min_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With Wat Price must be a valid`
+  String get price_with_vat_regex_pattern {
+    return Intl.message(
+      'With Wat Price must be a valid',
+      name: 'price_with_vat_regex_pattern',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `With Wat Price is required`
+  String get price_with_vat_required {
+    return Intl.message(
+      'With Wat Price is required',
+      name: 'price_with_vat_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Range`
+  String get range {
+    return Intl.message(
+      'Range',
+      name: 'range',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rate`
+  String get rate {
+    return Intl.message(
+      'Rate',
+      name: 'rate',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Refineries`
   String get refineries {
     return Intl.message(
       'Refineries',
       name: 'refineries',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refineries Description`
+  String get refineries_description {
+    return Intl.message(
+      'Refineries Description',
+      name: 'refineries_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refinery`
+  String get refinery {
+    return Intl.message(
+      'Refinery',
+      name: 'refinery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Refinery is required`
+  String get refinery_required {
+    return Intl.message(
+      'Refinery is required',
+      name: 'refinery_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rejected`
+  String get rejected_status {
+    return Intl.message(
+      'Rejected',
+      name: 'rejected_status',
       desc: '',
       args: [],
     );
@@ -1000,21 +2020,51 @@ class S {
     );
   }
 
-  /// `Reset Email Address Password`
-  String get reset {
+  /// `Cost is required`
+  String get required_cost {
     return Intl.message(
-      'Reset Email Address Password',
-      name: 'reset',
+      'Cost is required',
+      name: 'required_cost',
       desc: '',
       args: [],
     );
   }
 
-  /// `Sales Person`
-  String get salesPerson {
+  /// `Maturity is required`
+  String get required_maturity {
     return Intl.message(
-      'Sales Person',
-      name: 'salesPerson',
+      'Maturity is required',
+      name: 'required_maturity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Phone Type Required 5** *** ** ** `
+  String get required_phone_type {
+    return Intl.message(
+      'Phone Type Required 5** *** ** ** ',
+      name: 'required_phone_type',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Range is required`
+  String get required_range {
+    return Intl.message(
+      'Range is required',
+      name: 'required_range',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Rate is required`
+  String get required_rate {
+    return Intl.message(
+      'Rate is required',
+      name: 'required_rate',
       desc: '',
       args: [],
     );
@@ -1030,6 +2080,46 @@ class S {
     );
   }
 
+  /// `Reset Email Address Password`
+  String get reset {
+    return Intl.message(
+      'Reset Email Address Password',
+      name: 'reset',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Role`
+  String get role {
+    return Intl.message(
+      'Role',
+      name: 'role',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales Person`
+  String get salesPerson {
+    return Intl.message(
+      'Sales Person',
+      name: 'salesPerson',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sales Person Code`
+  String get sales_person_code {
+    return Intl.message(
+      'Sales Person Code',
+      name: 'sales_person_code',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Save`
   String get save {
     return Intl.message(
@@ -1040,11 +2130,51 @@ class S {
     );
   }
 
+  /// `Screen size is too small.`
+  String get screen_size_error {
+    return Intl.message(
+      'Screen size is too small.',
+      name: 'screen_size_error',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select`
+  String get select {
+    return Intl.message(
+      'Select',
+      name: 'select',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Select Customer`
+  String get select_customer {
+    return Intl.message(
+      'Select Customer',
+      name: 'select_customer',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Send`
   String get send {
     return Intl.message(
       'Send',
       name: 'send',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send Offer`
+  String get send_offer {
+    return Intl.message(
+      'Send Offer',
+      name: 'send_offer',
       desc: '',
       args: [],
     );
@@ -1070,6 +2200,26 @@ class S {
     );
   }
 
+  /// `Station Rate`
+  String get station_rate {
+    return Intl.message(
+      'Station Rate',
+      name: 'station_rate',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Station is required`
+  String get station_required {
+    return Intl.message(
+      'Station is required',
+      name: 'station_required',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Stations`
   String get stations {
     return Intl.message(
@@ -1080,11 +2230,11 @@ class S {
     );
   }
 
-  /// `Station Rate`
-  String get station_rate {
+  /// `Status`
+  String get status {
     return Intl.message(
-      'Station Rate',
-      name: 'station_rate',
+      'Status',
+      name: 'status',
       desc: '',
       args: [],
     );
@@ -1120,6 +2270,16 @@ class S {
     );
   }
 
+  /// `Theme`
+  String get theme {
+    return Intl.message(
+      'Theme',
+      name: 'theme',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Home Page`
   String get title {
     return Intl.message(
@@ -1135,6 +2295,16 @@ class S {
     return Intl.message(
       'Todo List',
       name: 'todoList',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total Price`
+  String get total_price {
+    return Intl.message(
+      'Total Price',
+      name: 'total_price',
       desc: '',
       args: [],
     );
@@ -1198,11 +2368,141 @@ class S {
     );
   }
 
+  /// `Transport Cost TL`
+  String get transport_cost {
+    return Intl.message(
+      'Transport Cost TL',
+      name: 'transport_cost',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport Cost must be a valid`
+  String get transport_cost_numeric {
+    return Intl.message(
+      'Transport Cost must be a valid',
+      name: 'transport_cost_numeric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport Cost is required`
+  String get transport_cost_required {
+    return Intl.message(
+      'Transport Cost is required',
+      name: 'transport_cost_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport`
+  String get transport_cost_tl {
+    return Intl.message(
+      'Transport',
+      name: 'transport_cost_tl',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport Date`
+  String get transport_date {
+    return Intl.message(
+      'Transport Date',
+      name: 'transport_date',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport Date is required`
+  String get transport_date_required {
+    return Intl.message(
+      'Transport Date is required',
+      name: 'transport_date_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport Distance Km`
+  String get transport_distance {
+    return Intl.message(
+      'Transport Distance Km',
+      name: 'transport_distance',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport Distance must be a valid`
+  String get transport_distance_numeric {
+    return Intl.message(
+      'Transport Distance must be a valid',
+      name: 'transport_distance_numeric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Transport Distance is required`
+  String get transport_distance_required {
+    return Intl.message(
+      'Transport Distance is required',
+      name: 'transport_distance_required',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Turkish`
   String get turkish {
     return Intl.message(
       'Turkish',
       name: 'turkish',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Unit Price`
+  String get unit_price {
+    return Intl.message(
+      'Unit Price',
+      name: 'unit_price',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Last Price Update`
+  String get unit_price_update {
+    return Intl.message(
+      'Last Price Update',
+      name: 'unit_price_update',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update`
+  String get update {
+    return Intl.message(
+      'Update',
+      name: 'update',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update Description`
+  String get update_description {
+    return Intl.message(
+      'Update Description',
+      name: 'update_description',
       desc: '',
       args: [],
     );
@@ -1228,16 +2528,6 @@ class S {
     );
   }
 
-  /// `Username is required`
-  String get username_required {
-    return Intl.message(
-      'Username is required',
-      name: 'username_required',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Username must be a valid email address`
   String get username_regex_pattern {
     return Intl.message(
@@ -1248,81 +2538,11 @@ class S {
     );
   }
 
-  /// `Firstname is required`
-  String get firstname_required {
+  /// `Username is required`
+  String get username_required {
     return Intl.message(
-      'Firstname is required',
-      name: 'firstname_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Firstname must be at least 5 characters long`
-  String get firstname_min_length {
-    return Intl.message(
-      'Firstname must be at least 5 characters long',
-      name: 'firstname_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Firstname cannot be more than 20 characters long`
-  String get firstname_max_length {
-    return Intl.message(
-      'Firstname cannot be more than 20 characters long',
-      name: 'firstname_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lastname is required`
-  String get lastname_required {
-    return Intl.message(
-      'Lastname is required',
-      name: 'lastname_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lastname must be at least 5 characters long`
-  String get lastname_min_length {
-    return Intl.message(
-      'Lastname must be at least 5 characters long',
-      name: 'lastname_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lastname cannot be more than 20 characters long`
-  String get lastname_max_length {
-    return Intl.message(
-      'Lastname cannot be more than 20 characters long',
-      name: 'lastname_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Authorities`
-  String get authorities {
-    return Intl.message(
-      'Authorities',
-      name: 'authorities',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Authorities is required`
-  String get authorities_required {
-    return Intl.message(
-      'Authorities is required',
-      name: 'authorities_required',
+      'Username is required',
+      name: 'username_required',
       desc: '',
       args: [],
     );
@@ -1333,6 +2553,16 @@ class S {
     return Intl.message(
       'Users',
       name: 'users',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Vat No`
+  String get vat_no {
+    return Intl.message(
+      'Vat No',
+      name: 'vat_no',
       desc: '',
       args: [],
     );
@@ -1363,1236 +2593,6 @@ class S {
     return Intl.message(
       'Yes',
       name: 'yes',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `First Name`
-  String get first_name {
-    return Intl.message(
-      'First Name',
-      name: 'first_name',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Last Name`
-  String get last_name {
-    return Intl.message(
-      'Last Name',
-      name: 'last_name',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Phone Number`
-  String get phone_number {
-    return Intl.message(
-      'Phone Number',
-      name: 'phone_number',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sales Person Code`
-  String get sales_person_code {
-    return Intl.message(
-      'Sales Person Code',
-      name: 'sales_person_code',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit User`
-  String get edit_user {
-    return Intl.message(
-      'Edit User',
-      name: 'edit_user',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit Refinery`
-  String get edit_refinery {
-    return Intl.message(
-      'Edit Refinery',
-      name: 'edit_refinery',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit Corporation`
-  String get edit_corporation {
-    return Intl.message(
-      'Edit Corporation',
-      name: 'edit_corporation',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit Station`
-  String get edit_station {
-    return Intl.message(
-      'Edit Station',
-      name: 'edit_station',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit Offer`
-  String get edit_offer {
-    return Intl.message(
-      'Edit Offer',
-      name: 'edit_offer',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit Station Maturity`
-  String get edit_station_maturity {
-    return Intl.message(
-      'Edit Station Maturity',
-      name: 'edit_station_maturity',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit Corporation Maturity`
-  String get edit_corporation_maturity {
-    return Intl.message(
-      'Edit Corporation Maturity',
-      name: 'edit_corporation_maturity',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `List User`
-  String get list_user {
-    return Intl.message(
-      'List User',
-      name: 'list_user',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `List Refinery`
-  String get list_refinery {
-    return Intl.message(
-      'List Refinery',
-      name: 'list_refinery',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `List Corporation`
-  String get list_corporation {
-    return Intl.message(
-      'List Corporation',
-      name: 'list_corporation',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `List Station`
-  String get list_station {
-    return Intl.message(
-      'List Station',
-      name: 'list_station',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `List Offer`
-  String get list_offer {
-    return Intl.message(
-      'List Offer',
-      name: 'list_offer',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `ID`
-  String get id {
-    return Intl.message(
-      'ID',
-      name: 'id',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `List`
-  String get list {
-    return Intl.message(
-      'List',
-      name: 'list',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Login`
-  String get login {
-    return Intl.message(
-      'Login',
-      name: 'login',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Plasiyer`
-  String get plasiyer {
-    return Intl.message(
-      'Plasiyer',
-      name: 'plasiyer',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create User`
-  String get create_user {
-    return Intl.message(
-      'Create User',
-      name: 'create_user',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create Refinery`
-  String get create_refinery {
-    return Intl.message(
-      'Create Refinery',
-      name: 'create_refinery',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create Corporation`
-  String get create_corporation {
-    return Intl.message(
-      'Create Corporation',
-      name: 'create_corporation',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create Corporation Maturity`
-  String get create_corporation_maturity {
-    return Intl.message(
-      'Create Corporation Maturity',
-      name: 'create_corporation_maturity',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create Station`
-  String get create_station {
-    return Intl.message(
-      'Create Station',
-      name: 'create_station',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create Station Maturity`
-  String get create_station_maturity {
-    return Intl.message(
-      'Create Station Maturity',
-      name: 'create_station_maturity',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create Offer`
-  String get create_offer {
-    return Intl.message(
-      'Create Offer',
-      name: 'create_offer',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Phone Type Required 5** *** ** ** `
-  String get required_phone_type {
-    return Intl.message(
-      'Phone Type Required 5** *** ** ** ',
-      name: 'required_phone_type',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Range`
-  String get range {
-    return Intl.message(
-      'Range',
-      name: 'range',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Range is required`
-  String get required_range {
-    return Intl.message(
-      'Range is required',
-      name: 'required_range',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Screen size is too small.`
-  String get screen_size_error {
-    return Intl.message(
-      'Screen size is too small.',
-      name: 'screen_size_error',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Account Code`
-  String get cari_kod {
-    return Intl.message(
-      'Account Code',
-      name: 'cari_kod',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Detail`
-  String get detail {
-    return Intl.message(
-      'Detail',
-      name: 'detail',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Role`
-  String get role {
-    return Intl.message(
-      'Role',
-      name: 'role',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Edit`
-  String get edit {
-    return Intl.message(
-      'Edit',
-      name: 'edit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Name is required`
-  String get name_required {
-    return Intl.message(
-      'Name is required',
-      name: 'name_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Name must be at least 5 characters long`
-  String get name_min_length {
-    return Intl.message(
-      'Name must be at least 5 characters long',
-      name: 'name_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Name cannot be more than 20 characters long`
-  String get name_max_length {
-    return Intl.message(
-      'Name cannot be more than 20 characters long',
-      name: 'name_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Name must be a valid`
-  String get name_regex_pattern {
-    return Intl.message(
-      'Name must be a valid',
-      name: 'name_regex_pattern',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Refineries Description`
-  String get refineries_description {
-    return Intl.message(
-      'Refineries Description',
-      name: 'refineries_description',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Description is required`
-  String get description_required {
-    return Intl.message(
-      'Description is required',
-      name: 'description_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Description must be at least 5 characters long`
-  String get description_min_length {
-    return Intl.message(
-      'Description must be at least 5 characters long',
-      name: 'description_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Description cannot be more than 20 characters long`
-  String get description_max_length {
-    return Intl.message(
-      'Description cannot be more than 20 characters long',
-      name: 'description_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Description must be a valid`
-  String get description_regex_pattern {
-    return Intl.message(
-      'Description must be a valid',
-      name: 'description_regex_pattern',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Price`
-  String get price {
-    return Intl.message(
-      'Price',
-      name: 'price',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Price is required`
-  String get price_required {
-    return Intl.message(
-      'Price is required',
-      name: 'price_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Price must be at least 1 characters long`
-  String get price_min_length {
-    return Intl.message(
-      'Price must be at least 1 characters long',
-      name: 'price_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Price cannot be more than 10 characters long`
-  String get price_max_length {
-    return Intl.message(
-      'Price cannot be more than 10 characters long',
-      name: 'price_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Price must be a valid`
-  String get price_regex_pattern {
-    return Intl.message(
-      'Price must be a valid',
-      name: 'price_regex_pattern',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Price cannot be empty`
-  String get price_empty {
-    return Intl.message(
-      'Price cannot be empty',
-      name: 'price_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `With Wat Price`
-  String get price_with_vat {
-    return Intl.message(
-      'With Wat Price',
-      name: 'price_with_vat',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `With Wat Price is required`
-  String get price_with_vat_required {
-    return Intl.message(
-      'With Wat Price is required',
-      name: 'price_with_vat_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `With Wat Price must be at least 1 characters long`
-  String get price_with_vat_min_length {
-    return Intl.message(
-      'With Wat Price must be at least 1 characters long',
-      name: 'price_with_vat_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `With Wat Price cannot be more than 10 characters long`
-  String get price_with_vat_max_length {
-    return Intl.message(
-      'With Wat Price cannot be more than 10 characters long',
-      name: 'price_with_vat_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `With Wat Price must be a valid`
-  String get price_with_vat_regex_pattern {
-    return Intl.message(
-      'With Wat Price must be a valid',
-      name: 'price_with_vat_regex_pattern',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `With Wat Price cannot be empty`
-  String get price_with_vat_empty {
-    return Intl.message(
-      'With Wat Price cannot be empty',
-      name: 'price_with_vat_empty',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Active`
-  String get active {
-    return Intl.message(
-      'Active',
-      name: 'active',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `City is required`
-  String get city_required {
-    return Intl.message(
-      'City is required',
-      name: 'city_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Maturity Types`
-  String get maturity_types {
-    return Intl.message(
-      'Maturity Types',
-      name: 'maturity_types',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cost`
-  String get cost {
-    return Intl.message(
-      'Cost',
-      name: 'cost',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Maturity`
-  String get maturity {
-    return Intl.message(
-      'Maturity',
-      name: 'maturity',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Rate`
-  String get rate {
-    return Intl.message(
-      'Rate',
-      name: 'rate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Delete`
-  String get delete {
-    return Intl.message(
-      'Delete',
-      name: 'delete',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Are you sure you want to delete?`
-  String get delete_confirmation {
-    return Intl.message(
-      'Are you sure you want to delete?',
-      name: 'delete_confirmation',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Create`
-  String get create {
-    return Intl.message(
-      'Create',
-      name: 'create',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Maturity is required`
-  String get required_maturity {
-    return Intl.message(
-      'Maturity is required',
-      name: 'required_maturity',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cost is required`
-  String get required_cost {
-    return Intl.message(
-      'Cost is required',
-      name: 'required_cost',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Rate is required`
-  String get required_rate {
-    return Intl.message(
-      'Rate is required',
-      name: 'required_rate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Nothing changed`
-  String get change_nothing {
-    return Intl.message(
-      'Nothing changed',
-      name: 'change_nothing',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// ` Find `
-  String get find {
-    return Intl.message(
-      ' Find ',
-      name: 'find',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Select`
-  String get select {
-    return Intl.message(
-      'Select',
-      name: 'select',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Select Customer`
-  String get select_customer {
-    return Intl.message(
-      'Select Customer',
-      name: 'select_customer',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Vat No`
-  String get vat_no {
-    return Intl.message(
-      'Vat No',
-      name: 'vat_no',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Debt`
-  String get debt {
-    return Intl.message(
-      'Debt',
-      name: 'debt',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Credit`
-  String get credit {
-    return Intl.message(
-      'Credit',
-      name: 'credit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Destination City`
-  String get destination_city {
-    return Intl.message(
-      'Destination City',
-      name: 'destination_city',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Destination District`
-  String get destination_district {
-    return Intl.message(
-      'Destination District',
-      name: 'destination_district',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Destination Address`
-  String get destination_address {
-    return Intl.message(
-      'Destination Address',
-      name: 'destination_address',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Distance Km`
-  String get transport_distance {
-    return Intl.message(
-      'Transport Distance Km',
-      name: 'transport_distance',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Distance is required`
-  String get transport_distance_required {
-    return Intl.message(
-      'Transport Distance is required',
-      name: 'transport_distance_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Distance must be a valid`
-  String get transport_distance_numeric {
-    return Intl.message(
-      'Transport Distance must be a valid',
-      name: 'transport_distance_numeric',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Cost TL`
-  String get transport_cost {
-    return Intl.message(
-      'Transport Cost TL',
-      name: 'transport_cost',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport`
-  String get transport_cost_tl {
-    return Intl.message(
-      'Transport',
-      name: 'transport_cost_tl',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Cost is required`
-  String get transport_cost_required {
-    return Intl.message(
-      'Transport Cost is required',
-      name: 'transport_cost_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Cost must be a valid`
-  String get transport_cost_numeric {
-    return Intl.message(
-      'Transport Cost must be a valid',
-      name: 'transport_cost_numeric',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `birim`
-  String get birim {
-    return Intl.message(
-      'birim',
-      name: 'birim',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `birim is required`
-  String get birim_required {
-    return Intl.message(
-      'birim is required',
-      name: 'birim_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `birim must be a valid`
-  String get birim_numeric {
-    return Intl.message(
-      'birim must be a valid',
-      name: 'birim_numeric',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Day`
-  String get day {
-    return Intl.message(
-      'Day',
-      name: 'day',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Credit Card`
-  String get credit_card {
-    return Intl.message(
-      'Credit Card',
-      name: 'credit_card',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Calculate`
-  String get calculate {
-    return Intl.message(
-      'Calculate',
-      name: 'calculate',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Corporation is required`
-  String get corporation_required {
-    return Intl.message(
-      'Corporation is required',
-      name: 'corporation_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Station is required`
-  String get station_required {
-    return Intl.message(
-      'Station is required',
-      name: 'station_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Destination City is required`
-  String get destination_city_required {
-    return Intl.message(
-      'Destination City is required',
-      name: 'destination_city_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Refinery is required`
-  String get refinery_required {
-    return Intl.message(
-      'Refinery is required',
-      name: 'refinery_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Increase`
-  String get increase {
-    return Intl.message(
-      'Increase',
-      name: 'increase',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `New Increase`
-  String get new_increase {
-    return Intl.message(
-      'New Increase',
-      name: 'new_increase',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Increase Price`
-  String get increase_unit_price {
-    return Intl.message(
-      'Increase Price',
-      name: 'increase_unit_price',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Last Price Update`
-  String get unit_price_update {
-    return Intl.message(
-      'Last Price Update',
-      name: 'unit_price_update',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Offer Form`
-  String get offer_form {
-    return Intl.message(
-      'Offer Form',
-      name: 'offer_form',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Refinery`
-  String get refinery {
-    return Intl.message(
-      'Refinery',
-      name: 'refinery',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Corporation`
-  String get corporation {
-    return Intl.message(
-      'Corporation',
-      name: 'corporation',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Maturity Type`
-  String get maturity_type {
-    return Intl.message(
-      'Maturity Type',
-      name: 'maturity_type',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Total Price`
-  String get total_price {
-    return Intl.message(
-      'Total Price',
-      name: 'total_price',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Status`
-  String get status {
-    return Intl.message(
-      'Status',
-      name: 'status',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Unit Price`
-  String get unit_price {
-    return Intl.message(
-      'Unit Price',
-      name: 'unit_price',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Update`
-  String get update {
-    return Intl.message(
-      'Update',
-      name: 'update',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Document`
-  String get document {
-    return Intl.message(
-      'Document',
-      name: 'document',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Theme`
-  String get theme {
-    return Intl.message(
-      'Theme',
-      name: 'theme',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Date`
-  String get date {
-    return Intl.message(
-      'Date',
-      name: 'date',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Company Name`
-  String get company_name {
-    return Intl.message(
-      'Company Name',
-      name: 'company_name',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Exit`
-  String get exit {
-    return Intl.message(
-      'Exit',
-      name: 'exit',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Update Description`
-  String get update_description {
-    return Intl.message(
-      'Update Description',
-      name: 'update_description',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Date`
-  String get transport_date {
-    return Intl.message(
-      'Transport Date',
-      name: 'transport_date',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Transport Date is required`
-  String get transport_date_required {
-    return Intl.message(
-      'Transport Date is required',
-      name: 'transport_date_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Calculated`
-  String get calculated_status {
-    return Intl.message(
-      'Calculated',
-      name: 'calculated_status',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Rejected`
-  String get rejected_status {
-    return Intl.message(
-      'Rejected',
-      name: 'rejected_status',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Confirmation Offers`
-  String get confirmation_status {
-    return Intl.message(
-      'Confirmation Offers',
-      name: 'confirmation_status',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Approved Offers`
-  String get approved_status {
-    return Intl.message(
-      'Approved Offers',
-      name: 'approved_status',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Completed`
-  String get completed_status {
-    return Intl.message(
-      'Completed',
-      name: 'completed_status',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Cancelled`
-  String get cancelled_status {
-    return Intl.message(
-      'Cancelled',
-      name: 'cancelled_status',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Send Offer`
-  String get send_offer {
-    return Intl.message(
-      'Send Offer',
-      name: 'send_offer',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Calculated Maturity Screen`
-  String get calculated_maturity_screen {
-    return Intl.message(
-      'Calculated Maturity Screen',
-      name: 'calculated_maturity_screen',
       desc: '',
       args: [],
     );
