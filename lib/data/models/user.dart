@@ -21,22 +21,56 @@ class User extends Equatable {
   @JsonProperty(name: 'email')
   final String? email;
 
+  @JsonProperty(name: 'activated')
+  final bool? activated;
+
   @JsonProperty(name: 'langKey')
   final String? langKey;
 
-  final bool? activated;
+  @JsonProperty(name: 'createdBy')
+  final String? createdBy;
 
-  final String? imageUrl;
+  @JsonProperty(name: 'createdDate')
+  final DateTime? createdDate;
+
+  @JsonProperty(name: 'lastModifiedBy')
+  final String? lastModifiedBy;
+
+  @JsonProperty(name: 'lastModifiedDate')
+  final DateTime? lastModifiedDate;
+
+  @JsonProperty(name: 'authorities')
+  final List<String>? authorities;
+
+  @JsonProperty(name: 'cariKodu')
+  final String? cariKodu;
+
+  @JsonProperty(name: 'phoneNumber')
+  final String? phoneNumber;
+
+  @JsonProperty(name: 'salesPersonCode')
+  final String? salesPersonCode;
+
+  @JsonProperty(name: 'salesPersonName')
+  final String? salesPersonName;
 
   const User({
-    this.id = 0,
-    this.login = '',
-    this.firstName = '',
-    this.lastName = '',
-    this.email = '',
-    this.langKey = 'en',
-    this.activated = false,
-    this.imageUrl = '',
+    this.id,
+    this.login,
+    this.firstName,
+    this.lastName,
+    this.email,
+    this.activated,
+    this.langKey,
+    this.createdBy,
+    this.createdDate,
+    this.lastModifiedBy,
+    this.lastModifiedDate,
+    this.authorities,
+    this.cariKodu,
+    this.phoneNumber,
+    this.salesPersonCode,
+    this.salesPersonName,
   });
 
   User copyWith({
@@ -45,9 +79,17 @@ class User extends Equatable {
     String? firstName,
     String? lastName,
     String? email,
-    String? langKey,
     bool? activated,
-    String? imageUrl,
+    String? langKey,
+    String? createdBy,
+    DateTime? createdDate,
+    String? lastModifiedBy,
+    DateTime? lastModifiedDate,
+    List<String>? authorities,
+    String? cariKodu,
+    String? phoneNumber,
+    String? salesPersonCode,
+    String? salesPersonName,
   }) {
     return User(
       id: id ?? this.id,
@@ -55,9 +97,17 @@ class User extends Equatable {
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
       email: email ?? this.email,
-      langKey: langKey ?? this.langKey,
       activated: activated ?? this.activated,
-      imageUrl: imageUrl ?? this.imageUrl,
+      langKey: langKey ?? this.langKey,
+      createdBy: createdBy ?? this.createdBy,
+      createdDate: createdDate ?? this.createdDate,
+      lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
+      lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
+      authorities: authorities ?? this.authorities,
+      cariKodu: cariKodu ?? this.cariKodu,
+      phoneNumber: phoneNumber ?? this.phoneNumber,
+      salesPersonCode: salesPersonCode ?? this.salesPersonCode,
+      salesPersonName: salesPersonName ?? this.salesPersonName,
     );
   }
 
@@ -68,9 +118,17 @@ class User extends Equatable {
         firstName,
         lastName,
         email,
-        langKey,
         activated,
-        imageUrl,
+        langKey,
+        createdBy,
+        createdDate,
+        lastModifiedBy,
+        lastModifiedDate,
+        authorities,
+        cariKodu,
+        phoneNumber,
+        salesPersonCode,
+        salesPersonName,
       ];
 
   @override

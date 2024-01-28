@@ -1,11 +1,13 @@
-
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../configuration/app_keys.dart';
-import '../../../configuration/locale_constants.dart';
+import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
+import '../../common_widgets/drawer/bloc/drawer_bloc.dart';
 import 'bloc/settings.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -19,6 +21,16 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
+  List<DropdownMenuItem<String>> createDropdownLanguageItems(Map<String, String> languages) {
+    return languages.keys
+        .map<DropdownMenuItem<String>>(
+          (String key) => DropdownMenuItem<String>(
+            value: key,
+            child: Text(languages[key]!),
+          ),
+        )
+        .toList();
+  }
 
   submit(BuildContext context) {
     return BlocBuilder<SettingsBloc, SettingsState>(builder: (context, state) {
@@ -29,7 +41,7 @@ class SettingsScreen extends StatelessWidget {
               child: Visibility(
                 replacement: CircularProgressIndicator(value: null),
                 visible: state.status != SettingsStatus.loaded,
-                child: Text(S.of(context).pageSettingsTitle.toUpperCase()),
+                child: Text(S.of(context).save),
               ),
             )),
         onPressed: () {}, //context.read<SettingsBloc>().add(SaveSettings()),
@@ -39,116 +51,194 @@ class SettingsScreen extends StatelessWidget {
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text(S.of(context).pageSettingsTitle),
+      title: Text(S.of(context).settings),
     );
   }
 
   _buildBody(BuildContext context) {
     return FormBuilder(
-      child: Wrap(
-        runSpacing: 15,
-        children: <Widget>[
-          _firstNameField(context),
-          _lastNameNameField(context),
-          _emailField(context),
-          _submit(context),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              width: 150,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, ApplicationRoutes.account);
+                },
+                child: Text(
+                  S.of(context).account,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              width: 150,
+              child: ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, ApplicationRoutes.changePassword);
+                },
+                child: Text(
+                  S.of(context).change_password,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              width: 150,
+              child: ElevatedButton(
+                onPressed: () {
+                  languageConfirmationDialog(context);
+                },
+                child: Text(
+                  S.of(context).language_select,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              width: 150,
+              child: ElevatedButton(
+                onPressed: () {
+                  themeConfirmationDialog(context);
+                },
+                child: Text(
+                  S.of(context).theme,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
+          SizedBox(height: 20),
+          Center(
+            child: SizedBox(
+              width: 150,
+              child: ElevatedButton(
+                onPressed: () {
+                  logOutDialog(context);
+                  //Navigator.pushNamed(context, ApplicationRoutes.logout);
+                },
+                child: Text(
+                  S.of(context).logout,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  /// FirstName field widget generating by form_builder and bloc_builder
-  Widget _firstNameField(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-        buildWhen: (previous, current) => previous.firstName != current.firstName,
-        builder: (context, state) {
-          return FormBuilderTextField(
-              name: 'firstName',
-              decoration: InputDecoration(labelText: S.of(context).firstName),
-              onChanged: (value) {
-                if (value != null) {
-                  context.read<SettingsBloc>().add(SettingsFirstNameChanged(firstName: value));
-                }
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your first name';
-                } else if (value.length < 3) {
-                  return 'First name must be at least 3 characters long';
-                } else {
-                  return null;
-                }
-              });
-        });
-  }
-
-  Widget _lastNameNameField(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-        buildWhen: (previous, current) => previous.lastName != current.lastName,
-        builder: (context, state) {
-          return FormBuilderTextField(
-              name: 'lastName',
-              decoration: InputDecoration(labelText: 'Last Name'),
-              onChanged: (value) {
-                if (value != null) {
-                  context.read<SettingsBloc>().add(SettingsLastNameChanged(lastName: value));
-                }
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your last name';
-                } else if (value.length < 3) {
-                  return 'Last name must be at least 3 characters long';
-                } else {
-                  return null;
-                }
-              });
-        });
-  }
-
-  Widget _emailField(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-        buildWhen: (previous, current) => previous.email != current.email,
-        builder: (context, state) {
-          return FormBuilderTextField(
-              name: 'email',
-              decoration: InputDecoration(labelText: 'Email'),
-              onChanged: (value) {
-                if (value != null) {
-                  context.read<SettingsBloc>().add(SettingsEmailChanged(email: value));
-                }
-              },
-              validator: (value) {
-                if (value == null || value.isEmpty) {
-                  return 'Please enter your email';
-                } else if (!value.contains('@')) {
-                  return 'Please enter a valid email';
-                } else {
-                  return null;
-                }
-              });
-        });
-  }
-
-
-  Widget _submit(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(
-      buildWhen: (previous, current) => previous.status != current.status,
-      builder: (context, state) {
-        return ElevatedButton(
-          child: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: Center(
-              child: Visibility(
-                replacement: CircularProgressIndicator(value: null),
-                visible: state.status != SettingsStatus.loaded,
-                child: Text("S.of(context).pageSettingsFormSave.toUpperCase()"),
+  Future languageConfirmationDialog(
+    BuildContext context,
+  ) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(S.of(context).language_select, textAlign: TextAlign.center),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
               ),
+              onPressed: () async {
+                final SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.setString('lang', 'tr');
+                S.load(Locale("tr"));
+                Navigator.pushNamed(context, ApplicationRoutes.home);
+              },
+              child: Text(S.of(context).turkish, style: TextStyle(color: Colors.white)),
             ),
-          ),
-          onPressed: () {}, //context.read<SettingsBloc>().add(SaveSettings()),
+            TextButton(
+              style: TextButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.primary,
+              ),
+              onPressed: () async {
+                final SharedPreferences prefs = await SharedPreferences.getInstance();
+                prefs.setString('lang', 'en');
+                S.load(Locale("en"));
+                Navigator.pushNamed(context, ApplicationRoutes.home);
+              },
+              child: Text(S.of(context).english, style: TextStyle(color: Colors.white)),
+            ),
+          ],
         );
       },
     );
+  }
+
+  Future themeConfirmationDialog(
+    BuildContext context,
+  ) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(S.of(context).theme, textAlign: TextAlign.center),
+          actionsAlignment: MainAxisAlignment.center,
+          actions: [
+            Switch(
+              value: AdaptiveTheme.of(context).mode.isDark,
+              onChanged: (value) {
+                if (value) {
+                  AdaptiveTheme.of(context).setDark();
+                } else {
+                  AdaptiveTheme.of(context).setLight();
+                }
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future logOutDialog(
+    BuildContext context,
+  ) {
+    return showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(S.of(context).logout),
+          content: Text(S.of(context).logout_sure),
+          actions: [
+            TextButton(
+              onPressed: () => onLogout(context),
+              child: Text(S.of(context).yes),
+            ),
+            TextButton(
+              onPressed: () => onCancel(context),
+              child: Text(S.of(context).no),
+            ),
+          ],
+        );
+      },
+    );
+  }
+  void onLogout(context) {
+    BlocProvider.of<DrawerBloc>(context).add(Logout());
+    Navigator.pushNamed(context, ApplicationRoutes.login);
+  }
+
+  void onCancel(context) {
+    //pop context
+    Navigator.pop(context);
   }
 }

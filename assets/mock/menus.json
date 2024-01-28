@@ -1,0 +1,342 @@
+[
+  {
+    "id": 5,
+    "name": "settings",
+    "description": "settings",
+    "url": "/settings",
+    "icon": "cog-outline",
+    "orderPriority": 60,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 8,
+    "name": "salesPerson",
+    "description": "salesPerson",
+    "url": "/admin",
+    "icon": "account-tie",
+    "orderPriority": 20,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 9,
+    "name": "create",
+    "description": "createOffer",
+    "url": "/admin/new-user",
+    "icon": "account-multiple-plus-outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 8,
+      "name": "salesPerson",
+      "description": "salesPerson",
+      "url": "/admin",
+      "icon": "account-tie",
+      "orderPriority": 20,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 10,
+    "name": "list",
+    "description": "listOffer",
+    "url": "/admin/list-users",
+    "icon": "account-edit-outline",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 8,
+      "name": "salesPerson",
+      "description": "salesPerson",
+      "url": "/admin",
+      "icon": "account-tie",
+      "orderPriority": 20,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 30,
+    "name": "station",
+    "description": "station",
+    "url": "/station",
+    "icon": "gas-station",
+    "orderPriority": 34,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 31,
+    "name": "create",
+    "description": "createStation",
+    "url": "/station/new-station",
+    "icon": "plus-box-outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 30,
+      "name": "station",
+      "description": "station",
+      "url": "/station",
+      "icon": "gas-station",
+      "orderPriority": 34,
+      "active": true,
+      "level": 1
+    },
+    "level": 30
+  },
+  {
+    "id": 32,
+    "name": "list",
+    "description": "listStation",
+    "url": "/station/list-stations",
+    "icon": "list-status",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 30,
+      "name": "station",
+      "description": "station",
+      "url": "/station",
+      "icon": "gas-station",
+      "orderPriority": 34,
+      "active": true,
+      "level": 1
+    },
+    "level": 30
+  },
+  {
+    "id": 40,
+    "name": "corporation",
+    "description": "corporation",
+    "url": "/corporation",
+    "icon": "domain",
+    "orderPriority": 32,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 41,
+    "name": "create",
+    "description": "createCorporation",
+    "url": "/corporation/new-corporation",
+    "icon": "plus-box-outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 40,
+      "name": "corporation",
+      "description": "corporation",
+      "url": "/corporation",
+      "icon": "domain",
+      "orderPriority": 32,
+      "active": true,
+      "level": 1
+    },
+    "level": 40
+  },
+  {
+    "id": 42,
+    "name": "list",
+    "description": "listCorporation",
+    "url": "/corporation/list-corporations",
+    "icon": "list-status",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 40,
+      "name": "corporation",
+      "description": "corporation",
+      "url": "/corporation",
+      "icon": "domain",
+      "orderPriority": 32,
+      "active": true,
+      "level": 1
+    },
+    "level": 40
+  },
+  {
+    "id": 50,
+    "name": "refinery",
+    "description": "refinery",
+    "url": "/refinery",
+    "icon": "square-opacity",
+    "orderPriority": 31,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 51,
+    "name": "create",
+    "description": "createRefinery",
+    "url": "/refinery/new-refinery",
+    "icon": "plus-box-outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 50,
+      "name": "refinery",
+      "description": "refinery",
+      "url": "/refinery",
+      "icon": "square-opacity",
+      "orderPriority": 31,
+      "active": true,
+      "level": 1
+    },
+    "level": 50
+  },
+  {
+    "id": 52,
+    "name": "list",
+    "description": "listCorporations",
+    "url": "/refinery/list-refineries",
+    "icon": "list-status",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 50,
+      "name": "refinery",
+      "description": "refinery",
+      "url": "/refinery",
+      "icon": "square-opacity",
+      "orderPriority": 31,
+      "active": true,
+      "level": 1
+    },
+    "level": 50
+  },
+  {
+    "id": 60,
+    "name": "offer",
+    "description": "offer",
+    "url": "/offer",
+    "icon": "offer",
+    "orderPriority": 36,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 61,
+    "name": "create",
+    "description": "createOffer",
+    "url": "/offer/new-offer",
+    "icon": "plus-box-outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 60,
+      "name": "offer",
+      "description": "offer",
+      "url": "/offer",
+      "icon": "offer",
+      "orderPriority": 36,
+      "active": true,
+      "level": 1
+    },
+    "level": 60
+  },
+  {
+    "id": 62,
+    "name": "list",
+    "description": "listOffer",
+    "url": "/offer/list-offers",
+    "icon": "list-status",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 60,
+      "name": "offer",
+      "description": "offer",
+      "url": "/offer",
+      "icon": "offer",
+      "orderPriority": 36,
+      "active": true,
+      "level": 1
+    },
+    "level": 60
+  },
+  {
+    "id": 70,
+    "name": "stationMaturity",
+    "description": "stationMaturity",
+    "url": "/station-maturity",
+    "icon": "gas-station",
+    "orderPriority": 35,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  }
+]

@@ -1,7 +1,13 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../configuration/environment.dart';
+import '../data/http_utils.dart';
+import '../utils/app_constants.dart';
 import 'app.dart';
 import 'main_prod.mapper.g.dart' show initializeJsonMapper;
 
@@ -10,9 +16,21 @@ import 'main_prod.mapper.g.dart' show initializeJsonMapper;
 
 /// main entry point of production environment
 void main() async {
+  HttpOverrides.global = MyHttpOverrides();
   ProfileConstants.setEnvironment(Environment.PROD);
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
-  AdaptiveThemeMode? savedThemeMode = await AdaptiveTheme.getThemeMode();
-  runApp(App(savedThemeMode: savedThemeMode));
+  final SharedPreferences prefs = await SharedPreferences.getInstance();
+  String? language = prefs.getString('lang');
+  if (language == null) {
+    prefs.setString('lang', 'en');
+    language = 'en';
+  }
+  AppConstants.jwtToken = prefs.getString('jwtToken') ?? "";
+  AppConstants.role = prefs.getString('role') ?? "";
+
+  WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]).then((_){
+    runApp(App(language: language??'tr'));
+  });
 }

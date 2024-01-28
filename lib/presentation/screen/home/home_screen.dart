@@ -1,13 +1,12 @@
-import 'dart:developer';
-
+import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/bloc/drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/data/repository/menu_repository.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
+import '../../../data/repository/menu_repository.dart';
+import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account.dart';
-import '../../common_widgets/drawer/bloc/drawer_bloc.dart';
 import '../../common_widgets/drawer/drawer_widget.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -17,23 +16,14 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _openDrawer(context);
-    });
     return _buildBody(context);
-  }
-
-  void _openDrawer(BuildContext context) {
-    _scaffoldKey.currentState?.openDrawer();
   }
 
   Widget _buildBody(BuildContext context) {
     return BlocListener<AccountBloc, AccountState>(
       listener: (context, state) {
-        log("AccountBloc listener: ${state.status}");
         if (state.status == AccountStatus.failure) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, ApplicationRoutes.login, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
         } else {}
       },
       child: BlocBuilder<AccountBloc, AccountState>(
@@ -42,10 +32,16 @@ class HomeScreen extends StatelessWidget {
           if (state.status == AccountStatus.success) {
             return Scaffold(
               appBar: AppBar(
-                title: Text("Home Page"),
+                title: Text(S.of(context).description),
               ),
               key: _scaffoldKey,
-              body: _body(),
+              body: Center(
+                child: Column(
+                  children: [
+                    backgroundImage(context),
+                  ],
+                ),
+              ),
               drawer: _buildDrawer(context),
             );
           }
@@ -55,6 +51,50 @@ class HomeScreen extends StatelessWidget {
     );
   }
 
+  Widget backgroundImage(BuildContext context) {
+    // dark or light mode row decoration
+    if (Theme.of(context).brightness == Brightness.dark) {
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(200),
+          child: Container(
+            height: 300,
+            width: 300,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(
+                  "assets/images/img.png",
+                ),
+                scale: 1,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
+      );
+    } else {
+      return Expanded(
+        child: Padding(
+          padding: const EdgeInsets.all(200),
+          child: Container(
+            height: 250,
+            width: 250,
+            decoration: BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage(
+                  "assets/image/img.png",
+                ),
+                scale: 0.1,
+                fit: BoxFit.contain,
+                opacity: 1,
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+  }
+
   _buildDrawer(BuildContext context) {
     return BlocProvider<DrawerBloc>(
         create: (context) => DrawerBloc(
@@ -62,15 +102,5 @@ class HomeScreen extends StatelessWidget {
               menuRepository: MenuRepository(),
             )..add(LoadMenus()),
         child: ApplicationDrawer());
-  }
-
-  Center _body() {
-    return Center(
-      child: Column(
-        children: const [
-          Text("Home Page"),
-        ],
-      ),
-    );
   }
 }

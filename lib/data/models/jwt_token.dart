@@ -6,11 +6,13 @@ class JWTToken {
   @JsonProperty(name: 'id_token')
   String? idToken;
 
+  JWTToken(this.idToken);
 
   @override
   String toString() {
     return 'JWTToken{idToken: $idToken}';
   }
+
 
   @override
   bool operator ==(Object other) =>

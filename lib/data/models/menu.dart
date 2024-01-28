@@ -1,11 +1,20 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
+/// menu object
+/// example:
+/// id	name	description	url	icon	order_priority	active	parent_id	level
+// 1	home	home	/	icon	0	1		0
+// 2	account	account	branch	icon	4	1	1	1
+// 3	logout	logout	/logout	icon	1	1	2	2
+// 4	login	login	/login	icon	2	1	2	2
+// 5	settings	settings	branch	icon	3	1	1	1
 
+/// ApplicationUser model that represents the user entity in this application.
+///
+/// this is an immutable class that extends [Equatable] so that it can be compared
 @jsonSerializable
 class Menu extends Equatable {
-
   @JsonProperty(name: 'id')
   final int id;
 

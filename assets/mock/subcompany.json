@@ -1,0 +1,737 @@
+[
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:25:15.673Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T21:01:23.677Z",
+    "id": 15,
+    "name": "SAMSUN",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 55,
+      "name": "SAMSUN",
+      "plateCode": "55"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:25:58.693Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:25:58.693Z",
+    "id": 16,
+    "name": "DERİNCE",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 41,
+      "name": "KOCAELI",
+      "plateCode": "41"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:26:59.873Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:26:59.873Z",
+    "id": 17,
+    "name": "M.EREĞLİSİ",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 59,
+      "name": "TEKIRDAG",
+      "plateCode": "59"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:29:51.233Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:29:51.233Z",
+    "id": 18,
+    "name": "MERSİN",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 33,
+      "name": "MERSIN",
+      "plateCode": "33"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:30:22.633Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:30:22.633Z",
+    "id": 19,
+    "name": "ALİAĞA",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 35,
+      "name": "IZMIR",
+      "plateCode": "35"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:40:28.067Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:40:28.067Z",
+    "id": 22,
+    "name": "TRABZON",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 61,
+      "name": "TRABZON",
+      "plateCode": "61"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:55:26.867Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:55:26.867Z",
+    "id": 24,
+    "name": "GÜVERCİNLİK",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 6,
+      "name": "ANKARA",
+      "plateCode": "6"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:58:58.700Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:58:58.700Z",
+    "id": 25,
+    "name": "SAMSUN",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+      "id": 2,
+      "name": "Ana Firma 2 ",
+      "description": "Ana Firma 2 ",
+      "active": true
+    },
+    "city": {
+      "id": 55,
+      "name": "SAMSUN",
+      "plateCode": "55"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:26:59.873Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-12T19:27:50.950Z",
+    "id": 27,
+    "name": "KIRIKKALE",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+      "id": 2,
+      "name": "Ana Firma 2 ",
+      "description": "Ana Firma 2 ",
+      "active": true
+    },
+    "city": {
+      "id": 71,
+      "name": "KIRIKKALE",
+      "plateCode": "71"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:29:51.233Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:29:51.233Z",
+    "id": 28,
+    "name": "MERSİN",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+      "id": 2,
+      "name": "Ana Firma 2 ",
+      "description": "Ana Firma 2 ",
+      "active": true
+    },
+    "city": {
+      "id": 33,
+      "name": "MERSIN",
+      "plateCode": "33"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:30:22.633Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:30:22.633Z",
+    "id": 29,
+    "name": "ALİAĞA",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+      "id": 2,
+      "name": "Ana Firma 2 ",
+      "description": "Ana Firma 2 ",
+      "active": true
+    },
+    "city": {
+      "id": 35,
+      "name": "IZMIR",
+      "plateCode": "35"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:31:38.880Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-01T13:31:38.880Z",
+    "id": 30,
+    "name": "ANTALYA",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+      "id": 2,
+      "name": "Ana Firma 2 ",
+      "description": "Ana Firma 2 ",
+      "active": true
+    },
+    "city": {
+      "id": 7,
+      "name": "ANTALYA",
+      "plateCode": "7"
+    },
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-12T17:28:00.667Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-12T17:28:00.667Z",
+    "id": 32,
+    "name": "ANTALYA",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 7,
+      "name": "ANTALYA",
+      "plateCode": "7"
+    },
+    "district": {
+      "id": "657578392",
+      "name": "AKSU",
+      "code": "657578392"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-12T17:33:21.687Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-12T17:33:21.687Z",
+    "id": 33,
+    "name": "İSKENDERUN",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 31,
+      "name": "HATAY",
+      "plateCode": "31"
+    },
+    "district": {
+      "id": "682148284898007",
+      "name": "DÖRTYOL",
+      "code": "682148284898007"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-12T17:34:07.577Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-12T17:34:07.577Z",
+    "id": 34,
+    "name": "KIRIKKALE",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+      "id": 1,
+      "name": "Ana Firma 1 ",
+      "description": "Ana Firma 1 ",
+      "active": true
+    },
+    "city": {
+      "id": 39,
+      "name": "KIRKLARELI",
+      "plateCode": "39"
+    },
+    "district": {
+      "id": "686977738275253",
+      "name": "DEMIRKÖY",
+      "code": "686977738275253"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-12T17:55:31.077Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-12T17:55:31.077Z",
+    "id": 35,
+    "name": "GEBZE",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+      "id": 2,
+      "name": "Ana Firma 2 ",
+      "description": "Ana Firma 2 ",
+      "active": true
+    },
+    "city": {
+      "id": 41,
+      "name": "KOCAELI",
+      "plateCode": "41"
+    },
+    "district": {
+      "id": "716941669110",
+      "name": "GEBZE",
+      "code": "716941669110"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-12T18:23:22.453Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-12T18:23:22.453Z",
+    "id": 36,
+    "name": "M.EREĞLİSİ",
+    "active": true,
+    "corporation": {
+      "createdBy": null,
+      "createdDate": null,
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+      "id": 2,
+      "name": "Ana Firma 2 ",
+      "description": "Ana Firma 2 ",
+      "active": true
+    },
+    "city": {
+      "id": 59,
+      "name": "TEKIRDAG",
+      "plateCode": "59"
+    },
+    "district": {
+      "id": "77658277658324",
+      "name": "MARMARAEREGLISI",
+      "code": "77658277658324"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:35:57.763Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:35:57.763Z",
+    "id": 37,
+    "name": "SAMSUN",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 55,
+      "name": "SAMSUN",
+      "plateCode": "55"
+    },
+    "district": {
+      "id": "73767565687432",
+      "name": "ILKADIM",
+      "code": "73767565687432"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:36:49.443Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:36:49.443Z",
+    "id": 38,
+    "name": "MERSIN",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 33,
+      "name": "MERSIN",
+      "plateCode": "33"
+    },
+    "district": {
+      "id": "65756869787423",
+      "name": "AKDENIZ",
+      "code": "65756869787423"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:38:07.643Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:38:07.643Z",
+    "id": 39,
+    "name": "DORTYOL",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 31,
+      "name": "HATAY",
+      "plateCode": "31"
+    },
+    "district": {
+      "id": "682148284898007",
+      "name": "DÖRTYOL",
+      "code": "682148284898007"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:38:44.440Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:38:44.440Z",
+    "id": 40,
+    "name": "HOPA",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 8,
+      "name": "ARTVIN",
+      "plateCode": "8"
+    },
+    "district": {
+      "id": "727988073",
+      "name": "HOPA",
+      "code": "727988073"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:39:49.213Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:39:49.213Z",
+    "id": 41,
+    "name": "KIRIKKALE",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 71,
+      "name": "KIRIKKALE",
+      "plateCode": "71"
+    },
+    "district": {
+      "id": "66657283737744",
+      "name": "BAHSILI",
+      "code": "66657283737744"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:40:55.033Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:40:55.033Z",
+    "id": 42,
+    "name": "IZMIT",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 41,
+      "name": "KOCAELI",
+      "plateCode": "41"
+    },
+    "district": {
+      "id": "739041777425",
+      "name": "IZMIT",
+      "code": "739041777425"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:41:34.510Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:41:34.510Z",
+    "id": 43,
+    "name": "AMBARLI",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 34,
+      "name": "ISTANBUL",
+      "plateCode": "34"
+    },
+    "district": {
+      "id": "65866773766616",
+      "name": "AVCILAR",
+      "code": "65866773766616"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:42:02.050Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:42:02.050Z",
+    "id": 44,
+    "name": "M.EREGLI",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 59,
+      "name": "TEKIRDAG",
+      "plateCode": "59"
+    },
+    "district": {
+      "id": "77658277658324",
+      "name": "MARMARAEREGLISI",
+      "code": "77658277658324"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:42:26.757Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:42:26.757Z",
+    "id": 45,
+    "name": "ANTALYA",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 7,
+      "name": "ANTALYA",
+      "plateCode": "7"
+    },
+    "district": {
+      "id": "682148369776972",
+      "name": "DÖSEMEALTI",
+      "code": "682148369776972"
+    }
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-29T10:42:46.557Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-29T10:42:46.557Z",
+    "id": 46,
+    "name": "ALIAGA",
+    "active": true,
+    "corporation": {
+      "createdBy": "admin",
+      "createdDate": "2023-12-01T13:24:12.753Z",
+      "lastModifiedBy": "admin",
+      "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+      "id": 5,
+      "name": "Ana Firma 3 ",
+      "description": "Ana Firma 3 ",
+      "active": true
+    },
+    "city": {
+      "id": 35,
+      "name": "IZMIR",
+      "plateCode": "35"
+    },
+    "district": {
+      "id": "65763573657200",
+      "name": "ALIAGA",
+      "code": "65763573657200"
+    }
+  }
+]

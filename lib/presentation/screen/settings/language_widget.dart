@@ -1,26 +1,25 @@
-
-
-
-
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../configuration/app_keys.dart';
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 
-class LanguageScreen extends StatefulWidget {
-  const LanguageScreen() :super(key: ApplicationKeys.languageScreen);
+class LanguageConfirmationDialog extends StatefulWidget {
+  const LanguageConfirmationDialog({super.key});
 
   @override
-  State<LanguageScreen> createState() =>
+  State<LanguageConfirmationDialog> createState() =>
       _LanguageConfirmationDialogState();
+
+  static _LanguageConfirmationDialogState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_LanguageConfirmationDialogState>();
 }
 
 class _LanguageConfirmationDialogState
-    extends State<LanguageScreen> {
-  void setLocale(String value) {
+    extends State<LanguageConfirmationDialog> {
+  void setLocale(Locale value) {
     setState(() {
-      Locale(value);
+      S.delegate.load(value);
     });
   }
 
@@ -35,8 +34,13 @@ class _LanguageConfirmationDialogState
             style: TextButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
             ),
-            onPressed: () {
-              setLocale("tr");
+            onPressed: () async {
+              final SharedPreferences prefs =
+                  await SharedPreferences.getInstance();
+              prefs.setString('lang', 'tr');
+              LanguageConfirmationDialog.of(context)?.setLocale(
+                Locale.fromSubtags(languageCode: 'tr'),
+              );
               S.load(Locale("tr"));
               Navigator.pushNamed(context, ApplicationRoutes.home);
             },
@@ -47,8 +51,13 @@ class _LanguageConfirmationDialogState
             style: TextButton.styleFrom(
               backgroundColor: Theme.of(context).colorScheme.primary,
             ),
-            onPressed: () {
-              setLocale("en");
+            onPressed: () async {
+              final SharedPreferences prefs =
+                  await SharedPreferences.getInstance();
+              prefs.setString('lang', 'en');
+              LanguageConfirmationDialog.of(context)?.setLocale(
+                Locale.fromSubtags(languageCode: 'en'),
+              );
               S.load(Locale("en"));
               Navigator.pushNamed(context, ApplicationRoutes.home);
             },

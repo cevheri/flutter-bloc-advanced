@@ -7,7 +7,6 @@ import '../../../../data/models/change_password.dart';
 import '../../../../data/repository/account_repository.dart';
 
 part 'change_password_event.dart';
-
 part 'change_password_state.dart';
 
 class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> {

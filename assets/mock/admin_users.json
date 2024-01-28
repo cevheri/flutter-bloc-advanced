@@ -1,0 +1,40 @@
+[
+  {
+    "id": 1,
+    "login": "admin",
+    "firstName": "Yusuf",
+    "lastName": "Gundogdu",
+    "email": "yusufgundogdu555@gmail.com",
+    "imageUrl": null,
+    "activated": true,
+    "langKey": null,
+    "createdBy": "system",
+    "createdDate": null,
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2024-01-04T06:02:47.757Z",
+    "authorities": ["ROLE_ADMIN"],
+    "cariKodu": null,
+    "phoneNumber": "5320000000",
+    "salesPersonCode": null,
+    "salesPersonName": null
+  },
+  {
+    "id": 4,
+    "login": "cevheri.admin",
+    "firstName": "Cevheri",
+    "lastName": "Bozoglan",
+    "email": "cevheribozoglan@gmail.com",
+    "imageUrl": "",
+    "activated": true,
+    "langKey": "en",
+    "createdBy": "system",
+    "createdDate": null,
+    "lastModifiedBy": "system",
+    "lastModifiedDate": null,
+    "authorities": ["ROLE_ADMIN"],
+    "cariKodu": null,
+    "phoneNumber": "5420000000",
+    "salesPersonCode": null,
+    "salesPersonName": null
+  }
+]

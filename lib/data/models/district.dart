@@ -1,9 +1,10 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:equatable/equatable.dart';
 
 @jsonSerializable
-class District {
+class District extends Equatable {
   @JsonProperty(name: 'id')
-  final int? id;
+  final String? id;
 
   @JsonProperty(name: 'name')
   final String? name;
@@ -11,16 +12,32 @@ class District {
   @JsonProperty(name: 'code')
   final String? code;
 
-  const District({this.id = 0, this.name = '', this.code = ''});
+  const District({
+    this.id,
+    this.name,
+    this.code,
+  });
 
-  @override
-  String toString() {
-    return 'District{id: $id, name: $name, code: $code}';
+
+  District copyWith({
+    String? id,
+    String? name,
+    String? code,
+  }) {
+    return District(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      code: code ?? this.code,
+    );
   }
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is District && id == other.id && name == other.name && code == other.code;
+  List<Object?> get props => [
+    id,
+    name,
+    code,
+  ];
 
   @override
-  int get hashCode => id.hashCode ^ name.hashCode ^ code.hashCode;
+  bool get stringify => true;
 }

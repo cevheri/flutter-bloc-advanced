@@ -1,14 +1,12 @@
-
+import 'package:flutter_bloc_advance/configuration/app_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../configuration/app_keys.dart';
-import '../../../configuration/routes.dart';
+import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account_bloc.dart';
 
 class AccountsScreen extends StatelessWidget {
-  AccountsScreen() : super(key: ApplicationKeys.accountsScreen);
+  const AccountsScreen() : super(key: ApplicationKeys.accountsScreen);
 
   @override
   Widget build(BuildContext context) {
@@ -18,69 +16,128 @@ class AccountsScreen extends StatelessWidget {
     );
   }
 
-  List<DropdownMenuItem<String>> createDropdownLanguageItems(Map<String, String> languages) {
-    return languages.keys
-        .map<DropdownMenuItem<String>>(
-          (String key) => DropdownMenuItem<String>(
-            value: key,
-            child: Text(languages[key]!),
-          ),
-        )
-        .toList();
-  }
-
-  submit(BuildContext context) {
-    return BlocBuilder<AccountBloc, AccountState>(builder: (context, state) {
-      return ElevatedButton(
-        onPressed: () {
-          //context.read<SettingsBloc>().add(SaveSettings()),
-        },
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width,
-          child: Center(child: Text("Kaydet")),
-        ),
-      );
-    });
-  }
-
   _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text("Hesaplar"),
+      title: Text(S.of(context).account),
     );
   }
 
   _buildBody(BuildContext context) {
-    return FormBuilder(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
-        mainAxisSize: MainAxisSize.max,
-        children: [
-          SizedBox(height: 20),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, ApplicationRoutes.changePassword);
-              },
-              child: Text(
-                "Yeni Hesap oluştur",
-                textAlign: TextAlign.center,
-              ),
+    return SingleChildScrollView(
+      child: Padding(
+        padding: EdgeInsets.only(top: 50),
+        child: BlocBuilder<AccountBloc, AccountState>(
+          builder: (context, state) {
+            if (state.account == null) {
+              return Container();
+            }
+
+            return Column(
+              children: [
+                _buildAccountInfo(context, state),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  _buildAccountInfo(BuildContext context, AccountState state) {
+    return Column(
+      children: [
+        _buildAccountInfoItem(
+          context,
+          S.of(context).first_name,
+          state.account!.firstName,
+          Icons.person,
+        ),
+        _buildAccountInfoItem(
+          context,
+          S.of(context).last_name,
+          state.account!.lastName,
+          Icons.person,
+        ),
+        _buildAccountInfoItem(
+          context,
+          S.of(context).email,
+          state.account!.email,
+          Icons.email,
+        ),
+        _buildAccountInfoItem(
+          context,
+          S.of(context).phone_number,
+          state.account!.phoneNumber,
+          Icons.phone,
+        ),
+        _buildAccountInfoItem(
+          context,
+          S.of(context).sales_person_code,
+          state.account!.salesPersonCode,
+          Icons.code,
+        ),
+        _buildAccountInfoItem(
+          context,
+          S.of(context).authorities,
+          state.account!.authorities.toString(),
+          Icons.person,
+        ),
+      ],
+    );
+  }
+
+  _buildAccountInfoItem(
+      BuildContext context, text1, String? text2, IconData iconData) {
+    return Center(
+      child: Container(
+        constraints: BoxConstraints(minWidth: 300, maxWidth: 700),
+        padding: EdgeInsets.all(10),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.max,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(0.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          SizedBox(width: 10),
+                          Icon(
+                            iconData,
+                          ),
+                          SizedBox(width: 10),
+                          Text(
+                            text1 + '..: ',
+                            style: TextStyle(
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                Row(
+                  children: [
+                    Text(
+                      text2 ?? '',
+                      style: TextStyle(
+                        fontSize: 14,
+                      ),
+                    ),
+                    SizedBox(width: 30),
+                  ],
+                )
+              ],
             ),
-          ),
-          SizedBox(height: 20),
-          Center(
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.pushNamed(context, ApplicationRoutes.changePassword);
-              },
-              child: Text(
-                "Oluşturulmuş hesaplar",
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        ],
+            Divider(),
+          ],
+        ),
       ),
     );
   }
