@@ -75,7 +75,7 @@ class RefineryRepository {
   Future<List<Refinery>> findRefineryByName() async {
     //final userRequest = await HttpUtils.getRequest("/refineries?page=0&size=1000&eagerload=false");
     //var result = JsonMapper.deserialize<List<Refinery>>(userRequest)!;
-    var result = JsonMapper.deserialize<List<Refinery>>(await rootBundle.loadString('mock/ureticiler.json'))!;
+    var result = JsonMapper.deserialize<List<Refinery>>(await rootBundle.loadString('mock/producers.json'))!;
 
     return result;
   }

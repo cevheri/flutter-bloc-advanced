@@ -50,7 +50,7 @@ class OfferRepository {
     // ConstOfferStationMaturity.page = offersHeaderRequest;
     //final offersRequest = await HttpUtils.getRequest("/offerings?createdDate.greaterThanOrEqual=${ConstOfferStationMaturity.startDate}&createdDate.lessThanOrEqual=${ConstOfferStationMaturity.endDate}&${ConstOfferStationMaturity.urlString}page=$startIndex&size=$limit&sort=id%2Cdesc");
     return JsonMapper.deserialize<List<Offer>>(
-        await rootBundle.loadString('mock/teklifler.json'))!;
+        await rootBundle.loadString('mock/offers.json'))!;
   }
 
 

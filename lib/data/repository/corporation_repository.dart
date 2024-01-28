@@ -61,7 +61,7 @@ class CorporationRepository {
   Future<List<Corporation>> list() async {
     //final userRequest = await HttpUtils.getRequest("/corporations?page=0&size=1000&eagerload=false");
     //var result = JsonMapper.deserialize<List<Corporation>>(userRequest)!;
-    var result = JsonMapper.deserialize<List<Corporation>>(await rootBundle.loadString('mock/ana_firmalar.json'))!;
+    var result = JsonMapper.deserialize<List<Corporation>>(await rootBundle.loadString('mock/main_company.json'))!;
     return result;
   }
 

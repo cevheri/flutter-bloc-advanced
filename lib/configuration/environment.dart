@@ -34,6 +34,11 @@ class ProfileConstants {
 
 class _Config {
   static const API = "API";
+  //TODO activate mock data
+  static Map<String, dynamic> mockConstants = {
+    API: "mock_data",
+  };
+
 
   static Map<String, dynamic> devConstants = {
     API: "mock_data",

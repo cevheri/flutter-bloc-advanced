@@ -25,7 +25,7 @@ class CorporationMaturityRepository {
   Future<List<CorporationMaturity>> getCorporationMaturity(String id) async {
     //final result = await HttpUtils.getRequest("/corporation-maturity-dates/corporation/$id?page=0&size=1000");
     //var defaultCityList = JsonMapper.deserialize<List<CorporationMaturity>>(result)!;
-    var result = JsonMapper.deserialize<List<CorporationMaturity>>(await rootBundle.loadString('mock/ana_firma_vadeler.json'))!;
+    var result = JsonMapper.deserialize<List<CorporationMaturity>>(await rootBundle.loadString('mock/main_company_maturity.json'))!;
     print(result.length);
     var sortWithNameResult = result ..sort((a, b) => a.id!.compareTo(b.id!));
     return sortWithNameResult;

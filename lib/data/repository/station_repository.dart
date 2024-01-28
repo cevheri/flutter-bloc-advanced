@@ -67,22 +67,22 @@ class StationRepository {
     if (cityId == "0" && corporationId == "0") {
       // final saveRequest = await HttpUtils.getRequest("/stations?page=0&size=100");
       return JsonMapper.deserialize<List<Station>>(
-          await rootBundle.loadString('mock/alt_firmalar.json'))!;
+          await rootBundle.loadString('mock/subcompany.json'))!;
     } else if (cityId != "0" && corporationId == "0") {
       //final saveRequest = await HttpUtils.getRequest("/stations?cityId.equals=$cityId&page=0&size=100");
       //return JsonMapper.deserialize<List<Station>>(saveRequest)!;
       return JsonMapper.deserialize<List<Station>>(
-          await rootBundle.loadString('mock/alt_firmalar.json'))!;
+          await rootBundle.loadString('mock/subcompany.json'))!;
     } else if (cityId == "0" && corporationId != "0") {
       //final saveRequest = await HttpUtils.getRequest( "/stations?corporationId.equals=$corporationId&page=0&size=100");
       //return JsonMapper.deserialize<List<Station>>(saveRequest)!;
       return JsonMapper.deserialize<List<Station>>(
-          await rootBundle.loadString('mock/alt_firmalar.json'))!;
+          await rootBundle.loadString('mock/subcompany.json'))!;
     } else {
       //final saveRequest = await HttpUtils.getRequest("/stations?cityId.equals=$cityId&corporationId.equals=$corporationId&page=0&size=100");
       //return JsonMapper.deserialize<List<Station>>(saveRequest)!;
       return JsonMapper.deserialize<List<Station>>(
-          await rootBundle.loadString('mock/alt_firmalar.json'))!;
+          await rootBundle.loadString('mock/subcompany.json'))!;
     }
   }
 

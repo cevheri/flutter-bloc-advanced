@@ -24,7 +24,7 @@ class StationMaturityRepository {
   /// @param id the stationMaturity id
   Future<List<StationMaturity>> getStationMaturity(String id) async {
     //final result = await HttpUtils.getRequest("/station-maturity-prices/stations/$id?page=0&size=1000");
-    var defaultCityList = JsonMapper.deserialize<List<StationMaturity>>(await rootBundle.loadString('mock/alt_firma_vadeler.json'))!;
+    var defaultCityList = JsonMapper.deserialize<List<StationMaturity>>(await rootBundle.loadString('mock/subcompany_maturity.json'))!;
     var sortWithNameResult = defaultCityList
       ..sort((a, b) => a.id!.compareTo(b.id!));
     return sortWithNameResult;
