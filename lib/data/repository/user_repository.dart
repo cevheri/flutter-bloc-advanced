@@ -1,7 +1,4 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc_advance/data/models/customer.dart';
-
 import '../http_utils.dart';
 import '../models/user.dart';
 
@@ -10,9 +7,11 @@ import '../models/user.dart';
 /// This class is responsible for all the user related operations
 /// list, create, update, delete etc.
 class UserRepository {
+  final _path = "/admin/users";
+
   /// Retrieve all users method that retrieves all the users
   Future<List<User>> getUsers() async {
-    final usersRequest = await HttpUtils.getRequest("/users");
+    final usersRequest = await HttpUtils.get("/users");
     return JsonMapper.deserialize<List<User>>(usersRequest)!;
   }
 
@@ -20,7 +19,7 @@ class UserRepository {
   ///
   /// @param id the user id
   Future<User> getUser(String id) async {
-    final userRequest = await HttpUtils.getRequest("/users/$id");
+    final userRequest = await HttpUtils.get("/users/$id");
     return JsonMapper.deserialize<User>(userRequest)!;
   }
 
@@ -41,44 +40,39 @@ class UserRepository {
       result = HttpUtils.successResult;
     }
 
-    return result == HttpUtils.successResult
-        ? JsonMapper.deserialize<User>(saveRequest.body)
-        : null;
+    return result == HttpUtils.successResult ? JsonMapper.deserialize<User>(saveRequest.body) : null;
   }
 
   /// Find user method that findUser a user
   Future<List<User>> listUser(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size,
   ) async {
-    final userRequest = await HttpUtils.getRequest("/admin/users?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    final userRequest = await HttpUtils.get("/admin/users?page=$page&size=$size");
     var result = JsonMapper.deserialize<List<User>>(userRequest)!;
     return result;
   }
 
   /// Find user method that findUserByAuthorities a user
   Future<List<User>> findUserByAuthorities(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size,
     String authorities,
   ) async {
-    final path = "/admin/users/authorities";
-    final pathParameter ="/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}";
-    final userRequest = await HttpUtils.getRequest(path, pathParameter);
+    final userRequest = await HttpUtils.get(_path, "/authorities/$authorities?page=$page&size=$size");
     var result = JsonMapper.deserialize<List<User>>(userRequest)!;
     return result;
   }
 
   /// Find user method that findUserByName a user
   Future<List<User>> findUserByName(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size,
     String name,
     String authorities,
   ) async {
-    final userRequest = await HttpUtils.getRequest("/admin/users/filter?name=$name&authorities=$authorities&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    final userRequest = await HttpUtils.get(_path, "/filter?name=$name&authorities=$authorities&page=$page&size=$size");
     var result = JsonMapper.deserialize<List<User>>(userRequest)!;
-    //var result = JsonMapper.deserialize<List<User>>(await rootBundle.loadString('mock/sales_man.json'))!;
     return result;
   }
 
@@ -98,8 +92,6 @@ class UserRepository {
       result = HttpUtils.successResult;
     }
 
-    return result == HttpUtils.successResult
-        ? JsonMapper.deserialize<User>(saveRequest.body)
-        : null;
+    return result == HttpUtils.successResult ? JsonMapper.deserialize<User>(saveRequest.body) : null;
   }
 }

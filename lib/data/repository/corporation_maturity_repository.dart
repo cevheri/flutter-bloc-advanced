@@ -11,34 +11,29 @@ import '../models/corporation_maturity.dart';
 /// This class is responsible for all the corporationMaturity related operations
 /// list, create, update, delete etc.
 class CorporationMaturityRepository {
-  /// Retrieve all corporationMaturitys method that retrieves all the corporationMaturitys
-  Future<List<CorporationMaturity>> getCorporationMaturitys() async {
-    final corporationMaturitysRequest =
-        await HttpUtils.getRequest("/corporationMaturitys");
-    return JsonMapper.deserialize<List<CorporationMaturity>>(
-        corporationMaturitysRequest)!;
+  final String _path = "/corporation-maturity-dates";
+
+  /// Retrieve all corporationMaturities method that retrieves all the corporationMaturites
+  Future<List<CorporationMaturity>> getCorporationMaturities() async {
+    final request = await HttpUtils.get("/corporationMaturitys");
+    return JsonMapper.deserialize<List<CorporationMaturity>>(request)!;
   }
 
   /// Retrieve corporationMaturity method that retrieves a corporationMaturity by id
   ///
   /// @param id the corporationMaturity id
   Future<List<CorporationMaturity>> getCorporationMaturity(String id) async {
-    //final result = await HttpUtils.getRequest("/corporation-maturity-dates/corporation/$id?page=0&size=1000");
-    //var defaultCityList = JsonMapper.deserialize<List<CorporationMaturity>>(result)!;
-    var result = JsonMapper.deserialize<List<CorporationMaturity>>(await rootBundle.loadString('mock/main_company_maturity.json'))!;
-    print(result.length);
-    var sortWithNameResult = result ..sort((a, b) => a.id!.compareTo(b.id!));
-    return sortWithNameResult;
+    final response = await HttpUtils.get(_path, "/corporation/$id");
+    final result = JsonMapper.deserialize<List<CorporationMaturity>>(response)!;
+    return result;
   }
 
   /// Create corporationMaturity method that creates a new corporationMaturity
   ///
   /// @param corporationMaturity the corporationMaturity object
-  Future<CorporationMaturity?> createCorporationMaturity(
-      CorporationMaturity corporationMaturity) async {
+  Future<CorporationMaturity?> createCorporationMaturity(CorporationMaturity corporationMaturity) async {
     //api/corporation-maturity-dates
-    final saveRequest = await HttpUtils.postRequest<CorporationMaturity>(
-        "/corporation-maturity-dates", corporationMaturity);
+    final saveRequest = await HttpUtils.postRequest<CorporationMaturity>(_path, corporationMaturity);
     String? result;
 
     if (saveRequest.statusCode != 201) {
@@ -51,47 +46,40 @@ class CorporationMaturityRepository {
       result = HttpUtils.successResult;
     }
 
-    return result == HttpUtils.successResult
-        ? JsonMapper.deserialize<CorporationMaturity>(saveRequest.body)
-        : null;
+    return result == HttpUtils.successResult ? JsonMapper.deserialize<CorporationMaturity>(saveRequest.body) : null;
   }
 
   /// Find corporationMaturity method that findCorporationMaturity a corporationMaturity
   Future<List<CorporationMaturity>> findCorporationMaturity(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size,
   ) async {
+    final response = await HttpUtils.get(_path,"?page=$page&size=$size&sort=id,asc");
 
-
-    final getRequest = await HttpUtils.getRequest(
-        "/corporationMaturitys?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
-
-    return JsonMapper.deserialize<List<CorporationMaturity>>(getRequest)!;
+    return JsonMapper.deserialize<List<CorporationMaturity>>(response)!;
   }
 
   /// Find corporationMaturity method that findCorporationMaturityByAuthorities a corporationMaturity
   Future<List<CorporationMaturity>> findCorporationMaturityByAuthorities(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size,
     String authorities,
   ) async {
-    final corporationMaturityRequest = await HttpUtils.getRequest(
-        "/corporationMaturitys/authorities/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
-    var result =
-        JsonMapper.deserialize<List<CorporationMaturity>>(corporationMaturityRequest)!;
+    final response =
+        await HttpUtils.get(_path,"/authorities/$authorities?page=$page&size=$size");
+    var result = JsonMapper.deserialize<List<CorporationMaturity>>(response)!;
     return result;
   }
 
   /// Find corporationMaturity method that findCorporationMaturityByName a corporationMaturity
   Future<List<CorporationMaturity>> findCorporationMaturityByName(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size,
     String name,
   ) async {
-    final corporationMaturityRequest = await HttpUtils.getRequest(
-        "/corporationMaturitys/filter/$name?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
-    var result =
-        JsonMapper.deserialize<List<CorporationMaturity>>(corporationMaturityRequest)!;
+    final corporationMaturityRequest =
+        await HttpUtils.get(_path,"/filter/$name?page=$page&size=$size");
+    var result = JsonMapper.deserialize<List<CorporationMaturity>>(corporationMaturityRequest)!;
     return result;
   }
 
@@ -100,8 +88,7 @@ class CorporationMaturityRepository {
   /// @param id the corporationMaturity id
   Future<bool?> deleteCorporationMaturity(String id) async {
     //api/corporation-maturity-dates/{id}
-    final result =
-        await HttpUtils.deleteRequest("/corporation-maturity-dates/$id");
+    final result = await HttpUtils.deleteRequest("$_path/$id");
     if (result.statusCode == 204) {
       return true;
     }
@@ -112,9 +99,9 @@ class CorporationMaturityRepository {
   ///
   /// @param corporationMaturity the corporationMaturity object
   Future<CorporationMaturity?> updateCorporationMaturity(
-   //api/corporation-maturity-dates/{id}
+      //api/corporation-maturity-dates/{id}
       CorporationMaturity corporationMaturity) async {
-    final result = await HttpUtils.putRequest("/corporation-maturity-dates/${corporationMaturity.id}", corporationMaturity);
+    final result = await HttpUtils.putRequest("$_path/${corporationMaturity.id}", corporationMaturity);
     if (result.statusCode == 200) {
       return JsonMapper.deserialize<CorporationMaturity>(result.body);
     }

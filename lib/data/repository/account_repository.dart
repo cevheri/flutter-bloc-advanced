@@ -102,7 +102,7 @@ class AccountRepository {
   }
 
   Future<List<Menu>> getMenus() async {
-    final menusRequest = await HttpUtils.getRequest("/menus/current-user");
+    final menusRequest = await HttpUtils.get("/menus/current-user");
     log("getMenus: ${menusRequest}");
     return JsonMapper.deserialize<List<Menu>>(menusRequest)!;
   }

@@ -10,7 +10,7 @@ import '../models/customer.dart';
 class CustomerRepository {
   /// Retrieve all customers method that retrieves all the customers
   Future<List<Customer>> getCustomers() async {
-    final customersRequest = await HttpUtils.getRequest("/customers");
+    final customersRequest = await HttpUtils.get("/customers");
     return JsonMapper.deserialize<List<Customer>>(customersRequest)!;
   }
 
@@ -18,7 +18,7 @@ class CustomerRepository {
   ///
   /// @param id the customer id
   Future<Customer> getCustomer(String id) async {
-    final customerRequest = await HttpUtils.getRequest("/customers/$id");
+    final customerRequest = await HttpUtils.get("/customers/$id");
     return JsonMapper.deserialize<Customer>(customerRequest)!;
   }
 
@@ -30,7 +30,7 @@ class CustomerRepository {
     int rangeEnd,
   ) async {
 
-    final getRequest = await HttpUtils.getRequest(
+    final getRequest = await HttpUtils.get(
         "/customers?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     return JsonMapper.deserialize<List<Customer>>(getRequest)!;
   }
@@ -39,7 +39,7 @@ class CustomerRepository {
   Future<List<Customer>> findCustomerByName(
     String name,
   ) async {
-    final customerRequest = await HttpUtils.getRequest(
+    final customerRequest = await HttpUtils.get(
         "/customers?name.contains=$name&page=0&size=100");
     var result = JsonMapper.deserialize<List<Customer>>(customerRequest)!;
     return result;

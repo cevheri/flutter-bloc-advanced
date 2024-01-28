@@ -63,7 +63,7 @@ class HomeScreen extends StatelessWidget {
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(
-                  "assets/images/logoLight.png",
+                  "assets/images/img.png",
                 ),
                 scale: 1,
                 fit: BoxFit.contain,

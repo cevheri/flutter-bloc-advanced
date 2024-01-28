@@ -9,7 +9,7 @@ class SalesPersonRepository {
   SalesPersonRepository();
 
   Future<List<SalesPerson>> getSalesPerson() async {
-    final result = await HttpUtils.getRequest("/sales-people");
+    final result = await HttpUtils.get("/sales-people");
     return JsonMapper.deserialize<List<SalesPerson>>(result)!;
   }
 }

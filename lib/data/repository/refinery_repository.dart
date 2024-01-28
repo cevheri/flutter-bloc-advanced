@@ -11,9 +11,10 @@ import '../models/refinery.dart';
 /// This class is responsible for all the user related operations
 /// list, create, update, delete etc.
 class RefineryRepository {
+  final _path = "/refineries";
   /// Retrieve all refinery method that retrieves all the refinery
   Future<List<Refinery>> getRefineries() async {
-    final refineryRequest = await HttpUtils.getRequest("/refineries");
+    final refineryRequest = await HttpUtils.get("/refineries");
     return JsonMapper.deserialize<List<Refinery>>(refineryRequest)!;
   }
 
@@ -21,7 +22,7 @@ class RefineryRepository {
   ///
   /// @param id the user id
   Future<Refinery> getRefinery(String id) async {
-    final userRequest = await HttpUtils.getRequest("/refinery/$id");
+    final userRequest = await HttpUtils.get("/refinery/$id");
     return JsonMapper.deserialize<Refinery>(userRequest)!;
   }
 
@@ -53,7 +54,7 @@ class RefineryRepository {
     int rangeStart,
     int rangeEnd,
   ) async {
-    final userRequest = await HttpUtils.getRequest(
+    final userRequest = await HttpUtils.get(
         "/admin/refinery?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     var result = JsonMapper.deserialize<List<Refinery>>(userRequest)!;
     return result;
@@ -65,18 +66,17 @@ class RefineryRepository {
     int rangeEnd,
     String authorities,
   ) async {
-    final userRequest = await HttpUtils.getRequest(
-        "/admin/refinery/authorities/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    final userRequest = await HttpUtils.get(
+        "/admin/refinery","/authorities/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     var result = JsonMapper.deserialize<List<Refinery>>(userRequest)!;
     return result;
   }
 
   /// Find user method that findRefineryByName a user
   Future<List<Refinery>> findRefineryByName() async {
-    //final userRequest = await HttpUtils.getRequest("/refineries?page=0&size=1000&eagerload=false");
-    //var result = JsonMapper.deserialize<List<Refinery>>(userRequest)!;
-    var result = JsonMapper.deserialize<List<Refinery>>(await rootBundle.loadString('mock/producers.json'))!;
-
+    
+    final userRequest = await HttpUtils.get(_path,"?page=0&size=10");
+    final result = JsonMapper.deserialize<List<Refinery>>(userRequest)!;
     return result;
   }
 

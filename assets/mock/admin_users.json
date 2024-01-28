@@ -12,9 +12,7 @@
     "createdDate": null,
     "lastModifiedBy": "admin",
     "lastModifiedDate": "2024-01-04T06:02:47.757Z",
-    "authorities": [
-      "ROLE_ADMIN"
-    ],
+    "authorities": ["ROLE_ADMIN"],
     "cariKodu": null,
     "phoneNumber": "5320000000",
     "salesPersonCode": null,
@@ -33,9 +31,7 @@
     "createdDate": null,
     "lastModifiedBy": "system",
     "lastModifiedDate": null,
-    "authorities": [
-      "ROLE_ADMIN"
-    ],
+    "authorities": ["ROLE_ADMIN"],
     "cariKodu": null,
     "phoneNumber": "5420000000",
     "salesPersonCode": null,

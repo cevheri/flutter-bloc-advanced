@@ -97,7 +97,7 @@ class OfferRepository {
     print(user.login);
     ConstOfferStationMaturity.page = offersHeaderRequest;
 
-    final offersRequest = await HttpUtils.getRequest(
+    final offersRequest = await HttpUtils.get(
         "/offerings?createdDate.greaterThanOrEqual=${ConstOfferStationMaturity.startDate}&createdDate.lessThanOrEqual=${ConstOfferStationMaturity.endDate}&${ConstOfferStationMaturity.urlString}createdBy.equals=${user.login}&page=0&size=10&sort=id%2Cdesc");
     return JsonMapper.deserialize<List<Offer>>(offersRequest)!;
   }

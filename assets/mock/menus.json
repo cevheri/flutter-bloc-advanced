@@ -338,25 +338,5 @@
       "level": 0
     },
     "level": 1
-  },
-  {
-    "id": 80,
-    "name": "corporationMaturity",
-    "description": "corporationMaturity",
-    "url": "/corporation-maturity",
-    "icon": "domain",
-    "orderPriority": 33,
-    "active": true,
-    "parent": {
-      "id": 1,
-      "name": "home",
-      "description": "home",
-      "url": "/",
-      "icon": "icon",
-      "orderPriority": 0,
-      "active": true,
-      "level": 0
-    },
-    "level": 1
   }
 ]

@@ -14,7 +14,7 @@ class StationMaturityRepository {
   /// Retrieve all stationMaturities method that retrieves all the stationMaturitys
   Future<List<StationMaturity>> getStationMaturitys() async {
     final stationMaturitysRequest =
-        await HttpUtils.getRequest("/stationMaturitys");
+        await HttpUtils.get("/stationMaturitys");
     return JsonMapper.deserialize<List<StationMaturity>>(
         stationMaturitysRequest)!;
   }
@@ -23,7 +23,7 @@ class StationMaturityRepository {
   ///
   /// @param id the stationMaturity id
   Future<List<StationMaturity>> getStationMaturity(String id) async {
-    //final result = await HttpUtils.getRequest("/station-maturity-prices/stations/$id?page=0&size=1000");
+    //final result = await HttpUtils.getRequest("/station-maturity-prices/stations/$id?page=0&size=10");
     var defaultCityList = JsonMapper.deserialize<List<StationMaturity>>(await rootBundle.loadString('mock/subcompany_maturity.json'))!;
     var sortWithNameResult = defaultCityList
       ..sort((a, b) => a.id!.compareTo(b.id!));
@@ -61,7 +61,7 @@ class StationMaturityRepository {
   ) async {
 
 
-    final getRequest = await HttpUtils.getRequest(
+    final getRequest = await HttpUtils.get(
         "/stationMaturitys?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
 
     return JsonMapper.deserialize<List<StationMaturity>>(getRequest)!;
@@ -73,7 +73,7 @@ class StationMaturityRepository {
     int rangeEnd,
     String authorities,
   ) async {
-    final stationMaturityRequest = await HttpUtils.getRequest(
+    final stationMaturityRequest = await HttpUtils.get(
         "/stationMaturitys/authorities/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     var result =
         JsonMapper.deserialize<List<StationMaturity>>(stationMaturityRequest)!;
@@ -86,7 +86,7 @@ class StationMaturityRepository {
     int rangeEnd,
     String name,
   ) async {
-    final stationMaturityRequest = await HttpUtils.getRequest(
+    final stationMaturityRequest = await HttpUtils.get(
         "/stationMaturitys/filter/$name?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     var result =
         JsonMapper.deserialize<List<StationMaturity>>(stationMaturityRequest)!;

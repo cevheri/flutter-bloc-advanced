@@ -41,9 +41,12 @@ class HttpUtils {
   }
 
   static String encodeUTF8(String toEncode) {
-    return utf8.decode(toEncode.runes.toList());
+    try {
+      return utf8.decode(toEncode.runes.toList());
+    } catch (e) {
+      return toEncode;
+    }
   }
-
   static Future<Map<String, String>> headers() async {
     String? jwt = AppConstants.jwtToken;
     Map<String, String> headerParameters = <String, String>{};
@@ -110,7 +113,8 @@ class HttpUtils {
     return response;
   }
 
-  static Future<String> getRequest(String endpoint, [String? parameters]) async {
+  static Future<String> get(String endpoint, [String? parameters]) async {
+    debugPrint("Rest get request: $endpoint, parameters: $parameters");
     if (ProfileConstants.isMockJson) {
       return await loadJsonMockData(parameters, endpoint);
     }
@@ -145,7 +149,7 @@ class HttpUtils {
     }
     final removedPath = endpoint.replaceFirst("/", "").split("?")[0];
     final replacedPath = removedPath.replaceAll("/", "_");
-    final jsonPath = "assets/mock/$replacedPath.json";
+    final jsonPath = "mock/$replacedPath.json";
     final result = await rootBundle.loadString(jsonPath);
     final encodedResult = encodeUTF8(result);
     return encodedResult;

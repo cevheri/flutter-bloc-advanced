@@ -42,7 +42,7 @@ class ListRefineriesScreen extends StatelessWidget {
         builder: (context, constraints) {
           if (constraints.maxWidth > 900) {
             return layoutBody(context, 200, 1100, constraints.maxWidth);
-          } else if (constraints.maxWidth > 700 && constraints.maxWidth < 900) {
+          } else if (constraints.maxWidth > 300 && constraints.maxWidth < 900) {
             return layoutBody(context, 200, 1200, constraints.maxWidth);
           } else {
             return Center(

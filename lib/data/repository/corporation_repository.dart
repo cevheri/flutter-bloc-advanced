@@ -1,6 +1,4 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter/services.dart';
-
 import '../http_utils.dart';
 import '../models/corporation.dart';
 
@@ -9,9 +7,11 @@ import '../models/corporation.dart';
 /// This class is responsible for all the user related operations
 /// list, create, update, delete etc.
 class CorporationRepository {
+  final String _path = "/corporations";
+
   /// Retrieve all corporations method that retrieves all the corporations
   Future<List<Corporation>> getCorporations() async {
-    final corporationsRequest = await HttpUtils.getRequest("/corporations");
+    final corporationsRequest = await HttpUtils.get(_path);
     return JsonMapper.deserialize<List<Corporation>>(corporationsRequest)!;
   }
 
@@ -19,7 +19,7 @@ class CorporationRepository {
   ///
   /// @param id the user id
   Future<Corporation> getCorporation(String id) async {
-    final userRequest = await HttpUtils.getRequest("/corporations/$id");
+    final userRequest = await HttpUtils.get(_path,"corporations/$id");
     return JsonMapper.deserialize<Corporation>(userRequest)!;
   }
 
@@ -28,7 +28,7 @@ class CorporationRepository {
   /// @param user the user object
   Future<Corporation?> createCorporation(Corporation user) async {
     final saveRequest =
-        await HttpUtils.postRequest<Corporation>("/corporations", user);
+        await HttpUtils.postRequest<Corporation>(_path, user);
     String? result;
 
     if (saveRequest.statusCode != 201) {
@@ -48,32 +48,31 @@ class CorporationRepository {
 
   /// Find user method that findCorporation a user
   Future<List<Corporation>> findCorporation(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size
   ) async {
-    final userRequest = await HttpUtils.getRequest(
-        "/admin/corporations?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    final userRequest = await HttpUtils.get(
+        "/admin/corporations?page=$page&size=$size");
     var result = JsonMapper.deserialize<List<Corporation>>(userRequest)!;
     return result;
   }
 
   /// Find user method that findCorporationByAuthorities a user
   Future<List<Corporation>> list() async {
-    //final userRequest = await HttpUtils.getRequest("/corporations?page=0&size=1000&eagerload=false");
-    //var result = JsonMapper.deserialize<List<Corporation>>(userRequest)!;
-    var result = JsonMapper.deserialize<List<Corporation>>(await rootBundle.loadString('mock/main_company.json'))!;
+    final response = await HttpUtils.get(_path,"?page=0&size=10&sort=id,asc");
+    var result = JsonMapper.deserialize<List<Corporation>>(response)!; 
     return result;
   }
 
   /// Find user method that findCorporationByName a user
   Future<List<Corporation>> findCorporationByName(
-    int rangeStart,
-    int rangeEnd,
+    int page,
+    int size,
     String name,
     String authorities,
   ) async {
-    final userRequest = await HttpUtils.getRequest(
-        "/admin/corporations/filter?name=$name&authorities=$authorities&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    final userRequest = await HttpUtils.get(
+        "/admin/corporations/filter?name=$name&authorities=$authorities&page=$page&size=$size");
     var result = JsonMapper.deserialize<List<Corporation>>(userRequest)!;
     return result;
   }
@@ -82,7 +81,7 @@ class CorporationRepository {
 
   Future<Corporation?> updateCorporation(Corporation corporation) async {
     final saveRequest =
-        await HttpUtils.putRequest<Corporation>("/corporations/${corporation.id}", corporation);
+        await HttpUtils.putRequest<Corporation>("$_path/${corporation.id}", corporation);
     String? result;
 
     if (saveRequest.statusCode != 200) {

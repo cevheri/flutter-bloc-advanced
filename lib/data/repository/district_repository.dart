@@ -8,7 +8,7 @@ class DistrictRepository {
   DistrictRepository();
 
   Future<List<District>> getDistrict(cityId) async {
-    final result = await HttpUtils.getRequest("/districts/cities/$cityId");
+    final result = await HttpUtils.get("/districts/cities/$cityId");
     return JsonMapper.deserialize<List<District>>(result)!;
   }
 }

@@ -1,0 +1,50 @@
+[
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-08T13:51:50.687Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T13:51:50.687Z",
+    "id": 1,
+    "name": "Corporation 1",
+    "description": "Corporation 1",
+    "active": true,
+    "city": null,
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-08T13:51:50.687Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T13:52:02.687Z",
+    "id": 2,
+    "name": "Corporation 2",
+    "description": "Corporation 2",
+    "active": true,
+    "city": null,
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:24:12.753Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+    "id": 3,
+    "name": "Corporation 3",
+    "description": "Corporation 3",
+    "active": true,
+    "city": null,
+    "district": null
+  },
+  {
+    "createdBy": "admin",
+    "createdDate": "2023-12-01T13:24:12.753Z",
+    "lastModifiedBy": "admin",
+    "lastModifiedDate": "2023-12-08T13:52:32.870Z",
+    "id": 4,
+    "name": "Corporation 4",
+    "description": "Corporation 4",
+    "active": true,
+    "city": null,
+    "district": null
+  }
+]

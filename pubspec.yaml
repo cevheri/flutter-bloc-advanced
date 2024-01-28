@@ -61,6 +61,5 @@ flutter:
   uses-material-design: true
   assets:
     - assets/mock/
-    - assets/image/img.png
-    - assets/image/logoLight.png
+    - assets/images/
 

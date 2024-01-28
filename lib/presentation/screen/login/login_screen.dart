@@ -68,13 +68,13 @@ class LoginScreen extends StatelessWidget {
   _logo(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
       return Image.asset(
-        'assets/images/logoLight.png',
+        'assets/images/img.png', //TODO change dark mode image
         width: 200,
         height: 200,
       );
     } else {
       return Image.asset(
-        'assets/image/img.png',
+        'assets/image/img.png', // TODO change light mode image
         width: 200,
         height: 200,
       );
