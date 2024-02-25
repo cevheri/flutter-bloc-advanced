@@ -2,51 +2,9 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
 import 'package:flutter_bloc_advance/data/models/status.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
 
 import 'authorities.dart';
 
-/*
-{
-  "id": 3,
-  "name": "APPROVAL_IN_PROGRESS",
-  "description": "Teklif onaylama işlemi için yönlendirildi.",
-  "orderPriority": 3,
-  "active": true,
-  "nexts": [
-    {
-      "id": 2,
-      "name": "CANCELLED",
-      "description": "Bir taslak teklif oluşturuldu ve ardından onaylama veya müşteriye sunma öncesinde iptal edildi.",
-      "orderPriority": 2,
-      "active": true
-    },
-    {
-      "id": 4,
-      "name": "APPROVAL_REJECTED",
-      "description": "Teklif onaylama isteği reddedildi.",
-      "orderPriority": 4,
-      "active": true
-    },
-    {
-      "id": 5,
-      "name": "APPROVED",
-      "description": "Teklif onaylandı ve teklif müşteriye gönderilmeye hazır.",
-      "orderPriority": 5,
-      "active": true
-    }
-  ],
-  "authorities": [
-    {
-      "name": "ROLE_MARKETING"
-    },
-    {
-      "name": "ROLE_ADMIN"
-    }
-  ],
-  "parents": null
-}
- */
 
 @jsonSerializable
 class StatusNext extends Equatable {

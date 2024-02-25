@@ -45,7 +45,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints:
-  build_runner: any
+  build_runner: ^2.4.8
 
 flutter_intl:
   enabled: true

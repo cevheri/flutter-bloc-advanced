@@ -37,13 +37,14 @@ class ProfileConstants {
   static bool get isMockServer {
     return _config == _Config.mockServerConstants;
   }
+
   static bool get isMockJson {
     return _config == _Config.mockJsonConstants;
   }
+
   static get api {
     return _config![_Config.API];
   }
-
 }
 
 class _Config {

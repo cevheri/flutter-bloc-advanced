@@ -53,7 +53,7 @@ class ChangePasswordScreen extends StatelessWidget {
 
   _logo(BuildContext context) {
     return Image.asset(
-      'assets/image/img.png',
+      'assets/images/img.png',
       width: 200,
       height: 200,
     );

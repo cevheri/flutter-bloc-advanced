@@ -28,7 +28,7 @@ class LoginScreen extends StatelessWidget {
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text("Demo CRM"),
+      title: Text("Sekoya Demo CRM"),
     );
   }
 
@@ -74,7 +74,7 @@ class LoginScreen extends StatelessWidget {
       );
     } else {
       return Image.asset(
-        'assets/image/img.png', // TODO change light mode image
+        'assets/images/img.png', // TODO change light mode image
         width: 200,
         height: 200,
       );

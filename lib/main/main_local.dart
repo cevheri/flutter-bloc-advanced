@@ -28,7 +28,7 @@ void main() async {
   AppConstants.role = prefs.getString('role') ?? "";
 
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]).then((_){
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_){
   runApp(App(language: language??'tr'));
   });
 }
