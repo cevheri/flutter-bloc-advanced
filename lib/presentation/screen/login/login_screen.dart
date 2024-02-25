@@ -164,6 +164,9 @@ class LoginScreen extends StatelessWidget {
         );
       },
       buildWhen: (previous, current) {
+        print("****************************");
+        print(current);
+        print("****************************");
         if (current is LoginLoadingState) {
           Message.getMessage(context: context, title: S.of(context).logging_in, content: "");
         }

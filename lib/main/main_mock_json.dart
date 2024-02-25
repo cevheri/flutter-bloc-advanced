@@ -25,9 +25,11 @@ void main() async {
   }
   AppConstants.jwtToken = prefs.getString('jwtToken') ?? "";
   AppConstants.role = prefs.getString('role') ?? "";
+  print("jwtToken: ${AppConstants.jwtToken}");
+  print("role: ${AppConstants.role}");
 
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]).then((_){
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_){
   runApp(App(language: language??'tr'));
   });
 }

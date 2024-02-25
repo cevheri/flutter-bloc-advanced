@@ -223,7 +223,7 @@
   "tax_number": "Tax Number",
   "tax_office": "Tax Office",
   "theme": "Theme",
-  "title": "Home Page",
+  "title": "Sekoya",
   "todoList": "Todo List",
   "total_price": "Total Price",
   "translate_menu_title": "{translate, select, station{Stations} maturityCalculate{Maturity Calculated} stationMaturity{Station Maturity} corporation{Corporations} corporationMaturity{Corporation Maturity} refinery{Refineries} offer{Offers} customer{Customers} salesPerson{Sales Person} account{Account} settings{Settings} dashboard{Dashboard}reports{Reports} logout{Logout}  info{Info} language{Language}  theme{Theme}  create{Create}  list{List/Edit} other{Other}}",
@@ -250,5 +250,14 @@
   "vat_no": "Vat No",
   "weekly": "Weekly",
   "welcome": "Welcome",
-  "yes": "Yes"
+  "yes": "Yes",
+  "services": "Services",
+  "services_detail": "Our company, established in 2024, develops customized systems for factories by integrating advanced technologies such as industrial IoT (Internet of Things), Machine Learning, and Artificial Intelligence. These systems help our customers optimize their production processes, reduce costs, and increase efficiency. Additionally, we further enhance factory operations through our mobile application and web-based solutions.",
+  "products": "Products",
+  "products_detail": "Our company offers customized software and hardware products for industrial sectors. Among these are IoT devices and sensors that help factories monitor production processes, analyze data, and make decisions. Additionally, we develop software solutions using machine learning algorithms and artificial intelligence technologies to enhance automation and efficiency in factories.",
+  "about_us": "About Us",
+  "about_us_detail": "Established in 2024, our company is a pioneer in industrial transformation, continuously offering innovative solutions to provide our customers with a competitive advantage. With an experienced team and a strong R&D infrastructure, we push the boundaries of industrial IoT, machine learning, and artificial intelligence technologies. Focused on our customers' needs, we aim to deliver scalable, reliable, and user-friendly solutions.",
+  "faq": "FAQ",
+  "our_references": "Our References",
+  "our_references_detail": "Our company provides services to numerous clients from various industries. To learn more about our past projects and customer satisfaction, please feel free to contact us. We would be delighted to provide detailed information regarding the references of the companies we have collaborated with.\nFor communication, please reach out to us at sekoyatech@gmail.com or call us at +905077438321. Our expert team will get in touch with you as soon as possible.\n"
 }

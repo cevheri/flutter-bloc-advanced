@@ -9,8 +9,7 @@ class MenuRepository {
 
   Future<List<Menu>> getMenus() async {
     //final menusRequest = await HttpUtils.getRequest("/menus/current-user?page=0&size=200");
-
-    return JsonMapper.deserialize<List<Menu>>(
-        await rootBundle.loadString('mock/menus.json'))!;
+    var result = JsonMapper.deserialize<List<Menu>>(await rootBundle.loadString('assets/mock/menus.json'))!;
+    return result;
   }
 }

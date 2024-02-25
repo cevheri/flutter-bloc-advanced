@@ -46,9 +46,9 @@ import '../presentation/screen/corporation_maturity/list/list_screen.dart';
 import '../presentation/screen/customer/bloc/customer_bloc.dart';
 import '../presentation/screen/forgot_password/bloc/forgot_password_bloc.dart';
 import '../presentation/screen/forgot_password/forgot_password_screen.dart';
-import '../presentation/screen/home/home_screen.dart';
 import '../presentation/screen/login/bloc/login.dart';
 import '../presentation/screen/login/login_screen.dart';
+import '../presentation/screen/main_tab_screen/screen_controller.dart';
 import '../presentation/screen/offer/bloc/offer/offer_bloc.dart';
 import '../presentation/screen/offer/bloc/pdf/pdf_bloc.dart';
 import '../presentation/screen/offer/bloc/price/price_bloc.dart';
@@ -106,8 +106,7 @@ class App extends StatelessWidget {
             BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
             BlocProvider<StationBloc>(create: (_) => StationBloc(stationRepository: StationRepository())),
             BlocProvider<StationMaturityBloc>(create: (_) => StationMaturityBloc(stationMaturityRepository: StationMaturityRepository())),
-            BlocProvider<CorporationMaturityBloc>(
-                create: (_) => CorporationMaturityBloc(corporationMaturityRepository: CorporationMaturityRepository())),
+            BlocProvider<CorporationMaturityBloc>(create: (_) => CorporationMaturityBloc(corporationMaturityRepository: CorporationMaturityRepository())),
             BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
             BlocProvider<CorporationBloc>(create: (_) => CorporationBloc(corporationRepository: CorporationRepository())),
             BlocProvider<RefineryBloc>(create: (_) => RefineryBloc(refineryRepository: RefineryRepository())),
@@ -131,27 +130,22 @@ class App extends StatelessWidget {
             locale: Locale(language),
             routes: {
               ApplicationRoutes.home: (context) {
-                return BlocProvider<AccountBloc>(
-                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: HomeScreen());
+                return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: ScreenControllerPage());
               },
               ApplicationRoutes.account: (context) {
-                return BlocProvider<AccountBloc>(
-                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: AccountsScreen());
+                return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: AccountsScreen());
               },
               ApplicationRoutes.login: (context) {
                 return BlocProvider<LoginBloc>(create: (context) => LoginBloc(loginRepository: LoginRepository()), child: LoginScreen());
               },
               ApplicationRoutes.settings: (context) {
-                return BlocProvider<SettingsBloc>(
-                    create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
+                return BlocProvider<SettingsBloc>(create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
               },
               ApplicationRoutes.forgotPassword: (context) {
-                return BlocProvider<ForgotPasswordBloc>(
-                    create: (context) => ForgotPasswordBloc(AccountRepository: AccountRepository()), child: ForgotPasswordScreen());
+                return BlocProvider<ForgotPasswordBloc>(create: (context) => ForgotPasswordBloc(AccountRepository: AccountRepository()), child: ForgotPasswordScreen());
               },
               ApplicationRoutes.changePassword: (context) {
-                return BlocProvider<ChangePasswordBloc>(
-                    create: (context) => ChangePasswordBloc(AccountRepository: AccountRepository()), child: ChangePasswordScreen());
+                return BlocProvider<ChangePasswordBloc>(create: (context) => ChangePasswordBloc(AccountRepository: AccountRepository()), child: ChangePasswordScreen());
               },
               ApplicationRoutes.logout: (context) {
                 return LogoutConfirmationDialog();
@@ -163,50 +157,38 @@ class App extends StatelessWidget {
                 return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: ListUserScreen());
               },
               ApplicationRoutes.createRefinery: (context) {
-                return BlocProvider<RefineryBloc>(
-                    create: (context) => RefineryBloc(refineryRepository: RefineryRepository()), child: CreateRefineryScreen());
+                return BlocProvider<RefineryBloc>(create: (context) => RefineryBloc(refineryRepository: RefineryRepository()), child: CreateRefineryScreen());
               },
               ApplicationRoutes.listRefineries: (context) {
-                return BlocProvider<RefineryBloc>(
-                    create: (context) => RefineryBloc(refineryRepository: RefineryRepository()), child: ListRefineriesScreen());
+                return BlocProvider<RefineryBloc>(create: (context) => RefineryBloc(refineryRepository: RefineryRepository()), child: ListRefineriesScreen());
               },
               ApplicationRoutes.createCorporation: (context) {
-                return BlocProvider<CorporationBloc>(
-                    create: (context) => CorporationBloc(corporationRepository: CorporationRepository()), child: CreateCorporationScreen());
+                return BlocProvider<CorporationBloc>(create: (context) => CorporationBloc(corporationRepository: CorporationRepository()), child: CreateCorporationScreen());
               },
               ApplicationRoutes.listCorporations: (context) {
-                return BlocProvider<CorporationBloc>(
-                    create: (context) => CorporationBloc(corporationRepository: CorporationRepository()), child: ListCorporationsScreen());
+                return BlocProvider<CorporationBloc>(create: (context) => CorporationBloc(corporationRepository: CorporationRepository()), child: ListCorporationsScreen());
               },
               ApplicationRoutes.createStation: (context) {
-                return BlocProvider<StationBloc>(
-                    create: (context) => StationBloc(stationRepository: StationRepository()), child: CreateStationScreen());
+                return BlocProvider<StationBloc>(create: (context) => StationBloc(stationRepository: StationRepository()), child: CreateStationScreen());
               },
               ApplicationRoutes.listStations: (context) {
-                return BlocProvider<StationBloc>(
-                    create: (context) => StationBloc(stationRepository: StationRepository()), child: ListStationsScreen());
+                return BlocProvider<StationBloc>(create: (context) => StationBloc(stationRepository: StationRepository()), child: ListStationsScreen());
               },
               ApplicationRoutes.stationMaturity: (context) {
-                return BlocProvider<StationMaturityBloc>(
-                    create: (context) => StationMaturityBloc(stationMaturityRepository: StationMaturityRepository()),
-                    child: ListStationMaturityScreen());
+                return BlocProvider<StationMaturityBloc>(create: (context) => StationMaturityBloc(stationMaturityRepository: StationMaturityRepository()), child: ListStationMaturityScreen());
               },
               ApplicationRoutes.corporationMaturity: (context) {
                 return BlocProvider<CorporationMaturityBloc>(
-                    create: (context) => CorporationMaturityBloc(corporationMaturityRepository: CorporationMaturityRepository()),
-                    child: ListCorporationMaturityScreen());
+                    create: (context) => CorporationMaturityBloc(corporationMaturityRepository: CorporationMaturityRepository()), child: ListCorporationMaturityScreen());
               },
               ApplicationRoutes.createOffer: (context) {
-                return BlocProvider<OfferBloc>(
-                    create: (context) => OfferBloc(offerRepository: OfferRepository()), child: CreateOfferWithSelectCustomerScreen());
+                return BlocProvider<OfferBloc>(create: (context) => OfferBloc(offerRepository: OfferRepository()), child: CreateOfferWithSelectCustomerScreen());
               },
               ApplicationRoutes.listOffers: (context) {
-                return BlocProvider<OfferBloc>(
-                    create: (context) => OfferBloc(offerRepository: OfferRepository()), child: ListOffersScreen());
+                return BlocProvider<OfferBloc>(create: (context) => OfferBloc(offerRepository: OfferRepository()), child: ListOffersScreen());
               },
               ApplicationRoutes.maturityCalculate: (context) {
-                return BlocProvider<MaturityCalculateBloc>(
-                    create: (context) => MaturityCalculateBloc(maturityCalculateRepository: MaturityCalculateRepository()), child: MaturityCalculateScreen());
+                return BlocProvider<MaturityCalculateBloc>(create: (context) => MaturityCalculateBloc(maturityCalculateRepository: MaturityCalculateRepository()), child: MaturityCalculateScreen());
               },
             },
           ),

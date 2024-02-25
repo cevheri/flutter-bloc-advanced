@@ -62,6 +62,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+        "about_us": MessageLookupByLibrary.simpleMessage("About Us"),
+        "about_us_detail": MessageLookupByLibrary.simpleMessage(
+            "Established in 2024, our company is a pioneer in industrial transformation, continuously offering innovative solutions to provide our customers with a competitive advantage. With an experienced team and a strong R&D infrastructure, we push the boundaries of industrial IoT, machine learning, and artificial intelligence technologies. Focused on our customers\' needs, we aim to deliver scalable, reliable, and user-friendly solutions."),
         "account": MessageLookupByLibrary.simpleMessage("Account"),
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "address": MessageLookupByLibrary.simpleMessage("Address"),
@@ -192,6 +195,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "error":
             MessageLookupByLibrary.simpleMessage("Email address not found"),
         "exit": MessageLookupByLibrary.simpleMessage("Exit"),
+        "faq": MessageLookupByLibrary.simpleMessage("FAQ"),
         "find": MessageLookupByLibrary.simpleMessage(" Find "),
         "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
         "firstname_max_length": MessageLookupByLibrary.simpleMessage(
@@ -294,6 +298,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "offer_form": MessageLookupByLibrary.simpleMessage("Offer Form"),
         "offers": MessageLookupByLibrary.simpleMessage("Offers"),
         "ok": MessageLookupByLibrary.simpleMessage("Ok"),
+        "our_references":
+            MessageLookupByLibrary.simpleMessage("Our References"),
+        "our_references_detail": MessageLookupByLibrary.simpleMessage(
+            "Our company provides services to numerous clients from various industries. To learn more about our past projects and customer satisfaction, please feel free to contact us. We would be delighted to provide detailed information regarding the references of the companies we have collaborated with.\nFor communication, please reach out to us at sekoyatech@gmail.com or call us at +905077438321. Our expert team will get in touch with you as soon as possible.\n"),
         "password": MessageLookupByLibrary.simpleMessage("Password"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Forgot Password"),
@@ -332,6 +340,9 @@ class MessageLookup extends MessageLookupByLibrary {
             "With Wat Price must be a valid"),
         "price_with_vat_required":
             MessageLookupByLibrary.simpleMessage("With Wat Price is required"),
+        "products": MessageLookupByLibrary.simpleMessage("Products"),
+        "products_detail": MessageLookupByLibrary.simpleMessage(
+            "Our company offers customized software and hardware products for industrial sectors. Among these are IoT devices and sensors that help factories monitor production processes, analyze data, and make decisions. Additionally, we develop software solutions using machine learning algorithms and artificial intelligence technologies to enhance automation and efficiency in factories."),
         "range": MessageLookupByLibrary.simpleMessage("Range"),
         "rate": MessageLookupByLibrary.simpleMessage("Rate"),
         "refineries": MessageLookupByLibrary.simpleMessage("Refineries"),
@@ -368,6 +379,9 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Select Customer"),
         "send": MessageLookupByLibrary.simpleMessage("Send"),
         "send_offer": MessageLookupByLibrary.simpleMessage("Send Offer"),
+        "services": MessageLookupByLibrary.simpleMessage("Services"),
+        "services_detail": MessageLookupByLibrary.simpleMessage(
+            "Our company, established in 2024, develops customized systems for factories by integrating advanced technologies such as industrial IoT (Internet of Things), Machine Learning, and Artificial Intelligence. These systems help our customers optimize their production processes, reduce costs, and increase efficiency. Additionally, we further enhance factory operations through our mobile application and web-based solutions."),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "station": MessageLookupByLibrary.simpleMessage("Station"),
         "station_rate": MessageLookupByLibrary.simpleMessage("Station Rate"),
@@ -380,7 +394,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "tax_number": MessageLookupByLibrary.simpleMessage("Tax Number"),
         "tax_office": MessageLookupByLibrary.simpleMessage("Tax Office"),
         "theme": MessageLookupByLibrary.simpleMessage("Theme"),
-        "title": MessageLookupByLibrary.simpleMessage("Home Page"),
+        "title": MessageLookupByLibrary.simpleMessage("Sekoya"),
         "todoList": MessageLookupByLibrary.simpleMessage("Todo List"),
         "total_price": MessageLookupByLibrary.simpleMessage("Total Price"),
         "translate_menu_title": m0,

@@ -2280,10 +2280,10 @@ class S {
     );
   }
 
-  /// `Home Page`
+  /// `Sekoya`
   String get title {
     return Intl.message(
-      'Home Page',
+      'Sekoya',
       name: 'title',
       desc: '',
       args: [],
@@ -2593,6 +2593,96 @@ class S {
     return Intl.message(
       'Yes',
       name: 'yes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Services`
+  String get services {
+    return Intl.message(
+      'Services',
+      name: 'services',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Our company, established in 2024, develops customized systems for factories by integrating advanced technologies such as industrial IoT (Internet of Things), Machine Learning, and Artificial Intelligence. These systems help our customers optimize their production processes, reduce costs, and increase efficiency. Additionally, we further enhance factory operations through our mobile application and web-based solutions.`
+  String get services_detail {
+    return Intl.message(
+      'Our company, established in 2024, develops customized systems for factories by integrating advanced technologies such as industrial IoT (Internet of Things), Machine Learning, and Artificial Intelligence. These systems help our customers optimize their production processes, reduce costs, and increase efficiency. Additionally, we further enhance factory operations through our mobile application and web-based solutions.',
+      name: 'services_detail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Products`
+  String get products {
+    return Intl.message(
+      'Products',
+      name: 'products',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Our company offers customized software and hardware products for industrial sectors. Among these are IoT devices and sensors that help factories monitor production processes, analyze data, and make decisions. Additionally, we develop software solutions using machine learning algorithms and artificial intelligence technologies to enhance automation and efficiency in factories.`
+  String get products_detail {
+    return Intl.message(
+      'Our company offers customized software and hardware products for industrial sectors. Among these are IoT devices and sensors that help factories monitor production processes, analyze data, and make decisions. Additionally, we develop software solutions using machine learning algorithms and artificial intelligence technologies to enhance automation and efficiency in factories.',
+      name: 'products_detail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `About Us`
+  String get about_us {
+    return Intl.message(
+      'About Us',
+      name: 'about_us',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Established in 2024, our company is a pioneer in industrial transformation, continuously offering innovative solutions to provide our customers with a competitive advantage. With an experienced team and a strong R&D infrastructure, we push the boundaries of industrial IoT, machine learning, and artificial intelligence technologies. Focused on our customers' needs, we aim to deliver scalable, reliable, and user-friendly solutions.`
+  String get about_us_detail {
+    return Intl.message(
+      'Established in 2024, our company is a pioneer in industrial transformation, continuously offering innovative solutions to provide our customers with a competitive advantage. With an experienced team and a strong R&D infrastructure, we push the boundaries of industrial IoT, machine learning, and artificial intelligence technologies. Focused on our customers\' needs, we aim to deliver scalable, reliable, and user-friendly solutions.',
+      name: 'about_us_detail',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `FAQ`
+  String get faq {
+    return Intl.message(
+      'FAQ',
+      name: 'faq',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Our References`
+  String get our_references {
+    return Intl.message(
+      'Our References',
+      name: 'our_references',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Our company provides services to numerous clients from various industries. To learn more about our past projects and customer satisfaction, please feel free to contact us. We would be delighted to provide detailed information regarding the references of the companies we have collaborated with.\nFor communication, please reach out to us at sekoyatech@gmail.com or call us at +905077438321. Our expert team will get in touch with you as soon as possible.\n`
+  String get our_references_detail {
+    return Intl.message(
+      'Our company provides services to numerous clients from various industries. To learn more about our past projects and customer satisfaction, please feel free to contact us. We would be delighted to provide detailed information regarding the references of the companies we have collaborated with.\nFor communication, please reach out to us at sekoyatech@gmail.com or call us at +905077438321. Our expert team will get in touch with you as soon as possible.\n',
+      name: 'our_references_detail',
       desc: '',
       args: [],
     );

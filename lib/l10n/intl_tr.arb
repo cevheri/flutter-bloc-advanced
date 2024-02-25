@@ -1,5 +1,5 @@
 {
-  "@@locale" : "tr",
+  "@@locale": "tr",
   "account": "Hesabım",
   "active": "Aktif",
   "address": "Address",
@@ -97,7 +97,7 @@
   "firstname_required": "İsim gereklidir",
   "forgot": "Forgot Password",
   "global": "CRM",
-  "home": "Anasayfa",
+  "home": "Ana Sayfa",
   "home_page": "Anasayfa",
   "http_400": "Bad Request",
   "http_401": "Unauthorized",
@@ -141,7 +141,7 @@
   "list_refinery": "Üreticiler",
   "list_station": "Alt Firmalar",
   "list_user": "Kullanıcılar",
-  "loading": "Loading...",
+  "loading": "Yükleniyor...",
   "logging_in": "Giriş yapılıyor...",
   "login": "Kullanıcı Adı",
   "login_button": "Giriş Yap",
@@ -223,7 +223,7 @@
   "tax_number": "Vergi Numarası",
   "tax_office": "Tax Office",
   "theme": "Tema",
-  "title": "Ana Sayfa",
+  "title": "Sekoya",
   "todoList": "Yapılacak İşler",
   "total_price": "Toplam Fiyat",
   "translate_menu_title": "{translate, select,station{Alt Firmalar}  maturityCalculate{Vade Hesaplama}  stationMaturity{Alt Firma Vadeleri} corporation{Ana Firmaları}  corporationMaturity{Ana Firma Vadeleri} refinery{Üreticiler} offer{Teklifler} customer{Müşteriler} salesPerson{Satış Temsilcisi} account{Hesabım} settings{Ayarlar}  dashboard{Grafikler} reports{Raporlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  create{Oluştur}  list{Listele/Düzenle }  other{Diğer}}",
@@ -250,6 +250,15 @@
   "vat_no": "Vergi No",
   "weekly": "Haftalık",
   "welcome": "Hoş geldiniz",
-  "yes": "Evet"
+  "yes": "Evet",
+  "services": "Hizmetlerimiz",
+  "services_detail": "Firmamız, 2024 yılında kurulmuş olup, endüstriyel IoT (Nesnelerin İnterneti), Makine Öğrenimi ve Yapay Zeka gibi ileri teknolojileri entegre ederek fabrikalar için özelleştirilmiş sistemler geliştirmektedir. Bu sistemler, müşterilerimizin üretim süreçlerini optimize etmelerine, maliyetleri düşürmelerine ve verimliliği artırmalarına yardımcı olmaktadır. Ayrıca, mobil uygulama ve web tabanlı çözümlerimiz aracılığıyla fabrika operasyonlarını daha da iyileştiriyoruz.",
+  "products": "Ürünlerimiz",
+  "products_detail": "Firmamız, endüstriyel sektörler için özelleştirilmiş yazılım ve donanım ürünleri sunmaktadır. Bunlar arasında, fabrikaların üretim süreçlerini izlemelerine, verileri analiz etmelerine ve karar almalarına yardımcı olan IoT cihazları ve sensörler bulunmaktadır. Ayrıca, makine öğrenimi algoritmaları ve yapay zeka teknolojileri kullanarak fabrikaların otomasyonunu ve verimliliğini artıran yazılım çözümleri geliştiriyoruz.",
+  "about_us": "Hakkımızda",
+  "about_us_detail": "Firmamız, 2024 yılında kurulmuş olup, endüstriyel dönüşümün öncüsü olarak, müşterilerimize rekabet avantajı sağlamak için sürekli olarak yenilikçi çözümler sunmaktadır. Deneyimli bir ekip ve güçlü bir Ar-Ge altyapısıyla, endüstriyel IoT, makine öğrenimi ve yapay zeka teknolojilerinin sınırlarını zorluyoruz. Müşterilerimizin ihtiyaçlarına odaklanarak, ölçeklenebilir, güvenilir ve kullanıcı dostu çözümler sunmayı amaçlıyoruz.",
+  "faq": "SSS",
+  "our_references": "Referanslarımız",
+  "our_references_detail": "Firmamız, çeşitli endüstrilerden birçok müşteriye hizmet sunmaktadır. Geçmiş projelerimiz ve müşteri memnuniyeti hakkında daha fazla bilgi edinmek için bizimle iletişime geçebilirsiniz. Size, işbirliği yaptığımız firmaların referanslarıyla ilgili detaylı bilgileri sağlamaktan memnuniyet duyarız.\nİletişim için lütfen sekoyatech@gmail.com üzerinden bize ulaşın veya +905077438321 numaralı telefonu arayın. Uzman ekibimiz, sizinle en kısa sürede iletişime geçecektir."
 }
 

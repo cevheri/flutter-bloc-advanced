@@ -34,7 +34,8 @@ dependencies:
   http_certificate_pinning:
   bloc_concurrency:
   modbus_client_tcp:
-
+  custom_navigation_bar:
+  flutter_inappwebview:
 
 dependency_overrides:
   reflectable:
@@ -47,10 +48,6 @@ dev_dependencies:
   flutter_lints:
   build_runner: ^2.4.8
 
-flutter_intl:
-  enabled: true
-  class_name: S
-  main_locale: en
 
 flutter_secure_storage:
   enabled: true

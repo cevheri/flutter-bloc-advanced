@@ -9,6 +9,7 @@ import '../../../data/models/user.dart';
 import '../../../data/repository/account_repository.dart';
 
 part 'account_event.dart';
+
 part 'account_state.dart';
 
 /// Bloc responsible for managing the account.
@@ -23,7 +24,6 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     on<AccountLoad>(_onLoad);
   }
 
-
   /// Load the current account.
   FutureOr<void> _onLoad(AccountLoad event, Emitter<AccountState> emit) async {
     log("AccountBloc._onLoad start : ${event.props}, $emit");
@@ -31,17 +31,16 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     try {
-      User user = await _accountRepository.getAccount();
+      // User user = await _accountRepository.getAccount();
 
-      await prefs.setString('username', user.login!);
-      await prefs.setString('role', user.authorities![0]);
+      // await prefs.setString('username', user.login!);
+      // await prefs.setString('role', user.authorities![0]);
 
       emit(state.copyWith(
-        account: user,
+        account: User(firstName: "admin", lastName: "admin", email: "admin@deneme.com"),
         status: AccountStatus.success,
       ));
       log("AccountBloc._onLoad end : ${state.account}, ${state.status}");
-
     } catch (e) {
       emit(state.copyWith(status: AccountStatus.failure));
       log("AccountBloc._onLoad error : ${state.account}, ${state.status} error: $e");

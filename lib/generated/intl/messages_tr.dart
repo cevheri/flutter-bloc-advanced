@@ -62,6 +62,9 @@ class MessageLookup extends MessageLookupByLibrary {
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
+        "about_us": MessageLookupByLibrary.simpleMessage("Hakkımızda"),
+        "about_us_detail": MessageLookupByLibrary.simpleMessage(
+            "Firmamız, 2024 yılında kurulmuş olup, endüstriyel dönüşümün öncüsü olarak, müşterilerimize rekabet avantajı sağlamak için sürekli olarak yenilikçi çözümler sunmaktadır. Deneyimli bir ekip ve güçlü bir Ar-Ge altyapısıyla, endüstriyel IoT, makine öğrenimi ve yapay zeka teknolojilerinin sınırlarını zorluyoruz. Müşterilerimizin ihtiyaçlarına odaklanarak, ölçeklenebilir, güvenilir ve kullanıcı dostu çözümler sunmayı amaçlıyoruz."),
         "account": MessageLookupByLibrary.simpleMessage("Hesabım"),
         "active": MessageLookupByLibrary.simpleMessage("Aktif"),
         "address": MessageLookupByLibrary.simpleMessage("Address"),
@@ -195,6 +198,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "error":
             MessageLookupByLibrary.simpleMessage("Email address not found"),
         "exit": MessageLookupByLibrary.simpleMessage("Çıkış"),
+        "faq": MessageLookupByLibrary.simpleMessage("SSS"),
         "find": MessageLookupByLibrary.simpleMessage(" Ara "),
         "first_name": MessageLookupByLibrary.simpleMessage("İsim"),
         "firstname_max_length": MessageLookupByLibrary.simpleMessage(
@@ -205,7 +209,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("İsim gereklidir"),
         "forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
         "global": MessageLookupByLibrary.simpleMessage("CRM"),
-        "home": MessageLookupByLibrary.simpleMessage("Anasayfa"),
+        "home": MessageLookupByLibrary.simpleMessage("Ana Sayfa"),
         "home_page": MessageLookupByLibrary.simpleMessage("Anasayfa"),
         "http_400": MessageLookupByLibrary.simpleMessage("Bad Request"),
         "http_401": MessageLookupByLibrary.simpleMessage("Unauthorized"),
@@ -262,7 +266,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "list_refinery": MessageLookupByLibrary.simpleMessage("Üreticiler"),
         "list_station": MessageLookupByLibrary.simpleMessage("Alt Firmalar"),
         "list_user": MessageLookupByLibrary.simpleMessage("Kullanıcılar"),
-        "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
+        "loading": MessageLookupByLibrary.simpleMessage("Yükleniyor..."),
         "logging_in":
             MessageLookupByLibrary.simpleMessage("Giriş yapılıyor..."),
         "login": MessageLookupByLibrary.simpleMessage("Kullanıcı Adı"),
@@ -299,6 +303,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "offer_form": MessageLookupByLibrary.simpleMessage("Teklif Formu"),
         "offers": MessageLookupByLibrary.simpleMessage("Teklifler"),
         "ok": MessageLookupByLibrary.simpleMessage("Tamam"),
+        "our_references":
+            MessageLookupByLibrary.simpleMessage("Referanslarımız"),
+        "our_references_detail": MessageLookupByLibrary.simpleMessage(
+            "Firmamız, çeşitli endüstrilerden birçok müşteriye hizmet sunmaktadır. Geçmiş projelerimiz ve müşteri memnuniyeti hakkında daha fazla bilgi edinmek için bizimle iletişime geçebilirsiniz. Size, işbirliği yaptığımız firmaların referanslarıyla ilgili detaylı bilgileri sağlamaktan memnuniyet duyarız.\nİletişim için lütfen sekoyatech@gmail.com üzerinden bize ulaşın veya +905077438321 numaralı telefonu arayın. Uzman ekibimiz, sizinle en kısa sürede iletişime geçecektir."),
         "password": MessageLookupByLibrary.simpleMessage("Password"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
@@ -336,6 +344,9 @@ class MessageLookup extends MessageLookupByLibrary {
             "Vergi dahil Fiyat geçerli değil"),
         "price_with_vat_required": MessageLookupByLibrary.simpleMessage(
             "Vergi dahil Fiyat gereklidir"),
+        "products": MessageLookupByLibrary.simpleMessage("Ürünlerimiz"),
+        "products_detail": MessageLookupByLibrary.simpleMessage(
+            "Firmamız, endüstriyel sektörler için özelleştirilmiş yazılım ve donanım ürünleri sunmaktadır. Bunlar arasında, fabrikaların üretim süreçlerini izlemelerine, verileri analiz etmelerine ve karar almalarına yardımcı olan IoT cihazları ve sensörler bulunmaktadır. Ayrıca, makine öğrenimi algoritmaları ve yapay zeka teknolojileri kullanarak fabrikaların otomasyonunu ve verimliliğini artıran yazılım çözümleri geliştiriyoruz."),
         "range": MessageLookupByLibrary.simpleMessage("Aralık"),
         "rate": MessageLookupByLibrary.simpleMessage("Oran"),
         "refineries": MessageLookupByLibrary.simpleMessage("Üreticiler"),
@@ -373,6 +384,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "send": MessageLookupByLibrary.simpleMessage("Gönder"),
         "send_offer":
             MessageLookupByLibrary.simpleMessage("Teklifi Onaya Gönder"),
+        "services": MessageLookupByLibrary.simpleMessage("Hizmetlerimiz"),
+        "services_detail": MessageLookupByLibrary.simpleMessage(
+            "Firmamız, 2024 yılında kurulmuş olup, endüstriyel IoT (Nesnelerin İnterneti), Makine Öğrenimi ve Yapay Zeka gibi ileri teknolojileri entegre ederek fabrikalar için özelleştirilmiş sistemler geliştirmektedir. Bu sistemler, müşterilerimizin üretim süreçlerini optimize etmelerine, maliyetleri düşürmelerine ve verimliliği artırmalarına yardımcı olmaktadır. Ayrıca, mobil uygulama ve web tabanlı çözümlerimiz aracılığıyla fabrika operasyonlarını daha da iyileştiriyoruz."),
         "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
         "station": MessageLookupByLibrary.simpleMessage("Dolum Tesisi"),
         "station_rate":
@@ -386,7 +400,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "tax_number": MessageLookupByLibrary.simpleMessage("Vergi Numarası"),
         "tax_office": MessageLookupByLibrary.simpleMessage("Tax Office"),
         "theme": MessageLookupByLibrary.simpleMessage("Tema"),
-        "title": MessageLookupByLibrary.simpleMessage("Ana Sayfa"),
+        "title": MessageLookupByLibrary.simpleMessage("Sekoya"),
         "todoList": MessageLookupByLibrary.simpleMessage("Yapılacak İşler"),
         "total_price": MessageLookupByLibrary.simpleMessage("Toplam Fiyat"),
         "translate_menu_title": m0,
