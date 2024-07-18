@@ -98,6 +98,20 @@ flutter run dev environment
 
 - Run `flutter test`
 
+## Usage
+
+To add new screens, models, and BLOCs, follow these steps:
+
+1. Add New Screens
+   Add your new screens to the lib/screens directory.
+2. Add New Models
+   Add your new model classes to the lib/models directory.
+3. Add New BLOCs
+   Add your new BLOC classes to the lib/bloc directory and perform necessary operations.
+4. API Integration 
+   Integrate with APIs using the services provided in the lib/api directory.
+
+
 ## CI/CD with Github Actions
 
 - [Flutter CI/CD with Github Actions]()
@@ -115,6 +129,7 @@ flutter run dev environment
 - [Flutter Firebase Deploy]()
 - [Flutter Firebase Deploy with Github Actions]()
 - [Flutter Firebase Deploy with Github Actions and Firebase Hosting]()
+
 
 ## How to Contribute
 
