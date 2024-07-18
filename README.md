@@ -1,27 +1,16 @@
-# IN PROGRESS
+# Advanced Flutter BLOC Template
 
-- [x] Add BLoC Pattern
-- [x] Add Folder Structure
-- [x] Add Environments
-- [x] Add Configuration
-- [x] Add Themes
-- [x] Add Internationalization
-- [ ] Add Firebase
-- [x] Add Home Page
-- [x] Add Login Page
-- [ ] Add User Management
-- [ ] Add Roles and Permissions
-- [ ] Add Task Management
-  - [x] dummy task list with bloc
-  - [ ]      
-- [ ] Add CI/CD
+* This project is an open-source template built with Flutter and BLOC architecture. 
+* It comes with a range of features and allows you to quickly get started by adding your own screens, models, and BLOCs.
 
-# Advanced Flutter BLoC Project
+---
 
-BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
-Android and Web
+* BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
+* Android/IOS and Web 
 
-## Features
+---
+
+## Out-of-the-box Features
 
 - Public and Private Routes
 - Home Page
@@ -38,17 +27,21 @@ Android and Web
     - Update Profile
     - Change Password
 - Roles and Permissions
-- Task Management
-    - Create a new task
-    - Update a task
-    - Delete a task
-    - List all tasks
-    - Assign a task to a user
-    - Mark a task as completed
+- Dark and Light Themes
+- Mock data or API data
 - API client
 - Internationalization
 - Access Control with Flutter and Firebase
 - CI/CD with Github Actions
+
+---
+
+## Installation
+```bash
+git clone https://github.com/cevheri/flutter-bloc-advanced.git
+```
+
+---
 
 ## Requirements
 
@@ -62,10 +55,18 @@ dart run build_runner build --delete-conflicting-outputs
 dart analyze --fix
 ```
 
+---
+
+## Install Dependencies
+
+```bash
+flutter pub get
+```
+
+---
+
 ## Getting Started
 
-- Clone this repository
-- Run `flutter pub get`
 - Run `flutter run --target lib/main/main-dev.dart` for dev environment
 - Run `flutter run --target lib/main/main-prod.dart` for prod environment
 
@@ -74,15 +75,18 @@ flutter run dev environment
 - Run `flutter run -d chrome --target lib/main/main-dev.dart` for web dev environment
 - Run `flutter run -d chrome --target lib/main/main-prod.dart` for web prod environment
 
+---
+
 ## How to Build
 
 - Run `flutter build apk --target lib/main/main-prod.dart` for android
 - Run `flutter build ios --target lib/main/main-prod.dart` for ios
 - Run `flutter build web --target lib/main/main-prod.dart` for web
 
+---
+
 ## How to Run
 
-- Clone this repository
 - Run `flutter pub get`
 - Run `flutter run --target lib/main/main-dev.dart` for dev environment
 - Run `flutter run -d chrome --target lib/main/main-dev.dart` for web
