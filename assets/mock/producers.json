@@ -1,0 +1,30 @@
+[
+  {
+    "createdBy": "2024-01-19T13:03:22.430Z",
+    "createdDate": "2024-01-19T13:03:22.430Z",
+    "lastModifiedBy": "test user1",
+    "lastModifiedDate": "2024-01-19T13:02:47.953Z",
+    "id": 1,
+    "name": "Üretici 1 ",
+    "description": "Üretici 1 ",
+    "active": true,
+    "price": 33.3905,
+    "priceWithVat": 36.4686,
+    "city": null,
+    "district": null
+  },
+  {
+    "createdBy": "2024-01-19T13:03:22.430Z",
+    "createdDate": "2024-01-19T13:03:22.430Z",
+    "lastModifiedBy": "test user2",
+    "lastModifiedDate": "2024-01-19T13:03:22.430Z",
+    "id": 2,
+    "name": "Üretici 2 ",
+    "description": "Üretici 2 ",
+    "active": true,
+    "price": 30.51184,
+    "priceWithVat": 36.614208,
+    "city": null,
+    "district": null
+  }
+]

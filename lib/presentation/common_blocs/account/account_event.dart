@@ -14,19 +14,3 @@ class AccountLoad extends AccountEvent {
   List<Object> get props => [];
 }
 
-class AccountUpdate extends AccountEvent {
-  final User account;
-
-  const AccountUpdate(this.account);
-
-  @override
-  List<Object> get props => [account];
-}
-
-class AccountDelete extends AccountEvent {
-  const AccountDelete();
-
-  @override
-  List<Object> get props => [];
-}
-

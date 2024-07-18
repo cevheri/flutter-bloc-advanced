@@ -35,7 +35,7 @@ class SettingsState extends Equatable {
   }
 
   @override
-  List<Object> get props => [firstName, lastName, email, language, status];
+  List<Object> get props => [];
 
   @override
   bool get stringify => true;

@@ -2,23 +2,22 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../data/http_utils.dart';
 import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
+import '../../../../utils/app_constants.dart';
+import '../../../common_blocs/account/account_bloc.dart';
 
 part 'login_event.dart';
-
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   LoginBloc({required LoginRepository loginRepository})
       : _loginRepository = loginRepository,
         super(const LoginState()) {
-    // on<LoginChanged>(_onLoginChange);
-    // on<PasswordChanged>(_onPasswordChange);
     on<LoginFormSubmitted>(_onSubmit);
     on<TogglePasswordVisibility>((event, emit) {
       emit(state.copyWith(passwordVisible: !state.passwordVisible));
@@ -39,21 +38,29 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       password: event.password,
       status: LoginStatus.authenticating,
     ));
+    print("gonderilen username: ${event.username}");
+    print("gonderilen password: ${event.password}");
     UserJWT userJWT = UserJWT(state.username, state.password);
+
     try {
       var token = await _loginRepository.authenticate(userJWT);
+
       if (token.idToken != null) {
-        log("LoginBloc.onSubmit token: ${token.idToken}");
-        FlutterSecureStorage storage = FlutterSecureStorage();
-        await storage.delete(key: HttpUtils.keyForJWTToken);
-        await storage.write(key: HttpUtils.keyForJWTToken, value: token.idToken);
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('jwtToken', token.idToken ?? "");
+        AppConstants.jwtToken = token.idToken ?? "";
         emit(state.copyWith(status: LoginStatus.authenticated));
+
+        emit(LoginLoadedState());
         log("LoginBloc.onSubmit end: ${state.status}");
       } else {
         emit(state.copyWith(status: LoginStatus.failure));
+        emit(const LoginErrorState(message: "Login Error"));
       }
     } catch (e) {
       emit(state.copyWith(status: LoginStatus.failure));
+      emit(const LoginErrorState(message: "Login Error"));
+      debugPrint(e.toString(), wrapWidth: 1024);
       log("LoginBloc.onSubmit ERROR: ${e.toString()}");
     }
   }

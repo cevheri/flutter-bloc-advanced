@@ -38,7 +38,7 @@ class ChangePasswordScreen extends StatelessWidget {
             _currentPasswordField(context),
             _newPasswordField(context),
             SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: MediaQuery.of(context).size.width * 0.6,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
@@ -53,7 +53,7 @@ class ChangePasswordScreen extends StatelessWidget {
 
   _logo(BuildContext context) {
     return Image.asset(
-      'assets/images/app_logo.png',
+      'assets/images/img.png',
       width: 200,
       height: 200,
     );
@@ -61,7 +61,7 @@ class ChangePasswordScreen extends StatelessWidget {
 
   _currentPasswordField(BuildContext context) {
     final fieldWidth = MediaQuery.of(context).size.width * 0.6;
-    return Container(
+    return SizedBox(
       width: fieldWidth,
       child: Row(
         children: [
@@ -88,7 +88,7 @@ class ChangePasswordScreen extends StatelessWidget {
 
   _newPasswordField(BuildContext context) {
     final fieldWidth = MediaQuery.of(context).size.width * 0.6;
-    return Container(
+    return SizedBox(
       width: fieldWidth,
       child: Row(
         children: [
@@ -116,38 +116,34 @@ class ChangePasswordScreen extends StatelessWidget {
   _submitButton(BuildContext context) {
     return BlocBuilder<ChangePasswordBloc, ChangePasswordState>(
       builder: (context, state) {
-        return Container(
+        return SizedBox(
           child: ElevatedButton(
             child: Text("Şifre Değiştir"),
             onPressed: () {
               if (_changePasswordFormKey.currentState!.saveAndValidate() &&
-                  _changePasswordFormKey.currentState!.value['currentPassword'] != _changePasswordFormKey.currentState!.value['newPassword'] &&
+                  _changePasswordFormKey.currentState!.value['currentPassword'] !=
+                      _changePasswordFormKey.currentState!.value['newPassword'] &&
                   _changePasswordFormKey.currentState!.value['newPassword'] != null &&
                   _changePasswordFormKey.currentState!.value['currentPassword'] != null) {
-                print("_changePasswordFormKey.currentState!.value");
-                print("_changePasswordFormKey.currentState!.value");
-                print("_changePasswordFormKey.currentState!.value");
                 context.read<ChangePasswordBloc>().add(ChangePasswordChanged(
                       currentPassword: _changePasswordFormKey.currentState!.value['currentPassword'],
                       newPassword: _changePasswordFormKey.currentState!.value['newPassword'],
                     ));
-              } else {
-                print("Lütfen şifreleri kontrol ediniz.");
-              }
+              } else {}
             },
           ),
         );
       },
       buildWhen: (previous, current) {
         if (current is ChangePasswordInitialState) {
-          Message.info(context: context, message: "Şifre değiştiriliyor...");
+          Message.getMessage(context: context, title: "Şifre değiştiriliyor...", content: "");
         }
         if (current is ChangePasswordPasswordCompletedState) {
-          Message.info(context: context, message: "Şifre değiştirildi");
+          Message.getMessage(context: context, title: "Şifre değiştirildi", content: "");
           Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
         }
         if (current is ChangePasswordPasswordErrorState) {
-          Message.error(message: 'Şifre değiştirilemedi', context: context);
+          Message.errorMessage(title: 'Şifre değiştirilemedi', context: context,content: "");
         }
         return true;
       },
