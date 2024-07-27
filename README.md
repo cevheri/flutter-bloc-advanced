@@ -144,3 +144,4 @@ To add new screens, models, and BLOCs, follow these steps:
 - https://flutter.dev/
 - https://bloclibrary.dev/
 - https://pub.dev/packages/flutter_bloc
+- https://pub.dev/packages/get
