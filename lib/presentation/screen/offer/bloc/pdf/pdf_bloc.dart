@@ -1,19 +1,17 @@
 import 'dart:async';
-import 'dart:typed_data';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 
 import '../../../../../data/models/customer.dart';
 import '../../../../../data/models/offer.dart';
 import '../../../../../utils/app_constants.dart';
-import 'package:pdf/widgets.dart' as pw;
 
 part 'pdf_event.dart';
-
 part 'pdf_state.dart';
 
 class PdfBloc extends Bloc<PdfEvent, PdfState> {

@@ -1,11 +1,11 @@
 
+import 'dart:core';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../data/models/customer.dart';
 import '../../../../data/models/offer.dart';
-import 'dart:core';
-
 import '../bloc/pdf/pdf_bloc.dart';
 
 BlocBuilder<PdfBloc, PdfState> pdfOpenButton(

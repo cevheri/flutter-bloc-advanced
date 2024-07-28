@@ -1,8 +1,6 @@
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/app_constants.dart';
-import '../http_utils.dart';
 import '../models/jwt_token.dart';
 import '../models/user_jwt.dart';
 

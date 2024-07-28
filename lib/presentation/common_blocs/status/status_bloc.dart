@@ -5,11 +5,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/models/status.dart';
-import '../../../data/models/status_next.dart';
 import '../../../data/repository/status_repository.dart';
 
 part 'status_event.dart';
-
 part 'status_state.dart';
 
 /// Bloc responsible for managing the status.

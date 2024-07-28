@@ -1,5 +1,5 @@
-import '../../../data/models/maturity.dart';
 import '../../../data/models/corporation_maturity.dart';
+import '../../../data/models/maturity.dart';
 
 class ConstCorporationMaturity {
   static List<Maturity> maturityAllList = [];

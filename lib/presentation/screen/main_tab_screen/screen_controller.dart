@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get/get.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
@@ -13,7 +14,6 @@ import 'bottom_navigator_bar.dart';
 import 'faq_screen.dart';
 import 'home_screen.dart';
 import 'web_view_screen.dart';
-import 'package:get/get.dart';
 
 class ScreenControllerPage extends StatelessWidget {
   ScreenControllerPage({super.key});

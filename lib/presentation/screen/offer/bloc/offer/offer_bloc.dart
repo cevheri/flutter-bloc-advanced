@@ -1,10 +1,10 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/OfferingConstants.dart';
 import 'package:flutter_bloc_advance/data/repository/offer_repository.dart';
 import 'package:flutter_bloc_advance/utils/OfferingStatusType.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../data/models/customer.dart';
 import '../../../../../data/models/offer.dart';
@@ -13,7 +13,6 @@ import '../../../../../data/models/status_change.dart';
 import '../../../../../data/models/user.dart';
 
 part 'offer_event.dart';
-
 part 'offer_state.dart';
 
 /// Bloc responsible for managing the Offers.

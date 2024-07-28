@@ -9,7 +9,6 @@ import '../../../../data/repository/login_repository.dart';
 import '../../../../data/repository/menu_repository.dart';
 
 part 'drawer_event.dart';
-
 part 'drawer_state.dart';
 
 class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {

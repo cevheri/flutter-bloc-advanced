@@ -7,7 +7,6 @@ import '../../../../data/models/station.dart';
 import '../../../../data/repository/station_repository.dart';
 
 part 'station_event.dart';
-
 part 'station_state.dart';
 
 /// Bloc responsible for managing the Stations.

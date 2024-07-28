@@ -1,8 +1,8 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc_advance/data/models/city.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/data/models/city.dart';
 
 import '../../../data/models/district.dart';
 import '../../../data/repository/district_repository.dart';

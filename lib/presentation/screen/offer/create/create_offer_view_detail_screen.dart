@@ -1,8 +1,8 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter_bloc_advance/data/models/customer.dart';
-import 'package:flutter_bloc_advance/data/models/offer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/data/models/customer.dart';
+import 'package:flutter_bloc_advance/data/models/offer.dart';
 
 import '../../../../../configuration/app_keys.dart';
 import '../../../../../generated/l10n.dart';

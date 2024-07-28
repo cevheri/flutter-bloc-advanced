@@ -2,8 +2,18 @@
 
 * This project is an open-source template built with Flutter and BLOC architecture. 
 * It comes with a range of features and allows you to quickly get started by adding your own screens, models, and BLOCs.
+* The template is designed to help you build scalable and maintainable applications with ease.
+* It includes public and private routes, user management, roles and permissions, dark and light themes, mock data or API data, API client, internationalization, access control with Flutter and Firebase, and CI/CD with Github Actions.
+* The template is suitable for building applications for Android, iOS, and the web.
+* It is easy to customize and extend the template to meet your specific requirements.
+* The template is well-documented and easy to use.
+* It is a great starting point for building your next Flutter project.
+* The template has separate environments for development and production.
+* It can work API and Mock data.
 
 ---
+![img.png](img.png)
+
 
 * BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
 * Android/IOS and Web 

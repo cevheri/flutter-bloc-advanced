@@ -1,6 +1,6 @@
-import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:intl/intl.dart';
 
@@ -10,9 +10,8 @@ import '../../../../data/models/status.dart';
 import '../../../../generated/l10n.dart';
 import '../../../common_blocs/status/status_bloc.dart';
 import '../list/list_widget.dart';
-import '../offer_widget/offer_form_comment_widget.dart';
-import '../offer_widget/offer_pdf_view_button_widget.dart';
 import '../offer_screen_const.dart';
+import '../offer_widget/offer_form_comment_widget.dart';
 
 Future<dynamic> offerEditFormScreen(
   BuildContext context,

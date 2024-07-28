@@ -4,7 +4,6 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../../../configuration/app_keys.dart';
 import '../../../../../generated/l10n.dart';
-
 import '../../../../utils/app_constants.dart';
 import '../../customer/bloc/customer_bloc.dart';
 import 'create_offer_screen.dart';

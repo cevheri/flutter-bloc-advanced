@@ -3,7 +3,6 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 
 import '../http_utils.dart';
 import '../models/status.dart';
-import '../models/status_next.dart';
 
 class StatusRepository {
   StatusRepository();
