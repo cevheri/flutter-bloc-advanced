@@ -150,3 +150,8 @@ To add new screens, models, and BLOCs, follow these steps:
 - Push to the branch
 - Create a new Pull Request
 
+## References
+- https://flutter.dev/
+- https://bloclibrary.dev/
+- https://pub.dev/packages/flutter_bloc
+- https://pub.dev/packages/get
