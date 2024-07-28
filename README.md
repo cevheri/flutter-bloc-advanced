@@ -12,8 +12,10 @@
 * It can work API and Mock data.
 
 ---
-![img.png](img.png)
 
+![img.png](assets/README_header.png)
+
+---
 
 * BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
 * Android/IOS and Web 
