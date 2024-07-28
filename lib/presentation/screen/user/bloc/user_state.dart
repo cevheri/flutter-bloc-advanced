@@ -27,12 +27,14 @@ class UserFindInitialState extends UserState {}
 class UserLoadInProgressState extends UserState {}
 
 class UserLoadSuccessState extends UserState {
+  @override
   final User user;
 
   const UserLoadSuccessState({required this.user});
 }
 
 class UserEditSuccessState extends UserState {
+  @override
   final User user;
 
   const UserEditSuccessState({required this.user});
