@@ -9,7 +9,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
 import '../../../../utils/app_constants.dart';
-import '../../../common_blocs/account/account_bloc.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';

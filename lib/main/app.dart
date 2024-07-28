@@ -1,8 +1,8 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authorities/authorities.dart';
-import 'package:flutter_bloc_advance/presentation/screen/account/logout_widget.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/authorities/authorities.dart';
+import 'package:flutter_bloc_advance/presentation/screen/account/logout_widget.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
@@ -29,7 +29,6 @@ import '../generated/l10n.dart';
 import '../presentation/common_blocs/account/account.dart';
 import '../presentation/common_blocs/city/city_bloc.dart';
 import '../presentation/common_blocs/district/district_bloc.dart';
-
 import '../presentation/common_blocs/sales_people/sales_people_bloc.dart';
 import '../presentation/common_blocs/status/status_bloc.dart';
 import '../presentation/common_widgets/drawer/bloc/drawer_bloc.dart';

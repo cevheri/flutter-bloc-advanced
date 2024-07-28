@@ -3,13 +3,12 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../data/models/maturity.dart';
 import '../../../../data/models/corporation_maturity.dart';
+import '../../../../data/models/maturity.dart';
 import '../../../../data/repository/corporation_maturity_repository.dart';
 import '../const.dart';
 
 part 'corporation_maturity_event.dart';
-
 part 'corporation_maturity_state.dart';
 
 /// Bloc responsible for managing the CorporationMaturity's.

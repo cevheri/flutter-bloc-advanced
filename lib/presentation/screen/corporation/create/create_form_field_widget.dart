@@ -24,7 +24,7 @@ class CorporationCreateFormName extends StatelessWidget {
         [
           FormBuilderValidators.minLength(errorText: S.of(context).name_min_length, 1),
           FormBuilderValidators.maxLength(errorText: S.of(context).name_max_length, 50),
-          FormBuilderValidators.match("^[a-zA-Z0-9]+\$", errorText: S.of(context).name_regex_pattern),
+          FormBuilderValidators.match("^[a-zA-Z0-9]+\$" as RegExp, errorText: S.of(context).name_regex_pattern),
         ],
       ),
     );

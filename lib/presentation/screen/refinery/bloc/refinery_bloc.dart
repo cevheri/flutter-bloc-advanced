@@ -7,7 +7,6 @@ import '../../../../data/models/refinery.dart';
 import '../../../../data/repository/refinery_repository.dart';
 
 part 'refinery_event.dart';
-
 part 'refinery_state.dart';
 
 class RefineryBloc extends Bloc<RefineryEvent, RefineryState> {

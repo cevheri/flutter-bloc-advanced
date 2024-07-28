@@ -10,7 +10,6 @@ import '../../offer/offer_screen_const.dart';
 import '../station_maturity_const.dart';
 
 part 'station_maturity_event.dart';
-
 part 'station_maturity_state.dart';
 
 /// Bloc responsible for managing the StationMaturity's.

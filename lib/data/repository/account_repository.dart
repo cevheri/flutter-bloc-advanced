@@ -1,7 +1,6 @@
 import 'dart:developer';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/app_constants.dart';

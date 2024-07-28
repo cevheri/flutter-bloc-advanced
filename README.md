@@ -1,27 +1,28 @@
-# IN PROGRESS
+# Advanced Flutter BLOC Template
 
-- [x] Add BLoC Pattern
-- [x] Add Folder Structure
-- [x] Add Environments
-- [x] Add Configuration
-- [x] Add Themes
-- [x] Add Internationalization
-- [ ] Add Firebase
-- [x] Add Home Page
-- [x] Add Login Page
-- [ ] Add User Management
-- [ ] Add Roles and Permissions
-- [ ] Add Task Management
-  - [x] dummy task list with bloc
-  - [ ]      
-- [ ] Add CI/CD
+* This project is an open-source template built with Flutter and BLOC architecture. 
+* It comes with a range of features and allows you to quickly get started by adding your own screens, models, and BLOCs.
+* The template is designed to help you build scalable and maintainable applications with ease.
+* It includes public and private routes, user management, roles and permissions, dark and light themes, mock data or API data, API client, internationalization, access control with Flutter and Firebase, and CI/CD with Github Actions.
+* The template is suitable for building applications for Android, iOS, and the web.
+* It is easy to customize and extend the template to meet your specific requirements.
+* The template is well-documented and easy to use.
+* It is a great starting point for building your next Flutter project.
+* The template has separate environments for development and production.
+* It can work API and Mock data.
 
-# Advanced Flutter BLoC Project
+---
 
-BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
-Android and Web
+![img.png](assets/README_header.png)
 
-## Features
+---
+
+* BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
+* Android/IOS and Web 
+
+---
+
+## Out-of-the-box Features
 
 - Public and Private Routes
 - Home Page
@@ -38,17 +39,21 @@ Android and Web
     - Update Profile
     - Change Password
 - Roles and Permissions
-- Task Management
-    - Create a new task
-    - Update a task
-    - Delete a task
-    - List all tasks
-    - Assign a task to a user
-    - Mark a task as completed
+- Dark and Light Themes
+- Mock data or API data
 - API client
 - Internationalization
 - Access Control with Flutter and Firebase
 - CI/CD with Github Actions
+
+---
+
+## Installation
+```bash
+git clone https://github.com/cevheri/flutter-bloc-advanced.git
+```
+
+---
 
 ## Requirements
 
@@ -62,10 +67,18 @@ dart run build_runner build --delete-conflicting-outputs
 dart analyze --fix
 ```
 
+---
+
+## Install Dependencies
+
+```bash
+flutter pub get
+```
+
+---
+
 ## Getting Started
 
-- Clone this repository
-- Run `flutter pub get`
 - Run `flutter run --target lib/main/main-dev.dart` for dev environment
 - Run `flutter run --target lib/main/main-prod.dart` for prod environment
 
@@ -74,15 +87,18 @@ flutter run dev environment
 - Run `flutter run -d chrome --target lib/main/main-dev.dart` for web dev environment
 - Run `flutter run -d chrome --target lib/main/main-prod.dart` for web prod environment
 
+---
+
 ## How to Build
 
 - Run `flutter build apk --target lib/main/main-prod.dart` for android
 - Run `flutter build ios --target lib/main/main-prod.dart` for ios
 - Run `flutter build web --target lib/main/main-prod.dart` for web
 
+---
+
 ## How to Run
 
-- Clone this repository
 - Run `flutter pub get`
 - Run `flutter run --target lib/main/main-dev.dart` for dev environment
 - Run `flutter run -d chrome --target lib/main/main-dev.dart` for web
@@ -93,6 +109,20 @@ flutter run dev environment
 ## How to Test
 
 - Run `flutter test`
+
+## Usage
+
+To add new screens, models, and BLOCs, follow these steps:
+
+1. Add New Screens
+   Add your new screens to the lib/screens directory.
+2. Add New Models
+   Add your new model classes to the lib/models directory.
+3. Add New BLOCs
+   Add your new BLOC classes to the lib/bloc directory and perform necessary operations.
+4. API Integration 
+   Integrate with APIs using the services provided in the lib/api directory.
+
 
 ## CI/CD with Github Actions
 
@@ -112,6 +142,7 @@ flutter run dev environment
 - [Flutter Firebase Deploy with Github Actions]()
 - [Flutter Firebase Deploy with Github Actions and Firebase Hosting]()
 
+
 ## How to Contribute
 
 - Fork the repository
@@ -121,3 +152,8 @@ flutter run dev environment
 - Push to the branch
 - Create a new Pull Request
 
+## References
+- https://flutter.dev/
+- https://bloclibrary.dev/
+- https://pub.dev/packages/flutter_bloc
+- https://pub.dev/packages/get

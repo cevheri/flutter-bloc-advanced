@@ -1,13 +1,13 @@
-import 'package:flutter_bloc_advance/data/models/customer.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/models/city.dart';
+import 'package:flutter_bloc_advance/data/models/customer.dart';
 import 'package:flutter_bloc_advance/data/models/status.dart';
 import 'package:flutter_bloc_advance/presentation/screen/corporation_maturity/bloc/corporation_maturity.dart';
 import 'package:flutter_bloc_advance/presentation/screen/station_maturity/bloc/station_maturity.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_bloc_advance/utils/message.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:intl/intl.dart';
@@ -22,8 +22,8 @@ import '../../corporation/bloc/corporation_bloc.dart';
 import '../../refinery/bloc/refinery_bloc.dart';
 import '../../station/bloc/station_bloc.dart';
 import '../bloc/offer/offer_bloc.dart';
-import 'create_offer_view_detail_screen.dart';
 import '../offer_screen_const.dart';
+import 'create_offer_view_detail_screen.dart';
 
 Widget customerDetailTable(BuildContext context, Customer customer) {
   final headerStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);

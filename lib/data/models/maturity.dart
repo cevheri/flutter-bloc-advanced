@@ -1,8 +1,5 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc_advance/data/models/district.dart';
-
-import 'city.dart';
 
 @jsonSerializable
 class Maturity extends Equatable {

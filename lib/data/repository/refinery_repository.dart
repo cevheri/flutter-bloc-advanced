@@ -1,7 +1,4 @@
-import 'dart:developer';
-
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter/services.dart';
 
 import '../http_utils.dart';
 import '../models/refinery.dart';
