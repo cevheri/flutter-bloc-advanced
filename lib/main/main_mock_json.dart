@@ -25,8 +25,6 @@ void main() async {
   }
   AppConstants.jwtToken = prefs.getString('jwtToken') ?? "";
   AppConstants.role = prefs.getString('role') ?? "";
-  print("jwtToken: ${AppConstants.jwtToken}");
-  print("role: ${AppConstants.role}");
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_){

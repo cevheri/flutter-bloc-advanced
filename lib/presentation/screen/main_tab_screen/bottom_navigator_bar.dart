@@ -68,8 +68,8 @@ class _BuildFloatingBarStateState extends State<BuildFloatingBarState> {
             CustomNavigationBarItem(
               title: Text(S.of(context).faq, style: TextStyle(fontSize: 7, color: Colors.black54)),
               selectedTitle: Text(S.of(context).faq, style: TextStyle(fontSize: 9, color: Colors.red)),
-              icon: Image.asset("assets/images/icon_faq.png", color: Colors.black54),
-              selectedIcon: Image.asset("assets/images/icon_faq.png", color: Colors.red),
+              icon: Image.asset("assets/images/img.png", color: Colors.black54),
+              selectedIcon: Image.asset("assets/images/img.png", color: Colors.red),
             ),
           ],
           onTap: (index) {

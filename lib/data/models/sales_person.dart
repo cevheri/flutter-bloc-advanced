@@ -41,11 +41,11 @@ class SalesPerson extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        code,
-        active,
-      ];
+    id,
+    name,
+    code,
+    active,
+  ];
 
   @override
   bool get stringify => true;

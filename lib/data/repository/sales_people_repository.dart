@@ -11,5 +11,3 @@ class SalesPersonRepository {
     return JsonMapper.deserialize<List<SalesPerson>>(result)!;
   }
 }
-
-

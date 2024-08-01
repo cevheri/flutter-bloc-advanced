@@ -137,8 +137,6 @@ class CreateFormLoginName extends StatelessWidget {
             errorText: S.of(context).username_min_length, 3),
         FormBuilderValidators.maxLength(
             errorText: S.of(context).username_max_length, 20),
-        FormBuilderValidators.match("^[a-zA-Z0-9]+\$" as RegExp,
-            errorText: S.of(context).username_regex_pattern),
       ]),
     );
   }
