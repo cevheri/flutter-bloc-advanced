@@ -21,9 +21,7 @@ class AuthoritiesState extends Equatable {
     AuthoritiesStatus? status,
   }) {
     return AuthoritiesState(
-      status: status ?? this.status,
-      role: authorities ?? this.role
-    );
+        status: status ?? this.status, role: authorities ?? this.role);
   }
 
   @override
@@ -34,7 +32,9 @@ class AuthoritiesState extends Equatable {
 }
 
 class AuthoritiesInitialState extends AuthoritiesState {}
+
 class AuthoritiesLoadInProgressState extends AuthoritiesState {}
+
 class AuthoritiesLoadSuccessState extends AuthoritiesState {
   final List role;
 
@@ -43,9 +43,9 @@ class AuthoritiesLoadSuccessState extends AuthoritiesState {
   @override
   List<Object> get props => [role];
 }
+
 class AuthoritiesLoadFailureState extends AuthoritiesState {
   final String message;
 
   const AuthoritiesLoadFailureState({required this.message});
 }
-

@@ -1,5 +1,6 @@
-class LocaleConstants{
-
-  static final Map<String, String> languages =  {'en': 'English'}; //, 'fr': 'Francais', 'tr': 'Türkçe'};
+class LocaleConstants {
+  static final Map<String, String> languages = {
+    'en': 'English'
+  };
   static final String langStorageKey = 'locale';
 }

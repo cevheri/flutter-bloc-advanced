@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../configuration/environment.dart';
@@ -22,14 +23,15 @@ void main() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? language = prefs.getString('lang');
   if (language == null) {
-    prefs.setString('lang', 'en');
-    language = 'en';
+    prefs.setString('lang', 'tr');
+    language = 'tr';
   }
   AppConstants.jwtToken = prefs.getString('jwtToken') ?? "";
   AppConstants.role = prefs.getString('role') ?? "";
 
   WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft]).then((_){
-    runApp(App(language: language??'tr'));
+  SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft])
+      .then((_) {
+    runApp(App(language: language ?? 'tr'));
   });
 }

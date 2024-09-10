@@ -3,20 +3,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
-import '../../../configuration/app_keys.dart';
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 import '../../../utils/message.dart';
 import 'bloc/login.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen() : super(key: ApplicationKeys.loginScreen);
+  LoginScreen() : super();
 
   final _loginFormKey = GlobalKey<FormBuilderState>();
 
-  // Future<bool> _onWillPop() async {
-  //   return false;
-  // }
+  Future<bool> _onWillPop() async {
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,14 +27,13 @@ class LoginScreen extends StatelessWidget {
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text("Sekoya Demo CRM"),
+      title: Text("Flutter Bloc Advanced"),
     );
   }
 
   _buildBody(BuildContext context) {
     return FormBuilder(
       key: _loginFormKey,
-      // onWillPop: _onWillPop,
       child: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -67,14 +65,15 @@ class LoginScreen extends StatelessWidget {
 
   _logo(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
+      //beyaz  renk buraya konulacak
       return Image.asset(
-        'assets/images/img.png', //TODO change dark mode image
+        'assets/images/logoLight.png',
         width: 200,
         height: 200,
       );
     } else {
       return Image.asset(
-        'assets/images/img.png', // TODO change light mode image
+        'assets/images/img.png',
         width: 200,
         height: 200,
       );
@@ -91,9 +90,12 @@ class LoginScreen extends StatelessWidget {
           maxLines: 1,
           validator: FormBuilderValidators.compose(
             [
-              FormBuilderValidators.required(errorText: S.of(context).username_required),
-              FormBuilderValidators.minLength(5, errorText: S.of(context).username_min_length),
-              FormBuilderValidators.maxLength(20, errorText: S.of(context).username_max_length),
+              FormBuilderValidators.required(
+                  errorText: S.of(context).username_required),
+              FormBuilderValidators.minLength(5,
+                  errorText: S.of(context).username_min_length),
+              FormBuilderValidators.maxLength(20,
+                  errorText: S.of(context).username_max_length),
               (val) {
                 return null;
               },
@@ -114,7 +116,8 @@ class LoginScreen extends StatelessWidget {
             Expanded(
               child: FormBuilderTextField(
                 name: 'password',
-                decoration: InputDecoration(labelText: S.of(context).login_password),
+                decoration:
+                    InputDecoration(labelText: S.of(context).login_password),
                 // when press the enter key, call submit button function
                 textInputAction: TextInputAction.done,
                 onSubmitted: (value) {
@@ -127,9 +130,12 @@ class LoginScreen extends StatelessWidget {
                 maxLines: 1,
                 validator: FormBuilderValidators.compose(
                   [
-                    FormBuilderValidators.required(errorText: S.of(context).password_required),
-                    FormBuilderValidators.minLength(6, errorText: S.of(context).password_min_length),
-                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
+                    FormBuilderValidators.required(
+                        errorText: S.of(context).password_required),
+                    FormBuilderValidators.minLength(6,
+                        errorText: S.of(context).password_min_length),
+                    FormBuilderValidators.maxLength(20,
+                        errorText: S.of(context).password_max_length),
                     (val) {
                       return null;
                     },
@@ -138,7 +144,9 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
+              icon: Icon(state.passwordVisible
+                  ? Icons.visibility
+                  : Icons.visibility_off),
               onPressed: () {
                 context.read<LoginBloc>().add(TogglePasswordVisibility());
               },
@@ -164,17 +172,17 @@ class LoginScreen extends StatelessWidget {
         );
       },
       buildWhen: (previous, current) {
-        print("****************************");
-        print(current);
-        print("****************************");
         if (current is LoginLoadingState) {
-          Message.getMessage(context: context, title: S.of(context).logging_in, content: "");
+          Message.getMessage(
+              context: context, title: S.of(context).logging_in, content: "");
         }
         if (current is LoginLoadedState) {
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(
+              context, ApplicationRoutes.home, (route) => false);
         }
         if (current is LoginErrorState) {
-          Message.errorMessage(context: context, title: S.of(context).login_error, content: "");
+          Message.errorMessage(
+              context: context, title: S.of(context).login_error, content: "");
         }
         return true;
       },
@@ -208,7 +216,9 @@ class LoginScreen extends StatelessWidget {
           child: Center(
             child: Text(
               S.of(context).login_error,
-              style: TextStyle(fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize, color: Theme.of(context).colorScheme.error),
+              style: TextStyle(
+                  fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize,
+                  color: Theme.of(context).colorScheme.error),
               textAlign: TextAlign.center,
             ),
           ),

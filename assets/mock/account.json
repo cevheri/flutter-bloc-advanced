@@ -1,10 +1,9 @@
 {
   "id": 1,
   "login": "admin",
-  "firstName": "Yusuf",
-  "lastName": "Gundogdu",
-  "email": "yusufgundogdu555@gmail.com",
-  "imageUrl": null,
+  "firstName": "first name",
+  "lastName": "last name",
+  "email": "email@email.com",
   "activated": true,
   "langKey": null,
   "createdBy": "system",
@@ -14,8 +13,5 @@
   "authorities": [
     "ROLE_ADMIN"
   ],
-  "cariKodu": null,
-  "phoneNumber": "5320000000",
-  "salesPersonCode": null,
-  "salesPersonName": null
+  "phoneNumber": "5323627760"
 }

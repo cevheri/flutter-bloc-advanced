@@ -5,7 +5,6 @@ import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
@@ -21,7 +20,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 class HttpUtils {
-  static String errorHeader = 'x-${AppConstants.APP_KEY}App-error';
+  static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.APP_KEY : "default_token"}App-error';
   static String successResult = 'success';
   static String keyForJWTToken = 'jwt-token';
   static String badRequestServerKey = 'error.400';
@@ -41,14 +40,11 @@ class HttpUtils {
   }
 
   static String encodeUTF8(String toEncode) {
-    try {
-      return utf8.decode(toEncode.runes.toList());
-    } catch (e) {
-      return toEncode;
-    }
+    return utf8.decode(toEncode.runes.toList());
   }
+
   static Future<Map<String, String>> headers() async {
-    String? jwt = AppConstants.jwtToken;
+    String? jwt = ProfileConstants.isProduction == true ? AppConstants.jwtToken : "default_token";
     Map<String, String> headerParameters = <String, String>{};
 
     //custom http headers entries
@@ -61,7 +57,7 @@ class HttpUtils {
       log("default headers");
     }
 
-    if (jwt.isNotEmpty) {
+    if (jwt != null) {
       headerParameters['Authorization'] = 'Bearer $jwt';
     } else {
       headerParameters.remove('Authorization');
@@ -100,11 +96,6 @@ class HttpUtils {
             encoding: Encoding.getByName('utf-8'),
           )
           .timeout(Duration(seconds: timeout));
-      debugPrint("###########################");
-      debugPrint("postRequest url: $url");
-      debugPrint("postRequest header: $headers");
-      debugPrint("postRequest body: $messageBody");
-      debugPrint("###########################");
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -113,49 +104,30 @@ class HttpUtils {
     return response;
   }
 
-  static Future<String> get(String endpoint, [String? parameters]) async {
-    debugPrint("Rest get request: $endpoint, parameters: $parameters");
-    if (ProfileConstants.isMockJson) {
-      return await loadJsonMockData(parameters, endpoint);
-    }
-
-    if (parameters != null) {
-      endpoint = endpoint + parameters;
-    }
-
+  static Future<String> getRequest(String endpoint) async {
     var headers = await HttpUtils.headers();
     try {
-      final uri = Uri.parse('${ProfileConstants.api}$endpoint');
-      var result = await http.get(uri, headers: headers).timeout(Duration(seconds: timeout));
-
-      debugPrint("###########################");
-      debugPrint("postRequest url: ${ProfileConstants.api}$endpoint");
-      debugPrint("postRequest header: ${result.headers}");
-      debugPrint("postRequest body: ${result.body}");
-      debugPrint("###########################");
+      debugPrint("");
+      debugPrint("GET Request Method *******************************");
+      debugPrint("${ProfileConstants.api}$endpoint");
+      debugPrint("GET Request Method *******************************");
+      debugPrint("");
+      var result = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
       if (result.statusCode == 401) {
         throw UnauthorisedException(result.body.toString());
       }
-      return encodeUTF8(result.body.toString());
+      var resultCache = encodeUTF8(result.body.toString());
+      debugPrint("");
+      debugPrint("GET Result Body *******************************");
+      debugPrint(resultCache);
+      debugPrint("GET Result Body *******************************");
+      debugPrint("");
+      return resultCache;
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
       throw FetchDataException('Request timeout');
-    } on Exception catch (e) {
-      throw FetchDataException(e.toString());
     }
-  }
-
-  static Future<String> loadJsonMockData(String? parameters, String endpoint) async {
-    if (parameters == null) {
-      throw new ApiBusinessException("Parameters cannot be null when using mock json");
-    }
-    final removedPath = endpoint.replaceFirst("/", "").split("?")[0];
-    final replacedPath = removedPath.replaceAll("/", "_");
-    final jsonPath = "mock/$replacedPath.json";
-    final result = await rootBundle.loadString(jsonPath);
-    final encodedResult = encodeUTF8(result);
-    return encodedResult;
   }
 
   static Future<int> getRequestHeader(String endpoint) async {
@@ -163,6 +135,7 @@ class HttpUtils {
     var headers = await HttpUtils.headers();
     try {
       var result = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
+      print(result.headers.toString());
       if (result.statusCode == 401) {
         throw UnauthorisedException(result.headers.toString());
       }
@@ -237,6 +210,9 @@ class HttpUtils {
   }
 
   dynamic returnResponse(http.Response response) {
+    if (ProfileConstants.isProduction == true) {
+      return 200;
+    }
     switch (response.statusCode) {
       case 200:
         return response;
@@ -246,11 +222,10 @@ class HttpUtils {
       case 403:
         throw UnauthorisedException(response.body.toString());
       case 417:
-        throw ApiBusinessException(response.body
-            .toString()); //TODO cevheri: handle http.417 exception and throw ApiBusinessException with translated error messages
+        throw ApiBusinessException(response.body.toString());
       case 500:
       default:
-        throw FetchDataException('Error occurred while Communication with Server with StatusCode : ${response.statusCode}');
+        throw FetchDataException('Error occured while Communication with Server with StatusCode : ${response.statusCode}');
     }
   }
 }

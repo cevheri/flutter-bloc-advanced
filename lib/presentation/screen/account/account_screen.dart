@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/configuration/app_keys.dart';
 
 import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account_bloc.dart';
 
 class AccountsScreen extends StatelessWidget {
-  const AccountsScreen() : super(key: ApplicationKeys.accountsScreen);
+  const AccountsScreen() : super();
 
   @override
   Widget build(BuildContext context) {
@@ -69,12 +68,6 @@ class AccountsScreen extends StatelessWidget {
           S.of(context).phone_number,
           state.account!.phoneNumber,
           Icons.phone,
-        ),
-        _buildAccountInfoItem(
-          context,
-          S.of(context).sales_person_code,
-          state.account!.salesPersonCode,
-          Icons.code,
         ),
         _buildAccountInfoItem(
           context,

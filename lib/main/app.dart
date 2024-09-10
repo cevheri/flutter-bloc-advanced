@@ -1,8 +1,6 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authorities/authorities.dart';
-import 'package:flutter_bloc_advance/presentation/screen/account/logout_widget.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
@@ -10,21 +8,27 @@ import '../configuration/environment.dart';
 import '../configuration/routes.dart';
 import '../data/repository/account_repository.dart';
 import '../data/repository/authorities_repository.dart';
+import '../data/repository/city_repository.dart';
+import '../data/repository/district_repository.dart';
 import '../data/repository/login_repository.dart';
 import '../data/repository/menu_repository.dart';
 import '../data/repository/user_repository.dart';
 import '../generated/l10n.dart';
 import '../presentation/common_blocs/account/account.dart';
-import '../presentation/common_blocs/sales_people/sales_people_bloc.dart';
+import '../presentation/common_blocs/authorities/authorities_bloc.dart';
+import '../presentation/common_blocs/city/city_bloc.dart';
+import '../presentation/common_blocs/district/district_bloc.dart';
+
 import '../presentation/common_widgets/drawer/bloc/drawer_bloc.dart';
 import '../presentation/screen/account/account_screen.dart';
+import '../presentation/screen/account/logout_widget.dart';
 import '../presentation/screen/change_password/bloc/change_password_bloc.dart';
 import '../presentation/screen/change_password/change_password_screen.dart';
 import '../presentation/screen/forgot_password/bloc/forgot_password_bloc.dart';
 import '../presentation/screen/forgot_password/forgot_password_screen.dart';
+import '../presentation/screen/home/home_screen.dart';
 import '../presentation/screen/login/bloc/login.dart';
 import '../presentation/screen/login/login_screen.dart';
-import '../presentation/screen/main_tab_screen/screen_controller.dart';
 import '../presentation/screen/settings/bloc/settings.dart';
 import '../presentation/screen/settings/settings_screen.dart';
 import '../presentation/screen/user/bloc/user_bloc.dart';
@@ -57,12 +61,14 @@ class App extends StatelessWidget {
         primarySwatch: Colors.blueGrey,
       ),
       debugShowFloatingThemeButton: false,
-      initial: AdaptiveThemeMode.system,
+      initial: AdaptiveThemeMode.light,
       builder: (light, dark) {
         return MultiBlocProvider(
           providers: [
             BlocProvider<AuthoritiesBloc>(create: (_) => AuthoritiesBloc(authoritiesRepository: AuthoritiesRepository())),
             BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
+            BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),
+            BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
             BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
           ],
           child: GetMaterialApp(
@@ -80,8 +86,9 @@ class App extends StatelessWidget {
             locale: Locale(language),
             routes: {
               ApplicationRoutes.home: (context) {
-                return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: ScreenControllerPage());
+                return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: HomeScreen());
               },
+
               ApplicationRoutes.account: (context) {
                 return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: AccountsScreen());
               },

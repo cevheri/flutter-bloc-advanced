@@ -21,9 +21,7 @@ class AccountState extends Equatable {
     AccountStatus? status,
   }) {
     return AccountState(
-      status: status ?? this.status,
-      account: account ?? this.account
-    );
+        status: status ?? this.status, account: account ?? this.account);
   }
 
   @override
@@ -31,7 +29,4 @@ class AccountState extends Equatable {
 
   @override
   bool get stringify => true;
-
 }
-
-
