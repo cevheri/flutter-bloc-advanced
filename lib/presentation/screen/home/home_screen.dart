@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -23,8 +24,7 @@ class HomeScreen extends StatelessWidget {
     return BlocListener<AccountBloc, AccountState>(
       listener: (context, state) {
         if (state.status == AccountStatus.failure) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, ApplicationRoutes.login, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
         } else {}
       },
       child: BlocBuilder<AccountBloc, AccountState>(
@@ -76,20 +76,25 @@ class HomeScreen extends StatelessWidget {
     } else {
       return Expanded(
         child: Padding(
-          padding: const EdgeInsets.all(200),
+          padding: const EdgeInsets.all(10),
           child: Container(
-            height: 250,
-            width: 250,
+            height: double.infinity,
+            width: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(
                 image: AssetImage(
                   "assets/images/img.png",
                 ),
-                scale: 0.1,
-                fit: BoxFit.contain,
-                opacity: 1,
+                colorFilter: ColorFilter.mode(
+                  AdaptiveTheme.of(context).mode.isDark ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.1),
+                  BlendMode.dstIn,
+                ),
               ),
             ),
+            child: Center(
+                child: Text(
+              S.of(context).main_screen,
+            )),
           ),
         ),
       );

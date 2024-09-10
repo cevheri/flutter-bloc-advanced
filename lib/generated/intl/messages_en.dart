@@ -88,6 +88,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "logout": MessageLookupByLibrary.simpleMessage("Logout"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Are you sure you want to logout?"),
+        "main_screen": MessageLookupByLibrary.simpleMessage("Main Screen"),
         "name": MessageLookupByLibrary.simpleMessage("Name"),
         "no": MessageLookupByLibrary.simpleMessage("No"),
         "ok": MessageLookupByLibrary.simpleMessage("Ok"),

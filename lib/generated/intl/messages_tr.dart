@@ -91,6 +91,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "logout": MessageLookupByLibrary.simpleMessage("Çıkış Yap"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Çıkış yapmak istediğinize emin misiniz?"),
+        "main_screen": MessageLookupByLibrary.simpleMessage("Ana Ekran"),
         "name": MessageLookupByLibrary.simpleMessage("İsim"),
         "no": MessageLookupByLibrary.simpleMessage("Hayır"),
         "ok": MessageLookupByLibrary.simpleMessage("Tamam"),

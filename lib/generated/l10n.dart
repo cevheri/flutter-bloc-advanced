@@ -50,6 +50,16 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
+  /// `Main Screen`
+  String get main_screen {
+    return Intl.message(
+      'Main Screen',
+      name: 'main_screen',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `List User`
   String get list_user {
     return Intl.message(
