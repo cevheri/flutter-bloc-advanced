@@ -1,4 +1,3 @@
-
 part of 'settings_bloc.dart';
 
 class SettingsEvent extends Equatable {
@@ -9,7 +8,6 @@ class SettingsEvent extends Equatable {
 }
 
 class SettingsLoadCurrentUser extends SettingsEvent {}
-
 
 class SettingsFirstNameChanged extends SettingsEvent {
   final String firstName;

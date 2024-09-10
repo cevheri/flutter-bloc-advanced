@@ -18,7 +18,6 @@ class District extends Equatable {
     this.code,
   });
 
-
   District copyWith({
     String? id,
     String? name,
@@ -33,10 +32,10 @@ class District extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    code,
-  ];
+        id,
+        name,
+        code,
+      ];
 
   @override
   bool get stringify => true;

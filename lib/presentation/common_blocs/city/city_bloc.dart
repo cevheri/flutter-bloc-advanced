@@ -7,6 +7,7 @@ import '../../../data/models/city.dart';
 import '../../../data/repository/city_repository.dart';
 
 part 'city_event.dart';
+
 part 'city_state.dart';
 
 /// Bloc responsible for managing the city.

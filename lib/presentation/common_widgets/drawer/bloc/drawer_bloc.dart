@@ -2,13 +2,14 @@ import 'dart:async';
 
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter_bloc_advance/utils/menu_list_cache.dart';
 
 import '../../../../data/models/menu.dart';
 import '../../../../data/repository/login_repository.dart';
 import '../../../../data/repository/menu_repository.dart';
+import '../../../../utils/menu_list_cache.dart';
 
 part 'drawer_event.dart';
+
 part 'drawer_state.dart';
 
 class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
@@ -50,7 +51,8 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     }
   }
 
-  FutureOr<void> _refreshMenus(RefreshMenus event, Emitter<DrawerState> emit) async {
+  FutureOr<void> _refreshMenus(
+      RefreshMenus event, Emitter<DrawerState> emit) async {
     try {
       final menus = await _menuRepository.getMenus();
       MenuListCache.menus = menus;

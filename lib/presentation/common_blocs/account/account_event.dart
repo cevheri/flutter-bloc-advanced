@@ -13,4 +13,3 @@ class AccountLoad extends AccountEvent {
   @override
   List<Object> get props => [];
 }
-

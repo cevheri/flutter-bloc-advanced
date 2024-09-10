@@ -13,4 +13,3 @@ class AuthoritiesLoad extends AuthoritiesEvent {
   @override
   List<Object> get props => [];
 }
-

@@ -2,17 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../../../configuration/app_keys.dart';
 import '../../../../../data/models/user.dart';
 import '../../../../../generated/l10n.dart';
 import '../../../../../utils/message.dart';
 import '../../../common_blocs/authorities/authorities_bloc.dart';
-import '../../../common_blocs/sales_people/sales_people_bloc.dart';
 import '../bloc/user_bloc.dart';
 import 'create_form_field_widget.dart';
 
 class CreateUserScreen extends StatelessWidget {
-  CreateUserScreen() : super(key: ApplicationKeys.getUserScreen);
+  CreateUserScreen() : super();
   final formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -31,7 +29,6 @@ class CreateUserScreen extends StatelessWidget {
         icon: Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.pop(context);
-          BlocProvider.of<SalesPersonBloc>(context).add(SalesPersonLoadDefault());
           formKey.currentState!.fields['salesPersonCode']?.didChange("");
         },
       ),
@@ -55,8 +52,6 @@ class CreateUserScreen extends StatelessWidget {
                 CreateFormEmail(),
                 CreateFormPhoneNumber(),
                 CreateFormPhoneActive(),
-                CreateFormAuthorities(formKey: formKey),
-                CreateFormSalesPerson(formKey: formKey),
                 SizedBox(height: 20),
                 _submitButton(context)
               ],
@@ -80,11 +75,13 @@ class CreateUserScreen extends StatelessWidget {
                   firstName: formKey.currentState!.fields['firstName']!.value,
                   lastName: formKey.currentState!.fields['lastName']!.value,
                   email: formKey.currentState!.fields['email']!.value,
-                  phoneNumber: formKey.currentState!.fields['phoneNumber']!.value,
-                  authorities: [formKey.currentState!.fields['authorities']!.value],
-                  activated: formKey.currentState!.fields['userCreateActive']!.value,
-                  salesPersonCode: formKey.currentState!.fields['salesPersonName']?.value.code.toString() ?? "",
-                  salesPersonName: formKey.currentState!.fields['salesPersonName']?.value.name ?? "",
+                  phoneNumber:
+                      formKey.currentState!.fields['phoneNumber']!.value,
+                  authorities: [
+                    formKey.currentState!.fields['authorities']!.value
+                  ],
+                  activated:
+                      formKey.currentState!.fields['userCreateActive']!.value,
                 );
                 context.read<UserBloc>().add(
                       UserCreate(
@@ -98,14 +95,22 @@ class CreateUserScreen extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is UserInitialState) {
-          Message.getMessage(context: context, title: "Kullanıcı oluşturuluyor...", content: "");
+          Message.getMessage(
+              context: context,
+              title: "Kullanıcı oluşturuluyor...",
+              content: "");
         }
         if (current is UserLoadSuccessState) {
-          Message.getMessage(context: context, title: "Kullanıcı oluşturuldu", content: "");
+          Message.getMessage(
+              context: context, title: "Kullanıcı oluşturuldu", content: "");
           Navigator.pop(context);
         }
         if (current is UserLoadFailureState) {
-          Message.errorMessage(title: 'Kullanıcı oluşturulamadı lütfen bilgileri kontrol ediniz.', context: context, content: "");
+          Message.errorMessage(
+              title:
+                  'Kullanıcı oluşturulamadı lütfen bilgileri kontrol ediniz.',
+              context: context,
+              content: "");
         }
 
         return true;

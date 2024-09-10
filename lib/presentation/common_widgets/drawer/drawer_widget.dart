@@ -1,9 +1,9 @@
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/configuration/routes.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
+import '../../../configuration/routes.dart';
 import '../../../data/models/menu.dart';
 import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account.dart';
@@ -21,8 +21,7 @@ class ApplicationDrawer extends StatelessWidget {
         BlocListener<DrawerBloc, DrawerState>(
           listener: (context, state) {
             if (state.isLogout) {
-              Navigator.popUntil(
-                  context, ModalRoute.withName(ApplicationRoutes.login));
+              Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
               Navigator.pushNamed(context, ApplicationRoutes.login);
             }
           },
@@ -30,8 +29,7 @@ class ApplicationDrawer extends StatelessWidget {
         BlocListener<AccountBloc, AccountState>(
           listener: (context, state) {
             if (state.status == AccountStatus.failure) {
-              Navigator.popUntil(
-                  context, ModalRoute.withName(ApplicationRoutes.login));
+              Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
               Navigator.pushNamed(context, ApplicationRoutes.login);
             }
           },
@@ -43,10 +41,8 @@ class ApplicationDrawer extends StatelessWidget {
           if (state.menus.isEmpty) {
             return Container();
           }
-          parentMenus =
-              state.menus.where((element) => element.level == 1).toList();
-          parentMenus
-              .sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
+          parentMenus = state.menus.where((element) => element.level == 1).toList();
+          parentMenus.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
           return Drawer(
             child: SingleChildScrollView(
@@ -55,12 +51,8 @@ class ApplicationDrawer extends StatelessWidget {
                 shrinkWrap: true,
                 physics: ClampingScrollPhysics(),
                 itemBuilder: (context, index) {
-                  List<Menu> sublistMenu = state.menus
-                      .where((element) =>
-                          element.parent?.id == parentMenus[index].id)
-                      .toList();
-                  sublistMenu.sort(
-                      (a, b) => a.orderPriority.compareTo(b.orderPriority));
+                  List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
+                  sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
                   return ExpansionTileCard(
                     trailing: sublistMenu.length != 0
                         ? Icon(
@@ -71,7 +63,6 @@ class ApplicationDrawer extends StatelessWidget {
                           ),
                     onExpansionChanged: (value) {
                       if (value) {
-
                         if (sublistMenu.length == 0) {
                           Navigator.pop(context);
                           Navigator.pushNamed(context, parentMenus[index].url);
@@ -82,13 +73,10 @@ class ApplicationDrawer extends StatelessWidget {
                     isThreeLine: false,
                     initiallyExpanded: false,
                     leading: Icon(
-                      String2Icon.getIconDataFromString(
-                          parentMenus[index].icon),
+                      String2Icon.getIconDataFromString(parentMenus[index].icon),
                     ),
                     title: Text(
-                      S
-                          .of(context)
-                          .translate_menu_title(parentMenus[index].name),
+                      S.of(context).translate_menu_title(parentMenus[index].name),
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     children: [
@@ -101,18 +89,15 @@ class ApplicationDrawer extends StatelessWidget {
                           itemBuilder: (context, index) {
                             return ListTile(
                               leading: Icon(
-                                String2Icon.getIconDataFromString(
-                                    sublistMenu[index].icon),
+                                String2Icon.getIconDataFromString(sublistMenu[index].icon),
                               ),
                               title: Text(
-                                S.of(context).translate_menu_title(
-                                      sublistMenu[index].name),
+                                S.of(context).translate_menu_title(sublistMenu[index].name),
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               onTap: () {
                                 Navigator.pop(context);
-                                Navigator.pushNamed(
-                                    context, sublistMenu[index].url);
+                                Navigator.pushNamed(context, sublistMenu[index].url);
                               },
                             );
                           },

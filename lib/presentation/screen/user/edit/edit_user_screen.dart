@@ -1,18 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
-import '../../../../../configuration/app_keys.dart';
 import '../../../../../data/models/user.dart';
 import '../../../../../generated/l10n.dart';
-import '../../../common_blocs/sales_people/sales_people_bloc.dart';
 import 'edit_form_widget.dart';
 
 class EditUserScreen extends StatelessWidget {
   final User user;
 
   EditUserScreen({required this.user})
-      : super(key: ApplicationKeys.getUserScreen);
+      : super();
   final formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -30,8 +27,6 @@ class EditUserScreen extends StatelessWidget {
         icon: Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.pop(context);
-          BlocProvider.of<SalesPersonBloc>(context)
-              .add(SalesPersonLoadDefault());
           formKey.currentState!.fields['salesPersonCode']?.didChange("");
         },
       ),
@@ -56,9 +51,12 @@ class EditUserScreen extends StatelessWidget {
                 EditFormPhoneNumber(user: user),
                 EditFormActive(user: user),
                 EditFormAuthorities(user: user, formKey: formKey),
-                EditFormSalesPerson(user: user, formKey: formKey),
                 SizedBox(height: 20),
-                SubmitButton(context, user: user,formKey: formKey,)
+                SubmitButton(
+                  context,
+                  user: user,
+                  formKey: formKey,
+                )
               ],
             ),
           ),
@@ -67,5 +65,3 @@ class EditUserScreen extends StatelessWidget {
     );
   }
 }
-
-

@@ -4,14 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../configuration/app_keys.dart';
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 import '../../common_widgets/drawer/bloc/drawer_bloc.dart';
 import 'bloc/settings.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen() : super(key: ApplicationKeys.settingsScreen);
+  const SettingsScreen() : super();
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +20,8 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  List<DropdownMenuItem<String>> createDropdownLanguageItems(Map<String, String> languages) {
+  List<DropdownMenuItem<String>> createDropdownLanguageItems(
+      Map<String, String> languages) {
     return languages.keys
         .map<DropdownMenuItem<String>>(
           (String key) => DropdownMenuItem<String>(
@@ -83,7 +83,8 @@ class SettingsScreen extends StatelessWidget {
               width: 150,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, ApplicationRoutes.changePassword);
+                  Navigator.pushNamed(
+                      context, ApplicationRoutes.changePassword);
                 },
                 child: Text(
                   S.of(context).change_password,
@@ -150,7 +151,8 @@ class SettingsScreen extends StatelessWidget {
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: Text(S.of(context).language_select, textAlign: TextAlign.center),
+          title:
+              Text(S.of(context).language_select, textAlign: TextAlign.center),
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             TextButton(
@@ -158,24 +160,28 @@ class SettingsScreen extends StatelessWidget {
                 backgroundColor: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () async {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
+                final SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
                 prefs.setString('lang', 'tr');
                 S.load(Locale("tr"));
                 Navigator.pushNamed(context, ApplicationRoutes.home);
               },
-              child: Text(S.of(context).turkish, style: TextStyle(color: Colors.white)),
+              child: Text(S.of(context).turkish,
+                  style: TextStyle(color: Colors.white)),
             ),
             TextButton(
               style: TextButton.styleFrom(
                 backgroundColor: Theme.of(context).colorScheme.primary,
               ),
               onPressed: () async {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
+                final SharedPreferences prefs =
+                    await SharedPreferences.getInstance();
                 prefs.setString('lang', 'en');
                 S.load(Locale("en"));
                 Navigator.pushNamed(context, ApplicationRoutes.home);
               },
-              child: Text(S.of(context).english, style: TextStyle(color: Colors.white)),
+              child: Text(S.of(context).english,
+                  style: TextStyle(color: Colors.white)),
             ),
           ],
         );
@@ -232,6 +238,7 @@ class SettingsScreen extends StatelessWidget {
       },
     );
   }
+
   void onLogout(context) {
     BlocProvider.of<DrawerBloc>(context).add(Logout());
     Navigator.pushNamed(context, ApplicationRoutes.login);

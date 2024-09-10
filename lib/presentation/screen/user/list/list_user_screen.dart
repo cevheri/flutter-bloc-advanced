@@ -5,14 +5,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
-import '../../../../../configuration/app_keys.dart';
 import '../../../../../generated/l10n.dart';
 import '../../../common_blocs/authorities/authorities_bloc.dart';
 import '../bloc/user_bloc.dart';
 import '../edit/edit_user_screen.dart';
 
 class ListUserScreen extends StatelessWidget {
-  ListUserScreen() : super(key: ApplicationKeys.getUserScreen);
+  ListUserScreen() : super();
   final listFormKey = GlobalKey<FormBuilderState>();
   final headerStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
@@ -64,9 +63,6 @@ class ListUserScreen extends StatelessWidget {
           _tableHeader(context),
           BlocBuilder<UserBloc, UserState>(
             builder: (context, state) {
-              print("------------------------");
-              print(state);
-              print("------------------------");
               if (state is UserSearchSuccessState) {
                 return ListView.builder(
                   itemCount: state.userList.length,
@@ -88,7 +84,7 @@ class ListUserScreen extends StatelessWidget {
                                 state.userList[index].authorities.toString() ==
                                         "[ROLE_ADMIN]"
                                     ? S.of(context).admin
-                                    : S.of(context).plasiyer,
+                                    : S.of(context).guest,
                                 textAlign: TextAlign.left),
                           ),
                           SizedBox(width: 5),
@@ -125,18 +121,6 @@ class ListUserScreen extends StatelessWidget {
                                         "null"
                                     ? "-"
                                     : state.userList[index].phoneNumber
-                                        .toString(),
-                                textAlign: TextAlign.left),
-                          ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 10,
-                            child: Text(
-                                state.userList[index].salesPersonName
-                                            .toString() ==
-                                        "null"
-                                    ? "-"
-                                    : state.userList[index].salesPersonName
                                         .toString(),
                                 textAlign: TextAlign.left),
                           ),
@@ -257,7 +241,7 @@ class ListUserScreen extends StatelessWidget {
             SizedBox(width: 5),
             Expanded(
               flex: 10,
-              child: Text(S.of(context).plasiyer,
+              child: Text(S.of(context).guest,
                   textAlign: TextAlign.left, style: headerStyle),
             ),
             SizedBox(width: 5),
@@ -332,9 +316,8 @@ class ListUserScreen extends StatelessWidget {
                             .toList(),
                         initialValue: state.role[0],
                       );
-                    } else {
+                    } else
                       return Container();
-                    }
                   },
                 ),
               ),
@@ -396,7 +379,10 @@ class ListUserScreen extends StatelessWidget {
             ),
             SizedBox(width: 10),
             _submitButton(context),
-            Expanded(flex: 3, child: Container()),
+            Expanded(
+              flex: 3,
+              child: Container(),
+            ),
           ],
         ),
       ),
@@ -404,26 +390,29 @@ class ListUserScreen extends StatelessWidget {
   }
 
   _submitButton(BuildContext context) {
-    return ElevatedButton(
-      style: ElevatedButton.styleFrom(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
+    return Container(
+      child: ElevatedButton(
+        style: ElevatedButton.styleFrom(
+          elevation: 2,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(5),
+          ),
         ),
+        child: Text(S.of(context).list),
+        onPressed: () {
+          if (listFormKey.currentState!.saveAndValidate()) {
+            BlocProvider.of<UserBloc>(context).add(
+              UserSearch(
+                int.parse(
+                    listFormKey.currentState!.fields['rangeStart']?.value),
+                int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
+                listFormKey.currentState!.fields['authorities']?.value ?? "-",
+                listFormKey.currentState!.fields['name']?.value ?? "",
+              ),
+            );
+          }
+        },
       ),
-      child: Text(S.of(context).list),
-      onPressed: () {
-        if (listFormKey.currentState!.saveAndValidate()) {
-          BlocProvider.of<UserBloc>(context).add(
-            UserSearch(
-              int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
-              int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
-              listFormKey.currentState!.fields['authorities']?.value ?? "-",
-              listFormKey.currentState!.fields['name']?.value ?? "",
-            ),
-          );
-        }
-      },
     );
   }
 }

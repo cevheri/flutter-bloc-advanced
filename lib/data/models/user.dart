@@ -42,17 +42,10 @@ class User extends Equatable {
   @JsonProperty(name: 'authorities')
   final List<String>? authorities;
 
-  @JsonProperty(name: 'cariKodu')
-  final String? cariKodu;
 
   @JsonProperty(name: 'phoneNumber')
   final String? phoneNumber;
 
-  @JsonProperty(name: 'salesPersonCode')
-  final String? salesPersonCode;
-
-  @JsonProperty(name: 'salesPersonName')
-  final String? salesPersonName;
 
   const User({
     this.id,
@@ -67,10 +60,7 @@ class User extends Equatable {
     this.lastModifiedBy,
     this.lastModifiedDate,
     this.authorities,
-    this.cariKodu,
     this.phoneNumber,
-    this.salesPersonCode,
-    this.salesPersonName,
   });
 
   User copyWith({
@@ -86,10 +76,7 @@ class User extends Equatable {
     String? lastModifiedBy,
     DateTime? lastModifiedDate,
     List<String>? authorities,
-    String? cariKodu,
     String? phoneNumber,
-    String? salesPersonCode,
-    String? salesPersonName,
   }) {
     return User(
       id: id ?? this.id,
@@ -104,10 +91,7 @@ class User extends Equatable {
       lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       authorities: authorities ?? this.authorities,
-      cariKodu: cariKodu ?? this.cariKodu,
       phoneNumber: phoneNumber ?? this.phoneNumber,
-      salesPersonCode: salesPersonCode ?? this.salesPersonCode,
-      salesPersonName: salesPersonName ?? this.salesPersonName,
     );
   }
 
@@ -125,10 +109,7 @@ class User extends Equatable {
         lastModifiedBy,
         lastModifiedDate,
         authorities,
-        cariKodu,
         phoneNumber,
-        salesPersonCode,
-        salesPersonName,
       ];
 
   @override

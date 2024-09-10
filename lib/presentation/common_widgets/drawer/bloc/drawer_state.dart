@@ -1,4 +1,3 @@
-
 part of 'drawer_bloc.dart';
 
 class DrawerState extends Equatable {

@@ -1,4 +1,3 @@
-
 part of 'drawer_bloc.dart';
 
 abstract class DrawerEvent extends Equatable {
@@ -14,4 +13,5 @@ abstract class DrawerEvent extends Equatable {
 class Logout extends DrawerEvent {}
 
 class LoadMenus extends DrawerEvent {}
+
 class RefreshMenus extends DrawerEvent {}

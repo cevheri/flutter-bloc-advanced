@@ -30,13 +30,13 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     try {
-      // User user = await _accountRepository.getAccount();
+      User user = await _accountRepository.getAccount();
 
-      // await prefs.setString('username', user.login!);
-      // await prefs.setString('role', user.authorities![0]);
+      await prefs.setString('username', user.login!);
+      await prefs.setString('role', user.authorities![0]);
 
       emit(state.copyWith(
-        account: User(firstName: "admin", lastName: "admin", email: "admin@deneme.com"),
+        account: user,
         status: AccountStatus.success,
       ));
       log("AccountBloc._onLoad end : ${state.account}, ${state.status}");

@@ -20,6 +20,7 @@ class UserState {
 }
 
 class UserInitialState extends UserState {}
+
 class UserEditInitialState extends UserState {}
 
 class UserFindInitialState extends UserState {}
@@ -27,14 +28,12 @@ class UserFindInitialState extends UserState {}
 class UserLoadInProgressState extends UserState {}
 
 class UserLoadSuccessState extends UserState {
-  @override
   final User user;
 
   const UserLoadSuccessState({required this.user});
 }
 
 class UserEditSuccessState extends UserState {
-  @override
   final User user;
 
   const UserEditSuccessState({required this.user});
@@ -51,6 +50,7 @@ class UserLoadFailureState extends UserState {
 
   const UserLoadFailureState({required this.message});
 }
+
 class UserEditFailureState extends UserState {
   final String message;
 
@@ -64,11 +64,13 @@ class UserSearchFailureState extends UserState {
 }
 
 class UserListInitialState extends UserState {}
+
 class UserListSuccessState extends UserState {
   final List<User> userList;
 
   const UserListSuccessState({required this.userList});
 }
+
 class UserListFailureState extends UserState {
   final String message;
 
