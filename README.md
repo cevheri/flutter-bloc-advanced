@@ -1,9 +1,12 @@
 # Advanced Flutter BLOC Template
 
-* This project is an open-source template built with Flutter and BLOC architecture. 
-* It comes with a range of features and allows you to quickly get started by adding your own screens, models, and BLOCs.
+* This project is an open-source template built with Flutter and BLOC architecture.
+* It comes with a range of features and allows you to quickly get started by adding your own
+  screens, models, and BLOCs.
 * The template is designed to help you build scalable and maintainable applications with ease.
-* It includes public and private routes, user management, roles and permissions, dark and light themes, mock data or API data, API client, internationalization, access control with Flutter and Firebase, and CI/CD with Github Actions.
+* It includes public and private routes, user management, roles and permissions, dark and light
+  themes, mock data or API data, API client, internationalization, access control with Flutter and
+  Firebase, and CI/CD with Github Actions.
 * The template is suitable for building applications for Android, iOS, and the web.
 * It is easy to customize and extend the template to meet your specific requirements.
 * The template is well-documented and easy to use.
@@ -18,7 +21,7 @@
 ---
 
 * BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
-* Android/IOS and Web 
+* Android/IOS and Web
 
 ---
 
@@ -46,26 +49,46 @@
 - Internationalization
 
 ---
+
 ## Development Environment
-When you run the app in the development environment, the app will use the development configuration settings.
+
+When you run the app in the development environment, the app will use the development configuration
+settings.
 API run on the mock data automatically.
+
 ```text
 ProfileConstants.isProduction = false;
 ```
 
 Mock data folder
+
 ```text
 assets/mock/...
 ```
 
+### User Roles
+
+- Admin Account
+This is an **admin account** that has access to all the pages.
+    - username: admin
+    - password: admin
+- User Account
+This is a **user account** that has access to the user's own pages.(Account, password, theme, language, etc.) (User can't access the admin pages)
+    - username: user
+    - password: user
+
 ## Production Environment
-When you run the app in the production environment, the app will use the production configuration settings.
+
+When you run the app in the production environment, the app will use the production configuration
+settings.
 API run on the real data automatically with your API URL.
+
 ```text
 ProfileConstants.isProduction = true;
 ```
 
 API URL
+
 ```text
 https://flutter-mock-api.sekoya.tech/api/v1 ....
 ```
@@ -73,6 +96,7 @@ https://flutter-mock-api.sekoya.tech/api/v1 ....
 ---
 
 ## Installation
+
 ```bash
 git clone https://github.com/cevheri/flutter-bloc-advanced.git
 ```
@@ -82,11 +106,13 @@ git clone https://github.com/cevheri/flutter-bloc-advanced.git
 ## Requirements
 
 * for serialize and deserialize json to object
+
 ```
 dart run build_runner build --delete-conflicting-outputs
 ```
 
 * fix dart analyze
+
 ```
 dart analyze --fix
 ```
@@ -144,9 +170,8 @@ To add new screens, models, and BLOCs, follow these steps:
    Add your new model classes to the lib/models directory.
 3. Add New BLOCs
    Add your new BLOC classes to the lib/bloc directory and perform necessary operations.
-4. API Integration 
+4. API Integration
    Integrate with APIs using the services provided in the lib/api directory.
-
 
 ## CI/CD with Github Actions
 
@@ -166,7 +191,6 @@ To add new screens, models, and BLOCs, follow these steps:
 - [Flutter Firebase Deploy with Github Actions]()
 - [Flutter Firebase Deploy with Github Actions and Firebase Hosting]()
 
-
 ## How to Contribute
 
 - Fork the repository
@@ -177,6 +201,7 @@ To add new screens, models, and BLOCs, follow these steps:
 - Create a new Pull Request
 
 ## References
+
 - https://flutter.dev/
 - https://bloclibrary.dev/
 - https://pub.dev/packages/flutter_bloc

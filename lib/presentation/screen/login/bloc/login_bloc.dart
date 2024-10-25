@@ -41,11 +41,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     UserJWT userJWT = UserJWT(state.username, state.password);
     try {
       var token = await _loginRepository.authenticate(userJWT);
-      print(token);
+      debugPrint(token.toString());
       if (token.idToken != null) {
         log("LoginBloc.onSubmit token: ${token.idToken}");
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwtToken', token.idToken ?? "");
+        await prefs.setString('username', event.username);
         AppConstants.jwtToken = token.idToken ?? "";
         emit(state.copyWith(status: LoginStatus.authenticated));
         emit(LoginLoadedState());

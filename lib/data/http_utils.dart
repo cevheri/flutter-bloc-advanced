@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert' show Encoding, utf8;
+import 'dart:convert' show Encoding, json, utf8;
 import 'dart:developer';
 import 'dart:io';
 
@@ -8,6 +8,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../configuration/environment.dart';
 import '../utils/app_constants.dart';
@@ -60,7 +61,7 @@ class HttpUtils {
       log("default headers");
     }
 
-    if (jwt != null && jwt != "") {
+    if (jwt != "") {
       headerParameters['Authorization'] = 'Bearer $jwt';
     } else {
       headerParameters.remove('Authorization');
@@ -270,6 +271,19 @@ class HttpUtils {
       debugPrint("Mock data loaded from $responseBody");
     } catch (e) {
       debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
+    }
+
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String username = prefs.getString('username') ?? '';
+    if (endpoint.startsWith('/account') || endpoint.startsWith('/users')) {
+      try {
+        var responseJson = json.decode(responseBody);
+        responseJson['login'] = username;
+        responseJson['authorities'] = ['ROLE_${username.toUpperCase()}'];
+        response = Future.value(Response(json.encode(responseJson), httpStatusCode));
+      } catch (e) {
+        debugPrint("There is no response body to update with username");
+      }
     }
 
     return response;

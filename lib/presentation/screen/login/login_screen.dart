@@ -13,10 +13,6 @@ class LoginScreen extends StatelessWidget {
 
   final _loginFormKey = GlobalKey<FormBuilderState>();
 
-  Future<bool> _onWillPop() async {
-    return false;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -92,7 +88,7 @@ class LoginScreen extends StatelessWidget {
             [
               FormBuilderValidators.required(
                   errorText: S.of(context).username_required),
-              FormBuilderValidators.minLength(5,
+              FormBuilderValidators.minLength(4,
                   errorText: S.of(context).username_min_length),
               FormBuilderValidators.maxLength(20,
                   errorText: S.of(context).username_max_length),
@@ -132,7 +128,7 @@ class LoginScreen extends StatelessWidget {
                   [
                     FormBuilderValidators.required(
                         errorText: S.of(context).password_required),
-                    FormBuilderValidators.minLength(6,
+                    FormBuilderValidators.minLength(4,
                         errorText: S.of(context).password_min_length),
                     FormBuilderValidators.maxLength(20,
                         errorText: S.of(context).password_max_length),
