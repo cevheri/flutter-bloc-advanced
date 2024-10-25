@@ -40,11 +40,35 @@
     - Change Password
 - Roles and Permissions
 - Dark and Light Themes
-- Mock data or API data
+- Mock data
+- Rest API data
 - API client
 - Internationalization
-- Access Control with Flutter and Firebase
-- CI/CD with Github Actions
+
+---
+## Development Environment
+When you run the app in the development environment, the app will use the development configuration settings.
+API run on the mock data automatically.
+```text
+ProfileConstants.isProduction = false;
+```
+
+Mock data folder
+```text
+assets/mock/...
+```
+
+## Production Environment
+When you run the app in the production environment, the app will use the production configuration settings.
+API run on the real data automatically with your API URL.
+```text
+ProfileConstants.isProduction = true;
+```
+
+API URL
+```text
+https://flutter-mock-api.sekoya.tech/api/v1 ....
+```
 
 ---
 
@@ -79,32 +103,32 @@ flutter pub get
 
 ## Getting Started
 
-- Run `flutter run --target lib/main/main-dev.dart` for dev environment
-- Run `flutter run --target lib/main/main-prod.dart` for prod environment
+- Run `flutter run --target lib/main/main_local.dart` for dev environment
+- Run `flutter run --target lib/main/main_prod.dart` for prod environment
 
 flutter run dev environment
 
-- Run `flutter run -d chrome --target lib/main/main-dev.dart` for web dev environment
-- Run `flutter run -d chrome --target lib/main/main-prod.dart` for web prod environment
+- Run `flutter run -d chrome --target lib/main/main_local.dart` for web dev environment
+- Run `flutter run -d chrome --target lib/main/main_prod.dart` for web prod environment
 
 ---
 
 ## How to Build
 
-- Run `flutter build apk --target lib/main/main-prod.dart` for android
-- Run `flutter build ios --target lib/main/main-prod.dart` for ios
-- Run `flutter build web --target lib/main/main-prod.dart` for web
+- Run `flutter build apk --target lib/main/main_prod.dart` for android
+- Run `flutter build ios --target lib/main/main_prod.dart` for ios
+- Run `flutter build web --target lib/main/main_prod.dart` for web
 
 ---
 
 ## How to Run
 
 - Run `flutter pub get`
-- Run `flutter run --target lib/main/main-dev.dart` for dev environment
-- Run `flutter run -d chrome --target lib/main/main-dev.dart` for web
-- Run `flutter run -d ios --target lib/main/main-dev.dart` for ios
-- Run `flutter run -d android --target lib/main/main-dev.dart` for android
-- Run `flutter run -d web --target lib/main/main-dev.dart` for web
+- Run `flutter run --target lib/main/main_dev.dart` for dev environment
+- Run `flutter run -d chrome --target lib/main/main_dev.dart` for web
+- Run `flutter run -d ios --target lib/main/main_dev.dart` for ios
+- Run `flutter run -d android --target lib/main/main_dev.dart` for android
+- Run `flutter run -d web --target lib/main/main_dev.dart` for web
 
 ## How to Test
 

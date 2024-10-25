@@ -1,16 +1,19 @@
+import 'dart:io';
+
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../../configuration/environment.dart';
+
 import '../../utils/app_constants.dart';
 import '../http_utils.dart';
 import '../models/change_password.dart';
 import '../models/user.dart';
-import 'package:flutter/services.dart';
 
 class AccountRepository {
   AccountRepository();
 
   Future<String?> register(User newUser) async {
+    debugPrint("register repository start");
     final registerRequest = await HttpUtils.postRequest<User>("/register", newUser);
     String? result;
     if (registerRequest.statusCode == 400) {
@@ -18,68 +21,55 @@ class AccountRepository {
     } else {
       result = HttpUtils.successResult;
     }
+    debugPrint("register successful - response: ${registerRequest.statusCode}");
     return result;
   }
 
-  //TODO if (ProfileConstants.isProduction) {}
-  Future<int> changePassword(
-    PasswordChangeDTO passwordChangeDTO,
-  ) async {
-    if (ProfileConstants.isProduction) {
-      final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>("/account/change-password", passwordChangeDTO);
-      return authenticateRequest.statusCode;
-    } else {
-      return 200;
-    }
+  Future<int> changePassword(PasswordChangeDTO passwordChangeDTO) async {
+    debugPrint("changePassword repository start");
+    final authenticateRequest =
+        await HttpUtils.postRequest<PasswordChangeDTO>("/account/change-password", passwordChangeDTO);
+    var result = authenticateRequest.statusCode;
+    debugPrint("changePassword successful - response: $result");
+    return result;
   }
 
-
-  //TODO if (ProfileConstants.isProduction) {}
   Future<int> resetPassword(String mailAddress) async {
-    if (ProfileConstants.isProduction) {
-      HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
-      HttpUtils.addCustomHttpHeader('Accept', '*/*');
-      final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
-      String? result;
-      if (resetRequest.statusCode != 200) {
-        if (resetRequest.headers[HttpUtils.errorHeader] != null) {
-          result = resetRequest.headers[HttpUtils.errorHeader];
-        } else {
-          result = HttpUtils.errorServerKey;
-        }
+    debugPrint("resetPassword repository start");
+    HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
+    HttpUtils.addCustomHttpHeader('Accept', '*/*');
+    final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
+    String? result;
+    if (resetRequest.statusCode != 200) {
+      if (resetRequest.headers[HttpUtils.errorHeader] != null) {
+        result = resetRequest.headers[HttpUtils.errorHeader];
       } else {
-        result = HttpUtils.successResult;
+        result = HttpUtils.errorServerKey;
       }
-      return resetRequest.statusCode;
     } else {
-      HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
-      HttpUtils.addCustomHttpHeader('Accept', '*/*');
-      return 200;
+      result = HttpUtils.successResult;
     }
+
+    debugPrint("resetPassword successful - response: ${resetRequest.statusCode}");
+    return resetRequest.statusCode;
   }
 
-  //TODO if (ProfileConstants.isProduction) {}
   Future<User> getAccount() async {
-    if (ProfileConstants.isProduction) {
-      final response = await HttpUtils.getRequest("/account");
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      var result = JsonMapper.deserialize<User>(response)!;
-      await prefs.setString('role', result.authorities?[0] ?? "");
-      AppConstants.role = prefs.getString('role') ?? "";
-      return result;
-    } else {
-      final SharedPreferences prefs = await SharedPreferences.getInstance();
-      var result = JsonMapper.deserialize<User>(await rootBundle.loadString('assets/mock/account.json'))!;
-      await prefs.setString('role', result.authorities?[0] ?? "");
-      AppConstants.role = prefs.getString('role') ?? "";
-      return result;
-    }
+    debugPrint("getAccount repository start");
+    final response = await HttpUtils.getRequest("/account");
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    var result = JsonMapper.deserialize<User>(response)!;
+    await prefs.setString('role', result.authorities?[0] ?? "");
+    AppConstants.role = prefs.getString('role') ?? "";
+    debugPrint("getAccount successful - response : $response}");
+    return result;
   }
 
   Future<String?> saveAccount(User user) async {
+    debugPrint("saveAccount repository start");
     final saveRequest = await HttpUtils.postRequest<User>("/account", user);
     String? result;
-    if (saveRequest.statusCode != 200) {
+    if (saveRequest.statusCode >= HttpStatus.badRequest) {
       if (saveRequest.headers[HttpUtils.errorHeader] != null) {
         result = saveRequest.headers[HttpUtils.errorHeader];
       } else {
@@ -88,15 +78,21 @@ class AccountRepository {
     } else {
       result = HttpUtils.successResult;
     }
-
+    debugPrint("saveAccount successful - response : $result");
     return result;
   }
 
-  updateAccount(User account) {
-    return HttpUtils.putRequest<User>("/account", account);
+  updateAccount(User account) async {
+    debugPrint("updateAccount repository start");
+    var result = await HttpUtils.putRequest<User>("/account", account);
+    debugPrint("updateAccount successful - response : ${result.body.toString()}");
+    return result;
   }
 
-  deleteAccount() {
-    return HttpUtils.deleteRequest("/account");
+  deleteAccount(int id) async {
+    debugPrint("deleteAccount repository start");
+    var result = await HttpUtils.deleteRequest("/account/$id");
+    debugPrint("deleteAccount successful - response : ${result.body.toString()}");
+    return result;
   }
 }

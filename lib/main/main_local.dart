@@ -19,8 +19,8 @@ void main() async {
   final SharedPreferences prefs = await SharedPreferences.getInstance();
   String? language = prefs.getString('lang');
   if (language == null) {
-    prefs.setString('lang', 'tr');
-    language = 'tr';
+    prefs.setString('lang', 'en');
+    language = 'en';
   }
   AppConstants.jwtToken = prefs.getString('jwtToken') ?? "";
   AppConstants.role = prefs.getString('role') ?? "";
@@ -28,6 +28,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp])
       .then((_) {
-    runApp(App(language: language ?? 'tr'));
+    runApp(App(language: language ?? 'en'));
   });
 }
