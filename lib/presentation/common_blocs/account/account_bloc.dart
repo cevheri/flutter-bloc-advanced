@@ -32,13 +32,6 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
     try {
       User user = await _accountRepository.getAccount();
-      //TODO will be deleted after test mock data
-      // await _accountRepository.register(user);
-      // await _accountRepository.changePassword(PasswordChangeDTO(currentPassword: '1', newPassword: '2'));
-      // await _accountRepository.resetPassword('mailAddress');
-      // await _accountRepository.saveAccount(user);
-      // await _accountRepository.updateAccount(user);
-      // await _accountRepository.deleteAccount(user.id!);
 
       await prefs.setString('username', user.login!);
       await prefs.setString('role', user.authorities![0]);
