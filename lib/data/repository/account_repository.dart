@@ -1,25 +1,19 @@
-import 'dart:developer';
+import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/app_constants.dart';
 import '../http_utils.dart';
 import '../models/change_password.dart';
-import '../models/menu.dart';
 import '../models/user.dart';
 
-/// Account repository that handles all the account related operations
-/// register, login, logout, getAccount, saveAccount, updateAccount
-///
-/// This class is responsible for all the account related operations
 class AccountRepository {
   AccountRepository();
 
-  final _path = "/account";
-
-  /// Register account method that registers a new user
   Future<String?> register(User newUser) async {
+    debugPrint("register repository start");
     final registerRequest = await HttpUtils.postRequest<User>("/register", newUser);
     String? result;
     if (registerRequest.statusCode == 400) {
@@ -27,24 +21,25 @@ class AccountRepository {
     } else {
       result = HttpUtils.successResult;
     }
+    debugPrint("register successful - response: ${registerRequest.statusCode}");
     return result;
   }
 
-  /// current account password change 
-  Future<int> changePassword(
-    PasswordChangeDTO passwordChangeDTO,
-  ) async {
-    final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>(
-        "$_path/change-password", passwordChangeDTO);
-    return authenticateRequest.statusCode;
+  Future<int> changePassword(PasswordChangeDTO passwordChangeDTO) async {
+    debugPrint("changePassword repository start");
+    final authenticateRequest =
+        await HttpUtils.postRequest<PasswordChangeDTO>("/account/change-password", passwordChangeDTO);
+    var result = authenticateRequest.statusCode;
+    debugPrint("changePassword successful - response: $result");
+    return result;
   }
 
   Future<int> resetPassword(String mailAddress) async {
+    debugPrint("resetPassword repository start");
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
-    final resetRequest = await HttpUtils.postRequest<String>("$_path/reset-password/init", mailAddress);
-
-    late String? result;
+    final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
+    String? result;
     if (resetRequest.statusCode != 200) {
       if (resetRequest.headers[HttpUtils.errorHeader] != null) {
         result = resetRequest.headers[HttpUtils.errorHeader];
@@ -54,27 +49,27 @@ class AccountRepository {
     } else {
       result = HttpUtils.successResult;
     }
+
+    debugPrint("resetPassword successful - response: ${resetRequest.statusCode}");
     return resetRequest.statusCode;
   }
 
-
-  /// Retrieve current account method that retrieves the current user
   Future<User> getAccount() async {
+    debugPrint("getAccount repository start");
+    final response = await HttpUtils.getRequest("/account");
     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    final response = await HttpUtils.get(_path);
     var result = JsonMapper.deserialize<User>(response)!;
     await prefs.setString('role', result.authorities?[0] ?? "");
     AppConstants.role = prefs.getString('role') ?? "";
+    debugPrint("getAccount successful - response : $response}");
     return result;
   }
 
-  /// Save account method that saves the current user
-  ///
-  /// @param account the user object
   Future<String?> saveAccount(User user) async {
-    final saveRequest = await HttpUtils.postRequest<User>(_path, user);
+    debugPrint("saveAccount repository start");
+    final saveRequest = await HttpUtils.postRequest<User>("/account", user);
     String? result;
-    if (saveRequest.statusCode != 200) {
+    if (saveRequest.statusCode >= HttpStatus.badRequest) {
       if (saveRequest.headers[HttpUtils.errorHeader] != null) {
         result = saveRequest.headers[HttpUtils.errorHeader];
       } else {
@@ -83,26 +78,21 @@ class AccountRepository {
     } else {
       result = HttpUtils.successResult;
     }
-
+    debugPrint("saveAccount successful - response : $result");
     return result;
   }
 
-  /// Update account method that updates the current user
-  ///
-  /// @param account the user object
-  updateAccount(User account) {
-    return HttpUtils.putRequest<User>(_path, account);
+  updateAccount(User account) async {
+    debugPrint("updateAccount repository start");
+    var result = await HttpUtils.putRequest<User>("/account", account);
+    debugPrint("updateAccount successful - response : ${result.body.toString()}");
+    return result;
   }
 
-  //TODO not implemented yet in API
-  /// Delete current account method that deletes the current user
-  deleteAccount() {
-    return HttpUtils.deleteRequest(_path);
-  }
-
-  Future<List<Menu>> getMenus() async {
-    final response = await HttpUtils.get("/menus/current-user");
-    log("getMenus: $response");
-    return JsonMapper.deserialize<List<Menu>>(response)!;
+  deleteAccount(int id) async {
+    debugPrint("deleteAccount repository start");
+    var result = await HttpUtils.deleteRequest("/account/$id");
+    debugPrint("deleteAccount successful - response : ${result.body.toString()}");
+    return result;
   }
 }

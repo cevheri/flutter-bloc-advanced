@@ -1,0 +1,17 @@
+{
+  "id": 1,
+  "login": "admin",
+  "firstName": "first name",
+  "lastName": "last name",
+  "email": "email@email.com",
+  "activated": true,
+  "langKey": null,
+  "createdBy": "system",
+  "createdDate": null,
+  "lastModifiedBy": "admin",
+  "lastModifiedDate": "2024-01-04T06:02:47.757Z",
+  "authorities": [
+    "ROLE_ADMIN"
+  ],
+  "phoneNumber": "5323627760"
+}

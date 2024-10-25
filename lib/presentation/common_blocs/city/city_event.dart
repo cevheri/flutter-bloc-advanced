@@ -13,4 +13,3 @@ class CityLoadList extends CityEvent {
   @override
   List<Object> get props => [];
 }
-

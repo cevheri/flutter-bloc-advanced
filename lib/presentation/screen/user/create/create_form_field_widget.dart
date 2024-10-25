@@ -8,7 +8,6 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import '../../../../../generated/l10n.dart';
 import '../../../../utils/app_constants.dart';
 import '../../../common_blocs/authorities/authorities_bloc.dart';
-import '../../../common_blocs/sales_people/sales_people_bloc.dart';
 
 class CreateFormPhoneNumber extends StatelessWidget {
   const CreateFormPhoneNumber({super.key});
@@ -33,6 +32,7 @@ class CreateFormPhoneNumber extends StatelessWidget {
     );
   }
 }
+
 class CreateFormPhoneActive extends StatelessWidget {
   const CreateFormPhoneActive({super.key});
 
@@ -60,8 +60,7 @@ class CreateFormEmail extends StatelessWidget {
         [
           FormBuilderValidators.required(
               errorText: S.of(context).email_required),
-          FormBuilderValidators.email(
-              errorText: S.of(context).email_pattern),
+          FormBuilderValidators.email(errorText: S.of(context).email_pattern),
         ],
       ),
     );
@@ -137,91 +136,11 @@ class CreateFormLoginName extends StatelessWidget {
             errorText: S.of(context).username_min_length, 3),
         FormBuilderValidators.maxLength(
             errorText: S.of(context).username_max_length, 20),
-        FormBuilderValidators.match("^[a-zA-Z0-9]+\$" as RegExp,
+        FormBuilderValidators.match((RegExp("^[a-zA-Z0-9]+\$")),
             errorText: S.of(context).username_regex_pattern),
       ]),
     );
   }
 }
 
-class CreateFormAuthorities extends StatelessWidget {
-  final GlobalKey<FormBuilderState>? formKey;
 
-  const CreateFormAuthorities({super.key, this.formKey});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<AuthoritiesBloc, AuthoritiesState>(
-      builder: (context, state) {
-        if (state is AuthoritiesLoadSuccessState) {
-          return FormBuilderDropdown(
-            name: 'authorities',
-            decoration: InputDecoration(
-              hintText: S.of(context).authorities,
-            ),
-            validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(
-                  errorText: S.of(context).authorities_required),
-            ]),
-            items: state.role
-                .map((role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(role),
-                    ))
-                .toList(),
-            initialValue: "",
-            onChanged: (value) {
-              if (value == "ROLE_MARKETING") {
-                BlocProvider.of<SalesPersonBloc>(context)
-                    .add(SalesPersonLoad());
-              }
-              if (value == "ROLE_ADMIN") {
-                BlocProvider.of<SalesPersonBloc>(context)
-                    .add(SalesPersonLoadDefault());
-                formKey?.currentState!.fields['salesPersonCode']?.didChange("");
-              }
-            },
-          );
-        } else
-          return Container();
-      },
-    );
-  }
-}
-
-class CreateFormSalesPerson extends StatelessWidget {
-  final GlobalKey<FormBuilderState>? formKey;
-  const CreateFormSalesPerson({super.key, required this.formKey});
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<SalesPersonBloc, SalesPersonState>(
-      builder: (context, state) {
-        if (state is SalesPersonLoadSuccessState) {
-          return FormBuilderDropdown(
-            name: 'salesPersonName',
-            decoration: InputDecoration(
-              labelText: S.of(context).plasiyer,
-            ),
-            validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(
-                  errorText: S.of(context).required_salesPerson),
-            ]),
-            items: state.salesPerson
-                .map((salesPerson) => DropdownMenuItem(
-                      value: salesPerson,
-                      child: Text(salesPerson.name?.toString() ?? ""),
-                    ))
-                .toList(),
-            onChanged: (value) {
-              log("value: $value");
-              if (value != formKey?.currentState!.fields['salesPersonName']?.value)
-              formKey?.currentState!.fields['salesPersonName']!.didChange(value);
-            },
-          );
-        } else
-          return Container();
-      },
-    );
-  }
-}

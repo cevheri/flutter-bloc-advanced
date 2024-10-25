@@ -8,7 +8,8 @@ import '../../../../data/repository/account_repository.dart';
 part 'forgot_password_event.dart';
 part 'forgot_password_state.dart';
 
-class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
+class ForgotPasswordBloc
+    extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
   ForgotPasswordBloc({required AccountRepository AccountRepository})
       : _AccountRepository = AccountRepository,
         super(const ForgotPasswordState()) {
@@ -18,20 +19,24 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   final AccountRepository _AccountRepository;
 
   @override
-  void onTransition(Transition<ForgotPasswordEvent, ForgotPasswordState> transition) {
+  void onTransition(
+      Transition<ForgotPasswordEvent, ForgotPasswordState> transition) {
     super.onTransition(transition);
   }
 
-  FutureOr<void> _onSubmit(ForgotPasswordEmailChanged event, Emitter<ForgotPasswordState> emit) async {
+  FutureOr<void> _onSubmit(ForgotPasswordEmailChanged event,
+      Emitter<ForgotPasswordState> emit) async {
     emit(AccountResetPasswordInitialState());
     try {
       String result = event.email.replaceAll('"', '');
       var resultStatusCode = await _AccountRepository.resetPassword(result);
       resultStatusCode == 200
           ? emit(AccountResetPasswordCompletedState())
-          : emit(const AccountResetPasswordErrorState(message: "Reset Password Error"));
+          : emit(const AccountResetPasswordErrorState(
+              message: "Reset Password Error"));
     } catch (e) {
-      emit(const AccountResetPasswordErrorState(message: "Reset Password Error"));
+      emit(const AccountResetPasswordErrorState(
+          message: "Reset Password Error"));
       rethrow;
     }
   }

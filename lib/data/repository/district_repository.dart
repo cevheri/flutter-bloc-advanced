@@ -1,4 +1,3 @@
-
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 
 import '../http_utils.dart';
@@ -8,9 +7,7 @@ class DistrictRepository {
   DistrictRepository();
 
   Future<List<District>> getDistrict(cityId) async {
-    final result = await HttpUtils.get("/districts/cities/$cityId");
+    final result = await HttpUtils.getRequest("/districts/cities/$cityId");
     return JsonMapper.deserialize<List<District>>(result)!;
   }
 }
-
-

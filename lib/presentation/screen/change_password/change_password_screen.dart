@@ -73,7 +73,8 @@ class ChangePasswordScreen extends StatelessWidget {
               maxLines: 1,
               validator: FormBuilderValidators.compose(
                 [
-                  FormBuilderValidators.required(errorText: "Şifre boş bırakılamaz."),
+                  FormBuilderValidators.required(
+                      errorText: "Şifre boş bırakılamaz."),
                   (val) {
                     return null;
                   },
@@ -100,7 +101,8 @@ class ChangePasswordScreen extends StatelessWidget {
               maxLines: 1,
               validator: FormBuilderValidators.compose(
                 [
-                  FormBuilderValidators.required(errorText: "Şifre boş bırakılamaz."),
+                  FormBuilderValidators.required(
+                      errorText: "Şifre boş bırakılamaz."),
                   (val) {
                     return null;
                   },
@@ -121,13 +123,20 @@ class ChangePasswordScreen extends StatelessWidget {
             child: Text("Şifre Değiştir"),
             onPressed: () {
               if (_changePasswordFormKey.currentState!.saveAndValidate() &&
-                  _changePasswordFormKey.currentState!.value['currentPassword'] !=
-                      _changePasswordFormKey.currentState!.value['newPassword'] &&
-                  _changePasswordFormKey.currentState!.value['newPassword'] != null &&
-                  _changePasswordFormKey.currentState!.value['currentPassword'] != null) {
+                  _changePasswordFormKey
+                          .currentState!.value['currentPassword'] !=
+                      _changePasswordFormKey
+                          .currentState!.value['newPassword'] &&
+                  _changePasswordFormKey.currentState!.value['newPassword'] !=
+                      null &&
+                  _changePasswordFormKey
+                          .currentState!.value['currentPassword'] !=
+                      null) {
                 context.read<ChangePasswordBloc>().add(ChangePasswordChanged(
-                      currentPassword: _changePasswordFormKey.currentState!.value['currentPassword'],
-                      newPassword: _changePasswordFormKey.currentState!.value['newPassword'],
+                      currentPassword: _changePasswordFormKey
+                          .currentState!.value['currentPassword'],
+                      newPassword: _changePasswordFormKey
+                          .currentState!.value['newPassword'],
                     ));
               } else {}
             },
@@ -136,14 +145,18 @@ class ChangePasswordScreen extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is ChangePasswordInitialState) {
-          Message.getMessage(context: context, title: "Şifre değiştiriliyor...", content: "");
+          Message.getMessage(
+              context: context, title: "Şifre değiştiriliyor...", content: "");
         }
         if (current is ChangePasswordPasswordCompletedState) {
-          Message.getMessage(context: context, title: "Şifre değiştirildi", content: "");
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
+          Message.getMessage(
+              context: context, title: "Şifre değiştirildi", content: "");
+          Navigator.pushNamedAndRemoveUntil(
+              context, ApplicationRoutes.home, (route) => false);
         }
         if (current is ChangePasswordPasswordErrorState) {
-          Message.errorMessage(title: 'Şifre değiştirilemedi', context: context,content: "");
+          Message.errorMessage(
+              title: 'Şifre değiştirilemedi', context: context, content: "");
         }
         return true;
       },

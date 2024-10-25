@@ -27,7 +27,7 @@ class InvalidInputException extends AppException {
   InvalidInputException(String message) : super(message, "Invalid Input: ");
 }
 
-//TODO cevheri: handle http.417 exception and throw ApiBusinessException with translated error messages
 class ApiBusinessException extends AppException {
-  ApiBusinessException(String message) : super(message, "Api Business Exception: ");
+  ApiBusinessException(String message)
+      : super(message, "Api Business Exception: ");
 }

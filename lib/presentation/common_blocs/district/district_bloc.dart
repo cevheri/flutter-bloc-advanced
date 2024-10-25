@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/data/models/city.dart';
 
+import '../../../data/models/city.dart';
 import '../../../data/models/district.dart';
 import '../../../data/repository/district_repository.dart';
 
@@ -26,7 +26,7 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
     emit(DistrictInitialState());
     try {
       List<District> district =
-      await _districtRepository.getDistrict(event.districtId);
+          await _districtRepository.getDistrict(event.districtId);
       emit(DistrictLoadSuccessState(district: district));
     } catch (e) {
       emit(DistrictLoadFailureState(message: e.toString()));

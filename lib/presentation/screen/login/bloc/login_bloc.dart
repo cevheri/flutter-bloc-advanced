@@ -30,26 +30,24 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     super.onTransition(transition);
   }
 
-  FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
+  FutureOr<void> _onSubmit(
+      LoginFormSubmitted event, Emitter<LoginState> emit) async {
     log("LoginBloc.onSubmit start: ${event.username}, ${event.password}");
     emit(state.copyWith(
       username: event.username,
       password: event.password,
       status: LoginStatus.authenticating,
     ));
-    print("gonderilen username: ${event.username}");
-    print("gonderilen password: ${event.password}");
     UserJWT userJWT = UserJWT(state.username, state.password);
-
     try {
       var token = await _loginRepository.authenticate(userJWT);
-
+      print(token);
       if (token.idToken != null) {
+        log("LoginBloc.onSubmit token: ${token.idToken}");
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('jwtToken', token.idToken ?? "");
         AppConstants.jwtToken = token.idToken ?? "";
         emit(state.copyWith(status: LoginStatus.authenticated));
-
         emit(LoginLoadedState());
         log("LoginBloc.onSubmit end: ${state.status}");
       } else {

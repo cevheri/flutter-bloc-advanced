@@ -32,10 +32,10 @@ class City extends Equatable {
 
   @override
   List<Object?> get props => [
-    id,
-    name,
-    plateCode,
-  ];
+        id,
+        name,
+        plateCode,
+      ];
 
   @override
   bool get stringify => true;

@@ -23,7 +23,6 @@ class ForgotPasswordState extends Equatable {
     );
   }
 
-
   @override
   List<Object> get props => [email, status];
 
@@ -32,7 +31,9 @@ class ForgotPasswordState extends Equatable {
 }
 
 class AccountResetPasswordInitialState extends ForgotPasswordState {}
+
 class AccountResetPasswordCompletedState extends ForgotPasswordState {}
+
 class AccountResetPasswordErrorState extends ForgotPasswordState {
   final String message;
 

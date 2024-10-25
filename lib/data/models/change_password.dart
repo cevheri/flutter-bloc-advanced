@@ -18,5 +18,4 @@ class PasswordChangeDTO {
     this.currentPassword = '',
     this.newPassword = '',
   });
-
 }

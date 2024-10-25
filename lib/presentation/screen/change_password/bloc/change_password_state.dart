@@ -23,7 +23,6 @@ class ChangePasswordState extends Equatable {
     );
   }
 
-
   @override
   List<Object> get props => [email, status];
 
@@ -32,7 +31,9 @@ class ChangePasswordState extends Equatable {
 }
 
 class ChangePasswordInitialState extends ChangePasswordState {}
+
 class ChangePasswordPasswordCompletedState extends ChangePasswordState {}
+
 class ChangePasswordPasswordErrorState extends ChangePasswordState {
   final String message;
 
