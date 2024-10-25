@@ -1,5 +1,4 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-
 import '../http_utils.dart';
 import '../models/user.dart';
 
