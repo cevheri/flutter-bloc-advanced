@@ -250,6 +250,16 @@ class S {
     );
   }
 
+  /// `Username must be a valid`
+  String get user_name_pattern {
+    return Intl.message(
+      'Username must be a valid',
+      name: 'user_name_pattern',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Lastname is required`
   String get lastname_required {
     return Intl.message(
@@ -385,6 +395,26 @@ class S {
     return Intl.message(
       'Create User',
       name: 'create_user',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User created successfully`
+  String get create_user_success {
+    return Intl.message(
+      'User created successfully',
+      name: 'create_user_success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `User creation failed`
+  String get create_user_error {
+    return Intl.message(
+      'User creation failed',
+      name: 'create_user_error',
       desc: '',
       args: [],
     );
@@ -535,6 +565,16 @@ class S {
     return Intl.message(
       'Forgot Password',
       name: 'password_forgot',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Register`
+  String get register {
+    return Intl.message(
+      'Register',
+      name: 'register',
       desc: '',
       args: [],
     );

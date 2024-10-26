@@ -29,6 +29,8 @@ import '../presentation/screen/forgot_password/forgot_password_screen.dart';
 import '../presentation/screen/home/home_screen.dart';
 import '../presentation/screen/login/bloc/login.dart';
 import '../presentation/screen/login/login_screen.dart';
+import '../presentation/screen/register/bloc/register_bloc.dart';
+import '../presentation/screen/register/register_screen.dart';
 import '../presentation/screen/settings/bloc/settings.dart';
 import '../presentation/screen/settings/settings_screen.dart';
 import '../presentation/screen/user/bloc/user_bloc.dart';
@@ -66,6 +68,7 @@ class App extends StatelessWidget {
         return MultiBlocProvider(
           providers: [
             BlocProvider<AuthoritiesBloc>(create: (_) => AuthoritiesBloc(authoritiesRepository: AuthoritiesRepository())),
+            BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
             BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
             BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),
             BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
@@ -84,11 +87,11 @@ class App extends StatelessWidget {
             ],
             supportedLocales: S.delegate.supportedLocales,
             locale: Locale(language),
+            initialRoute: ApplicationRoutes.login,
             routes: {
               ApplicationRoutes.home: (context) {
                 return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: HomeScreen());
               },
-
               ApplicationRoutes.account: (context) {
                 return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: AccountsScreen());
               },
@@ -100,6 +103,9 @@ class App extends StatelessWidget {
               },
               ApplicationRoutes.forgotPassword: (context) {
                 return BlocProvider<ForgotPasswordBloc>(create: (context) => ForgotPasswordBloc(AccountRepository: AccountRepository()), child: ForgotPasswordScreen());
+              },
+              ApplicationRoutes.register: (context) {
+                return BlocProvider<RegisterBloc>(create: (context) => RegisterBloc(AccountRepository: AccountRepository()), child: RegisterScreen());
               },
               ApplicationRoutes.changePassword: (context) {
                 return BlocProvider<ChangePasswordBloc>(create: (context) => ChangePasswordBloc(AccountRepository: AccountRepository()), child: ChangePasswordScreen());

@@ -11,6 +11,86 @@
     "level": 0
   },
   {
+    "id": 2,
+    "name": "account",
+    "description": "account",
+    "url": "/account",
+    "icon": "account",
+    "orderPriority": 10,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 3,
+    "name": "userManagement",
+    "description": "userManagement",
+    "url": "/admin",
+    "icon": "account-tie",
+    "orderPriority": 11,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 9,
+    "name": "create",
+    "description": "createOffer",
+    "url": "/admin/new-user",
+    "icon": "account-multiple-plus-outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 3,
+      "name": "userManagement",
+      "description": "userManagement",
+      "url": "/admin",
+      "icon": "account-tie",
+      "orderPriority": 11,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 10,
+    "name": "list",
+    "description": "listOffer",
+    "url": "/admin/list-users",
+    "icon": "account-edit-outline",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 3,
+      "name": "userManagement",
+      "description": "userManagement",
+      "url": "/admin",
+      "icon": "account-tie",
+      "orderPriority": 11,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
     "id": 5,
     "name": "settings",
     "description": "settings",

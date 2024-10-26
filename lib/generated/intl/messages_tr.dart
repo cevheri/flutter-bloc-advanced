@@ -44,6 +44,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Şifre Değiştir"),
         "create_user":
             MessageLookupByLibrary.simpleMessage("Kullanıcı Oluştur"),
+        "create_user_error":
+            MessageLookupByLibrary.simpleMessage("Kullanıcı oluşturulamadı"),
+        "create_user_success": MessageLookupByLibrary.simpleMessage(
+            "Kullanıcı başarıyla oluşturuldu"),
         "description":
             MessageLookupByLibrary.simpleMessage("Flutter Bloc Advanced"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Düzenle"),
@@ -108,6 +112,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "password_success": MessageLookupByLibrary.simpleMessage(
             "Password changed successfully"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Tel No"),
+        "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
         "required_phone_type": MessageLookupByLibrary.simpleMessage(
             "Telefon numarası 5** *** ** ** formatında ve 10 karakter olmalıdır"),
         "required_range":
@@ -120,6 +125,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "theme": MessageLookupByLibrary.simpleMessage("Tema"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
+        "user_name_pattern":
+            MessageLookupByLibrary.simpleMessage("Kullanıcı adı geçerli değil"),
         "username_max_length": MessageLookupByLibrary.simpleMessage(
             "Kullanıcı adı en fazla 20 karakter uzunluğunda olmalıdır"),
         "username_min_length": MessageLookupByLibrary.simpleMessage(

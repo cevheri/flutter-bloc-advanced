@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
+import 'package:http/src/response.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/app_constants.dart';
@@ -12,17 +13,10 @@ import '../models/user.dart';
 class AccountRepository {
   AccountRepository();
 
-  Future<String?> register(User newUser) async {
+  Future<Response> register(User newUser) async {
     debugPrint("register repository start");
     final registerRequest = await HttpUtils.postRequest<User>("/register", newUser);
-    String? result;
-    if (registerRequest.statusCode == 400) {
-      result = registerRequest.headers[HttpUtils.errorHeader];
-    } else {
-      result = HttpUtils.successResult;
-    }
-    debugPrint("register successful - response: ${registerRequest.statusCode}");
-    return result;
+    return registerRequest;
   }
 
   Future<int> changePassword(PasswordChangeDTO passwordChangeDTO) async {

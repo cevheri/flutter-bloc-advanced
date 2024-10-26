@@ -43,6 +43,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "change_password":
             MessageLookupByLibrary.simpleMessage("Change Password"),
         "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
+        "create_user_error":
+            MessageLookupByLibrary.simpleMessage("User creation failed"),
+        "create_user_success":
+            MessageLookupByLibrary.simpleMessage("User created successfully"),
         "description":
             MessageLookupByLibrary.simpleMessage("Flutter Bloc Advanced"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Edit User"),
@@ -105,6 +109,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "password_success": MessageLookupByLibrary.simpleMessage(
             "Password changed successfully"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
+        "register": MessageLookupByLibrary.simpleMessage("Register"),
         "required_phone_type": MessageLookupByLibrary.simpleMessage(
             "Phone Type Required 5** *** ** ** "),
         "required_range":
@@ -117,6 +122,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "theme": MessageLookupByLibrary.simpleMessage("Theme"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
+        "user_name_pattern":
+            MessageLookupByLibrary.simpleMessage("Username must be a valid"),
         "username_max_length": MessageLookupByLibrary.simpleMessage(
             "Username cannot be more than 20 characters long"),
         "username_min_length": MessageLookupByLibrary.simpleMessage(

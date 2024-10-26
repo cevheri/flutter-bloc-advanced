@@ -25,7 +25,7 @@ class HomeScreen extends StatelessWidget {
       listener: (context, state) {
         if (state.status == AccountStatus.failure) {
           Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
-        } else {}
+        }
       },
       child: BlocBuilder<AccountBloc, AccountState>(
         buildWhen: (previous, current) => previous.status != current.status,

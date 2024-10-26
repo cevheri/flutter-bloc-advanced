@@ -75,8 +75,7 @@ class ApplicationDrawer extends StatelessWidget {
                     leading: Icon(
                       String2Icon.getIconDataFromString(parentMenus[index].icon),
                     ),
-                    title: Text(
-                      S.of(context).translate_menu_title(parentMenus[index].name),
+                    title: Text((parentMenus[index].name),
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                     children: [
@@ -92,7 +91,7 @@ class ApplicationDrawer extends StatelessWidget {
                                 String2Icon.getIconDataFromString(sublistMenu[index].icon),
                               ),
                               title: Text(
-                                S.of(context).translate_menu_title(sublistMenu[index].name),
+                                (sublistMenu[index].name),
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                               onTap: () {

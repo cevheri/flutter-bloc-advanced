@@ -1,9 +1,9 @@
 {
   "id": 1,
   "login": "admin",
-  "firstName": "first name",
-  "lastName": "last name",
-  "email": "email@email.com",
+  "firstName": "Mock First Name",
+  "lastName": "Mock Last Name",
+  "email": "mock_account@test.com",
   "activated": true,
   "langKey": null,
   "createdBy": "system",

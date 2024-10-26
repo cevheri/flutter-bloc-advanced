@@ -24,6 +24,8 @@ class LoginScreen extends StatelessWidget {
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text("Flutter Bloc Advanced"),
+      //leading button false
+      leading: Container(),
     );
   }
 
@@ -50,6 +52,10 @@ class LoginScreen extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[_forgotPasswordLink(context)],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[_register(context)],
               ),
               _validationZone(),
             ],
@@ -199,6 +205,16 @@ class LoginScreen extends StatelessWidget {
           Navigator.pushNamed(context, ApplicationRoutes.forgotPassword);
         },
         child: Text(S.of(context).password_forgot),
+      ),
+    );
+  }
+  _register(BuildContext context) {
+    return SizedBox(
+      child: TextButton(
+        onPressed: () {
+          Navigator.pushNamed(context, ApplicationRoutes.register);
+        },
+        child: Text(S.of(context).register),
       ),
     );
   }
