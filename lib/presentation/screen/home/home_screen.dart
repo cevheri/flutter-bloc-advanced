@@ -91,10 +91,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            child: Center(
-                child: Text(
-              S.of(context).main_screen,
-            )),
           ),
         ),
       );
