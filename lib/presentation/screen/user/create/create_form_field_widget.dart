@@ -23,10 +23,6 @@ class CreateFormPhoneNumber extends StatelessWidget {
         [
           FormBuilderValidators.required(
               errorText: S.of(context).required_phone_type),
-          FormBuilderValidators.minLength(
-              errorText: S.of(context).required_phone_type, 10),
-          FormBuilderValidators.maxLength(
-              errorText: S.of(context).required_phone_type, 10),
         ],
       ),
     );
@@ -78,7 +74,7 @@ class CreateFormLastname extends StatelessWidget {
         labelText: S.of(context).last_name,
       ),
       inputFormatters: [
-        UpperCaseTextFormatter(),
+        // UpperCaseTextFormatter(),
       ],
       validator: FormBuilderValidators.compose(
         [
@@ -105,7 +101,7 @@ class CreateFormFirstName extends StatelessWidget {
         labelText: S.of(context).first_name,
       ),
       inputFormatters: [
-        UpperCaseTextFormatter(),
+        // UpperCaseTextFormatter(),
       ],
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(

@@ -16,6 +16,7 @@
   "name": "Name",
   "list": "List",
   "edit_user": "Edit User",
+  "edit_account": "Edit Account",
   "required_phone_type": "Phone Type Required 5** *** ** ** ",
   "email_required": "Email is required",
   "email_pattern": "Email must be a valid email address",
@@ -66,5 +67,5 @@
   "email_reset_password_error": "Email address not found",
   "email_reset_password_sending": "Sending email to reset password...",
   "email_reset_password_success": "Email sent successfully",
-  "translate_menu_title": "{translate, select, account{Account} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  create{Create}  list{List/Edit} other{Other}}"
+  "translate_menu_title": "{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  create{Create}  list{List/Edit} other{Other}}"
 }

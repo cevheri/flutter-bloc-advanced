@@ -61,7 +61,7 @@ class UserRepository {
     String authorities,
   ) async {
     final userRequest = await HttpUtils.getRequest(
-        "/admin/users/authorities/$authorities?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+        "/admin/users/list");
     var result = JsonMapper.deserialize<List<User>>(userRequest)!;
     return result;
   }

@@ -220,6 +220,16 @@ class S {
     );
   }
 
+  /// `Edit Account`
+  String get edit_account {
+    return Intl.message(
+      'Edit Account',
+      name: 'edit_account',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Phone Type Required 5** *** ** ** `
   String get required_phone_type {
     return Intl.message(
@@ -720,12 +730,13 @@ class S {
     );
   }
 
-  /// `{translate, select, account{Account} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  create{Create}  list{List/Edit} other{Other}}`
+  /// `{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  create{Create}  list{List/Edit} other{Other}}`
   String translate_menu_title(Object translate) {
     return Intl.select(
       translate,
       {
         'account': 'Account',
+        'userManagement': 'User Management',
         'settings': 'Settings',
         'logout': 'Logout',
         'info': 'Info',

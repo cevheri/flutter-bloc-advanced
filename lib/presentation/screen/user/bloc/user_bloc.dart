@@ -20,7 +20,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UserEvent>((event, emit) {});
     on<UserCreate>(_onCreate);
     on<UserSearch>(_onSearch);
-    on<UserEditEvent>(_onEdit);
+    on<UserEdit>(_onEdit);
     on<UserList>(_onList);
   }
 
@@ -64,7 +64,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     }
   }
 
-  FutureOr<void> _onEdit(UserEditEvent event, Emitter<UserState> emit) async {
+  FutureOr<void> _onEdit(UserEdit event, Emitter<UserState> emit) async {
     emit(UserEditInitialState());
     try {
       var user = await _userRepository.updateUser(event.user);

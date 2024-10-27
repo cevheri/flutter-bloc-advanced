@@ -16,6 +16,7 @@
   "name": "İsim",
   "list": "Listele",
   "edit_user": "Kullanıcı Düzenle",
+  "edit_account": "Hesabı Düzenle",
   "required_phone_type": "Telefon numarası 5** *** ** ** formatında ve 10 karakter olmalıdır",
   "email_required": "E-posta gereklidir",
   "email_pattern": "E-posta adresi geçerli değil",
@@ -66,5 +67,5 @@
   "email_reset_password_error": "Şifre sıfırlama e-postası gönderilemedi",
   "email_reset_password_sending": "Şifre sıfırlama e-postası gönderiliyor...",
   "email_reset_password_success": "Şifre sıfırlama e-postası başarıyla gönderildi",
-  "translate_menu_title": "{translate, select, account{Hesabım} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  create{Oluştur}  list{Listele/Düzenle }  other{Diğer}}"
+  "translate_menu_title": "{translate, select, account{Hesabım}  userManagement{Kullanıcı Yönetimi} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  create{Oluştur}  list{Listele/Düzenle } other{Diğer}}"
 }

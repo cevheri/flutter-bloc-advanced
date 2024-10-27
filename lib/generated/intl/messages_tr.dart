@@ -22,6 +22,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(translate) => "${Intl.select(translate, {
             'account': 'Hesabım',
+            'userManagement': 'Kullanıcı Yönetimi',
             'settings': 'Ayarlar',
             'logout': 'Çıkış',
             'info': 'Bilgiler',
@@ -50,6 +51,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Kullanıcı başarıyla oluşturuldu"),
         "description":
             MessageLookupByLibrary.simpleMessage("Flutter Bloc Advanced"),
+        "edit_account": MessageLookupByLibrary.simpleMessage("Hesabı Düzenle"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Düzenle"),
         "email": MessageLookupByLibrary.simpleMessage("E-posta"),
         "email_pattern": MessageLookupByLibrary.simpleMessage(

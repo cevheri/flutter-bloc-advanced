@@ -41,7 +41,9 @@
     - Forgot Password
     - Update Profile
     - Change Password
-- Roles and Permissions
+- Role based Access Control
+    - Admin Role
+    - User Role
 - Dark and Light Themes
 - Mock data
 - Rest API data

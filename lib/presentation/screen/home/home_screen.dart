@@ -7,7 +7,7 @@ import '../../../data/repository/login_repository.dart';
 import '../../../data/repository/menu_repository.dart';
 import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account.dart';
-import '../../common_widgets/drawer/bloc/drawer_bloc.dart';
+import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../../common_widgets/drawer/drawer_widget.dart';
 
 class HomeScreen extends StatelessWidget {

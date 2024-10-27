@@ -24,12 +24,7 @@ class EditFormPhoneNumber extends StatelessWidget {
       ),
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).required_phone_type),
-          FormBuilderValidators.minLength(
-              errorText: S.of(context).required_phone_type, 10),
-          FormBuilderValidators.maxLength(
-              errorText: S.of(context).required_phone_type, 10),
+          FormBuilderValidators.required(errorText: S.of(context).required_phone_type),
         ],
       ),
       initialValue: user.phoneNumber,
@@ -66,8 +61,7 @@ class EditFormEmail extends StatelessWidget {
       ),
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).email_required),
+          FormBuilderValidators.required(errorText: S.of(context).email_required),
           FormBuilderValidators.email(errorText: S.of(context).email_pattern),
         ],
       ),
@@ -89,16 +83,13 @@ class EditFormLastname extends StatelessWidget {
         labelText: S.of(context).last_name,
       ),
       inputFormatters: [
-        UpperCaseTextFormatter(),
+        // UpperCaseTextFormatter(),
       ],
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).lastname_required),
-          FormBuilderValidators.minLength(
-              errorText: S.of(context).lastname_min_length, 3),
-          FormBuilderValidators.maxLength(
-              errorText: S.of(context).lastname_max_length, 20),
+          FormBuilderValidators.required(errorText: S.of(context).lastname_required),
+          FormBuilderValidators.minLength(errorText: S.of(context).lastname_min_length, 3),
+          FormBuilderValidators.maxLength(errorText: S.of(context).lastname_max_length, 20),
         ],
       ),
       initialValue: user.lastName,
@@ -119,16 +110,13 @@ class EditFormFirstName extends StatelessWidget {
         labelText: S.of(context).first_name,
       ),
       inputFormatters: [
-        UpperCaseTextFormatter(),
+        // UpperCaseTextFormatter(),
       ],
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).firstname_required),
-          FormBuilderValidators.minLength(
-              errorText: S.of(context).firstname_min_length, 3),
-          FormBuilderValidators.maxLength(
-              errorText: S.of(context).firstname_max_length, 20),
+          FormBuilderValidators.required(errorText: S.of(context).firstname_required),
+          FormBuilderValidators.minLength(errorText: S.of(context).firstname_min_length, 3),
+          FormBuilderValidators.maxLength(errorText: S.of(context).firstname_max_length, 20),
         ],
       ),
       initialValue: user.firstName,
@@ -150,14 +138,10 @@ class EditFormLoginName extends StatelessWidget {
       ),
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).username_required),
-          FormBuilderValidators.minLength(
-              errorText: S.of(context).username_min_length, 3),
-          FormBuilderValidators.maxLength(
-              errorText: S.of(context).username_max_length, 20),
-          FormBuilderValidators.match((RegExp("^[a-zA-Z0-9]+\$")),
-              errorText: S.of(context).username_regex_pattern),
+          FormBuilderValidators.required(errorText: S.of(context).username_required),
+          FormBuilderValidators.minLength(errorText: S.of(context).username_min_length, 3),
+          FormBuilderValidators.maxLength(errorText: S.of(context).username_max_length, 20),
+          FormBuilderValidators.match((RegExp("^[a-zA-Z0-9]+\$")), errorText: S.of(context).username_regex_pattern),
         ],
       ),
       initialValue: user.login,
@@ -182,8 +166,7 @@ class EditFormAuthorities extends StatelessWidget {
               hintText: S.of(context).authorities,
             ),
             validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(
-                  errorText: S.of(context).authorities_required),
+              FormBuilderValidators.required(errorText: S.of(context).authorities_required),
             ]),
             items: state.role
                 .map((role) => DropdownMenuItem(
@@ -191,10 +174,8 @@ class EditFormAuthorities extends StatelessWidget {
                       child: Text(role),
                     ))
                 .toList(),
-            initialValue: () {
-            }(),
-            onChanged: (value) {
-            },
+            initialValue: () {}(),
+            onChanged: (value) {},
           );
         } else {
           return Container();
@@ -204,13 +185,18 @@ class EditFormAuthorities extends StatelessWidget {
   }
 }
 
-
 class SubmitButton extends StatelessWidget {
   final User user;
   final GlobalKey<FormBuilderState> formKey;
+  final String? editAccount;
 
-  const SubmitButton(BuildContext context,
-      {super.key, required this.user, required this.formKey});
+  const SubmitButton(
+    BuildContext context, {
+    super.key,
+    required this.user,
+    required this.formKey,
+    this.editAccount,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -218,7 +204,7 @@ class SubmitButton extends StatelessWidget {
       builder: (context, state) {
         return SizedBox(
           child: ElevatedButton(
-            child: Text(S.of(context).edit_user),
+            child: Text(editAccount == null ? S.of(context).edit_user : S.of(context).edit_account),
             onPressed: () {
               User newUser = User(
                 id: user.id,
@@ -227,11 +213,8 @@ class SubmitButton extends StatelessWidget {
                 firstName: formKey.currentState!.fields['editFirstName']!.value,
                 lastName: formKey.currentState!.fields['editLastName']!.value,
                 email: formKey.currentState!.fields['editEmail']!.value,
-                phoneNumber:
-                    formKey.currentState!.fields['editPhoneNumber']!.value,
-                authorities: [
-                  formKey.currentState!.fields['editAuthorities']!.value
-                ],
+                phoneNumber: formKey.currentState!.fields['editPhoneNumber']!.value,
+                authorities: [formKey.currentState!.fields['editAuthorities']?.value ?? ""],
               );
               User cacheUser = User(
                 id: user.id,
@@ -245,17 +228,14 @@ class SubmitButton extends StatelessWidget {
               );
               if (cacheUser != newUser) {
                 BlocProvider.of<UserBloc>(context).add(
-                  UserEditEvent(
+                  UserEdit(
                     user: newUser,
                   ),
                 );
               }
 
               if (cacheUser == newUser) {
-                Message.getMessage(
-                    context: context,
-                    title: "Değişiklik bulunmadı",
-                    content: '');
+                Message.getMessage(context: context, title: "Değişiklik bulunmadı", content: '');
               }
             },
           ),
@@ -263,19 +243,14 @@ class SubmitButton extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is UserEditInitialState) {
-          Message.getMessage(
-              context: context, title: "Değişiklikleri kaydet", content: '');
+          Message.getMessage(context: context, title: "Değişiklikleri kaydet", content: '');
         }
         if (current is UserEditSuccessState) {
-          Message.getMessage(
-              context: context, title: "Değişiklikler kaydedildi", content: '');
+          Message.getMessage(context: context, title: "Değişiklikler kaydedildi", content: '');
           Navigator.pop(context);
         }
         if (current is UserEditFailureState) {
-          Message.errorMessage(
-              title: 'Değişiklikler kaydedilemedi.',
-              context: context,
-              content: '');
+          Message.errorMessage(title: 'Değişiklikler kaydedilemedi.', context: context, content: '');
         }
 
         return true;

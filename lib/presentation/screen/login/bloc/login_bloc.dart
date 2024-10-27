@@ -48,6 +48,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await prefs.setString('jwtToken', token.idToken ?? "");
         await prefs.setString('username', event.username);
         AppConstants.jwtToken = token.idToken ?? "";
+        AppConstants.role = event.username;
         emit(state.copyWith(status: LoginStatus.authenticated));
         emit(LoginLoadedState());
         log("LoginBloc.onSubmit end: ${state.status}");
