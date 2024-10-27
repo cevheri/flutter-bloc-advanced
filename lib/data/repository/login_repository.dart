@@ -14,6 +14,9 @@ class LoginRepository {
   /// Store the JWT token in the secure storage
   Future<void> _storeToken(JWTToken result) async {
     AppConstants.jwtToken = result.idToken ?? "";
+    await SharedPreferences.getInstance().then((prefs) {
+      prefs.setString('jwtToken', result.idToken ?? "");
+    });
   }
 
   //TODO if (ProfileConstants.isProduction) {}
@@ -23,8 +26,7 @@ class LoginRepository {
       JWTToken result = JsonMapper.deserialize<JWTToken>(authenticateRequest.body)!;
       await _storeToken(result);
       return result;
-    }
-    else{
+    } else {
       JWTToken result = JsonMapper.deserialize<JWTToken>(await rootBundle.loadString('assets/mock/id_token.json'))!;
       await _storeToken(result);
       return result;
@@ -38,5 +40,8 @@ class LoginRepository {
     await prefs.remove('jwtToken');
     await prefs.clear();
     AppConstants.jwtToken = "";
+    await SharedPreferences.getInstance().then((prefs) {
+      prefs.remove('jwtToken');
+    });
   }
 }
