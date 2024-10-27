@@ -106,15 +106,15 @@ class App extends StatelessWidget {
               },
               ApplicationRoutes.forgotPassword: (context) {
                 return BlocProvider<ForgotPasswordBloc>(
-                    create: (context) => ForgotPasswordBloc(AccountRepository: AccountRepository()), child: ForgotPasswordScreen());
+                    create: (context) => ForgotPasswordBloc(accountRepository: AccountRepository()), child: ForgotPasswordScreen());
               },
               ApplicationRoutes.register: (context) {
                 return BlocProvider<RegisterBloc>(
-                    create: (context) => RegisterBloc(AccountRepository: AccountRepository()), child: RegisterScreen());
+                    create: (context) => RegisterBloc(accountRepository: AccountRepository()), child: RegisterScreen());
               },
               ApplicationRoutes.changePassword: (context) {
                 return BlocProvider<ChangePasswordBloc>(
-                    create: (context) => ChangePasswordBloc(AccountRepository: AccountRepository()), child: ChangePasswordScreen());
+                    create: (context) => ChangePasswordBloc(accountRepository: AccountRepository()), child: ChangePasswordScreen());
               },
               ApplicationRoutes.logout: (context) {
                 return LogoutConfirmationDialog();

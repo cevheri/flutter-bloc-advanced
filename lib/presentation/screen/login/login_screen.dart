@@ -9,7 +9,7 @@ import '../../../utils/message.dart';
 import 'bloc/login.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen() : super();
+  LoginScreen({super.key});
 
   final _loginFormKey = GlobalKey<FormBuilderState>();
 

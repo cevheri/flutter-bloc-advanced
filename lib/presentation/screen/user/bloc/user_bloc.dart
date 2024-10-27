@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../../data/models/customer.dart';
 import '../../../../data/models/user.dart';
 import '../../../../data/repository/user_repository.dart';
 
@@ -30,7 +29,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(UserInitialState());
     try {
       var user = await _userRepository.createUser(event.user);
-      emit(UserLoadSuccessState(user: user!));
+      emit(UserLoadSuccessState(userLoadSuccess: user!));
     } catch (e) {
       emit(UserLoadFailureState(message: e.toString()));
     }
@@ -68,7 +67,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(UserEditInitialState());
     try {
       var user = await _userRepository.updateUser(event.user);
-      emit(UserEditSuccessState(user: user!));
+      emit(UserEditSuccessState(userEditSuccess: user!));
     } catch (e) {
       emit(UserEditFailureState(message: e.toString()));
     }

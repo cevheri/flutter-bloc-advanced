@@ -26,10 +26,6 @@ class LoginRepository {
     }
     else{
       JWTToken result = JsonMapper.deserialize<JWTToken>(await rootBundle.loadString('assets/mock/id_token.json'))!;
-      print(result);
-      print(result);
-      print(result);
-      print(result);
       await _storeToken(result);
       return result;
       //

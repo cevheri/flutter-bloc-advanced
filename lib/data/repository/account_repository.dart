@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
-import 'package:http/src/response.dart';
+import 'package:http/http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../utils/app_constants.dart';
@@ -33,17 +33,6 @@ class AccountRepository {
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
     final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
-    String? result;
-    if (resetRequest.statusCode != 200) {
-      if (resetRequest.headers[HttpUtils.errorHeader] != null) {
-        result = resetRequest.headers[HttpUtils.errorHeader];
-      } else {
-        result = HttpUtils.errorServerKey;
-      }
-    } else {
-      result = HttpUtils.successResult;
-    }
-
     debugPrint("resetPassword successful - response: ${resetRequest.statusCode}");
     return resetRequest.statusCode;
   }

@@ -483,7 +483,7 @@ packages:
     source: hosted
     version: "4.0.0"
   glob:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       name: glob
       sha256: "0e7014b3b7d4dac1ca4d6114f82bf1782ee86745b9b42a92c9289c23d8a0ab63"
@@ -835,7 +835,7 @@ packages:
     source: hosted
     version: "3.0.2"
   reflectable:
-    dependency: "direct overridden"
+    dependency: "direct main"
     description:
       name: reflectable
       sha256: f6abe4c7779c6c88f77b79a4317d9277c870c7292a3d6c2e56624c4846124368

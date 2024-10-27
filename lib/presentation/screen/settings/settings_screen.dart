@@ -1,7 +1,7 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../configuration/routes.dart';
@@ -10,7 +10,7 @@ import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import 'bloc/settings.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen() : super();
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -112,42 +112,11 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Future languageConfirmationDialog(
-    BuildContext context,
-  ) {
+  Future<void> languageConfirmationDialog(BuildContext context) {
     return showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title: Text(S.of(context).language_select, textAlign: TextAlign.center),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: () async {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.setString('lang', 'tr');
-                S.load(Locale("tr"));
-                Navigator.pushNamed(context, ApplicationRoutes.home);
-              },
-              child: Text(S.of(context).turkish, style: TextStyle(color: Colors.white)),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: () async {
-                final SharedPreferences prefs = await SharedPreferences.getInstance();
-                prefs.setString('lang', 'en');
-                S.load(Locale("en"));
-                Navigator.pushNamed(context, ApplicationRoutes.home);
-              },
-              child: Text(S.of(context).english, style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
+        return const LanguageConfirmationDialog();
       },
     );
   }
@@ -186,3 +155,42 @@ class SettingsScreen extends StatelessWidget {
     Navigator.pop(context);
   }
 }
+
+
+
+
+class LanguageConfirmationDialog extends StatelessWidget {
+  const LanguageConfirmationDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(S.of(context).language_select, textAlign: TextAlign.center),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          onPressed: () => _setLanguage(context, 'tr'),
+          child: Text(S.of(context).turkish, style: TextStyle(color: Colors.white)),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          onPressed: () => _setLanguage(context, 'en'),
+          child: Text(S.of(context).english, style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _setLanguage(BuildContext context, String langCode) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('lang', langCode);
+    await S.load(Locale(langCode));
+    Get.back();
+  }
+}
+

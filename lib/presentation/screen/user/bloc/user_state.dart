@@ -28,15 +28,15 @@ class UserFindInitialState extends UserState {}
 class UserLoadInProgressState extends UserState {}
 
 class UserLoadSuccessState extends UserState {
-  final User user;
+  final User userLoadSuccess;
 
-  const UserLoadSuccessState({required this.user});
+  const UserLoadSuccessState({required this.userLoadSuccess});
 }
 
 class UserEditSuccessState extends UserState {
-  final User user;
+  final User userEditSuccess;
 
-  const UserEditSuccessState({required this.user});
+  const UserEditSuccessState({required this.userEditSuccess});
 }
 
 class UserSearchSuccessState extends UserState {

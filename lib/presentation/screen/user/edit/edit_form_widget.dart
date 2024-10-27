@@ -5,7 +5,6 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../../../generated/l10n.dart';
 import '../../../../data/models/user.dart';
-import '../../../../utils/app_constants.dart';
 import '../../../../utils/message.dart';
 import '../../../common_blocs/authorities/authorities_bloc.dart';
 import '../bloc/user_bloc.dart';
@@ -82,9 +81,6 @@ class EditFormLastname extends StatelessWidget {
       decoration: InputDecoration(
         labelText: S.of(context).last_name,
       ),
-      inputFormatters: [
-        // UpperCaseTextFormatter(),
-      ],
       validator: FormBuilderValidators.compose(
         [
           FormBuilderValidators.required(errorText: S.of(context).lastname_required),
@@ -109,9 +105,6 @@ class EditFormFirstName extends StatelessWidget {
       decoration: InputDecoration(
         labelText: S.of(context).first_name,
       ),
-      inputFormatters: [
-        // UpperCaseTextFormatter(),
-      ],
       validator: FormBuilderValidators.compose(
         [
           FormBuilderValidators.required(errorText: S.of(context).firstname_required),
@@ -168,7 +161,7 @@ class EditFormAuthorities extends StatelessWidget {
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).authorities_required),
             ]),
-            items: state.role
+            items: state.roleList
                 .map((role) => DropdownMenuItem(
                       value: role,
                       child: Text(role),

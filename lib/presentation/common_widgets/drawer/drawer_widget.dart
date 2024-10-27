@@ -58,7 +58,7 @@ class ApplicationDrawer extends StatelessWidget {
                         List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
                         sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
                         return ExpansionTileCard(
-                          trailing: sublistMenu.length != 0
+                          trailing: sublistMenu.isNotEmpty
                               ? Icon(
                                   Icons.keyboard_arrow_down,
                                 )
@@ -67,7 +67,7 @@ class ApplicationDrawer extends StatelessWidget {
                                 ),
                           onExpansionChanged: (value) {
                             if (value) {
-                              if (sublistMenu.length == 0) {
+                              if (sublistMenu.isEmpty) {
                                 Navigator.pop(context);
                                 Navigator.pushNamed(context, parentMenus[index].url);
                               }
@@ -259,7 +259,11 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('lang', isTurkish ? 'tr' : 'en');
         await S.load(Locale(isTurkish ? 'tr' : 'en'));
-        Navigator.pushNamed(context, ApplicationRoutes.home);
+        if (mounted) {
+          setState(() {
+            Navigator.pushNamed(context, ApplicationRoutes.home);
+          });
+        }
       },
     );
   }

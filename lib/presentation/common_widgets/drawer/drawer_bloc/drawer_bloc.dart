@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../data/models/menu.dart';
 import '../../../../data/repository/login_repository.dart';
@@ -57,6 +57,8 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
       final menus = await _menuRepository.getMenus();
       MenuListCache.menus = menus;
       emit(state.copyWith(menus: menus));
-    } catch (e) {}
+    } catch (e) {
+      emit(state.copyWith(menus: []));
+    }
   }
 }

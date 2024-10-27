@@ -37,11 +37,10 @@ dependencies:
   custom_navigation_bar:
   flutter_inappwebview:
   animated_toggle_switch:
-
-dependency_overrides:
   reflectable:
-  intl:
   glob:
+
+
 
 dev_dependencies:
   flutter_test:

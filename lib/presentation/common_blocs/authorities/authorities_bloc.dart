@@ -26,7 +26,7 @@ class AuthoritiesBloc extends Bloc<AuthoritiesEvent, AuthoritiesState> {
     emit(AuthoritiesInitialState());
     try {
       List role = await _authoritiesRepository.getAuthorities();
-      emit(AuthoritiesLoadSuccessState(role: role));
+      emit(AuthoritiesLoadSuccessState(roleList: role));
     } catch (e) {
       emit(AuthoritiesLoadFailureState(message: e.toString()));
     }
