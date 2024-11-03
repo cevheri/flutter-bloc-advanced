@@ -10,6 +10,7 @@ import '../../../../data/repository/login_repository.dart';
 import '../../../../utils/storage.dart';
 
 part 'login_event.dart';
+
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
@@ -29,8 +30,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     super.onTransition(transition);
   }
 
-  FutureOr<void> _onSubmit(
-      LoginFormSubmitted event, Emitter<LoginState> emit) async {
+  FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
     log("LoginBloc.onSubmit start: ${event.username}, ${event.password}");
     emit(state.copyWith(
       username: event.username,
@@ -44,6 +44,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       if (token.idToken != null) {
         log("LoginBloc.onSubmit token: ${token.idToken}");
         saveStorage(jwtToken: token.idToken, role: event.username);
+        saveStorage(username: event.username);
 
         emit(state.copyWith(status: LoginStatus.authenticated));
         emit(LoginLoadedState());

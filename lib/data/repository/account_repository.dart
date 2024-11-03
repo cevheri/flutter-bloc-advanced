@@ -4,6 +4,7 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/utils/storage.dart';
 import 'package:http/http.dart';
+
 import '../../utils/app_constants.dart';
 import '../http_utils.dart';
 import '../models/change_password.dart';
@@ -39,6 +40,7 @@ class AccountRepository {
   Future<User> getAccount() async {
     debugPrint("getAccount repository start");
     final response = await HttpUtils.getRequest("/account");
+
     var result = JsonMapper.deserialize<User>(response)!;
     saveStorage(role: result.authorities?[0] ?? "");
     debugPrint("getAccount successful - response : $response}");

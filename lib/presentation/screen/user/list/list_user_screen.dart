@@ -114,7 +114,7 @@ class ListUserScreen extends StatelessWidget {
                           SizedBox(width: 5),
                           Expanded(
                             flex: 3,
-                            child: buildActiveItem(state, index),
+                            child: buildActiveItem(state, index, context),
                           ),
                           SizedBox(width: 5),
                           Expanded(
@@ -167,14 +167,8 @@ class ListUserScreen extends StatelessWidget {
     );
   }
 
-  Switch buildActiveItem(UserSearchSuccessState state, int index) {
-    return Switch(
-      value: state.userList[index].activated!,
-      onChanged: (value) {
-        // ignore: unnecessary_statements
-        value;
-      },
-    );
+  Widget buildActiveItem(UserSearchSuccessState state, int index, BuildContext context) {
+    return Text(state.userList[index].activated! ? "active" : "passive");
   }
 
   Widget _tableHeader(BuildContext context) {
@@ -217,7 +211,7 @@ class ListUserScreen extends StatelessWidget {
             ),
             SizedBox(width: 5),
             Expanded(
-              flex: 10,
+              flex: 3,
               child: Text(S.of(context).guest, textAlign: TextAlign.left, style: headerStyle),
             ),
             SizedBox(width: 5),

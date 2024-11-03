@@ -129,6 +129,7 @@ class EditFormLoginName extends StatelessWidget {
       decoration: InputDecoration(
         labelText: S.of(context).login,
       ),
+      enabled: false,
       validator: FormBuilderValidators.compose(
         [
           FormBuilderValidators.required(errorText: S.of(context).username_required),

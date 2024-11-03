@@ -6,26 +6,24 @@ import 'dart:io';
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
 import '../configuration/environment.dart';
 import '../main/main_local.dart';
 import '../utils/app_constants.dart';
-import '../utils/storage.dart';
 import 'app_api_exception.dart';
 
 class MyHttpOverrides extends HttpOverrides {
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)
-      ..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
   }
 }
 
 class HttpUtils {
-  static String errorHeader =
-      'x-${ProfileConstants.isProduction == true ? AppConstants.APP_KEY : "default_token"}App-error';
+  static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.APP_KEY : "default_token"}App-error';
   static String successResult = 'success';
   static String keyForJWTToken = 'jwt-token';
   static String badRequestServerKey = 'error.400';
@@ -120,9 +118,7 @@ class HttpUtils {
 
     var headers = await HttpUtils.headers();
     try {
-      var response = await http
-          .get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers)
-          .timeout(Duration(seconds: timeout));
+      var response = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
       if (response.statusCode == 401) {
         throw UnauthorisedException(response.body.toString());
       }
@@ -173,8 +169,7 @@ class HttpUtils {
     Response response;
     try {
       response = await http
-          .put(Uri.parse('${ProfileConstants.api}$endpoint'),
-              headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
+          .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
           .timeout(Duration(seconds: timeout));
     } on SocketException {
       throw FetchDataException('No Internet connection');
@@ -199,8 +194,7 @@ class HttpUtils {
     Response response;
     try {
       response = await http
-          .patch(Uri.parse('${ProfileConstants.api}$endpoint'),
-              headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
+          .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
           .timeout(Duration(seconds: timeout));
     } on SocketException {
       throw FetchDataException('No Internet connection');
@@ -214,9 +208,7 @@ class HttpUtils {
     if (!ProfileConstants.isProduction) return await mockRequest('DELETE', endpoint);
     var headers = await HttpUtils.headers();
     try {
-      return await http
-          .delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers)
-          .timeout(Duration(seconds: timeout));
+      return await http.delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -274,8 +266,8 @@ class HttpUtils {
       debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
     }
 
-
-    String username = getStorageCache["username"];
+    final cacheStorage = getStorageCache;
+    String username = cacheStorage["username"] ?? '';
     if (endpoint.startsWith('/account') || endpoint.startsWith('/users')) {
       try {
         var responseJson = json.decode(responseBody);

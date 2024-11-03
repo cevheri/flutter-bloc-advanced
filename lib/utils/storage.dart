@@ -1,6 +1,8 @@
 import 'package:get_storage/get_storage.dart';
 import 'dart:html' as html;
 
+import '../main/main_local.dart';
+
 class AuthenticationStorageConstants {
   static const JWT_TOKEN = "TOKEN";
   static const ROLE = "ROLE";
@@ -35,6 +37,7 @@ void saveStorage({
   language != null ? authenticationStorage.write(AuthenticationStorageConstants.LANGUAGE, language) : null;
   username != null ? authenticationStorage.write(AuthenticationStorageConstants.USERNAME, username) : null;
   getStorage();
+  loadStorageData();
 }
 
 void clearStorage() {

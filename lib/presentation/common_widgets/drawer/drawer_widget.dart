@@ -8,14 +8,12 @@ import '../../../configuration/routes.dart';
 import '../../../data/models/menu.dart';
 import '../../../generated/l10n.dart';
 import '../../../main/main_local.dart';
-import '../../../utils/app_constants.dart';
 import '../../../utils/storage.dart';
 import '../../common_blocs/account/account.dart';
 import 'drawer_bloc/drawer_bloc.dart';
 
 class ApplicationDrawer extends StatelessWidget {
   const ApplicationDrawer({super.key});
-
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +54,7 @@ class ApplicationDrawer extends StatelessWidget {
                     shrinkWrap: true,
                     physics: ClampingScrollPhysics(),
                     itemBuilder: (context, index) {
+
                       if (getStorageCache["role"] == 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
                         List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
                         sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
@@ -111,7 +110,7 @@ class ApplicationDrawer extends StatelessWidget {
                             ),
                           ],
                         );
-                      } else if (getStorageCache["role"] != 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
+                      } else if (getStorageCache["jwtToken"] != 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
                         return Container();
                       } else {
                         return ListTile(
@@ -239,8 +238,8 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
   }
 
   Future<void> _loadLanguage() async {
-    final language = getStorageCache["language"];
-    String? lang = language;
+    final cache = await getStorage();
+    final lang = cache["language"];
     setState(() {
       isTurkish = lang == 'tr';
     });
@@ -258,7 +257,8 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
       value: isTurkish,
       onChanged: (value) async {
         isTurkish = value;
-        saveStorage(language: isTurkish ? 'tr' : 'en');
+        final cache = await getStorage();
+        cache["language"] = isTurkish ? 'tr' : 'en';
         await S.load(Locale(isTurkish ? 'tr' : 'en'));
         if (mounted) {
           setState(() {
