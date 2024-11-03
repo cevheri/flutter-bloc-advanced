@@ -2,18 +2,20 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/models/menu.dart';
 import '../../../generated/l10n.dart';
+import '../../../main/main_local.dart';
 import '../../../utils/app_constants.dart';
+import '../../../utils/storage.dart';
 import '../../common_blocs/account/account.dart';
 import 'drawer_bloc/drawer_bloc.dart';
 
 class ApplicationDrawer extends StatelessWidget {
   const ApplicationDrawer({super.key});
+
 
   @override
   Widget build(BuildContext context) {
@@ -54,7 +56,7 @@ class ApplicationDrawer extends StatelessWidget {
                     shrinkWrap: true,
                     physics: ClampingScrollPhysics(),
                     itemBuilder: (context, index) {
-                      if (AppConstants.role == 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
+                      if (getStorageCache["role"] == 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
                         List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
                         sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
                         return ExpansionTileCard(
@@ -109,7 +111,7 @@ class ApplicationDrawer extends StatelessWidget {
                             ),
                           ],
                         );
-                      } else if (AppConstants.role != 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
+                      } else if (getStorageCache["role"] != 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
                         return Container();
                       } else {
                         return ListTile(
@@ -237,8 +239,8 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
   }
 
   Future<void> _loadLanguage() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? lang = prefs.getString('lang');
+    final language = getStorageCache["language"];
+    String? lang = language;
     setState(() {
       isTurkish = lang == 'tr';
     });
@@ -256,8 +258,7 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
       value: isTurkish,
       onChanged: (value) async {
         isTurkish = value;
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('lang', isTurkish ? 'tr' : 'en');
+        saveStorage(language: isTurkish ? 'tr' : 'en');
         await S.load(Locale(isTurkish ? 'tr' : 'en'));
         if (mounted) {
           setState(() {

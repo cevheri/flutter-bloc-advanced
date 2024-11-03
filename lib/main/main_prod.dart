@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get_storage/get_storage.dart';
 
 import '../configuration/environment.dart';
-import '../utils/app_constants.dart';
+import '../utils/storage.dart';
 import 'app.dart';
 import 'main_local.mapper.g.dart' show initializeJsonMapper;
 
@@ -12,19 +12,25 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 // flutter pub run intl_utils:generate
 
 /// main entry point of local computer development
+
+Map<String, dynamic> getStorageCache = {};
+Future<void> loadStorageData() async {
+  getStorageCache = await getStorage();
+}
+
 void main() async {
   ProfileConstants.setEnvironment(Environment.PROD);
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
-  final SharedPreferences prefs = await SharedPreferences.getInstance();
-  String? language = prefs.getString('lang');
-  if (language == null) {
-    prefs.setString('lang', 'en');
-    language = 'en';
-  }
-  AppConstants.jwtToken = prefs.getString('jwtToken') ?? "";
-  AppConstants.role = prefs.getString('role') ?? "";
 
+  await GetStorage.init();
+  clearLocalStorage();
+
+  final storageData = getStorageCache;
+  final language = storageData["language"];
+  if (language == null) {
+    saveStorage(language: 'en');
+  }
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runApp(App(language: language ?? 'en'));

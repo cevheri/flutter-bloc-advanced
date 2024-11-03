@@ -8,10 +8,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../configuration/environment.dart';
+import '../main/main_local.dart';
 import '../utils/app_constants.dart';
+import '../utils/storage.dart';
 import 'app_api_exception.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -48,7 +49,7 @@ class HttpUtils {
   }
 
   static Future<Map<String, String>> headers() async {
-    String? jwt = ProfileConstants.isProduction == true ? AppConstants.jwtToken : "default_token";
+    String? jwt = ProfileConstants.isProduction == true ? getStorageCache["jwtToken"] : "default_token";
     Map<String, String> headerParameters = <String, String>{};
 
     //custom http headers entries
@@ -273,8 +274,8 @@ class HttpUtils {
       debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
     }
 
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String username = prefs.getString('username') ?? '';
+
+    String username = getStorageCache["username"];
     if (endpoint.startsWith('/account') || endpoint.startsWith('/users')) {
       try {
         var responseJson = json.decode(responseBody);

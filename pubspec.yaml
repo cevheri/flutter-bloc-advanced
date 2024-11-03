@@ -28,7 +28,6 @@ dependencies:
   form_builder_validators:
   intl:
   string_2_icon:
-  shared_preferences:
   intl_utils:
   pattern_formatter:
   http_certificate_pinning:
@@ -39,6 +38,7 @@ dependencies:
   animated_toggle_switch:
   reflectable:
   glob:
+  get_storage:
 
 
 

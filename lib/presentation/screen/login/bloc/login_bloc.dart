@@ -4,11 +4,10 @@ import 'dart:developer';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
-import '../../../../utils/app_constants.dart';
+import '../../../../utils/storage.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -44,11 +43,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       debugPrint(token.toString());
       if (token.idToken != null) {
         log("LoginBloc.onSubmit token: ${token.idToken}");
-        final SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('jwtToken', token.idToken ?? "");
-        await prefs.setString('username', event.username);
-        AppConstants.jwtToken = token.idToken ?? "";
-        AppConstants.role = event.username;
+        saveStorage(jwtToken: token.idToken, role: event.username);
+
         emit(state.copyWith(status: LoginStatus.authenticated));
         emit(LoginLoadedState());
         log("LoginBloc.onSubmit end: ${state.status}");
