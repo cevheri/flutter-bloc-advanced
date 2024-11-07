@@ -19,7 +19,7 @@ import '../presentation/common_blocs/authorities/authorities_bloc.dart';
 import '../presentation/common_blocs/city/city_bloc.dart';
 import '../presentation/common_blocs/district/district_bloc.dart';
 
-import '../presentation/common_widgets/drawer/bloc/drawer_bloc.dart';
+import '../presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../presentation/screen/account/account_screen.dart';
 import '../presentation/screen/account/logout_widget.dart';
 import '../presentation/screen/change_password/bloc/change_password_bloc.dart';
@@ -36,6 +36,8 @@ import '../presentation/screen/settings/settings_screen.dart';
 import '../presentation/screen/user/bloc/user_bloc.dart';
 import '../presentation/screen/user/create/create_user_screen.dart';
 import '../presentation/screen/user/list/list_user_screen.dart';
+import '../utils/storage.dart';
+import 'main_local.dart';
 
 /// Main application widget. This widget is the root of your application.
 ///
@@ -87,28 +89,34 @@ class App extends StatelessWidget {
             ],
             supportedLocales: S.delegate.supportedLocales,
             locale: Locale(language),
-            initialRoute: ApplicationRoutes.login,
+            initialRoute: getStorageCache["jwtToken"] != "" ? "/" : initialRouteControl(context),
             routes: {
               ApplicationRoutes.home: (context) {
-                return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: HomeScreen());
+                return BlocProvider<AccountBloc>(
+                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: HomeScreen());
               },
               ApplicationRoutes.account: (context) {
-                return BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: AccountsScreen());
+                return BlocProvider<AccountBloc>(
+                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: AccountsScreen());
               },
               ApplicationRoutes.login: (context) {
                 return BlocProvider<LoginBloc>(create: (context) => LoginBloc(loginRepository: LoginRepository()), child: LoginScreen());
               },
               ApplicationRoutes.settings: (context) {
-                return BlocProvider<SettingsBloc>(create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
+                return BlocProvider<SettingsBloc>(
+                    create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
               },
               ApplicationRoutes.forgotPassword: (context) {
-                return BlocProvider<ForgotPasswordBloc>(create: (context) => ForgotPasswordBloc(AccountRepository: AccountRepository()), child: ForgotPasswordScreen());
+                return BlocProvider<ForgotPasswordBloc>(
+                    create: (context) => ForgotPasswordBloc(accountRepository: AccountRepository()), child: ForgotPasswordScreen());
               },
               ApplicationRoutes.register: (context) {
-                return BlocProvider<RegisterBloc>(create: (context) => RegisterBloc(AccountRepository: AccountRepository()), child: RegisterScreen());
+                return BlocProvider<RegisterBloc>(
+                    create: (context) => RegisterBloc(accountRepository: AccountRepository()), child: RegisterScreen());
               },
               ApplicationRoutes.changePassword: (context) {
-                return BlocProvider<ChangePasswordBloc>(create: (context) => ChangePasswordBloc(AccountRepository: AccountRepository()), child: ChangePasswordScreen());
+                return BlocProvider<ChangePasswordBloc>(
+                    create: (context) => ChangePasswordBloc(accountRepository: AccountRepository()), child: ChangePasswordScreen());
               },
               ApplicationRoutes.logout: (context) {
                 return LogoutConfirmationDialog();

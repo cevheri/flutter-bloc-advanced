@@ -21,7 +21,7 @@ class DistrictState extends Equatable {
     DistrictStatus? status,
   }) {
     return DistrictState(
-        status: status ?? this.status, district: authorities ?? this.district);
+        status: status ?? this.status, district: authorities ?? district);
   }
 
   @override
@@ -34,12 +34,12 @@ class DistrictState extends Equatable {
 class DistrictInitialState extends DistrictState {}
 
 class DistrictLoadSuccessState extends DistrictState {
-  final List<District> district;
+  final List<District> districtList;
 
-  const DistrictLoadSuccessState({required this.district});
+  const DistrictLoadSuccessState({required this.districtList});
 
   @override
-  List<Object> get props => [district];
+  List<Object> get props => [districtList];
 }
 
 class DistrictLoadFailureState extends DistrictState {

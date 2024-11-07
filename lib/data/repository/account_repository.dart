@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
-import 'package:http/src/response.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc_advance/utils/storage.dart';
+import 'package:http/http.dart';
 
 import '../../utils/app_constants.dart';
 import '../http_utils.dart';
@@ -33,17 +33,6 @@ class AccountRepository {
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
     final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
-    String? result;
-    if (resetRequest.statusCode != 200) {
-      if (resetRequest.headers[HttpUtils.errorHeader] != null) {
-        result = resetRequest.headers[HttpUtils.errorHeader];
-      } else {
-        result = HttpUtils.errorServerKey;
-      }
-    } else {
-      result = HttpUtils.successResult;
-    }
-
     debugPrint("resetPassword successful - response: ${resetRequest.statusCode}");
     return resetRequest.statusCode;
   }
@@ -51,10 +40,9 @@ class AccountRepository {
   Future<User> getAccount() async {
     debugPrint("getAccount repository start");
     final response = await HttpUtils.getRequest("/account");
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
     var result = JsonMapper.deserialize<User>(response)!;
-    await prefs.setString('role', result.authorities?[0] ?? "");
-    AppConstants.role = prefs.getString('role') ?? "";
+    saveStorage(role: result.authorities?[0] ?? "");
     debugPrint("getAccount successful - response : $response}");
     return result;
   }

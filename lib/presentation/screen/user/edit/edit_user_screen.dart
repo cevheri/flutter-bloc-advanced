@@ -8,8 +8,7 @@ import 'edit_form_widget.dart';
 class EditUserScreen extends StatelessWidget {
   final User user;
 
-  EditUserScreen({required this.user})
-      : super();
+  EditUserScreen({super.key, required this.user});
   final formKey = GlobalKey<FormBuilderState>();
 
   @override

@@ -5,7 +5,7 @@ version: 1.0.0+1
 
 environment:
   sdk: ^3.5.3
-  flutter: '3.24.3'
+  flutter: '3.24.4'
 
 dependencies:
   flutter:
@@ -28,7 +28,6 @@ dependencies:
   form_builder_validators:
   intl:
   string_2_icon:
-  shared_preferences:
   intl_utils:
   pattern_formatter:
   http_certificate_pinning:
@@ -36,11 +35,12 @@ dependencies:
   modbus_client_tcp:
   custom_navigation_bar:
   flutter_inappwebview:
-
-dependency_overrides:
+  animated_toggle_switch:
   reflectable:
-  intl:
   glob:
+  get_storage:
+
+
 
 dev_dependencies:
   flutter_test:

@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account_bloc.dart';
+import '../user/edit/edit_form_widget.dart';
 
 class AccountsScreen extends StatelessWidget {
-  const AccountsScreen() : super();
+  AccountsScreen({super.key});
+
+  final formKey = GlobalKey<FormBuilderState>();
 
   @override
   Widget build(BuildContext context) {
@@ -22,116 +26,47 @@ class AccountsScreen extends StatelessWidget {
   }
 
   _buildBody(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: EdgeInsets.only(top: 50),
-        child: BlocBuilder<AccountBloc, AccountState>(
-          builder: (context, state) {
-            if (state.account == null) {
-              return Container();
-            }
+    return BlocBuilder<AccountBloc, AccountState>(
+      builder: (context, state) {
+        if (state.account == null) {
+          return Container();
+        }
 
-            return Column(
-              children: [
-                _buildAccountInfo(context, state),
-              ],
-            );
-          },
-        ),
-      ),
-    );
-  }
-
-  _buildAccountInfo(BuildContext context, AccountState state) {
-    return Column(
-      children: [
-        _buildAccountInfoItem(
-          context,
-          S.of(context).first_name,
-          state.account!.firstName,
-          Icons.person,
-        ),
-        _buildAccountInfoItem(
-          context,
-          S.of(context).last_name,
-          state.account!.lastName,
-          Icons.person,
-        ),
-        _buildAccountInfoItem(
-          context,
-          S.of(context).email,
-          state.account!.email,
-          Icons.email,
-        ),
-        _buildAccountInfoItem(
-          context,
-          S.of(context).phone_number,
-          state.account!.phoneNumber,
-          Icons.phone,
-        ),
-        _buildAccountInfoItem(
-          context,
-          S.of(context).authorities,
-          state.account!.authorities.toString(),
-          Icons.person,
-        ),
-      ],
-    );
-  }
-
-  _buildAccountInfoItem(
-      BuildContext context, text1, String? text2, IconData iconData) {
-    return Center(
-      child: Container(
-        constraints: BoxConstraints(minWidth: 300, maxWidth: 700),
-        padding: EdgeInsets.all(10),
-        child: Column(
+        return Column(
           children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              mainAxisSize: MainAxisSize.max,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(0.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          SizedBox(width: 10),
-                          Icon(
-                            iconData,
-                          ),
-                          SizedBox(width: 10),
-                          Text(
-                            text1 + '..: ',
-                            style: TextStyle(
-                              fontSize: 14,
-                            ),
-                          ),
-                        ],
-                      ),
+            Center(
+              child: SingleChildScrollView(
+                child: Container(
+                  constraints: BoxConstraints(minWidth: 300, maxWidth: 700),
+                  padding: EdgeInsets.all(10),
+                  alignment: Alignment.center,
+                  child: FormBuilder(
+                    key: formKey,
+                    child: Column(
+                      children: <Widget>[
+                        EditFormLoginName(user: state.account!),
+                        EditFormFirstName(user: state.account!),
+                        EditFormLastname(user: state.account!),
+                        EditFormEmail(user: state.account!),
+                        EditFormPhoneNumber(user: state.account!),
+                        EditFormActive(user: state.account!),
+                        EditFormAuthorities(user: state.account!, formKey: formKey),
+                        SizedBox(height: 20),
+                        SubmitButton(
+                          editAccount: "edit_page",
+                          context,
+                          user: state.account!,
+                          formKey: formKey,
+                        )
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                Row(
-                  children: [
-                    Text(
-                      text2 ?? '',
-                      style: TextStyle(
-                        fontSize: 14,
-                      ),
-                    ),
-                    SizedBox(width: 30),
-                  ],
-                )
-              ],
+              ),
             ),
-            Divider(),
           ],
-        ),
-      ),
+        );
+      },
     );
   }
 }

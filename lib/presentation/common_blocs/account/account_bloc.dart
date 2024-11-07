@@ -3,10 +3,11 @@ import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../data/models/user.dart';
 import '../../../data/repository/account_repository.dart';
+import '../../../main/main_local.dart';
+import '../../../utils/storage.dart';
 
 part 'account_event.dart';
 
@@ -28,14 +29,12 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   FutureOr<void> _onLoad(AccountLoad event, Emitter<AccountState> emit) async {
     log("AccountBloc._onLoad start : ${event.props}, $emit");
     emit(state.copyWith(status: AccountStatus.loading));
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
 
     try {
       User user = await _accountRepository.getAccount();
-
-      await prefs.setString('username', user.login!);
-      await prefs.setString('role', user.authorities![0]);
-
+      saveStorage(username: user.login!);
+      saveStorage(role: user.authorities![0]);
+      loadStorageData();
       emit(state.copyWith(
         account: user,
         status: AccountStatus.success,

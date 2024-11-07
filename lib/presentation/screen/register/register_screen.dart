@@ -53,66 +53,66 @@ class RegisterScreen extends StatelessWidget {
     return FormBuilder(
       key: _registerFormKey,
       child: Center(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            FormBuilderTextField(
-              name: "firstname",
-              decoration: InputDecoration(labelText: S.of(context).first_name),
-              maxLines: 1,
-              initialValue: account!.firstName,
-              validator: FormBuilderValidators.compose(
-                [
-                  FormBuilderValidators.required(errorText: S.of(context).first_name),
-                  (value) {
-                    if (value == null || value.isEmpty) {
-                      return S.of(context).firstname_required;
-                    }
-                    return null;
-                  },
-                ],
+        child: Padding(
+          padding: const EdgeInsets.all(30.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: <Widget>[
+              FormBuilderTextField(
+                name: "firstname",
+                decoration: InputDecoration(labelText: S.of(context).first_name),
+                maxLines: 1,
+                validator: FormBuilderValidators.compose(
+                  [
+                    FormBuilderValidators.required(errorText: S.of(context).first_name),
+                    (value) {
+                      if (value == null || value.isEmpty) {
+                        return S.of(context).firstname_required;
+                      }
+                      return null;
+                    },
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            FormBuilderTextField(
-              name: "lastname",
-              decoration: InputDecoration(labelText: S.of(context).last_name),
-              maxLines: 1,
-              initialValue: account.lastName,
-              validator: FormBuilderValidators.compose(
-                [
-                  FormBuilderValidators.required(errorText: S.of(context).last_name),
-                  (value) {
-                    if (value == null || value.isEmpty) {
-                      return S.of(context).lastname_required;
-                    }
-                    return null;
-                  },
-                ],
+              SizedBox(height: 20),
+              FormBuilderTextField(
+                name: "lastname",
+                decoration: InputDecoration(labelText: S.of(context).last_name),
+                maxLines: 1,
+                validator: FormBuilderValidators.compose(
+                  [
+                    FormBuilderValidators.required(errorText: S.of(context).last_name),
+                    (value) {
+                      if (value == null || value.isEmpty) {
+                        return S.of(context).lastname_required;
+                      }
+                      return null;
+                    },
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            FormBuilderTextField(
-              name: "email",
-              decoration: InputDecoration(labelText: S.of(context).email),
-              maxLines: 1,
-              initialValue: account.email,
-              validator: FormBuilderValidators.compose(
-                [
-                  FormBuilderValidators.required(errorText: S.of(context).email_required),
-                  (value) {
-                    if (value == null || value.isEmpty) {
-                      return S.of(context).email_required;
-                    }
-                    return null;
-                  },
-                ],
+              SizedBox(height: 20),
+              FormBuilderTextField(
+                name: "email",
+                decoration: InputDecoration(labelText: S.of(context).email),
+                maxLines: 1,
+                validator: FormBuilderValidators.compose(
+                  [
+                    FormBuilderValidators.required(errorText: S.of(context).email_required),
+                    (value) {
+                      if (value == null || value.isEmpty) {
+                        return S.of(context).email_required;
+                      }
+                      return null;
+                    },
+                  ],
+                ),
               ),
-            ),
-            SizedBox(height: 20),
-            _submitButton(context),
-          ],
+              SizedBox(height: 20),
+              _submitButton(context),
+            ],
+          ),
         ),
       ),
     );

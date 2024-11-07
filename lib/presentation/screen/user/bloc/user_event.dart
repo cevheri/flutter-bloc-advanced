@@ -43,8 +43,8 @@ class UserUpdate extends UserEvent {
   List<Object> get props => [];
 }
 
-class UserEditEvent extends UserEvent {
-  const UserEditEvent({
+class UserEdit extends UserEvent {
+  const UserEdit({
     required this.user,
   });
 

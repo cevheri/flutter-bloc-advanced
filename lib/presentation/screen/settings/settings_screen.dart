@@ -1,16 +1,16 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:get/get.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
-import '../../common_widgets/drawer/bloc/drawer_bloc.dart';
+import '../../../utils/storage.dart';
+import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import 'bloc/settings.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen() : super();
+  const SettingsScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +20,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  List<DropdownMenuItem<String>> createDropdownLanguageItems(
-      Map<String, String> languages) {
+  List<DropdownMenuItem<String>> createDropdownLanguageItems(Map<String, String> languages) {
     return languages.keys
         .map<DropdownMenuItem<String>>(
           (String key) => DropdownMenuItem<String>(
@@ -44,7 +43,7 @@ class SettingsScreen extends StatelessWidget {
                 child: Text(S.of(context).save),
               ),
             )),
-        onPressed: () {}, //context.read<SettingsBloc>().add(SaveSettings()),
+        onPressed: () {},
       );
     });
   }
@@ -68,23 +67,7 @@ class SettingsScreen extends StatelessWidget {
               width: 150,
               child: ElevatedButton(
                 onPressed: () {
-                  Navigator.pushNamed(context, ApplicationRoutes.account);
-                },
-                child: Text(
-                  S.of(context).account,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 150,
-              child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(
-                      context, ApplicationRoutes.changePassword);
+                  Navigator.pushNamed(context, ApplicationRoutes.changePassword);
                 },
                 child: Text(
                   S.of(context).change_password,
@@ -114,21 +97,6 @@ class SettingsScreen extends StatelessWidget {
               width: 150,
               child: ElevatedButton(
                 onPressed: () {
-                  themeConfirmationDialog(context);
-                },
-                child: Text(
-                  S.of(context).theme,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-            ),
-          ),
-          SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 150,
-              child: ElevatedButton(
-                onPressed: () {
                   logOutDialog(context);
                   //Navigator.pushNamed(context, ApplicationRoutes.logout);
                 },
@@ -144,73 +112,11 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  Future languageConfirmationDialog(
-    BuildContext context,
-  ) {
+  Future<void> languageConfirmationDialog(BuildContext context) {
     return showDialog(
       context: context,
       builder: (context) {
-        return AlertDialog(
-          title:
-              Text(S.of(context).language_select, textAlign: TextAlign.center),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: () async {
-                final SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
-                prefs.setString('lang', 'tr');
-                S.load(Locale("tr"));
-                Navigator.pushNamed(context, ApplicationRoutes.home);
-              },
-              child: Text(S.of(context).turkish,
-                  style: TextStyle(color: Colors.white)),
-            ),
-            TextButton(
-              style: TextButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.primary,
-              ),
-              onPressed: () async {
-                final SharedPreferences prefs =
-                    await SharedPreferences.getInstance();
-                prefs.setString('lang', 'en');
-                S.load(Locale("en"));
-                Navigator.pushNamed(context, ApplicationRoutes.home);
-              },
-              child: Text(S.of(context).english,
-                  style: TextStyle(color: Colors.white)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future themeConfirmationDialog(
-    BuildContext context,
-  ) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(S.of(context).theme, textAlign: TextAlign.center),
-          actionsAlignment: MainAxisAlignment.center,
-          actions: [
-            Switch(
-              value: AdaptiveTheme.of(context).mode.isDark,
-              onChanged: (value) {
-                if (value) {
-                  AdaptiveTheme.of(context).setDark();
-                } else {
-                  AdaptiveTheme.of(context).setLight();
-                }
-              },
-            ),
-          ],
-        );
+        return const LanguageConfirmationDialog();
       },
     );
   }
@@ -249,3 +155,41 @@ class SettingsScreen extends StatelessWidget {
     Navigator.pop(context);
   }
 }
+
+
+
+
+class LanguageConfirmationDialog extends StatelessWidget {
+  const LanguageConfirmationDialog({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(S.of(context).language_select, textAlign: TextAlign.center),
+      actionsAlignment: MainAxisAlignment.center,
+      actions: [
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          onPressed: () => _setLanguage(context, 'tr'),
+          child: Text(S.of(context).turkish, style: TextStyle(color: Colors.white)),
+        ),
+        TextButton(
+          style: TextButton.styleFrom(
+            backgroundColor: Theme.of(context).colorScheme.primary,
+          ),
+          onPressed: () => _setLanguage(context, 'en'),
+          child: Text(S.of(context).english, style: TextStyle(color: Colors.white)),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _setLanguage(BuildContext context, String langCode) async {
+    saveStorage(language: langCode);
+    await S.load(Locale(langCode));
+    Get.back();
+  }
+}
+

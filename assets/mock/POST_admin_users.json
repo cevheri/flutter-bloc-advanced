@@ -1,0 +1,17 @@
+{
+  "id": 1,
+  "login": "new_user",
+  "firstName": "Mock new user First Name",
+  "lastName": "Mock new user  Last Name",
+  "email": "mock_account@test.com",
+  "activated": true,
+  "langKey": null,
+  "createdBy": "system",
+  "createdDate": null,
+  "lastModifiedBy": "admin",
+  "lastModifiedDate": "2024-01-04T06:02:47.757Z",
+  "authorities": [
+    "ROLE_ADMIN"
+  ],
+  "phoneNumber": "5323627760"
+}

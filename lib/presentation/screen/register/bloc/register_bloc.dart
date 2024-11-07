@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../data/models/user.dart';
 import '../../../../data/repository/account_repository.dart';
@@ -11,8 +11,8 @@ part 'register_event.dart';
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-  RegisterBloc({required AccountRepository AccountRepository})
-      : _accountRepository = AccountRepository,
+  RegisterBloc({required AccountRepository accountRepository})
+      : _accountRepository = accountRepository,
         super(const RegisterState()) {
     on<RegisterEmailChanged>(_onSubmit);
   }

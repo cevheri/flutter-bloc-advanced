@@ -27,7 +27,7 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
     try {
       List<District> district =
           await _districtRepository.getDistrict(event.districtId);
-      emit(DistrictLoadSuccessState(district: district));
+      emit(DistrictLoadSuccessState(districtList: district));
     } catch (e) {
       emit(DistrictLoadFailureState(message: e.toString()));
     }

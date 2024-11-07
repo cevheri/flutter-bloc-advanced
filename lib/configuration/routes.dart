@@ -1,3 +1,5 @@
+import '../main/main_local.dart';
+
 /// Routes for the application
 ///
 /// This class contains all the routes used in the application.
@@ -13,4 +15,12 @@ class ApplicationRoutes {
   static final account = '/account';
   static final createUser = '/admin/new-user';
   static final listUsers = '/admin/list-users';
+}
+
+String initialRouteControl(context) {
+  if (getStorageCache["jwtToken"] != null) {
+    return "/";
+  } else {
+    return '/login';
+  }
 }

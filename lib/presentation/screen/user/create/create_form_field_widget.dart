@@ -1,13 +1,9 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../../../generated/l10n.dart';
-import '../../../../utils/app_constants.dart';
-import '../../../common_blocs/authorities/authorities_bloc.dart';
 
 class CreateFormPhoneNumber extends StatelessWidget {
   const CreateFormPhoneNumber({super.key});
@@ -23,10 +19,6 @@ class CreateFormPhoneNumber extends StatelessWidget {
         [
           FormBuilderValidators.required(
               errorText: S.of(context).required_phone_type),
-          FormBuilderValidators.minLength(
-              errorText: S.of(context).required_phone_type, 10),
-          FormBuilderValidators.maxLength(
-              errorText: S.of(context).required_phone_type, 10),
         ],
       ),
     );
@@ -77,9 +69,6 @@ class CreateFormLastname extends StatelessWidget {
       decoration: InputDecoration(
         labelText: S.of(context).last_name,
       ),
-      inputFormatters: [
-        UpperCaseTextFormatter(),
-      ],
       validator: FormBuilderValidators.compose(
         [
           FormBuilderValidators.required(
@@ -104,9 +93,6 @@ class CreateFormFirstName extends StatelessWidget {
       decoration: InputDecoration(
         labelText: S.of(context).first_name,
       ),
-      inputFormatters: [
-        UpperCaseTextFormatter(),
-      ],
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(
             errorText: S.of(context).firstname_required),

@@ -25,7 +25,7 @@ class CityBloc extends Bloc<CityEvent, CityState> {
     emit(CityInitialState());
     try {
       List<City> city = await _cityRepository.getCity();
-      emit(CityLoadSuccessState(city: city));
+      emit(CityLoadSuccessState(cityList: city));
     } catch (e) {
       emit(CityLoadFailureState(message: e.toString()));
     }

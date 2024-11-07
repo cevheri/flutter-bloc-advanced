@@ -1,7 +1,7 @@
 import 'dart:async';
 
-import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../data/repository/account_repository.dart';
 
@@ -10,13 +10,13 @@ part 'forgot_password_state.dart';
 
 class ForgotPasswordBloc
     extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
-  ForgotPasswordBloc({required AccountRepository AccountRepository})
-      : _AccountRepository = AccountRepository,
+  ForgotPasswordBloc({required AccountRepository accountRepository})
+      : _accountRepository = accountRepository,
         super(const ForgotPasswordState()) {
     on<ForgotPasswordEmailChanged>(_onSubmit);
   }
 
-  final AccountRepository _AccountRepository;
+  final AccountRepository _accountRepository;
 
   @override
   void onTransition(
@@ -29,7 +29,7 @@ class ForgotPasswordBloc
     emit(AccountResetPasswordInitialState());
     try {
       String result = event.email.replaceAll('"', '');
-      var resultStatusCode = await _AccountRepository.resetPassword(result);
+      var resultStatusCode = await _accountRepository.resetPassword(result);
       resultStatusCode == 200
           ? emit(AccountResetPasswordCompletedState())
           : emit(const AccountResetPasswordErrorState(

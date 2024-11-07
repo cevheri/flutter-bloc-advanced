@@ -4,7 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
-import '../../common_widgets/drawer/bloc/drawer_bloc.dart';
+import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 
 class LogoutConfirmationDialog extends StatelessWidget {
   const LogoutConfirmationDialog({super.key});
@@ -13,16 +13,24 @@ class LogoutConfirmationDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: AlertDialog(
-        title: Text(S.of(context).logout),
-        content: Text(S.of(context).logout_sure),
+        title: Text(S
+            .of(context)
+            .logout),
+        content: Text(S
+            .of(context)
+            .logout_sure),
         actions: [
           TextButton(
             onPressed: () => onLogout(context),
-            child: Text(S.of(context).yes),
+            child: Text(S
+                .of(context)
+                .yes),
           ),
           TextButton(
             onPressed: () => onCancel(context),
-            child: Text(S.of(context).no),
+            child: Text(S
+                .of(context)
+                .no),
           ),
         ],
       ),
