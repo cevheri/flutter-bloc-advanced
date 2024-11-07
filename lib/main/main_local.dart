@@ -23,7 +23,6 @@ void main() async {
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
-  clearLocalStorage();
 
   final storageData = getStorageCache;
   final language = storageData["language"];

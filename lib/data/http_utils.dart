@@ -6,10 +6,10 @@ import 'dart:io';
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/http.dart';
 
+import '../configuration/allowed_paths.dart';
 import '../configuration/environment.dart';
 import '../main/main_local.dart';
 import '../utils/app_constants.dart';
@@ -47,7 +47,7 @@ class HttpUtils {
   }
 
   static Future<Map<String, String>> headers() async {
-    String? jwt = ProfileConstants.isProduction == true ? getStorageCache["jwtToken"] : "default_token";
+    String? jwt = getStorageCache["jwtToken"];
     Map<String, String> headerParameters = <String, String>{};
 
     //custom http headers entries
@@ -60,7 +60,7 @@ class HttpUtils {
       log("default headers");
     }
 
-    if (jwt != "") {
+    if (jwt != null && jwt != "") {
       headerParameters['Authorization'] = 'Bearer $jwt';
     } else {
       headerParameters.remove('Authorization');
@@ -239,6 +239,14 @@ class HttpUtils {
 
   static Future<Response> mockRequest(String httpMethod, String endpoint) async {
     debugPrint("Mock request: $httpMethod $endpoint");
+
+    var headers = await HttpUtils.headers();
+    if (!ALLOWED_PATHS.contains(endpoint)) {
+      if (headers['Authorization'] == null) {
+        return Future.value(Response("Unauthorized", HttpStatus.unauthorized));
+      }
+    }
+
     String responseBody = "OK";
     int httpStatusCode = HttpStatus.ok;
     Future<Response> response = Future.value(Response("", httpStatusCode));

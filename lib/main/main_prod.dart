@@ -24,7 +24,6 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await GetStorage.init();
-  clearLocalStorage();
 
   final storageData = getStorageCache;
   final language = storageData["language"];

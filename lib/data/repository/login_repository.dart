@@ -12,25 +12,19 @@ import '../models/user_jwt.dart';
 class LoginRepository {
   LoginRepository();
 
-  // /// Store the JWT token in the secure storage
-  // Future<void> _storeToken(JWTToken result) async {
-  //   AppConstants.jwtToken = result.idToken ?? "";
-  // }
-
-  //TODO if (ProfileConstants.isProduction) {}
   Future<JWTToken> authenticate(UserJWT userJWT) async {
-    if (ProfileConstants.isProduction) {
-      final authenticateRequest = await HttpUtils.postRequest<UserJWT>("/authenticate", userJWT);
-      JWTToken result = JsonMapper.deserialize<JWTToken>(authenticateRequest.body)!;
-      saveStorage(jwtToken: result.idToken);
-      return result;
+    JWTToken? result;
+    if (userJWT.username == null || userJWT.password == null) {
+      throw Exception("Invalid username or password");
     }
-    else{
-      JWTToken result = JsonMapper.deserialize<JWTToken>(await rootBundle.loadString('assets/mock/id_token.json'))!;
+
+    final authenticateRequest = await HttpUtils.postRequest<UserJWT>("/authenticate", userJWT);
+    result = JsonMapper.deserialize<JWTToken>(authenticateRequest.body)!;
+
+    if (result.idToken != null) {
       saveStorage(jwtToken: result.idToken);
-      return result;
-      //
     }
+    return result;
   }
 
   Future<void> logout() async {
@@ -39,6 +33,5 @@ class LoginRepository {
     await prefs.remove('jwtToken');
     await prefs.clear();
     clearStorage();
-    clearLocalStorage();
   }
 }

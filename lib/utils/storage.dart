@@ -1,7 +1,11 @@
 import 'package:get_storage/get_storage.dart';
-import 'dart:html' as html;
 
 import '../main/main_local.dart';
+
+//TODO storage alternatives:
+// - https://pub.dev/packages/localstorage
+// - https://pub.dev/packages/shared_preferences
+// - https://pub.dev/packages/hive
 
 class AuthenticationStorageConstants {
   static const JWT_TOKEN = "TOKEN";
@@ -42,12 +46,13 @@ void saveStorage({
 
 void clearStorage() {
   final authenticationStorage = GetStorage();
-  clearLocalStorage();
+//  clearLocalStorage();
   authenticationStorage.remove(AuthenticationStorageConstants.JWT_TOKEN);
   authenticationStorage.remove(AuthenticationStorageConstants.ROLE);
   authenticationStorage.remove(AuthenticationStorageConstants.LANGUAGE);
+  authenticationStorage.remove(AuthenticationStorageConstants.USERNAME);
 }
 
-void clearLocalStorage() {
-  html.window.localStorage.clear();
-}
+// void clearLocalStorage() {
+//   html.window.localStorage.clear();
+// }
