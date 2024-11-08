@@ -6,8 +6,10 @@ import '../models/district.dart';
 class DistrictRepository {
   DistrictRepository();
 
+  final String _resource = "districts";
+
   Future<List<District>> getDistrict(cityId) async {
-    final result = await HttpUtils.getRequest("/districts/cities/$cityId");
+    final result = await HttpUtils.getRequest("/$_resource/cities/$cityId");
     return JsonMapper.deserialize<List<District>>(result)!;
   }
 }

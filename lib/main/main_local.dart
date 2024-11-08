@@ -22,6 +22,7 @@ void main() async {
   ProfileConstants.setEnvironment(Environment.DEV);
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
+
   await GetStorage.init();
 
   final storageData = getStorageCache;

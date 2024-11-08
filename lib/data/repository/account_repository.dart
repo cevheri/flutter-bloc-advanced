@@ -12,6 +12,8 @@ import '../models/user.dart';
 class AccountRepository {
   AccountRepository();
 
+  final String _resource = "account";
+
   Future<Response> register(User newUser) async {
     debugPrint("register repository start");
     final registerRequest = await HttpUtils.postRequest<User>("/register", newUser);
@@ -20,8 +22,7 @@ class AccountRepository {
 
   Future<int> changePassword(PasswordChangeDTO passwordChangeDTO) async {
     debugPrint("changePassword repository start");
-    final authenticateRequest =
-        await HttpUtils.postRequest<PasswordChangeDTO>("/account/change-password", passwordChangeDTO);
+    final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>("/$_resource/change-password", passwordChangeDTO);
     var result = authenticateRequest.statusCode;
     debugPrint("changePassword successful - response: $result");
     return result;
@@ -31,14 +32,14 @@ class AccountRepository {
     debugPrint("resetPassword repository start");
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
-    final resetRequest = await HttpUtils.postRequest<String>("/account/reset-password/init", mailAddress);
+    final resetRequest = await HttpUtils.postRequest<String>("/$_resource/reset-password/init", mailAddress);
     debugPrint("resetPassword successful - response: ${resetRequest.statusCode}");
     return resetRequest.statusCode;
   }
 
   Future<User> getAccount() async {
     debugPrint("getAccount repository start");
-    final response = await HttpUtils.getRequest("/account");
+    final response = await HttpUtils.getRequest("/$_resource");
 
     var result = JsonMapper.deserialize<User>(response)!;
     saveStorage(role: result.authorities?[0] ?? "");
@@ -48,7 +49,7 @@ class AccountRepository {
 
   Future<String?> saveAccount(User user) async {
     debugPrint("saveAccount repository start");
-    final saveRequest = await HttpUtils.postRequest<User>("/account", user);
+    final saveRequest = await HttpUtils.postRequest<User>("/$_resource", user);
     String? result;
     if (saveRequest.statusCode >= HttpStatus.badRequest) {
       if (saveRequest.headers[HttpUtils.errorHeader] != null) {
@@ -65,14 +66,14 @@ class AccountRepository {
 
   updateAccount(User account) async {
     debugPrint("updateAccount repository start");
-    var result = await HttpUtils.putRequest<User>("/account", account);
+    var result = await HttpUtils.putRequest<User>("/$_resource", account);
     debugPrint("updateAccount successful - response : ${result.body.toString()}");
     return result;
   }
 
   deleteAccount(int id) async {
     debugPrint("deleteAccount repository start");
-    var result = await HttpUtils.deleteRequest("/account/$id");
+    var result = await HttpUtils.deleteRequest("/$_resource/$id");
     debugPrint("deleteAccount successful - response : ${result.body.toString()}");
     return result;
   }

@@ -14,6 +14,7 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 /// main entry point of local computer development
 
 Map<String, dynamic> getStorageCache = {};
+
 Future<void> loadStorageData() async {
   getStorageCache = await getStorage();
 }
@@ -30,6 +31,7 @@ void main() async {
   if (language == null) {
     saveStorage(language: 'en');
   }
+
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runApp(App(language: language ?? 'en'));

@@ -41,6 +41,6 @@ class _Config {
   };
 
   static Map<String, dynamic> prodConstants = {
-    API: "https://flutter_bloc_advanced.com/api",
+    API: "https://dhw-api.onrender.com/api",
   };
 }

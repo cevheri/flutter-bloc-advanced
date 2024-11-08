@@ -7,9 +7,11 @@ import '../models/user.dart';
 /// This class is responsible for all the user related operations
 /// list, create, update, delete etc.
 class UserRepository {
+  final String _resource = "users";
+
   /// Retrieve all users method that retrieves all the users
   Future<List<User>> getUsers() async {
-    final usersRequest = await HttpUtils.getRequest("/users");
+    final usersRequest = await HttpUtils.getRequest("/$_resource");
     return JsonMapper.deserialize<List<User>>(usersRequest)!;
   }
 
@@ -17,7 +19,7 @@ class UserRepository {
   ///
   /// @param id the user id
   Future<User> getUser(String id) async {
-    final userRequest = await HttpUtils.getRequest("/users/$id");
+    final userRequest = await HttpUtils.getRequest("/$_resource/$id");
     return JsonMapper.deserialize<User>(userRequest)!;
   }
 
@@ -25,7 +27,7 @@ class UserRepository {
   ///
   /// @param user the user object
   Future<User?> createUser(User user) async {
-    final saveRequest = await HttpUtils.postRequest<User>("/admin/users", user);
+    final saveRequest = await HttpUtils.postRequest<User>("/admin/$_resource", user);
     String? result;
 
     if (saveRequest.statusCode != 201) {
@@ -38,9 +40,7 @@ class UserRepository {
       result = HttpUtils.successResult;
     }
 
-    return result == HttpUtils.successResult
-        ? JsonMapper.deserialize<User>(saveRequest.body)
-        : null;
+    return result == HttpUtils.successResult ? JsonMapper.deserialize<User>(saveRequest.body) : null;
   }
 
   /// Find user method that findUser a user
@@ -48,8 +48,7 @@ class UserRepository {
     int rangeStart,
     int rangeEnd,
   ) async {
-    final userRequest = await HttpUtils.getRequest(
-        "/admin/users?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    final userRequest = await HttpUtils.getRequest("/admin/$_resource?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     var result = JsonMapper.deserialize<List<User>>(userRequest)!;
     return result;
   }
@@ -60,8 +59,7 @@ class UserRepository {
     int rangeEnd,
     String authorities,
   ) async {
-    final userRequest = await HttpUtils.getRequest(
-        "/admin/users/list");
+    final userRequest = await HttpUtils.getRequest("/admin/$_resource/list");
     var result = JsonMapper.deserialize<List<User>>(userRequest)!;
     return result;
   }
@@ -74,7 +72,7 @@ class UserRepository {
     String authorities,
   ) async {
     final userRequest = await HttpUtils.getRequest(
-        "/admin/users/filter?name=$name&authorities=$authorities&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+        "/admin/$_resource/filter?name=$name&authorities=$authorities&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     var result = JsonMapper.deserialize<List<User>>(userRequest)!;
     return result;
   }
@@ -82,7 +80,7 @@ class UserRepository {
   /// Edit user method that editUser a user
 
   Future<User?> updateUser(User user) async {
-    final saveRequest = await HttpUtils.putRequest<User>("/admin/users", user);
+    final saveRequest = await HttpUtils.putRequest<User>("/admin/$_resource", user);
     String? result;
 
     if (saveRequest.statusCode != 200) {
@@ -95,8 +93,6 @@ class UserRepository {
       result = HttpUtils.successResult;
     }
 
-    return result == HttpUtils.successResult
-        ? JsonMapper.deserialize<User>(saveRequest.body)
-        : null;
+    return result == HttpUtils.successResult ? JsonMapper.deserialize<User>(saveRequest.body) : null;
   }
 }
