@@ -39,6 +39,7 @@ dependencies:
   reflectable:
   glob:
   get_storage:
+  shared_preferences:
 
 
 

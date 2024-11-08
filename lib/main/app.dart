@@ -18,7 +18,6 @@ import '../presentation/common_blocs/account/account.dart';
 import '../presentation/common_blocs/authorities/authorities_bloc.dart';
 import '../presentation/common_blocs/city/city_bloc.dart';
 import '../presentation/common_blocs/district/district_bloc.dart';
-
 import '../presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../presentation/screen/account/account_screen.dart';
 import '../presentation/screen/account/logout_widget.dart';
@@ -36,7 +35,6 @@ import '../presentation/screen/settings/settings_screen.dart';
 import '../presentation/screen/user/bloc/user_bloc.dart';
 import '../presentation/screen/user/create/create_user_screen.dart';
 import '../presentation/screen/user/list/list_user_screen.dart';
-import '../utils/storage.dart';
 import 'main_local.dart';
 
 /// Main application widget. This widget is the root of your application.
