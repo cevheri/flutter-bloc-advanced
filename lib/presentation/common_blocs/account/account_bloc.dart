@@ -42,7 +42,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       log("AccountBloc._onLoad end : ${state.account}, ${state.status}");
     } catch (e) {
       emit(state.copyWith(status: AccountStatus.failure));
-      log("AccountBloc._onLoad error : ${state.account}, ${state.status} error: $e");
+      log("AccountBloc._onLoad error : ${state.props}. error-detail: $e");
     }
   }
 }
