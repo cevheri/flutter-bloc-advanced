@@ -5,7 +5,6 @@ import 'package:equatable/equatable.dart';
 ///
 /// this is an immutable class that extends [Equatable] so that it can be compared
 
-
 @jsonSerializable
 class Customer extends Equatable {
   @JsonProperty(name: 'id')
@@ -20,7 +19,6 @@ class Customer extends Equatable {
   @JsonProperty(name: 'email')
   final String? email;
 
-
   @JsonProperty(name: 'cityName')
   final String? cityName;
 
@@ -32,7 +30,6 @@ class Customer extends Equatable {
 
   @JsonProperty(name: 'active')
   final bool? active;
-
 
   const Customer({
     this.id,

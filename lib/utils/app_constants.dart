@@ -7,8 +7,8 @@ class AppConstants {
   static const String APP_DESCRIPTION = "User Roles and Offering Management mobile and web application";
   static const String APP_AUTHOR = "*****";
   static const String APP_AUTHOR_EMAIL = "*****@*****.com";
-  // static String jwtToken = "";
-  // static String role = "";
+// static String jwtToken = "";
+// static String role = "";
 }
 
 class UpperCaseTextFormatter extends TextInputFormatter {

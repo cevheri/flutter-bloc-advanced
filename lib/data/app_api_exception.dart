@@ -11,8 +11,7 @@ class AppException implements Exception {
 }
 
 class FetchDataException extends AppException {
-  FetchDataException(String message)
-      : super(message, "Error During Communication: ");
+  FetchDataException(String message) : super(message, "Error During Communication: ");
 }
 
 class BadRequestException extends AppException {
@@ -28,6 +27,5 @@ class InvalidInputException extends AppException {
 }
 
 class ApiBusinessException extends AppException {
-  ApiBusinessException(String message)
-      : super(message, "Api Business Exception: ");
+  ApiBusinessException(String message) : super(message, "Api Business Exception: ");
 }

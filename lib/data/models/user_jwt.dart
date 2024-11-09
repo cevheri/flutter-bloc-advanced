@@ -17,11 +17,7 @@ class UserJWT {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) ||
-      other is UserJWT &&
-          runtimeType == other.runtimeType &&
-          username == other.username &&
-          password == other.password;
+      identical(this, other) || other is UserJWT && runtimeType == other.runtimeType && username == other.username && password == other.password;
 
   @override
   int get hashCode => username.hashCode ^ password.hashCode;

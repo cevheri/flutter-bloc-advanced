@@ -20,8 +20,7 @@ class AuthoritiesState extends Equatable {
     List? authorities,
     AuthoritiesStatus? status,
   }) {
-    return AuthoritiesState(
-        status: status ?? this.status, role: authorities ?? role);
+    return AuthoritiesState(status: status ?? this.status, role: authorities ?? role);
   }
 
   @override

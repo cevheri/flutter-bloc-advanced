@@ -127,7 +127,7 @@ class RegisterScreen extends StatelessWidget {
             if (_registerFormKey.currentState!.saveAndValidate()) {
               context.read<RegisterBloc>().add(
                     RegisterEmailChanged(
-                      createUset: User(
+                      createUser: User(
                         firstName: _registerFormKey.currentState!.fields["firstname"]!.value,
                         lastName: _registerFormKey.currentState!.fields["lastname"]!.value,
                         email: _registerFormKey.currentState!.fields["email"]!.value,

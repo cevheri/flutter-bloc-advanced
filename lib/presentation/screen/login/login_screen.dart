@@ -92,12 +92,9 @@ class LoginScreen extends StatelessWidget {
           maxLines: 1,
           validator: FormBuilderValidators.compose(
             [
-              FormBuilderValidators.required(
-                  errorText: S.of(context).username_required),
-              FormBuilderValidators.minLength(4,
-                  errorText: S.of(context).username_min_length),
-              FormBuilderValidators.maxLength(20,
-                  errorText: S.of(context).username_max_length),
+              FormBuilderValidators.required(errorText: S.of(context).username_required),
+              FormBuilderValidators.minLength(4, errorText: S.of(context).username_min_length),
+              FormBuilderValidators.maxLength(20, errorText: S.of(context).username_max_length),
               (val) {
                 return null;
               },
@@ -118,8 +115,7 @@ class LoginScreen extends StatelessWidget {
             Expanded(
               child: FormBuilderTextField(
                 name: 'password',
-                decoration:
-                    InputDecoration(labelText: S.of(context).login_password),
+                decoration: InputDecoration(labelText: S.of(context).login_password),
                 // when press the enter key, call submit button function
                 textInputAction: TextInputAction.done,
                 onSubmitted: (value) {
@@ -132,12 +128,9 @@ class LoginScreen extends StatelessWidget {
                 maxLines: 1,
                 validator: FormBuilderValidators.compose(
                   [
-                    FormBuilderValidators.required(
-                        errorText: S.of(context).password_required),
-                    FormBuilderValidators.minLength(4,
-                        errorText: S.of(context).password_min_length),
-                    FormBuilderValidators.maxLength(20,
-                        errorText: S.of(context).password_max_length),
+                    FormBuilderValidators.required(errorText: S.of(context).password_required),
+                    FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
+                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
                     (val) {
                       return null;
                     },
@@ -146,9 +139,7 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
             IconButton(
-              icon: Icon(state.passwordVisible
-                  ? Icons.visibility
-                  : Icons.visibility_off),
+              icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
               onPressed: () {
                 context.read<LoginBloc>().add(TogglePasswordVisibility());
               },
@@ -175,16 +166,13 @@ class LoginScreen extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is LoginLoadingState) {
-          Message.getMessage(
-              context: context, title: S.of(context).logging_in, content: "");
+          Message.getMessage(context: context, title: S.of(context).logging_in, content: "");
         }
         if (current is LoginLoadedState) {
-          Navigator.pushNamedAndRemoveUntil(
-              context, ApplicationRoutes.home, (route) => false);
+          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
         }
         if (current is LoginErrorState) {
-          Message.errorMessage(
-              context: context, title: S.of(context).login_error, content: "");
+          Message.errorMessage(context: context, title: S.of(context).login_error, content: "");
         }
         return true;
       },
@@ -208,6 +196,7 @@ class LoginScreen extends StatelessWidget {
       ),
     );
   }
+
   _register(BuildContext context) {
     return SizedBox(
       child: TextButton(
@@ -228,9 +217,7 @@ class LoginScreen extends StatelessWidget {
           child: Center(
             child: Text(
               S.of(context).login_error,
-              style: TextStyle(
-                  fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize,
-                  color: Theme.of(context).colorScheme.error),
+              style: TextStyle(fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize, color: Theme.of(context).colorScheme.error),
               textAlign: TextAlign.center,
             ),
           ),

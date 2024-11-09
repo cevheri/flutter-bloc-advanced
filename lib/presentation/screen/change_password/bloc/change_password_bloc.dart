@@ -9,8 +9,7 @@ import '../../../../data/repository/account_repository.dart';
 part 'change_password_event.dart';
 part 'change_password_state.dart';
 
-class ChangePasswordBloc
-    extends Bloc<ChangePasswordEvent, ChangePasswordState> {
+class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> {
   ChangePasswordBloc({required AccountRepository accountRepository})
       : _accountRepository = accountRepository,
         super(const ChangePasswordState()) {
@@ -20,13 +19,11 @@ class ChangePasswordBloc
   final AccountRepository _accountRepository;
 
   @override
-  void onTransition(
-      Transition<ChangePasswordEvent, ChangePasswordState> transition) {
+  void onTransition(Transition<ChangePasswordEvent, ChangePasswordState> transition) {
     super.onTransition(transition);
   }
 
-  FutureOr<void> _onSubmit(
-      ChangePasswordChanged event, Emitter<ChangePasswordState> emit) async {
+  FutureOr<void> _onSubmit(ChangePasswordChanged event, Emitter<ChangePasswordState> emit) async {
     emit(ChangePasswordInitialState());
     try {
       PasswordChangeDTO passwordChangeDTO = PasswordChangeDTO(
@@ -36,11 +33,9 @@ class ChangePasswordBloc
       var result = await _accountRepository.changePassword(passwordChangeDTO);
       result == 200
           ? emit(ChangePasswordPasswordCompletedState())
-          : emit(const ChangePasswordPasswordErrorState(
-              message: "Reset Password Error"));
+          : emit(const ChangePasswordPasswordErrorState(message: "Reset Password Error"));
     } catch (e) {
-      emit(const ChangePasswordPasswordErrorState(
-          message: "Reset Password Error"));
+      emit(const ChangePasswordPasswordErrorState(message: "Reset Password Error"));
       rethrow;
     }
   }

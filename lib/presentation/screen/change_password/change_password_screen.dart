@@ -22,7 +22,7 @@ class ChangePasswordScreen extends StatelessWidget {
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text("Şifre Değiştir"),
+      title: Text("Change Password"),
     );
   }
 
@@ -68,13 +68,12 @@ class ChangePasswordScreen extends StatelessWidget {
           Expanded(
             child: FormBuilderTextField(
               name: 'currentPassword',
-              decoration: InputDecoration(labelText: "Eski Şifreniz"),
+              decoration: InputDecoration(labelText: "Old Password"),
               obscureText: true,
               maxLines: 1,
               validator: FormBuilderValidators.compose(
                 [
-                  FormBuilderValidators.required(
-                      errorText: "Şifre boş bırakılamaz."),
+                  FormBuilderValidators.required(errorText: "Required Field"),
                   (val) {
                     return null;
                   },
@@ -96,13 +95,12 @@ class ChangePasswordScreen extends StatelessWidget {
           Expanded(
             child: FormBuilderTextField(
               name: 'newPassword',
-              decoration: InputDecoration(labelText: "Yeni Şifreniz"),
+              decoration: InputDecoration(labelText: "New Password"),
               obscureText: true,
               maxLines: 1,
               validator: FormBuilderValidators.compose(
                 [
-                  FormBuilderValidators.required(
-                      errorText: "Şifre boş bırakılamaz."),
+                  FormBuilderValidators.required(errorText: "Required Field"),
                   (val) {
                     return null;
                   },
@@ -120,23 +118,15 @@ class ChangePasswordScreen extends StatelessWidget {
       builder: (context, state) {
         return SizedBox(
           child: ElevatedButton(
-            child: Text("Şifre Değiştir"),
+            child: Text("Change Password"),
             onPressed: () {
               if (_changePasswordFormKey.currentState!.saveAndValidate() &&
-                  _changePasswordFormKey
-                          .currentState!.value['currentPassword'] !=
-                      _changePasswordFormKey
-                          .currentState!.value['newPassword'] &&
-                  _changePasswordFormKey.currentState!.value['newPassword'] !=
-                      null &&
-                  _changePasswordFormKey
-                          .currentState!.value['currentPassword'] !=
-                      null) {
+                  _changePasswordFormKey.currentState!.value['currentPassword'] != _changePasswordFormKey.currentState!.value['newPassword'] &&
+                  _changePasswordFormKey.currentState!.value['newPassword'] != null &&
+                  _changePasswordFormKey.currentState!.value['currentPassword'] != null) {
                 context.read<ChangePasswordBloc>().add(ChangePasswordChanged(
-                      currentPassword: _changePasswordFormKey
-                          .currentState!.value['currentPassword'],
-                      newPassword: _changePasswordFormKey
-                          .currentState!.value['newPassword'],
+                      currentPassword: _changePasswordFormKey.currentState!.value['currentPassword'],
+                      newPassword: _changePasswordFormKey.currentState!.value['newPassword'],
                     ));
               } else {}
             },
@@ -145,18 +135,14 @@ class ChangePasswordScreen extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is ChangePasswordInitialState) {
-          Message.getMessage(
-              context: context, title: "Şifre değiştiriliyor...", content: "");
+          Message.getMessage(context: context, title: "Password is changing..", content: "");
         }
         if (current is ChangePasswordPasswordCompletedState) {
-          Message.getMessage(
-              context: context, title: "Şifre değiştirildi", content: "");
-          Navigator.pushNamedAndRemoveUntil(
-              context, ApplicationRoutes.home, (route) => false);
+          Message.getMessage(context: context, title: "Password is changed", content: "");
+          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
         }
         if (current is ChangePasswordPasswordErrorState) {
-          Message.errorMessage(
-              title: 'Şifre değiştirilemedi', context: context, content: "");
+          Message.errorMessage(title: 'Password did not changed', context: context, content: "");
         }
         return true;
       },

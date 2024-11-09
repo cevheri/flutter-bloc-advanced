@@ -20,8 +20,7 @@ class CityState extends Equatable {
     List<City>? authorities,
     CityStatus? status,
   }) {
-    return CityState(
-        status: status ?? this.status, city: authorities ?? city);
+    return CityState(status: status ?? this.status, city: authorities ?? city);
   }
 
   @override

@@ -7,7 +7,6 @@ import 'package:string_2_icon/string_2_icon.dart';
 import '../../../configuration/routes.dart';
 import '../../../data/models/menu.dart';
 import '../../../generated/l10n.dart';
-import '../../../main/main_local.dart';
 import '../../../utils/storage.dart';
 import '../../common_blocs/account/account.dart';
 import 'drawer_bloc/drawer_bloc.dart';
@@ -54,7 +53,6 @@ class ApplicationDrawer extends StatelessWidget {
                     shrinkWrap: true,
                     physics: ClampingScrollPhysics(),
                     itemBuilder: (context, index) {
-
                       if (getStorageCache["role"] == 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
                         List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
                         sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));

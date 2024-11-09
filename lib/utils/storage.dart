@@ -1,7 +1,5 @@
 import 'package:get_storage/get_storage.dart';
 
-import '../main/main_local.dart';
-
 //TODO storage alternatives:
 // - https://pub.dev/packages/localstorage
 // - https://pub.dev/packages/shared_preferences
@@ -13,7 +11,6 @@ class AuthenticationStorageConstants {
   static const LANGUAGE = "LANGUAGE";
   static const USERNAME = "USERNAME";
 }
-
 
 Map<String, dynamic> getStorageCache = {};
 

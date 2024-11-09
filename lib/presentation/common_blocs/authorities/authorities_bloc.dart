@@ -21,8 +21,7 @@ class AuthoritiesBloc extends Bloc<AuthoritiesEvent, AuthoritiesState> {
   }
 
   /// Load the current authorities.
-  FutureOr<void> _onLoad(
-      AuthoritiesLoad event, Emitter<AuthoritiesState> emit) async {
+  FutureOr<void> _onLoad(AuthoritiesLoad event, Emitter<AuthoritiesState> emit) async {
     emit(AuthoritiesInitialState());
     try {
       List role = await _authoritiesRepository.getAuthorities();
