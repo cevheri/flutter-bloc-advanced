@@ -1,17 +1,16 @@
 {
-  "id": 1,
+  "id": "user-1",
   "login": "admin",
-  "firstName": "first name",
-  "lastName": "last name",
-  "email": "email@email.com",
+  "email": "admin@sekoya.tech",
+  "firstName": "Admin",
+  "lastName": "User",
   "activated": true,
-  "langKey": null,
+  "langKey": "en",
   "createdBy": "system",
-  "createdDate": null,
+  "createdDate": "2024-01-04T06:02:47.757Z",
   "lastModifiedBy": "admin",
   "lastModifiedDate": "2024-01-04T06:02:47.757Z",
   "authorities": [
-    "ROLE_ADMIN"
-  ],
-  "phoneNumber": "5323627760"
+    "ROLE_ADMIN", "ROLE_USER"
+  ]
 }

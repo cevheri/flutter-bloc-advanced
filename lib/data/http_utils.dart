@@ -263,7 +263,7 @@ class HttpUtils {
     var headers = await HttpUtils.headers();
     if (!allowedPaths.contains(endpoint)) {
       if (headers['Authorization'] == null) {
-        return Future.value(http.Response("Unauthorized", HttpStatus.unauthorized));
+        throw UnauthorizedException("Unauthorized Access");
       }
     }
 

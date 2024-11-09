@@ -1,17 +1,16 @@
 {
-  "id": 1,
-  "login": "new_user",
-  "firstName": "Mock new user First Name",
-  "lastName": "Mock new user  Last Name",
-  "email": "mock_account@test.com",
+  "id": "user-1",
+  "login": "admin",
+  "email": "admin@sekoya.tech",
+  "firstName": "Admin",
+  "lastName": "User",
   "activated": true,
-  "langKey": null,
+  "langKey": "en",
   "createdBy": "system",
-  "createdDate": null,
+  "createdDate": "2024-01-04T06:02:47.757Z",
   "lastModifiedBy": "admin",
   "lastModifiedDate": "2024-01-04T06:02:47.757Z",
   "authorities": [
-    "ROLE_ADMIN"
-  ],
-  "phoneNumber": "5323627760"
+    "ROLE_ADMIN", "ROLE_USER"
+  ]
 }
