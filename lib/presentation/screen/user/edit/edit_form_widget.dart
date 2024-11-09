@@ -9,27 +9,25 @@ import '../../../../utils/message.dart';
 import '../../../common_blocs/authorities/authorities_bloc.dart';
 import '../bloc/user_bloc.dart';
 
-class EditFormPhoneNumber extends StatelessWidget {
-  final User user;
-
-  const EditFormPhoneNumber({super.key, required this.user});
-
-  @override
-  Widget build(BuildContext context) {
-    return FormBuilderTextField(
-      name: 'editPhoneNumber',
-      decoration: InputDecoration(
-        labelText: S.of(context).phone_number,
-      ),
-      validator: FormBuilderValidators.compose(
-        [
-          FormBuilderValidators.required(errorText: S.of(context).required_phone_type),
-        ],
-      ),
-      initialValue: user.phoneNumber,
-    );
-  }
-}
+// class EditFormPhoneNumber extends StatelessWidget {
+//   final User user;
+//
+//   const EditFormPhoneNumber({super.key, required this.user});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return FormBuilderTextField(
+//       name: 'editPhoneNumber',
+//       decoration: InputDecoration(
+//         labelText: S.of(context).phone_number,
+//       ),
+//       validator: FormBuilderValidators.compose(
+//         [FormBuilderValidators.required(errorText: S.of(context).required_phone_type)],
+//       ),
+//       initialValue: user.phoneNumber,
+//     );
+//   }
+// }
 
 class EditFormActive extends StatelessWidget {
   final User user;
@@ -207,7 +205,7 @@ class SubmitButton extends StatelessWidget {
                 firstName: formKey.currentState!.fields['editFirstName']!.value,
                 lastName: formKey.currentState!.fields['editLastName']!.value,
                 email: formKey.currentState!.fields['editEmail']!.value,
-                phoneNumber: formKey.currentState!.fields['editPhoneNumber']!.value,
+                // phoneNumber: formKey.currentState!.fields['editPhoneNumber']!.value,
                 authorities: [formKey.currentState!.fields['editAuthorities']?.value ?? ""],
               );
               User cacheUser = User(
@@ -217,7 +215,7 @@ class SubmitButton extends StatelessWidget {
                 firstName: user.firstName,
                 lastName: user.lastName,
                 email: user.email,
-                phoneNumber: user.phoneNumber,
+                // phoneNumber: user.phoneNumber,
                 authorities: user.authorities,
               );
               if (cacheUser != newUser) {

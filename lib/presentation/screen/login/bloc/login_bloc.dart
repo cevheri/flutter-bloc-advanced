@@ -31,7 +31,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
-    log("LoginBloc.onSubmit start: ${event.username}, ${event.password}");
+    log("LoginBloc.onSubmit start: ${event.username}");
     emit(state.copyWith(
       username: event.username,
       password: event.password,

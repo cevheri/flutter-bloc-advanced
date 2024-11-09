@@ -76,7 +76,7 @@ class CreateUserScreen extends StatelessWidget {
                   firstName: formKey.currentState!.fields['firstName']!.value,
                   lastName: formKey.currentState!.fields['lastName']!.value,
                   email: formKey.currentState!.fields['email']!.value,
-                  phoneNumber: formKey.currentState!.fields['phoneNumber']!.value,
+                  // phoneNumber: formKey.currentState!.fields['phoneNumber']!.value,
                   authorities: [formKey.currentState!.fields['authorities']?.value ?? ""],
                   activated: formKey.currentState!.fields['userCreateActive']!.value,
                 );

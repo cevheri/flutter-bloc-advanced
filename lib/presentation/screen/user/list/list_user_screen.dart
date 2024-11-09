@@ -104,13 +104,13 @@ class ListUserScreen extends StatelessWidget {
                             flex: 15,
                             child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left),
                           ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 10,
-                            child: Text(
-                                state.userList[index].phoneNumber.toString() == "null" ? "-" : state.userList[index].phoneNumber.toString(),
-                                textAlign: TextAlign.left),
-                          ),
+                          // SizedBox(width: 5),
+                          // Expanded(
+                          //   flex: 10,
+                          //   child: Text(
+                          //       state.userList[index].phoneNumber.toString() == "null" ? "-" : state.userList[index].phoneNumber.toString(),
+                          //       textAlign: TextAlign.left),
+                          // ),
                           SizedBox(width: 5),
                           Expanded(
                             flex: 3,

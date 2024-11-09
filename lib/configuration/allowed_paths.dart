@@ -1,4 +1,4 @@
-List<String> ALLOWED_PATHS = [
+List<String> allowedPaths = [
   '/authenticate',
   '/login',
   '/register',

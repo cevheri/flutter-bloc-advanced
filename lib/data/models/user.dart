@@ -42,12 +42,11 @@ class User extends Equatable {
   @JsonProperty(name: 'authorities')
   final List<String>? authorities;
 
+  // @JsonProperty(name: 'phoneNumber')
+  // final String? phoneNumber;
 
-  @JsonProperty(name: 'phoneNumber')
-  final String? phoneNumber;
 
-
-  const User({
+  User({
     this.id,
     this.login,
     this.firstName,
@@ -60,7 +59,7 @@ class User extends Equatable {
     this.lastModifiedBy,
     this.lastModifiedDate,
     this.authorities,
-    this.phoneNumber,
+    // this.phoneNumber,
   });
 
   User copyWith({
@@ -76,7 +75,7 @@ class User extends Equatable {
     String? lastModifiedBy,
     DateTime? lastModifiedDate,
     List<String>? authorities,
-    String? phoneNumber,
+    // String? phoneNumber,
   }) {
     return User(
       id: id ?? this.id,
@@ -91,7 +90,7 @@ class User extends Equatable {
       lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       authorities: authorities ?? this.authorities,
-      phoneNumber: phoneNumber ?? this.phoneNumber,
+      // phoneNumber: phoneNumber ?? this.phoneNumber,
     );
   }
 
@@ -109,9 +108,18 @@ class User extends Equatable {
         lastModifiedBy,
         lastModifiedDate,
         authorities,
-        phoneNumber,
+        // phoneNumber,
       ];
 
   @override
   bool get stringify => true;
+
+  // static fromJson(JsonMap json){
+  //   return User(
+  //     id:
+  //     login: json['login'],
+  //     firstName: json['firstName'],
+  //     lastName: json['lastName'],
+  //
+  // }
 }

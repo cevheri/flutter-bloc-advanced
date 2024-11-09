@@ -14,6 +14,7 @@ class AuthenticationStorageConstants {
   static const USERNAME = "USERNAME";
 }
 
+//TODO a lot of read to storage is done in the app
 Future<Map<String, dynamic>> getStorage() async {
   final authenticationStorage = GetStorage();
   final language = authenticationStorage.read(AuthenticationStorageConstants.LANGUAGE) ?? "";

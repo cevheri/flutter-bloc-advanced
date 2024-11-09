@@ -48,7 +48,7 @@ class AccountsScreen extends StatelessWidget {
                         EditFormFirstName(user: state.account!),
                         EditFormLastname(user: state.account!),
                         EditFormEmail(user: state.account!),
-                        EditFormPhoneNumber(user: state.account!),
+                        // EditFormPhoneNumber(user: state.account!),
                         EditFormActive(user: state.account!),
                         EditFormAuthorities(user: state.account!, formKey: formKey),
                         SizedBox(height: 20),

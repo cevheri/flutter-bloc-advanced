@@ -9,6 +9,19 @@ import '../models/user_jwt.dart';
 class LoginRepository {
   LoginRepository();
 
+  /// Authenticate the user with the given [userJWT].
+  /// If the authentication is successful, the JWT token is saved in the storage.
+  /// Returns the JWT token.
+  /// Throws an exception if the username or password is invalid.
+  ///
+  /// Example usage:
+  ///
+  /// ```dart
+  /// curl 'https://dhw-api.onrender.com/api/authenticate' \
+  ///   -H 'accept: application/json, text/plain, */*' \
+  ///   -H 'content-type: application/json' \
+  ///   --data-raw $'{"username":"admin","password":"admin","rememberMe":false}'
+  /// ```
   Future<JWTToken> authenticate(UserJWT userJWT) async {
     JWTToken? result;
     if (userJWT.username == null || userJWT.password == null) {
