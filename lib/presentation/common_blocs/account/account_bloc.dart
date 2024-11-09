@@ -9,7 +9,6 @@ import '../../../data/repository/account_repository.dart';
 import '../../../utils/storage.dart';
 
 part 'account_event.dart';
-
 part 'account_state.dart';
 
 /// Bloc responsible for managing the account.

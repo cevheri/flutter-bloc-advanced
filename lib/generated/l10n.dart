@@ -180,21 +180,51 @@ class S {
     );
   }
 
-  /// `Range is required`
-  String get required_range {
-    return Intl.message(
-      'Range is required',
-      name: 'required_range',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Name`
   String get name {
     return Intl.message(
       'Name',
       name: 'name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Success`
+  String get success {
+    return Intl.message(
+      'Success',
+      name: 'success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed`
+  String get failed {
+    return Intl.message(
+      'Failed',
+      name: 'failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Required Field!`
+  String get required_field {
+    return Intl.message(
+      'Required Field!',
+      name: 'required_field',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Range is required`
+  String get required_range {
+    return Intl.message(
+      'Range is required',
+      name: 'required_range',
       desc: '',
       args: [],
     );
@@ -565,6 +595,26 @@ class S {
     return Intl.message(
       'Password',
       name: 'password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current Password`
+  String get current_password {
+    return Intl.message(
+      'Current Password',
+      name: 'current_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New Password`
+  String get new_password {
+    return Intl.message(
+      'New Password',
+      name: 'new_password',
       desc: '',
       args: [],
     );

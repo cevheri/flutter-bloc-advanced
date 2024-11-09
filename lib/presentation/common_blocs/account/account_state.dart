@@ -20,8 +20,7 @@ class AccountState extends Equatable {
     User? account,
     AccountStatus? status,
   }) {
-    return AccountState(
-        status: status ?? this.status, account: account ?? this.account);
+    return AccountState(status: status ?? this.status, account: account ?? this.account);
   }
 
   @override

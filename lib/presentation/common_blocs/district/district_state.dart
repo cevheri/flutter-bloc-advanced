@@ -20,8 +20,7 @@ class DistrictState extends Equatable {
     List<District>? authorities,
     DistrictStatus? status,
   }) {
-    return DistrictState(
-        status: status ?? this.status, district: authorities ?? district);
+    return DistrictState(status: status ?? this.status, district: authorities ?? district);
   }
 
   @override

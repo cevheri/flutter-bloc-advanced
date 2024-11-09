@@ -48,6 +48,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("User creation failed"),
         "create_user_success":
             MessageLookupByLibrary.simpleMessage("User created successfully"),
+        "current_password":
+            MessageLookupByLibrary.simpleMessage("Current Password"),
         "description":
             MessageLookupByLibrary.simpleMessage("Flutter Bloc Advanced"),
         "edit_account": MessageLookupByLibrary.simpleMessage("Edit Account"),
@@ -65,6 +67,7 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Email sent successfully"),
         "email_send": MessageLookupByLibrary.simpleMessage("Send Email"),
         "english": MessageLookupByLibrary.simpleMessage("English"),
+        "failed": MessageLookupByLibrary.simpleMessage("Failed"),
         "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
         "firstname_max_length": MessageLookupByLibrary.simpleMessage(
             "Firstname cannot be more than 20 characters long"),
@@ -96,6 +99,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Are you sure you want to logout?"),
         "main_screen": MessageLookupByLibrary.simpleMessage("Main Screen"),
         "name": MessageLookupByLibrary.simpleMessage("Name"),
+        "new_password": MessageLookupByLibrary.simpleMessage("New Password"),
         "no": MessageLookupByLibrary.simpleMessage("No"),
         "ok": MessageLookupByLibrary.simpleMessage("Ok"),
         "password": MessageLookupByLibrary.simpleMessage("Password"),
@@ -112,6 +116,8 @@ class MessageLookup extends MessageLookupByLibrary {
             "Password changed successfully"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
         "register": MessageLookupByLibrary.simpleMessage("Register"),
+        "required_field":
+            MessageLookupByLibrary.simpleMessage("Required Field!"),
         "required_phone_type": MessageLookupByLibrary.simpleMessage(
             "Phone Type Required 5** *** ** ** "),
         "required_range":
@@ -121,6 +127,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "screen_size_error":
             MessageLookupByLibrary.simpleMessage("Screen size is too small."),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
+        "success": MessageLookupByLibrary.simpleMessage("Success"),
         "theme": MessageLookupByLibrary.simpleMessage("Theme"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),

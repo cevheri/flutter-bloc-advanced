@@ -156,9 +156,6 @@ class SettingsScreen extends StatelessWidget {
   }
 }
 
-
-
-
 class LanguageConfirmationDialog extends StatelessWidget {
   const LanguageConfirmationDialog({super.key});
 
@@ -192,4 +189,3 @@ class LanguageConfirmationDialog extends StatelessWidget {
     Get.back();
   }
 }
-

@@ -15,11 +15,9 @@ class TogglePasswordVisibility extends RegisterEvent {
 }
 
 class RegisterEmailChanged extends RegisterEvent {
-  final User createUset;
-
+  final User createUser;
 
   const RegisterEmailChanged({
-    required this.createUset,
-
+    required this.createUser,
   });
 }

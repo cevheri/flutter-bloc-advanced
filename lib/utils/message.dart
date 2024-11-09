@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class Message {
-  static Future getMessage(
-      {required BuildContext context,
-      required String title,
-      required String content}) async {
+  static Future getMessage({required BuildContext context, required String title, required String content}) async {
     Get.snackbar(
       title,
       content,
@@ -15,11 +12,7 @@ class Message {
     );
   }
 
-
-  static Future errorMessage(
-      {required BuildContext context,
-      required String title,
-      required String content}) async {
+  static Future errorMessage({required BuildContext context, required String title, required String content}) async {
     Get.snackbar(
       title,
       content,
@@ -29,6 +22,4 @@ class Message {
       colorText: Colors.red,
     );
   }
-
-
 }

@@ -13,8 +13,6 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 
 /// main entry point of local computer development
 
-
-
 void main() async {
   ProfileConstants.setEnvironment(Environment.PROD);
   initializeJsonMapper();

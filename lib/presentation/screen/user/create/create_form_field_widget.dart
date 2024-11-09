@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -17,8 +16,7 @@ class CreateFormPhoneNumber extends StatelessWidget {
       ),
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).required_phone_type),
+          FormBuilderValidators.required(errorText: S.of(context).required_phone_type),
         ],
       ),
     );
@@ -50,8 +48,7 @@ class CreateFormEmail extends StatelessWidget {
       ),
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).email_required),
+          FormBuilderValidators.required(errorText: S.of(context).email_required),
           FormBuilderValidators.email(errorText: S.of(context).email_pattern),
         ],
       ),
@@ -71,12 +68,9 @@ class CreateFormLastname extends StatelessWidget {
       ),
       validator: FormBuilderValidators.compose(
         [
-          FormBuilderValidators.required(
-              errorText: S.of(context).lastname_required),
-          FormBuilderValidators.minLength(
-              errorText: S.of(context).lastname_min_length, 3),
-          FormBuilderValidators.maxLength(
-              errorText: S.of(context).lastname_max_length, 20),
+          FormBuilderValidators.required(errorText: S.of(context).lastname_required),
+          FormBuilderValidators.minLength(errorText: S.of(context).lastname_min_length, 3),
+          FormBuilderValidators.maxLength(errorText: S.of(context).lastname_max_length, 20),
         ],
       ),
     );
@@ -94,12 +88,9 @@ class CreateFormFirstName extends StatelessWidget {
         labelText: S.of(context).first_name,
       ),
       validator: FormBuilderValidators.compose([
-        FormBuilderValidators.required(
-            errorText: S.of(context).firstname_required),
-        FormBuilderValidators.minLength(
-            errorText: S.of(context).firstname_min_length, 3),
-        FormBuilderValidators.maxLength(
-            errorText: S.of(context).firstname_max_length, 20),
+        FormBuilderValidators.required(errorText: S.of(context).firstname_required),
+        FormBuilderValidators.minLength(errorText: S.of(context).firstname_min_length, 3),
+        FormBuilderValidators.maxLength(errorText: S.of(context).firstname_max_length, 20),
       ]),
     );
   }
@@ -116,17 +107,11 @@ class CreateFormLoginName extends StatelessWidget {
         labelText: S.of(context).login,
       ),
       validator: FormBuilderValidators.compose([
-        FormBuilderValidators.required(
-            errorText: S.of(context).username_required),
-        FormBuilderValidators.minLength(
-            errorText: S.of(context).username_min_length, 3),
-        FormBuilderValidators.maxLength(
-            errorText: S.of(context).username_max_length, 20),
-        FormBuilderValidators.match((RegExp("^[a-zA-Z0-9]+\$")),
-            errorText: S.of(context).username_regex_pattern),
+        FormBuilderValidators.required(errorText: S.of(context).username_required),
+        FormBuilderValidators.minLength(errorText: S.of(context).username_min_length, 3),
+        FormBuilderValidators.maxLength(errorText: S.of(context).username_max_length, 20),
+        FormBuilderValidators.match((RegExp("^[a-zA-Z0-9]+\$")), errorText: S.of(context).username_regex_pattern),
       ]),
     );
   }
 }
-
-

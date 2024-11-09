@@ -28,8 +28,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
   final AccountRepository _accountRepository;
 
   /// Load the current user.
-  FutureOr<void> _onLoadCurrentUser(
-      SettingsLoadCurrentUser event, Emitter<SettingsState> emit) async {
+  FutureOr<void> _onLoadCurrentUser(SettingsLoadCurrentUser event, Emitter<SettingsState> emit) async {
     log('event value: $event, emit $emit');
     emit(state.copyWith(status: SettingsStatus.loading));
     log('state value: ${state.firstName}, ${state.lastName}, ${state.email}, ${state.language}, ${state.status}');
@@ -50,36 +49,31 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     }
   }
 
-  FutureOr<void> _firstNameChanged(
-      SettingsFirstNameChanged event, Emitter<SettingsState> emit) {
+  FutureOr<void> _firstNameChanged(SettingsFirstNameChanged event, Emitter<SettingsState> emit) {
     log('event value: ${event.firstName}, emit $emit');
     state.copyWith(firstName: event.firstName);
     log('state value: ${state.firstName}, ${state.lastName}, ${state.email}, ${state.language}, ${state.status}');
   }
 
-  FutureOr<void> _lastNameChanged(
-      SettingsLastNameChanged event, Emitter<SettingsState> emit) {
+  FutureOr<void> _lastNameChanged(SettingsLastNameChanged event, Emitter<SettingsState> emit) {
     log('event value: ${event.lastName}, emit $emit');
     state.copyWith(lastName: event.lastName);
     log('state value: ${state.firstName}, ${state.lastName}, ${state.email}, ${state.language}, ${state.status}');
   }
 
-  FutureOr<void> _emailChanged(
-      SettingsEmailChanged event, Emitter<SettingsState> emit) {
+  FutureOr<void> _emailChanged(SettingsEmailChanged event, Emitter<SettingsState> emit) {
     log('event value: ${event.email}, emit $emit');
     state.copyWith(email: event.email);
     log('state value: ${state.firstName}, ${state.lastName}, ${state.email}, ${state.language}, ${state.status}');
   }
 
-  FutureOr<void> _languageChanged(
-      SettingsLanguageChanged event, Emitter<SettingsState> emit) {
+  FutureOr<void> _languageChanged(SettingsLanguageChanged event, Emitter<SettingsState> emit) {
     log('event value: ${event.language}, emit $emit');
     state.copyWith(language: event.language);
     log('state value: ${state.firstName}, ${state.lastName}, ${state.email}, ${state.language}, ${state.status}');
   }
 
-  FutureOr<void> _onSubmit(
-      SettingsFormSubmitted event, Emitter<SettingsState> emit) async {
+  FutureOr<void> _onSubmit(SettingsFormSubmitted event, Emitter<SettingsState> emit) async {
     log('event value: $event, emit $emit');
     state.copyWith(status: SettingsStatus.loading);
     log('state value: ${state.firstName}, ${state.lastName}, ${state.email}, ${state.language}, ${state.status}');

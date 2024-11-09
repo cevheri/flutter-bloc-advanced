@@ -68,10 +68,8 @@ class ForgotPasswordScreen extends StatelessWidget {
             decoration: InputDecoration(labelText: S.of(context).email),
             maxLines: 1,
             validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(
-                  errorText: S.of(context).email_required),
-              FormBuilderValidators.email(
-                  errorText: S.of(context).email_pattern),
+              FormBuilderValidators.required(errorText: S.of(context).email_required),
+              FormBuilderValidators.email(errorText: S.of(context).email_pattern),
               (value) {
                 if (value == null || value.isEmpty) {
                   return S.of(context).email_pattern;
@@ -92,40 +90,30 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   _submitButton(BuildContext context) {
-    return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
-        builder: (context, state) {
+    return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(builder: (context, state) {
       return SizedBox(
         child: ElevatedButton(
           child: Text(S.of(context).email_send),
           onPressed: () {
             if (_forgotPasswordFormKey.currentState!.saveAndValidate()) {
-              context.read<ForgotPasswordBloc>().add(ForgotPasswordEmailChanged(
-                  email: _forgotPasswordFormKey
-                      .currentState!.fields["email"]!.value));
+              context
+                  .read<ForgotPasswordBloc>()
+                  .add(ForgotPasswordEmailChanged(email: _forgotPasswordFormKey.currentState!.fields["email"]!.value));
             } else {}
           },
         ),
       );
     }, buildWhen: (previous, current) {
       if (current is AccountResetPasswordInitialState) {
-        Message.getMessage(
-            context: context,
-            title: S.of(context).email_reset_password_sending,
-            content: "");
+        Message.getMessage(context: context, title: S.of(context).email_reset_password_sending, content: "");
       }
       if (current is AccountResetPasswordCompletedState) {
         Navigator.pop(context);
-        Message.getMessage(
-            context: context,
-            title: S.of(context).email_reset_password_success,
-            content: "");
+        Message.getMessage(context: context, title: S.of(context).email_reset_password_success, content: "");
         Future.delayed(Duration(seconds: 1), () {});
       }
       if (current is AccountResetPasswordErrorState) {
-        Message.errorMessage(
-            title: S.of(context).email_reset_password_error,
-            context: context,
-            content: "");
+        Message.errorMessage(title: S.of(context).email_reset_password_error, context: context, content: "");
       }
       return true;
     });

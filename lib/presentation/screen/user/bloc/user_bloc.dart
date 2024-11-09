@@ -7,7 +7,6 @@ import '../../../../data/models/user.dart';
 import '../../../../data/repository/user_repository.dart';
 
 part 'user_event.dart';
-
 part 'user_state.dart';
 
 /// Bloc responsible for managing the Users.
@@ -39,13 +38,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(UserFindInitialState());
     try {
       if (event.name == "") {
-        List<User> user = await _userRepository.findUserByAuthorities(
-            event.rangeStart, event.rangeEnd, event.authorities);
+        List<User> user = await _userRepository.findUserByAuthorities(event.rangeStart, event.rangeEnd, event.authorities);
         emit(UserSearchSuccessState(userList: user));
       }
       if (event.name != "") {
-        List<User> user = await _userRepository.findUserByName(
-            event.rangeStart, event.rangeEnd, event.name, event.authorities);
+        List<User> user = await _userRepository.findUserByName(event.rangeStart, event.rangeEnd, event.name, event.authorities);
         emit(UserSearchSuccessState(userList: user));
       }
     } catch (e) {
