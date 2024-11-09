@@ -4,6 +4,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../configuration/routes.dart';
+import '../../../generated/l10n.dart';
 import '../../../utils/message.dart';
 import 'bloc/change_password_bloc.dart';
 
@@ -22,7 +23,7 @@ class ChangePasswordScreen extends StatelessWidget {
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-      title: Text("Change Password"),
+      title: Text(S.of(context).change_password),
     );
   }
 
@@ -68,12 +69,12 @@ class ChangePasswordScreen extends StatelessWidget {
           Expanded(
             child: FormBuilderTextField(
               name: 'currentPassword',
-              decoration: InputDecoration(labelText: "Old Password"),
+              decoration: InputDecoration(labelText: S.of(context).current_password),
               obscureText: true,
               maxLines: 1,
               validator: FormBuilderValidators.compose(
                 [
-                  FormBuilderValidators.required(errorText: "Required Field"),
+                  FormBuilderValidators.required(errorText: S.of(context).required_field),
                   (val) {
                     return null;
                   },
@@ -95,12 +96,12 @@ class ChangePasswordScreen extends StatelessWidget {
           Expanded(
             child: FormBuilderTextField(
               name: 'newPassword',
-              decoration: InputDecoration(labelText: "New Password"),
+              decoration: InputDecoration(labelText: S.of(context).new_password),
               obscureText: true,
               maxLines: 1,
               validator: FormBuilderValidators.compose(
                 [
-                  FormBuilderValidators.required(errorText: "Required Field"),
+                  FormBuilderValidators.required(errorText: S.of(context).required_field),
                   (val) {
                     return null;
                   },
@@ -118,7 +119,7 @@ class ChangePasswordScreen extends StatelessWidget {
       builder: (context, state) {
         return SizedBox(
           child: ElevatedButton(
-            child: Text("Change Password"),
+            child: Text(S.of(context).change_password),
             onPressed: () {
               if (_changePasswordFormKey.currentState!.saveAndValidate() &&
                   _changePasswordFormKey.currentState!.value['currentPassword'] != _changePasswordFormKey.currentState!.value['newPassword'] &&
@@ -135,14 +136,14 @@ class ChangePasswordScreen extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is ChangePasswordInitialState) {
-          Message.getMessage(context: context, title: "Password is changing..", content: "");
+          Message.getMessage(context: context, title: S.of(context).loading, content: "");
         }
         if (current is ChangePasswordPasswordCompletedState) {
-          Message.getMessage(context: context, title: "Password is changed", content: "");
+          Message.getMessage(context: context, title: S.of(context).success, content: "");
           Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
         }
         if (current is ChangePasswordPasswordErrorState) {
-          Message.errorMessage(title: 'Password did not changed', context: context, content: "");
+          Message.errorMessage(title: S.of(context).failed, context: context, content: "");
         }
         return true;
       },

@@ -1,7 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'intl/messages_all.dart';
 
 // **************************************************************************
@@ -19,14 +18,17 @@ class S {
   static S? _current;
 
   static S get current {
-    assert(_current != null, 'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
+    assert(_current != null,
+        'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.');
     return _current!;
   }
 
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<S> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false) ? locale.languageCode : locale.toString();
+    final name = (locale.countryCode?.isEmpty ?? false)
+        ? locale.languageCode
+        : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -39,7 +41,8 @@ class S {
 
   static S of(BuildContext context) {
     final instance = S.maybeOf(context);
-    assert(instance != null, 'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
+    assert(instance != null,
+        'No instance of S present in the widget tree. Did you add S.delegate in localizationsDelegates?');
     return instance!;
   }
 
@@ -177,21 +180,51 @@ class S {
     );
   }
 
-  /// `Range is required`
-  String get required_range {
-    return Intl.message(
-      'Range is required',
-      name: 'required_range',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Name`
   String get name {
     return Intl.message(
       'Name',
       name: 'name',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Success`
+  String get success {
+    return Intl.message(
+      'Success',
+      name: 'success',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Failed`
+  String get failed {
+    return Intl.message(
+      'Failed',
+      name: 'failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Required Field!`
+  String get required_field {
+    return Intl.message(
+      'Required Field!',
+      name: 'required_field',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Range is required`
+  String get required_range {
+    return Intl.message(
+      'Range is required',
+      name: 'required_range',
       desc: '',
       args: [],
     );
@@ -567,6 +600,26 @@ class S {
     );
   }
 
+  /// `Current Password`
+  String get current_password {
+    return Intl.message(
+      'Current Password',
+      name: 'current_password',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New Password`
+  String get new_password {
+    return Intl.message(
+      'New Password',
+      name: 'new_password',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Forgot Password`
   String get password_forgot {
     return Intl.message(
@@ -762,10 +815,8 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
 
   @override
   bool isSupported(Locale locale) => _isSupported(locale);
-
   @override
   Future<S> load(Locale locale) => S.load(locale);
-
   @override
   bool shouldReload(AppLocalizationDelegate old) => false;
 

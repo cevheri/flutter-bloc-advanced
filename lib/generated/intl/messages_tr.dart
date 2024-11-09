@@ -49,6 +49,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Kullanıcı oluşturulamadı"),
         "create_user_success": MessageLookupByLibrary.simpleMessage(
             "Kullanıcı başarıyla oluşturuldu"),
+        "current_password":
+            MessageLookupByLibrary.simpleMessage("Mevcut Şifre"),
         "description":
             MessageLookupByLibrary.simpleMessage("Flutter Bloc Advanced"),
         "edit_account": MessageLookupByLibrary.simpleMessage("Hesabı Düzenle"),
@@ -66,6 +68,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Şifre sıfırlama e-postası başarıyla gönderildi"),
         "email_send": MessageLookupByLibrary.simpleMessage("E-posta Gönder"),
         "english": MessageLookupByLibrary.simpleMessage("İngilizce"),
+        "failed": MessageLookupByLibrary.simpleMessage("Başarısız"),
         "first_name": MessageLookupByLibrary.simpleMessage("İsim"),
         "firstname_max_length": MessageLookupByLibrary.simpleMessage(
             "İsim en fazla 20 karakter uzunluğunda olmalıdır"),
@@ -99,6 +102,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Çıkış yapmak istediğinize emin misiniz?"),
         "main_screen": MessageLookupByLibrary.simpleMessage("Ana Ekran"),
         "name": MessageLookupByLibrary.simpleMessage("İsim"),
+        "new_password": MessageLookupByLibrary.simpleMessage("Yeni Şifre"),
         "no": MessageLookupByLibrary.simpleMessage("Hayır"),
         "ok": MessageLookupByLibrary.simpleMessage("Tamam"),
         "password": MessageLookupByLibrary.simpleMessage("Password"),
@@ -115,6 +119,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Password changed successfully"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Tel No"),
         "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
+        "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan!"),
         "required_phone_type": MessageLookupByLibrary.simpleMessage(
             "Telefon numarası 5** *** ** ** formatında ve 10 karakter olmalıdır"),
         "required_range":
@@ -124,6 +129,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "screen_size_error":
             MessageLookupByLibrary.simpleMessage("Ekran boyutu çok küçük."),
         "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
+        "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
         "theme": MessageLookupByLibrary.simpleMessage("Tema"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
