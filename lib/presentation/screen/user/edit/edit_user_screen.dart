@@ -9,6 +9,7 @@ class EditUserScreen extends StatelessWidget {
   final User user;
 
   EditUserScreen({super.key, required this.user});
+
   final formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -47,7 +48,7 @@ class EditUserScreen extends StatelessWidget {
                 EditFormFirstName(user: user),
                 EditFormLastname(user: user),
                 EditFormEmail(user: user),
-                EditFormPhoneNumber(user: user),
+                // EditFormPhoneNumber(user: user),
                 EditFormActive(user: user),
                 EditFormAuthorities(user: user, formKey: formKey),
                 SizedBox(height: 20),
