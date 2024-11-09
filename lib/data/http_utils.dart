@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert' show Encoding, json, utf8;
+import 'dart:convert' show Encoding, json, jsonDecode, utf8;
 import 'dart:developer';
 import 'dart:io';
 
@@ -31,6 +31,8 @@ class HttpUtils {
   static const String generalNoErrorKey = 'none';
   static int timeout = 30;
 
+  ///   -H 'accept: application/json, text/plain, */*' \
+  ///   -H 'content-type: application/json' \
   /// Default headers for all requests (can be overridden with [addCustomHttpHeader])
   static final _defaultHttpHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json'};
 
@@ -42,9 +44,12 @@ class HttpUtils {
     _customHttpHeaders[key] = value;
   }
 
-  static String encodeUTF8(String toEncode) {
+  static String decodeUTF8(String toEncode) {
     return utf8.decode(toEncode.runes.toList());
   }
+
+  ///   -H 'accept: application/json, text/plain, */*' \
+  ///   -H 'content-type: application/json' \
 
   static Future<Map<String, String>> headers() async {
     String? jwt = getStorageCache["jwtToken"];
@@ -57,7 +62,7 @@ class HttpUtils {
       _customHttpHeaders.clear();
     } else {
       headerParameters.addAll(_defaultHttpHeaders);
-      log("default headers");
+      log("default headers : $_defaultHttpHeaders");
     }
 
     if (jwt != null && jwt != "") {
@@ -102,9 +107,11 @@ class HttpUtils {
             encoding: Encoding.getByName('utf-8'),
           )
           .timeout(Duration(seconds: timeout));
-    } on SocketException {
+    } on SocketException catch (se) {
+      debugPrint("Socket Exception: $se");
       throw FetchDataException('No Internet connection');
-    } on TimeoutException {
+    } on TimeoutException catch (toe) {
+      debugPrint("Timeout Exception: $toe");
       throw FetchDataException('Request timeout');
     }
     return response;
@@ -120,9 +127,9 @@ class HttpUtils {
     try {
       var response = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
       if (response.statusCode == 401) {
-        throw UnauthorisedException(response.body.toString());
+        throw UnauthorizedException(response.body.toString());
       }
-      var result = encodeUTF8(response.body.toString());
+      var result = decodeUTF8(response.body.toString());
       debugPrint(" GET Request Method end : ${ProfileConstants.api}$endpoint");
       return result;
     } on SocketException {
@@ -141,7 +148,7 @@ class HttpUtils {
   //         .timeout(Duration(seconds: timeout));
   //     debugPrint(result.headers.toString());
   //     if (result.statusCode == 401) {
-  //       throw UnauthorisedException(result.headers.toString());
+  //       throw UnauthorizedException(result.headers.toString());
   //     }
   //     Map<String, dynamic> pageable = <String, dynamic>{};
   //     pageable['x-total-count'] = result.headers['x-total-count'];
@@ -227,7 +234,7 @@ class HttpUtils {
   //       throw BadRequestException(response.body.toString());
   //     case 401:
   //     case 403:
-  //       throw UnauthorisedException(response.body.toString());
+  //       throw UnauthorizedException(response.body.toString());
   //     case 417:
   //       throw ApiBusinessException(response.body.toString());
   //     case 500:
@@ -241,7 +248,7 @@ class HttpUtils {
     debugPrint("Mock request: $httpMethod $endpoint");
 
     var headers = await HttpUtils.headers();
-    if (!ALLOWED_PATHS.contains(endpoint)) {
+    if (!allowedPaths.contains(endpoint)) {
       if (headers['Authorization'] == null) {
         return Future.value(Response("Unauthorized", HttpStatus.unauthorized));
       }
