@@ -43,7 +43,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       debugPrint(token.toString());
       if (token.idToken != null) {
         log("LoginBloc.onSubmit token: ${token.idToken}");
-        saveStorage(jwtToken: token.idToken, role: event.username);
+        saveStorage(jwtToken: token.idToken);
         saveStorage(username: event.username);
 
         emit(state.copyWith(status: LoginStatus.authenticated));

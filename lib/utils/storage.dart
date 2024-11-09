@@ -9,9 +9,16 @@ import '../main/main_local.dart';
 
 class AuthenticationStorageConstants {
   static const JWT_TOKEN = "TOKEN";
-  static const ROLE = "ROLE";
+  static const ROLES = "ROLES";
   static const LANGUAGE = "LANGUAGE";
   static const USERNAME = "USERNAME";
+}
+
+
+Map<String, dynamic> getStorageCache = {};
+
+Future<void> loadStorageData() async {
+  getStorageCache = await getStorage();
 }
 
 //TODO a lot of read to storage is done in the app
@@ -19,7 +26,7 @@ Future<Map<String, dynamic>> getStorage() async {
   final authenticationStorage = GetStorage();
   final language = authenticationStorage.read(AuthenticationStorageConstants.LANGUAGE) ?? "";
   final jwtToken = authenticationStorage.read(AuthenticationStorageConstants.JWT_TOKEN) ?? "";
-  final role = authenticationStorage.read(AuthenticationStorageConstants.ROLE) ?? "";
+  final role = authenticationStorage.read(AuthenticationStorageConstants.ROLES) ?? "";
   final username = authenticationStorage.read(AuthenticationStorageConstants.USERNAME) ?? "";
 
   return {
@@ -32,13 +39,13 @@ Future<Map<String, dynamic>> getStorage() async {
 
 void saveStorage({
   String? jwtToken,
-  String? role,
+  List<String>? roles,
   String? language,
   String? username,
 }) {
   final authenticationStorage = GetStorage();
   jwtToken != null ? authenticationStorage.write(AuthenticationStorageConstants.JWT_TOKEN, jwtToken) : null;
-  role != null ? authenticationStorage.write(AuthenticationStorageConstants.ROLE, role) : null;
+  roles != null ? authenticationStorage.write(AuthenticationStorageConstants.ROLES, roles) : null;
   language != null ? authenticationStorage.write(AuthenticationStorageConstants.LANGUAGE, language) : null;
   username != null ? authenticationStorage.write(AuthenticationStorageConstants.USERNAME, username) : null;
   getStorage();
@@ -49,7 +56,7 @@ void clearStorage() {
   final authenticationStorage = GetStorage();
 //  clearLocalStorage();
   authenticationStorage.remove(AuthenticationStorageConstants.JWT_TOKEN);
-  authenticationStorage.remove(AuthenticationStorageConstants.ROLE);
+  authenticationStorage.remove(AuthenticationStorageConstants.ROLES);
   authenticationStorage.remove(AuthenticationStorageConstants.LANGUAGE);
   authenticationStorage.remove(AuthenticationStorageConstants.USERNAME);
 }

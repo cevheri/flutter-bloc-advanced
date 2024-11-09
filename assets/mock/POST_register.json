@@ -11,7 +11,6 @@
   "lastModifiedBy": "admin",
   "lastModifiedDate": "2024-01-04T06:02:47.757Z",
   "authorities": [
-    "ROLE_ADMIN"
-  ],
-  "phoneNumber": "5323627760"
+    "ROLE_ADMIN", "ROLE_USER"
+  ]
 }

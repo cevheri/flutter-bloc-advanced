@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/user.dart';
 import '../../../data/repository/account_repository.dart';
-import '../../../main/main_local.dart';
 import '../../../utils/storage.dart';
 
 part 'account_event.dart';
@@ -33,7 +32,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     try {
       User user = await _accountRepository.getAccount();
       saveStorage(username: user.login!);
-      saveStorage(role: user.authorities![0]);
+      saveStorage(roles: user.authorities);
       loadStorageData();
       emit(state.copyWith(
         account: user,

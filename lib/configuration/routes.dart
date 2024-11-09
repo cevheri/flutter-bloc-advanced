@@ -1,4 +1,4 @@
-import '../main/main_local.dart';
+import '../utils/storage.dart';
 
 /// Routes for the application
 ///
