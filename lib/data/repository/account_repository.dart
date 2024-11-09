@@ -1,9 +1,7 @@
 import 'dart:io';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/utils/storage.dart';
-import 'package:http/http.dart';
 
 import '../http_utils.dart';
 import '../models/change_password.dart';
@@ -14,10 +12,11 @@ class AccountRepository {
 
   final String _resource = "account";
 
-  Future<Response> register(User newUser) async {
+  Future<User?> register(User newUser) async {
     debugPrint("register repository start");
-    final registerRequest = await HttpUtils.postRequest<User>("/register", newUser);
-    return registerRequest;
+    final httpResponse = await HttpUtils.postRequest<User>("/register", newUser);
+    var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
+    return User.fromJsonString(response);
   }
 
   Future<int> changePassword(PasswordChangeDTO passwordChangeDTO) async {
@@ -39,10 +38,13 @@ class AccountRepository {
 
   Future<User> getAccount() async {
     debugPrint("getAccount repository start");
-    final response = await HttpUtils.getRequest("/$_resource");
+    final httpResponse = await HttpUtils.getRequest("/$_resource");
 
-    var result = JsonMapper.deserialize<User>(response)!;
-    saveStorage(role: result.authorities?[0] ?? "");
+    var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
+    debugPrint(" GET Request Method result : $response");
+
+    var result = User.fromJsonString(response)!;
+    saveStorage(roles: result.authorities);
     debugPrint("getAccount successful - response : $response}");
     return result;
   }

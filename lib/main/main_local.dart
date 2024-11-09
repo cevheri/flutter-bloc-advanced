@@ -12,11 +12,7 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 // flutter pub run intl_utils:generate
 /// main entry point of local computer development
 
-Map<String, dynamic> getStorageCache = {};
 
-Future<void> loadStorageData() async {
-  getStorageCache = await getStorage();
-}
 
 void main() async {
   ProfileConstants.setEnvironment(Environment.DEV);

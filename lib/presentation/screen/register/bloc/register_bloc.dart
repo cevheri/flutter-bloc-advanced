@@ -7,7 +7,6 @@ import '../../../../data/models/user.dart';
 import '../../../../data/repository/account_repository.dart';
 
 part 'register_event.dart';
-
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
@@ -28,9 +27,9 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     emit(RegisterInitialState());
     try {
       var resultStatusCode = await _accountRepository.register(event.createUset);
-      resultStatusCode.statusCode == 201 ? emit(RegisterCompletedState()) : emit(const RegisterErrorState(message: "Reset Password Error"));
+      emit(RegisterCompletedState());
     } catch (e) {
-      emit(const RegisterErrorState(message: "Reset Password Error"));
+      emit(const RegisterErrorState(message: "Register Error"));
       rethrow;
     }
   }

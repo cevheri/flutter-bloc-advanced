@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
@@ -7,7 +9,7 @@ import 'package:equatable/equatable.dart';
 @jsonSerializable
 class User extends Equatable {
   @JsonProperty(name: 'id')
-  final int? id;
+  final String? id;
 
   @JsonProperty(name: 'login')
   final String? login;
@@ -45,8 +47,7 @@ class User extends Equatable {
   // @JsonProperty(name: 'phoneNumber')
   // final String? phoneNumber;
 
-
-  User({
+  const User({
     this.id,
     this.login,
     this.firstName,
@@ -63,7 +64,7 @@ class User extends Equatable {
   });
 
   User copyWith({
-    int? id,
+    String? id,
     String? login,
     String? firstName,
     String? lastName,
@@ -94,6 +95,22 @@ class User extends Equatable {
     );
   }
 
+  static User? fromJson(Map<String, dynamic> json) {
+    var result = JsonMapper.deserialize<User>(json);
+    if (result == null) {
+      return null;
+    }
+    return result;
+  }
+
+  static User? fromJsonString(String json) {
+    var result = JsonMapper.deserialize<User>(jsonDecode(json));
+    if (result == null) {
+      return null;
+    }
+    return result;
+  }
+
   @override
   List<Object?> get props => [
         id,
@@ -113,13 +130,4 @@ class User extends Equatable {
 
   @override
   bool get stringify => true;
-
-  // static fromJson(JsonMap json){
-  //   return User(
-  //     id:
-  //     login: json['login'],
-  //     firstName: json['firstName'],
-  //     lastName: json['lastName'],
-  //
-  // }
 }

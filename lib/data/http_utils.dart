@@ -1,18 +1,17 @@
 import 'dart:async';
-import 'dart:convert' show Encoding, json, jsonDecode, utf8;
+import 'dart:convert' show Encoding, json, utf8;
 import 'dart:developer';
 import 'dart:io';
 
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-import 'package:http/http.dart';
 
 import '../configuration/allowed_paths.dart';
 import '../configuration/environment.dart';
-import '../main/main_local.dart';
 import '../utils/app_constants.dart';
+import '../utils/storage.dart';
 import 'app_api_exception.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -74,7 +73,13 @@ class HttpUtils {
     return headerParameters;
   }
 
-  static Future<Response> postRequest<T>(String endpoint, T body, {Map<String, String>? headers}) async {
+  static void checkUnauthorizedAccess(String endpoint, http.Response response) {
+    if (response.statusCode == 401) {
+      throw UnauthorizedException(response.body.toString());
+    }
+  }
+
+  static Future<http.Response> postRequest<T>(String endpoint, T body, {Map<String, String>? headers}) async {
     /// if isMock is true, return mock data instead of making a request
     if (!ProfileConstants.isProduction) return await mockRequest('POST', endpoint);
 
@@ -95,7 +100,7 @@ class HttpUtils {
       messageBody = body as String;
     }
 
-    Response? response;
+    http.Response? response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
 
@@ -107,6 +112,8 @@ class HttpUtils {
             encoding: Encoding.getByName('utf-8'),
           )
           .timeout(Duration(seconds: timeout));
+
+      checkUnauthorizedAccess(endpoint, response);
     } on SocketException catch (se) {
       debugPrint("Socket Exception: $se");
       throw FetchDataException('No Internet connection');
@@ -114,24 +121,26 @@ class HttpUtils {
       debugPrint("Timeout Exception: $toe");
       throw FetchDataException('Request timeout');
     }
+
     return response;
   }
 
-  static Future<String> getRequest(String endpoint) async {
+  static Future<http.Response> getRequest(String endpoint) async {
     debugPrint("GET Request Method start : ${ProfileConstants.api}$endpoint");
 
     /// if isMock is true, return mock data instead of making a request
-    if (!ProfileConstants.isProduction) return (await mockRequest('GET', endpoint)).body.toString();
+    if (!ProfileConstants.isProduction) return (await mockRequest('GET', endpoint));
 
     var headers = await HttpUtils.headers();
     try {
-      var response = await http.get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
-      if (response.statusCode == 401) {
-        throw UnauthorizedException(response.body.toString());
-      }
-      var result = decodeUTF8(response.body.toString());
-      debugPrint(" GET Request Method end : ${ProfileConstants.api}$endpoint");
-      return result;
+      var response = await http
+          .get(
+            Uri.parse('${ProfileConstants.api}$endpoint'),
+            headers: headers,
+          )
+          .timeout(Duration(seconds: timeout));
+      checkUnauthorizedAccess(endpoint, response);
+      return response;
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -161,7 +170,7 @@ class HttpUtils {
   //   }
   // }
 
-  static Future<Response> putRequest<T>(String endpoint, T body) async {
+  static Future<http.Response> putRequest<T>(String endpoint, T body) async {
     if (!ProfileConstants.isProduction) return await mockRequest('PUT', endpoint);
     var headers = await HttpUtils.headers();
     final String json = JsonMapper.serialize(
@@ -173,11 +182,12 @@ class HttpUtils {
         ignoreUnknownTypes: true,
       ),
     );
-    Response response;
+    http.Response response;
     try {
       response = await http
           .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
           .timeout(Duration(seconds: timeout));
+      checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -186,7 +196,7 @@ class HttpUtils {
     return response;
   }
 
-  static Future<Response> patchRequest<T>(String endpoint, T body) async {
+  static Future<http.Response> patchRequest<T>(String endpoint, T body) async {
     if (!ProfileConstants.isProduction) return await mockRequest('PATCH', endpoint);
     var headers = await HttpUtils.headers();
     final String json = JsonMapper.serialize(
@@ -198,11 +208,12 @@ class HttpUtils {
         ignoreUnknownTypes: true,
       ),
     );
-    Response response;
+    http.Response response;
     try {
       response = await http
           .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
           .timeout(Duration(seconds: timeout));
+      checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -211,11 +222,13 @@ class HttpUtils {
     return response;
   }
 
-  static Future<Response> deleteRequest(String endpoint) async {
+  static Future<http.Response> deleteRequest(String endpoint) async {
     if (!ProfileConstants.isProduction) return await mockRequest('DELETE', endpoint);
     var headers = await HttpUtils.headers();
     try {
-      return await http.delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
+      var response = await http.delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
+      checkUnauthorizedAccess(endpoint, response);
+      return response;
     } on SocketException {
       throw FetchDataException('No Internet connection');
     } on TimeoutException {
@@ -244,26 +257,26 @@ class HttpUtils {
   //   }
   // }
 
-  static Future<Response> mockRequest(String httpMethod, String endpoint) async {
+  static Future<http.Response> mockRequest(String httpMethod, String endpoint) async {
     debugPrint("Mock request: $httpMethod $endpoint");
 
     var headers = await HttpUtils.headers();
     if (!allowedPaths.contains(endpoint)) {
       if (headers['Authorization'] == null) {
-        return Future.value(Response("Unauthorized", HttpStatus.unauthorized));
+        return Future.value(http.Response("Unauthorized", HttpStatus.unauthorized));
       }
     }
 
     String responseBody = "OK";
     int httpStatusCode = HttpStatus.ok;
-    Future<Response> response = Future.value(Response("", httpStatusCode));
+    Future<http.Response> response = Future.value(http.Response("", httpStatusCode));
     switch (httpMethod) {
       case 'POST':
         httpStatusCode = HttpStatus.created;
         break;
       case 'DELETE':
         httpStatusCode = HttpStatus.noContent;
-        return Future.value(Response(responseBody, httpStatusCode));
+        return Future.value(http.Response(responseBody, httpStatusCode));
       case 'GET':
       case 'PUT':
       default:
@@ -271,11 +284,11 @@ class HttpUtils {
     }
 
     try {
-      String path = 'mock/';
+      String path = ProfileConstants.api;
       String fileName = "$httpMethod${endpoint.replaceAll("/", "_")}.json";
       String mockDataPath = path + fileName;
       responseBody = await rootBundle.loadString(mockDataPath);
-      response = Future.value(Response(responseBody, httpStatusCode));
+      response = Future.value(http.Response(responseBody, httpStatusCode));
       debugPrint("Mock data loaded from $responseBody");
     } catch (e) {
       debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
@@ -288,7 +301,7 @@ class HttpUtils {
         var responseJson = json.decode(responseBody);
         responseJson['login'] = username;
         responseJson['authorities'] = ['ROLE_${username.toUpperCase()}'];
-        response = Future.value(Response(json.encode(responseJson), httpStatusCode));
+        response = Future.value(http.Response(json.encode(responseJson), httpStatusCode));
       } catch (e) {
         debugPrint("There is no response body to update with username");
       }
