@@ -4,14 +4,9 @@ import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   late User userModel;
-  // late String postUserJson;
-  // final mockDataPath = 'mock/';
-  // final postUserMockData = 'POST_admin_users.json';
-  // Initialize Test
-  setUp(() {
-    initializeJsonMapper();
-
-    userModel = User(
+  User initUser() {
+    final createdDate = DateTime.now();
+    return User(
       id: '1',
       login: 'test_login',
       firstName: 'John',
@@ -20,11 +15,21 @@ void main() {
       activated: true,
       langKey: 'en',
       createdBy: 'admin',
-      createdDate: DateTime(2021, 1, 1),
+      createdDate: createdDate,
       lastModifiedBy: 'admin',
-      lastModifiedDate: DateTime(2021, 1, 2),
-      authorities: ['ROLE_USER'],
+      lastModifiedDate: createdDate,
+      authorities: const ['ROLE_USER'],
     );
+  }
+
+  // late String postUserJson;
+  // final mockDataPath = 'mock/';
+  // final postUserMockData = 'POST_admin_users.json';
+  // Initialize Test
+  setUp(() {
+    initializeJsonMapper();
+
+    userModel = initUser();
   });
 
   group('User Model', () {

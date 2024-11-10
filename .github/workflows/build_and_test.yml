@@ -4,6 +4,7 @@ on:
     branches:
       - main
       - unittest
+      - android-upgrade
   pull_request:
     branches:
       - main
@@ -29,7 +30,7 @@ jobs:
         run: flutter analyze
       - name: Run tests
         run: flutter test
-#      - name: Build APK
-#        run: flutter build apk --release --target lib/main/main_prod.dart
-#      - name: Build Android App Bundle
-#        run: flutter build appbundle --release --target lib/main/main_prod.dart
+      - name: Build APK
+        run: flutter build apk --release --target lib/main/main_prod.dart
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release --target lib/main/main_prod.dart
