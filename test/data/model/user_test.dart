@@ -3,15 +3,10 @@ import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  final DateTime createdDate = DateTime(2024, 1, 1);
   late User userModel;
-  // late String postUserJson;
-  // final mockDataPath = 'mock/';
-  // final postUserMockData = 'POST_admin_users.json';
-  // Initialize Test
-  setUp(() {
-    initializeJsonMapper();
-
-    userModel = User(
+  User initUser() {
+    return User(
       id: '1',
       login: 'test_login',
       firstName: 'John',
@@ -20,11 +15,21 @@ void main() {
       activated: true,
       langKey: 'en',
       createdBy: 'admin',
-      createdDate: DateTime(2021, 1, 1),
+      createdDate: createdDate,
       lastModifiedBy: 'admin',
-      lastModifiedDate: DateTime(2021, 1, 2),
-      authorities: ['ROLE_USER'],
+      lastModifiedDate: createdDate,
+      authorities: const ['ROLE_USER'],
     );
+  }
+
+  // late String postUserJson;
+  // final mockDataPath = 'mock/';
+  // final postUserMockData = 'POST_admin_users.json';
+  // Initialize Test
+  setUp(() {
+    initializeJsonMapper();
+
+    userModel = initUser();
   });
 
   group('User Model', () {
@@ -39,9 +44,9 @@ void main() {
       expect(finalUser.activated, true);
       expect(finalUser.langKey, 'en');
       expect(finalUser.createdBy, 'admin');
-      expect(finalUser.createdDate, DateTime(2021, 1, 1));
+      expect(finalUser.createdDate, createdDate);
       expect(finalUser.lastModifiedBy, 'admin');
-      expect(finalUser.lastModifiedDate, DateTime(2021, 1, 2));
+      expect(finalUser.lastModifiedDate, createdDate);
       expect(finalUser.authorities, ['ROLE_USER']);
     });
 
@@ -61,14 +66,15 @@ void main() {
       expect(updatedUser.activated, true);
       expect(updatedUser.langKey, 'en');
       expect(updatedUser.createdBy, 'admin');
-      expect(updatedUser.createdDate, DateTime(2021, 1, 1));
+      expect(updatedUser.createdDate, createdDate);
       expect(updatedUser.lastModifiedBy, 'admin');
-      expect(updatedUser.lastModifiedDate, DateTime(2021, 1, 2));
+      expect(updatedUser.lastModifiedDate, createdDate);
       expect(updatedUser.authorities, ['ROLE_USER']);
     });
 
     test('should deserialize from JSON', () {
-      const json = {
+      final createdDateString = createdDate.toIso8601String();
+      final json = {
         'id': '1',
         'login': 'test_login',
         'firstName': 'John',
@@ -77,9 +83,9 @@ void main() {
         'activated': true,
         'langKey': 'en',
         'createdBy': 'admin',
-        'createdDate': '2021-01-01T00:00:00.000Z',
+        'createdDate': createdDateString,
         'lastModifiedBy': 'admin',
-        'lastModifiedDate': '2021-01-02T00:00:00.000Z',
+        'lastModifiedDate': createdDateString,
         'authorities': ['ROLE_USER'],
       };
 
@@ -93,16 +99,17 @@ void main() {
       expect(finalUser?.activated, true);
       expect(finalUser?.langKey, 'en');
       expect(finalUser?.createdBy, 'admin');
-      expect(finalUser?.createdDate, DateTime.parse('2021-01-01T00:00:00.000Z'));
+      expect(finalUser?.createdDate, createdDate);
       expect(finalUser?.lastModifiedBy, 'admin');
-      expect(finalUser?.lastModifiedDate, DateTime.parse('2021-01-02T00:00:00.000Z'));
+      expect(finalUser?.lastModifiedDate, createdDate);
       expect(finalUser?.authorities, ['ROLE_USER']);
     });
 
     test('should deserialize from JSON string', () {
       //postUserJson = await rootBundle.loadString(mockDataPath+postUserMockData);
 
-      const jsonString = '''
+      final createdDateString = createdDate.toIso8601String();
+      final jsonString = '''
       {
         "id": "1",
         "login": "test_login",
@@ -112,9 +119,9 @@ void main() {
         "activated": true,
         "langKey": "en",
         "createdBy": "admin",
-        "createdDate": "2021-01-01T00:00:00.000Z",
+        "createdDate": "$createdDateString",
         "lastModifiedBy": "admin",
-        "lastModifiedDate": "2021-01-02T00:00:00.000Z",
+        "lastModifiedDate": "$createdDateString",
         "authorities": ["ROLE_USER"]
       }
       ''';
@@ -129,9 +136,9 @@ void main() {
       expect(finalUser?.activated, true);
       expect(finalUser?.langKey, 'en');
       expect(finalUser?.createdBy, 'admin');
-      expect(finalUser?.createdDate, DateTime.parse('2021-01-01T00:00:00.000Z'));
+      expect(finalUser?.createdDate, createdDate);
       expect(finalUser?.lastModifiedBy, 'admin');
-      expect(finalUser?.lastModifiedDate, DateTime.parse('2021-01-02T00:00:00.000Z'));
+      expect(finalUser?.lastModifiedDate, createdDate);
       expect(finalUser?.authorities, ['ROLE_USER']);
     });
   });
