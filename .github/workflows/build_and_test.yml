@@ -9,7 +9,7 @@ on:
       - main
 jobs:
   build:
-    name: Build and Test
+    name: Analyze and Test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
