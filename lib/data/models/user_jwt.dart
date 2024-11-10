@@ -1,14 +1,35 @@
+import 'dart:convert';
+
 import 'package:dart_json_mapper/dart_json_mapper.dart';
+import 'package:equatable/equatable.dart';
 
 @jsonSerializable
-class UserJWT {
+class UserJWT extends Equatable {
   @JsonProperty(name: 'username')
-  String? username;
+  final String? username;
 
   @JsonProperty(name: 'password')
-  String? password;
+  final String? password;
 
-  UserJWT(this.username, this.password);
+  const UserJWT(this.username, this.password);
+
+  UserJWT copyWith({
+    String? username,
+    String? password,
+  }) {
+    return UserJWT(
+      username ?? this.username,
+      password ?? this.password,
+    );
+  }
+
+  static UserJWT? fromJson(Map<String, dynamic> json) {
+    return JsonMapper.fromMap<UserJWT>(json);
+  }
+
+  static UserJWT? fromJsonString(String json) {
+    return JsonMapper.deserialize<UserJWT>(jsonDecode(json));
+  }
 
   @override
   String toString() {
@@ -21,4 +42,10 @@ class UserJWT {
 
   @override
   int get hashCode => username.hashCode ^ password.hashCode;
+
+  @override
+  List<Object?> get props => [username, password];
+
+  @override
+  bool get stringify => true;
 }

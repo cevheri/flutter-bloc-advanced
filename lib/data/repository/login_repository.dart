@@ -1,4 +1,3 @@
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter_bloc_advance/utils/storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,13 +27,14 @@ class LoginRepository {
       throw Exception("Invalid username or password");
     }
 
-    final authenticateRequest = await HttpUtils.postRequest<UserJWT>("/authenticate", userJWT);
-    result = JsonMapper.deserialize<JWTToken>(authenticateRequest.body)!;
+    final response = await HttpUtils.postRequest<UserJWT>("/authenticate", userJWT);
+    result = JWTToken.fromJsonString(response.body);
 
-    if (result.idToken != null) {
+    if (result != null && result.idToken != null) {
       saveStorage(jwtToken: result.idToken);
+      return result;
     }
-    return result;
+    return JWTToken(idToken: null);
   }
 
   Future<void> logout() async {

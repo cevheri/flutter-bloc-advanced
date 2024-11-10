@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
@@ -16,6 +18,22 @@ class Authorities extends Equatable {
     return Authorities(
       name: name ?? this.name,
     );
+  }
+
+  static Authorities? fromJson(Map<String, dynamic> json) {
+    var result = JsonMapper.fromMap<Authorities>(json);
+    if (result == null) {
+      return null;
+    }
+    return result;
+  }
+
+  static Authorities? fromJsonString(String json){
+    var result = JsonMapper.deserialize<Authorities>(jsonDecode(json));
+    if (result == null) {
+      return null;
+    }
+    return result;
   }
 
   @override

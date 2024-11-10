@@ -2,6 +2,7 @@ import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+/// Test the User model
 void main() {
   final DateTime createdDate = DateTime(2024, 1, 1);
   late User userModel;
@@ -22,9 +23,6 @@ void main() {
     );
   }
 
-  // late String postUserJson;
-  // final mockDataPath = 'mock/';
-  // final postUserMockData = 'POST_admin_users.json';
   // Initialize Test
   setUp(() {
     initializeJsonMapper();

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
@@ -62,6 +64,22 @@ class Customer extends Equatable {
       address: address ?? this.address,
       active: active ?? this.active,
     );
+  }
+
+  static Customer? fromJson(Map<String, dynamic> json) {
+    var result = JsonMapper.fromMap<Customer>(json);
+    if (result == null) {
+      return null;
+    }
+    return result;
+  }
+
+  static Customer? fromJsonString(String json){
+    var result = JsonMapper.deserialize<Customer>(jsonDecode(json));
+    if (result == null) {
+      return null;
+    }
+    return result;
   }
 
   @override

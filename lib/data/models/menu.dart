@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
@@ -78,6 +80,22 @@ class Menu extends Equatable {
       parent: parent ?? this.parent,
       level: level ?? this.level,
     );
+  }
+
+  static Menu? fromJson(Map<String, dynamic> json) {
+    var result = JsonMapper.fromMap<Menu>(json);
+    if (result == null) {
+      return null;
+    }
+    return result;
+  }
+
+  static Menu? fromJsonString(String json){
+    var result = JsonMapper.deserialize<Menu>(jsonDecode(json));
+    if (result == null) {
+      return null;
+    }
+    return result;
   }
 
   @override
