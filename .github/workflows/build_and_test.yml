@@ -1,0 +1,35 @@
+name: Flutter Build And Test
+on:
+  push:
+    branches:
+      - main
+      - unittest
+  pull_request:
+    branches:
+      - main
+jobs:
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2.16.0
+        with:
+          flutter-version: 3.24.4
+          channel: stable
+      - name: Setup Dart
+        uses: dart-lang/setup-dart@v1.6.5
+        with:
+          dart-version: 3.5.4
+      - name: Install dependencies
+        run: flutter pub get
+      - name: Analyze
+        run: flutter analyze
+      - name: Run tests
+        run: flutter test
+      - name: Build APK
+        run: flutter build apk --release --target lib/main/main_prod.dart
+      - name: Build Android App Bundle
+        run: flutter build appbundle --release --target lib/main/main_prod.dart
