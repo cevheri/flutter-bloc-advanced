@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
@@ -28,6 +30,22 @@ class City extends Equatable {
       name: name ?? this.name,
       plateCode: plateCode ?? this.plateCode,
     );
+  }
+
+  static City? fromJson(Map<String, dynamic> json) {
+    var result = JsonMapper.fromMap<City>(json);
+    if (result == null) {
+      return null;
+    }
+    return result;
+  }
+
+  static City? fromJsonString(String json) {
+    var result = JsonMapper.deserialize<City>(jsonDecode(json));
+    if (result == null) {
+      return null;
+    }
+    return result;
   }
 
   @override
