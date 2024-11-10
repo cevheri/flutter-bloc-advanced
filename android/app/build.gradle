@@ -23,9 +23,9 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.cevheri.flutter.flutter_bloc_advance"
-    compileSdkVersion 34
-    ndkVersion flutter.ndkVersion
+    namespace = "com.cevheri.flutter.flutter_bloc_advance"
+    compileSdkVersion = flutter.compileSdkVersion
+    ndkVersion = flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
@@ -33,7 +33,7 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = '1.8'
+        jvmTarget = JavaVersion.VERSION_1_8
     }
 
     sourceSets {
