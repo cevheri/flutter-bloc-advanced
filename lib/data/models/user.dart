@@ -47,6 +47,7 @@ class User extends Equatable {
   // @JsonProperty(name: 'phoneNumber')
   // final String? phoneNumber;
 
+  //Constructor
   const User({
     this.id,
     this.login,
@@ -63,6 +64,7 @@ class User extends Equatable {
     // this.phoneNumber,
   });
 
+  /// CopyWith method to create a new instance of the User class with new values
   User copyWith({
     String? id,
     String? login,

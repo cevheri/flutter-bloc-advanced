@@ -26,7 +26,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   FutureOr<void> _onSubmit(RegisterEmailChanged event, Emitter<RegisterState> emit) async {
     emit(RegisterInitialState());
     try {
-      var resultStatusCode = await _accountRepository.register(event.createUser);
+      await _accountRepository.register(event.createUser);
       emit(RegisterCompletedState());
     } catch (e) {
       emit(const RegisterErrorState(message: "Register Error"));
