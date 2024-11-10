@@ -27,12 +27,12 @@ jobs:
       - name: Setup Java JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'openjdk'
+          distribution: 'temurin'
           java-version: '17'
       - name: set JAVA_HOME
-        run: echo "JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64" >> $GITHUB_ENV
+        run: echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
       - name: flutter jdk configuration
-        run: flutter config --jdk-dir /usr/lib/jvm/java-17-openjdk-amd64
+        run: flutter config --jdk-dir /usr/lib/jvm/temurin-17-jdk-amd64
       - name: Install dependencies
         run: flutter pub get
       - name: Analyze
