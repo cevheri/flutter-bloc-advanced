@@ -1,38 +1,22 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../fake/user_data.dart';
+
 /// Test the User model
 void main() {
-  final DateTime createdDate = DateTime(2024, 1, 1);
-  late User userModel;
-  User initUser() {
-    return User(
-      id: '1',
-      login: 'test_login',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      activated: true,
-      langKey: 'en',
-      createdBy: 'admin',
-      createdDate: createdDate,
-      lastModifiedBy: 'admin',
-      lastModifiedDate: createdDate,
-      authorities: const ['ROLE_USER'],
-    );
-  }
+  final model = mockUserFullPayload;
 
-  // Initialize Test
   setUp(() {
     initializeJsonMapper();
-
-    userModel = initUser();
   });
 
   group('User Model', () {
     test('should create a User instance (Constructor)', () {
-      final finalUser = userModel;
+      final finalUser = model;
 
       expect(finalUser.id, '1');
       expect(finalUser.login, 'test_login');
@@ -49,7 +33,7 @@ void main() {
     });
 
     test('should copy a User instance with new values (copyWith)', () {
-      final finalUser = userModel;
+      final finalUser = model;
 
       final updatedUser = finalUser.copyWith(
         firstName: 'Jane',
@@ -71,23 +55,9 @@ void main() {
     });
 
     test('should deserialize from JSON', () {
-      final createdDateString = createdDate.toIso8601String();
-      final json = {
-        'id': '1',
-        'login': 'test_login',
-        'firstName': 'John',
-        'lastName': 'Doe',
-        'email': 'john.doe@example.com',
-        'activated': true,
-        'langKey': 'en',
-        'createdBy': 'admin',
-        'createdDate': createdDateString,
-        'lastModifiedBy': 'admin',
-        'lastModifiedDate': createdDateString,
-        'authorities': ['ROLE_USER'],
-      };
+      final json = model.toJson();
 
-      final finalUser = User.fromJson(json);
+      final finalUser = User.fromJson(json!);
 
       expect(finalUser?.id, '1');
       expect(finalUser?.login, 'test_login');
@@ -104,25 +74,7 @@ void main() {
     });
 
     test('should deserialize from JSON string', () {
-      //postUserJson = await rootBundle.loadString(mockDataPath+postUserMockData);
-
-      final createdDateString = createdDate.toIso8601String();
-      final jsonString = '''
-      {
-        "id": "1",
-        "login": "test_login",
-        "firstName": "John",
-        "lastName": "Doe",
-        "email": "john.doe@example.com",
-        "activated": true,
-        "langKey": "en",
-        "createdBy": "admin",
-        "createdDate": "$createdDateString",
-        "lastModifiedBy": "admin",
-        "lastModifiedDate": "$createdDateString",
-        "authorities": ["ROLE_USER"]
-      }
-      ''';
+      var jsonString = jsonEncode(model.toJson());
 
       final finalUser = User.fromJsonString(jsonString);
 

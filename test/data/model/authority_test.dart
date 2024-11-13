@@ -1,32 +1,23 @@
-import 'package:flutter_bloc_advance/data/models/authorities.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../fake/user_data.dart';
+
 /// Test the Authorities model
 void main() {
-  late Authorities authoritiesModel;
-  Authorities initAuthorities() {
-    return Authorities(
-      name: 'ROLE_USER',
-    );
-  }
+  var model = mockAuthorityPayload;
 
   setUp(() {
     initializeJsonMapper();
-    authoritiesModel = initAuthorities();
   });
 
   group("Authorities Model", () {
     test('should create a Authorities instance (Constructor)', () {
-      final finalAuthorities = authoritiesModel;
-
-      expect(finalAuthorities.name, 'ROLE_USER');
+      expect(model.name, 'ROLE_USER');
     });
 
     test('should copy a Authorities instance with new values (copyWith)', () {
-      final finalAuthorities = authoritiesModel;
-
-      final updatedAuthorities = finalAuthorities.copyWith(
+      final updatedAuthorities = model.copyWith(
         name: 'ROLE_ADMIN',
       );
 
@@ -34,7 +25,7 @@ void main() {
     });
 
     test('should compare two Authorities instances', () {
-      final finalAuthorities = authoritiesModel;
+      final finalAuthorities = model;
 
       final updatedAuthorities = finalAuthorities.copyWith(
         name: 'ROLE_ADMIN',

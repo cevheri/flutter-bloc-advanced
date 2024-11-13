@@ -42,6 +42,8 @@ class PasswordChangeDTO extends Equatable {
     return result;
   }
 
+  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+
   @override
   List<Object?> get props => [currentPassword, newPassword];
 
