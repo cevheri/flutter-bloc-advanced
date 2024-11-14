@@ -3,14 +3,13 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
-import 'dart:async' as _i5;
+import 'dart:async' as _i4;
 
-import 'package:flutter_bloc_advance/data/models/change_password.dart' as _i6;
+import 'package:flutter_bloc_advance/data/models/change_password.dart' as _i5;
 import 'package:flutter_bloc_advance/data/models/user.dart' as _i2;
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart'
     as _i3;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i4;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -44,71 +43,56 @@ class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
   }
 
   @override
-  String mockWhen() => (super.noSuchMethod(
-        Invocation.method(
-          #mockWhen,
-          [],
-        ),
-        returnValue: _i4.dummyValue<String>(
-          this,
-          Invocation.method(
-            #mockWhen,
-            [],
-          ),
-        ),
-      ) as String);
-
-  @override
-  _i5.Future<_i2.User?> register(_i2.User? newUser) => (super.noSuchMethod(
+  _i4.Future<_i2.User?> register(_i2.User? newUser) => (super.noSuchMethod(
         Invocation.method(
           #register,
           [newUser],
         ),
-        returnValue: _i5.Future<_i2.User?>.value(),
-      ) as _i5.Future<_i2.User?>);
+        returnValue: _i4.Future<_i2.User?>.value(),
+      ) as _i4.Future<_i2.User?>);
 
   @override
-  _i5.Future<int> changePassword(_i6.PasswordChangeDTO? passwordChangeDTO) =>
+  _i4.Future<int> changePassword(_i5.PasswordChangeDTO? passwordChangeDTO) =>
       (super.noSuchMethod(
         Invocation.method(
           #changePassword,
           [passwordChangeDTO],
         ),
-        returnValue: _i5.Future<int>.value(0),
-      ) as _i5.Future<int>);
+        returnValue: _i4.Future<int>.value(0),
+      ) as _i4.Future<int>);
 
   @override
-  _i5.Future<int> resetPassword(String? mailAddress) => (super.noSuchMethod(
+  _i4.Future<int> resetPassword(String? mailAddress) => (super.noSuchMethod(
         Invocation.method(
           #resetPassword,
           [mailAddress],
         ),
-        returnValue: _i5.Future<int>.value(0),
-      ) as _i5.Future<int>);
+        returnValue: _i4.Future<int>.value(0),
+      ) as _i4.Future<int>);
 
   @override
-  _i5.Future<_i2.User> getAccount() => (super.noSuchMethod(
+  _i4.Future<_i2.User> getAccount() => (super.noSuchMethod(
         Invocation.method(
           #getAccount,
           [],
         ),
-        returnValue: _i5.Future<_i2.User>.value(_FakeUser_0(
+        returnValue: _i4.Future<_i2.User>.value(_FakeUser_0(
           this,
           Invocation.method(
             #getAccount,
             [],
           ),
         )),
-      ) as _i5.Future<_i2.User>);
+      ) as _i4.Future<_i2.User>);
 
   @override
-  _i5.Future<String?> saveAccount(_i2.User? user) => (super.noSuchMethod(
+  _i4.Future<String?> saveAccount(_i2.User? user) => (super.noSuchMethod(
         Invocation.method(
           #saveAccount,
           [user],
         ),
-        returnValue: _i5.Future<String?>.value(),
-      ) as _i5.Future<String?>);
+        returnValue: _i4.Future<String?>.value(),
+      ) as _i4.Future<String?>);
 
   @override
   dynamic updateAccount(_i2.User? account) =>

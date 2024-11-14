@@ -2,7 +2,7 @@ part of 'user_bloc.dart';
 
 enum UserStatus { initial, loading, success, failure }
 
-class UserState {
+class UserState extends Equatable {
   final User? user;
   final UserStatus status;
 
@@ -17,6 +17,9 @@ class UserState {
   }) {
     return UserState(status: status ?? this.status, user: user ?? this.user);
   }
+
+  @override
+  List<Object?> get props => [user, status];
 }
 
 class UserInitialState extends UserState {}
