@@ -27,7 +27,6 @@ void main() {
     initBlocDependencies();
   });
   //endregion main setup
-
   //region state
   /// User State Tests
   group("UserState", () {
@@ -51,23 +50,90 @@ void main() {
         user: null,
         status: UserStatus.initial,
       );
-      final user = User(
-        id: "1",
-        login: "test_login",
-        firstName: "John",
-        lastName: "Doe",
-        email: "john.doe@example.com",
-        activated: true,
-        langKey: "en",
-        createdBy: "admin",
-        createdDate: DateTime(2024, 1, 1),
-        lastModifiedBy: "admin",
-        lastModifiedDate: DateTime(2024, 1, 1),
-        authorities: const ["test"],
-      );
+      final user = mockUserFullPayload;
       expect(
         state.copyWith(user: user, status: UserStatus.success),
         UserState(user: user, status: UserStatus.success),
+      );
+    });
+  });
+
+  group("UserLoadSuccessState", () {
+    test("supports value comparisons", () {
+      final user = mockUserFullPayload;
+      expect(
+        UserLoadSuccessState(userLoadSuccess: user),
+        UserLoadSuccessState(userLoadSuccess: user),
+      );
+    });
+  });
+
+  group("UserEditSuccessState", () {
+    test("supports value comparisons", () {
+      final user = mockUserFullPayload;
+      expect(
+        UserEditSuccessState(userEditSuccess: user),
+        UserEditSuccessState(userEditSuccess: user),
+      );
+    });
+  });
+
+  group("UserSearchSuccessState", () {
+    test("supports value comparisons", () {
+      final userList = [mockUserFullPayload];
+      expect(
+        UserSearchSuccessState(userList: userList),
+        UserSearchSuccessState(userList: userList),
+      );
+    });
+  });
+
+  group("UserLoadFailureState", () {
+    test("supports value comparisons", () {
+      const message = "Error loading user";
+      expect(
+        UserLoadFailureState(message: message),
+        UserLoadFailureState(message: message),
+      );
+    });
+  });
+
+  group("UserEditFailureState", () {
+    test("supports value comparisons", () {
+      const message = "Error editing user";
+      expect(
+        UserEditFailureState(message: message),
+        UserEditFailureState(message: message),
+      );
+    });
+  });
+
+  group("UserSearchFailureState", () {
+    test("supports value comparisons", () {
+      const message = "Error searching user";
+      expect(
+        UserSearchFailureState(message: message),
+        UserSearchFailureState(message: message),
+      );
+    });
+  });
+
+  group("UserListSuccessState", () {
+    test("supports value comparisons", () {
+      final userList = [mockUserFullPayload];
+      expect(
+        UserListSuccessState(userList: userList),
+        UserListSuccessState(userList: userList),
+      );
+    });
+  });
+
+  group("UserListFailureState", () {
+    test("supports value comparisons", () {
+      const message = "Error loading user list";
+      expect(
+        UserListFailureState(message: message),
+        UserListFailureState(message: message),
       );
     });
   });
@@ -140,6 +206,116 @@ void main() {
         expect: () => [
           UserListInitialState(),
           UserListFailureState(message: "error"),
+        ],
+      );
+    });
+
+    group("on UserCreate", () {
+      blocTest<UserBloc, UserState>(
+        "emits [UserInitialState, UserLoadSuccessState] when UserCreate is added and createUser succeeds",
+        build: () {
+          when(repository.createUser(mockUserFullPayload)).thenAnswer((_) async => mockUserFullPayload);
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserCreate(user: mockUserFullPayload)),
+        expect: () => [
+          UserInitialState(),
+          UserLoadSuccessState(userLoadSuccess: mockUserFullPayload),
+        ],
+      );
+
+      blocTest<UserBloc, UserState>(
+        "emits [UserInitialState, UserLoadFailureState] when UserCreate is added and createUser fails",
+        build: () {
+          when(repository.createUser(mockUserFullPayload)).thenThrow(Exception("error"));
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserCreate(user: mockUserFullPayload)),
+        expect: () => [
+          UserInitialState(),
+          UserLoadFailureState(message: "Exception: error"),
+        ],
+      );
+    });
+
+    group("on UserSearch", () {
+      blocTest<UserBloc, UserState>(
+        "emits [UserFindInitialState, UserSearchSuccessState] when UserSearch is added and findUserByAuthorities succeeds",
+        build: () {
+          when(repository.findUserByAuthorities(0, 10, "ROLE_USER")).thenAnswer((_) async => [mockUserFullPayload]);
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserSearch(0, 10, "ROLE_USER", "")),
+        expect: () => [
+          UserFindInitialState(),
+          UserSearchSuccessState(userList: [mockUserFullPayload]),
+        ],
+      );
+
+      blocTest<UserBloc, UserState>(
+        "emits [UserFindInitialState, UserSearchSuccessState] when UserSearch is added and findUserByName succeeds",
+        build: () {
+          when(repository.findUserByName(0, 10, "test", "ROLE_USER")).thenAnswer((_) async => [mockUserFullPayload]);
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserSearch(0, 10, "ROLE_USER", "test")),
+        expect: () => [
+          UserFindInitialState(),
+          UserSearchSuccessState(userList: [mockUserFullPayload]),
+        ],
+      );
+
+      blocTest<UserBloc, UserState>(
+        "emits [UserFindInitialState, UserSearchFailureState] when UserSearch is added and findUserByAuthorities fails",
+        build: () {
+          when(repository.findUserByAuthorities(0, 10, "ROLE_USER")).thenThrow(Exception("error"));
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserSearch(0, 10, "ROLE_USER", "")),
+        expect: () => [
+          UserFindInitialState(),
+          UserSearchFailureState(message: "Exception: error"),
+        ],
+      );
+
+      blocTest<UserBloc, UserState>(
+        "emits [UserFindInitialState, UserSearchFailureState] when UserSearch is added and findUserByName fails",
+        build: () {
+          when(repository.findUserByName(0, 10, "test", "ROLE_USER")).thenThrow(Exception("error"));
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserSearch(0, 10, "ROLE_USER", "test")),
+        expect: () => [
+          UserFindInitialState(),
+          UserSearchFailureState(message: "Exception: error"),
+        ],
+      );
+    });
+
+    group("on UserEdit", () {
+      blocTest<UserBloc, UserState>(
+        "emits [UserEditInitialState, UserEditSuccessState] when UserEdit is added and updateUser succeeds",
+        build: () {
+          when(repository.updateUser(mockUserFullPayload)).thenAnswer((_) async => mockUserFullPayload);
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserEdit(user: mockUserFullPayload)),
+        expect: () => [
+          UserEditInitialState(),
+          UserEditSuccessState(userEditSuccess: mockUserFullPayload),
+        ],
+      );
+
+      blocTest<UserBloc, UserState>(
+        "emits [UserEditInitialState, UserEditFailureState] when UserEdit is added and updateUser fails",
+        build: () {
+          when(repository.updateUser(mockUserFullPayload)).thenThrow(Exception("error"));
+          return bloc;
+        },
+        act: (bloc) => bloc.add(UserEdit(user: mockUserFullPayload)),
+        expect: () => [
+          UserEditInitialState(),
+          UserEditFailureState(message: "Exception: error"),
         ],
       );
     });
