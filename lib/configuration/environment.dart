@@ -1,5 +1,5 @@
 /// This file is used to set the environment
-enum Environment { DEV, PROD }
+enum Environment { DEV, PROD, TEST }
 
 /// This class is used to store all environment variables
 ///
@@ -10,6 +10,7 @@ class ProfileConstants {
   static void setEnvironment(Environment env) {
     switch (env) {
       case Environment.DEV:
+      case Environment.TEST:
         _config = _Config.devConstants;
         break;
       case Environment.PROD:
