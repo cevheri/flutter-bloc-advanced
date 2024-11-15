@@ -82,7 +82,7 @@ class ListUserScreen extends StatelessWidget {
                           Expanded(
                             flex: 7,
                             child: Text(
-                                state.userList[index].authorities.toString() == "[ROLE_ADMIN]" ? S.of(context).admin : S.of(context).guest,
+                                state.userList[index].authorities!.contains("ROLE_ADMIN")? S.of(context).admin : S.of(context).guest,
                                 textAlign: TextAlign.left),
                           ),
                           SizedBox(width: 5),

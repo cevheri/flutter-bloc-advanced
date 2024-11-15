@@ -16,6 +16,7 @@ import 'package:flutter_bloc_advance/presentation/common_blocs/district/district
 import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
+import 'package:flutter_bloc_advance/utils/storage.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,6 +56,10 @@ void main() {
     );
   }
 
+  void addToken() {
+    saveStorage(jwtToken: "MOCK_TOKEN");
+  }
+
   testWidgets('renders ListUserScreen correctly', (tester) async {
     // Given: A ListUserScreen with mocked state is rendered
     await tester.pumpWidget(getWidget());
@@ -79,28 +84,51 @@ void main() {
     expect(find.text('Active'), findsOneWidget);
   });
 
-  // testWidgets('FormBuilderDropdown is displayed when state is AuthoritiesLoadSuccessState', (WidgetTester tester) async {
-  //   final mockAuthoritiesBloc = MockAuthoritiesBloc();
-  //
-  //   whenListen(
-  //     mockAuthoritiesBloc,
-  //     Stream.fromIterable([AuthoritiesLoadSuccessState(roleList: ['ROLE_USER', 'ROLE_ADMIN'])]),
-  //     initialState: AuthoritiesInitial(),
-  //   );
-  //
-  //   await tester.pumpWidget(
-  //     MaterialApp(
-  //       home: BlocProvider<AuthoritiesBloc>(
-  //         create: (context) => mockAuthoritiesBloc,
-  //         child: ListUserScreen(),
-  //       ),
-  //     ),
-  //   );
-  //
-  //   await tester.pumpAndSettle();
-  //
-  //   expect(find.byType(FormBuilderDropdown), findsOneWidget);
-  // });
+  testWidgets('displays user list when UserSearchSuccessState is emitted with JWTToken', (tester) async {
+    // Given: A mock UserSearchSuccessState with a list of users
+    await tester.pumpWidget(getWidget());
 
+    addToken();
+
+    // When: ListUserScreen is shown and UserBloc emits the state
+    // final userSearchEvent = UserSearch(0, 100, "-", "");
+    // BlocProvider.of<UserBloc>(tester.element(find.byType(ListUserScreen))).add(userSearchEvent);
+    await tester.tap(find.text('List'));
+    await tester.pumpAndSettle();
+
+    // Then: Verify that the list is displayed with correct data
+    expect(find.text('Admin'), findsAtLeastNWidgets(1));
+    expect(find.text('admin'), findsAtLeastNWidgets(1));
+    expect(find.text('User'), findsAtLeastNWidgets(1));
+    expect(find.text('admin@sekoya.tech'), findsAtLeastNWidgets(1));
+    expect(find.text('active'), findsAtLeastNWidgets(1));
+    expect(find.byType(IconButton), findsAtLeastNWidgets(1));
+  });
+
+
+  testWidgets('displays user list when UserSearchSuccessState is emitted without token and fail', (tester) async {
+    // Given: A mock UserSearchSuccessState with a list of users
+
+    await tester.pumpWidget(getWidget());
+    final block = BlocProvider.of<UserBloc>(tester.element(find.byType(ListUserScreen)));
+    // When: ListUserScreen is shown and UserBloc emits the state
+    // final userSearchEvent = UserSearch(0, 100, "-", "");
+    // BlocProvider.of<UserBloc>(tester.element(find.byType(ListUserScreen))).add(userSearchEvent);
+    await tester.tap(find.text('List'));
+    await tester.pumpAndSettle();
+
+    // Then handle the Unauthorized error with UserSearchFailureState
+    expect(block.state, isA<UserSearchFailureState>());
+
+    // Then: Verify that the list is not displayed
+    expect(find.text('Admin'), findsNothing);
+    expect(find.text('admin'), findsNothing);
+    expect(find.text('User'), findsNothing);
+    expect(find.text('admin@sekoya.tech'), findsNothing);
+    expect(find.text('active'), findsNothing);
+    expect(find.byType(IconButton), findsNothing);
+
+
+  });
 
 }

@@ -286,7 +286,8 @@ class HttpUtils {
     try {
       String path = ProfileConstants.api;
       String fileName = "$httpMethod${endpoint.replaceAll("/", "_")}.json";
-      String mockDataPath = path + fileName;
+      String mockDataPath = "$path/$fileName";
+
       responseBody = await rootBundle.loadString(mockDataPath);
       response = Future.value(http.Response(responseBody, httpStatusCode));
       debugPrint("Mock data loaded from $httpMethod $endpoint : $responseBody");

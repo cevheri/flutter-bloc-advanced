@@ -10,8 +10,9 @@ class ProfileConstants {
   static void setEnvironment(Environment env) {
     switch (env) {
       case Environment.DEV:
-      case Environment.TEST:
         _config = _Config.devConstants;
+      case Environment.TEST:
+        _config = _Config.testConstants;
         break;
       case Environment.PROD:
         _config = _Config.prodConstants;
@@ -38,7 +39,11 @@ class _Config {
   static const API = "API";
 
   static Map<String, dynamic> devConstants = {
-    API: "mock/",
+    API: "mock",
+  };
+
+  static Map<String, dynamic> testConstants = {
+    API: "assets/mock",
   };
 
   static Map<String, dynamic> prodConstants = {
