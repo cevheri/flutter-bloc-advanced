@@ -20,8 +20,8 @@ class UserRepository {
   ///
   /// @param id the user id
   Future<User> getUser(String id) async {
-    final userRequest = await HttpUtils.getRequest("/$_resource/$id");
-    return JsonMapper.deserialize<User>(userRequest)!;
+    final response = await HttpUtils.getRequest("/$_resource/$id");
+    return JsonMapper.deserialize<User>(response)!;
   }
 
   /// Create user method that creates a new user
@@ -49,8 +49,8 @@ class UserRepository {
     int rangeStart,
     int rangeEnd,
   ) async {
-    final userRequest = await HttpUtils.getRequest("/admin/$_resource?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
-    var result = JsonMapper.deserialize<List<User>>(userRequest)!;
+    final response = await HttpUtils.getRequest("/admin/$_resource?page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
+    var result = JsonMapper.deserialize<List<User>>(response.body)!;
     return result;
   }
 
@@ -60,8 +60,8 @@ class UserRepository {
     int rangeEnd,
     String authorities,
   ) async {
-    final userRequest = await HttpUtils.getRequest("/admin/$_resource/list");
-    var result = JsonMapper.deserialize<List<User>>(userRequest)!;
+    final response = await HttpUtils.getRequest("/admin/$_resource/list");
+    var result = JsonMapper.deserialize<List<User>>(response.body)!;
     return result;
   }
 
@@ -72,21 +72,21 @@ class UserRepository {
     String name,
     String authorities,
   ) async {
-    final userRequest = await HttpUtils.getRequest(
+    final response = await HttpUtils.getRequest(
         "/admin/$_resource/filter?name=$name&authorities=$authorities&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
-    var result = JsonMapper.deserialize<List<User>>(userRequest)!;
+    var result = JsonMapper.deserialize<List<User>>(response.body)!;
     return result;
   }
 
   /// Edit user method that editUser a user
 
   Future<User?> updateUser(User user) async {
-    final saveRequest = await HttpUtils.putRequest<User>("/admin/$_resource", user);
+    final response = await HttpUtils.putRequest<User>("/admin/$_resource", user);
     String? result;
 
-    if (saveRequest.statusCode != 200) {
-      if (saveRequest.headers[HttpUtils.errorHeader] != null) {
-        result = saveRequest.headers[HttpUtils.errorHeader];
+    if (response.statusCode != 200) {
+      if (response.headers[HttpUtils.errorHeader] != null) {
+        result = response.headers[HttpUtils.errorHeader];
       } else {
         result = HttpUtils.errorServerKey;
       }
@@ -94,6 +94,6 @@ class UserRepository {
       result = HttpUtils.successResult;
     }
 
-    return result == HttpUtils.successResult ? JsonMapper.deserialize<User>(saveRequest.body) : null;
+    return result == HttpUtils.successResult ? JsonMapper.deserialize<User>(response.body) : null;
   }
 }

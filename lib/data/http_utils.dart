@@ -289,7 +289,7 @@ class HttpUtils {
       String mockDataPath = path + fileName;
       responseBody = await rootBundle.loadString(mockDataPath);
       response = Future.value(http.Response(responseBody, httpStatusCode));
-      debugPrint("Mock data loaded from $responseBody");
+      debugPrint("Mock data loaded from $httpMethod $endpoint : $responseBody");
     } catch (e) {
       debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
     }
