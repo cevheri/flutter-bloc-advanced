@@ -64,9 +64,6 @@ class ListUserScreen extends StatelessWidget {
           BlocBuilder<UserBloc, UserState>(
             builder: (context, state) {
               if (state is UserSearchSuccessState) {
-                print("-------------------------------------------------------");
-                print("userSearchSuccessState");
-                print(state.userList);
                 return ListView.builder(
                   itemCount: state.userList.length,
                   shrinkWrap: true,

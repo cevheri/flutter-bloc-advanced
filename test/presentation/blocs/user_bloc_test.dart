@@ -9,7 +9,7 @@ import '../../fake/user_data.dart';
 import '../../init.dart';
 import 'user_bloc_test.mocks.dart';
 
-/// BLoc Test for AccountBloc
+/// BLoc Test for UserBloc
 ///
 /// Tests: <p>
 /// 1. State test <p>
