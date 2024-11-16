@@ -1,32 +1,19 @@
+import 'dart:convert';
+
 import 'package:flutter_bloc_advance/data/models/customer.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../fake/customer_data.dart';
+
 void main() {
-  late Customer customerModel;
-
-  Customer initCustomer() {
-    return Customer(
-      id: '1',
-      name: 'Acme',
-      phone: '5055055050',
-      cityName: 'Konya',
-      email: 'john.doe@example.com',
-      districtName: 'selçuklu',
-      address: 'yazır mh.',
-      active: true,
-    );
-  }
-
   setUp(() {
     initializeJsonMapper();
-
-    customerModel = initCustomer();
   });
 
   group("Customer model", () {
     test("should create a Customer instance (Constructor)", () {
-      final finalCustomer = customerModel;
+      final finalCustomer = customerMockFullPayload;
 
       expect(finalCustomer.id, '1');
       expect(finalCustomer.name, 'Acme');
@@ -39,7 +26,7 @@ void main() {
     });
 
     test('should copy a Customer instance with new values (copyWith)', () {
-      final finalCustomer = customerModel;
+      final finalCustomer = customerMockFullPayload;
 
       final updatedCustomer = finalCustomer.copyWith(
         name: 'new Acme',
@@ -59,16 +46,7 @@ void main() {
     });
 
     test('should deserialize from JSON', () {
-      final json = {
-        'id': '1',
-        'name': 'Acme',
-        'phone': '5055055050',
-        'cityName': 'Konya',
-        'email': 'john.doe@example.com',
-        'districtName': 'selçuklu',
-        'address': 'yazır mh.',
-        'active': true,
-      };
+      final json = customerMockFullPayload.toJson()!;
 
       final finalCustomer = Customer.fromJson(json);
 
@@ -83,28 +61,17 @@ void main() {
     });
 
     test('should deserialize from JSON string', () {
-      final jsonString = '''
-       {
-         "id": "1",                      
-         "name" : "Acme",       
-         "phone" : "5055055050",         
-         "cityName": "izmir",            
-         "email": "john.doe@example.com",
-         "districtName": "göztepe",     
-         "address": "yazır",         
-         "active": true
-       }
-       ''';
+      final jsonString = jsonEncode(customerMockFullPayload.toJson()!);
 
       final finalCustomer = Customer.fromJsonString(jsonString);
 
       expect(finalCustomer?.id, '1');
       expect(finalCustomer?.name, 'Acme');
       expect(finalCustomer?.phone, '5055055050');
-      expect(finalCustomer?.cityName, 'izmir');
+      expect(finalCustomer?.cityName, 'Konya');
       expect(finalCustomer?.email, 'john.doe@example.com');
-      expect(finalCustomer?.districtName, "göztepe");
-      expect(finalCustomer?.address, 'yazır');
+      expect(finalCustomer?.districtName, "selçuklu");
+      expect(finalCustomer?.address, 'yazır mh.');
       expect(finalCustomer?.active, true);
     });
   });
