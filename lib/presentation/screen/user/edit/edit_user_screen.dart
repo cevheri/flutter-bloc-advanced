@@ -27,7 +27,7 @@ class EditUserScreen extends StatelessWidget {
         icon: Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.pop(context);
-          formKey.currentState!.fields['salesPersonCode']?.didChange("");
+          formKey.currentState!.fields['salesPersonCode']?.didChange(""); //TODO fix fieldName
         },
       ),
     );
@@ -52,11 +52,7 @@ class EditUserScreen extends StatelessWidget {
                 EditFormActive(user: user),
                 EditFormAuthorities(user: user, formKey: formKey),
                 SizedBox(height: 20),
-                SubmitButton(
-                  context,
-                  user: user,
-                  formKey: formKey,
-                )
+                SubmitButton(context, user: user, formKey: formKey)
               ],
             ),
           ),

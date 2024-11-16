@@ -54,6 +54,7 @@ dev_dependencies:
   bloc_test: ^9.1.7
   mockito: ^5.4.4
   mocktail:
+  fake_async:
 
 
 

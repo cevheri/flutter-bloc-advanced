@@ -160,12 +160,7 @@ class EditFormAuthorities extends StatelessWidget {
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).authorities_required),
             ]),
-            items: state.roleList
-                .map((role) => DropdownMenuItem(
-                      value: role,
-                      child: Text(role),
-                    ))
-                .toList(),
+            items: state.roleList.map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
             initialValue: () {}(),
             onChanged: (value) {},
           );
@@ -196,7 +191,7 @@ class SubmitButton extends StatelessWidget {
       builder: (context, state) {
         return SizedBox(
           child: ElevatedButton(
-            child: Text(editAccount == null ? S.of(context).edit_user : S.of(context).edit_account),
+            child: Text(S.of(context).save),
             onPressed: () {
               User newUser = User(
                 id: user.id,
@@ -219,15 +214,11 @@ class SubmitButton extends StatelessWidget {
                 authorities: user.authorities,
               );
               if (cacheUser != newUser) {
-                BlocProvider.of<UserBloc>(context).add(
-                  UserEdit(
-                    user: newUser,
-                  ),
-                );
+                BlocProvider.of<UserBloc>(context).add(UserEdit(user: newUser));
               }
 
               if (cacheUser == newUser) {
-                Message.getMessage(context: context, title: "Değişiklik bulunmadı", content: '');
+                Message.getMessage(context: context, title: "Değişiklik bulunmadı", content: ''); //TODO internationalization
               }
             },
           ),
@@ -235,14 +226,14 @@ class SubmitButton extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is UserEditInitialState) {
-          Message.getMessage(context: context, title: "Değişiklikleri kaydet", content: '');
+          Message.getMessage(context: context, title: S.of(context).loading, content: '');
         }
         if (current is UserEditSuccessState) {
-          Message.getMessage(context: context, title: "Değişiklikler kaydedildi", content: '');
+          Message.getMessage(context: context, title: S.of(context).success, content: '');
           Navigator.pop(context);
         }
         if (current is UserEditFailureState) {
-          Message.errorMessage(title: 'Değişiklikler kaydedilemedi.', context: context, content: '');
+          Message.errorMessage(title: S.of(context).failed, context: context, content: '');
         }
 
         return true;
