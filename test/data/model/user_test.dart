@@ -54,6 +54,25 @@ void main() {
       expect(updatedUser.authorities, ['ROLE_USER']);
     });
 
+    test('should copy a User instance with new values (copyWith)', () {
+      final finalUser = model;
+
+      final updatedUser = finalUser.copyWith();
+
+      expect(updatedUser.id, '1');
+      expect(updatedUser.login, 'test_login');
+      expect(updatedUser.firstName, 'John');
+      expect(updatedUser.lastName, 'Doe');
+      expect(updatedUser.email, 'john.doe@example.com');
+      expect(updatedUser.activated, true);
+      expect(updatedUser.langKey, 'en');
+      expect(updatedUser.createdBy, 'admin');
+      expect(updatedUser.createdDate, createdDate);
+      expect(updatedUser.lastModifiedBy, 'admin');
+      expect(updatedUser.lastModifiedDate, createdDate);
+      expect(updatedUser.authorities, ['ROLE_USER']);
+    });
+
     test('should deserialize from JSON', () {
       final json = model.toJson();
 
