@@ -36,6 +36,8 @@ class JWTToken extends Equatable {
     return result;
   }
 
+  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+
   @override
   String toString() {
     return 'JWTToken{idToken: $idToken}';

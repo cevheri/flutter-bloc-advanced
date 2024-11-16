@@ -40,17 +40,20 @@ dependencies:
   glob:
   get_storage:
   shared_preferences:
-
+  path_provider:
 
 
 dev_dependencies:
   flutter_test:
+    sdk: flutter
+  integration_test:
     sdk: flutter
   flutter_lints: ^4.0.0
   build_runner:
   test: ^1.25.7
   bloc_test: ^9.1.7
   mockito: ^5.4.4
+  mocktail:
 
 
 
@@ -61,7 +64,10 @@ flutter_secure_storage:
 
 flutter:
   uses-material-design: true
+  generate: true
   assets:
     - assets/mock/
     - assets/images/
 
+flutter_intl:
+  enabled: true

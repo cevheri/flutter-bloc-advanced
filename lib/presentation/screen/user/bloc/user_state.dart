@@ -2,7 +2,7 @@ part of 'user_bloc.dart';
 
 enum UserStatus { initial, loading, success, failure }
 
-class UserState {
+class UserState extends Equatable {
   final User? user;
   final UserStatus status;
 
@@ -17,13 +17,29 @@ class UserState {
   }) {
     return UserState(status: status ?? this.status, user: user ?? this.user);
   }
+
+  @override
+  List<Object?> get props => [user, status];
 }
 
 class UserInitialState extends UserState {}
 
 class UserEditInitialState extends UserState {}
 
-class UserFindInitialState extends UserState {}
+class UserFindInitialState extends UserState {
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    if (other is UserFindInitialState) {
+      return true;
+    }
+    return false;
+  }
+
+  @override
+  int get hashCode => 0;
+}
 
 class UserLoadInProgressState extends UserState {}
 

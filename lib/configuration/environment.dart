@@ -1,5 +1,5 @@
 /// This file is used to set the environment
-enum Environment { DEV, PROD }
+enum Environment { DEV, PROD, TEST }
 
 /// This class is used to store all environment variables
 ///
@@ -11,6 +11,8 @@ class ProfileConstants {
     switch (env) {
       case Environment.DEV:
         _config = _Config.devConstants;
+      case Environment.TEST:
+        _config = _Config.testConstants;
         break;
       case Environment.PROD:
         _config = _Config.prodConstants;
@@ -37,7 +39,11 @@ class _Config {
   static const API = "API";
 
   static Map<String, dynamic> devConstants = {
-    API: "mock/",
+    API: "mock",
+  };
+
+  static Map<String, dynamic> testConstants = {
+    API: "assets/mock",
   };
 
   static Map<String, dynamic> prodConstants = {

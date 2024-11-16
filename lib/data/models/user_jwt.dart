@@ -31,6 +31,8 @@ class UserJWT extends Equatable {
     return JsonMapper.deserialize<UserJWT>(jsonDecode(json));
   }
 
+  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+
   @override
   String toString() {
     return 'UserJWT{password: $password}';

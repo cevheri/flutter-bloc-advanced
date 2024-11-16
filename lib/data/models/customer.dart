@@ -6,6 +6,7 @@ import 'package:equatable/equatable.dart';
 /// ApplicationCustomer model that represents the customer entity in this application.
 ///
 /// this is an immutable class that extends [Equatable] so that it can be compared
+
 @jsonSerializable
 class Customer extends Equatable {
   @JsonProperty(name: 'id')
@@ -65,25 +66,23 @@ class Customer extends Equatable {
     );
   }
 
-  static Customer? fromJson(Map<String, dynamic> jsonDict) {
-    return Customer(
-      id: jsonDict["id"],
-      name: jsonDict["name"],
-      phone: jsonDict["phone"],
-      email: jsonDict["email"],
-      cityName: jsonDict["cityName"],
-      districtName: jsonDict["districtName"],
-      address: jsonDict["address"],
-      active: jsonDict["active"],
-    );
+  static Customer? fromJson(Map<String, dynamic> json) {
+    var result = JsonMapper.fromMap<Customer>(json);
+    if (result == null) {
+      return null;
+    }
+    return result;
   }
 
-  static Customer? fromJsonString(String json) {
-    if (json == "") return null;
-
-    final customerDict = jsonDecode(json);
-    return fromJson(customerDict);
+  static Customer? fromJsonString(String json){
+    var result = JsonMapper.deserialize<Customer>(jsonDecode(json));
+    if (result == null) {
+      return null;
+    }
+    return result;
   }
+
+  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override
   List<Object?> get props => [

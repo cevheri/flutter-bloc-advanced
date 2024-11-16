@@ -2,6 +2,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/utils/security_utils.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
 import '../../../configuration/routes.dart';
@@ -53,7 +54,7 @@ class ApplicationDrawer extends StatelessWidget {
                     shrinkWrap: true,
                     physics: ClampingScrollPhysics(),
                     itemBuilder: (context, index) {
-                      if (getStorageCache["role"] == 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
+                      if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
                         List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
                         sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
                         return ExpansionTileCard(
@@ -108,7 +109,7 @@ class ApplicationDrawer extends StatelessWidget {
                             ),
                           ],
                         );
-                      } else if (getStorageCache["jwtToken"] != 'ROLE_ADMIN' && parentMenus[index].name == 'userManagement') {
+                      } else if (SecurityUtils.isCurrentUserAdmin() &&  parentMenus[index].name == 'userManagement') {
                         return Container();
                       } else {
                         return ListTile(
