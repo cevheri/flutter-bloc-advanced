@@ -71,11 +71,12 @@ assets/mock/...
 ### User Roles
 
 - Admin Account
-This is an **admin account** that has access to all the pages.
+  This is an **admin account** that has access to all the pages.
     - username: admin
     - password: admin
 - User Account
-This is a **user account** that has access to the user's own pages.(Account, password, theme, language, etc.) (User can't access the admin pages)
+  This is a **user account** that has access to the user's own pages.(Account, password, theme,
+  language, etc.) (User can't access the admin pages)
     - username: user
     - password: user
 
@@ -160,7 +161,20 @@ flutter run dev environment
 
 ## How to Test
 
+### Description
+
+Following test should run
+
+* test/data/model
+* test/data/repository
+* test/presentation/blocs
+* test/presentation/screen
+
+### Run Test
+
 - Run `flutter test`
+
+---
 
 ## Usage
 
