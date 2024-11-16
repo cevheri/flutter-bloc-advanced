@@ -6,7 +6,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import '../../fake/user_data.dart';
-import '../../init.dart';
+import '../../test_utils.dart';
 import 'user_bloc_test.mocks.dart';
 
 /// BLoc Test for UserBloc
@@ -23,7 +23,7 @@ import 'user_bloc_test.mocks.dart';
 void main() {
   //region main setup
   setUpAll(() {
-    initBlocDependencies();
+    TestUtils.initBlocDependencies();
   });
   //endregion main setup
   //region state
