@@ -106,7 +106,7 @@ void main() {
     // Given: A mock UserSearchSuccessState with a list of users
 
     await tester.pumpWidget(getWidget());
-    final bloc = BlocProvider.of<UserBloc>(tester.element(find.byType(ListUserScreen)));
+    //final bloc = BlocProvider.of<UserBloc>(tester.element(find.byType(ListUserScreen)));
     // When: ListUserScreen is shown and UserBloc emits the state
     // final userSearchEvent = UserSearch(0, 100, "-", "");
     // BlocProvider.of<UserBloc>(tester.element(find.byType(ListUserScreen))).add(userSearchEvent);
