@@ -1,6 +1,7 @@
 import 'package:flutter_bloc_advance/data/models/authorities.dart';
 import 'package:flutter_bloc_advance/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/data/models/jwt_token.dart';
+import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 
 final DateTime createdDate = DateTime(2024, 1, 1);
@@ -35,4 +36,17 @@ final mockPasswordChangePayload = PasswordChangeDTO(
 /// JWTToken fake data
 final jWTTokenMockPayload = JWTToken(
   idToken: 'idToken',
+);
+
+/// Menu fake data with full payload
+final menuMockPayload = Menu(
+  id: 0,
+  name: 'test name',
+  description: '',
+  url: 'https://dhw-api.onrender.com/',
+  icon: '',
+  orderPriority: 01,
+  active: false,
+  parent: null,
+  level: 01,
 );
