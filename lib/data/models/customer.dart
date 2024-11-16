@@ -6,7 +6,6 @@ import 'package:equatable/equatable.dart';
 /// ApplicationCustomer model that represents the customer entity in this application.
 ///
 /// this is an immutable class that extends [Equatable] so that it can be compared
-
 @jsonSerializable
 class Customer extends Equatable {
   @JsonProperty(name: 'id')
@@ -66,23 +65,53 @@ class Customer extends Equatable {
     );
   }
 
-  static Customer? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.fromMap<Customer>(json);
-    if (result == null) {
-      return null;
-    }
-    return result;
+  static Customer? fromJson(Map<String, dynamic> jsonDict) {
+    return Customer(
+      id: jsonDict["id"],
+      name: jsonDict["name"],
+      phone: jsonDict["phone"],
+      email: jsonDict["email"],
+      cityName: jsonDict["cityName"],
+      districtName: jsonDict["districtName"],
+      address: jsonDict["address"],
+      active: jsonDict["active"],
+    );
   }
 
-  static Customer? fromJsonString(String json){
-    var result = JsonMapper.deserialize<Customer>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
+  static Customer? fromJsonString(String json) {
+    if (json == "") return null;
+    final customerDict = jsonDecode(json);
+    return fromJson(customerDict);
   }
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  Map<String, dynamic>? toJson() {
+    final Map<String, dynamic> json = {};
+    if (id != null) {
+      json["id"] = id;
+    }
+    if (name != null) {
+      json["name"] = name;
+    }
+    if (phone != null) {
+      json["phone"] = phone;
+    }
+    if (email != null) {
+      json["email"] = email;
+    }
+    if (cityName != null) {
+      json["cityName"] = cityName;
+    }
+    if (districtName != null) {
+      json["districtName"] = districtName;
+    }
+    if (address != null) {
+      json["address"] = address;
+    }
+    if (active != null) {
+      json["active"] = active;
+    }
+    return json;
+  }
 
   @override
   List<Object?> get props => [
