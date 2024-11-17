@@ -31,4 +31,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: $HOME/.sonar/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner
+        run: |
+          $HOME/.sonar/sonar-scanner-6.2.1.4610-linux-x64/bin/sonar-scanner \
+          -Dsonar.projectKey=cevheri_flutter-bloc-advanced \
+          -Dsonar.organization=cevheri-open-source
