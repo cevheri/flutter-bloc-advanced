@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
@@ -30,7 +32,8 @@ class TestUtils {
         .setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), (MethodCall methodCall) async {
       return '.';
     });
-    GetStorage.init();
+    Directory tempDir = Directory.systemTemp.createTempSync();
+    GetStorage.init(tempDir.path);
   }
 
   /// Initialize the dependencies for the Widget tests
