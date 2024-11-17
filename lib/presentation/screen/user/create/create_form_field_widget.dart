@@ -4,32 +4,35 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../../../generated/l10n.dart';
 
-class CreateFormPhoneNumber extends StatelessWidget {
-  const CreateFormPhoneNumber({super.key});
+// phoneNumber is not using  in account screen
+// class CreateFormPhoneNumber extends StatelessWidget {
+//   const CreateFormPhoneNumber({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return FormBuilderTextField(
+//       name: 'phoneNumber',
+//       key: const Key("phoneNumber"),
+//       decoration: InputDecoration(
+//         labelText: S.of(context).phone_number,
+//       ),
+//       validator: FormBuilderValidators.compose(
+//         [
+//           FormBuilderValidators.required(errorText: S.of(context).required_phone_type),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
-  @override
-  Widget build(BuildContext context) {
-    return FormBuilderTextField(
-      name: 'phoneNumber',
-      decoration: InputDecoration(
-        labelText: S.of(context).phone_number,
-      ),
-      validator: FormBuilderValidators.compose(
-        [
-          FormBuilderValidators.required(errorText: S.of(context).required_phone_type),
-        ],
-      ),
-    );
-  }
-}
-
-class CreateFormPhoneActive extends StatelessWidget {
-  const CreateFormPhoneActive({super.key});
+class CreateFormActive extends StatelessWidget {
+  const CreateFormActive({super.key});
 
   @override
   Widget build(BuildContext context) {
     return FormBuilderSwitch(
       name: 'userCreateActive',
+      key: const Key("activeSwitch"),
       title: Text(S.of(context).active),
       initialValue: true,
     );
@@ -43,6 +46,7 @@ class CreateFormEmail extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: 'email',
+      key: const Key("emailTextField"),
       decoration: InputDecoration(
         labelText: S.of(context).email,
       ),
@@ -63,6 +67,7 @@ class CreateFormLastname extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: 'lastName',
+      key: const Key("lastNameTextField"),
       decoration: InputDecoration(
         labelText: S.of(context).last_name,
       ),
@@ -84,6 +89,7 @@ class CreateFormFirstName extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: 'firstName',
+      key: const Key("firstNameTextField"),
       decoration: InputDecoration(
         labelText: S.of(context).first_name,
       ),
@@ -103,6 +109,7 @@ class CreateFormLoginName extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: 'login',
+      key: const Key("loginTextField"),
       decoration: InputDecoration(
         labelText: S.of(context).login,
       ),
