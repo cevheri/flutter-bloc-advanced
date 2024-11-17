@@ -21,7 +21,6 @@ void main() {
   /// init setup
   setUp(() {
     TestUtils.initBlocDependencies();
-    //TestUtils.initBlocDependencies();
   });
 
   final blocs = [
@@ -138,6 +137,7 @@ void main() {
 
   /// validate mock data
   testWidgets(skip: true, "Render screen validate entered user data and click save button", (tester) async {
+    TestUtils.initWidgetDependenciesWithToken();
     // Given:
     await tester.pumpWidget(getWidget());
     await tester.pumpAndSettle();
