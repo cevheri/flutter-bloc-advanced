@@ -176,6 +176,13 @@ Following test should run
 
 ---
 
+## Code Quality Analysis with SonarQube
+
+GitHub Actions already implemented with SonarQube
+* You can create a secret for your repository ```SONAR_TOKEN```
+
+---
+
 ## Usage
 
 To add new screens, models, and BLOCs, follow these steps:

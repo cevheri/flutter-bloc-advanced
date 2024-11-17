@@ -113,24 +113,6 @@ class User extends Equatable {
     return result;
   }
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
-  // old toJson method
-  // Map<String, dynamic> toJson() {
-  //   return {
-  //     'id': id,
-  //     'login': login,
-  //     'firstName': firstName,
-  //     'lastName': lastName,
-  //     'email': email,
-  //     'activated': activated,
-  //     'langKey': langKey,
-  //     'createdBy': createdBy,
-  //     'createdDate': createdDate?.toIso8601String(),
-  //     'lastModifiedBy': lastModifiedBy,
-  //     'lastModifiedDate': lastModifiedDate?.toIso8601String(),
-  //     'authorities': authorities,
-  //     // 'phoneNumber': phoneNumber,
-  //   };
-  // }
 
   @override
   List<Object?> get props => [
