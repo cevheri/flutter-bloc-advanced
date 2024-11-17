@@ -81,11 +81,7 @@ class CreateUserScreen extends StatelessWidget {
                   authorities: [formKey.currentState!.fields['authorities']?.value ?? ""],
                   activated: formKey.currentState!.fields['userCreateActive']!.value,
                 );
-                context.read<UserBloc>().add(
-                      UserCreate(
-                        user: user,
-                      ),
-                    );
+                context.read<UserBloc>().add(UserCreate(user: user));
               }
             },
           ),

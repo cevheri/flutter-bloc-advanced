@@ -290,23 +290,24 @@ class HttpUtils {
 
       responseBody = await rootBundle.loadString(mockDataPath);
       response = Future.value(http.Response(responseBody, httpStatusCode));
-      debugPrint("Mock data loaded from $httpMethod $endpoint : $responseBody");
+      debugPrint("Mock data loaded from $httpMethod $endpoint : response body length: ${responseBody.length}");
     } catch (e) {
       debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
     }
 
-    final cacheStorage = getStorageCache;
-    String username = cacheStorage["username"] ?? '';
-    if (endpoint.startsWith('/account') || endpoint.startsWith('/users')) {
-      try {
-        var responseJson = json.decode(responseBody);
-        responseJson['login'] = username;
-        responseJson['authorities'] = ['ROLE_${username.toUpperCase()}'];
-        response = Future.value(http.Response(json.encode(responseJson), httpStatusCode));
-      } catch (e) {
-        debugPrint("There is no response body to update with username");
-      }
-    }
+    //TODO this code-bloc not working in unit-test
+    // final cacheStorage = getStorageCache;
+    // String username = cacheStorage["username"] ?? '';
+    // if (endpoint.startsWith('/account') || endpoint.startsWith('/users')) {
+    //   try {
+    //     var responseJson = json.decode(responseBody);
+    //     responseJson['login'] = username;
+    //     responseJson['authorities'] = ['ROLE_${username.toUpperCase()}'];
+    //     response = Future.value(http.Response(json.encode(responseJson), httpStatusCode));
+    //   } catch (e) {
+    //     debugPrint("There is no response body to update with username");
+    //   }
+    // }
 
     return response;
   }

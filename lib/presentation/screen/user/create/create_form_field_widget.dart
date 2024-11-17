@@ -4,25 +4,26 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../../../generated/l10n.dart';
 
-class CreateFormPhoneNumber extends StatelessWidget {
-  const CreateFormPhoneNumber({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return FormBuilderTextField(
-      name: 'phoneNumber',
-      key: const Key("phoneNumber"),
-      decoration: InputDecoration(
-        labelText: S.of(context).phone_number,
-      ),
-      validator: FormBuilderValidators.compose(
-        [
-          FormBuilderValidators.required(errorText: S.of(context).required_phone_type),
-        ],
-      ),
-    );
-  }
-}
+// phoneNumber is not using  in account screen
+// class CreateFormPhoneNumber extends StatelessWidget {
+//   const CreateFormPhoneNumber({super.key});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return FormBuilderTextField(
+//       name: 'phoneNumber',
+//       key: const Key("phoneNumber"),
+//       decoration: InputDecoration(
+//         labelText: S.of(context).phone_number,
+//       ),
+//       validator: FormBuilderValidators.compose(
+//         [
+//           FormBuilderValidators.required(errorText: S.of(context).required_phone_type),
+//         ],
+//       ),
+//     );
+//   }
+// }
 
 class CreateFormActive extends StatelessWidget {
   const CreateFormActive({super.key});
