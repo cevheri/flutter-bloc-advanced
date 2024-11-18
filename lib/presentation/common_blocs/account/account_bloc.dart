@@ -4,10 +4,10 @@ import 'dart:developer';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 import '../../../data/models/user.dart';
 import '../../../data/repository/account_repository.dart';
-import '../../../utils/storage.dart';
 
 part 'account_event.dart';
 part 'account_state.dart';
@@ -26,21 +26,17 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
   /// Load the current account.
   FutureOr<void> _onLoad(AccountLoad event, Emitter<AccountState> emit) async {
-    debugPrint("BEGIN: getAccount bloc: _onLoad(AccountLoad event, Emitter<AccountState> emit)");
+    debugPrint("BEGIN: getAccount bloc: _onLoad");
     log("AccountBloc._onLoad start : ${event.props}, $emit");
     emit(state.copyWith(status: AccountStatus.loading));
 
     try {
       User user = await _accountRepository.getAccount();
-      saveStorage(username: user.login!);
-      saveStorage(roles: user.authorities);
-      loadStorageData();
-      emit(state.copyWith(
-        account: user,
-        status: AccountStatus.success,
-      ));
+      await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
+
+      emit(state.copyWith(account: user, status: AccountStatus.success));
       log("AccountBloc._onLoad end : ${state.account}, ${state.status}");
-      debugPrint("BEGIN: getAccount bloc");
+      debugPrint("END: getAccount bloc: _onLoad");
     } catch (e) {
       emit(state.copyWith(status: AccountStatus.failure));
       log("AccountBloc._onLoad error : ${state.props}. error-detail: $e");

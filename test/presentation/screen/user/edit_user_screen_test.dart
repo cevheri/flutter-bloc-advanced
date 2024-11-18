@@ -18,9 +18,12 @@ import '../../../test_utils.dart';
 /// Edit User Screen Test
 /// class UserScreen extends
 void main() {
-  //region init
-  setUp(() {
-    TestUtils.initBlocDependencies();
+  //region setup
+  setUpAll(() async {
+    await TestUtils().setupUnitTest();
+  });
+  tearDown(() async {
+    await TestUtils().tearDownUnitTest();
   });
 
   final blocs = [
@@ -42,11 +45,10 @@ void main() {
       ],
     );
   }
-  //endregion init
+  //endregion setup
 
   group("EditUserScreen Test", () {
     testWidgets("Validate AppBar", (tester) async {
-      TestUtils.initWidgetDependencies();
 
       // Given:
       await tester.pumpWidget(getWidget(mockUserFullPayload));
@@ -60,7 +62,6 @@ void main() {
     });
 
     testWidgets("Render screen validate field type successful", (tester) async {
-      TestUtils.initWidgetDependencies();
       // Given:
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When:
@@ -74,7 +75,6 @@ void main() {
 
     /// validate field name with English translation
     testWidgets("Render screen validate field name successful", (tester) async {
-      TestUtils.initWidgetDependencies();
       // Given:
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When:
@@ -96,7 +96,6 @@ void main() {
 
     /// validate mock data
     testWidgets("Render screen validate user data successful", (tester) async {
-      TestUtils.initWidgetDependencies();
       // Given:
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When:
@@ -117,7 +116,7 @@ void main() {
 
   group("EditUserScreen Bloc Test", () {
     testWidgets(skip: true, "Given valid user data with AccessToken when Save Button clicked then update user Successfully", (tester) async {
-      TestUtils.initWidgetDependenciesWithToken();
+      TestUtils().addMockTokenToStorage();
 
       // Given: render screen with valid user data
       await tester.pumpWidget(getWidget(mockUserFullPayload));
@@ -132,7 +131,6 @@ void main() {
 
     testWidgets(skip: true, "Given valid user data without AccessToken when Save Button clicked then update user fail (Unauthorized)",
         (tester) async {
-      TestUtils.initWidgetDependencies();
       expect(find.byType(ElevatedButton), findsOneWidget);
       expect(find.text("Save"), findsOneWidget);
       // await tester.tap(find.text('Save'));
@@ -147,7 +145,6 @@ void main() {
     });
 
     testWidgets(skip: true, "Given same user data (no-changes) when Save Button clicked then no-action", (tester) async {
-      TestUtils.initWidgetDependenciesWithToken();
       // Given: render screen with valid user data
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When: wait screen is ready

@@ -35,7 +35,6 @@ import '../presentation/screen/settings/settings_screen.dart';
 import '../presentation/screen/user/bloc/user_bloc.dart';
 import '../presentation/screen/user/create/create_user_screen.dart';
 import '../presentation/screen/user/list/list_user_screen.dart';
-import '../utils/storage.dart';
 
 /// Main application widget. This widget is the root of your application.
 ///
@@ -87,7 +86,7 @@ class App extends StatelessWidget {
             ],
             supportedLocales: S.delegate.supportedLocales,
             locale: Locale(language),
-            initialRoute: getStorageCache["jwtToken"] != "" ? "/" : initialRouteControl(context),
+            initialRoute: initialRouteControl(),
             routes: {
               ApplicationRoutes.home: (context) {
                 return BlocProvider<AccountBloc>(

@@ -18,9 +18,12 @@ import '../../../test_utils.dart';
 ///Create User Screen Test
 ///class CreateUserScreen extent
 void main() {
-  /// init setup
-  setUp(() {
-    TestUtils.initBlocDependencies();
+  //region setup
+  setUpAll(() async {
+    await TestUtils().setupUnitTest();
+  });
+  tearDown(() async {
+    await TestUtils().tearDownUnitTest();
   });
 
   final blocs = [
@@ -42,6 +45,7 @@ void main() {
       ],
     );
   }
+  //endregion setup
 
   group("CreateUserScreen Test", () {
     testWidgets("Validate AppBar", (tester) async {
@@ -137,7 +141,7 @@ void main() {
 
   /// validate mock data
   testWidgets(skip: true, "Render screen validate entered user data and click save button", (tester) async {
-    TestUtils.initWidgetDependenciesWithToken();
+    TestUtils().addMockTokenToStorage();
     // Given:
     await tester.pumpWidget(getWidget());
     await tester.pumpAndSettle();

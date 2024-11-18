@@ -38,10 +38,7 @@ dependencies:
   animated_toggle_switch:
   reflectable:
   glob:
-  get_storage:
   shared_preferences:
-  path_provider:
-  synchronized: ^3.3.0+3
 
 
 dev_dependencies:
@@ -55,7 +52,7 @@ dev_dependencies:
   bloc_test: ^9.1.7
   mockito: ^5.4.4
   mocktail:
-  fake_async:
+
 
 
 

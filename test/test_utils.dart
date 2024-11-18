@@ -1,13 +1,8 @@
-import 'dart:io';
-import 'dart:math';
-
 import 'package:equatable/equatable.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
-import 'package:flutter_bloc_advance/utils/storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Utility class for the tests
@@ -22,33 +17,29 @@ class TestUtils {
   /// 3. Shared Preferences <p>
   /// 4. Equatable Configuration <p>
   /// 5. Mock Method Call Handler for Path Provider <p>
-  static void initBlocDependencies() {
+
+
+  Future<void> setupUnitTest() async {
     ProfileConstants.setEnvironment(Environment.TEST);
     initializeJsonMapper();
     TestWidgetsFlutterBinding.ensureInitialized();
-    SharedPreferences.setMockInitialValues({});
     EquatableConfig.stringify = true;
-
-    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), (MethodCall methodCall) async {
-      return '.';
-    });
-
-    GetStorage.init("${Directory.systemTemp.createTempSync().path}/${Random().nextInt(1000)}");
-    TestWidgetsFlutterBinding.ensureInitialized();
+    await clearStorage();
+    await AppLocalStorage().save(StorageKeys.language.name, "en");
+    await AppLocalStorageCached.loadCache();
   }
 
-  /// Initialize the dependencies for the Widget tests
-  static void initWidgetDependencies() {
-    clearStorage();
-
-    saveStorage(language: 'en');
-    saveStorage(jwtToken: "");
+  Future<void> clearStorage() async {
+    SharedPreferences.setMockInitialValues({});
+    await AppLocalStorage().clear();
   }
 
-  static void initWidgetDependenciesWithToken() {
-    clearStorage();
-    saveStorage(language: 'en');
-    saveStorage(jwtToken: "MOCK_TOKEN");
+  // add mock token to storage
+  Future<void> addMockTokenToStorage() async {
+    await AppLocalStorage().save(StorageKeys.jwtToken.name, "UNITTEST_TOKEN");
+  }
+
+  Future<void> tearDownUnitTest() async {
+    return await clearStorage();
   }
 }

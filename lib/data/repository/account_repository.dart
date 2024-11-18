@@ -14,13 +14,13 @@ class AccountRepository {
 
   Future<User?> register(User? newUser) async {
     debugPrint("register repository start");
-    if(newUser == null) {
+    if (newUser == null) {
       throw BadRequestException("User null");
     }
-    if(newUser.email == null || newUser.email!.isEmpty || newUser.login == null || newUser.login!.isEmpty) {
+    if (newUser.email == null || newUser.email!.isEmpty || newUser.login == null || newUser.login!.isEmpty) {
       throw BadRequestException("User email or login null");
     }
-    if(newUser.langKey == null) {
+    if (newUser.langKey == null) {
       newUser = newUser.copyWith(langKey: "en");
     }
     // when user is registered, it is a normal user
@@ -32,10 +32,13 @@ class AccountRepository {
 
   Future<int> changePassword(PasswordChangeDTO? passwordChangeDTO) async {
     debugPrint("BEGIN:changePassword repository start");
-    if(passwordChangeDTO == null) {
+    if (passwordChangeDTO == null) {
       throw BadRequestException("PasswordChangeDTO null");
     }
-    if(passwordChangeDTO.currentPassword == null || passwordChangeDTO.currentPassword!.isEmpty || passwordChangeDTO.newPassword == null || passwordChangeDTO.newPassword!.isEmpty) {
+    if (passwordChangeDTO.currentPassword == null ||
+        passwordChangeDTO.currentPassword!.isEmpty ||
+        passwordChangeDTO.newPassword == null ||
+        passwordChangeDTO.newPassword!.isEmpty) {
       throw BadRequestException("PasswordChangeDTO currentPassword or newPassword null");
     }
     final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>("/$_resource/change-password", passwordChangeDTO);
@@ -46,7 +49,7 @@ class AccountRepository {
 
   Future<int> resetPassword(String mailAddress) async {
     debugPrint("resetPassword repository start");
-    if(mailAddress.isEmpty) {
+    if (mailAddress.isEmpty) {
       throw BadRequestException("Mail address null");
     }
 
@@ -54,7 +57,6 @@ class AccountRepository {
     if (!mailAddress.contains("@") || !mailAddress.contains(".")) {
       throw BadRequestException("Mail address invalid");
     }
-
 
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
@@ -77,10 +79,10 @@ class AccountRepository {
 
   Future<User> saveAccount(User? user) async {
     debugPrint("saveAccount repository start");
-    if(user == null) {
+    if (user == null) {
       throw BadRequestException("User null");
     }
-    if(user.id == null || user.id!.isEmpty) {
+    if (user.id == null || user.id!.isEmpty) {
       throw BadRequestException("User id not null");
     }
     final saveRequest = await HttpUtils.postRequest<User>("/$_resource", user);

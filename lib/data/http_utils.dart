@@ -6,12 +6,12 @@ import 'dart:io';
 import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc_advance/configuration/allowed_paths.dart';
+import 'package:flutter_bloc_advance/configuration/environment.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:http/http.dart' as http;
 
-import '../configuration/allowed_paths.dart';
-import '../configuration/environment.dart';
-import '../utils/app_constants.dart';
-import '../utils/storage.dart';
 import 'app_api_exception.dart';
 
 class MyHttpOverrides extends HttpOverrides {
@@ -51,7 +51,6 @@ class HttpUtils {
   ///   -H 'content-type: application/json' \
 
   static Future<Map<String, String>> headers() async {
-    String? jwt = getStorageCache["jwtToken"];
     Map<String, String> headerParameters = <String, String>{};
 
     //custom http headers entries
@@ -64,8 +63,8 @@ class HttpUtils {
       log("default headers : $_defaultHttpHeaders");
     }
 
-    if (jwt != null && jwt != "") {
-      headerParameters['Authorization'] = 'Bearer $jwt';
+    if (AppLocalStorageCached.jwtToken != null) {
+      headerParameters['Authorization'] = 'Bearer ${AppLocalStorageCached.jwtToken}';
     } else {
       headerParameters.remove('Authorization');
     }

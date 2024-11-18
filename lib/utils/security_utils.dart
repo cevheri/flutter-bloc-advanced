@@ -1,9 +1,11 @@
-
-
-import 'package:flutter_bloc_advance/utils/storage.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 class SecurityUtils {
   static bool isCurrentUserAdmin() {
-    return getStorageCache["role"].contains("ROLE_ADMIN");
+    if (AppLocalStorageCached.roles != null) {
+      return AppLocalStorageCached.roles!.contains("ROLE_ADMIN");
+    } else {
+      return false;
+    }
   }
 }

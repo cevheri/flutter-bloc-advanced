@@ -16,9 +16,12 @@ import '../../../test_utils.dart';
 /// List User Screen Test
 /// class ListUserScreen extends StatelessWidget
 void main() {
-  /// init setup
-  setUp(() {
-    TestUtils.initBlocDependencies();
+  //region setup
+  setUpAll(() async {
+    await TestUtils().setupUnitTest();
+  });
+  tearDown(() async {
+    await TestUtils().tearDownUnitTest();
   });
 
   final blocs = [
@@ -40,10 +43,9 @@ void main() {
       ],
     );
   }
+  //endregion setup
 
   testWidgets('renders ListUserScreen correctly', (tester) async {
-    TestUtils.initWidgetDependencies();
-
     // Given: A ListUserScreen with mocked state is rendered
     await tester.pumpWidget(getWidget());
 
@@ -68,7 +70,7 @@ void main() {
   });
 
   testWidgets('displays user list when UserSearchSuccessState is emitted with JWTToken', (tester) async {
-    TestUtils.initWidgetDependenciesWithToken();
+    TestUtils().addMockTokenToStorage();
     await tester.pumpAndSettle();
 
     // Given: A mock UserSearchSuccessState with a list of users

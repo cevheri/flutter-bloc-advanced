@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:get_storage/get_storage.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 import '../configuration/environment.dart';
-import '../utils/storage.dart';
 import 'app.dart';
 import 'main_local.mapper.g.dart' show initializeJsonMapper;
 
@@ -17,16 +16,10 @@ void main() async {
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
 
-  await GetStorage.init();
-
-  final storageData = getStorageCache;
-  final language = storageData["language"];
-  if (language == null) {
-    saveStorage(language: 'en');
-  }
+  await AppLocalStorage().save(StorageKeys.language.name, "en");
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(App(language: language ?? 'en'));
+    runApp(App(language: AppLocalStorageCached.language!));
   });
 }

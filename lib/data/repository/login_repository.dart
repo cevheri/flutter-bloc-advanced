@@ -1,5 +1,4 @@
-import 'package:flutter_bloc_advance/utils/storage.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 import '../http_utils.dart';
 import '../models/jwt_token.dart';
@@ -31,17 +30,13 @@ class LoginRepository {
     result = JWTToken.fromJsonString(response.body);
 
     if (result != null && result.idToken != null) {
-      saveStorage(jwtToken: result.idToken);
+      await AppLocalStorage().save(StorageKeys.jwtToken.name, result.idToken);
       return result;
     }
     return JWTToken(idToken: null);
   }
 
   Future<void> logout() async {
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.remove('role');
-    await prefs.remove('jwtToken');
-    await prefs.clear();
-    clearStorage();
+    await AppLocalStorage().clear();
   }
 }

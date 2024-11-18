@@ -42,8 +42,10 @@ jobs:
         run: flutter pub get
       - name: Analyze
         run: flutter analyze
+      #      - name: Run tests
+      #        run: flutter test --concurrency=1 --test-randomize-ordering-seed=random
       - name: Run tests
-        run: flutter test --concurrency=1 --test-randomize-ordering-seed=random
+        run: flutter test
       - name: Build APK
         run: flutter build apk --release --target lib/main/main_prod.dart
       - name: Build Android App Bundle
