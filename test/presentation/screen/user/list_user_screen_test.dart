@@ -32,11 +32,7 @@ void main() {
 
   final blocs = [
     BlocProvider<AuthoritiesBloc>(create: (_) => AuthoritiesBloc(authoritiesRepository: AuthoritiesRepository())),
-    BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
-    BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),
-    BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
-    BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
   ];
 
   GetMaterialApp getWidget() {

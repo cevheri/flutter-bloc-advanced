@@ -51,11 +51,12 @@ void saveStorage({
 
 void clearStorage() {
   final authenticationStorage = GetStorage();
-//  clearLocalStorage();
   authenticationStorage.remove(AuthenticationStorageConstants.JWT_TOKEN);
   authenticationStorage.remove(AuthenticationStorageConstants.ROLES);
   authenticationStorage.remove(AuthenticationStorageConstants.LANGUAGE);
   authenticationStorage.remove(AuthenticationStorageConstants.USERNAME);
+
+  authenticationStorage.erase();
 }
 
 // void clearLocalStorage() {

@@ -1,4 +1,4 @@
-class AppException implements Exception {
+abstract class AppException implements Exception {
   final String? _message;
   final String? _prefix;
 
@@ -14,11 +14,11 @@ class FetchDataException extends AppException {
   FetchDataException(String message) : super(message, "Error During Communication: ");
 }
 
-class BadRequestException extends AppException {
+final class BadRequestException extends AppException {
   BadRequestException([message]) : super(message, "Invalid Request: ");
 }
 
-class UnauthorizedException extends AppException {
+final class UnauthorizedException extends AppException {
   UnauthorizedException([message]) : super(message, "Unauthorized: ");
 }
 
