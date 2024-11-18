@@ -30,22 +30,22 @@ jobs:
 #        with:
 #          dart-version: 3.5.4
 
-      - name: Setup Java JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: set JAVA_HOME
-        run: echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
-      - name: flutter jdk configuration
-        run: flutter config --jdk-dir /usr/lib/jvm/temurin-17-jdk-amd64
+#      - name: Setup Java JDK 17
+#        uses: actions/setup-java@v4
+#        with:
+#          distribution: 'temurin'
+#          java-version: '17'
+#      - name: set JAVA_HOME
+#        run: echo "JAVA_HOME=/usr/lib/jvm/temurin-17-jdk-amd64" >> $GITHUB_ENV
+#      - name: flutter jdk configuration
+#        run: flutter config --jdk-dir /usr/lib/jvm/temurin-17-jdk-amd64
 
       - name: Install dependencies
         run: flutter pub get
       - name: Analyze
         run: flutter analyze
       - name: Run tests
-        run: flutter test
+        run: flutter test --coverage
 
       - name: Cache SonarQube Cloud packages
         uses: actions/cache@v4
