@@ -4,6 +4,8 @@ on:
     branches:
       - sonar
   pull_request:
+    branches:
+      - sonar
     types: [opened, synchronize, reopened]
 jobs:
   build:
