@@ -219,6 +219,7 @@ class SubmitButton extends StatelessWidget {
 
               if (cacheUser == newUser) {
                 Message.getMessage(context: context, title: "Değişiklik bulunmadı", content: ''); //TODO internationalization
+                Navigator.pop(context);
               }
             },
           ),

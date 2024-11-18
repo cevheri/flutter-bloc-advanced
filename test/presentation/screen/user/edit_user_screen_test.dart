@@ -18,12 +18,41 @@ import '../../../test_utils.dart';
 /// Edit User Screen Test
 /// class UserScreen extends
 void main() {
+  // 1. setup
+  // 2. appbar
+  // 3. render screen with field type( text, switch, dropdown, button, label, etc.)
+  // 4. validate field name with English translation
+  // 5. Optional: validate loaded data
+  // 6. Optional: Enter data to fields
+  // 8. Optional: Validate data entered
+  // 9. Validate button click or bloc event
+  // 10. Optional: Validate saved data, listed data, updated data, etc.
+  // 11. Validate screen dispose: back button, saved data, etc.
+
   //region setup
+
+  // before
+  // setupAll run once before all tests
   setUpAll(() async {
+    debugPrint("setupAll run once before all tests");
     await TestUtils().setupUnitTest();
   });
+
+  // after
+  // tearDownAll run once after all tests
+  tearDownAll(() async {
+    debugPrint("tearDownAll run once after all tests");
+  });
+
+  // setup run before each test
+  setUp(() async {
+    debugPrint("setUp run before each test");
+  });
+
+  // tearDown run after each test
   tearDown(() async {
     await TestUtils().tearDownUnitTest();
+    debugPrint("tearDown run after each test");
   });
 
   final blocs = [
@@ -33,10 +62,7 @@ void main() {
 
   GetMaterialApp getWidget(User user) {
     return GetMaterialApp(
-      home: MultiBlocProvider(
-        providers: blocs,
-        child: EditUserScreen(user: user),
-      ),
+      home: MultiBlocProvider(providers: blocs, child: EditUserScreen(user: user)),
       localizationsDelegates: const [
         S.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -49,7 +75,6 @@ void main() {
 
   group("EditUserScreen Test", () {
     testWidgets("Validate AppBar", (tester) async {
-
       // Given:
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When:
@@ -80,17 +105,11 @@ void main() {
       //When:
       await tester.pumpAndSettle();
       //Then:
-      // username / login name textField
       expect(find.text("Login"), findsOneWidget);
-      // firstName textField
       expect(find.text("First Name"), findsOneWidget);
-      // lastName textField
       expect(find.text("Last Name"), findsOneWidget);
-      // email textField
       expect(find.text("Email"), findsOneWidget);
-      // active switch button
       expect(find.text("Active"), findsOneWidget);
-      // save button
       expect(find.text("Save"), findsOneWidget);
     });
 
@@ -101,50 +120,56 @@ void main() {
       //When:
       await tester.pumpAndSettle();
       //Then:
-      // username / login name
       expect(find.text("test_login"), findsOneWidget);
-      // firstName
       expect(find.text("John"), findsOneWidget);
-      // lastName
       expect(find.text("Doe"), findsOneWidget);
-      // email
       expect(find.text("john.doe@example.com"), findsOneWidget);
-      // activated
       // expect(find.text("true"), findsOneWidget);
     });
   });
 
   group("EditUserScreen Bloc Test", () {
-    testWidgets(skip: true, "Given valid user data with AccessToken when Save Button clicked then update user Successfully", (tester) async {
-      TestUtils().addMockTokenToStorage();
+    testWidgets("Given valid user data with AccessToken when Save Button clicked then update user Successfully", (tester) async {
+      await TestUtils().setupAuthentication();
 
+      // Given: render screen with valid user data
+      await tester.pumpWidget(getWidget(mockUserFullPayload));
+      //When: wait screen is ready
+      await tester.pumpAndSettle(Duration(seconds: 1));
+
+      // before click save button check button
+      expect(find.byType(ElevatedButton), findsOneWidget);
+      expect(find.text("Save"), findsOneWidget);
+
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle(Duration(seconds: 5));
+
+      // after click save button check screen, dispose EditUserScreen and should be navigate to user list screen
+      expect(find.byType(EditUserScreen), findsNothing);
+    });
+
+    testWidgets("Given valid user data without AccessToken when Save Button clicked then update user fail (Unauthorized)", (tester) async {
       // Given: render screen with valid user data
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When: wait screen is ready
       await tester.pumpAndSettle();
 
+      // before click save button check button
       expect(find.byType(ElevatedButton), findsOneWidget);
       expect(find.text("Save"), findsOneWidget);
-      //await tester.tap(find.text('Save'));
-      // await tester.pumpAndSettle();
-    });
 
-    testWidgets(skip: true, "Given valid user data without AccessToken when Save Button clicked then update user fail (Unauthorized)",
-        (tester) async {
-      expect(find.byType(ElevatedButton), findsOneWidget);
-      expect(find.text("Save"), findsOneWidget);
-      // await tester.tap(find.text('Save'));
-      // await tester.pumpAndSettle();
-      // Given: render screen with valid user data
+      await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle(Duration(seconds: 5));
       await tester.pumpWidget(getWidget(mockUserFullPayload));
-      //When: wait screen is ready
       await tester.pumpAndSettle();
 
-      //await tester.tap(find.text('Save'));
-      //await tester.pumpAndSettle();
+      // after click save button check screen, without AccessToken should be stay in EditUserScreen
+      expect(find.byType(EditUserScreen), findsOneWidget);
     });
 
-    testWidgets(skip: true, "Given same user data (no-changes) when Save Button clicked then no-action", (tester) async {
+    testWidgets(
+        skip: true, // skip this test because of no-changes
+        "Given same user data (no-changes) without AccessToken when Save Button clicked then no-action", (tester) async {
       // Given: render screen with valid user data
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When: wait screen is ready
@@ -154,6 +179,10 @@ void main() {
       expect(find.text("Save"), findsOneWidget);
 
       await tester.tap(find.text('Save'));
+      await tester.pumpAndSettle(Duration(seconds: 5));
+
+      // after click save button check screen, with same user data, EditUserScreen will not call bloc event then go back
+      expect(find.byType(EditUserScreen), findsNothing);
     });
   });
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc_advance/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/data/models/jwt_token.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
+import 'package:flutter_bloc_advance/data/models/user_jwt.dart';
 
 final DateTime createdDate = DateTime(2024, 1, 1);
 
@@ -50,3 +51,6 @@ final menuMockPayload = Menu(
   parent: null,
   level: 01,
 );
+
+/// UserJWT fake data with full payload
+final userJWTMockPayload = UserJWT("username", "password");

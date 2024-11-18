@@ -141,7 +141,7 @@ void main() {
 
   /// validate mock data
   testWidgets(skip: true, "Render screen validate entered user data and click save button", (tester) async {
-    TestUtils().addMockTokenToStorage();
+    await TestUtils().setupAuthentication();
     // Given:
     await tester.pumpWidget(getWidget());
     await tester.pumpAndSettle();

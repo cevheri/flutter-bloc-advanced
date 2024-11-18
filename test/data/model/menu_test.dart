@@ -44,6 +44,21 @@ void main() {
       expect(updatedMenu.level, 01);
     });
 
+    test('should copy a Menu instance with copyWith just copy', () {
+      final finalMenu = menuMockPayload;
+      final updatedMenu = finalMenu.copyWith();
+
+      expect(updatedMenu.id, 0);
+      expect(updatedMenu.name, 'test name');
+      expect(updatedMenu.description, '');
+      expect(updatedMenu.url, 'https://dhw-api.onrender.com/');
+      expect(updatedMenu.icon, '');
+      expect(updatedMenu.orderPriority, 01);
+      expect(updatedMenu.active, false);
+      expect(updatedMenu.parent, null);
+      expect(updatedMenu.level, 01);
+    });
+
     test('should deserialize from JSON', () {
       final json = menuMockPayload.toJson();
 

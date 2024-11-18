@@ -21,22 +21,21 @@ class Authorities extends Equatable {
   }
 
   static Authorities? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.fromMap<Authorities>(json);
-    if (result == null) {
-      return null;
+    if (json['name'] != null) {
+      return Authorities(name: json['name']);
     }
-    return result;
+    return null;
   }
 
-  static Authorities? fromJsonString(String json){
-    var result = JsonMapper.deserialize<Authorities>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
+  static Authorities? fromJsonString(String json) {
+    return fromJson(jsonDecode(json));
   }
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  Map<String, dynamic>? toJson() {
+    return {
+      'name': name,
+    };
+  }
 
   @override
   List<Object?> get props => [

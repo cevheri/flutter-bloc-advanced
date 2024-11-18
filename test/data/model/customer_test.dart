@@ -28,6 +28,14 @@ void main() {
     test('should copy a Customer instance with new values (copyWith)', () {
       final finalCustomer = customerMockFullPayload;
 
+      final updatedCustomer = finalCustomer.copyWith();
+
+      expect(updatedCustomer == finalCustomer, true);
+    });
+
+    test('should copy a Customer instance with new values (copyWith) new values', () {
+      final finalCustomer = customerMockFullPayload;
+
       final updatedCustomer = finalCustomer.copyWith(
         name: 'new Acme',
         cityName: 'izmir',
@@ -73,6 +81,21 @@ void main() {
       expect(finalCustomer?.districtName, "selçuklu");
       expect(finalCustomer?.address, 'yazır mh.');
       expect(finalCustomer?.active, true);
+    });
+
+    //props
+    test('props test', () {
+      final finalCustomer = customerMockFullPayload;
+      final updatedCustomer = finalCustomer.copyWith();
+
+      expect(finalCustomer.props, updatedCustomer.props);
+    });
+
+    //toString
+    test('should return string', () {
+      final finalCustomer = customerMockFullPayload;
+      expect(finalCustomer.toString(),
+          'Customer(1, Acme, 5055055050, john.doe@example.com, Konya, selçuklu, yazır mh., true)');
     });
   });
 }

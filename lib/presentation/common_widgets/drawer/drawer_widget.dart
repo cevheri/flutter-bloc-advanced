@@ -237,7 +237,8 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
   }
 
   Future<void> _loadLanguage() async {
-    final lang = AppLocalStorageCached.language;
+
+    final lang = await AppLocalStorage().read(StorageKeys.language.name);
     setState(() {
       isTurkish = lang == 'tr';
     });

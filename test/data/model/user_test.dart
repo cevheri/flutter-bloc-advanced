@@ -35,28 +35,6 @@ void main() {
     test('should copy a User instance with new values (copyWith)', () {
       final finalUser = model;
 
-      final updatedUser = finalUser.copyWith(
-        firstName: 'Jane',
-        lastName: 'Smith',
-      );
-
-      expect(updatedUser.id, '1');
-      expect(updatedUser.login, 'test_login');
-      expect(updatedUser.firstName, 'Jane');
-      expect(updatedUser.lastName, 'Smith');
-      expect(updatedUser.email, 'john.doe@example.com');
-      expect(updatedUser.activated, true);
-      expect(updatedUser.langKey, 'en');
-      expect(updatedUser.createdBy, 'admin');
-      expect(updatedUser.createdDate, createdDate);
-      expect(updatedUser.lastModifiedBy, 'admin');
-      expect(updatedUser.lastModifiedDate, createdDate);
-      expect(updatedUser.authorities, ['ROLE_USER']);
-    });
-
-    test('should copy a User instance with new values (copyWith)', () {
-      final finalUser = model;
-
       final updatedUser = finalUser.copyWith();
 
       expect(updatedUser.id, '1');
@@ -71,6 +49,19 @@ void main() {
       expect(updatedUser.lastModifiedBy, 'admin');
       expect(updatedUser.lastModifiedDate, createdDate);
       expect(updatedUser.authorities, ['ROLE_USER']);
+    });
+
+    test('should copy a User instance with new values copyWith fistName', () {
+      final finalUser = model;
+
+      final updatedUser = finalUser.copyWith(firstName: 'Jane');
+      expect(updatedUser.firstName, 'Jane');
+    });
+    test('should copy a User instance with new values copyWith lastname', () {
+      final finalUser = model;
+
+      final updatedUser = finalUser.copyWith(lastName: 'Smith');
+      expect(updatedUser.lastName, 'Smith');
     });
 
     test('should deserialize from JSON', () {

@@ -24,22 +24,21 @@ class TestUtils {
     initializeJsonMapper();
     TestWidgetsFlutterBinding.ensureInitialized();
     EquatableConfig.stringify = true;
-    await clearStorage();
+    await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.name, "en");
-    await AppLocalStorageCached.loadCache();
-  }
-
-  Future<void> clearStorage() async {
-    SharedPreferences.setMockInitialValues({});
-    await AppLocalStorage().clear();
-  }
-
-  // add mock token to storage
-  Future<void> addMockTokenToStorage() async {
-    await AppLocalStorage().save(StorageKeys.jwtToken.name, "UNITTEST_TOKEN");
   }
 
   Future<void> tearDownUnitTest() async {
-    return await clearStorage();
+    return await _clearStorage();
+  }
+  
+  // add mock token to storage
+  Future<void> setupAuthentication() async {
+    await AppLocalStorage().save(StorageKeys.jwtToken.name, "UNITTEST_TOKEN");
+  }
+
+  Future<void> _clearStorage() async {
+    SharedPreferences.setMockInitialValues({});
+    await AppLocalStorage().clear();
   }
 }

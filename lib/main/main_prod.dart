@@ -16,10 +16,11 @@ void main() async {
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
 
-  await AppLocalStorage().save(StorageKeys.language.name, "en");
+  const defaultLanguage = "en";
+  await AppLocalStorage().save(StorageKeys.language.name, defaultLanguage);
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(App(language: AppLocalStorageCached.language!));
+    runApp(App(language: defaultLanguage));
   });
 }
