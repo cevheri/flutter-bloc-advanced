@@ -41,6 +41,7 @@ dependencies:
   get_storage:
   shared_preferences:
   path_provider:
+  synchronized: ^3.3.0+3
 
 
 dev_dependencies:
