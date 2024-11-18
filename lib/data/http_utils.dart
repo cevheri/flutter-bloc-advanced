@@ -63,8 +63,10 @@ class HttpUtils {
       log("default headers : $_defaultHttpHeaders");
     }
 
-    if (AppLocalStorageCached.jwtToken != null) {
-      headerParameters['Authorization'] = 'Bearer ${AppLocalStorageCached.jwtToken}';
+    final jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.name);
+
+    if (jwtToken != null) {
+      headerParameters['Authorization'] = 'Bearer $jwtToken';
     } else {
       headerParameters.remove('Authorization');
     }
