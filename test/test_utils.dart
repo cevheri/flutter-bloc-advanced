@@ -2,7 +2,6 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';

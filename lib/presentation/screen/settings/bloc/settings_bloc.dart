@@ -86,6 +86,7 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       );
       final savedAccount = await _accountRepository.saveAccount(user);
       state.copyWith(status: SettingsStatus.loaded);
+      log("saved account: ${savedAccount.login}");
     } catch (e) {
       state.copyWith(status: SettingsStatus.failure);
       log('error: $e');
