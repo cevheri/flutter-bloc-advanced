@@ -70,7 +70,7 @@ void main() {
   });
 
   testWidgets('displays user list when UserSearchSuccessState is emitted with JWTToken', (tester) async {
-    TestUtils().addMockTokenToStorage();
+    await TestUtils().setupAuthentication();
     await tester.pumpAndSettle();
 
     // Given: A mock UserSearchSuccessState with a list of users

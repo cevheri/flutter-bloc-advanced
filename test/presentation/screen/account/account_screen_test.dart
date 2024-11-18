@@ -67,7 +67,7 @@ void main() {
   group("AccountsScreen DataTest", () {
     testWidgets("Render Screen Validate Field Type Successful", (tester) async {
       debugPrint("begin Validate Field Type");
-      await TestUtils().addMockTokenToStorage();
+      await TestUtils().setupAuthentication();
       debugPrint("getAccount initWidgetDependenciesWithToken");
       // Given:
       await tester.pumpWidget(getWidget());

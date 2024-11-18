@@ -64,7 +64,7 @@ void main() {
   //test change password success
   group("AccountRepository Change Password success", () {
     test("Given valid passwordChangeDTO when changePassword then return 200", () async {
-      await TestUtils().addMockTokenToStorage();
+      await TestUtils().setupAuthentication();
       final passwordChangeDTO = mockPasswordChangePayload;
       final result = await AccountRepository().changePassword(passwordChangeDTO);
       expect(result, 200);
@@ -88,7 +88,7 @@ void main() {
   //test reset password success
   group("AccountRepository Reset Password success", () {
     test("Given valid mailAddress when resetPassword then return 200", () async {
-      await TestUtils().addMockTokenToStorage();
+      await TestUtils().setupAuthentication();
       final mailAddress = "admin@sekoya.tech";
       final result = await AccountRepository().resetPassword(mailAddress);
       expect(result, 200);
@@ -108,7 +108,7 @@ void main() {
   //test get account success
   group("AccountRepository Get Account success", () {
     test("Given valid user when getAccount then return user successfully", () async {
-      await TestUtils().addMockTokenToStorage();
+      await TestUtils().setupAuthentication();
       final result = await AccountRepository().getAccount();
       expect(result, isA<User>());
     });
@@ -125,7 +125,7 @@ void main() {
   //test save account success
   group("AccountRepository Save Account success", () {
     test("Given valid user when saveAccount then return user successfully", () async {
-      await TestUtils().addMockTokenToStorage();
+      await TestUtils().setupAuthentication();
       final newUser = mockUserFullPayload;
       final result = await AccountRepository().saveAccount(newUser);
       expect(result, isA<User>());
