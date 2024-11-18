@@ -16,17 +16,6 @@ void main() {
   });
   //endregion setup
 
-  // ProfileConstants.setEnvironment(Environment.TEST);
-  // initializeJsonMapper();
-  // TestWidgetsFlutterBinding.ensureInitialized();
-  // SharedPreferences.setMockInitialValues({});
-  //
-  // TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-  //     .setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), (MethodCall methodCall) async {
-  //   return '.';
-  // });
-  // GetStorage.init("${Directory.systemTemp.createTempSync().path}/${Random().nextInt(1000)}");
-  // TestWidgetsFlutterBinding.ensureInitialized();
 
   //test register success
   group("AccountRepository Register success", () {

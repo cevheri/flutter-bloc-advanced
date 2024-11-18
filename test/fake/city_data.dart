@@ -10,7 +10,7 @@ final cityMockPayload = City(
 
 /// District Fake data with full payload
 final districtMockPayload = District(
-  id: '1',
-  name: 'istanbul',
-  code: '01',
+  id: 'id',
+  name: 'kadikoy',
+  code: '34',
 );

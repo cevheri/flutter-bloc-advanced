@@ -34,25 +34,16 @@ void main() {
   /// User State Tests
   group("UserState", () {
     test("supports value comparisons", () {
-      expect(
-        const UserState(),
-        const UserState(),
-      );
+      expect(const UserState(), const UserState());
     });
 
     test("copyWith retains the same values if no arguments are provided", () {
-      const state = UserState(
-        user: null,
-        status: UserStatus.initial,
-      );
+      const state = UserState(user: null, status: UserStatus.initial);
       expect(state.copyWith(), state);
     });
 
     test("copyWith replaces non-null parameters", () {
-      const state = UserState(
-        user: null,
-        status: UserStatus.initial,
-      );
+      const state = UserState(user: null, status: UserStatus.initial);
       final user = mockUserFullPayload;
       expect(
         state.copyWith(user: user, status: UserStatus.success),
