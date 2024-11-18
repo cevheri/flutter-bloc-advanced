@@ -52,12 +52,7 @@ class AccountsScreen extends StatelessWidget {
                         EditFormActive(user: state.account!),
                         EditFormAuthorities(user: state.account!, formKey: formKey),
                         SizedBox(height: 20),
-                        SubmitButton(
-                          editAccount: "edit_page",
-                          context,
-                          user: state.account!,
-                          formKey: formKey,
-                        )
+                        SubmitButton(editAccount: "edit_page", context, user: state.account!, formKey: formKey)
                       ],
                     ),
                   ),

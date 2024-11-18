@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:developer';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../data/models/user.dart';
@@ -25,6 +26,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
   /// Load the current account.
   FutureOr<void> _onLoad(AccountLoad event, Emitter<AccountState> emit) async {
+    debugPrint("BEGIN: getAccount bloc: _onLoad(AccountLoad event, Emitter<AccountState> emit)");
     log("AccountBloc._onLoad start : ${event.props}, $emit");
     emit(state.copyWith(status: AccountStatus.loading));
 
@@ -38,6 +40,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
         status: AccountStatus.success,
       ));
       log("AccountBloc._onLoad end : ${state.account}, ${state.status}");
+      debugPrint("BEGIN: getAccount bloc");
     } catch (e) {
       emit(state.copyWith(status: AccountStatus.failure));
       log("AccountBloc._onLoad error : ${state.props}. error-detail: $e");

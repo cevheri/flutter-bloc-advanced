@@ -51,8 +51,8 @@ class CreateUserScreen extends StatelessWidget {
                 CreateFormFirstName(),
                 CreateFormLastname(),
                 CreateFormEmail(),
-                CreateFormPhoneNumber(),
-                CreateFormPhoneActive(),
+                // CreateFormPhoneNumber(),
+                CreateFormActive(),
                 SizedBox(height: 20),
                 _submitButton(context)
               ],
@@ -68,7 +68,8 @@ class CreateUserScreen extends StatelessWidget {
       builder: (context, state) {
         return SizedBox(
           child: ElevatedButton(
-            child: Text(S.of(context).create_user),
+            key: const Key("createUserSubmitButton"),
+            child: Text(S.of(context).save),
             onPressed: () {
               if (formKey.currentState!.saveAndValidate()) {
                 var user = User(
@@ -80,11 +81,7 @@ class CreateUserScreen extends StatelessWidget {
                   authorities: [formKey.currentState!.fields['authorities']?.value ?? ""],
                   activated: formKey.currentState!.fields['userCreateActive']!.value,
                 );
-                context.read<UserBloc>().add(
-                      UserCreate(
-                        user: user,
-                      ),
-                    );
+                context.read<UserBloc>().add(UserCreate(user: user));
               }
             },
           ),

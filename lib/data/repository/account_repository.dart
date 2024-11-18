@@ -37,7 +37,7 @@ class AccountRepository {
   }
 
   Future<User> getAccount() async {
-    debugPrint("getAccount repository start");
+    debugPrint("BEGIN: getAccount repository");
     final httpResponse = await HttpUtils.getRequest("/$_resource");
 
     var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
@@ -45,7 +45,7 @@ class AccountRepository {
 
     var result = User.fromJsonString(response)!;
     saveStorage(roles: result.authorities);
-    debugPrint("getAccount successful - response : $response}");
+    debugPrint("END: getAccount repository");
     return result;
   }
 
