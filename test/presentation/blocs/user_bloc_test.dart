@@ -22,10 +22,14 @@ import 'user_bloc_test.mocks.dart';
 @GenerateMocks([UserRepository])
 void main() {
   //region main setup
-  setUpAll(() {
-    TestUtils.initBlocDependencies();
+  setUpAll(() async {
+    await TestUtils().setupUnitTest();
+  });
+  tearDown(() async {
+    await TestUtils().tearDownUnitTest();
   });
   //endregion main setup
+
   //region state
   /// User State Tests
   group("UserState", () {

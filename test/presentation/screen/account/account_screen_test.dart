@@ -18,7 +18,13 @@ import '../../../test_utils.dart';
 /// Accounts Screen Test
 /// claas AccountsScreen extent
 void main() {
-//region init
+  //region setup
+  setUpAll(() async {
+    await TestUtils().setupUnitTest();
+  });
+  tearDown(() async {
+    await TestUtils().tearDownUnitTest();
+  });
 
   final blocs = [
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
@@ -40,13 +46,11 @@ void main() {
       ],
     );
   }
-  //endregion init
+  //endregion setup
 
   group("AccountsScreen AppBarTest", () {
     testWidgets("Validate AppBar", (tester) async {
       debugPrint("begin Validate AppBar");
-      TestUtils.initBlocDependencies();
-      TestUtils.initWidgetDependencies();
       // Given
       await tester.pumpWidget(getWidget());
       //When:
@@ -63,9 +67,7 @@ void main() {
   group("AccountsScreen DataTest", () {
     testWidgets("Render Screen Validate Field Type Successful", (tester) async {
       debugPrint("begin Validate Field Type");
-
-      TestUtils.initBlocDependencies();
-      TestUtils.initWidgetDependenciesWithToken();
+      await TestUtils().addMockTokenToStorage();
       debugPrint("getAccount initWidgetDependenciesWithToken");
       // Given:
       await tester.pumpWidget(getWidget());

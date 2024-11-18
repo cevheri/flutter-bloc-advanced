@@ -1,4 +1,4 @@
-import '../utils/storage.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 /// Routes for the application
 ///
@@ -17,10 +17,10 @@ class ApplicationRoutes {
   static final listUsers = '/admin/list-users';
 }
 
-String initialRouteControl(context) {
-  if (getStorageCache["jwtToken"] != null) {
-    return "/";
+String initialRouteControl() {
+  if (AppLocalStorageCached.jwtToken != null) {
+    return ApplicationRoutes.home;
   } else {
-    return '/login';
+    return ApplicationRoutes.login;
   }
 }

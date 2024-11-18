@@ -4,10 +4,10 @@ import 'dart:developer';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
-import '../../../../utils/storage.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -42,8 +42,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       debugPrint(token.toString());
       if (token.idToken != null) {
         log("LoginBloc.onSubmit token: ${token.idToken}");
-        saveStorage(jwtToken: token.idToken);
-        saveStorage(username: event.username);
+        await AppLocalStorage().save(StorageKeys.jwtToken.name, token.idToken);
+        await AppLocalStorage().save(StorageKeys.username.name, event.username);
 
         emit(state.copyWith(status: LoginStatus.authenticated));
         emit(LoginLoadedState());

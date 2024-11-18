@@ -1,18 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/authorities_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/city_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/district_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/login_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/menu_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/authorities/authorities_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/city/city.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/district/district.dart';
-import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -25,18 +16,17 @@ import '../../../test_utils.dart';
 /// List User Screen Test
 /// class ListUserScreen extends StatelessWidget
 void main() {
-  /// init setup
-  setUp(() {
-    TestUtils.initBlocDependencies();
+  //region setup
+  setUpAll(() async {
+    await TestUtils().setupUnitTest();
+  });
+  tearDown(() async {
+    await TestUtils().tearDownUnitTest();
   });
 
   final blocs = [
     BlocProvider<AuthoritiesBloc>(create: (_) => AuthoritiesBloc(authoritiesRepository: AuthoritiesRepository())),
-    BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
-    BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),
-    BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
-    BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
   ];
 
   GetMaterialApp getWidget() {
@@ -53,10 +43,9 @@ void main() {
       ],
     );
   }
+  //endregion setup
 
   testWidgets('renders ListUserScreen correctly', (tester) async {
-    TestUtils.initWidgetDependencies();
-
     // Given: A ListUserScreen with mocked state is rendered
     await tester.pumpWidget(getWidget());
 
@@ -81,7 +70,7 @@ void main() {
   });
 
   testWidgets('displays user list when UserSearchSuccessState is emitted with JWTToken', (tester) async {
-    TestUtils.initWidgetDependenciesWithToken();
+    TestUtils().addMockTokenToStorage();
     await tester.pumpAndSettle();
 
     // Given: A mock UserSearchSuccessState with a list of users

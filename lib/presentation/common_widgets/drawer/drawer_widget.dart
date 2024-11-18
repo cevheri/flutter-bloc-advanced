@@ -2,13 +2,13 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/utils/security_utils.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/models/menu.dart';
 import '../../../generated/l10n.dart';
-import '../../../utils/storage.dart';
 import '../../common_blocs/account/account.dart';
 import 'drawer_bloc/drawer_bloc.dart';
 
@@ -237,8 +237,7 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
   }
 
   Future<void> _loadLanguage() async {
-    final cache = await getStorage();
-    final lang = cache["language"];
+    final lang = AppLocalStorageCached.language;
     setState(() {
       isTurkish = lang == 'tr';
     });
@@ -256,8 +255,9 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
       value: isTurkish,
       onChanged: (value) async {
         isTurkish = value;
-        final cache = await getStorage();
-        cache["language"] = isTurkish ? 'tr' : 'en';
+
+        final lang = isTurkish ? 'tr' : 'en';
+        await AppLocalStorage().save(StorageKeys.language.name, lang);
         await S.load(Locale(isTurkish ? 'tr' : 'en'));
         if (mounted) {
           setState(() {

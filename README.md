@@ -174,6 +174,10 @@ Following test should run
 
 - Run `flutter test`
 
+Or 1 Thread
+
+- Run `flutter test --concurrency=1 --test-randomize-ordering-seed=random` 
+
 ---
 
 ## Code Quality Analysis with SonarQube

@@ -1,15 +1,13 @@
 {
-  "id": "user-1",
-  "login": "admin",
-  "email": "admin@sekoya.tech",
-  "firstName": "Admin",
+  "id": "user-2",
+  "login": "user",
+  "email": "user@sekoya.tech",
+  "firstName": "User",
   "lastName": "User",
   "langKey": "en",
   "createdBy": "system",
   "createdDate": "2024-01-04T06:02:47.757Z",
   "lastModifiedBy": "admin",
   "lastModifiedDate": "2024-01-04T06:02:47.757Z",
-  "authorities": [
-    "ROLE_ADMIN", "ROLE_USER"
-  ]
+  "authorities": ["ROLE_USER"]
 }

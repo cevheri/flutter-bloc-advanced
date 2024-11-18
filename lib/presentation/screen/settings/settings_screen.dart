@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
-import '../../../utils/storage.dart';
 import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import 'bloc/settings.dart';
 
@@ -184,7 +184,7 @@ class LanguageConfirmationDialog extends StatelessWidget {
   }
 
   Future<void> _setLanguage(BuildContext context, String langCode) async {
-    saveStorage(language: langCode);
+    await AppLocalStorage().save(StorageKeys.language.name, langCode);
     await S.load(Locale(langCode));
     Get.back();
   }
