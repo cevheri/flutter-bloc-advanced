@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/utils/storage.dart';
+import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 
 import '../http_utils.dart';
 import '../models/change_password.dart';
@@ -12,8 +12,19 @@ class AccountRepository {
 
   final String _resource = "account";
 
-  Future<User?> register(User newUser) async {
+  Future<User?> register(User? newUser) async {
     debugPrint("register repository start");
+    if(newUser == null) {
+      throw BadRequestException("User null");
+    }
+    if(newUser.email == null || newUser.email!.isEmpty || newUser.login == null || newUser.login!.isEmpty) {
+      throw BadRequestException("User email or login null");
+    }
+    if(newUser.langKey == null) {
+      newUser = newUser.copyWith(langKey: "en");
+    }
+    // when user is registered, it is a normal user
+    newUser = newUser.copyWith(authorities: ["ROLE_USER"]);
     final httpResponse = await HttpUtils.postRequest<User>("/register", newUser);
     var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
     return User.fromJsonString(response);
@@ -37,15 +48,14 @@ class AccountRepository {
   }
 
   Future<User> getAccount() async {
-    debugPrint("BEGIN: getAccount repository");
+    debugPrint("getAccount repository start");
     final httpResponse = await HttpUtils.getRequest("/$_resource");
 
     var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
     debugPrint(" GET Request Method result : $response");
 
     var result = User.fromJsonString(response)!;
-    saveStorage(roles: result.authorities);
-    debugPrint("END: getAccount repository");
+    debugPrint("getAccount successful - response : $response}");
     return result;
   }
 

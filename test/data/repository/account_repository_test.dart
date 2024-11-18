@@ -1,21 +1,38 @@
+import 'dart:io';
+import 'dart:math';
+
+import 'package:flutter/services.dart';
+import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/utils/storage.dart';
+import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../fake/user_data.dart';
 import '../../test_utils.dart';
 
 void main() {
-  AccountRepository accountRepository = AccountRepository();
+  ProfileConstants.setEnvironment(Environment.TEST);
+  initializeJsonMapper();
+  TestWidgetsFlutterBinding.ensureInitialized();
+  SharedPreferences.setMockInitialValues({});
+
+  TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+      .setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), (MethodCall methodCall) async {
+    return '.';
+  });
+  GetStorage.init("${Directory.systemTemp.createTempSync().path}/${Random().nextInt(1000)}");
+  TestWidgetsFlutterBinding.ensureInitialized();
 
   group("AccountRepository Register", () {
-    TestUtils.initTestDependenciesWithToken();
+    TestUtils.initWidgetDependenciesWithToken();
 
     test("Given valid user when register then return user successfully", () async {
       final newUser = mockUserFullPayload;
-      final result = await accountRepository.register(newUser);
+      final result = await AccountRepository().register(newUser);
 
       //check assets/mock/POST_register.json
       expect(result, isA<User>());
@@ -33,28 +50,28 @@ void main() {
     });
 
     test("Given null user when register then throw BadRequestException", () async {
-      expect(() => accountRepository.register(null), throwsA(isA<BadRequestException>()));
+      expect(() => AccountRepository().register(null), throwsA(isA<BadRequestException>()));
     });
 
     test("Given user with null email when register then throw BadRequestException", () async {
       final newUser = mockUserFullPayload.copyWith(email: "");
 
-      expect(() => accountRepository.register(newUser), throwsA(isA<BadRequestException>()));
+      expect(() => AccountRepository().register(newUser), throwsA(isA<BadRequestException>()));
     });
 
     test("Given user with null login when register then throw BadRequestException", () async {
       final newUser = mockUserFullPayload.copyWith(login: "");
-      expect(() => accountRepository.register(newUser), throwsA(isA<BadRequestException>()));
+      expect(() => AccountRepository().register(newUser), throwsA(isA<BadRequestException>()));
     });
   });
 
   group("Register", () {
-    TestUtils.initTestDependenciesWithToken();
+    TestUtils.initWidgetDependencies();
 
     /// Register endpoint does not require AccessToken, this endpoint added to the allowed endpoints in the HttpUtils class
     test("Given valid user without token when register then return user successfully", () async {
       final newUser = mockUserFullPayload;
-      final result = await accountRepository.register(newUser);
+      final result = await AccountRepository().register(newUser);
       expect(result, isA<User>());
     });
   });

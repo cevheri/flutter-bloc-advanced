@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
@@ -32,8 +34,9 @@ class TestUtils {
         .setMockMethodCallHandler(const MethodChannel('plugins.flutter.io/path_provider'), (MethodCall methodCall) async {
       return '.';
     });
-    Directory tempDir = Directory.systemTemp.createTempSync();
-    GetStorage.init(tempDir.path);
+
+    GetStorage.init("${Directory.systemTemp.createTempSync().path}/${Random().nextInt(1000)}");
+    TestWidgetsFlutterBinding.ensureInitialized();
   }
 
   /// Initialize the dependencies for the Widget tests
