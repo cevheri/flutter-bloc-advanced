@@ -30,16 +30,32 @@ class AccountRepository {
     return User.fromJsonString(response);
   }
 
-  Future<int> changePassword(PasswordChangeDTO passwordChangeDTO) async {
-    debugPrint("changePassword repository start");
+  Future<int> changePassword(PasswordChangeDTO? passwordChangeDTO) async {
+    debugPrint("BEGIN:changePassword repository start");
+    if(passwordChangeDTO == null) {
+      throw BadRequestException("PasswordChangeDTO null");
+    }
+    if(passwordChangeDTO.currentPassword == null || passwordChangeDTO.currentPassword!.isEmpty || passwordChangeDTO.newPassword == null || passwordChangeDTO.newPassword!.isEmpty) {
+      throw BadRequestException("PasswordChangeDTO currentPassword or newPassword null");
+    }
     final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>("/$_resource/change-password", passwordChangeDTO);
     var result = authenticateRequest.statusCode;
-    debugPrint("changePassword successful - response: $result");
+    debugPrint("END:changePassword successful - response: $result");
     return result;
   }
 
   Future<int> resetPassword(String mailAddress) async {
     debugPrint("resetPassword repository start");
+    if(mailAddress.isEmpty) {
+      throw BadRequestException("Mail address null");
+    }
+
+    //valida mail address
+    if (!mailAddress.contains("@") || !mailAddress.contains(".")) {
+      throw BadRequestException("Mail address invalid");
+    }
+
+
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
     final resetRequest = await HttpUtils.postRequest<String>("/$_resource/reset-password/init", mailAddress);
@@ -59,8 +75,14 @@ class AccountRepository {
     return result;
   }
 
-  Future<String?> saveAccount(User user) async {
+  Future<User> saveAccount(User? user) async {
     debugPrint("saveAccount repository start");
+    if(user == null) {
+      throw BadRequestException("User null");
+    }
+    if(user.id == null || user.id!.isEmpty) {
+      throw BadRequestException("User id not null");
+    }
     final saveRequest = await HttpUtils.postRequest<User>("/$_resource", user);
     String? result;
     if (saveRequest.statusCode >= HttpStatus.badRequest) {
@@ -72,8 +94,11 @@ class AccountRepository {
     } else {
       result = HttpUtils.successResult;
     }
+    var response = HttpUtils.decodeUTF8(saveRequest.body.toString());
+    var savedUser = User.fromJsonString(response)!;
+
     debugPrint("saveAccount successful - response : $result");
-    return result;
+    return savedUser;
   }
 
   updateAccount(User account) async {
