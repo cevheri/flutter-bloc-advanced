@@ -101,15 +101,26 @@ class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
       ) as _i4.Future<_i2.User>);
 
   @override
-  dynamic updateAccount(_i2.User? account) =>
-      super.noSuchMethod(Invocation.method(
-        #updateAccount,
-        [account],
-      ));
+  _i4.Future<_i2.User> updateAccount(_i2.User? account) => (super.noSuchMethod(
+        Invocation.method(
+          #updateAccount,
+          [account],
+        ),
+        returnValue: _i4.Future<_i2.User>.value(_FakeUser_0(
+          this,
+          Invocation.method(
+            #updateAccount,
+            [account],
+          ),
+        )),
+      ) as _i4.Future<_i2.User>);
 
   @override
-  dynamic deleteAccount(int? id) => super.noSuchMethod(Invocation.method(
-        #deleteAccount,
-        [id],
-      ));
+  _i4.Future<bool> deleteAccount(String? id) => (super.noSuchMethod(
+        Invocation.method(
+          #deleteAccount,
+          [id],
+        ),
+        returnValue: _i4.Future<bool>.value(false),
+      ) as _i4.Future<bool>);
 }

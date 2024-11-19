@@ -1,4 +1,5 @@
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
+import 'package:flutter_bloc_advance/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,11 +17,30 @@ void main() {
   });
   //endregion setup
 
-
-  //test register success
+  //test register
   group("AccountRepository Register success", () {
     test("Given valid user when register then return user successfully", () async {
       final newUser = mockUserFullPayload;
+      final result = await AccountRepository().register(newUser);
+
+      //check assets/mock/POST_register.json
+      expect(result, isA<User>());
+      expect(result?.id, "user-2");
+      expect(result?.login, "user");
+      expect(result?.email, "user@sekoya.tech");
+      expect(result?.firstName, "User");
+      expect(result?.lastName, "User");
+      expect(result?.langKey, "en");
+      expect(result?.createdBy, "system");
+      expect(result?.createdDate?.toIso8601String(), "2024-01-04T06:02:47.757Z");
+      expect(result?.lastModifiedBy, "admin");
+      expect(result?.lastModifiedDate?.toIso8601String(), "2024-01-04T06:02:47.757Z");
+      expect(result?.authorities, ["ROLE_USER"]);
+    });
+
+    test("Given valid without langKey user when register then return user successfully", () async {
+      var newUser = mockUserFullPayload;
+      newUser = newUser.copyWith(langKey: "");
       final result = await AccountRepository().register(newUser);
 
       //check assets/mock/POST_register.json
@@ -61,101 +81,140 @@ void main() {
     });
   });
 
-  //test change password success
-  group("AccountRepository Change Password success", () {
+  //test changePassword
+  group("AccountRepository Change Password", () {
     test("Given valid passwordChangeDTO when changePassword then return 200", () async {
       await TestUtils().setupAuthentication();
       final passwordChangeDTO = mockPasswordChangePayload;
       final result = await AccountRepository().changePassword(passwordChangeDTO);
       expect(result, 200);
     });
-  });
-  //test change password with error
-  // group("AccountRepository Change Password with error", () {
-  //   test("Given null passwordChangeDTO when changePassword then throw BadRequestException", () async {
-  //     expect(() => AccountRepository().changePassword(null), throwsA(isA<BadRequestException>()));
-  //   });
-  //   test("Given empty value passwordChangeDTO when changePassword then throw BadRequestException", () async {
-  //     final passwordChangeDTO = PasswordChangeDTO();
-  //     expect(() => AccountRepository().changePassword(passwordChangeDTO), throwsA(isA<BadRequestException>()));
-  //   });
-  //   test("Given null value passwordChangeDTO when changePassword then throw BadRequestException", () async {
-  //     final passwordChangeDTO = mockPasswordChangePayload.copyWith(currentPassword: "", newPassword: "");
-  //     expect(() => AccountRepository().changePassword(passwordChangeDTO), throwsA(isA<BadRequestException>()));
-  //   });
-  // });
 
-  //test reset password success
-  group("AccountRepository Reset Password success", () {
+    test("Given null passwordChangeDTO when changePassword then throw BadRequestException", () async {
+      expect(() => AccountRepository().changePassword(null), throwsA(isA<BadRequestException>()));
+    });
+    test("Given empty value passwordChangeDTO when changePassword then throw BadRequestException", () async {
+      final passwordChangeDTO = PasswordChangeDTO();
+      expect(() => AccountRepository().changePassword(passwordChangeDTO), throwsA(isA<BadRequestException>()));
+    });
+    test("Given null value passwordChangeDTO when changePassword then throw BadRequestException", () async {
+      final passwordChangeDTO = mockPasswordChangePayload.copyWith(currentPassword: "", newPassword: "");
+      expect(() => AccountRepository().changePassword(passwordChangeDTO), throwsA(isA<BadRequestException>()));
+    });
+  });
+
+  //test resetPassword
+  group("AccountRepository Reset Password", () {
     test("Given valid mailAddress when resetPassword then return 200", () async {
       await TestUtils().setupAuthentication();
       final mailAddress = "admin@sekoya.tech";
       final result = await AccountRepository().resetPassword(mailAddress);
       expect(result, 200);
     });
+
+    test("Given null mailAddress when resetPassword then throw BadRequestException", () async {
+      expect(() => AccountRepository().resetPassword(""), throwsA(isA<BadRequestException>()));
+    });
+    test("Given invalid mailAddress when resetPassword then throw BadRequestException", () async {
+      expect(() => AccountRepository().resetPassword("test"), throwsA(isA<BadRequestException>()));
+    });
   });
 
-  // //test reset password with error
-  // group("AccountRepository Reset Password with error", () {
-  //   test("Given null mailAddress when resetPassword then throw BadRequestException", () async {
-  //     expect(() => AccountRepository().resetPassword(""), throwsA(isA<BadRequestException>()));
-  //   });
-  //   test("Given invalid mailAddress when resetPassword then throw BadRequestException", () async {
-  //     expect(() => AccountRepository().resetPassword("test"), throwsA(isA<BadRequestException>()));
-  //   });
-  // });
-
-  //test get account success
-  group("AccountRepository Get Account success", () {
+  //test getAccount
+  group("AccountRepository Get Account", () {
+    //success
     test("Given valid user when getAccount then return user successfully", () async {
       await TestUtils().setupAuthentication();
       final result = await AccountRepository().getAccount();
       expect(result, isA<User>());
     });
-  });
-  // //test get account with error
-  // group("AccountRepository Get Account with error", () {
-  //   test("Given null user when getAccount then throw BadRequestException", () async {
-  //     TestUtils.initWidgetDependencies();
-  //     getStorageCache = {};
-  //     expect(() => AccountRepository().getAccount(), throwsA(anything));
-  //   });
-  // });
+    //fail: without AccessToken
+    test("Given valid user when getAccount without AccessToken then return user successfully", () async {
+      expect(() => AccountRepository().getAccount(), throwsA(isA<UnauthorizedException>()));
+    });
 
-  //test save account success
-  group("AccountRepository Save Account success", () {
+    //fail
+    test("Given getAccount when without AccessToken then throw BadRequestException", () async {
+      expect(() => AccountRepository().getAccount(), throwsA(isA<UnauthorizedException>()));
+    });
+  });
+
+  //test saveAccount
+  group("AccountRepository Save Account", () {
+    //success
     test("Given valid user when saveAccount then return user successfully", () async {
       await TestUtils().setupAuthentication();
       final newUser = mockUserFullPayload;
       final result = await AccountRepository().saveAccount(newUser);
       expect(result, isA<User>());
     });
+    //fail: without AccessToken
+    test("Given valid user when saveAccount without AccessToken then return user successfully", () async {
+      final newUser = mockUserFullPayload;
+      expect(() => AccountRepository().saveAccount(newUser), throwsA(isA<UnauthorizedException>()));
+    });
+
+    test("Given null user when saveAccount then throw BadRequestException", () async {
+      await TestUtils().setupAuthentication();
+      expect(() => AccountRepository().saveAccount(null), throwsA(isA<BadRequestException>()));
+    });
+    test("Given user with null id when saveAccount then throw BadRequestException", () async {
+      await TestUtils().setupAuthentication();
+      final newUser = User();
+      expect(() => AccountRepository().saveAccount(newUser), throwsA(isA<BadRequestException>()));
+    });
+
+    test("Given user with null id when saveAccount then throw BadRequestException", () async {
+      await TestUtils().setupAuthentication();
+      final newUser = mockUserFullPayload.copyWith(id: "");
+      expect(() => AccountRepository().saveAccount(newUser), throwsA(isA<BadRequestException>()));
+    });
   });
-  // //test save account with error
-  // group("AccountRepository Save Account with error", () {
-  //   test("Given null user when saveAccount then throw BadRequestException", () async {
-  //     TestUtils.initWidgetDependencies();
-  //     getStorageCache = {};
-  //     expect(() => AccountRepository().saveAccount(null), throwsA(isA<BadRequestException>()));
-  //   });
-  //   test("Given user with null id when saveAccount then throw BadRequestException", () async {
-  //     TestUtils.initWidgetDependencies();
-  //     getStorageCache = {};
-  //     final newUser = User();
-  //     expect(() => AccountRepository().saveAccount(newUser), throwsA(isA<BadRequestException>()));
-  //   });
 
-  // test("Given user with null id when saveAccount then throw BadRequestException", () async {
-  //   TestUtils.initWidgetDependencies();
-  //   getStorageCache = {};
-  //   final newUser = mockUserFullPayload.copyWith(id: "");
-  //   expect(() => AccountRepository().saveAccount(newUser), throwsA(isA<BadRequestException>()));
-  // });
-  // });
+  //test updateAccount
+  group("AccountRepository Update Account", () {
+    //success
+    test("Given valid user when updateAccount then return user successfully", () async {
+      await TestUtils().setupAuthentication();
+      final newUser = mockUserFullPayload;
+      final result = await AccountRepository().updateAccount(newUser);
+      expect(result, isA<User>());
+    });
+    //fail: without AccessToken
+    test("Given valid user when updateAccount without AccessToken then return user successfully", () async {
+      final newUser = mockUserFullPayload;
+      expect(() async => await AccountRepository().updateAccount(newUser), throwsA(isA<UnauthorizedException>()));
+    });
 
-  //test update account success
-  //test update account with error
+    test("Given user with null id when updateAccount then throw BadRequestException", () async {
+      await TestUtils().setupAuthentication();
+      final newUser = User();
+      expect(() async => await AccountRepository().updateAccount(newUser), throwsA(isA<BadRequestException>()));
+    });
 
-  //test delete account success
-  //test delete account with error
+    test("Given user with null id when updateAccount then throw BadRequestException", () async {
+      await TestUtils().setupAuthentication();
+      final newUser = mockUserFullPayload.copyWith(id: "");
+      expect(() async => await AccountRepository().updateAccount(newUser), throwsA(isA<BadRequestException>()));
+    });
+  });
+
+  //test deleteAccount
+  group("AccountRepository Delete Account", () {
+    //success
+    test("Given valid id when deleteAccount then return void", () async {
+      await TestUtils().setupAuthentication();
+      final result = await AccountRepository().deleteAccount("id");
+      expect(result, isTrue);
+    });
+    //fail: without AccessToken
+    test("Given valid id when deleteAccount without AccessToken then return void", () async {
+      expect(() async => await AccountRepository().deleteAccount("id"), throwsA(isA<UnauthorizedException>()));
+    });
+
+    test("Given null id when deleteAccount then throw BadRequestException", () async {
+      await TestUtils().setupAuthentication();
+      expect(() async => await AccountRepository().deleteAccount(""), throwsA(isA<BadRequestException>()));
+    });
+  });
 }
