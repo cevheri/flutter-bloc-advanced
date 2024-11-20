@@ -23,17 +23,21 @@ class MyHttpOverrides extends HttpOverrides {
 
 class HttpUtils {
   static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.APP_KEY : "default_token"}App-error';
-  static String successResult = 'success';
-  static String keyForJWTToken = 'jwt-token';
-  static String badRequestServerKey = 'error.400';
-  static String errorServerKey = 'error.500';
+  static const String successResult = 'success';
+  static const String keyForJWTToken = 'jwt-token';
+  static const String badRequestServerKey = 'error.400';
+  static const String errorServerKey = 'error.500';
   static const String generalNoErrorKey = 'none';
-  static int timeout = 30;
+  static const int timeout = 30;
+  static const String applicationJson = 'application/json';
+  static const String UTF8 = 'utf-8';
+  static const String noInternetConnectionError = 'No Internet connection';
+  static const String requestTimeoutError = 'Request timeout';
 
   ///   -H 'accept: application/json, text/plain, */*' \
   ///   -H 'content-type: application/json' \
   /// Default headers for all requests (can be overridden with [addCustomHttpHeader])
-  static final _defaultHttpHeaders = {'Accept': 'application/json', 'Content-Type': 'application/json'};
+  static final _defaultHttpHeaders = {'Accept': applicationJson, 'Content-Type': applicationJson};
 
   static final _customHttpHeaders = <String, String>{};
 
@@ -87,10 +91,10 @@ class HttpUtils {
     var headers = await HttpUtils.headers();
     String messageBody = "";
 
-    if (headers['Content-Type'] == 'application/json') {
+    if (headers['Content-Type'] == applicationJson) {
       messageBody = JsonMapper.serialize(
         body,
-        SerializationOptions(
+        const SerializationOptions(
           indent: '',
           ignoreDefaultMembers: true,
           ignoreNullMembers: true,
@@ -110,17 +114,17 @@ class HttpUtils {
             url,
             headers: headers,
             body: messageBody,
-            encoding: Encoding.getByName('utf-8'),
+            encoding: Encoding.getByName(UTF8),
           )
           .timeout(Duration(seconds: timeout));
 
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException catch (se) {
       debugPrint("Socket Exception: $se");
-      throw FetchDataException('No Internet connection');
+      throw FetchDataException(noInternetConnectionError);
     } on TimeoutException catch (toe) {
       debugPrint("Timeout Exception: $toe");
-      throw FetchDataException('Request timeout');
+      throw FetchDataException(requestTimeoutError);
     }
 
     return response;
@@ -143,9 +147,9 @@ class HttpUtils {
       checkUnauthorizedAccess(endpoint, response);
       return response;
     } on SocketException {
-      throw FetchDataException('No Internet connection');
+      throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
-      throw FetchDataException('Request timeout');
+      throw FetchDataException(requestTimeoutError);
     }
   }
 
@@ -165,9 +169,9 @@ class HttpUtils {
   //     int countOffers = int.parse(result.headers['x-total-count']!);
   //     return countOffers;
   //   } on SocketException {
-  //     throw FetchDataException('No Internet connection');
+  //     throw FetchDataException(noInternetConnectionError);
   //   } on TimeoutException {
-  //     throw FetchDataException('Request timeout');
+  //     throw FetchDataException(requestTimeoutError);
   //   }
   // }
 
@@ -176,7 +180,7 @@ class HttpUtils {
     var headers = await HttpUtils.headers();
     final String json = JsonMapper.serialize(
       body,
-      SerializationOptions(
+      const SerializationOptions(
         indent: '',
         ignoreDefaultMembers: true,
         ignoreNullMembers: true,
@@ -186,13 +190,13 @@ class HttpUtils {
     http.Response response;
     try {
       response = await http
-          .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
+          .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(UTF8))
           .timeout(Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
-      throw FetchDataException('No Internet connection');
+      throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
-      throw FetchDataException('Request timeout');
+      throw FetchDataException(requestTimeoutError);
     }
     return response;
   }
@@ -202,7 +206,7 @@ class HttpUtils {
     var headers = await HttpUtils.headers();
     final String json = JsonMapper.serialize(
       body,
-      SerializationOptions(
+      const SerializationOptions(
         indent: '',
         ignoreDefaultMembers: true,
         ignoreNullMembers: true,
@@ -212,13 +216,13 @@ class HttpUtils {
     http.Response response;
     try {
       response = await http
-          .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName('utf-8'))
+          .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(UTF8))
           .timeout(Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
-      throw FetchDataException('No Internet connection');
+      throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
-      throw FetchDataException('Request timeout');
+      throw FetchDataException(requestTimeoutError);
     }
     return response;
   }
@@ -231,9 +235,9 @@ class HttpUtils {
       checkUnauthorizedAccess(endpoint, response);
       return response;
     } on SocketException {
-      throw FetchDataException('No Internet connection');
+      throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
-      throw FetchDataException('Request timeout');
+      throw FetchDataException(requestTimeoutError);
     }
   }
 

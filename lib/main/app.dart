@@ -90,18 +90,18 @@ class App extends StatelessWidget {
             routes: {
               ApplicationRoutes.home: (context) {
                 return BlocProvider<AccountBloc>(
-                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: HomeScreen());
+                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: HomeScreen());
               },
               ApplicationRoutes.account: (context) {
                 return BlocProvider<AccountBloc>(
-                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()), child: AccountsScreen());
+                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: AccountsScreen());
               },
               ApplicationRoutes.login: (context) {
                 return BlocProvider<LoginBloc>(create: (context) => LoginBloc(loginRepository: LoginRepository()), child: LoginScreen());
               },
               ApplicationRoutes.settings: (context) {
                 return BlocProvider<SettingsBloc>(
-                    create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: SettingsScreen());
+                    create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: const SettingsScreen());
               },
               ApplicationRoutes.forgotPassword: (context) {
                 return BlocProvider<ForgotPasswordBloc>(
@@ -115,9 +115,7 @@ class App extends StatelessWidget {
                 return BlocProvider<ChangePasswordBloc>(
                     create: (context) => ChangePasswordBloc(accountRepository: AccountRepository()), child: ChangePasswordScreen());
               },
-              ApplicationRoutes.logout: (context) {
-                return LogoutConfirmationDialog();
-              },
+              ApplicationRoutes.logout: (context) => const LogoutConfirmationDialog(),
               ApplicationRoutes.createUser: (context) {
                 return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: CreateUserScreen());
               },

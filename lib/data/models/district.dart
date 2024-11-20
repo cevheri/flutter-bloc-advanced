@@ -33,7 +33,7 @@ class District extends Equatable {
   }
 
   static District? fromJson(Map<String, dynamic> json) {
-    return District().copyWith(
+    return const District().copyWith(
       id: json['id'],
       name: json['name'],
       code: json['code'],

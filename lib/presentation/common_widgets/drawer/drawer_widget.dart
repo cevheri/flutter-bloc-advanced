@@ -18,24 +18,7 @@ class ApplicationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
-      listeners: [
-        BlocListener<DrawerBloc, DrawerState>(
-          listener: (context, state) {
-            if (state.isLogout) {
-              Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
-              Navigator.pushNamed(context, ApplicationRoutes.login);
-            }
-          },
-        ),
-        BlocListener<AccountBloc, AccountState>(
-          listener: (context, state) {
-            if (state.status == AccountStatus.failure) {
-              Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
-              Navigator.pushNamed(context, ApplicationRoutes.login);
-            }
-          },
-        ),
-      ],
+      listeners: _buildBlocListener(context),
       child: BlocBuilder<DrawerBloc, DrawerState>(
         builder: (context, state) {
           var parentMenus = [];
@@ -49,110 +32,13 @@ class ApplicationDrawer extends StatelessWidget {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  ListView.builder(
-                    itemCount: parentMenus.length,
-                    shrinkWrap: true,
-                    physics: ClampingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
-                        List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
-                        sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
-                        return ExpansionTileCard(
-                          trailing: sublistMenu.isNotEmpty
-                              ? Icon(
-                                  Icons.keyboard_arrow_down,
-                                )
-                              : Icon(
-                                  Icons.keyboard_arrow_right,
-                                ),
-                          onExpansionChanged: (value) {
-                            if (value) {
-                              if (sublistMenu.isEmpty) {
-                                Navigator.pop(context);
-                                Navigator.pushNamed(context, parentMenus[index].url);
-                              }
-                            }
-                          },
-                          elevation: 0,
-                          isThreeLine: false,
-                          initiallyExpanded: false,
-                          leading: Icon(
-                            String2Icon.getIconDataFromString(parentMenus[index].icon),
-                          ),
-                          title: Text(
-                            S.of(context).translate_menu_title(parentMenus[index].name),
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          children: [
-                            Padding(
-                              padding: EdgeInsets.only(left: 20),
-                              child: ListView.builder(
-                                itemCount: sublistMenu.length,
-                                shrinkWrap: true,
-                                physics: ClampingScrollPhysics(),
-                                itemBuilder: (context, index) {
-                                  return ListTile(
-                                    leading: Icon(
-                                      String2Icon.getIconDataFromString(sublistMenu[index].icon),
-                                    ),
-                                    title: Text(
-                                      S.of(context).translate_menu_title(sublistMenu[index].name),
-                                      style: Theme.of(context).textTheme.bodyMedium,
-                                    ),
-                                    onTap: () {
-                                      Navigator.pop(context);
-                                      Navigator.pushNamed(context, sublistMenu[index].url);
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        );
-                      } else if (SecurityUtils.isCurrentUserAdmin() &&  parentMenus[index].name == 'userManagement') {
-                        return Container();
-                      } else {
-                        return ListTile(
-                          leading: Icon(
-                            String2Icon.getIconDataFromString(parentMenus[index].icon),
-                          ),
-                          title: Text(
-                            S.of(context).translate_menu_title(parentMenus[index].name),
-                            style: Theme.of(context).textTheme.bodyMedium,
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            Navigator.pushNamed(context, parentMenus[index].url);
-                          },
-                        );
-                      }
-                    },
-                  ),
+                  _buildMenuList(parentMenus, state),
                   SizedBox(height: 20),
                   ThemeSwitchButton(),
                   SizedBox(height: 20),
                   LanguageSwitchButton(),
                   SizedBox(height: 20),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Center(
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            elevation: 0,
-                          ),
-                          onPressed: () {
-                            logOutDialog(context);
-                          },
-                          child: Text(
-                            S.of(context).logout,
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
+                  _buildLogoutButton(context),
                 ],
               ),
             ),
@@ -160,6 +46,125 @@ class ApplicationDrawer extends StatelessWidget {
         },
       ),
     );
+  }
+
+  Padding _buildLogoutButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Center(
+        child: SizedBox(
+          width: double.infinity,
+          child: ElevatedButton(
+            style: ElevatedButton.styleFrom(elevation: 0),
+            onPressed: () => logOutDialog(context),
+            child: Text(S.of(context).logout, textAlign: TextAlign.center),
+          ),
+        ),
+      ),
+    );
+  }
+
+  ListView _buildMenuList(List<dynamic> parentMenus, DrawerState state) {
+    return ListView.builder(
+      itemCount: parentMenus.length,
+      shrinkWrap: true,
+      physics: ClampingScrollPhysics(),
+      itemBuilder: (context, index) {
+        if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
+          List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
+          sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
+          return ExpansionTileCard(
+            trailing: sublistMenu.isNotEmpty
+                ? Icon(
+                    Icons.keyboard_arrow_down,
+                  )
+                : Icon(
+                    Icons.keyboard_arrow_right,
+                  ),
+            onExpansionChanged: (value) {
+              if (value) {
+                if (sublistMenu.isEmpty) {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, parentMenus[index].url);
+                }
+              }
+            },
+            elevation: 0,
+            isThreeLine: false,
+            initiallyExpanded: false,
+            leading: Icon(
+              String2Icon.getIconDataFromString(parentMenus[index].icon),
+            ),
+            title: Text(
+              S.of(context).translate_menu_title(parentMenus[index].name),
+              style: Theme.of(context).textTheme.bodyLarge,
+            ),
+            children: [
+              Padding(
+                padding: EdgeInsets.only(left: 20),
+                child: ListView.builder(
+                  itemCount: sublistMenu.length,
+                  shrinkWrap: true,
+                  physics: ClampingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    return ListTile(
+                      leading: Icon(
+                        String2Icon.getIconDataFromString(sublistMenu[index].icon),
+                      ),
+                      title: Text(
+                        S.of(context).translate_menu_title(sublistMenu[index].name),
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        Navigator.pushNamed(context, sublistMenu[index].url);
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          );
+        } else if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
+          return Container();
+        } else {
+          return ListTile(
+            leading: Icon(
+              String2Icon.getIconDataFromString(parentMenus[index].icon),
+            ),
+            title: Text(
+              S.of(context).translate_menu_title(parentMenus[index].name),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, parentMenus[index].url);
+            },
+          );
+        }
+      },
+    );
+  }
+
+  _buildBlocListener(BuildContext context) {
+    return [
+      BlocListener<DrawerBloc, DrawerState>(
+        listener: (context, state) {
+          if (state.isLogout) {
+            Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
+            Navigator.pushNamed(context, ApplicationRoutes.login);
+          }
+        },
+      ),
+      BlocListener<AccountBloc, AccountState>(
+        listener: (context, state) {
+          if (state.status == AccountStatus.failure) {
+            Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
+            Navigator.pushNamed(context, ApplicationRoutes.login);
+          }
+        },
+      ),
+    ];
   }
 
   Future logOutDialog(BuildContext context) {
@@ -237,7 +242,6 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
   }
 
   Future<void> _loadLanguage() async {
-
     final lang = await AppLocalStorage().read(StorageKeys.language.name);
     setState(() {
       isTurkish = lang == 'tr';

@@ -33,7 +33,7 @@ class City extends Equatable {
   }
 
   static City? fromJson(Map<String, dynamic> json) {
-    return City().copyWith(
+    return const City().copyWith(
       id: json['id'],
       name: json['name'],
       plateCode: json['plateCode'],

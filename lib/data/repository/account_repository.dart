@@ -8,7 +8,8 @@ import 'package:flutter_bloc_advance/data/models/user.dart';
 class AccountRepository {
   AccountRepository();
 
-  final String _resource = "account";
+  static const _resource = "account";
+  static const userIdNotNull = "User id not null";
 
   Future<User?> register(User? newUser) async {
     debugPrint("register repository start");
@@ -76,7 +77,7 @@ class AccountRepository {
       throw BadRequestException("User null");
     }
     if (user.id == null || user.id!.isEmpty) {
-      throw BadRequestException("User id not null");
+      throw BadRequestException(userIdNotNull);
     }
     final httpResponse = await HttpUtils.postRequest<User>("/$_resource", user);
     final response = HttpUtils.decodeUTF8(httpResponse.body.toString());
@@ -88,7 +89,7 @@ class AccountRepository {
   Future<User> updateAccount(User account) async {
     debugPrint("BEGIN:updateAccount repository start");
     if (account.id == null || account.id!.isEmpty) {
-      throw BadRequestException("User id not null");
+      throw BadRequestException(userIdNotNull);
     }
     final response = await HttpUtils.putRequest<User>("/$_resource", account);
     final result = User.fromJsonString(response.body.toString())!;
@@ -99,7 +100,7 @@ class AccountRepository {
   Future<bool> deleteAccount(String id) async {
     debugPrint("BEGIN:deleteAccount repository start");
     if (id.isEmpty) {
-      throw BadRequestException("User id not null");
+      throw BadRequestException(userIdNotNull);
     }
     var result = await HttpUtils.deleteRequest("/$_resource/$id");
     debugPrint("END:deleteAccount successful - response : ${result.body.toString()}");

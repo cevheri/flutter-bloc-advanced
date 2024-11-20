@@ -19,16 +19,11 @@ class ListUserScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     BlocProvider.of<AuthorityBloc>(context).add(AuthorityLoad());
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).list_user),
-    );
+    return AppBar(title: Text(S.of(context).list_user));
   }
 
   _buildBody(BuildContext context) {
@@ -40,9 +35,7 @@ class ListUserScreen extends StatelessWidget {
           } else if (constraints.maxWidth > 700 && constraints.maxWidth < 900) {
             return layoutBody(context, 200, 1200, constraints.maxWidth);
           } else {
-            return Center(
-              child: Text(S.of(context).screen_size_error),
-            );
+            return Center(child: Text(S.of(context).screen_size_error));
           }
         },
       ),
@@ -61,113 +54,116 @@ class ListUserScreen extends StatelessWidget {
           _tableSearch(min, max, maxWidth, context),
           SizedBox(height: 30),
           _tableHeader(context),
-          BlocBuilder<UserBloc, UserState>(
-            builder: (context, state) {
-              if (state is UserSearchSuccessState) {
-                return ListView.builder(
-                  itemCount: state.userList.length,
-                  shrinkWrap: true,
-                  physics: ClampingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return Container(
-                      height: 50,
-                      decoration: buildTableRowDecoration(index, context),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.max,
-                        verticalDirection: VerticalDirection.down,
-                        children: [
-                          Expanded(
-                            flex: 7,
-                            child: Text(state.userList[index].authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest,
-                                textAlign: TextAlign.left),
-                          ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 10,
-                            child: Text(state.userList[index].login.toString(), textAlign: TextAlign.left),
-                          ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 10,
-                            child: Text(state.userList[index].firstName.toString(), textAlign: TextAlign.left),
-                          ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 10,
-                            child: Text(state.userList[index].lastName.toString(), textAlign: TextAlign.left),
-                          ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 15,
-                            child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left),
-                          ),
-                          // SizedBox(width: 5),
-                          // Expanded(
-                          //   flex: 10,
-                          //   child: Text(
-                          //       state.userList[index].phoneNumber.toString() == "null" ? "-" : state.userList[index].phoneNumber.toString(),
-                          //       textAlign: TextAlign.left),
-                          // ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 3,
-                            child: buildActiveItem(state, index, context),
-                          ),
-                          SizedBox(width: 5),
-                          Expanded(
-                            flex: 3,
-                            child: IconButton(
-                              alignment: Alignment.centerRight,
-                              focusColor: Colors.transparent,
-                              hoverColor: Colors.transparent,
-                              splashColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              icon: Icon(Icons.edit),
-                              onPressed: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => EditUserScreen(
-                                      user: state.userList[index],
-                                    ),
-                                  ),
-                                ).then((value) async {
-                                  if (listFormKey.currentState!.saveAndValidate()) {
-                                    if (context.mounted) {
-                                      BlocProvider.of<UserBloc>(context).add(
-                                        UserSearch(
-                                          int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
-                                          int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
-                                          listFormKey.currentState!.fields['authority']?.value ?? "-",
-                                          listFormKey.currentState!.fields['name']?.value ?? "",
-                                        ),
-                                      );
-                                    }
-                                  }
-                                });
-                              },
-                            ),
-                          ),
-                          SizedBox(width: 5),
-                        ],
-                      ),
-                    );
-                  },
-                );
-              } else {
-                return Container();
-              }
-            },
-          ),
+          _tableData(context),
         ],
       ),
     );
   }
 
-  Widget buildActiveItem(UserSearchSuccessState state, int index, BuildContext context) {
-    return Text(state.userList[index].activated! ? "active" : "passive");
+  BlocBuilder<UserBloc, UserState> _tableData(BuildContext context) {
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        if (state is UserSearchSuccessState) {
+          return ListView.builder(
+            itemCount: state.userList.length,
+            shrinkWrap: true,
+            physics: ClampingScrollPhysics(),
+            itemBuilder: (context, index) {
+              return Container(
+                height: 50,
+                decoration: buildTableRowDecoration(index, context),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.max,
+                  verticalDirection: VerticalDirection.down,
+                  children: [
+                    _tableDataAuthority(state, index, context),
+                    SizedBox(width: 5),
+                    _tableDataLogin(state, index),
+                    SizedBox(width: 5),
+                    _tableDataFirsName(state, index),
+                    SizedBox(width: 5),
+                    _tableDataLastName(state, index),
+                    SizedBox(width: 5),
+                    _tableDataEmail(state, index),
+                    // SizedBox(width: 5),
+                    // Expanded(
+                    //   flex: 10,
+                    //   child: Text(
+                    //       state.userList[index].phoneNumber.toString() == "null" ? "-" : state.userList[index].phoneNumber.toString(),
+                    //       textAlign: TextAlign.left),
+                    // ),
+                    SizedBox(width: 5),
+                    _tableDataActivatedSwitch(state, index),
+                    SizedBox(width: 5),
+                    _tableDataEditButton(context, state, index),
+                    SizedBox(width: 5),
+                  ],
+                ),
+              );
+            },
+          );
+        } else {
+          return Container();
+        }
+      },
+    );
+  }
+
+  Expanded _tableDataActivatedSwitch(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 3, child: Text(state.userList[index].activated! ? "active" : "passive"));
+
+  Expanded _tableDataEditButton(BuildContext context, UserSearchSuccessState state, int index) {
+    return Expanded(
+      flex: 3,
+      child: IconButton(
+        alignment: Alignment.centerRight,
+        focusColor: Colors.transparent,
+        hoverColor: Colors.transparent,
+        splashColor: Colors.transparent,
+        highlightColor: Colors.transparent,
+        icon: Icon(Icons.edit),
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => EditUserScreen(user: state.userList[index])),
+          ).then((value) async {
+            if (listFormKey.currentState!.saveAndValidate()) {
+              if (context.mounted) {
+                BlocProvider.of<UserBloc>(context).add(
+                  UserSearch(
+                    int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
+                    int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
+                    listFormKey.currentState!.fields['authority']?.value ?? "-",
+                    listFormKey.currentState!.fields['name']?.value ?? "",
+                  ),
+                );
+              }
+            }
+          });
+        },
+      ),
+    );
+  }
+
+  Expanded _tableDataEmail(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 15, child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataLastName(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 10, child: Text(state.userList[index].lastName.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataFirsName(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 10, child: Text(state.userList[index].firstName.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataLogin(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 10, child: Text(state.userList[index].login.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataAuthority(UserSearchSuccessState state, int index, BuildContext context) {
+    return Expanded(
+        flex: 7,
+        child: Text(state.userList[index].authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest,
+            textAlign: TextAlign.left));
   }
 
   Widget _tableHeader(BuildContext context) {
@@ -267,88 +263,101 @@ class ListUserScreen extends StatelessWidget {
                 padding: EdgeInsets.only(right: 10),
                 child: BlocBuilder<AuthorityBloc, AuthorityState>(
                   builder: (context, state) {
-                    if (state is AuthorityLoadSuccessState) {
-                      return FormBuilderDropdown(
-                        name: 'authority',
-                        decoration: InputDecoration(
-                          hintText: S.of(context).authorities,
-                        ),
-                        items: state.authorities!
-                            .map(
-                              (role) => DropdownMenuItem(
-                                value: role,
-                                child: Text(role),
-                              ),
-                            )
-                            .toList(),
-                        initialValue: state.authorities![0],
-                      );
-                    } else {
-                      return Container();
-                    }
+                    return _tableSearchAuthority(state, context);
                   },
                 ),
               ),
             ),
             SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: FormBuilderTextField(
-                  name: 'rangeStart',
-                  initialValue: "0",
-                  validator: FormBuilderValidators.compose(
-                    [
-                      FormBuilderValidators.required(errorText: S.of(context).required_range),
-                      FormBuilderValidators.numeric(errorText: S.of(context).required_range),
-                      FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            _tableSearchPage(context),
             SizedBox(width: 10),
             Flexible(
               child: Text("/"),
             ),
             SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: FormBuilderTextField(
-                  name: 'rangeEnd',
-                  initialValue: "100",
-                  validator: FormBuilderValidators.compose(
-                    [
-                      FormBuilderValidators.required(errorText: S.of(context).required_range),
-                      FormBuilderValidators.numeric(errorText: S.of(context).required_range),
-                      FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
-                    ],
-                  ),
-                ),
-              ),
-            ),
+            _tableSearchSize(context),
             SizedBox(width: 10),
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: FormBuilderTextField(
-                  name: 'name',
-                  decoration: InputDecoration(hintText: S.of(context).name),
-                  initialValue: "",
-                ),
-              ),
-            ),
+            _tableSearchName(context),
             SizedBox(width: 10),
             _submitButton(context),
-            Expanded(
-              flex: 3,
-              child: Container(),
-            ),
+            Expanded(flex: 3, child: Container()),
           ],
         ),
       ),
     );
+  }
+
+  Expanded _tableSearchName(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: FormBuilderTextField(
+          name: 'name',
+          decoration: InputDecoration(hintText: S.of(context).name),
+          initialValue: "",
+        ),
+      ),
+    );
+  }
+
+  Expanded _tableSearchSize(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: FormBuilderTextField(
+          name: 'rangeEnd',
+          initialValue: "100",
+          validator: FormBuilderValidators.compose(
+            [
+              FormBuilderValidators.required(errorText: S.of(context).required_range),
+              FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+              FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Expanded _tableSearchPage(BuildContext context) {
+    return Expanded(
+      child: Padding(
+        padding: EdgeInsets.only(right: 10),
+        child: FormBuilderTextField(
+          name: 'rangeStart',
+          initialValue: "0",
+          validator: FormBuilderValidators.compose(
+            [
+              FormBuilderValidators.required(errorText: S.of(context).required_range),
+              FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+              FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _tableSearchAuthority(AuthorityState state, BuildContext context) {
+    if (state is AuthorityLoadSuccessState) {
+      return FormBuilderDropdown(
+        name: 'authority',
+        decoration: InputDecoration(
+          hintText: S.of(context).authorities,
+        ),
+        items: state.authorities!
+            .map(
+              (role) => DropdownMenuItem(
+                value: role,
+                child: Text(role),
+              ),
+            )
+            .toList(),
+        initialValue: state.authorities![0],
+      );
+    } else {
+      return Container();
+    }
   }
 
   _submitButton(BuildContext context) {

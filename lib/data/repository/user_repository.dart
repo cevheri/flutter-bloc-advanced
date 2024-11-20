@@ -10,7 +10,8 @@ import '../models/user.dart';
 /// This class is responsible for all the user related operations
 /// list, create, update, delete etc.
 class UserRepository {
-  final String _resource = "users";
+  static const String _resource = "users";
+  static const String userIdRequired = "User id is required";
 
   /// Retrieve all users method that retrieves all the users
   Future<List<User?>> getUsers({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
@@ -27,7 +28,7 @@ class UserRepository {
   Future<User?> getUser(String id) async {
     debugPrint("BEGIN:getUser repository start");
     if (id.isEmpty) {
-      throw BadRequestException("User id is required");
+      throw BadRequestException(userIdRequired);
     }
     final httpResponse = await HttpUtils.getRequest("/admin/$_resource/$id");
     final response = User.fromJsonString(httpResponse.body)!;
@@ -92,7 +93,7 @@ class UserRepository {
   Future<User?> updateUser(User user) async {
     debugPrint("BEGIN:updateUser repository start");
     if(user.id == null || user.id!.isEmpty) {
-      throw BadRequestException("User id is required");
+      throw BadRequestException(userIdRequired);
     }
     final httpResponse = await HttpUtils.putRequest<User>("/admin/$_resource", user);
     final response = User.fromJsonString(httpResponse.body);
@@ -103,7 +104,7 @@ class UserRepository {
   Future<void> deleteUser(String id) async {
     debugPrint("BEGIN:deleteUser repository start");
     if(id.isEmpty) {
-      throw BadRequestException("User id is required");
+      throw BadRequestException(userIdRequired);
     }
     await HttpUtils.deleteRequest("/admin/$_resource/$id");
     debugPrint("END:deleteUser successful");
