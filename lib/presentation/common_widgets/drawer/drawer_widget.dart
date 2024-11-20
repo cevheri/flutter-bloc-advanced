@@ -71,78 +71,70 @@ class ApplicationDrawer extends StatelessWidget {
       physics: ClampingScrollPhysics(),
       itemBuilder: (context, index) {
         if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
-          List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
-          sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
-          return ExpansionTileCard(
-            trailing: sublistMenu.isNotEmpty
-                ? Icon(
-                    Icons.keyboard_arrow_down,
-                  )
-                : Icon(
-                    Icons.keyboard_arrow_right,
-                  ),
-            onExpansionChanged: (value) {
-              if (value) {
-                if (sublistMenu.isEmpty) {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, parentMenus[index].url);
-                }
-              }
-            },
-            elevation: 0,
-            isThreeLine: false,
-            initiallyExpanded: false,
-            leading: Icon(
-              String2Icon.getIconDataFromString(parentMenus[index].icon),
-            ),
-            title: Text(
-              S.of(context).translate_menu_title(parentMenus[index].name),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-            children: [
-              Padding(
-                padding: EdgeInsets.only(left: 20),
-                child: ListView.builder(
-                  itemCount: sublistMenu.length,
-                  shrinkWrap: true,
-                  physics: ClampingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    return ListTile(
-                      leading: Icon(
-                        String2Icon.getIconDataFromString(sublistMenu[index].icon),
-                      ),
-                      title: Text(
-                        S.of(context).translate_menu_title(sublistMenu[index].name),
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      onTap: () {
-                        Navigator.pop(context);
-                        Navigator.pushNamed(context, sublistMenu[index].url);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          );
+          return _bildMenuListUserManagement(state, parentMenus, index, context);
         } else if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
           return Container();
         } else {
-          return ListTile(
-            leading: Icon(
-              String2Icon.getIconDataFromString(parentMenus[index].icon),
-            ),
-            title: Text(
-              S.of(context).translate_menu_title(parentMenus[index].name),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.pushNamed(context, parentMenus[index].url);
-            },
-          );
+          return _buildMenuListListTile(parentMenus, index, context);
         }
       },
+    );
+  }
+
+  ListTile _buildMenuListListTile(List<dynamic> parentMenus, int index, BuildContext context) {
+    return ListTile(
+          leading: Icon(String2Icon.getIconDataFromString(parentMenus[index].icon)),
+          title: Text(S.of(context).translate_menu_title(parentMenus[index].name), style: Theme.of(context).textTheme.bodyMedium),
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, parentMenus[index].url);
+          },
+        );
+  }
+
+  ExpansionTileCard _bildMenuListUserManagement(DrawerState state, List<dynamic> parentMenus, int index, BuildContext context) {
+    List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
+    sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
+    return ExpansionTileCard(
+      trailing: sublistMenu.isNotEmpty ? Icon(Icons.keyboard_arrow_down) : Icon(Icons.keyboard_arrow_right),
+      onExpansionChanged: (value) {
+        if (value) {
+          if (sublistMenu.isEmpty) {
+            Navigator.pop(context);
+            Navigator.pushNamed(context, parentMenus[index].url);
+          }
+        }
+      },
+      elevation: 0,
+      isThreeLine: false,
+      initiallyExpanded: false,
+      leading: Icon(String2Icon.getIconDataFromString(parentMenus[index].icon)),
+      title: Text(S.of(context).translate_menu_title(parentMenus[index].name), style: Theme.of(context).textTheme.bodyLarge),
+      children: [
+        Padding(
+          padding: EdgeInsets.only(left: 20),
+          child: ListView.builder(
+            itemCount: sublistMenu.length,
+            shrinkWrap: true,
+            physics: ClampingScrollPhysics(),
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: Icon(
+                  String2Icon.getIconDataFromString(sublistMenu[index].icon),
+                ),
+                title: Text(
+                  S.of(context).translate_menu_title(sublistMenu[index].name),
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, sublistMenu[index].url);
+                },
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 

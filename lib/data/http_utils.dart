@@ -116,7 +116,7 @@ class HttpUtils {
             body: messageBody,
             encoding: Encoding.getByName(UTF8),
           )
-          .timeout(Duration(seconds: timeout));
+          .timeout(const Duration(seconds: timeout));
 
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException catch (se) {
@@ -143,7 +143,7 @@ class HttpUtils {
             Uri.parse('${ProfileConstants.api}$endpoint'),
             headers: headers,
           )
-          .timeout(Duration(seconds: timeout));
+          .timeout(const Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
       return response;
     } on SocketException {
@@ -159,7 +159,7 @@ class HttpUtils {
   //   try {
   //     var result = await http
   //         .get(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers)
-  //         .timeout(Duration(seconds: timeout));
+  //         .timeout(cont Duration(seconds: timeout));
   //     debugPrint(result.headers.toString());
   //     if (result.statusCode == 401) {
   //       throw UnauthorizedException(result.headers.toString());
@@ -191,7 +191,7 @@ class HttpUtils {
     try {
       response = await http
           .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(UTF8))
-          .timeout(Duration(seconds: timeout));
+          .timeout(const Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -217,7 +217,7 @@ class HttpUtils {
     try {
       response = await http
           .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(UTF8))
-          .timeout(Duration(seconds: timeout));
+          .timeout(const Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -231,7 +231,7 @@ class HttpUtils {
     if (!ProfileConstants.isProduction) return await mockRequest('DELETE', endpoint);
     var headers = await HttpUtils.headers();
     try {
-      var response = await http.delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(Duration(seconds: timeout));
+      var response = await http.delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(const Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
       return response;
     } on SocketException {
