@@ -6,7 +6,7 @@ import 'package:equatable/equatable.dart';
 @jsonSerializable
 class City extends Equatable {
   @JsonProperty(name: 'id')
-  final int? id;
+  final String? id;
 
   @JsonProperty(name: 'name')
   final String? name;
@@ -21,7 +21,7 @@ class City extends Equatable {
   });
 
   City copyWith({
-    int? id,
+    String? id,
     String? name,
     String? plateCode,
   }) {
@@ -33,22 +33,38 @@ class City extends Equatable {
   }
 
   static City? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.fromMap<City>(json);
-    if (result == null) {
-      return null;
-    }
-    return result;
+    return City().copyWith(
+      id: json['id'],
+      name: json['name'],
+      plateCode: json['plateCode'],
+    );
   }
 
   static City? fromJsonString(String json) {
-    var result = JsonMapper.deserialize<City>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
+    return fromJson(jsonDecode(json));
   }
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  static List<City?> fromJsonList(List<dynamic> json) {
+    return json.map((value) => City.fromJson(value)).toList();
+  }
+
+  static List<City?> fromJsonStringList(String json) {
+    return fromJsonList(jsonDecode(json));
+  }
+
+  Map<String, dynamic>? toJson() {
+    final Map<String, dynamic> json = {};
+    if (id != null) {
+      json['id'] = id;
+    }
+    if (name != null) {
+      json['name'] = name;
+    }
+    if (plateCode != null) {
+      json['plateCode'] = plateCode;
+    }
+    return json;
+  }
 
   @override
   List<Object?> get props => [

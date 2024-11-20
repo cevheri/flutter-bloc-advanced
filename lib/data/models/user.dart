@@ -112,6 +112,11 @@ class User extends Equatable {
     }
     return result;
   }
+
+  static List<User> fromJsonList(List<dynamic> jsonList) => jsonList.map((json) => fromJson(json)!).toList();
+
+  static List<User> fromJsonStringList(String jsonString) => fromJsonList(jsonDecode(jsonString));
+
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override

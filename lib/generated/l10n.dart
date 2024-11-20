@@ -170,11 +170,11 @@ class S {
     );
   }
 
-  /// `Authorities`
+  /// `Authority`
   String get authorities {
     return Intl.message(
       'Authorities',
-      name: 'authorities',
+      name: 'authority',
       desc: '',
       args: [],
     );

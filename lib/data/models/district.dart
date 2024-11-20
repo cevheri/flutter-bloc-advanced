@@ -33,22 +33,32 @@ class District extends Equatable {
   }
 
   static District? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.fromMap<District>(json);
-    if (result == null) {
-      return null;
-    }
-    return result;
+    return District().copyWith(
+      id: json['id'],
+      name: json['name'],
+      code: json['code'],
+    );
   }
 
-  static District? fromJsonString(String json){
-    var result = JsonMapper.deserialize<District>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
-  }
+  static District? fromJsonString(String json) => fromJson(jsonDecode(json));
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  static List<District?> fromJsonList(List<dynamic> json) => json.map((value) => District.fromJson(value)).toList();
+
+  static List<District?> fromJsonStringList(String json) => fromJsonList(jsonDecode(json));
+
+  Map<String, dynamic>? toJson() {
+    Map<String, dynamic> json = {};
+    if (id != null) {
+      json['id'] = id;
+    }
+    if (name != null) {
+      json['name'] = name;
+    }
+    if (code != null) {
+      json['code'] = code;
+    }
+    return json;
+  }
 
   @override
   List<Object?> get props => [

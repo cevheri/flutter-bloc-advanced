@@ -10,6 +10,7 @@ import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
 
 part 'login_event.dart';
+
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
@@ -39,8 +40,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     UserJWT userJWT = UserJWT(state.username, state.password);
     try {
       var token = await _loginRepository.authenticate(userJWT);
+
       debugPrint(token.toString());
-      if (token.idToken != null) {
+      if (token != null && token.idToken != null) {
         log("LoginBloc.onSubmit token: ${token.idToken}");
         await AppLocalStorage().save(StorageKeys.jwtToken.name, token.idToken);
         await AppLocalStorage().save(StorageKeys.username.name, event.username);

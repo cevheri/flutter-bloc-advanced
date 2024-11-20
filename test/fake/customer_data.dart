@@ -1,7 +1,7 @@
 import 'package:flutter_bloc_advance/data/models/customer.dart';
 
 /// Customer fake data with full payload
-final customerMockFullPayload = Customer(
+final mockCustomerFullPayload = Customer(
   id: '1',
   name: 'Acme',
   phone: '5055055050',

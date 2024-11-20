@@ -7,7 +7,7 @@ import 'package:get/get_navigation/src/root/get_material_app.dart';
 import '../configuration/environment.dart';
 import '../configuration/routes.dart';
 import '../data/repository/account_repository.dart';
-import '../data/repository/authorities_repository.dart';
+import '../data/repository/authority_repository.dart';
 import '../data/repository/city_repository.dart';
 import '../data/repository/district_repository.dart';
 import '../data/repository/login_repository.dart';
@@ -15,7 +15,7 @@ import '../data/repository/menu_repository.dart';
 import '../data/repository/user_repository.dart';
 import '../generated/l10n.dart';
 import '../presentation/common_blocs/account/account.dart';
-import '../presentation/common_blocs/authorities/authorities_bloc.dart';
+import '../presentation/common_blocs/authority/authority_bloc.dart';
 import '../presentation/common_blocs/city/city_bloc.dart';
 import '../presentation/common_blocs/district/district_bloc.dart';
 import '../presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
@@ -66,7 +66,7 @@ class App extends StatelessWidget {
       builder: (light, dark) {
         return MultiBlocProvider(
           providers: [
-            BlocProvider<AuthoritiesBloc>(create: (_) => AuthoritiesBloc(authoritiesRepository: AuthoritiesRepository())),
+            BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
             BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
             BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
             BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),

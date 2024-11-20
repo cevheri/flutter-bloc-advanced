@@ -14,34 +14,34 @@ void main() {
   // model test, constructor, copyWith, toJson, fromJson, props, toString, equals, hashcode
   group("UserJWT Model", () {
     test('should create a UserJWT instance (Constructor)', () {
-      final finalUserJWT = userJWTMockPayload;
+      final finalUserJWT = mockUserJWTPayload;
 
       expect(finalUserJWT.username, 'username');
       expect(finalUserJWT.password, 'password');
     });
 
     test('should copy a UserJWT instance with new values (copyWith)', () {
-      final finalUserJWT = userJWTMockPayload;
+      final finalUserJWT = mockUserJWTPayload;
       final updatedUserJWT = finalUserJWT.copyWith();
 
       expect(updatedUserJWT == finalUserJWT, true);
     });
 
     test('should copy a UserJWT instance with new values (copyWith) username', () {
-      final finalUserJWT = userJWTMockPayload;
+      final finalUserJWT = mockUserJWTPayload;
       final updatedUserJWT = finalUserJWT.copyWith(username: 'new_username');
 
       expect(updatedUserJWT.username, 'new_username');
     });
     test('should copy a UserJWT instance with new values (copyWith) pass', () {
-      final finalUserJWT = userJWTMockPayload;
+      final finalUserJWT = mockUserJWTPayload;
       final updatedUserJWT = finalUserJWT.copyWith(password: 'new_password');
 
       expect(updatedUserJWT.password, 'new_password');
     });
 
     test('should deserialize from JSON', () {
-      final json = userJWTMockPayload.toJson();
+      final json = mockUserJWTPayload.toJson();
 
       final userJWT = UserJWT.fromJson(json!);
 
@@ -50,7 +50,7 @@ void main() {
     });
 
     test('should deserialize from JSON string', () {
-      final json = userJWTMockPayload.toJson();
+      final json = mockUserJWTPayload.toJson();
       final userJWT = UserJWT.fromJsonString(jsonEncode(json!));
 
       expect(userJWT?.username, 'username');
@@ -58,7 +58,7 @@ void main() {
     });
 
     test('should serialize to JSON', () {
-      final userJWT = userJWTMockPayload;
+      final userJWT = mockUserJWTPayload;
 
       final json = userJWT.toJson()!;
 
@@ -68,19 +68,19 @@ void main() {
 
     // props, toString, equals, hashcode
     test("props should return list of properties", () {
-      final userJWT = userJWTMockPayload;
+      final userJWT = mockUserJWTPayload;
 
       expect(userJWT.props, [userJWT.username, userJWT.password]);
     });
 
     test('toString should return string', () {
-      final userJWT = userJWTMockPayload;
+      final userJWT = mockUserJWTPayload;
 
-      expect(userJWT.toString(), 'UserJWT{password: password}');
+      expect(userJWT.toString(), 'UserJWT(username, password)');
     });
 
     test('should return true when comparing two UserJWT instances', () {
-      final userJWT = userJWTMockPayload;
+      final userJWT = mockUserJWTPayload;
       final updatedUserJWT = userJWT.copyWith(
         username: 'new_username',
         password: 'new_password',
@@ -90,7 +90,7 @@ void main() {
     });
 
     test("hashCode should return hash code", () {
-      final userJWT = userJWTMockPayload;
+      final userJWT = mockUserJWTPayload;
       final updatedUserJWT = userJWT.copyWith(
         username: 'new_username',
         password: 'new_password',

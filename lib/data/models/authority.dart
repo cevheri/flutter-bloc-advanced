@@ -4,32 +4,34 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
 @jsonSerializable
-class Authorities extends Equatable {
+class Authority extends Equatable {
   @JsonProperty(name: 'name')
   final String? name;
 
-  const Authorities({
+  const Authority({
     this.name,
   });
 
-  Authorities copyWith({
+  Authority copyWith({
     String? name,
   }) {
-    return Authorities(
+    return Authority(
       name: name ?? this.name,
     );
   }
 
-  static Authorities? fromJson(Map<String, dynamic> json) {
+  static Authority? fromJson(Map<String, dynamic> json) {
     if (json['name'] != null) {
-      return Authorities(name: json['name']);
+      return Authority(name: json['name']);
     }
     return null;
   }
 
-  static Authorities? fromJsonString(String json) {
-    return fromJson(jsonDecode(json));
-  }
+  static Authority? fromJsonString(String json) => fromJson(jsonDecode(json));
+
+  static List<String?> fromJsonList(List<dynamic> json) => json.map((value) => Authority.fromJson(value)?.name).toList();
+
+  static List<String?> fromJsonStringList(String json) => fromJsonList(jsonDecode(json));
 
   Map<String, dynamic>? toJson() {
     return {

@@ -13,7 +13,7 @@ void main() {
 
   group("Customer model", () {
     test("should create a Customer instance (Constructor)", () {
-      final finalCustomer = customerMockFullPayload;
+      final finalCustomer = mockCustomerFullPayload;
 
       expect(finalCustomer.id, '1');
       expect(finalCustomer.name, 'Acme');
@@ -26,7 +26,7 @@ void main() {
     });
 
     test('should copy a Customer instance with new values (copyWith)', () {
-      final finalCustomer = customerMockFullPayload;
+      final finalCustomer = mockCustomerFullPayload;
 
       final updatedCustomer = finalCustomer.copyWith();
 
@@ -34,7 +34,7 @@ void main() {
     });
 
     test('should copy a Customer instance with new values (copyWith) new values', () {
-      final finalCustomer = customerMockFullPayload;
+      final finalCustomer = mockCustomerFullPayload;
 
       final updatedCustomer = finalCustomer.copyWith(
         name: 'new Acme',
@@ -54,7 +54,7 @@ void main() {
     });
 
     test('should deserialize from JSON', () {
-      final json = customerMockFullPayload.toJson()!;
+      final json = mockCustomerFullPayload.toJson()!;
 
       final finalCustomer = Customer.fromJson(json);
 
@@ -69,7 +69,7 @@ void main() {
     });
 
     test('should deserialize from JSON string', () {
-      final jsonString = jsonEncode(customerMockFullPayload.toJson()!);
+      final jsonString = jsonEncode(mockCustomerFullPayload.toJson()!);
 
       final finalCustomer = Customer.fromJsonString(jsonString);
 
@@ -85,7 +85,7 @@ void main() {
 
     //props
     test('props test', () {
-      final finalCustomer = customerMockFullPayload;
+      final finalCustomer = mockCustomerFullPayload;
       final updatedCustomer = finalCustomer.copyWith();
 
       expect(finalCustomer.props, updatedCustomer.props);
@@ -93,7 +93,7 @@ void main() {
 
     //toString
     test('should return string', () {
-      final finalCustomer = customerMockFullPayload;
+      final finalCustomer = mockCustomerFullPayload;
       expect(finalCustomer.toString(),
           'Customer(1, Acme, 5055055050, john.doe@example.com, Konya, selçuklu, yazır mh., true)');
     });

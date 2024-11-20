@@ -38,9 +38,9 @@ class MessageLookup extends MessageLookupByLibrary {
         "account": MessageLookupByLibrary.simpleMessage("Account"),
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
-        "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
+        "authority": MessageLookupByLibrary.simpleMessage("Authority"),
         "authorities_required":
-            MessageLookupByLibrary.simpleMessage("Authorities is required"),
+            MessageLookupByLibrary.simpleMessage("Authority is required"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Change Password"),
         "create_user": MessageLookupByLibrary.simpleMessage("Create User"),

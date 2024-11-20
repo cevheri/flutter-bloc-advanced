@@ -15,7 +15,7 @@ void main() {
 
   group('Menu Model Tests', () {
     test('should create a Menu instance (Constructor)', () {
-      final finalMenu = menuMockPayload;
+      final finalMenu = mockMenuPayload;
       expect(finalMenu.name, 'test name');
       expect(finalMenu.description, '');
       expect(finalMenu.url, 'https://dhw-api.onrender.com/');
@@ -27,7 +27,7 @@ void main() {
     });
 
     test('should copy a Menu instance with new values (copyWith)', () {
-      final finalMenu = menuMockPayload;
+      final finalMenu = mockMenuPayload;
       final updatedMenu = finalMenu.copyWith(
         id: 0,
         name: 'Home',
@@ -45,7 +45,7 @@ void main() {
     });
 
     test('should copy a Menu instance with copyWith just copy', () {
-      final finalMenu = menuMockPayload;
+      final finalMenu = mockMenuPayload;
       final updatedMenu = finalMenu.copyWith();
 
       expect(updatedMenu.id, 0);
@@ -60,7 +60,7 @@ void main() {
     });
 
     test('should deserialize from JSON', () {
-      final json = menuMockPayload.toJson();
+      final json = mockMenuPayload.toJson();
 
       final finalMenu = Menu.fromJson(json!);
 
@@ -75,7 +75,7 @@ void main() {
     });
 
     test('should deserialize from JSON string', () {
-      final jsonString = jsonEncode(menuMockPayload.toJson()!);
+      final jsonString = jsonEncode(mockMenuPayload.toJson()!);
 
       final finalMenu = Menu.fromJsonString(jsonString);
 

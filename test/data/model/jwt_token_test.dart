@@ -14,12 +14,12 @@ void main() {
 
   group("JWTToken model", () {
     test('should create a JWTToken instance (Constructor)', () {
-      final finalJWTToken = jWTTokenMockPayload;
-      expect(finalJWTToken.idToken, 'idToken');
+      final finalJWTToken = mockJWTTokenPayload;
+      expect(finalJWTToken.idToken, 'MOCK_UNITTEST_TOKEN');
     });
 
     test('should copy a JWTToken instance with new values (copyWith)', () {
-      final finalJWTToken = jWTTokenMockPayload;
+      final finalJWTToken = mockJWTTokenPayload;
       final updatedJWTToken = finalJWTToken.copyWith(
         idToken: 'new_idToken',
       );
@@ -27,13 +27,13 @@ void main() {
     });
 
     test('should copy a JWTToken instance with new values (copyWith)', () {
-      final finalJWTToken = jWTTokenMockPayload;
+      final finalJWTToken = mockJWTTokenPayload;
       final updatedJWTToken = finalJWTToken.copyWith();
       expect(updatedJWTToken == finalJWTToken, true);
     });
 
     test('should compare two JWTToken  instances', () {
-      final finalJWTToken = jWTTokenMockPayload;
+      final finalJWTToken = mockJWTTokenPayload;
       final updatedJWTToken = finalJWTToken.copyWith(
         idToken: 'new_idToken',
       );
@@ -41,7 +41,7 @@ void main() {
     });
 
     test('should compare two JWTToken copy old values', () {
-      final finalJWTToken = jWTTokenMockPayload;
+      final finalJWTToken = mockJWTTokenPayload;
       final updatedJWTToken = finalJWTToken.copyWith();
       expect(finalJWTToken.idToken, updatedJWTToken.idToken);
     });
@@ -50,27 +50,27 @@ void main() {
   //from json
   group('JWTToken from JSON', () {
     test('should deserialize from JSON', () {
-      final json = jWTTokenMockPayload.toJson();
+      final json = mockJWTTokenPayload.toJson();
       final jwtToken = JWTToken.fromJson(json!);
-      expect(jwtToken?.idToken, 'idToken');
+      expect(jwtToken?.idToken, 'MOCK_UNITTEST_TOKEN');
     });
 
     test('should deserialize from JSON string', () {
-      final json = jWTTokenMockPayload.toJson();
+      final json = mockJWTTokenPayload.toJson();
       final jwtToken = JWTToken.fromJsonString(jsonEncode(json!));
-      expect(jwtToken?.idToken, 'idToken');
+      expect(jwtToken?.idToken, 'MOCK_UNITTEST_TOKEN');
     });
   });
 
   // toString, equals, hashcode
   group("toString, equals and hashcode", (){
     test('should return string', () {
-      final finalJWTToken = jWTTokenMockPayload;
-      expect(finalJWTToken.toString(), 'JWTToken{idToken: idToken}');
+      final finalJWTToken = mockJWTTokenPayload;
+      expect(finalJWTToken.toString(), 'JWTToken(MOCK_UNITTEST_TOKEN)');
     });
 
     test('should return true when comparing two JWTToken instances', () {
-      final finalJWTToken = jWTTokenMockPayload;
+      final finalJWTToken = mockJWTTokenPayload;
       final updatedJWTToken = finalJWTToken.copyWith(
         idToken: 'new_idToken',
       );
@@ -78,7 +78,7 @@ void main() {
     });
 
     test('should return hashcode', () {
-      final finalJWTToken = jWTTokenMockPayload;
+      final finalJWTToken = mockJWTTokenPayload;
       expect(finalJWTToken.hashCode, finalJWTToken.idToken.hashCode);
     });
   });

@@ -23,8 +23,8 @@ class CityBloc extends Bloc<CityEvent, CityState> {
   FutureOr<void> _onLoad(CityLoadList event, Emitter<CityState> emit) async {
     emit(CityInitialState());
     try {
-      List<City> city = await _cityRepository.getCity();
-      emit(CityLoadSuccessState(cityList: city));
+      List<City?> cities = await _cityRepository.getCities();
+      emit(CityLoadSuccessState(cities: cities));
     } catch (e) {
       emit(CityLoadFailureState(message: e.toString()));
     }

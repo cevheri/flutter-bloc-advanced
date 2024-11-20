@@ -1,30 +1,30 @@
 part of 'district_bloc.dart';
 
-/// District status used the success or failure of the authorities loading.
+/// District status used the success or failure of the authority loading.
 enum DistrictStatus { initial, loading, success, failure }
 
-/// District state that contains the current authorities and the status of the authorities.
+/// District state that contains the current authority and the status of the authority.
 /// The status is used to display the loading indicator.
 ///
 /// The state is immutable and copyWith is used to update the state.
 class DistrictState extends Equatable {
-  final List<District>? district;
+  final List<District?>? districts;
   final DistrictStatus status;
 
   const DistrictState({
-    this.district,
+    this.districts,
     this.status = DistrictStatus.initial,
   });
 
   DistrictState copyWith({
-    List<District>? authorities,
+    List<District>? districts,
     DistrictStatus? status,
   }) {
-    return DistrictState(status: status ?? this.status, district: authorities ?? district);
+    return DistrictState(status: status ?? this.status, districts: districts ?? districts);
   }
 
   @override
-  List<Object> get props => [status];
+  List<Object> get props => [districts ?? [], status];
 
   @override
   bool get stringify => true;
@@ -33,12 +33,7 @@ class DistrictState extends Equatable {
 class DistrictInitialState extends DistrictState {}
 
 class DistrictLoadSuccessState extends DistrictState {
-  final List<District> districtList;
-
-  const DistrictLoadSuccessState({required this.districtList});
-
-  @override
-  List<Object> get props => [districtList];
+  const DistrictLoadSuccessState({required super.districts}) : super(status: DistrictStatus.success);
 }
 
 class DistrictLoadFailureState extends DistrictState {

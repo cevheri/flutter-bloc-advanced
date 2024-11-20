@@ -286,9 +286,23 @@ class HttpUtils {
 
     try {
       String path = ProfileConstants.api;
-      String fileName = "$httpMethod${endpoint.replaceAll("/", "_")}.json";
+      // @formatter:off
+      // use GET_resource.json for all GET requests except for id based GET requests
+      final queryParams =
+          endpoint
+              .replaceAll("/", "_")
+              .replaceAll("?", "_")
+              .replaceAll("&", "_")
+              .replaceAll("=", "_")
+              .replaceAll(",", "_")
+              .replaceAll(".", "_")
+              .replaceAll(";", "_")
+              .replaceAll("-", "_")
+      ;
+      // @formatter:on
+      String fileName = "$httpMethod$queryParams.json";
       String mockDataPath = "$path/$fileName";
-
+      debugPrint("Mock data path: $mockDataPath");
       responseBody = await rootBundle.loadString(mockDataPath);
       response = Future.value(http.Response(responseBody, httpStatusCode));
       debugPrint("Mock data loaded from $httpMethod $endpoint : response body length: ${responseBody.length}");
@@ -303,7 +317,7 @@ class HttpUtils {
     //   try {
     //     var responseJson = json.decode(responseBody);
     //     responseJson['login'] = username;
-    //     responseJson['authorities'] = ['ROLE_${username.toUpperCase()}'];
+    //     responseJson['authority'] = ['ROLE_${username.toUpperCase()}'];
     //     response = Future.value(http.Response(json.encode(responseJson), httpStatusCode));
     //   } catch (e) {
     //     debugPrint("There is no response body to update with username");
