@@ -4,10 +4,20 @@ include: package:flutter_lints/flutter.yaml
 linter:
 
   rules:
-    prefer_const_declarations: false
-    constant_identifier_names: false
+#    prefer_const_declarations: false
+#    constant_identifier_names: false
     # Unnecessary 'new' keyword. (Documentation)
-    unnecessary_new: false
+#    unnecessary_new: false
     #    Use 'const' with the constructor to improve performance
-    prefer_const_constructors: false
+#    prefer_const_constructors: false
 
+# exclude generated files
+analyzer:
+    exclude:
+        - "**/*.g.dart"
+        - "**/*.p.dart"
+        - "**/*.r.dart"
+        - "**/*.reflectable.dart"
+        - "**/*.router.dart"
+        - "**/*.theme.dart"
+        - "**/*.theme.g.dart"

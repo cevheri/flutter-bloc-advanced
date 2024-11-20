@@ -16,18 +16,15 @@ class CreateUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthorityBloc>(context).add(AuthorityLoad());
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    BlocProvider.of<AuthorityBloc>(context).add(const AuthorityLoad());
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).create_user),
       leading: IconButton(
-        icon: Icon(Icons.arrow_back),
+        icon: const Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.pop(context);
           formKey.currentState!.fields['salesPersonCode']?.didChange("");
@@ -40,20 +37,20 @@ class CreateUserScreen extends StatelessWidget {
     return Center(
       child: SingleChildScrollView(
         child: Container(
-          constraints: BoxConstraints(minWidth: 300, maxWidth: 700),
-          padding: EdgeInsets.all(10),
+          constraints: const BoxConstraints(minWidth: 300, maxWidth: 700),
+          padding: const EdgeInsets.all(10),
           alignment: Alignment.center,
           child: FormBuilder(
             key: formKey,
             child: Column(
               children: <Widget>[
-                CreateFormLoginName(),
-                CreateFormFirstName(),
-                CreateFormLastname(),
-                CreateFormEmail(),
+                const CreateFormLoginName(),
+                const CreateFormFirstName(),
+                const CreateFormLastname(),
+                const CreateFormEmail(),
                 // CreateFormPhoneNumber(),
-                CreateFormActive(),
-                SizedBox(height: 20),
+                const CreateFormActive(),
+                const SizedBox(height: 20),
                 _submitButton(context)
               ],
             ),
@@ -89,14 +86,14 @@ class CreateUserScreen extends StatelessWidget {
       },
       buildWhen: (previous, current) {
         if (current is UserInitialState) {
-          Message.getMessage(context: context, title: "Kullanıcı oluşturuluyor...", content: "");
+          Message.getMessage(context: context, title: S.of(context).loading, content: "");
         }
         if (current is UserLoadSuccessState) {
-          Message.getMessage(context: context, title: "Kullanıcı oluşturuldu", content: "");
+          Message.getMessage(context: context, title: S.of(context).success, content: "");
           Navigator.pop(context);
         }
         if (current is UserLoadFailureState) {
-          Message.errorMessage(title: 'Kullanıcı oluşturulamadı lütfen bilgileri kontrol ediniz.', context: context, content: "");
+          Message.errorMessage(title: S.of(context).failed, context: context, content: "");
         }
 
         return true;

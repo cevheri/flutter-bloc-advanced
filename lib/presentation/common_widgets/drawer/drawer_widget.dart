@@ -33,11 +33,11 @@ class ApplicationDrawer extends StatelessWidget {
               child: Column(
                 children: [
                   _buildMenuList(parentMenus, state),
-                  SizedBox(height: 20),
-                  ThemeSwitchButton(),
-                  SizedBox(height: 20),
-                  LanguageSwitchButton(),
-                  SizedBox(height: 20),
+                  const SizedBox(height: 20),
+                  const ThemeSwitchButton(),
+                  const SizedBox(height: 20),
+                  const LanguageSwitchButton(),
+                  const SizedBox(height: 20),
                   _buildLogoutButton(context),
                 ],
               ),
@@ -68,10 +68,10 @@ class ApplicationDrawer extends StatelessWidget {
     return ListView.builder(
       itemCount: parentMenus.length,
       shrinkWrap: true,
-      physics: ClampingScrollPhysics(),
+      physics: const ClampingScrollPhysics(),
       itemBuilder: (context, index) {
         if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
-          return _bildMenuListUserManagement(state, parentMenus, index, context);
+          return _buildMenuListUserManagement(state, parentMenus, index, context);
         } else if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
           return Container();
         } else {
@@ -92,11 +92,11 @@ class ApplicationDrawer extends StatelessWidget {
         );
   }
 
-  ExpansionTileCard _bildMenuListUserManagement(DrawerState state, List<dynamic> parentMenus, int index, BuildContext context) {
+  ExpansionTileCard _buildMenuListUserManagement(DrawerState state, List<dynamic> parentMenus, int index, BuildContext context) {
     List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
     sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
     return ExpansionTileCard(
-      trailing: sublistMenu.isNotEmpty ? Icon(Icons.keyboard_arrow_down) : Icon(Icons.keyboard_arrow_right),
+      trailing: sublistMenu.isNotEmpty ? const Icon(Icons.keyboard_arrow_down) : const Icon(Icons.keyboard_arrow_right),
       onExpansionChanged: (value) {
         if (value) {
           if (sublistMenu.isEmpty) {
@@ -112,11 +112,11 @@ class ApplicationDrawer extends StatelessWidget {
       title: Text(S.of(context).translate_menu_title(parentMenus[index].name), style: Theme.of(context).textTheme.bodyLarge),
       children: [
         Padding(
-          padding: EdgeInsets.only(left: 20),
+          padding: const EdgeInsets.only(left: 20),
           child: ListView.builder(
             itemCount: sublistMenu.length,
             shrinkWrap: true,
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             itemBuilder: (context, index) {
               return ListTile(
                 leading: Icon(

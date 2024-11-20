@@ -6,7 +6,7 @@ class RegisterState extends Equatable {
   final String email;
   final RegisterStatus status;
 
-  static final String authenticationFailKey = 'error.authenticate';
+  static const String authenticationFailKey = 'error.authenticate';
 
   const RegisterState({
     this.email = '',

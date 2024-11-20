@@ -20,7 +20,7 @@ class TestUtils {
 
 
   Future<void> setupUnitTest() async {
-    ProfileConstants.setEnvironment(Environment.TEST);
+    ProfileConstants.setEnvironment(Environment.test);
     initializeJsonMapper();
     TestWidgetsFlutterBinding.ensureInitialized();
     EquatableConfig.stringify = true;

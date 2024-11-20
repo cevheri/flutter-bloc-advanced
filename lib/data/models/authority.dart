@@ -46,4 +46,9 @@ class Authority extends Equatable {
 
   @override
   bool get stringify => true;
+
+  @override
+  String toString() {
+    return 'Authority($name)';
+  }
 }

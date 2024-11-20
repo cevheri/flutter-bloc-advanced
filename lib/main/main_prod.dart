@@ -12,7 +12,7 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 
 /// main entry point of PRODUCTION
 void main() async {
-  ProfileConstants.setEnvironment(Environment.PROD);
+  ProfileConstants.setEnvironment(Environment.prod);
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -21,6 +21,6 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(App(language: defaultLanguage));
+    runApp(const App(language: defaultLanguage));
   });
 }

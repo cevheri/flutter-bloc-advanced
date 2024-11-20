@@ -4,17 +4,17 @@ import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 ///
 /// This class contains all the routes used in the application.
 class ApplicationRoutes {
-  static final home = '/';
-  static final login = '/login';
-  static final info = '/info';
-  static final logout = '/logout';
-  static final register = '/register';
-  static final settings = '/settings';
-  static final forgotPassword = '/forgot-password';
-  static final changePassword = '/settings/change-password';
-  static final account = '/account';
-  static final createUser = '/admin/new-user';
-  static final listUsers = '/admin/list-users';
+  static const home = '/';
+  static const login = '/login';
+  static const info = '/info';
+  static const logout = '/logout';
+  static const register = '/register';
+  static const settings = '/settings';
+  static const forgotPassword = '/forgot-password';
+  static const changePassword = '/settings/change-password';
+  static const account = '/account';
+  static const createUser = '/admin/new-user';
+  static const listUsers = '/admin/list-users';
 }
 
 String initialRouteControl() {

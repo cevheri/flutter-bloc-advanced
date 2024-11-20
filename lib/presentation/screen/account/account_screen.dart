@@ -13,16 +13,11 @@ class AccountsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).account),
-    );
+    return AppBar(title: Text(S.of(context).account));
   }
 
   _buildBody(BuildContext context) {
@@ -37,8 +32,8 @@ class AccountsScreen extends StatelessWidget {
             Center(
               child: SingleChildScrollView(
                 child: Container(
-                  constraints: BoxConstraints(minWidth: 300, maxWidth: 700),
-                  padding: EdgeInsets.all(10),
+                  constraints: const BoxConstraints(minWidth: 300, maxWidth: 700),
+                  padding: const EdgeInsets.all(10),
                   alignment: Alignment.center,
                   child: FormBuilder(
                     key: formKey,
@@ -51,7 +46,7 @@ class AccountsScreen extends StatelessWidget {
                         // EditFormPhoneNumber(user: state.account!),
                         EditFormActive(user: state.account!),
                         EditFormAuthorities(user: state.account!, formKey: formKey),
-                        SizedBox(height: 20),
+                        const SizedBox(height: 20),
                         SubmitButton(editAccount: "edit_page", context, user: state.account!, formKey: formKey)
                       ],
                     ),

@@ -32,17 +32,9 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           if (state.status == AccountStatus.success) {
             return Scaffold(
-              appBar: AppBar(
-                title: Text(S.of(context).description),
-              ),
+              appBar: AppBar(title: Text(S.of(context).description)),
               key: _scaffoldKey,
-              body: Center(
-                child: Column(
-                  children: [
-                    backgroundImage(context),
-                  ],
-                ),
-              ),
+              body: Center(child: Column(children: [backgroundImage(context)])),
               drawer: _buildDrawer(context),
             );
           }
@@ -61,14 +53,8 @@ class HomeScreen extends StatelessWidget {
           child: Container(
             height: 300,
             width: 300,
-            decoration: BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(
-                  "assets/images/logoLight.png",
-                ),
-                scale: 1,
-                fit: BoxFit.contain,
-              ),
+            decoration: const BoxDecoration(
+              image: DecorationImage(image: AssetImage("assets/images/logoLight.png"), scale: 1, fit: BoxFit.contain),
             ),
           ),
         ),
@@ -82,13 +68,9 @@ class HomeScreen extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: AssetImage(
-                  "assets/images/img.png",
-                ),
+                image: const AssetImage("assets/images/img.png"),
                 colorFilter: ColorFilter.mode(
-                  AdaptiveTheme.of(context).mode.isDark ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.1),
-                  BlendMode.dstIn,
-                ),
+                    AdaptiveTheme.of(context).mode.isDark ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.1), BlendMode.dstIn),
               ),
             ),
           ),
@@ -99,10 +81,8 @@ class HomeScreen extends StatelessWidget {
 
   _buildDrawer(BuildContext context) {
     return BlocProvider<DrawerBloc>(
-        create: (context) => DrawerBloc(
-              loginRepository: LoginRepository(),
-              menuRepository: MenuRepository(),
-            )..add(LoadMenus()),
-        child: ApplicationDrawer());
+      create: (context) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())..add(LoadMenus()),
+      child: const ApplicationDrawer(),
+    );
   }
 }

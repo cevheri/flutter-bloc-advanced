@@ -18,33 +18,35 @@ void main() {
 
   group("Login Repository authenticate", () {
     // authenticate method can use with accessToken
-    test("Given valid userJWT when authenticate then return JWTToken successfully", () async {
+    test("Given valid entity when authenticate then return JWTToken successfully", () async {
       TestUtils().setupAuthentication();
-      final userJWT = mockUserJWTPayload;
-      final result = await LoginRepository().authenticate(userJWT);
+      const entity = mockUserJWTPayload;
+      final result = await LoginRepository().authenticate(entity);
 
       expect(result, isA<JWTToken>());
       expect(result?.idToken, "MOCK_TOKEN");
     });
 
     // authenticate method can use without accessToken
-    test("Given valid userJWT without AccessToken when authenticate then return JWTToken fail", () async {
-      final userJWT = mockUserJWTPayload;
-      final result = await LoginRepository().authenticate(userJWT);
+    test("Given valid entity without AccessToken when authenticate then return JWTToken fail", () async {
+      const entity = mockUserJWTPayload;
+      final result = await LoginRepository().authenticate(entity);
 
       expect(result, isA<JWTToken>());
       expect(result?.idToken, "MOCK_TOKEN");
     });
 
-    test("Given null userJWT when authenticate then return JWTToken fail", () async {
-      expect(() async => await LoginRepository().authenticate(UserJWT("", "")), throwsA(isA<Exception>()));
+    test("Given null entity when authenticate then return JWTToken fail", () async {
+      expect(() async => await LoginRepository().authenticate(const UserJWT("", "")), throwsA(isA<Exception>()));
     });
 
-    test("Given stored userJWT when logout then clear storage successfully", () async {
+    test("Given stored entity when logout then clear storage successfully", () async {
       TestUtils().setupAuthentication();
+
       expect(await AppLocalStorage().read(StorageKeys.jwtToken.name), isNotNull);
       expect(await AppLocalStorage().read(StorageKeys.jwtToken.name), isA<String>());
-      await LoginRepository().logout();
+
+      expect(() async => await LoginRepository().logout(), returnsNormally);
       expect(await AppLocalStorage().read(StorageKeys.jwtToken.name), null);
     });
   });

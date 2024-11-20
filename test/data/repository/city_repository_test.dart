@@ -21,8 +21,8 @@ void main() {
   group("CityRepository Create success", () {
     test("Given valid city when create then return city successfully", () async {
       TestUtils().setupAuthentication();
-      final newCity = mockCityPayload;
-      final result = await CityRepository().createCity(newCity);
+      const entity = mockCityPayload;
+      final result = await CityRepository().createCity(entity);
 
       expect(result, isA<City>());
       expect(result?.id, "1");
@@ -30,15 +30,15 @@ void main() {
       expect(result?.plateCode, "plateCode");
     });
     test("Given valid city without AccessToken when create then return city fail", () async {
-      final newCity = mockCityPayload;
-      expect(() async => await CityRepository().createCity(newCity), throwsA(isA<UnauthorizedException>()));
+      const entity = mockCityPayload;
+      expect(() async => await CityRepository().createCity(entity), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null city when create then return city fail", () async {
-      expect(() async => await CityRepository().createCity(City()), throwsA(isA<BadRequestException>()));
+      expect(() async => await CityRepository().createCity(const City()), throwsA(isA<BadRequestException>()));
     });
     test("Given null city when create then return city fail", () async {
-      expect(() async => await CityRepository().createCity(City(name: "")), throwsA(isA<BadRequestException>()));
+      expect(() async => await CityRepository().createCity(const City(name: "")), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -85,7 +85,8 @@ void main() {
   group("CityRepository Delete success", () {
     test("Given valid id when deleteCity then return successful", () async {
       TestUtils().setupAuthentication();
-      await CityRepository().deleteCity("1");
+
+      expect(() async => await CityRepository().deleteCity("1"), returnsNormally);
     });
     test("Given valid id without AccessToken when deleteCity then return fail", () async {
       expect(() async => await CityRepository().deleteCity("1"), throwsA(isA<UnauthorizedException>()));

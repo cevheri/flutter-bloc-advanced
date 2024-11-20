@@ -20,6 +20,7 @@ void main() {
     test("Given valid user when getUsers then return user list successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().getUsers();
+
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
@@ -34,6 +35,7 @@ void main() {
     test("Given valid userId when getUser then return user successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().getUser("user-1");
+
       expect(result, isA<User>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
@@ -55,6 +57,7 @@ void main() {
 
     test("Given null userId when getUser then return user fail", () async {
       TestUtils().setupAuthentication();
+
       expect(() async => await UserRepository().getUser(""), throwsA(isA<BadRequestException>()));
     });
   });
@@ -64,6 +67,7 @@ void main() {
     test("Given valid login when getUserByLogin then return user successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().getUserByLogin("username");
+
       expect(result, isA<User>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
@@ -85,6 +89,7 @@ void main() {
 
     test("Given null login when getUserByLogin then return user fail", () async {
       TestUtils().setupAuthentication();
+
       expect(() async => await UserRepository().getUserByLogin(""), throwsA(isA<BadRequestException>()));
     });
   });
@@ -93,8 +98,9 @@ void main() {
   group("User Repository createUser", () {
     test("Given valid user when createUser then return user successfully", () async {
       TestUtils().setupAuthentication();
-      final user = mockUserFullPayload;
-      final result = await UserRepository().createUser(user);
+      final entity = mockUserFullPayload;
+      final result = await UserRepository().createUser(entity);
+
       expect(result, isA<User>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
@@ -116,12 +122,14 @@ void main() {
 
     test("Given null user when createUser then return user fail", () async {
       TestUtils().setupAuthentication();
-      expect(() async => await UserRepository().createUser(User()), throwsA(isA<BadRequestException>()));
+
+      expect(() async => await UserRepository().createUser(const User()), throwsA(isA<BadRequestException>()));
     });
 
     test("Given null username when createUser then return user fail", () async {
       TestUtils().setupAuthentication();
-      expect(() async => await UserRepository().createUser(User(login: "admin")), throwsA(isA<BadRequestException>()));
+
+      expect(() async => await UserRepository().createUser(const User(login: "admin")), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -130,6 +138,7 @@ void main() {
     test("Given valid range when listUser then return user list successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().listUser(0, 10);
+
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
@@ -144,6 +153,7 @@ void main() {
     test("Given valid range and authority when findUserByAuthority then return user list successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().findUserByAuthority(0, 10, "ROLE_ADMIN");
+
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
@@ -158,6 +168,7 @@ void main() {
     test("Given valid range, name and authority when findUserByName then return user list successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().findUserByName(0, 10, "admin", "ROLE_ADMIN");
+
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
@@ -171,8 +182,9 @@ void main() {
   group("User Repository updateUser", () {
     test("Given valid user when updateUser then return user successfully", () async {
       TestUtils().setupAuthentication();
-      final user = mockUserFullPayload;
-      final result = await UserRepository().updateUser(user);
+      final entity = mockUserFullPayload;
+      final result = await UserRepository().updateUser(entity);
+
       expect(result, isA<User>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
@@ -194,7 +206,8 @@ void main() {
 
     test("Given null user when updateUser then return user fail", () async {
       TestUtils().setupAuthentication();
-      expect(() async => await UserRepository().updateUser(User()), throwsA(isA<BadRequestException>()));
+
+      expect(() async => await UserRepository().updateUser(const User()), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -202,7 +215,8 @@ void main() {
   group("User Repository deleteUser", () {
     test("Given valid userId when deleteUser then return void successfully", () async {
       TestUtils().setupAuthentication();
-      await UserRepository().deleteUser("user-1");
+
+      expect(() async => await UserRepository().deleteUser("user-1"), returnsNormally);
     });
 
     test("Given valid userId without accessToken when deleteUser then return void fail", () async {
@@ -211,6 +225,7 @@ void main() {
 
     test("Given null userId when deleteUser then return void fail", () async {
       TestUtils().setupAuthentication();
+
       expect(() async => await UserRepository().deleteUser(""), throwsA(isA<BadRequestException>()));
     });
   });

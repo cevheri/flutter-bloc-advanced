@@ -38,7 +38,7 @@ class ChangePasswordScreen extends StatelessWidget {
             _logo(context),
             _currentPasswordField(context),
             _newPasswordField(context),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.6,
               child: Row(

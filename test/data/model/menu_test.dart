@@ -15,78 +15,74 @@ void main() {
 
   group('Menu Model Tests', () {
     test('should create a Menu instance (Constructor)', () {
-      final finalMenu = mockMenuPayload;
-      expect(finalMenu.name, 'test name');
-      expect(finalMenu.description, '');
-      expect(finalMenu.url, 'https://dhw-api.onrender.com/');
-      expect(finalMenu.icon, '');
-      expect(finalMenu.orderPriority, 01);
-      expect(finalMenu.active, false);
-      expect(finalMenu.parent, null);
-      expect(finalMenu.level, 01);
+      const entity = mockMenuPayload;
+
+      expect(entity.name, 'test name');
+      expect(entity.description, '');
+      expect(entity.url, 'https://dhw-api.onrender.com/');
+      expect(entity.icon, '');
+      expect(entity.orderPriority, 01);
+      expect(entity.active, false);
+      expect(entity.parent, null);
+      expect(entity.level, 01);
     });
 
     test('should copy a Menu instance with new values (copyWith)', () {
-      final finalMenu = mockMenuPayload;
-      final updatedMenu = finalMenu.copyWith(
-        id: 0,
-        name: 'Home',
-      );
+      const entity = mockMenuPayload;
+      final entityUpd = entity.copyWith(id: 0, name: 'Home');
 
-      expect(updatedMenu.id, 0);
-      expect(updatedMenu.name, 'Home');
-      expect(updatedMenu.description, '');
-      expect(updatedMenu.url, 'https://dhw-api.onrender.com/');
-      expect(updatedMenu.icon, '');
-      expect(updatedMenu.orderPriority, 01);
-      expect(updatedMenu.active, false);
-      expect(updatedMenu.parent, null);
-      expect(updatedMenu.level, 01);
+      expect(entityUpd.id, 0);
+      expect(entityUpd.name, 'Home');
+      expect(entityUpd.description, '');
+      expect(entityUpd.url, 'https://dhw-api.onrender.com/');
+      expect(entityUpd.icon, '');
+      expect(entityUpd.orderPriority, 01);
+      expect(entityUpd.active, false);
+      expect(entityUpd.parent, null);
+      expect(entityUpd.level, 01);
     });
 
     test('should copy a Menu instance with copyWith just copy', () {
-      final finalMenu = mockMenuPayload;
-      final updatedMenu = finalMenu.copyWith();
+      const entity = mockMenuPayload;
+      final entityUpd = entity.copyWith();
 
-      expect(updatedMenu.id, 0);
-      expect(updatedMenu.name, 'test name');
-      expect(updatedMenu.description, '');
-      expect(updatedMenu.url, 'https://dhw-api.onrender.com/');
-      expect(updatedMenu.icon, '');
-      expect(updatedMenu.orderPriority, 01);
-      expect(updatedMenu.active, false);
-      expect(updatedMenu.parent, null);
-      expect(updatedMenu.level, 01);
+      expect(entityUpd.id, 0);
+      expect(entityUpd.name, 'test name');
+      expect(entityUpd.description, '');
+      expect(entityUpd.url, 'https://dhw-api.onrender.com/');
+      expect(entityUpd.icon, '');
+      expect(entityUpd.orderPriority, 01);
+      expect(entityUpd.active, false);
+      expect(entityUpd.parent, null);
+      expect(entityUpd.level, 01);
     });
 
     test('should deserialize from JSON', () {
       final json = mockMenuPayload.toJson();
+      final entity = Menu.fromJson(json!);
 
-      final finalMenu = Menu.fromJson(json!);
-
-      expect(finalMenu?.name, 'test name');
-      expect(finalMenu?.description, '');
-      expect(finalMenu?.url, 'https://dhw-api.onrender.com/');
-      expect(finalMenu?.icon, '');
-      expect(finalMenu?.orderPriority, 01);
-      expect(finalMenu?.active, false);
-      expect(finalMenu?.parent, null);
-      expect(finalMenu?.level, 01);
+      expect(entity?.name, 'test name');
+      expect(entity?.description, '');
+      expect(entity?.url, 'https://dhw-api.onrender.com/');
+      expect(entity?.icon, '');
+      expect(entity?.orderPriority, 01);
+      expect(entity?.active, false);
+      expect(entity?.parent, null);
+      expect(entity?.level, 01);
     });
 
     test('should deserialize from JSON string', () {
       final jsonString = jsonEncode(mockMenuPayload.toJson()!);
+      final entity = Menu.fromJsonString(jsonString);
 
-      final finalMenu = Menu.fromJsonString(jsonString);
-
-      expect(finalMenu?.name, 'test name');
-      expect(finalMenu?.description, '');
-      expect(finalMenu?.url, 'https://dhw-api.onrender.com/');
-      expect(finalMenu?.icon, '');
-      expect(finalMenu?.orderPriority, 01);
-      expect(finalMenu?.active, false);
-      expect(finalMenu?.parent, null);
-      expect(finalMenu?.level, 01);
+      expect(entity?.name, 'test name');
+      expect(entity?.description, '');
+      expect(entity?.url, 'https://dhw-api.onrender.com/');
+      expect(entity?.icon, '');
+      expect(entity?.orderPriority, 01);
+      expect(entity?.active, false);
+      expect(entity?.parent, null);
+      expect(entity?.level, 01);
     });
   });
 }

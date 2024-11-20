@@ -6,7 +6,7 @@ class ForgotPasswordState extends Equatable {
   final String email;
   final ForgotPasswordStatus status;
 
-  static final String authenticationFailKey = 'error.authenticate';
+  static const String authenticationFailKey = 'error.authenticate';
 
   const ForgotPasswordState({
     this.email = '',

@@ -16,23 +16,18 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AccountBloc>(context).add(AccountLoad());
+    BlocProvider.of<AccountBloc>(context).add(const AccountLoad());
 
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).register),
-    );
+    return AppBar(title: Text(S.of(context).register));
   }
 
   _buildBody(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(top: 50),
+      padding: const EdgeInsets.only(top: 50),
       child: BlocBuilder<AccountBloc, AccountState>(
         builder: (context, state) {
           if (state.account == null) {
@@ -75,7 +70,7 @@ class RegisterScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               FormBuilderTextField(
                 name: "lastname",
                 decoration: InputDecoration(labelText: S.of(context).last_name),
@@ -92,7 +87,7 @@ class RegisterScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               FormBuilderTextField(
                 name: "email",
                 decoration: InputDecoration(labelText: S.of(context).email),
@@ -109,7 +104,7 @@ class RegisterScreen extends StatelessWidget {
                   ],
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               _submitButton(context),
             ],
           ),
@@ -145,7 +140,7 @@ class RegisterScreen extends StatelessWidget {
       if (current is RegisterCompletedState) {
         Navigator.pop(context);
         Message.getMessage(context: context, title: S.of(context).create_user_success, content: "");
-        Future.delayed(Duration(seconds: 1), () {});
+        Future.delayed(const Duration(seconds: 1), () {});
       }
       if (current is RegisterErrorState) {
         Message.errorMessage(title: S.of(context).create_user_error, context: context, content: "");

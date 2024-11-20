@@ -1,14 +1,12 @@
 import 'package:flutter/services.dart';
 
 class AppConstants {
-  static const String APP_KEY = "flutter_bloc_advanced_api";
-  static const String APP_NAME = "User-Offering-Management";
-  static const String APP_VERSION = "1.0.0";
-  static const String APP_DESCRIPTION = "User Roles and Offering Management mobile and web application";
-  static const String APP_AUTHOR = "*****";
-  static const String APP_AUTHOR_EMAIL = "*****@*****.com";
-// static String jwtToken = "";
-// static String role = "";
+  static const String appKey = "flutter_bloc_advanced";
+  static const String appName = "FlutterTemplate";
+  static const String appVersion = "1.0.0";
+  static const String appDescription = "User Roles and Offering Management mobile and web application";
+  static const String appAuthor = "sekoya.tech";
+  static const String appAuthorEmail = "info@sekoya.tech";
 }
 
 class UpperCaseTextFormatter extends TextInputFormatter {

@@ -13,89 +13,85 @@ void main() {
 
   group("Customer model", () {
     test("should create a Customer instance (Constructor)", () {
-      final finalCustomer = mockCustomerFullPayload;
+      const entity = mockCustomerFullPayload;
 
-      expect(finalCustomer.id, '1');
-      expect(finalCustomer.name, 'Acme');
-      expect(finalCustomer.phone, '5055055050');
-      expect(finalCustomer.cityName, 'Konya');
-      expect(finalCustomer.email, 'john.doe@example.com');
-      expect(finalCustomer.districtName, "selçuklu");
-      expect(finalCustomer.address, 'yazır mh.');
-      expect(finalCustomer.active, true);
+      expect(entity.id, '1');
+      expect(entity.name, 'Acme');
+      expect(entity.phone, '5055055050');
+      expect(entity.cityName, 'Konya');
+      expect(entity.email, 'john.doe@example.com');
+      expect(entity.districtName, "selçuklu");
+      expect(entity.address, 'yazır mh.');
+      expect(entity.active, true);
     });
 
     test('should copy a Customer instance with new values (copyWith)', () {
-      final finalCustomer = mockCustomerFullPayload;
+      const entity = mockCustomerFullPayload;
+      final entityUpd = entity.copyWith();
 
-      final updatedCustomer = finalCustomer.copyWith();
-
-      expect(updatedCustomer == finalCustomer, true);
+      expect(entityUpd == entity, true);
     });
 
     test('should copy a Customer instance with new values (copyWith) new values', () {
-      final finalCustomer = mockCustomerFullPayload;
-
-      final updatedCustomer = finalCustomer.copyWith(
+      const entity = mockCustomerFullPayload;
+      final entityUpd = entity.copyWith(
         name: 'new Acme',
         cityName: 'izmir',
         districtName: 'göztepe',
         address: 'yazır',
       );
 
-      expect(updatedCustomer.id, '1');
-      expect(updatedCustomer.name, 'new Acme');
-      expect(updatedCustomer.phone, '5055055050');
-      expect(updatedCustomer.cityName, 'izmir');
-      expect(updatedCustomer.email, 'john.doe@example.com');
-      expect(updatedCustomer.districtName, 'göztepe');
-      expect(updatedCustomer.address, 'yazır');
-      expect(updatedCustomer.active, true);
+      expect(entityUpd.id, '1');
+      expect(entityUpd.name, 'new Acme');
+      expect(entityUpd.phone, '5055055050');
+      expect(entityUpd.cityName, 'izmir');
+      expect(entityUpd.email, 'john.doe@example.com');
+      expect(entityUpd.districtName, 'göztepe');
+      expect(entityUpd.address, 'yazır');
+      expect(entityUpd.active, true);
     });
 
     test('should deserialize from JSON', () {
       final json = mockCustomerFullPayload.toJson()!;
+      final entity = Customer.fromJson(json);
 
-      final finalCustomer = Customer.fromJson(json);
-
-      expect(finalCustomer?.id, '1');
-      expect(finalCustomer?.name, 'Acme');
-      expect(finalCustomer?.phone, '5055055050');
-      expect(finalCustomer?.cityName, 'Konya');
-      expect(finalCustomer?.email, 'john.doe@example.com');
-      expect(finalCustomer?.districtName, "selçuklu");
-      expect(finalCustomer?.address, 'yazır mh.');
-      expect(finalCustomer?.active, true);
+      expect(entity?.id, '1');
+      expect(entity?.name, 'Acme');
+      expect(entity?.phone, '5055055050');
+      expect(entity?.cityName, 'Konya');
+      expect(entity?.email, 'john.doe@example.com');
+      expect(entity?.districtName, "selçuklu");
+      expect(entity?.address, 'yazır mh.');
+      expect(entity?.active, true);
     });
 
     test('should deserialize from JSON string', () {
       final jsonString = jsonEncode(mockCustomerFullPayload.toJson()!);
+      final entity = Customer.fromJsonString(jsonString);
 
-      final finalCustomer = Customer.fromJsonString(jsonString);
-
-      expect(finalCustomer?.id, '1');
-      expect(finalCustomer?.name, 'Acme');
-      expect(finalCustomer?.phone, '5055055050');
-      expect(finalCustomer?.cityName, 'Konya');
-      expect(finalCustomer?.email, 'john.doe@example.com');
-      expect(finalCustomer?.districtName, "selçuklu");
-      expect(finalCustomer?.address, 'yazır mh.');
-      expect(finalCustomer?.active, true);
+      expect(entity?.id, '1');
+      expect(entity?.name, 'Acme');
+      expect(entity?.phone, '5055055050');
+      expect(entity?.cityName, 'Konya');
+      expect(entity?.email, 'john.doe@example.com');
+      expect(entity?.districtName, "selçuklu");
+      expect(entity?.address, 'yazır mh.');
+      expect(entity?.active, true);
     });
 
     //props
     test('props test', () {
-      final finalCustomer = mockCustomerFullPayload;
-      final updatedCustomer = finalCustomer.copyWith();
+      const entity = mockCustomerFullPayload;
+      final entityUpd = entity.copyWith();
 
-      expect(finalCustomer.props, updatedCustomer.props);
+      expect(entity.props, entityUpd.props);
     });
 
     //toString
     test('should return string', () {
-      final finalCustomer = mockCustomerFullPayload;
-      expect(finalCustomer.toString(),
-          'Customer(1, Acme, 5055055050, john.doe@example.com, Konya, selçuklu, yazır mh., true)');
+      const entity = mockCustomerFullPayload;
+
+      expect(entity.toString(), 'Customer(1, Acme, 5055055050, john.doe@example.com, Konya, selçuklu, yazır mh., true)');
     });
   });
 }

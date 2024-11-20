@@ -12,7 +12,7 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 /// main entry point of local computer development
 
 void main() async {
-  ProfileConstants.setEnvironment(Environment.DEV);
+  ProfileConstants.setEnvironment(Environment.dev);
   initializeJsonMapper();
   WidgetsFlutterBinding.ensureInitialized();
   const defaultLanguage = "en";
@@ -20,6 +20,6 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(App(language: defaultLanguage));
+    runApp(const App(language: defaultLanguage));
   });
 }

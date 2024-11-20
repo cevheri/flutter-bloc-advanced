@@ -14,7 +14,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc({
     required UserRepository userRepository,
   })  : _userRepository = userRepository,
-        super(UserState()) {
+        super(const UserState()) {
     on<UserEvent>((event, emit) {});
     on<UserCreate>(_onCreate);
     on<UserSearch>(_onSearch);

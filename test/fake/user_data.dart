@@ -24,23 +24,16 @@ final mockUserFullPayload = User(
 );
 
 /// Authority(Role) fake data
-final mockAuthorityPayload = Authority(
-  name: 'ROLE_USER',
-);
+const mockAuthorityPayload = Authority(name: 'ROLE_USER');
 
 /// PasswordChange fake data with full payload
-final mockPasswordChangePayload = PasswordChangeDTO(
-  currentPassword: 'password',
-  newPassword: 'new_password',
-);
+const mockPasswordChangePayload = PasswordChangeDTO(currentPassword: 'password', newPassword: 'new_password');
 
 /// JWTToken fake data
-final mockJWTTokenPayload = JWTToken(
-  idToken: 'MOCK_UNITTEST_TOKEN',
-);
+const mockJWTTokenPayload = JWTToken(idToken: 'MOCK_UNITTEST_TOKEN');
 
 /// Menu fake data with full payload
-final mockMenuPayload = Menu(
+const mockMenuPayload = Menu(
   id: 0,
   name: 'test name',
   description: '',
@@ -53,4 +46,4 @@ final mockMenuPayload = Menu(
 );
 
 /// UserJWT fake data with full payload
-final mockUserJWTPayload = UserJWT("username", "password");
+const mockUserJWTPayload = UserJWT("username", "password");

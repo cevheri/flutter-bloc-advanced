@@ -18,7 +18,7 @@ void main() {
   //endregion setup
 
   //getDistrictsByCity
-  group("District Repository getDistrictsByCity", (){
+  group("District Repository getDistrictsByCity", () {
     test("Given valid cityId when getDistrictsByCity then return districts successfully", () async {
       TestUtils().setupAuthentication();
       final result = await DistrictRepository().getDistrictsByCity("1");
@@ -41,13 +41,12 @@ void main() {
     });
   });
 
-
   //createDistrict
   group("DistrictRepository Create success", () {
     test("Given valid district when create then return district successfully", () async {
       TestUtils().setupAuthentication();
-      final newDistrict = mockDistrictPayload;
-      final result = await DistrictRepository().createDistrict(newDistrict);
+      const entity = mockDistrictPayload;
+      final result = await DistrictRepository().createDistrict(entity);
 
       expect(result, isA<District>());
       expect(result?.id, "1");
@@ -55,15 +54,15 @@ void main() {
       expect(result?.code, "code");
     });
     test("Given valid district without AccessToken when create then return district fail", () async {
-      final newDistrict = mockDistrictPayload;
-      expect(() async => await DistrictRepository().createDistrict(newDistrict), throwsA(isA<UnauthorizedException>()));
+      const entity = mockDistrictPayload;
+      expect(() async => await DistrictRepository().createDistrict(entity), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null district when create then return district fail", () async {
-      expect(() async => await DistrictRepository().createDistrict(District()), throwsA(isA<BadRequestException>()));
+      expect(() async => await DistrictRepository().createDistrict(const District()), throwsA(isA<BadRequestException>()));
     });
     test("Given null district when create then return district fail", () async {
-      expect(() async => await DistrictRepository().createDistrict(District(name: "")), throwsA(isA<BadRequestException>()));
+      expect(() async => await DistrictRepository().createDistrict(const District(name: "")), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -110,7 +109,8 @@ void main() {
   group("DistrictRepository Delete success", () {
     test("Given valid id when deleteDistrict then return successful", () async {
       TestUtils().setupAuthentication();
-      await DistrictRepository().deleteDistrict("1");
+
+      expect(() async => await DistrictRepository().deleteDistrict("1"), returnsNormally);
     });
     test("Given valid id without AccessToken when deleteDistrict then return fail", () async {
       expect(() async => await DistrictRepository().deleteDistrict("1"), throwsA(isA<UnauthorizedException>()));

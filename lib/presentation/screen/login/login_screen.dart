@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -15,19 +16,10 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text("Flutter Bloc Advanced"),
-      //leading button false
-      leading: Container(),
-    );
-  }
+  _buildAppBar(BuildContext context) => AppBar(title: const Text("Flutter Bloc Advanced"), leading: Container());
 
   _buildBody(BuildContext context) {
     return FormBuilder(
@@ -41,22 +33,13 @@ class LoginScreen extends StatelessWidget {
               _logo(context),
               _usernameField(context),
               _passwordField(context),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.6,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: <Widget>[_submitButton(context)],
-                ),
+                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[_submitButton(context)]),
               ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[_forgotPasswordLink(context)],
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[_register(context)],
-              ),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
+              Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
               _validationZone(),
             ],
           ),
@@ -67,18 +50,9 @@ class LoginScreen extends StatelessWidget {
 
   _logo(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      //beyaz  renk buraya konulacak
-      return Image.asset(
-        'assets/images/logoLight.png',
-        width: 200,
-        height: 200,
-      );
+      return Image.asset(LocaleConstants.logoLightUrl, width: 200, height: 200);
     } else {
-      return Image.asset(
-        'assets/images/img.png',
-        width: 200,
-        height: 200,
-      );
+      return Image.asset('assets/images/img.png', width: 200, height: 200);
     }
   }
 
@@ -141,7 +115,7 @@ class LoginScreen extends StatelessWidget {
             IconButton(
               icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
               onPressed: () {
-                context.read<LoginBloc>().add(TogglePasswordVisibility());
+                context.read<LoginBloc>().add(const TogglePasswordVisibility());
               },
             ),
           ],
@@ -180,10 +154,8 @@ class LoginScreen extends StatelessWidget {
   }
 
   void _submitEvent(BuildContext context) {
-    context.read<LoginBloc>().add(LoginFormSubmitted(
-          username: _loginFormKey.currentState!.value['username'],
-          password: _loginFormKey.currentState!.value['password'],
-        ));
+    context.read<LoginBloc>().add(
+        LoginFormSubmitted(username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']));
   }
 
   _forgotPasswordLink(BuildContext context) {

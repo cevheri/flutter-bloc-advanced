@@ -18,45 +18,38 @@ void main() {
     });
 
     test('should copy a Authority instance with new values (copyWith)', () {
-      final updatedAuthority = mockAuthorityPayload.copyWith();
+      final entityUpd = mockAuthorityPayload.copyWith();
 
-      expect(updatedAuthority == mockAuthorityPayload, true);
+      expect(entityUpd == mockAuthorityPayload, true);
     });
 
     test('should copy a Authority instance with new values (copyWith)', () {
-      final updatedAuthority = mockAuthorityPayload.copyWith(
-        name: 'ROLE_ADMIN',
-      );
+      final entityUpd = mockAuthorityPayload.copyWith(name: 'ROLE_ADMIN');
 
-      expect(updatedAuthority.name, 'ROLE_ADMIN');
+      expect(entityUpd.name, 'ROLE_ADMIN');
     });
 
     test('should compare two Authorities instances', () {
-      final finalAuthority = mockAuthorityPayload;
+      const entity = mockAuthorityPayload;
+      final entityUpd = entity.copyWith(name: 'ROLE_ADMIN');
 
-      final updatedAuthority = finalAuthority.copyWith(
-        name: 'ROLE_ADMIN',
-      );
-
-      expect(finalAuthority == updatedAuthority, false);
+      expect(entity == entityUpd, false);
     });
   });
 
   group("Authority Model Json Test", () {
     test('should convert Authorities from Json', () {
       final json = mockAuthorityPayload.toJson();
+      final entity = Authority.fromJson(json!);
 
-      final authority = Authority.fromJson(json!);
-
-      expect(authority?.name, 'ROLE_USER');
+      expect(entity?.name, 'ROLE_USER');
     });
 
     test('should convert Authorities from JsonString', () {
       final jsonString = jsonEncode(mockAuthorityPayload.toJson());
+      final entity = Authority.fromJsonString(jsonString);
 
-      final authority = Authority.fromJsonString(jsonString);
-
-      expect(authority?.name, 'ROLE_USER');
+      expect(entity?.name, 'ROLE_USER');
     });
 
     test('should convert Authorities to Json', () {
@@ -66,9 +59,9 @@ void main() {
     });
 
     test("to string method", () {
-      final authority = mockAuthorityPayload;
+      const entity = mockAuthorityPayload;
 
-      expect(authority.toString(), 'Authority(ROLE_USER)');
+      expect(entity.toString(), 'Authority(ROLE_USER)');
     });
   });
 }

@@ -8,7 +8,6 @@ import '../../fake/user_data.dart';
 
 /// Test the Change Password model
 void main() {
-
   setUp(() {
     initializeJsonMapper();
   });
@@ -20,26 +19,22 @@ void main() {
     });
 
     test('should copy a ChangePassword instance with new values (copyWith)', () {
-      final updatedChangePassword = mockPasswordChangePayload.copyWith(
-        currentPassword: 'new_password',
-        newPassword: 'password',
-      );
-      expect(updatedChangePassword.currentPassword, 'new_password');
-      expect(updatedChangePassword.newPassword, 'password');
+      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
+
+      expect(entityUpd.currentPassword, 'new_password');
+      expect(entityUpd.newPassword, 'password');
     });
 
     test('should copy a ChangePassword instance with new values (copyWith)', () {
-      final updatedChangePassword = mockPasswordChangePayload.copyWith();
-      expect(updatedChangePassword == mockPasswordChangePayload, true);
+      final entityUpd = mockPasswordChangePayload.copyWith();
+
+      expect(entityUpd == mockPasswordChangePayload, true);
     });
 
     test('should compare two ChangePassword instances', () {
-      final updatedChangePassword = mockPasswordChangePayload.copyWith(
-        currentPassword: 'new_password',
-        newPassword: 'password',
-      );
+      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
 
-      expect(mockPasswordChangePayload == updatedChangePassword, false);
+      expect(mockPasswordChangePayload == entityUpd, false);
     });
   });
 
@@ -47,45 +42,37 @@ void main() {
   group("Change Password Model Json Test", () {
     test('should convert ChangePassword from Json', () {
       final json = mockPasswordChangePayload.toJson();
+      final entity = PasswordChangeDTO.fromJson(json!);
 
-      final changePassword = PasswordChangeDTO.fromJson(json!);
-
-      expect(changePassword?.currentPassword, 'password');
-      expect(changePassword?.newPassword, 'new_password');
+      expect(entity?.currentPassword, 'password');
+      expect(entity?.newPassword, 'new_password');
     });
 
     test('should convert ChangePassword from JsonString', () {
       final jsonString = jsonEncode(mockPasswordChangePayload.toJson());
+      final entity = PasswordChangeDTO.fromJsonString(jsonString);
 
-      final changePassword = PasswordChangeDTO.fromJsonString(jsonString);
-
-      expect(changePassword?.currentPassword, 'password');
-      expect(changePassword?.newPassword, 'new_password');
+      expect(entity?.currentPassword, 'password');
+      expect(entity?.newPassword, 'new_password');
     });
 
     test('should convert ChangePassword to Json', () {
       final json = mockPasswordChangePayload.toJson()!;
+
       expect(json['currentPassword'], 'password');
       expect(json['newPassword'], 'new_password');
     });
 
     test('should compare two ChangePassword instances props', () {
-      final updatedChangePassword = mockPasswordChangePayload.copyWith(
-        currentPassword: 'new_password',
-        newPassword: 'password',
-      );
+      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
 
-      expect(mockPasswordChangePayload.props == updatedChangePassword.props, false);
+      expect(mockPasswordChangePayload.props == entityUpd.props, false);
     });
 
     test('should compare two ChangePassword instances toString', () {
-      final updatedChangePassword = mockPasswordChangePayload.copyWith(
-        currentPassword: 'new_password',
-        newPassword: 'password',
-      );
+      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
 
-      expect(mockPasswordChangePayload.toString() == updatedChangePassword.toString(), false);
+      expect(mockPasswordChangePayload.toString() == entityUpd.toString(), false);
     });
   });
-
 }

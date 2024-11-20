@@ -135,14 +135,14 @@ void main() {
       // Given: render screen with valid user data
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       //When: wait screen is ready
-      await tester.pumpAndSettle(Duration(seconds: 1));
+      await tester.pumpAndSettle(const Duration(seconds: 1));
 
       // before click save button check button
       expect(find.byType(ElevatedButton), findsOneWidget);
       expect(find.text("Save"), findsOneWidget);
 
       await tester.tap(find.text('Save'));
-      await tester.pumpAndSettle(Duration(seconds: 5));
+      await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // after click save button check screen, dispose EditUserScreen and should be navigate to user list screen
       expect(find.byType(EditUserScreen), findsNothing);
@@ -159,7 +159,7 @@ void main() {
       expect(find.text("Save"), findsOneWidget);
 
       await tester.tap(find.text('Save'));
-      await tester.pumpAndSettle(Duration(seconds: 5));
+      await tester.pumpAndSettle(const Duration(seconds: 5));
       await tester.pumpWidget(getWidget(mockUserFullPayload));
       await tester.pumpAndSettle();
 
@@ -179,7 +179,7 @@ void main() {
       expect(find.text("Save"), findsOneWidget);
 
       await tester.tap(find.text('Save'));
-      await tester.pumpAndSettle(Duration(seconds: 5));
+      await tester.pumpAndSettle(const Duration(seconds: 5));
 
       // after click save button check screen, with same user data, EditUserScreen will not call bloc event then go back
       expect(find.byType(EditUserScreen), findsNothing);

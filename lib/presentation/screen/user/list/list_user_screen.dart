@@ -14,11 +14,11 @@ class ListUserScreen extends StatelessWidget {
   ListUserScreen({super.key});
 
   final listFormKey = GlobalKey<FormBuilderState>();
-  final headerStyle = TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  final headerStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthorityBloc>(context).add(AuthorityLoad());
+    BlocProvider.of<AuthorityBloc>(context).add(const AuthorityLoad());
     return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
@@ -44,15 +44,15 @@ class ListUserScreen extends StatelessWidget {
 
   Widget layoutBody(BuildContext context, double min, double max, double maxWidth) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(30, 0, 30, 10),
+      padding: const EdgeInsets.fromLTRB(30, 0, 30, 10),
       child: Column(
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           _tableSearch(min, max, maxWidth, context),
-          SizedBox(height: 30),
+          const SizedBox(height: 30),
           _tableHeader(context),
           _tableData(context),
         ],
@@ -67,7 +67,7 @@ class ListUserScreen extends StatelessWidget {
           return ListView.builder(
             itemCount: state.userList.length,
             shrinkWrap: true,
-            physics: ClampingScrollPhysics(),
+            physics: const ClampingScrollPhysics(),
             itemBuilder: (context, index) {
               return Container(
                 height: 50,
@@ -79,13 +79,13 @@ class ListUserScreen extends StatelessWidget {
                   verticalDirection: VerticalDirection.down,
                   children: [
                     _tableDataAuthority(state, index, context),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     _tableDataLogin(state, index),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     _tableDataFirsName(state, index),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     _tableDataLastName(state, index),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     _tableDataEmail(state, index),
                     // SizedBox(width: 5),
                     // Expanded(
@@ -94,11 +94,11 @@ class ListUserScreen extends StatelessWidget {
                     //       state.userList[index].phoneNumber.toString() == "null" ? "-" : state.userList[index].phoneNumber.toString(),
                     //       textAlign: TextAlign.left),
                     // ),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     _tableDataActivatedSwitch(state, index),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                     _tableDataEditButton(context, state, index),
-                    SizedBox(width: 5),
+                    const SizedBox(width: 5),
                   ],
                 ),
               );
@@ -123,7 +123,7 @@ class ListUserScreen extends StatelessWidget {
         hoverColor: Colors.transparent,
         splashColor: Colors.transparent,
         highlightColor: Colors.transparent,
-        icon: Icon(Icons.edit),
+        icon: const Icon(Icons.edit),
         onPressed: () {
           Navigator.push(
             context,
@@ -179,51 +179,51 @@ class ListUserScreen extends StatelessWidget {
               flex: 7,
               child: Text(S.of(context).role, textAlign: TextAlign.left, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 10,
               child: Text(S.of(context).login, textAlign: TextAlign.left, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 10,
               child: Text(S.of(context).first_name, textAlign: TextAlign.left, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 10,
               child: Text(S.of(context).last_name, textAlign: TextAlign.left, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 15,
               child: Text(S.of(context).email, textAlign: TextAlign.left, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 10,
               child: Text(S.of(context).phone_number, textAlign: TextAlign.left, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 3,
               child: Text(S.of(context).guest, textAlign: TextAlign.left, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 3,
               child: Text(S.of(context).active, textAlign: TextAlign.center, style: headerStyle),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
             Expanded(
               flex: 3,
               child: Container(),
             ),
-            SizedBox(width: 5),
+            const SizedBox(width: 5),
           ],
         ),
-        SizedBox(height: 10),
-        Divider(
+        const SizedBox(height: 10),
+        const Divider(
           height: 2,
           color: Colors.grey,
           thickness: 1.5,
@@ -236,22 +236,22 @@ class ListUserScreen extends StatelessWidget {
     // dark or light mode row decoration
     if (Theme.of(context).brightness == Brightness.dark) {
       if (index % 2 == 0) {
-        return BoxDecoration(color: Colors.black26);
+        return const BoxDecoration(color: Colors.black26);
       } else {
-        return BoxDecoration();
+        return const BoxDecoration();
       }
     } else {
       if (index % 2 == 0) {
         return BoxDecoration(color: Colors.blueGrey[50]);
       } else {
-        return BoxDecoration();
+        return const BoxDecoration();
       }
     }
   }
 
   Widget _tableSearch(double min, double max, double maxWidth, BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(0, 0, 30, 10),
+      padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
       child: FormBuilder(
         key: listFormKey,
         child: Row(
@@ -260,7 +260,7 @@ class ListUserScreen extends StatelessWidget {
             Expanded(
               flex: 2,
               child: Padding(
-                padding: EdgeInsets.only(right: 10),
+                padding: const EdgeInsets.only(right: 10),
                 child: BlocBuilder<AuthorityBloc, AuthorityState>(
                   builder: (context, state) {
                     return _tableSearchAuthority(state, context);
@@ -268,17 +268,17 @@ class ListUserScreen extends StatelessWidget {
                 ),
               ),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             _tableSearchPage(context),
-            SizedBox(width: 10),
-            Flexible(
+            const SizedBox(width: 10),
+            const Flexible(
               child: Text("/"),
             ),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             _tableSearchSize(context),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             _tableSearchName(context),
-            SizedBox(width: 10),
+            const SizedBox(width: 10),
             _submitButton(context),
             Expanded(flex: 3, child: Container()),
           ],
@@ -290,7 +290,7 @@ class ListUserScreen extends StatelessWidget {
   Expanded _tableSearchName(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.only(right: 10),
         child: FormBuilderTextField(
           name: 'name',
           decoration: InputDecoration(hintText: S.of(context).name),
@@ -303,7 +303,7 @@ class ListUserScreen extends StatelessWidget {
   Expanded _tableSearchSize(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.only(right: 10),
         child: FormBuilderTextField(
           name: 'rangeEnd',
           initialValue: "100",
@@ -322,7 +322,7 @@ class ListUserScreen extends StatelessWidget {
   Expanded _tableSearchPage(BuildContext context) {
     return Expanded(
       child: Padding(
-        padding: EdgeInsets.only(right: 10),
+        padding: const EdgeInsets.only(right: 10),
         child: FormBuilderTextField(
           name: 'rangeStart',
           initialValue: "0",

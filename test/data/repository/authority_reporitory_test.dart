@@ -21,22 +21,22 @@ void main() {
   group("AuthorityRepository Create success", () {
     test("Given valid authority when create then return authority successfully", () async {
       TestUtils().setupAuthentication();
-      final newAuthority = mockAuthorityPayload;
-      final result = await AuthorityRepository().createAuthority(newAuthority);
+      const entity = mockAuthorityPayload;
+      final result = await AuthorityRepository().createAuthority(entity);
 
       expect(result, isA<Authority>());
       expect(result?.name, "ROLE_USER");
     });
     test("Given valid authority without AccessToken when create then return authority fail", () async {
-      final newAuthority = mockAuthorityPayload;
-      expect(() async => await AuthorityRepository().createAuthority(newAuthority), throwsA(isA<UnauthorizedException>()));
+      const entity = mockAuthorityPayload;
+      expect(() async => await AuthorityRepository().createAuthority(entity), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null authority when create then return authority fail", () async {
-      expect(() async => await AuthorityRepository().createAuthority(Authority()), throwsA(isA<BadRequestException>()));
+      expect(() async => await AuthorityRepository().createAuthority(const Authority()), throwsA(isA<BadRequestException>()));
     });
     test("Given null authority when create then return authority fail", () async {
-      expect(() async => await AuthorityRepository().createAuthority(Authority(name: "")), throwsA(isA<BadRequestException>()));
+      expect(() async => await AuthorityRepository().createAuthority(const Authority(name: "")), throwsA(isA<BadRequestException>()));
     });
   });
 

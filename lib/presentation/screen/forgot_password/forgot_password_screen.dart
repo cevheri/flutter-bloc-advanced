@@ -36,7 +36,7 @@ class ForgotPasswordScreen extends StatelessWidget {
           children: <Widget>[
             _logo(context),
             _forgotPasswordField(context),
-            SizedBox(height: 20),
+            const SizedBox(height: 20),
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.6,
               child: Row(
@@ -110,7 +110,7 @@ class ForgotPasswordScreen extends StatelessWidget {
       if (current is AccountResetPasswordCompletedState) {
         Navigator.pop(context);
         Message.getMessage(context: context, title: S.of(context).email_reset_password_success, content: "");
-        Future.delayed(Duration(seconds: 1), () {});
+        Future.delayed(const Duration(seconds: 1), () {});
       }
       if (current is AccountResetPasswordErrorState) {
         Message.errorMessage(title: S.of(context).email_reset_password_error, context: context, content: "");

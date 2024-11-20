@@ -22,7 +22,7 @@ class MyHttpOverrides extends HttpOverrides {
 }
 
 class HttpUtils {
-  static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.APP_KEY : "default_token"}App-error';
+  static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.appKey : "default_token"}App-error';
   static const String successResult = 'success';
   static const String keyForJWTToken = 'jwt-token';
   static const String badRequestServerKey = 'error.400';
@@ -30,7 +30,7 @@ class HttpUtils {
   static const String generalNoErrorKey = 'none';
   static const int timeout = 30;
   static const String applicationJson = 'application/json';
-  static const String UTF8 = 'utf-8';
+  static const String utf8Val = 'utf-8';
   static const String noInternetConnectionError = 'No Internet connection';
   static const String requestTimeoutError = 'Request timeout';
 
@@ -114,7 +114,7 @@ class HttpUtils {
             url,
             headers: headers,
             body: messageBody,
-            encoding: Encoding.getByName(UTF8),
+            encoding: Encoding.getByName(utf8Val),
           )
           .timeout(const Duration(seconds: timeout));
 
@@ -190,7 +190,7 @@ class HttpUtils {
     http.Response response;
     try {
       response = await http
-          .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(UTF8))
+          .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
           .timeout(const Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
@@ -216,7 +216,7 @@ class HttpUtils {
     http.Response response;
     try {
       response = await http
-          .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(UTF8))
+          .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
           .timeout(const Duration(seconds: timeout));
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {

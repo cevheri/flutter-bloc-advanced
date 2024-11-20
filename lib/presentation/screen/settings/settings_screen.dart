@@ -14,10 +14,7 @@ class SettingsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   List<DropdownMenuItem<String>> createDropdownLanguageItems(Map<String, String> languages) {
@@ -38,7 +35,7 @@ class SettingsScreen extends StatelessWidget {
             width: MediaQuery.of(context).size.width,
             child: Center(
               child: Visibility(
-                replacement: CircularProgressIndicator(value: null),
+                replacement: const CircularProgressIndicator(value: null),
                 visible: state.status != SettingsStatus.loaded,
                 child: Text(S.of(context).save),
               ),
@@ -49,9 +46,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).settings),
-    );
+    return AppBar(title: Text(S.of(context).settings));
   }
 
   _buildBody(BuildContext context) {
@@ -61,49 +56,33 @@ class SettingsScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.max,
         children: [
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Center(
             child: SizedBox(
               width: 150,
               child: ElevatedButton(
-                onPressed: () {
-                  Navigator.pushNamed(context, ApplicationRoutes.changePassword);
-                },
-                child: Text(
-                  S.of(context).change_password,
-                  textAlign: TextAlign.center,
-                ),
+                onPressed: () => Navigator.pushNamed(context, ApplicationRoutes.changePassword),
+                child: Text(S.of(context).change_password, textAlign: TextAlign.center),
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Center(
             child: SizedBox(
               width: 150,
               child: ElevatedButton(
-                onPressed: () {
-                  languageConfirmationDialog(context);
-                },
-                child: Text(
-                  S.of(context).language_select,
-                  textAlign: TextAlign.center,
-                ),
+                onPressed: () => languageConfirmationDialog(context),
+                child: Text(S.of(context).language_select, textAlign: TextAlign.center),
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Center(
             child: SizedBox(
               width: 150,
               child: ElevatedButton(
-                onPressed: () {
-                  logOutDialog(context);
-                  //Navigator.pushNamed(context, ApplicationRoutes.logout);
-                },
-                child: Text(
-                  S.of(context).logout,
-                  textAlign: TextAlign.center,
-                ),
+                onPressed: () => logOutDialog(context),
+                child: Text(S.of(context).logout, textAlign: TextAlign.center),
               ),
             ),
           ),
@@ -131,14 +110,8 @@ class SettingsScreen extends StatelessWidget {
           title: Text(S.of(context).logout),
           content: Text(S.of(context).logout_sure),
           actions: [
-            TextButton(
-              onPressed: () => onLogout(context),
-              child: Text(S.of(context).yes),
-            ),
-            TextButton(
-              onPressed: () => onCancel(context),
-              child: Text(S.of(context).no),
-            ),
+            TextButton(onPressed: () => onLogout(context), child: Text(S.of(context).yes)),
+            TextButton(onPressed: () => onCancel(context), child: Text(S.of(context).no)),
           ],
         );
       },
@@ -151,7 +124,6 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void onCancel(context) {
-    //pop context
     Navigator.pop(context);
   }
 }
@@ -166,18 +138,16 @@ class LanguageConfirmationDialog extends StatelessWidget {
       actionsAlignment: MainAxisAlignment.center,
       actions: [
         TextButton(
-          style: TextButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
+          style: TextButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
           onPressed: () => _setLanguage(context, 'tr'),
-          child: Text(S.of(context).turkish, style: TextStyle(color: Colors.white)),
+          child: Text(S.of(context).turkish, style: const TextStyle(color: Colors.white)),
         ),
         TextButton(
           style: TextButton.styleFrom(
             backgroundColor: Theme.of(context).colorScheme.primary,
           ),
           onPressed: () => _setLanguage(context, 'en'),
-          child: Text(S.of(context).english, style: TextStyle(color: Colors.white)),
+          child: Text(S.of(context).english, style: const TextStyle(color: Colors.white)),
         ),
       ],
     );

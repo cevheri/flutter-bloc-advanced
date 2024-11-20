@@ -29,7 +29,7 @@ void main() {
   final blocs = [
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
     BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
-    BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()))
+    BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()))
   ];
 
   GetMaterialApp getWidget() {

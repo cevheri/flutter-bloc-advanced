@@ -14,17 +14,14 @@ class EditUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).edit_user),
       leading: IconButton(
-        icon: Icon(Icons.arrow_back),
+        icon: const Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.pop(context);
           formKey.currentState!.fields['salesPersonCode']?.didChange(""); //TODO fix fieldName
@@ -37,8 +34,8 @@ class EditUserScreen extends StatelessWidget {
     return Center(
       child: SingleChildScrollView(
         child: Container(
-          constraints: BoxConstraints(minWidth: 300, maxWidth: 700),
-          padding: EdgeInsets.all(10),
+          constraints: const BoxConstraints(minWidth: 300, maxWidth: 700),
+          padding: const EdgeInsets.all(10),
           alignment: Alignment.center,
           child: FormBuilder(
             key: formKey,
@@ -51,7 +48,7 @@ class EditUserScreen extends StatelessWidget {
                 // EditFormPhoneNumber(user: user),
                 EditFormActive(user: user),
                 EditFormAuthorities(user: user, formKey: formKey),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 SubmitButton(context, user: user, formKey: formKey)
               ],
             ),

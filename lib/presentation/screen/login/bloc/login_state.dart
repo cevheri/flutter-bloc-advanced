@@ -8,7 +8,7 @@ class LoginState extends Equatable {
   final LoginStatus status;
   final bool passwordVisible;
 
-  static final String authenticationFailKey = 'error.authenticate';
+  static const String authenticationFailKey = 'error.authenticate';
 
   const LoginState({
     this.username = '',

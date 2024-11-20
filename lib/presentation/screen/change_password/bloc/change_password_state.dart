@@ -6,7 +6,7 @@ class ChangePasswordState extends Equatable {
   final String email;
   final ChangePasswordStatus status;
 
-  static final String authenticationFailKey = 'error.authenticate';
+  static const String authenticationFailKey = 'error.authenticate';
 
   const ChangePasswordState({
     this.email = '',

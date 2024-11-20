@@ -13,41 +13,41 @@ void main() {
 
   group("District Model", () {
     test('should create a City instance (Constructor)', () {
-      final finalDistrict = mockDistrictPayload;
+      const entity = mockDistrictPayload;
 
-      expect(finalDistrict.id, 'id');
-      expect(finalDistrict.name, 'kadikoy');
-      expect(finalDistrict.code, '34');
+      expect(entity.id, 'id');
+      expect(entity.name, 'kadikoy');
+      expect(entity.code, '34');
     });
 
     test('should copy a District instance with new values (copyWith)', () {
-      final finalDistrict = mockDistrictPayload;
-      final updatedDistrict = finalDistrict.copyWith();
+      const entity = mockDistrictPayload;
+      final entityUpd = entity.copyWith();
 
-      expect(updatedDistrict.id, 'id');
-      expect(updatedDistrict.name, 'kadikoy');
-      expect(updatedDistrict.code, '34');
+      expect(entityUpd.id, 'id');
+      expect(entityUpd.name, 'kadikoy');
+      expect(entityUpd.code, '34');
     });
 
     test('should compare two District instances copyWith ID', () {
-      final finalDistrict = mockDistrictPayload;
-      final updatedDistrict = finalDistrict.copyWith(id: '1');
+      const entity = mockDistrictPayload;
+      final entityUpd = entity.copyWith(id: '1');
 
-      expect(updatedDistrict.id, '1');
+      expect(entityUpd.id, '1');
     });
 
     test('should compare two District instances copyWith name', () {
-      final finalDistrict = mockDistrictPayload;
-      final updatedDistrict = finalDistrict.copyWith(name: 'ankara');
+      const entity = mockDistrictPayload;
+      final entityUpd = entity.copyWith(name: 'ankara');
 
-      expect(updatedDistrict.name, 'ankara');
+      expect(entityUpd.name, 'ankara');
     });
 
     test('should compare two District instances copyWith code', () {
-      final finalDistrict = mockDistrictPayload;
-      final updatedDistrict = finalDistrict.copyWith(code: '06');
+      const entity = mockDistrictPayload;
+      final entityUpd = entity.copyWith(code: '06');
 
-      expect(updatedDistrict.code, '06');
+      expect(entityUpd.code, '06');
     });
   });
 
@@ -55,28 +55,25 @@ void main() {
   group("District Model Json Test", () {
     test('should convert District from Json', () {
       final json = mockDistrictPayload.toJson();
+      final entity = District.fromJson(json!);
 
-      final district = District.fromJson(json!);
-
-      expect(district?.id, 'id');
-      expect(district?.name, 'kadikoy');
-      expect(district?.code, '34');
+      expect(entity?.id, 'id');
+      expect(entity?.name, 'kadikoy');
+      expect(entity?.code, '34');
     });
 
     test('should convert District from Json String', () {
       final jsonString = jsonEncode(mockDistrictPayload.toJson());
+      final entity = District.fromJsonString(jsonString);
 
-      final district = District.fromJsonString(jsonString);
-
-      expect(district?.id, 'id');
-      expect(district?.name, 'kadikoy');
-      expect(district?.code, '34');
+      expect(entity?.id, 'id');
+      expect(entity?.name, 'kadikoy');
+      expect(entity?.code, '34');
     });
 
     test('should convert District to Json', () {
-      final district = mockDistrictPayload;
-
-      final json = district.toJson()!;
+      const entity = mockDistrictPayload;
+      final json = entity.toJson()!;
 
       expect(json['id'], 'id');
       expect(json['name'], 'kadikoy');
@@ -84,18 +81,16 @@ void main() {
     });
 
     test('should compare two District instances props', () {
-      final finalDistrict = mockDistrictPayload;
-      final updatedDistrict = finalDistrict.copyWith();
+      const entity = mockDistrictPayload;
+      final entityUpd = entity.copyWith();
 
-      expect(finalDistrict.props, updatedDistrict.props);
+      expect(entity.props, entityUpd.props);
     });
 
     test('toString Properly', () {
-      final district = mockDistrictPayload;
+      const entity = mockDistrictPayload;
 
-      expect(district.toString(), 'District(id, kadikoy, 34)');
+      expect(entity.toString(), 'District(id, kadikoy, 34)');
     });
   });
-
-
 }

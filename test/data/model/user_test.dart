@@ -7,8 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../fake/user_data.dart';
 
 /// Test the User model
-void main() {
-  final model = mockUserFullPayload;
+void main() { 
 
   setUp(() {
     initializeJsonMapper();
@@ -16,90 +15,88 @@ void main() {
 
   group('User Model', () {
     test('should create a User instance (Constructor)', () {
-      final finalUser = model;
+      final entity = mockUserFullPayload;
 
-      expect(finalUser.id, '1');
-      expect(finalUser.login, 'test_login');
-      expect(finalUser.firstName, 'John');
-      expect(finalUser.lastName, 'Doe');
-      expect(finalUser.email, 'john.doe@example.com');
-      expect(finalUser.activated, true);
-      expect(finalUser.langKey, 'en');
-      expect(finalUser.createdBy, 'admin');
-      expect(finalUser.createdDate, createdDate);
-      expect(finalUser.lastModifiedBy, 'admin');
-      expect(finalUser.lastModifiedDate, createdDate);
-      expect(finalUser.authorities, ['ROLE_USER']);
+      expect(entity.id, '1');
+      expect(entity.login, 'test_login');
+      expect(entity.firstName, 'John');
+      expect(entity.lastName, 'Doe');
+      expect(entity.email, 'john.doe@example.com');
+      expect(entity.activated, true);
+      expect(entity.langKey, 'en');
+      expect(entity.createdBy, 'admin');
+      expect(entity.createdDate, createdDate);
+      expect(entity.lastModifiedBy, 'admin');
+      expect(entity.lastModifiedDate, createdDate);
+      expect(entity.authorities, ['ROLE_USER']);
     });
 
     test('should copy a User instance with new values (copyWith)', () {
-      final finalUser = model;
+      final entity = mockUserFullPayload;
+      final entityUpd = entity.copyWith();
 
-      final updatedUser = finalUser.copyWith();
-
-      expect(updatedUser.id, '1');
-      expect(updatedUser.login, 'test_login');
-      expect(updatedUser.firstName, 'John');
-      expect(updatedUser.lastName, 'Doe');
-      expect(updatedUser.email, 'john.doe@example.com');
-      expect(updatedUser.activated, true);
-      expect(updatedUser.langKey, 'en');
-      expect(updatedUser.createdBy, 'admin');
-      expect(updatedUser.createdDate, createdDate);
-      expect(updatedUser.lastModifiedBy, 'admin');
-      expect(updatedUser.lastModifiedDate, createdDate);
-      expect(updatedUser.authorities, ['ROLE_USER']);
+      expect(entityUpd.id, '1');
+      expect(entityUpd.login, 'test_login');
+      expect(entityUpd.firstName, 'John');
+      expect(entityUpd.lastName, 'Doe');
+      expect(entityUpd.email, 'john.doe@example.com');
+      expect(entityUpd.activated, true);
+      expect(entityUpd.langKey, 'en');
+      expect(entityUpd.createdBy, 'admin');
+      expect(entityUpd.createdDate, createdDate);
+      expect(entityUpd.lastModifiedBy, 'admin');
+      expect(entityUpd.lastModifiedDate, createdDate);
+      expect(entityUpd.authorities, ['ROLE_USER']);
     });
 
     test('should copy a User instance with new values copyWith fistName', () {
-      final finalUser = model;
+      final entity = mockUserFullPayload;
+      final entityUpd = entity.copyWith(firstName: 'Jane');
 
-      final updatedUser = finalUser.copyWith(firstName: 'Jane');
-      expect(updatedUser.firstName, 'Jane');
+      expect(entityUpd.firstName, 'Jane');
     });
-    test('should copy a User instance with new values copyWith lastname', () {
-      final finalUser = model;
 
-      final updatedUser = finalUser.copyWith(lastName: 'Smith');
-      expect(updatedUser.lastName, 'Smith');
+    test('should copy a User instance with new values copyWith lastname', () {
+      final entity = mockUserFullPayload;
+      final entityUpd = entity.copyWith(lastName: 'Smith');
+
+      expect(entityUpd.lastName, 'Smith');
     });
 
     test('should deserialize from JSON', () {
-      final json = model.toJson();
+      final json = mockUserFullPayload.toJson();
+      final entity = User.fromJson(json!);
 
-      final finalUser = User.fromJson(json!);
-
-      expect(finalUser?.id, '1');
-      expect(finalUser?.login, 'test_login');
-      expect(finalUser?.firstName, 'John');
-      expect(finalUser?.lastName, 'Doe');
-      expect(finalUser?.email, 'john.doe@example.com');
-      expect(finalUser?.activated, true);
-      expect(finalUser?.langKey, 'en');
-      expect(finalUser?.createdBy, 'admin');
-      expect(finalUser?.createdDate, createdDate);
-      expect(finalUser?.lastModifiedBy, 'admin');
-      expect(finalUser?.lastModifiedDate, createdDate);
-      expect(finalUser?.authorities, ['ROLE_USER']);
+      expect(entity?.id, '1');
+      expect(entity?.login, 'test_login');
+      expect(entity?.firstName, 'John');
+      expect(entity?.lastName, 'Doe');
+      expect(entity?.email, 'john.doe@example.com');
+      expect(entity?.activated, true);
+      expect(entity?.langKey, 'en');
+      expect(entity?.createdBy, 'admin');
+      expect(entity?.createdDate, createdDate);
+      expect(entity?.lastModifiedBy, 'admin');
+      expect(entity?.lastModifiedDate, createdDate);
+      expect(entity?.authorities, ['ROLE_USER']);
     });
 
     test('should deserialize from JSON string', () {
-      var jsonString = jsonEncode(model.toJson());
+      final jsonString = jsonEncode(mockUserFullPayload.toJson());
+      final entity = User.fromJsonString(jsonString);
 
-      final finalUser = User.fromJsonString(jsonString);
-
-      expect(finalUser?.id, '1');
-      expect(finalUser?.login, 'test_login');
-      expect(finalUser?.firstName, 'John');
-      expect(finalUser?.lastName, 'Doe');
-      expect(finalUser?.email, 'john.doe@example.com');
-      expect(finalUser?.activated, true);
-      expect(finalUser?.langKey, 'en');
-      expect(finalUser?.createdBy, 'admin');
-      expect(finalUser?.createdDate, createdDate);
-      expect(finalUser?.lastModifiedBy, 'admin');
-      expect(finalUser?.lastModifiedDate, createdDate);
-      expect(finalUser?.authorities, ['ROLE_USER']);
+      expect(entity?.id, '1');
+      expect(entity?.login, 'test_login');
+      expect(entity?.firstName, 'John');
+      expect(entity?.lastName, 'Doe');
+      expect(entity?.email, 'john.doe@example.com');
+      expect(entity?.activated, true);
+      expect(entity?.langKey, 'en');
+      expect(entity?.createdBy, 'admin');
+      expect(entity?.createdDate, createdDate);
+      expect(entity?.lastModifiedBy, 'admin');
+      expect(entity?.lastModifiedDate, createdDate);
+      expect(entity?.authorities, ['ROLE_USER']);
     });
   });
 }
