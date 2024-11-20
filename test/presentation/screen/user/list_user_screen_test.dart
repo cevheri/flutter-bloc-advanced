@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/data/repository/authorities_repository.dart';
+import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authorities/authorities_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -25,7 +25,7 @@ void main() {
   });
 
   final blocs = [
-    BlocProvider<AuthoritiesBloc>(create: (_) => AuthoritiesBloc(authoritiesRepository: AuthoritiesRepository())),
+    BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
   ];
 

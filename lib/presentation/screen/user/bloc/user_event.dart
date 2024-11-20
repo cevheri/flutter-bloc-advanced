@@ -10,13 +10,13 @@ class UserEvent extends Equatable {
 class UserSearch extends UserEvent {
   final int rangeStart;
   final int rangeEnd;
-  final String authorities;
+  final String authority;
   final String name;
 
   const UserSearch(
     this.rangeStart,
     this.rangeEnd,
-    this.authorities,
+    this.authority,
     this.name,
   );
 }

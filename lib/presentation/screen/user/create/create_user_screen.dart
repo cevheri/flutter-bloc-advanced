@@ -5,7 +5,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import '../../../../../data/models/user.dart';
 import '../../../../../generated/l10n.dart';
 import '../../../../../utils/message.dart';
-import '../../../common_blocs/authorities/authorities_bloc.dart';
+import '../../../common_blocs/authority/authority_bloc.dart';
 import '../bloc/user_bloc.dart';
 import 'create_form_field_widget.dart';
 
@@ -16,7 +16,7 @@ class CreateUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthoritiesBloc>(context).add(AuthoritiesLoad());
+    BlocProvider.of<AuthorityBloc>(context).add(AuthorityLoad());
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(context),
@@ -78,7 +78,7 @@ class CreateUserScreen extends StatelessWidget {
                   lastName: formKey.currentState!.fields['lastName']!.value,
                   email: formKey.currentState!.fields['email']!.value,
                   // phoneNumber: formKey.currentState!.fields['phoneNumber']!.value,
-                  authorities: [formKey.currentState!.fields['authorities']?.value ?? ""],
+                  authorities: [formKey.currentState!.fields['authority']?.value ?? ""],
                   activated: formKey.currentState!.fields['userCreateActive']!.value,
                 );
                 context.read<UserBloc>().add(UserCreate(user: user));

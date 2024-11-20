@@ -6,7 +6,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import '../../../../../generated/l10n.dart';
 import '../../../../data/models/user.dart';
 import '../../../../utils/message.dart';
-import '../../../common_blocs/authorities/authorities_bloc.dart';
+import '../../../common_blocs/authority/authority_bloc.dart';
 import '../bloc/user_bloc.dart';
 
 // class EditFormPhoneNumber extends StatelessWidget {
@@ -149,9 +149,9 @@ class EditFormAuthorities extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthoritiesBloc, AuthoritiesState>(
+    return BlocBuilder<AuthorityBloc, AuthorityState>(
       builder: (context, state) {
-        if (state is AuthoritiesLoadSuccessState) {
+        if (state is AuthorityLoadSuccessState) {
           return FormBuilderDropdown(
             name: 'editAuthorities',
             decoration: InputDecoration(
@@ -160,7 +160,7 @@ class EditFormAuthorities extends StatelessWidget {
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).authorities_required),
             ]),
-            items: state.roleList.map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
+            items: state.authorities!.map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
             initialValue: () {}(),
             onChanged: (value) {},
           );

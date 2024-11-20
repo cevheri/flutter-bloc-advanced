@@ -34,7 +34,7 @@ class TestUtils {
   
   // add mock token to storage
   Future<void> setupAuthentication() async {
-    await AppLocalStorage().save(StorageKeys.jwtToken.name, "UNITTEST_TOKEN");
+    await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_UNITTEST_TOKEN");
   }
 
   Future<void> _clearStorage() async {

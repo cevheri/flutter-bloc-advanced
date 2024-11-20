@@ -236,7 +236,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         "emits [UserFindInitialState, UserSearchSuccessState] when UserSearch is added and findUserByAuthorities succeeds",
         build: () {
-          when(repository.findUserByAuthorities(0, 10, "ROLE_USER")).thenAnswer((_) async => [mockUserFullPayload]);
+          when(repository.findUserByAuthority(0, 10, "ROLE_USER")).thenAnswer((_) async => [mockUserFullPayload]);
           return bloc;
         },
         act: (bloc) => bloc.add(UserSearch(0, 10, "ROLE_USER", "")),
@@ -262,7 +262,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         "emits [UserFindInitialState, UserSearchFailureState] when UserSearch is added and findUserByAuthorities fails",
         build: () {
-          when(repository.findUserByAuthorities(0, 10, "ROLE_USER")).thenThrow(Exception("error"));
+          when(repository.findUserByAuthority(0, 10, "ROLE_USER")).thenThrow(Exception("error"));
           return bloc;
         },
         act: (bloc) => bloc.add(UserSearch(0, 10, "ROLE_USER", "")),

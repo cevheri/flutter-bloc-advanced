@@ -1,4 +1,4 @@
-import 'package:flutter_bloc_advance/data/models/authorities.dart';
+import 'package:flutter_bloc_advance/data/models/authority.dart';
 import 'package:flutter_bloc_advance/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/data/models/jwt_token.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
@@ -24,7 +24,7 @@ final mockUserFullPayload = User(
 );
 
 /// Authority(Role) fake data
-final mockAuthorityPayload = Authorities(
+final mockAuthorityPayload = Authority(
   name: 'ROLE_USER',
 );
 
@@ -35,12 +35,12 @@ final mockPasswordChangePayload = PasswordChangeDTO(
 );
 
 /// JWTToken fake data
-final jWTTokenMockPayload = JWTToken(
-  idToken: 'idToken',
+final mockJWTTokenPayload = JWTToken(
+  idToken: 'MOCK_UNITTEST_TOKEN',
 );
 
 /// Menu fake data with full payload
-final menuMockPayload = Menu(
+final mockMenuPayload = Menu(
   id: 0,
   name: 'test name',
   description: '',
@@ -53,4 +53,4 @@ final menuMockPayload = Menu(
 );
 
 /// UserJWT fake data with full payload
-final userJWTMockPayload = UserJWT("username", "password");
+final mockUserJWTPayload = UserJWT("username", "password");

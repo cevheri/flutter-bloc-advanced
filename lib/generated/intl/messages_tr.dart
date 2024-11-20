@@ -38,7 +38,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "account": MessageLookupByLibrary.simpleMessage("Hesabım"),
         "active": MessageLookupByLibrary.simpleMessage("Aktif"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
-        "authorities": MessageLookupByLibrary.simpleMessage("Yetkiler"),
+        "authority": MessageLookupByLibrary.simpleMessage("Yetkiler"),
         "authorities_required":
             MessageLookupByLibrary.simpleMessage("Yetki gereklidir"),
         "change_password":

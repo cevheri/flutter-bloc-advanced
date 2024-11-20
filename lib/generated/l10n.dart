@@ -1,6 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+
 import 'intl/messages_all.dart';
 
 // **************************************************************************
@@ -170,11 +171,11 @@ class S {
     );
   }
 
-  /// `Authorities`
+  /// `Authority`
   String get authorities {
     return Intl.message(
       'Authorities',
-      name: 'authorities',
+      name: 'authority',
       desc: '',
       args: [],
     );

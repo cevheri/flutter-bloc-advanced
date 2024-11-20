@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/authorities_repository.dart';
+import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authorities/authorities_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/screen/account/account_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -28,7 +28,7 @@ void main() {
 
   final blocs = [
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
-    BlocProvider<AuthoritiesBloc>(create: (_) => AuthoritiesBloc(authoritiesRepository: AuthoritiesRepository())),
+    BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
     BlocProvider<AccountBloc>(create: (context) => AccountBloc(accountRepository: AccountRepository())..add(AccountLoad()))
   ];
 

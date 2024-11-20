@@ -13,7 +13,7 @@ void main() {
 
   group("District Model", () {
     test('should create a City instance (Constructor)', () {
-      final finalDistrict = districtMockPayload;
+      final finalDistrict = mockDistrictPayload;
 
       expect(finalDistrict.id, 'id');
       expect(finalDistrict.name, 'kadikoy');
@@ -21,7 +21,7 @@ void main() {
     });
 
     test('should copy a District instance with new values (copyWith)', () {
-      final finalDistrict = districtMockPayload;
+      final finalDistrict = mockDistrictPayload;
       final updatedDistrict = finalDistrict.copyWith();
 
       expect(updatedDistrict.id, 'id');
@@ -30,21 +30,21 @@ void main() {
     });
 
     test('should compare two District instances copyWith ID', () {
-      final finalDistrict = districtMockPayload;
+      final finalDistrict = mockDistrictPayload;
       final updatedDistrict = finalDistrict.copyWith(id: '1');
 
       expect(updatedDistrict.id, '1');
     });
 
     test('should compare two District instances copyWith name', () {
-      final finalDistrict = districtMockPayload;
+      final finalDistrict = mockDistrictPayload;
       final updatedDistrict = finalDistrict.copyWith(name: 'ankara');
 
       expect(updatedDistrict.name, 'ankara');
     });
 
     test('should compare two District instances copyWith code', () {
-      final finalDistrict = districtMockPayload;
+      final finalDistrict = mockDistrictPayload;
       final updatedDistrict = finalDistrict.copyWith(code: '06');
 
       expect(updatedDistrict.code, '06');
@@ -54,7 +54,7 @@ void main() {
   // fromJson, fromJsonString, toJson, props
   group("District Model Json Test", () {
     test('should convert District from Json', () {
-      final json = districtMockPayload.toJson();
+      final json = mockDistrictPayload.toJson();
 
       final district = District.fromJson(json!);
 
@@ -64,7 +64,7 @@ void main() {
     });
 
     test('should convert District from Json String', () {
-      final jsonString = jsonEncode(districtMockPayload.toJson());
+      final jsonString = jsonEncode(mockDistrictPayload.toJson());
 
       final district = District.fromJsonString(jsonString);
 
@@ -74,7 +74,7 @@ void main() {
     });
 
     test('should convert District to Json', () {
-      final district = districtMockPayload;
+      final district = mockDistrictPayload;
 
       final json = district.toJson()!;
 
@@ -84,10 +84,16 @@ void main() {
     });
 
     test('should compare two District instances props', () {
-      final finalDistrict = districtMockPayload;
+      final finalDistrict = mockDistrictPayload;
       final updatedDistrict = finalDistrict.copyWith();
 
       expect(finalDistrict.props, updatedDistrict.props);
+    });
+
+    test('toString Properly', () {
+      final district = mockDistrictPayload;
+
+      expect(district.toString(), 'District(id, kadikoy, 34)');
     });
   });
 

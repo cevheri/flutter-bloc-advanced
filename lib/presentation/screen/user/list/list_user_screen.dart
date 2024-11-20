@@ -6,7 +6,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../../../generated/l10n.dart';
-import '../../../common_blocs/authorities/authorities_bloc.dart';
+import '../../../common_blocs/authority/authority_bloc.dart';
 import '../bloc/user_bloc.dart';
 import '../edit/edit_user_screen.dart';
 
@@ -18,7 +18,7 @@ class ListUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthoritiesBloc>(context).add(AuthoritiesLoad());
+    BlocProvider.of<AuthorityBloc>(context).add(AuthorityLoad());
     return Scaffold(
       appBar: _buildAppBar(context),
       body: _buildBody(context),
@@ -78,11 +78,9 @@ class ListUserScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.max,
                         verticalDirection: VerticalDirection.down,
                         children: [
-
                           Expanded(
                             flex: 7,
-                            child: Text(
-                                state.userList[index].authorities!.contains("ROLE_ADMIN")? S.of(context).admin : S.of(context).guest,
+                            child: Text(state.userList[index].authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest,
                                 textAlign: TextAlign.left),
                           ),
                           SizedBox(width: 5),
@@ -142,7 +140,7 @@ class ListUserScreen extends StatelessWidget {
                                         UserSearch(
                                           int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
                                           int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
-                                          listFormKey.currentState!.fields['authorities']?.value ?? "-",
+                                          listFormKey.currentState!.fields['authority']?.value ?? "-",
                                           listFormKey.currentState!.fields['name']?.value ?? "",
                                         ),
                                       );
@@ -267,15 +265,15 @@ class ListUserScreen extends StatelessWidget {
               flex: 2,
               child: Padding(
                 padding: EdgeInsets.only(right: 10),
-                child: BlocBuilder<AuthoritiesBloc, AuthoritiesState>(
+                child: BlocBuilder<AuthorityBloc, AuthorityState>(
                   builder: (context, state) {
-                    if (state is AuthoritiesLoadSuccessState) {
+                    if (state is AuthorityLoadSuccessState) {
                       return FormBuilderDropdown(
-                        name: 'authorities',
+                        name: 'authority',
                         decoration: InputDecoration(
                           hintText: S.of(context).authorities,
                         ),
-                        items: state.roleList
+                        items: state.authorities!
                             .map(
                               (role) => DropdownMenuItem(
                                 value: role,
@@ -283,7 +281,7 @@ class ListUserScreen extends StatelessWidget {
                               ),
                             )
                             .toList(),
-                        initialValue: state.roleList[0],
+                        initialValue: state.authorities![0],
                       );
                     } else {
                       return Container();
@@ -368,7 +366,7 @@ class ListUserScreen extends StatelessWidget {
             UserSearch(
               int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
               int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
-              listFormKey.currentState!.fields['authorities']?.value ?? "-",
+              listFormKey.currentState!.fields['authority']?.value ?? "-",
               listFormKey.currentState!.fields['name']?.value ?? "",
             ),
           );

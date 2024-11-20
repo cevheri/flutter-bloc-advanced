@@ -1,11 +1,9 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
+import 'package:flutter_bloc_advance/data/http_utils.dart';
+import 'package:flutter_bloc_advance/data/models/change_password.dart';
+import 'package:flutter_bloc_advance/data/models/user.dart';
 
-import '../http_utils.dart';
-import '../models/change_password.dart';
-import '../models/user.dart';
 
 class AccountRepository {
   AccountRepository();
@@ -20,7 +18,7 @@ class AccountRepository {
     if (newUser.email == null || newUser.email!.isEmpty || newUser.login == null || newUser.login!.isEmpty) {
       throw BadRequestException("User email or login null");
     }
-    if (newUser.langKey == null) {
+    if (newUser.langKey == null || newUser.langKey!.isEmpty) {
       newUser = newUser.copyWith(langKey: "en");
     }
     // when user is registered, it is a normal user
@@ -41,79 +39,70 @@ class AccountRepository {
         passwordChangeDTO.newPassword!.isEmpty) {
       throw BadRequestException("PasswordChangeDTO currentPassword or newPassword null");
     }
-    final authenticateRequest = await HttpUtils.postRequest<PasswordChangeDTO>("/$_resource/change-password", passwordChangeDTO);
-    var result = authenticateRequest.statusCode;
+    final httpResponse = await HttpUtils.postRequest<PasswordChangeDTO>("/$_resource/change-password", passwordChangeDTO);
+    var result = httpResponse.statusCode;
     debugPrint("END:changePassword successful - response: $result");
     return result;
   }
 
   Future<int> resetPassword(String mailAddress) async {
-    debugPrint("resetPassword repository start");
+    debugPrint("BEGIN:resetPassword repository start");
     if (mailAddress.isEmpty) {
       throw BadRequestException("Mail address null");
     }
-
     //valida mail address
     if (!mailAddress.contains("@") || !mailAddress.contains(".")) {
       throw BadRequestException("Mail address invalid");
     }
-
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     HttpUtils.addCustomHttpHeader('Accept', '*/*');
-    final resetRequest = await HttpUtils.postRequest<String>("/$_resource/reset-password/init", mailAddress);
-    debugPrint("resetPassword successful - response: ${resetRequest.statusCode}");
-    return resetRequest.statusCode;
+    final httpResponse = await HttpUtils.postRequest<String>("/$_resource/reset-password/init", mailAddress);
+    debugPrint("END:resetPassword successful - response: ${httpResponse.statusCode}");
+    return httpResponse.statusCode;
   }
 
   Future<User> getAccount() async {
-    debugPrint("getAccount repository start");
+    debugPrint("BEGIN:getAccount repository start");
     final httpResponse = await HttpUtils.getRequest("/$_resource");
-
     var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
-    debugPrint(" GET Request Method result : $response");
-
     var result = User.fromJsonString(response)!;
-    debugPrint("getAccount successful - response : $response}");
+    debugPrint("END:getAccount successful - response : $response}");
     return result;
   }
 
   Future<User> saveAccount(User? user) async {
-    debugPrint("saveAccount repository start");
+    debugPrint("BEGIN:saveAccount repository start");
     if (user == null) {
       throw BadRequestException("User null");
     }
     if (user.id == null || user.id!.isEmpty) {
       throw BadRequestException("User id not null");
     }
-    final saveRequest = await HttpUtils.postRequest<User>("/$_resource", user);
-    String? result;
-    if (saveRequest.statusCode >= HttpStatus.badRequest) {
-      if (saveRequest.headers[HttpUtils.errorHeader] != null) {
-        result = saveRequest.headers[HttpUtils.errorHeader];
-      } else {
-        result = HttpUtils.errorServerKey;
-      }
-    } else {
-      result = HttpUtils.successResult;
+    final httpResponse = await HttpUtils.postRequest<User>("/$_resource", user);
+    final response = HttpUtils.decodeUTF8(httpResponse.body.toString());
+    var result = User.fromJsonString(response)!;
+    debugPrint("END:saveAccount successful - response length : ${result.toString().length}");
+    return result;
+  }
+
+  Future<User> updateAccount(User account) async {
+    debugPrint("BEGIN:updateAccount repository start");
+    if (account.id == null || account.id!.isEmpty) {
+      throw BadRequestException("User id not null");
     }
-    var response = HttpUtils.decodeUTF8(saveRequest.body.toString());
-    var savedUser = User.fromJsonString(response)!;
-
-    debugPrint("saveAccount successful - response : $result");
-    return savedUser;
-  }
-
-  updateAccount(User account) async {
-    debugPrint("updateAccount repository start");
-    var result = await HttpUtils.putRequest<User>("/$_resource", account);
-    debugPrint("updateAccount successful - response : ${result.body.toString()}");
+    final response = await HttpUtils.putRequest<User>("/$_resource", account);
+    final result = User.fromJsonString(response.body.toString())!;
+    debugPrint("END:updateAccount successful - response.length : ${result.toString().length}");
     return result;
   }
 
-  deleteAccount(int id) async {
-    debugPrint("deleteAccount repository start");
+  Future<bool> deleteAccount(String id) async {
+    debugPrint("BEGIN:deleteAccount repository start");
+    if (id.isEmpty) {
+      throw BadRequestException("User id not null");
+    }
     var result = await HttpUtils.deleteRequest("/$_resource/$id");
-    debugPrint("deleteAccount successful - response : ${result.body.toString()}");
-    return result;
+    debugPrint("END:deleteAccount successful - response : ${result.body.toString()}");
+    return result.statusCode == 204;
   }
 }

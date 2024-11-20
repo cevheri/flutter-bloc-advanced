@@ -1,44 +1,44 @@
 import 'dart:convert';
 
-import 'package:flutter_bloc_advance/data/models/authorities.dart';
+import 'package:flutter_bloc_advance/data/models/authority.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
 
-/// Test the Authorities model
+/// Test the Authority model
 void main() {
   setUp(() {
     initializeJsonMapper();
   });
 
-  group("Authorities Model", () {
-    test('should create a Authorities instance (Constructor)', () {
+  group("Authority Model", () {
+    test('should create a Authority instance (Constructor)', () {
       expect(mockAuthorityPayload.name, 'ROLE_USER');
     });
 
-    test('should copy a Authorities instance with new values (copyWith)', () {
-      final updatedAuthorities = mockAuthorityPayload.copyWith();
+    test('should copy a Authority instance with new values (copyWith)', () {
+      final updatedAuthority = mockAuthorityPayload.copyWith();
 
-      expect(updatedAuthorities == mockAuthorityPayload, true);
+      expect(updatedAuthority == mockAuthorityPayload, true);
     });
 
-    test('should copy a Authorities instance with new values (copyWith)', () {
-      final updatedAuthorities = mockAuthorityPayload.copyWith(
+    test('should copy a Authority instance with new values (copyWith)', () {
+      final updatedAuthority = mockAuthorityPayload.copyWith(
         name: 'ROLE_ADMIN',
       );
 
-      expect(updatedAuthorities.name, 'ROLE_ADMIN');
+      expect(updatedAuthority.name, 'ROLE_ADMIN');
     });
 
     test('should compare two Authorities instances', () {
-      final finalAuthorities = mockAuthorityPayload;
+      final finalAuthority = mockAuthorityPayload;
 
-      final updatedAuthorities = finalAuthorities.copyWith(
+      final updatedAuthority = finalAuthority.copyWith(
         name: 'ROLE_ADMIN',
       );
 
-      expect(finalAuthorities == updatedAuthorities, false);
+      expect(finalAuthority == updatedAuthority, false);
     });
   });
 
@@ -46,7 +46,7 @@ void main() {
     test('should convert Authorities from Json', () {
       final json = mockAuthorityPayload.toJson();
 
-      final authority = Authorities.fromJson(json!);
+      final authority = Authority.fromJson(json!);
 
       expect(authority?.name, 'ROLE_USER');
     });
@@ -54,7 +54,7 @@ void main() {
     test('should convert Authorities from JsonString', () {
       final jsonString = jsonEncode(mockAuthorityPayload.toJson());
 
-      final authority = Authorities.fromJsonString(jsonString);
+      final authority = Authority.fromJsonString(jsonString);
 
       expect(authority?.name, 'ROLE_USER');
     });
@@ -68,7 +68,7 @@ void main() {
     test("to string method", () {
       final authority = mockAuthorityPayload;
 
-      expect(authority.toString(), 'Authorities(ROLE_USER)');
+      expect(authority.toString(), 'Authority(ROLE_USER)');
     });
   });
 }

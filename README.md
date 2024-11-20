@@ -140,6 +140,11 @@ flutter run dev environment
 - Run `flutter run -d chrome --target lib/main/main_local.dart` for web dev environment
 - Run `flutter run -d chrome --target lib/main/main_prod.dart` for web prod environment
 
+## Usage for local environment with mock data
+* Run `flutter run -d chrome --web-port 3000 --target lib/main/main_local.dart` for web dev environment
+* Open `http://localhost:3000` in your browser
+* Login with `admin` and `admin` for admin role
+* Login with `user` and `user` for user role
 ---
 
 ## How to Build

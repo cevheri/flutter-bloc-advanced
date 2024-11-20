@@ -38,11 +38,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(UserFindInitialState());
     try {
       if (event.name == "") {
-        List<User> user = await _userRepository.findUserByAuthorities(event.rangeStart, event.rangeEnd, event.authorities);
+        List<User> user = await _userRepository.findUserByAuthority(event.rangeStart, event.rangeEnd, event.authority);
         emit(UserSearchSuccessState(userList: user));
       }
       if (event.name != "") {
-        List<User> user = await _userRepository.findUserByName(event.rangeStart, event.rangeEnd, event.name, event.authorities);
+        List<User> user = await _userRepository.findUserByName(event.rangeStart, event.rangeEnd, event.name, event.authority);
         emit(UserSearchSuccessState(userList: user));
       }
     } catch (e) {

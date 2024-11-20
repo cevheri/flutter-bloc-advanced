@@ -24,8 +24,8 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
   FutureOr<void> _onLoad(DistrictLoadList event, Emitter<DistrictState> emit) async {
     emit(DistrictInitialState());
     try {
-      List<District> district = await _districtRepository.getDistrict(event.districtId);
-      emit(DistrictLoadSuccessState(districtList: district));
+      List<District?>? district = await _districtRepository.getDistrictsByCity(event.districtId);
+      emit(DistrictLoadSuccessState(districts: district));
     } catch (e) {
       emit(DistrictLoadFailureState(message: e.toString()));
     }

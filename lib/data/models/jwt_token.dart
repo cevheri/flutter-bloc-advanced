@@ -39,11 +39,6 @@ class JWTToken extends Equatable {
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override
-  String toString() {
-    return 'JWTToken{idToken: $idToken}';
-  }
-
-  @override
   bool operator ==(Object other) => identical(this, other) || other is JWTToken && runtimeType == other.runtimeType && idToken == other.idToken;
 
   @override

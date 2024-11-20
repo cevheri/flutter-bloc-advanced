@@ -20,9 +20,10 @@ class LoginRepository {
   ///   -H 'content-type: application/json' \
   ///   --data-raw $'{"username":"admin","password":"admin","rememberMe":false}'
   /// ```
-  Future<JWTToken> authenticate(UserJWT userJWT) async {
+  Future<JWTToken?> authenticate(UserJWT userJWT) async {
     JWTToken? result;
-    if (userJWT.username == null || userJWT.password == null) {
+    if (userJWT.username == null|| userJWT.username!.isEmpty ||
+        userJWT.password == null || userJWT.password!.isEmpty) {
       throw Exception("Invalid username or password");
     }
 
@@ -31,9 +32,8 @@ class LoginRepository {
 
     if (result != null && result.idToken != null) {
       await AppLocalStorage().save(StorageKeys.jwtToken.name, result.idToken);
-      return result;
     }
-    return JWTToken(idToken: null);
+    return result;
   }
 
   Future<void> logout() async {

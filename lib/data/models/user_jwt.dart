@@ -34,18 +34,6 @@ class UserJWT extends Equatable {
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override
-  String toString() {
-    return 'UserJWT{password: $password}';
-  }
-
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) || other is UserJWT && runtimeType == other.runtimeType && username == other.username && password == other.password;
-
-  @override
-  int get hashCode => username.hashCode ^ password.hashCode;
-
-  @override
   List<Object?> get props => [username, password];
 
   @override

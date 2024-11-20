@@ -12,6 +12,7 @@
   "email": "Email",
   "active": "Active",
   "authorities": "Authorities",
+  "authority": "Authority",
   "name": "Name",
   "success": "Success",
   "failed": "Failed",
