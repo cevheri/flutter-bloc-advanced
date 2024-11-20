@@ -24,7 +24,7 @@ class CityState extends Equatable {
   }
 
   @override
-  List<Object> get props => [status];
+  List<Object> get props => [status, cities ?? []];
 
   @override
   bool get stringify => true;
@@ -33,12 +33,7 @@ class CityState extends Equatable {
 class CityInitialState extends CityState {}
 
 class CityLoadSuccessState extends CityState {
-  final List<City?> cities;
-
-  const CityLoadSuccessState({required this.cities});
-
-  @override
-  List<Object> get props => [cities];
+  const CityLoadSuccessState({required List<City?> cities}) : super(cities: cities, status: CityStatus.success);
 }
 
 class CityLoadFailureState extends CityState {

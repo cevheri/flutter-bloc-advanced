@@ -10,7 +10,6 @@ import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
 
 part 'login_event.dart';
-
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {

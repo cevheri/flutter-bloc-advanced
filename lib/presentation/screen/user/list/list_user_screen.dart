@@ -78,11 +78,9 @@ class ListUserScreen extends StatelessWidget {
                         mainAxisSize: MainAxisSize.max,
                         verticalDirection: VerticalDirection.down,
                         children: [
-
                           Expanded(
                             flex: 7,
-                            child: Text(
-                                state.userList[index].authorities!.contains("ROLE_ADMIN")? S.of(context).admin : S.of(context).guest,
+                            child: Text(state.userList[index].authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest,
                                 textAlign: TextAlign.left),
                           ),
                           SizedBox(width: 5),
@@ -275,7 +273,7 @@ class ListUserScreen extends StatelessWidget {
                         decoration: InputDecoration(
                           hintText: S.of(context).authorities,
                         ),
-                        items: state.authorities
+                        items: state.authorities!
                             .map(
                               (role) => DropdownMenuItem(
                                 value: role,
@@ -283,7 +281,7 @@ class ListUserScreen extends StatelessWidget {
                               ),
                             )
                             .toList(),
-                        initialValue: state.authorities[0],
+                        initialValue: state.authorities![0],
                       );
                     } else {
                       return Container();

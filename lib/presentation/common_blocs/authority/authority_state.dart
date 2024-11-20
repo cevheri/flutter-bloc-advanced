@@ -24,7 +24,7 @@ class AuthorityState extends Equatable {
   }
 
   @override
-  List<Object> get props => [status];
+  List<Object> get props => [status, authorities ?? []];
 
   @override
   bool get stringify => true;
@@ -35,12 +35,7 @@ class AuthorityInitialState extends AuthorityState {}
 class AuthorityLoadInProgressState extends AuthorityState {}
 
 class AuthorityLoadSuccessState extends AuthorityState {
-  final List authorities;
-
-  const AuthorityLoadSuccessState({required this.authorities});
-
-  @override
-  List<Object> get props => [authorities];
+  const AuthorityLoadSuccessState({required List authorities}) : super(authorities: authorities, status: AuthorityStatus.success);
 }
 
 class AuthorityLoadFailureState extends AuthorityState {

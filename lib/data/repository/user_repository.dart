@@ -16,7 +16,7 @@ class UserRepository {
   Future<List<User?>> getUsers({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
     debugPrint("BEGIN:getUsers repository start");
     final httpResponse = await HttpUtils.getRequest("/admin/$_resource?page=$page&size=$size&sort=${sort.join("&sort=")}");
-    final response = User.fromJsonStringList(httpResponse.body)!;
+    final response = User.fromJsonStringList(httpResponse.body);
     debugPrint("END:getUsers successful");
     return response;
   }
