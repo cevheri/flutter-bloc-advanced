@@ -20,6 +20,6 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(const App(language: defaultLanguage));
+    runApp(App(language: defaultLanguage));
   });
 }
