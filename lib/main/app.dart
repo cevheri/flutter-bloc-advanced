@@ -45,8 +45,9 @@ import '../presentation/screen/user/list/list_user_screen.dart';
 
 class App extends StatelessWidget {
   final String language;
+  final AdaptiveThemeMode initialTheme;
 
-  App({super.key, required this.language});
+  App({super.key, required this.language, required this.initialTheme});
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +59,7 @@ class App extends StatelessWidget {
       light: _buildLightTheme(),
       dark: _buildDarkTheme(),
       debugShowFloatingThemeButton: false,
-      initial: AdaptiveThemeMode.dark,
+      initial: initialTheme,
       builder: (light, dark) {
         return _buildMultiBlocProvider(light, dark);
       },

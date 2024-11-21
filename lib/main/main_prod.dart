@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
@@ -17,10 +18,11 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   const defaultLanguage = "en";
+  const initialTheme = AdaptiveThemeMode.dark;
   await AppLocalStorage().save(StorageKeys.language.name, defaultLanguage);
 
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(App(language: defaultLanguage));
+    runApp(App(language: defaultLanguage, initialTheme: initialTheme));
   });
 }
