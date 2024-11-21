@@ -2,6 +2,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/utils/security_utils.dart';
 import 'package:string_2_icon/string_2_icon.dart';
@@ -55,6 +56,7 @@ class ApplicationDrawer extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
+            key: drawerButtonLogout,
             style: ElevatedButton.styleFrom(elevation: 0),
             onPressed: () => logOutDialog(context),
             child: Text(S.of(context).logout, textAlign: TextAlign.center),
@@ -83,13 +85,13 @@ class ApplicationDrawer extends StatelessWidget {
 
   ListTile _buildMenuListListTile(List<dynamic> parentMenus, int index, BuildContext context) {
     return ListTile(
-          leading: Icon(String2Icon.getIconDataFromString(parentMenus[index].icon)),
-          title: Text(S.of(context).translate_menu_title(parentMenus[index].name), style: Theme.of(context).textTheme.bodyMedium),
-          onTap: () {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, parentMenus[index].url);
-          },
-        );
+      leading: Icon(String2Icon.getIconDataFromString(parentMenus[index].icon)),
+      title: Text(S.of(context).translate_menu_title(parentMenus[index].name), style: Theme.of(context).textTheme.bodyMedium),
+      onTap: () {
+        Navigator.pop(context);
+        Navigator.pushNamed(context, parentMenus[index].url);
+      },
+    );
   }
 
   ExpansionTileCard _buildMenuListUserManagement(DrawerState state, List<dynamic> parentMenus, int index, BuildContext context) {
@@ -168,10 +170,12 @@ class ApplicationDrawer extends StatelessWidget {
           content: Text(S.of(context).logout_sure),
           actions: [
             TextButton(
+              key: drawerButtonLogoutYes,
               onPressed: () => onLogout(context),
               child: Text(S.of(context).yes),
             ),
             TextButton(
+              key: drawerButtonLogoutNo,
               onPressed: () => onCancel(context),
               child: Text(S.of(context).no),
             ),
