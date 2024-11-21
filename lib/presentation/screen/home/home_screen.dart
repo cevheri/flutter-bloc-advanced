@@ -2,11 +2,11 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/utils/app_constants.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
 import '../../../data/repository/menu_repository.dart';
-import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account.dart';
 import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../../common_widgets/drawer/drawer_widget.dart';
@@ -33,7 +33,7 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           if (state.status == AccountStatus.success) {
             return Scaffold(
-              appBar: AppBar(title: Text(S.of(context).description)),
+              appBar: AppBar(title: const Text(AppConstants.appName)),
               key: _scaffoldKey,
               body: Center(child: Column(children: [backgroundImage(context)])),
               drawer: _buildDrawer(context),
