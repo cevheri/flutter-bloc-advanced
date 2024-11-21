@@ -1,6 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/constants.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
@@ -54,7 +55,7 @@ class HomeScreen extends StatelessWidget {
             height: 300,
             width: 300,
             decoration: const BoxDecoration(
-              image: DecorationImage(image: AssetImage("assets/images/logoLight.png"), scale: 1, fit: BoxFit.contain),
+              image: DecorationImage(image: AssetImage(LocaleConstants.logoLightUrl), scale: 1, fit: BoxFit.contain),
             ),
           ),
         ),
@@ -68,7 +69,7 @@ class HomeScreen extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage("assets/images/img.png"),
+                image: const AssetImage(LocaleConstants.defaultImgUrl),
                 colorFilter: ColorFilter.mode(
                     AdaptiveTheme.of(context).mode.isDark ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.1), BlendMode.dstIn),
               ),
