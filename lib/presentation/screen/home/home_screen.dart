@@ -1,11 +1,12 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/utils/app_constants.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
 import '../../../data/repository/menu_repository.dart';
-import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account.dart';
 import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../../common_widgets/drawer/drawer_widget.dart';
@@ -32,7 +33,7 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           if (state.status == AccountStatus.success) {
             return Scaffold(
-              appBar: AppBar(title: Text(S.of(context).description)),
+              appBar: AppBar(title: const Text(AppConstants.appName)),
               key: _scaffoldKey,
               body: Center(child: Column(children: [backgroundImage(context)])),
               drawer: _buildDrawer(context),
@@ -54,7 +55,7 @@ class HomeScreen extends StatelessWidget {
             height: 300,
             width: 300,
             decoration: const BoxDecoration(
-              image: DecorationImage(image: AssetImage("assets/images/logoLight.png"), scale: 1, fit: BoxFit.contain),
+              image: DecorationImage(image: AssetImage(LocaleConstants.logoLightUrl), scale: 1, fit: BoxFit.contain),
             ),
           ),
         ),
@@ -68,7 +69,7 @@ class HomeScreen extends StatelessWidget {
             width: double.infinity,
             decoration: BoxDecoration(
               image: DecorationImage(
-                image: const AssetImage("assets/images/img.png"),
+                image: const AssetImage(LocaleConstants.defaultImgUrl),
                 colorFilter: ColorFilter.mode(
                     AdaptiveTheme.of(context).mode.isDark ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.1), BlendMode.dstIn),
               ),

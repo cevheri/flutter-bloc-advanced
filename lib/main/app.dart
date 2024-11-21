@@ -45,87 +45,109 @@ import '../presentation/screen/user/list/list_user_screen.dart';
 
 class App extends StatelessWidget {
   final String language;
+  final AdaptiveThemeMode initialTheme;
 
-  const App({super.key, required this.language});
+  App({super.key, required this.language, required this.initialTheme});
 
   @override
   Widget build(BuildContext context) {
+    return buildHomeApp();
+  }
+
+  AdaptiveTheme buildHomeApp() {
     return AdaptiveTheme(
-      light: ThemeData(
-        useMaterial3: false,
-        brightness: Brightness.light,
-        colorSchemeSeed: Colors.blueGrey,
-      ),
-      dark: ThemeData(
-        useMaterial3: false,
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blueGrey,
-      ),
+      light: _buildLightTheme(),
+      dark: _buildDarkTheme(),
       debugShowFloatingThemeButton: false,
-      initial: AdaptiveThemeMode.dark,
+      initial: initialTheme,
       builder: (light, dark) {
-        return MultiBlocProvider(
-          providers: [
-            BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
-            BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
-            BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
-            BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),
-            BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
-            BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
-          ],
-          child: GetMaterialApp(
-            theme: light,
-            darkTheme: dark,
-            debugShowCheckedModeBanner: ProfileConstants.isDevelopment,
-            debugShowMaterialGrid: false,
-            localizationsDelegates: const [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: S.delegate.supportedLocales,
-            locale: Locale(language),
-            initialRoute: initialRouteControl(),
-            routes: {
-              ApplicationRoutes.home: (context) {
-                return BlocProvider<AccountBloc>(
-                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: HomeScreen());
-              },
-              ApplicationRoutes.account: (context) {
-                return BlocProvider<AccountBloc>(
-                    create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: AccountsScreen());
-              },
-              ApplicationRoutes.login: (context) {
-                return BlocProvider<LoginBloc>(create: (context) => LoginBloc(loginRepository: LoginRepository()), child: LoginScreen());
-              },
-              ApplicationRoutes.settings: (context) {
-                return BlocProvider<SettingsBloc>(
-                    create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: const SettingsScreen());
-              },
-              ApplicationRoutes.forgotPassword: (context) {
-                return BlocProvider<ForgotPasswordBloc>(
-                    create: (context) => ForgotPasswordBloc(accountRepository: AccountRepository()), child: ForgotPasswordScreen());
-              },
-              ApplicationRoutes.register: (context) {
-                return BlocProvider<RegisterBloc>(
-                    create: (context) => RegisterBloc(accountRepository: AccountRepository()), child: RegisterScreen());
-              },
-              ApplicationRoutes.changePassword: (context) {
-                return BlocProvider<ChangePasswordBloc>(
-                    create: (context) => ChangePasswordBloc(accountRepository: AccountRepository()), child: ChangePasswordScreen());
-              },
-              ApplicationRoutes.logout: (context) => const LogoutConfirmationDialog(),
-              ApplicationRoutes.createUser: (context) {
-                return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: CreateUserScreen());
-              },
-              ApplicationRoutes.listUsers: (context) {
-                return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: ListUserScreen());
-              },
-            },
-          ),
-        );
+        return _buildMultiBlocProvider(light, dark);
       },
     );
   }
+
+  ThemeData _buildDarkTheme() {
+    return ThemeData(
+      useMaterial3: false,
+      brightness: Brightness.dark,
+      primarySwatch: Colors.blueGrey,
+    );
+  }
+
+  ThemeData _buildLightTheme() {
+    return ThemeData(
+      useMaterial3: false,
+      brightness: Brightness.light,
+      colorSchemeSeed: Colors.blueGrey,
+    );
+  }
+
+  MultiBlocProvider _buildMultiBlocProvider(ThemeData light, ThemeData dark) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
+        BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
+        BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
+        BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),
+        BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
+        BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
+      ],
+      child: _buildGetMaterialApp(light, dark),
+    );
+  }
+
+  GetMaterialApp _buildGetMaterialApp(ThemeData light, ThemeData dark) {
+    return GetMaterialApp(
+      theme: light,
+      darkTheme: dark,
+      debugShowCheckedModeBanner: ProfileConstants.isDevelopment,
+      debugShowMaterialGrid: false,
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
+      locale: Locale(language),
+      initialRoute: initialRouteControl(),
+      routes: _initialRoutes,
+    );
+  }
+
+  final _initialRoutes = {
+    ApplicationRoutes.home: (context) {
+      return BlocProvider<AccountBloc>(
+          create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: HomeScreen());
+    },
+    ApplicationRoutes.account: (context) {
+      return BlocProvider<AccountBloc>(
+          create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: AccountsScreen());
+    },
+    ApplicationRoutes.login: (context) {
+      return BlocProvider<LoginBloc>(create: (context) => LoginBloc(loginRepository: LoginRepository()), child: LoginScreen());
+    },
+    ApplicationRoutes.settings: (context) {
+      return BlocProvider<SettingsBloc>(
+          create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: const SettingsScreen());
+    },
+    ApplicationRoutes.forgotPassword: (context) {
+      return BlocProvider<ForgotPasswordBloc>(
+          create: (context) => ForgotPasswordBloc(accountRepository: AccountRepository()), child: ForgotPasswordScreen());
+    },
+    ApplicationRoutes.register: (context) {
+      return BlocProvider<RegisterBloc>(create: (context) => RegisterBloc(accountRepository: AccountRepository()), child: RegisterScreen());
+    },
+    ApplicationRoutes.changePassword: (context) {
+      return BlocProvider<ChangePasswordBloc>(
+          create: (context) => ChangePasswordBloc(accountRepository: AccountRepository()), child: ChangePasswordScreen());
+    },
+    ApplicationRoutes.logout: (context) => const LogoutConfirmationDialog(),
+    ApplicationRoutes.createUser: (context) {
+      return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: CreateUserScreen());
+    },
+    ApplicationRoutes.listUsers: (context) {
+      return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: ListUserScreen());
+    },
+  };
 }

@@ -67,7 +67,7 @@ class AccountRepository {
     final httpResponse = await HttpUtils.getRequest("/$_resource");
     var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
     var result = User.fromJsonString(response)!;
-    debugPrint("END:getAccount successful - response : $response}");
+    debugPrint("END:getAccount successful - response : ${response.length}}");
     return result;
   }
 
