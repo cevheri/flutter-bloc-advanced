@@ -39,6 +39,7 @@ dependencies:
   reflectable:
   glob:
   shared_preferences:
+  logger: ^2.5.0
 
 
 dev_dependencies:

@@ -27,6 +27,12 @@ class TestUtils {
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.name, "en");
   }
+  Future<void> setupRepositoryUnitTest() async {
+    ProfileConstants.setEnvironment(Environment.test);
+    initializeJsonMapper();
+    await _clearStorage();
+    await AppLocalStorage().save(StorageKeys.language.name, "en");
+  }
 
   Future<void> tearDownUnitTest() async {
     return await _clearStorage();
