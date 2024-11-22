@@ -11,6 +11,7 @@ class ProfileConstants {
     switch (env) {
       case Environment.dev:
         _config = _Config.devConstants;
+        break;
       case Environment.test:
         _config = _Config.testConstants;
         break;

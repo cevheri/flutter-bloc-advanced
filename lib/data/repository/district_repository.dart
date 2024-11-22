@@ -1,62 +1,64 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 
 import '../http_utils.dart';
 import '../models/district.dart';
 
 class DistrictRepository {
+  static final _log = AppLogger.getLogger("DistrictRepository");
+
   DistrictRepository();
 
   final String _resource = "districts";
 
   /// Get all districts by city id
   Future<List<District?>> getDistrictsByCity(String cityId) async {
-    debugPrint("BEGIN:getDistrictsByCity repository start");
-    if(cityId.isEmpty){
+    _log.debug("BEGIN:getDistrictsByCity repository start - cityId: {}", [cityId]);
+    if (cityId.isEmpty) {
       throw BadRequestException("City id null");
     }
     final httpResponse = await HttpUtils.getRequest("/$_resource/cities/$cityId");
     final response = District.fromJsonStringList(httpResponse.body);
-    debugPrint("END:getDistrictsByCity successful");
+    _log.debug("END:getDistrictsByCity successful - response list size: {}", [response.length]);
     return response;
   }
 
   Future<District?> createDistrict(District district) async {
-    debugPrint("BEGIN:createDistrict repository start");
+    _log.debug("BEGIN:createDistrict repository start : {}", [district.toString()]);
     if (district.name == null || district.name!.isEmpty) {
       throw BadRequestException("District name null");
     }
     final httpResponse = await HttpUtils.postRequest("/$_resource", district);
     final response = District.fromJsonString(httpResponse.body);
-    debugPrint("END:createDistrict successful");
+    _log.debug("END:createDistrict successful");
     return response;
   }
 
   Future<List<District?>> getDistricts({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
-    debugPrint("BEGIN:getDistricts repository start");
+    _log.debug("BEGIN:getDistricts repository start - page: {}, size: {}, sort: {}", [page, size, sort]);
     final httpResponse = await HttpUtils.getRequest("/$_resource?page=$page&size=$size&sort=${sort.join("&sort=")}");
     final response = District.fromJsonStringList(httpResponse.body);
-    debugPrint("END:getDistricts successful");
+    _log.debug("END:getDistricts successful - response list size: {}", [response.length]);
     return response;
   }
 
   Future<District?> getDistrict(String id) async {
-    debugPrint("BEGIN:getDistrict repository start");
+    _log.debug("BEGIN:getDistrict repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException("District id null");
     }
     final httpResponse = await HttpUtils.getRequest("/$_resource/$id");
     final response = District.fromJsonString(httpResponse.body);
-    debugPrint("END:getDistrict successful");
+    _log.debug("END:getDistrict successful - response.body: {}", [response.toString()]);
     return response;
   }
 
   Future<void> deleteDistrict(String id) async {
-    debugPrint("BEGIN:deleteDistrict repository start");
+    _log.debug("BEGIN:deleteDistrict repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException("District id null");
     }
-    await HttpUtils.deleteRequest("/$_resource/$id");
-    debugPrint("END:deleteDistrict successful");
+    var httpResponse = await HttpUtils.deleteRequest("/$_resource/$id");
+    _log.debug("END:deleteDistrict successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

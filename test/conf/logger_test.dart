@@ -1,11 +1,9 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   // AppLogger Test
   group("AppLogger Test", () {
-
     test("Logger Test", () {
       // production
       AppLogger.configure(isProduction: true, logFormat: LogFormat.simple);
@@ -29,7 +27,6 @@ void main() {
       log.error("error");
       expect(log.toString(), "AppLogger(logger_test.dart, info, simple)");
     });
-
 
     test("Logger Test with parameters", () {
       // production

@@ -1,8 +1,16 @@
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+
+final _log = AppLogger.getLogger("BusinessException");
+
 abstract class AppException implements Exception {
   final String? _message;
   final String? _prefix;
 
-  AppException([this._message, this._prefix]);
+  AppException(String? message, String? prefix)
+      : _message = message,
+        _prefix = prefix {
+    _log.error("$_prefix$_message");
+  }
 
   @override
   String toString() {

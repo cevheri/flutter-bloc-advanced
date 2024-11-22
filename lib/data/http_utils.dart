@@ -7,6 +7,7 @@ import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/allowed_paths.dart';
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:http/http.dart' as http;
@@ -21,6 +22,7 @@ import 'app_api_exception.dart';
 // }
 
 class HttpUtils {
+  static final _log = AppLogger.getLogger("HttpUtils");
   //static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.appKey : "default_token"}App-error';
   static const successResult = 'success';
   static const keyForJWTToken = 'jwt-token';
@@ -45,8 +47,10 @@ class HttpUtils {
 
   /// Add custom http headers when you need to override the default ones
   static void addCustomHttpHeader(String key, String value) {
+    _log.debug("BEGIN: Adding custom headers {} : {}", [key, value]);
     log("add custom headers $key: $value");
     _customHttpHeaders[key] = value;
+    _log.debug("END: Added custom headers");
   }
 
   static String decodeUTF8(String toEncode) {

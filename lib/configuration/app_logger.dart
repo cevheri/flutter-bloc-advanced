@@ -29,7 +29,7 @@ class AppLogger {
     _level = isProduction ? Level.info : Level.debug;
     _logFormat = logFormat;
     final simple = SimplePrinter(printTime: true);
-    final pretty = PrettyPrinter(dateTimeFormat: DateTimeFormat.dateAndTime, methodCount: 1);
+    final pretty = PrettyPrinter(dateTimeFormat: DateTimeFormat.dateAndTime, methodCount: 2);
     LogPrinter printer = _logFormat == LogFormat.simple ? simple : pretty;
     LogOutput output =
         ConsoleOutput(); // logToFile ? FileOutput(file: File('log.txt'), overrideExisting: true) : ConsoleOutput(); Unsupported operation: Not supported on this platform.

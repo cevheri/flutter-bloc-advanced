@@ -13,10 +13,11 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 // flutter pub run intl_utils:generate
 /// main entry point of PRODUCTION
 void main() async {
-  ProfileConstants.setEnvironment(Environment.prod);
-
   AppLogger.configure(isProduction: true);
   final log = AppLogger.getLogger("main_prod.dart");
+
+  ProfileConstants.setEnvironment(Environment.prod);
+
   log.info("Starting App with env: {}", [Environment.prod.name]);
 
   initializeJsonMapper();

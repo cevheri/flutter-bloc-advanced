@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
@@ -20,6 +21,7 @@ class TestUtils {
 
 
   Future<void> setupUnitTest() async {
+    AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
     ProfileConstants.setEnvironment(Environment.test);
     initializeJsonMapper();
     TestWidgetsFlutterBinding.ensureInitialized();
@@ -28,6 +30,7 @@ class TestUtils {
     await AppLocalStorage().save(StorageKeys.language.name, "en");
   }
   Future<void> setupRepositoryUnitTest() async {
+    AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
     ProfileConstants.setEnvironment(Environment.test);
     initializeJsonMapper();
     await _clearStorage();

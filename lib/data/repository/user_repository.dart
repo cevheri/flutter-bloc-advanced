@@ -1,5 +1,5 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 
 import '../http_utils.dart';
@@ -10,15 +10,16 @@ import '../models/user.dart';
 /// This class is responsible for all the user related operations
 /// list, create, update, delete etc.
 class UserRepository {
+  static final _log = AppLogger.getLogger("UserRepository");
   static const String _resource = "users";
   static const String userIdRequired = "User id is required";
 
   /// Retrieve all users method that retrieves all the users
   Future<List<User?>> getUsers({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
-    debugPrint("BEGIN:getUsers repository start");
+    _log.debug("BEGIN:getUsers repository start - page: {}, size: {}, sort: {}", [page, size, sort]);
     final httpResponse = await HttpUtils.getRequest("/admin/$_resource?page=$page&size=$size&sort=${sort.join("&sort=")}");
     final response = User.fromJsonStringList(httpResponse.body);
-    debugPrint("END:getUsers successful");
+    _log.debug("END:getUsers successful - response list size: {}", [response.length]);
     return response;
   }
 
@@ -26,13 +27,13 @@ class UserRepository {
   ///
   /// @param id the user id
   Future<User?> getUser(String id) async {
-    debugPrint("BEGIN:getUser repository start");
+    _log.debug("BEGIN:getUser repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException(userIdRequired);
     }
     final httpResponse = await HttpUtils.getRequest("/admin/$_resource/$id");
     final response = User.fromJsonString(httpResponse.body)!;
-    debugPrint("END:getUser successful");
+    _log.debug("END:getUser successful - response.body: {}", [response.toString()]);
     return response;
   }
 
@@ -40,13 +41,13 @@ class UserRepository {
   ///
   /// @param login the username
   Future<User?> getUserByLogin(String login) async {
-    debugPrint("BEGIN:getUserByLogin repository start");
+    _log.debug("BEGIN:getUserByLogin repository start - login: {}", [login]);
     if (login.isEmpty) {
       throw BadRequestException("User login is required");
     }
     final httpResponse = await HttpUtils.getRequest("/admin/$_resource/$login");
     final response = User.fromJsonString(httpResponse.body)!;
-    debugPrint("END:getUserByLogin successful");
+    _log.debug("END:getUserByLogin successful - response.body: {}", [response.toString()]);
     return response;
   }
 
@@ -54,7 +55,7 @@ class UserRepository {
   ///
   /// @param user the user object
   Future<User?> createUser(User user) async {
-    debugPrint("BEGIN:createUser repository start");
+    _log.debug("BEGIN:createUser repository start : {}", [user.toString()]);
     if (user.login == null || user.login!.isEmpty) {
       throw BadRequestException("User login is required");
     }
@@ -63,50 +64,57 @@ class UserRepository {
     }
     final httpResponse = await HttpUtils.postRequest<User>("/admin/$_resource", user);
     final response = User.fromJsonString(httpResponse.body);
-    debugPrint("END:createUser successful");
+    _log.debug("END:createUser successful");
     return response;
   }
 
   /// Find user method that findUser a user
   Future<List<User>> listUser(int rangeStart, int rangeEnd, {List<String> sort = const ["id,desc"]}) async {
+    _log.debug("BEGIN:listUser repository start - rangeStart: {}, rangeEnd: {}, sort: {}", [rangeStart, rangeEnd, sort]);
     final response = await HttpUtils.getRequest("/admin/$_resource?page=$rangeStart&size=$rangeEnd&sort=${sort.join("&sort=")}");
     var result = JsonMapper.deserialize<List<User>>(response.body)!;
+    _log.debug("END:listUser successful - response list size: {}", [result.length]);
     return result;
   }
 
   /// Find user method that findUserByAuthorities a user
   Future<List<User>> findUserByAuthority(int rangeStart, int rangeEnd, String authority) async {
+    _log.debug("BEGIN:findUserByAuthority repository start - rangeStart: {}, rangeEnd: {}, authority: {}", [rangeStart, rangeEnd, authority]);
     final response = await HttpUtils.getRequest("/admin/$_resource/list");
     var result = JsonMapper.deserialize<List<User>>(response.body)!;
+    _log.debug("END:findUserByAuthority successful - response list size: {}", [result.length]);
     return result;
   }
 
   /// Find user method that findUserByName a user
   Future<List<User>> findUserByName(int rangeStart, int rangeEnd, String name, String authority) async {
+    _log.debug("BEGIN:findUserByName repository start - rangeStart: {}, rangeEnd: {}, name: {}, authority: {}",
+        [rangeStart, rangeEnd, name, authority]);
     final response = await HttpUtils.getRequest(
         "/admin/$_resource/filter?name=$name&authority=$authority&page=${rangeStart.toString()}&size=${rangeEnd.toString()}");
     var result = JsonMapper.deserialize<List<User>>(response.body)!;
+    _log.debug("END:findUserByName successful - response list size: {}", [result.length]);
     return result;
   }
 
   /// Edit user method that editUser a user
   Future<User?> updateUser(User user) async {
-    debugPrint("BEGIN:updateUser repository start");
-    if(user.id == null || user.id!.isEmpty) {
+    _log.debug("BEGIN:updateUser repository start : {}", [user.toString()]);
+    if (user.id == null || user.id!.isEmpty) {
       throw BadRequestException(userIdRequired);
     }
     final httpResponse = await HttpUtils.putRequest<User>("/admin/$_resource", user);
     final response = User.fromJsonString(httpResponse.body);
-    debugPrint("END:updateUser successful");
+    _log.debug("END:updateUser successful");
     return response;
   }
 
   Future<void> deleteUser(String id) async {
-    debugPrint("BEGIN:deleteUser repository start");
-    if(id.isEmpty) {
+    _log.debug("BEGIN:deleteUser repository start - id: {}", [id]);
+    if (id.isEmpty) {
       throw BadRequestException(userIdRequired);
     }
-    await HttpUtils.deleteRequest("/admin/$_resource/$id");
-    debugPrint("END:deleteUser successful");
+    final httpResponse = await HttpUtils.deleteRequest("/admin/$_resource/$id");
+    _log.debug("END:deleteUser successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

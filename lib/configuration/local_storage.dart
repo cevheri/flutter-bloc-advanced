@@ -1,17 +1,20 @@
-import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppLocalStorageCached {
+  static final _log = AppLogger.getLogger("AppLocalStorageCached");
   static late String? jwtToken;
   static late List<String>? roles;
   static late String? language;
   static late String? username;
 
   static Future<void> loadCache() async {
+    _log.trace("Loading cache");
     jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.name);
     roles = await AppLocalStorage().read(StorageKeys.roles.name);
     language = await AppLocalStorage().read(StorageKeys.language.name) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.name);
+    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}", [username, roles, language, jwtToken]);
   }
 }
 
@@ -39,9 +42,11 @@ enum StorageKeys { jwtToken, roles, language, username }
 ///
 /// This class is used to store data locally with the help of shared preferences.
 class AppLocalStorage {
+  static final _log = AppLogger.getLogger("AppLocalStorage");
   static final AppLocalStorage _instance = AppLocalStorage._internal();
 
   factory AppLocalStorage() {
+    _log.trace("Creating AppLocalStorage instance");
     return _instance;
   }
 
@@ -64,6 +69,7 @@ class AppLocalStorage {
   ///
   /// throws Exception if value type is not supported
   Future<bool> save(String key, dynamic value) async {
+    _log.trace("Saving data to local storage");
     final prefs = await _prefs;
     try {
       if (value is String) {
@@ -81,10 +87,10 @@ class AppLocalStorage {
       }
 
       await AppLocalStorageCached.loadCache();
-      debugPrint("Saved data to local storage: $key - $value");
+      _log.trace("Saved data to local storage {} {}", [key, value]);
       return true;
     } catch (e) {
-      debugPrint("Error saving data to local storage: $e");
+      _log.error("Error saving data to local storage: {}, {}", [key, e]);
       return false;
     }
   }
@@ -99,21 +105,26 @@ class AppLocalStorage {
   /// - **bool**
   /// - **List String**
   Future<dynamic> read(String key) async {
+    _log.trace("Reading data from local storage");
     final prefs = await _prefs;
-    return prefs.get(key);
+    final result = prefs.get(key);
+    _log.trace("Read data from local storage {} {}", [key, result]);
+    return result;
   }
 
   /// Remove data from local storage
   ///
   /// This method removes data from local storage. It takes a key as parameter.
   Future<bool> remove(String key) async {
+    _log.trace("Removing data from local storage");
     try {
       final prefs = await _prefs;
       prefs.remove(key);
       await AppLocalStorageCached.loadCache();
+      _log.trace("Removed data from local storage {}", [key]);
       return true;
     } catch (e) {
-      debugPrint("Error removing data from local storage: $e");
+      _log.error("Error removing data from local storage: {}, {}", [key, e]);
       return false;
     }
   }
@@ -122,8 +133,10 @@ class AppLocalStorage {
   ///
   /// This method clears all data from local storage.
   Future<void> clear() async {
+    _log.info("Clearing all data from local storage");
     final prefs = await _prefs;
     prefs.clear();
     await AppLocalStorageCached.loadCache();
+    _log.info("Cleared all data from local storage");
   }
 }
