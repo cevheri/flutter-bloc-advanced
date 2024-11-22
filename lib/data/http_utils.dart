@@ -9,30 +9,32 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/allowed_paths.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
-import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:http/http.dart' as http;
 
 import 'app_api_exception.dart';
 
-class MyHttpOverrides extends HttpOverrides {
-  @override
-  HttpClient createHttpClient(SecurityContext? context) {
-    return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
-  }
-}
+// class MyHttpOverrides extends HttpOverrides {
+//   @override
+//   HttpClient createHttpClient(SecurityContext? context) {
+//     return super.createHttpClient(context)..badCertificateCallback = (X509Certificate cert, String host, int port) => true;
+//   }
+// }
 
 class HttpUtils {
-  static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.appKey : "default_token"}App-error';
-  static const String successResult = 'success';
-  static const String keyForJWTToken = 'jwt-token';
-  static const String badRequestServerKey = 'error.400';
-  static const String errorServerKey = 'error.500';
-  static const String generalNoErrorKey = 'none';
-  static const int timeout = 30;
-  static const String applicationJson = 'application/json';
-  static const String utf8Val = 'utf-8';
-  static const String noInternetConnectionError = 'No Internet connection';
-  static const String requestTimeoutError = 'Request timeout';
+  //static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.appKey : "default_token"}App-error';
+  static const successResult = 'success';
+  static const keyForJWTToken = 'jwt-token';
+  static const badRequestServerKey = 'error.400';
+  static const errorServerKey = 'error.500';
+  static const generalNoErrorKey = 'none';
+  static const timeoutValue = 30;
+  static const applicationJson = 'application/json';
+  static const utf8Val = 'utf-8';
+  static const noInternetConnectionError = 'No Internet connection';
+  static const requestTimeoutError = 'Request timeout';
+  static const _timeout = Duration(seconds: timeoutValue);
+  static final _encoding = Encoding.getByName(utf8Val);
+  static const _serOps = SerializationOptions(indent: '', ignoreDefaultMembers: true, ignoreNullMembers: true, ignoreUnknownTypes: true);
 
   ///   -H 'accept: application/json, text/plain, */*' \
   ///   -H 'content-type: application/json' \
@@ -85,39 +87,23 @@ class HttpUtils {
   }
 
   static Future<http.Response> postRequest<T>(String endpoint, T body, {Map<String, String>? headers}) async {
+    debugPrint("BEGIN: POST Request Method start : ${ProfileConstants.api}$endpoint");
     /// if isMock is true, return mock data instead of making a request
     if (!ProfileConstants.isProduction) return await mockRequest('POST', endpoint);
 
-    var headers = await HttpUtils.headers();
+    final headers = await HttpUtils.headers();
     String messageBody = "";
 
     if (headers['Content-Type'] == applicationJson) {
-      messageBody = JsonMapper.serialize(
-        body,
-        const SerializationOptions(
-          indent: '',
-          ignoreDefaultMembers: true,
-          ignoreNullMembers: true,
-          ignoreUnknownTypes: true,
-        ),
-      );
+      messageBody = JsonMapper.serialize(body, _serOps);
     } else {
       messageBody = body as String;
     }
 
-    http.Response? response;
+    final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-
-      response = await http
-          .post(
-            url,
-            headers: headers,
-            body: messageBody,
-            encoding: Encoding.getByName(utf8Val),
-          )
-          .timeout(const Duration(seconds: timeout));
-
+      response = await http.post(url, headers: headers, body: messageBody, encoding: _encoding).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException catch (se) {
       debugPrint("Socket Exception: $se");
@@ -126,31 +112,28 @@ class HttpUtils {
       debugPrint("Timeout Exception: $toe");
       throw FetchDataException(requestTimeoutError);
     }
-
+    debugPrint("END: POST Request Method end : ${ProfileConstants.api}$endpoint");
     return response;
   }
 
   static Future<http.Response> getRequest(String endpoint) async {
-    debugPrint("GET Request Method start : ${ProfileConstants.api}$endpoint");
+    debugPrint("BEGIN: GET Request Method start : ${ProfileConstants.api}$endpoint");
 
     /// if isMock is true, return mock data instead of making a request
     if (!ProfileConstants.isProduction) return (await mockRequest('GET', endpoint));
-
-    var headers = await HttpUtils.headers();
+    final http.Response response;
+    final headers = await HttpUtils.headers();
     try {
-      var response = await http
-          .get(
-            Uri.parse('${ProfileConstants.api}$endpoint'),
-            headers: headers,
-          )
-          .timeout(const Duration(seconds: timeout));
+      final url = Uri.parse('${ProfileConstants.api}$endpoint');
+      response = await http.get(url, headers: headers).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
-      return response;
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
+    debugPrint("END: GET Request Method end : ${ProfileConstants.api}$endpoint");
+    return response;
   }
 
   // static Future<int> getRequestHeader(String endpoint) async {
@@ -176,69 +159,59 @@ class HttpUtils {
   // }
 
   static Future<http.Response> putRequest<T>(String endpoint, T body) async {
+    debugPrint("BEGIN: PUT Request Method start : ${ProfileConstants.api}$endpoint");
     if (!ProfileConstants.isProduction) return await mockRequest('PUT', endpoint);
     var headers = await HttpUtils.headers();
-    final String json = JsonMapper.serialize(
-      body,
-      const SerializationOptions(
-        indent: '',
-        ignoreDefaultMembers: true,
-        ignoreNullMembers: true,
-        ignoreUnknownTypes: true,
-      ),
-    );
-    http.Response response;
+    final String json = JsonMapper.serialize(body, _serOps);
+    final http.Response response;
     try {
-      response = await http
-          .put(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
-          .timeout(const Duration(seconds: timeout));
+      final url = Uri.parse('${ProfileConstants.api}$endpoint');
+      response = await http.put(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
+    debugPrint("END: PUT Request Method end : ${ProfileConstants.api}$endpoint");
     return response;
   }
 
   static Future<http.Response> patchRequest<T>(String endpoint, T body) async {
+    debugPrint("BEGIN: PATCH Request Method start : ${ProfileConstants.api}$endpoint");
     if (!ProfileConstants.isProduction) return await mockRequest('PATCH', endpoint);
     var headers = await HttpUtils.headers();
-    final String json = JsonMapper.serialize(
-      body,
-      const SerializationOptions(
-        indent: '',
-        ignoreDefaultMembers: true,
-        ignoreNullMembers: true,
-        ignoreUnknownTypes: true,
-      ),
-    );
-    http.Response response;
+    final String json = JsonMapper.serialize(body, _serOps);
+    final http.Response response;
     try {
-      response = await http
-          .patch(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
-          .timeout(const Duration(seconds: timeout));
+      final url = Uri.parse('${ProfileConstants.api}$endpoint');
+      response = await http.patch(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
+    debugPrint("END: PATCH Request Method end : ${ProfileConstants.api}$endpoint");
     return response;
   }
 
   static Future<http.Response> deleteRequest(String endpoint) async {
+    debugPrint("BEGIN: DELETE Request Method start : ${ProfileConstants.api}$endpoint");
     if (!ProfileConstants.isProduction) return await mockRequest('DELETE', endpoint);
     var headers = await HttpUtils.headers();
+    final http.Response response;
     try {
-      var response = await http.delete(Uri.parse('${ProfileConstants.api}$endpoint'), headers: headers).timeout(const Duration(seconds: timeout));
+      final url = Uri.parse('${ProfileConstants.api}$endpoint');
+      response = await http.delete(url, headers: headers).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
-      return response;
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
+    debugPrint("END: DELETE Request Method end : ${ProfileConstants.api}$endpoint");
+    return response;
   }
 
   // dynamic returnResponse(http.Response response) {
@@ -263,7 +236,7 @@ class HttpUtils {
   // }
 
   static Future<http.Response> mockRequest(String httpMethod, String endpoint) async {
-    debugPrint("Mock request: $httpMethod $endpoint");
+    debugPrint("BEGIN: Mock Request Method start : $httpMethod $endpoint");
 
     var headers = await HttpUtils.headers();
     if (!allowedPaths.contains(endpoint)) {
@@ -313,21 +286,7 @@ class HttpUtils {
     } catch (e) {
       debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
     }
-
-    //TODO this code-bloc not working in unit-test
-    // final cacheStorage = getStorageCache;
-    // String username = cacheStorage["username"] ?? '';
-    // if (endpoint.startsWith('/account') || endpoint.startsWith('/users')) {
-    //   try {
-    //     var responseJson = json.decode(responseBody);
-    //     responseJson['login'] = username;
-    //     responseJson['authority'] = ['ROLE_${username.toUpperCase()}'];
-    //     response = Future.value(http.Response(json.encode(responseJson), httpStatusCode));
-    //   } catch (e) {
-    //     debugPrint("There is no response body to update with username");
-    //   }
-    // }
-
+    debugPrint("END: Mock Request Method end : $httpMethod $endpoint");
     return response;
   }
 }
