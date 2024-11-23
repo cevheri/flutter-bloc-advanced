@@ -1,19 +1,19 @@
 part of 'login_bloc.dart';
 
-enum LoginStatus { none, authenticating, authenticated, failure }
+enum LoginStatus { initial, loading, success, failure }
 
 class LoginState extends Equatable {
-  final String username;
-  final String password;
+  final String? username;
+  final String? password;
   final LoginStatus status;
   final bool passwordVisible;
 
   static const String authenticationFailKey = 'error.authenticate';
 
   const LoginState({
-    this.username = '',
-    this.password = '',
-    this.status = LoginStatus.none,
+    this.username,
+    this.password,
+    this.status = LoginStatus.initial,
     this.passwordVisible = false,
   });
 
@@ -32,10 +32,10 @@ class LoginState extends Equatable {
   }
 
   @override
-  List<Object> get props => [username, password, status, passwordVisible];
+  bool get stringify => true;
 
   @override
-  bool get stringify => true;
+  List<Object?> get props => [username, password, status, passwordVisible];
 }
 
 class LoginInitialState extends LoginState {}
@@ -48,4 +48,7 @@ class LoginErrorState extends LoginState {
   final String message;
 
   const LoginErrorState({required this.message});
+
+  @override
+  List<Object?> get props => [message];
 }

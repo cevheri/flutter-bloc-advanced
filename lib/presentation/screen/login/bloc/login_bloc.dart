@@ -18,9 +18,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       : _loginRepository = loginRepository,
         super(const LoginState()) {
     on<LoginFormSubmitted>(_onSubmit);
-    on<TogglePasswordVisibility>((event, emit) {
-      emit(state.copyWith(passwordVisible: !state.passwordVisible));
-    });
+    on<TogglePasswordVisibility>((event, emit) => emit(state.copyWith(passwordVisible: !state.passwordVisible)));
   }
 
   static final _log = AppLogger.getLogger("LoginBloc");
@@ -33,11 +31,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
     _log.debug("BEGIN: onSubmit LoginFormSubmitted event: {}", [event.username]);
-    emit(state.copyWith(
-      username: event.username,
-      password: event.password,
-      status: LoginStatus.authenticating,
-    ));
+
+    emit(state.copyWith(username: event.username, password: event.password, status: LoginStatus.loading));
+
     UserJWT userJWT = UserJWT(state.username, state.password);
     try {
       var token = await _loginRepository.authenticate(userJWT);
@@ -47,17 +43,16 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await AppLocalStorage().save(StorageKeys.username.name, event.username);
         _log.debug("onSubmit save storage username: {}", [event.username]);
 
-        emit(state.copyWith(status: LoginStatus.authenticated));
-        emit(LoginLoadedState());
+        emit(state.copyWith(status: LoginStatus.success, username: event.username, password: event.password));
         _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [token.toString()]);
       } else {
         emit(state.copyWith(status: LoginStatus.failure));
-        emit(const LoginErrorState(message: "Login Error"));
+        //emit(const LoginErrorState(message: "Login Error"));
         _log.error("END:onSubmit LoginFormSubmitted event failure: {}", ["Login Error"]);
       }
     } catch (e) {
       emit(state.copyWith(status: LoginStatus.failure));
-      emit(const LoginErrorState(message: "Login Error"));
+      //emit(const LoginErrorState(message: "Login Error"));
       debugPrint(e.toString(), wrapWidth: 1024);
       _log.error("END:onSubmit LoginFormSubmitted event error: {}", [e.toString()]);
     }
