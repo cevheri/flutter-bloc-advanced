@@ -13,7 +13,7 @@ import 'main_local.mapper.g.dart' show initializeJsonMapper;
 // flutter pub run intl_utils:generate
 /// main entry point of local computer development
 void main() async {
-  AppLogger.configure(isProduction: false, logFormat: LogFormat.extended);
+  AppLogger.configure(isProduction: false);
   final log = AppLogger.getLogger("main_local.dart");
 
   ProfileConstants.setEnvironment(Environment.dev);

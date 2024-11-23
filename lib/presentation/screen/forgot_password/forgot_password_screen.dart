@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -90,6 +91,7 @@ class ForgotPasswordScreen extends StatelessWidget {
     return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(builder: (context, state) {
       return SizedBox(
         child: ElevatedButton(
+          key: forgotPasswordButtonSubmit,
           child: Text(S.of(context).email_send),
           onPressed: () {
             if (_forgotPasswordFormKey.currentState!.saveAndValidate()) {
