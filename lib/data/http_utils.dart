@@ -23,7 +23,6 @@ import 'app_api_exception.dart';
 
 class HttpUtils {
   static final _log = AppLogger.getLogger("HttpUtils");
-  //static String errorHeader = 'x-${ProfileConstants.isProduction == true ? AppConstants.appKey : "default_token"}App-error';
   static const successResult = 'success';
   static const keyForJWTToken = 'jwt-token';
   static const badRequestServerKey = 'error.400';
@@ -92,6 +91,7 @@ class HttpUtils {
 
   static Future<http.Response> postRequest<T>(String endpoint, T body, {Map<String, String>? headers}) async {
     debugPrint("BEGIN: POST Request Method start : ${ProfileConstants.api}$endpoint");
+
     /// if isMock is true, return mock data instead of making a request
     if (!ProfileConstants.isProduction) return await mockRequest('POST', endpoint);
 
@@ -261,6 +261,8 @@ class HttpUtils {
         return Future.value(http.Response(responseBody, httpStatusCode));
       case 'GET':
       case 'PUT':
+        httpStatusCode = HttpStatus.ok;
+        break;
       default:
         httpStatusCode = HttpStatus.ok;
     }

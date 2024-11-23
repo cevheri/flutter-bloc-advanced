@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -27,7 +28,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
     try {
       String result = event.email.replaceAll('"', '');
       var resultStatusCode = await _accountRepository.resetPassword(result);
-      resultStatusCode == 200
+      resultStatusCode < HttpStatus.badRequest
           ? emit(AccountResetPasswordCompletedState())
           : emit(const AccountResetPasswordErrorState(message: "Reset Password Error"));
     } catch (e) {
