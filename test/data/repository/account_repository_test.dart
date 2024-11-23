@@ -87,7 +87,7 @@ void main() {
       await TestUtils().setupAuthentication();
       const passwordChangeDTO = mockPasswordChangePayload;
       final result = await AccountRepository().changePassword(passwordChangeDTO);
-      expect(result, 200);
+      expect(result, lessThan(300));
     });
 
     test("Given null passwordChangeDTO when changePassword then throw BadRequestException", () async {

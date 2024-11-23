@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
@@ -56,7 +55,6 @@ void main() {
   group("AccountsScreen AppBarTest", () {
     testWidgets("Validate AppBar", (tester) async {
       _log.debug("begin Validate AppBar");
-      TestUtils().setupAuthentication();
       // Given
       await tester.pumpWidget(getWidget());
       //When:
@@ -75,9 +73,9 @@ void main() {
     testWidgets("Validate AppBar Back Button", (tester) async {
       _log.debug("begin Validate AppBar Back Button");
 
-      TestUtils().setupAuthentication();
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
+
       // Given:
       await tester.pumpWidget(getWidget());
       //When:
@@ -90,7 +88,6 @@ void main() {
 
       _log.debug("end Validate AppBar Back Button");
     });
-
   });
 
   //form fields
@@ -112,9 +109,6 @@ void main() {
       //expect(find.byType(ElevatedButton), findsOneWidget);
       _log.debug("end Validate Field Type");
     });
-
-
-
 
     /// validate field name with English translation
     testWidgets(skip: true, "Render Screen Validate Field Name Successful", (tester) async {
