@@ -9,3 +9,4 @@ const Key loginButtonSubmitKey = Key("loginButtonSubmitKey");
 const Key loginButtonForgotPasswordKey = Key("loginButtonForgotPasswordKey");
 const Key loginButtonRegisterKey = Key("loginButtonRegisterKey");
 const Key loginButtonPasswordVisibilityKey = Key("loginButtonPasswordVisibilityKey");
+const Key forgotPasswordButtonSubmit = Key("forgotPasswordButtonSubmit");
