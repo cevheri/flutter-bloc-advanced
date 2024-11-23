@@ -32,10 +32,6 @@ class LoginRepository {
 
     final response = await HttpUtils.postRequest<UserJWT>("/authenticate", userJWT);
     result = JWTToken.fromJsonString(response.body);
-
-    if (result != null && result.idToken != null) {
-      await AppLocalStorage().save(StorageKeys.jwtToken.name, result.idToken);
-    }
     _log.debug("END:authenticate successful - response.body: {}", [result.toString()]);
     return result;
   }

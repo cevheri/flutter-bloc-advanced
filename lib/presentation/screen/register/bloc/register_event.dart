@@ -10,10 +10,6 @@ abstract class RegisterEvent extends Equatable {
   bool get stringify => true;
 }
 
-class TogglePasswordVisibility extends RegisterEvent {
-  const TogglePasswordVisibility();
-}
-
 class RegisterEmailChanged extends RegisterEvent {
   final User createUser;
 

@@ -107,10 +107,10 @@ void main() {
       debugPrint("drawerButton PumpAndSettle");
 
       // logout test alert button No
-      final logoutFinder = find.byKey(drawerButtonLogout);
+      final logoutFinder = find.byKey(drawerButtonLogoutKey);
       await tester.tap(logoutFinder);
       await tester.pumpAndSettle(const Duration(seconds: 5));
-      final noButtonFinder = find.byKey(drawerButtonLogoutNo);
+      final noButtonFinder = find.byKey(drawerButtonLogoutNoKey);
       await tester.tap(noButtonFinder);
       await tester.pumpAndSettle(const Duration(seconds: 5));
 
@@ -121,7 +121,7 @@ void main() {
       // logout test alert button yes
       await tester.tap(logoutFinder);
       await tester.pumpAndSettle(const Duration(seconds: 5));
-      final yesButtonFinder = find.byKey(drawerButtonLogoutYes);
+      final yesButtonFinder = find.byKey(drawerButtonLogoutYesKey);
       await tester.tap(yesButtonFinder);
       await tester.pumpAndSettle(const Duration(seconds: 5));
 

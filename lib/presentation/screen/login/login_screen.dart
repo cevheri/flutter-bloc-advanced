@@ -1,6 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
+import 'package:flutter_bloc_advance/presentation/screen/forgot_password/bloc/forgot_password.dart';
+import 'package:flutter_bloc_advance/presentation/screen/forgot_password/forgot_password_screen.dart';
+import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register.dart';
+import 'package:flutter_bloc_advance/presentation/screen/register/register_screen.dart';
+
+import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -10,16 +19,16 @@ import '../../../utils/message.dart';
 import 'bloc/login.dart';
 
 class LoginScreen extends StatelessWidget {
-  LoginScreen({super.key});
+  final _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
 
-  final _loginFormKey = GlobalKey<FormBuilderState>();
+  LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  _buildAppBar(BuildContext context) => AppBar(title: const Text("Flutter Bloc Advanced"), leading: Container());
+  _buildAppBar(BuildContext context) => AppBar(title: const Text(AppConstants.appName), leading: Container());
 
   _buildBody(BuildContext context) {
     return FormBuilder(
@@ -52,7 +61,7 @@ class LoginScreen extends StatelessWidget {
     if (Theme.of(context).brightness == Brightness.dark) {
       return Image.asset(LocaleConstants.logoLightUrl, width: 200, height: 200);
     } else {
-      return Image.asset('assets/images/img.png', width: 200, height: 200);
+      return Image.asset(LocaleConstants.defaultImgUrl, width: 200, height: 200);
     }
   }
 
@@ -61,17 +70,15 @@ class LoginScreen extends StatelessWidget {
       return SizedBox(
         width: MediaQuery.of(context).size.width * 0.6,
         child: FormBuilderTextField(
+          key: loginTextFieldUsernameKey,
           name: 'username',
           decoration: InputDecoration(labelText: S.of(context).login_user_name),
-          maxLines: 1,
           validator: FormBuilderValidators.compose(
             [
               FormBuilderValidators.required(errorText: S.of(context).username_required),
               FormBuilderValidators.minLength(4, errorText: S.of(context).username_min_length),
               FormBuilderValidators.maxLength(20, errorText: S.of(context).username_max_length),
-              (val) {
-                return null;
-              },
+              (val) => null,
             ],
           ),
         ),
@@ -88,36 +95,33 @@ class LoginScreen extends StatelessWidget {
           children: [
             Expanded(
               child: FormBuilderTextField(
+                key: loginTextFieldPasswordKey,
                 name: 'password',
                 decoration: InputDecoration(labelText: S.of(context).login_password),
                 // when press the enter key, call submit button function
                 textInputAction: TextInputAction.done,
                 onSubmitted: (value) {
                   if (_loginFormKey.currentState!.saveAndValidate()) {
-                    _submitEvent(context);
+                    //(username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']));
+                    _submitEvent(context,
+                        username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']);
                   }
                 },
-
                 obscureText: !state.passwordVisible,
-                maxLines: 1,
                 validator: FormBuilderValidators.compose(
                   [
                     FormBuilderValidators.required(errorText: S.of(context).password_required),
                     FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
                     FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
-                    (val) {
-                      return null;
-                    },
+                    (val) => null
                   ],
                 ),
               ),
             ),
             IconButton(
-              icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
-              onPressed: () {
-                context.read<LoginBloc>().add(const TogglePasswordVisibility());
-              },
-            ),
+                key: loginButtonPasswordVisibilityKey,
+                icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
+                onPressed: () => context.read<LoginBloc>().add(const TogglePasswordVisibility())),
           ],
         ),
       );
@@ -129,23 +133,21 @@ class LoginScreen extends StatelessWidget {
       builder: (context, state) {
         return SizedBox(
           child: ElevatedButton(
+            key: loginButtonSubmitKey,
             child: Text(S.of(context).login_button),
             onPressed: () {
               if (_loginFormKey.currentState!.saveAndValidate()) {
-                _submitEvent(context);
+                _submitEvent(context,
+                    username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']);
               } else {}
             },
           ),
         );
       },
       buildWhen: (previous, current) {
-        if (current is LoginLoadingState) {
-          Message.getMessage(context: context, title: S.of(context).logging_in, content: "");
-        }
         if (current is LoginLoadedState) {
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
-        }
-        if (current is LoginErrorState) {
+          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => true);
+        }else if (current is LoginErrorState) {
           Message.errorMessage(context: context, title: S.of(context).login_error, content: "");
         }
         return true;
@@ -153,16 +155,27 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  void _submitEvent(BuildContext context) {
-    context.read<LoginBloc>().add(
-        LoginFormSubmitted(username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']));
+  void _submitEvent(BuildContext context, {required String username, required String password}) {
+    context.read<LoginBloc>().add(LoginFormSubmitted(username: username, password: password));
   }
 
   _forgotPasswordLink(BuildContext context) {
     return SizedBox(
       child: TextButton(
+        key: loginButtonForgotPasswordKey,
         onPressed: () {
-          Navigator.pushNamed(context, ApplicationRoutes.forgotPassword);
+          Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => BlocProvider<ForgotPasswordBloc>(
+                        create: (context) => ForgotPasswordBloc(
+                          accountRepository: AccountRepository(),
+                        ),
+                        child: ForgotPasswordScreen(),
+                      )));
+          //Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.forgotPassword, (route) => false);
+          //Get.offAndToNamed(ApplicationRoutes.forgotPassword);
+          //Get.to(() => ForgotPasswordScreen());
         },
         child: Text(S.of(context).password_forgot),
       ),
@@ -172,8 +185,20 @@ class LoginScreen extends StatelessWidget {
   _register(BuildContext context) {
     return SizedBox(
       child: TextButton(
+        key: loginButtonRegisterKey,
         onPressed: () {
-          Navigator.pushNamed(context, ApplicationRoutes.register);
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => MultiBlocProvider(
+                providers: [
+                  BlocProvider<AccountBloc>.value(value: AccountBloc(accountRepository: AccountRepository())),
+                  BlocProvider<RegisterBloc>(create: (_) => RegisterBloc(accountRepository: AccountRepository())),
+                ],
+                child: RegisterScreen(),
+              ),
+            ),
+          );
         },
         child: Text(S.of(context).register),
       ),
@@ -185,15 +210,13 @@ class LoginScreen extends StatelessWidget {
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
         return Visibility(
-          visible: state.status == LoginStatus.failure,
-          child: Center(
-            child: Text(
+            visible: state.status == LoginStatus.failure,
+            child: Center(
+                child: Text(
               S.of(context).login_error,
               style: TextStyle(fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize, color: Theme.of(context).colorScheme.error),
               textAlign: TextAlign.center,
-            ),
-          ),
-        );
+            )));
       },
     );
   }

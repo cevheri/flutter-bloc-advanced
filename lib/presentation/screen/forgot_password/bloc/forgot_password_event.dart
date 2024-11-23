@@ -10,10 +10,6 @@ abstract class ForgotPasswordEvent extends Equatable {
   bool get stringify => true;
 }
 
-class TogglePasswordVisibility extends ForgotPasswordEvent {
-  const TogglePasswordVisibility();
-}
-
 class ForgotPasswordEmailChanged extends ForgotPasswordEvent {
   final String email;
 

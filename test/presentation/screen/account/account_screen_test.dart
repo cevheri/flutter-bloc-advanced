@@ -1,5 +1,7 @@
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
@@ -14,6 +16,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 import '../../../test_utils.dart';
+
+final _log = AppLogger.getLogger("AccountsScreenTest");
 
 /// Accounts Screen Test
 /// claas AccountsScreen extent
@@ -48,9 +52,10 @@ void main() {
   }
   //endregion setup
 
+  // app bar
   group("AccountsScreen AppBarTest", () {
     testWidgets("Validate AppBar", (tester) async {
-      debugPrint("begin Validate AppBar");
+      _log.debug("begin Validate AppBar");
       // Given
       await tester.pumpWidget(getWidget());
       //When:
@@ -60,27 +65,28 @@ void main() {
       // appBar title
       expect(find.text("Account"), findsOneWidget);
 
-      debugPrint("end Validate AppBar");
+      _log.debug("end Validate AppBar");
     });
   });
 
+  //form fields
   group("AccountsScreen DataTest", () {
     testWidgets("Render Screen Validate Field Type Successful", (tester) async {
-      debugPrint("begin Validate Field Type");
+      _log.debug("begin Validate Field Type");
       await TestUtils().setupAuthentication();
-      debugPrint("getAccount initWidgetDependenciesWithToken");
+      _log.debug("getAccount initWidgetDependenciesWithToken");
       // Given:
       await tester.pumpWidget(getWidget());
-      debugPrint("getAccount getWidget");
+      _log.debug("getAccount getWidget");
       //When:
       await tester.pumpAndSettle();
-      debugPrint("getAccount pumpAndSettle");
+      _log.debug("getAccount pumpAndSettle");
 
       //Then:
       expect(find.byType(FormBuilderTextField), findsNWidgets(4)); // findsNWidget = 4?
       //expect(find.byType(FormBuilderSwitch), findsOneWidget);
       //expect(find.byType(ElevatedButton), findsOneWidget);
-      debugPrint("end Validate Field Type");
+      _log.debug("end Validate Field Type");
     });
 
     /// validate field name with English translation

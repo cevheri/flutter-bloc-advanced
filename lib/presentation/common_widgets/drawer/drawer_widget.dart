@@ -56,7 +56,7 @@ class ApplicationDrawer extends StatelessWidget {
         child: SizedBox(
           width: double.infinity,
           child: ElevatedButton(
-            key: drawerButtonLogout,
+            key: drawerButtonLogoutKey,
             style: ElevatedButton.styleFrom(elevation: 0),
             onPressed: () => logOutDialog(context),
             child: Text(S.of(context).logout, textAlign: TextAlign.center),
@@ -170,12 +170,12 @@ class ApplicationDrawer extends StatelessWidget {
           content: Text(S.of(context).logout_sure),
           actions: [
             TextButton(
-              key: drawerButtonLogoutYes,
+              key: drawerButtonLogoutYesKey,
               onPressed: () => onLogout(context),
               child: Text(S.of(context).yes),
             ),
             TextButton(
-              key: drawerButtonLogoutNo,
+              key: drawerButtonLogoutNoKey,
               onPressed: () => onCancel(context),
               child: Text(S.of(context).no),
             ),

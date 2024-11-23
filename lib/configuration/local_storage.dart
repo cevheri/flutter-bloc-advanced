@@ -69,7 +69,7 @@ class AppLocalStorage {
   ///
   /// throws Exception if value type is not supported
   Future<bool> save(String key, dynamic value) async {
-    _log.trace("Saving data to local storage");
+    _log.trace("Saving data to local storage {} {}", [key, value]);
     final prefs = await _prefs;
     try {
       if (value is String) {
@@ -108,7 +108,7 @@ class AppLocalStorage {
     _log.trace("Reading data from local storage");
     final prefs = await _prefs;
     final result = prefs.get(key);
-    _log.trace("Read data from local storage {} {}", [key, result]);
+    //_log.trace("Read data from local storage {} {}", [key, result]);
     return result;
   }
 

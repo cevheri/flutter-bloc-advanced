@@ -30,7 +30,7 @@ const mockAuthorityPayload = Authority(name: 'ROLE_USER');
 const mockPasswordChangePayload = PasswordChangeDTO(currentPassword: 'password', newPassword: 'new_password');
 
 /// JWTToken fake data
-const mockJWTTokenPayload = JWTToken(idToken: 'MOCK_UNITTEST_TOKEN');
+const mockJWTTokenPayload = JWTToken(idToken: 'MOCK_TOKEN');
 
 /// Menu fake data with full payload
 const mockMenuPayload = Menu(

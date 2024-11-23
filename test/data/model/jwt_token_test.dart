@@ -16,7 +16,7 @@ void main() {
     test('should create a JWTToken instance (Constructor)', () {
       const entity = mockJWTTokenPayload;
 
-      expect(entity.idToken, 'MOCK_UNITTEST_TOKEN');
+      expect(entity.idToken, 'MOCK_TOKEN');
     });
 
     test('should copy a JWTToken instance with new values (copyWith)', () {
@@ -54,14 +54,14 @@ void main() {
       final json = mockJWTTokenPayload.toJson();
       final entity = JWTToken.fromJson(json!);
 
-      expect(entity?.idToken, 'MOCK_UNITTEST_TOKEN');
+      expect(entity?.idToken, 'MOCK_TOKEN');
     });
 
     test('should deserialize from JSON string', () {
       final json = mockJWTTokenPayload.toJson();
       final entity = JWTToken.fromJsonString(jsonEncode(json!));
 
-      expect(entity?.idToken, 'MOCK_UNITTEST_TOKEN');
+      expect(entity?.idToken, 'MOCK_TOKEN');
     });
   });
 
@@ -70,7 +70,7 @@ void main() {
     test('should return string', () {
       const entity = mockJWTTokenPayload;
 
-      expect(entity.toString(), 'JWTToken(MOCK_UNITTEST_TOKEN)');
+      expect(entity.toString(), 'JWTToken(MOCK_TOKEN)');
     });
 
     test('should return true when comparing two JWTToken instances', () {
