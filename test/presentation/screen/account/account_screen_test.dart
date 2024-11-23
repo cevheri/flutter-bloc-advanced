@@ -56,6 +56,7 @@ void main() {
   group("AccountsScreen AppBarTest", () {
     testWidgets("Validate AppBar", (tester) async {
       _log.debug("begin Validate AppBar");
+      TestUtils().setupAuthentication();
       // Given
       await tester.pumpWidget(getWidget());
       //When:
@@ -63,10 +64,33 @@ void main() {
       //Then:
       expect(find.byType(AppBar), findsOneWidget);
       // appBar title
-      expect(find.text("Account"), findsOneWidget);
 
+      expect(find.byType(AccountsScreen), findsOneWidget);
+      expect(find.text("Account"), findsOneWidget);
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
       _log.debug("end Validate AppBar");
     });
+
+    //app bar back button test
+    testWidgets("Validate AppBar Back Button", (tester) async {
+      _log.debug("begin Validate AppBar Back Button");
+
+      TestUtils().setupAuthentication();
+      await tester.pumpWidget(Container());
+      await tester.pumpAndSettle();
+      // Given:
+      await tester.pumpWidget(getWidget());
+      //When:
+      await tester.pumpAndSettle();
+      //Then:
+      final backButtonFinder = find.byIcon(Icons.arrow_back);
+      await tester.tap(backButtonFinder);
+      await tester.pumpAndSettle();
+      expect(find.byType(AccountsScreen), findsNothing);
+
+      _log.debug("end Validate AppBar Back Button");
+    });
+
   });
 
   //form fields
@@ -88,6 +112,9 @@ void main() {
       //expect(find.byType(ElevatedButton), findsOneWidget);
       _log.debug("end Validate Field Type");
     });
+
+
+
 
     /// validate field name with English translation
     testWidgets(skip: true, "Render Screen Validate Field Name Successful", (tester) async {

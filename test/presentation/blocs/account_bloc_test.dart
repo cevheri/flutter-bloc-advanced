@@ -35,10 +35,7 @@ void main() {
   /// Account State Tests
   group("AccountState", () {
     test("supports value comparisons", () {
-      expect(
-        const AccountState(),
-        const AccountState(),
-      );
+      expect(const AccountState(), const AccountState());
     });
 
     test("copyWith retains the same values if no arguments are provided", () {
@@ -80,10 +77,7 @@ void main() {
   /// Account Event Tests
   group("AccountEvent", () {
     test("supports value comparisons", () {
-      expect(
-        const AccountLoad(),
-        const AccountLoad(),
-      );
+      expect(const AccountLoad(), const AccountLoad());
     });
 
     test("props returns []", () {

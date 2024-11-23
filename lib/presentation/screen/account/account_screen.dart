@@ -17,7 +17,10 @@ class AccountsScreen extends StatelessWidget {
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(title: Text(S.of(context).account));
+    return AppBar(
+      title: Text(S.of(context).account),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.of(context).pop()),
+    );
   }
 
   _buildBody(BuildContext context) {
