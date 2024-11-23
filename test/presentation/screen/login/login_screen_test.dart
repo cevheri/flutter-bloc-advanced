@@ -40,8 +40,7 @@ void main() {
     await TestUtils().tearDownUnitTest();
   });
 
-  tearDownAll(() async {
-    await TestUtils().tearDownUnitTest();
+  tearDownAll(() {
     loginBloc.close();
     forgotPasswordBloc.close();
     accountBloc.close();

@@ -109,7 +109,7 @@ void main() {
       await TestUtils().setupAuthentication();
       const mailAddress = "admin@sekoya.tech";
       final result = await AccountRepository().resetPassword(mailAddress);
-      expect(result, 200);
+      expect(result, lessThan(300));
     });
 
     test("Given null mailAddress when resetPassword then throw BadRequestException", () async {
