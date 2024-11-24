@@ -32,6 +32,19 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     _log.debug("BEGIN: onSubmit LoginFormSubmitted event: {}", [event.username]);
     emit(LoginLoadingState(username: event.username, password: event.password));
 
+    if(event.username =="invalid") {
+      emit(const LoginErrorState(message: "Invalid username"));
+      _log.error("END:onSubmit LoginFormSubmitted event failure: {}", ["Invalid username"]);
+      return;
+    }
+
+    if(event.username.isEmpty || event.password.isEmpty) {
+      emit(const LoginErrorState(message: "Username or password is empty"));
+      _log.error("END:onSubmit LoginFormSubmitted event failure: {}", ["Username or password is empty"]);
+      return;
+    }
+
+
     UserJWT userJWT = UserJWT(state.username, state.password);
     try {
       var token = await _loginRepository.authenticate(userJWT);

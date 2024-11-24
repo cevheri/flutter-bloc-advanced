@@ -102,9 +102,9 @@ class LoginScreen extends StatelessWidget {
                 textInputAction: TextInputAction.done,
                 onSubmitted: (value) {
                   if (_loginFormKey.currentState!.saveAndValidate()) {
-                    //(username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']));
-                    _submitEvent(context,
-                        username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']);
+                    final username = _loginFormKey.currentState!.value['username'];
+                    final password = _loginFormKey.currentState!.value['password'];
+                    _submitEvent(context, username: username, password: password);
                   }
                 },
                 obscureText: !state.passwordVisible,

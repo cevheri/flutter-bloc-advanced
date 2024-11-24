@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 
 import '../http_utils.dart';
 import '../models/jwt_token.dart';
@@ -27,7 +28,7 @@ class LoginRepository {
     _log.debug("BEGIN:authenticate repository start username: {}", [userJWT.username]);
     JWTToken? result;
     if (userJWT.username == null || userJWT.username!.isEmpty || userJWT.password == null || userJWT.password!.isEmpty) {
-      throw Exception("Invalid username or password");
+      throw BadRequestException("Invalid username or password");
     }
 
     final response = await HttpUtils.postRequest<UserJWT>("/authenticate", userJWT);

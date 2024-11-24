@@ -22,7 +22,7 @@ class RegisterScreen extends StatelessWidget {
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(title: Text(S.of(context).register));
+    return AppBar(title: Text(S.of(context).register), leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)));
   }
 
   _buildBody(BuildContext context) {
@@ -30,13 +30,32 @@ class RegisterScreen extends StatelessWidget {
       padding: const EdgeInsets.only(top: 50),
       child: BlocBuilder<AccountBloc, AccountState>(
         builder: (context, state) {
-          if (state.account == null) {
-            return Container();
-          }
-
+          // if (state.account == null) {
+          //   return Container();
+          // }
           return Column(
             children: [
-              _forgotPasswordField(context, state.account),
+              FormBuilder(
+                key: _registerFormKey,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(30.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        _formBuilderTextFieldFirstName(context),
+                        const SizedBox(height: 20),
+                        _formBuilderTextFieldLastName(context),
+                        const SizedBox(height: 20),
+                        _formBuilderTextFieldEmail(context),
+                        const SizedBox(height: 20),
+                        _submitButton(context),
+                      ],
+                    ),
+                  ),
+                ),
+              )
             ],
           );
         },
@@ -44,71 +63,59 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  _forgotPasswordField(BuildContext context, User? account) {
-    return FormBuilder(
-      key: _registerFormKey,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(30.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              FormBuilderTextField(
-                name: "firstname",
-                decoration: InputDecoration(labelText: S.of(context).first_name),
-                maxLines: 1,
-                validator: FormBuilderValidators.compose(
-                  [
-                    FormBuilderValidators.required(errorText: S.of(context).first_name),
-                    (value) {
-                      if (value == null || value.isEmpty) {
-                        return S.of(context).firstname_required;
-                      }
-                      return null;
-                    },
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              FormBuilderTextField(
-                name: "lastname",
-                decoration: InputDecoration(labelText: S.of(context).last_name),
-                maxLines: 1,
-                validator: FormBuilderValidators.compose(
-                  [
-                    FormBuilderValidators.required(errorText: S.of(context).last_name),
-                    (value) {
-                      if (value == null || value.isEmpty) {
-                        return S.of(context).lastname_required;
-                      }
-                      return null;
-                    },
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              FormBuilderTextField(
-                name: "email",
-                decoration: InputDecoration(labelText: S.of(context).email),
-                maxLines: 1,
-                validator: FormBuilderValidators.compose(
-                  [
-                    FormBuilderValidators.required(errorText: S.of(context).email_required),
-                    (value) {
-                      if (value == null || value.isEmpty) {
-                        return S.of(context).email_required;
-                      }
-                      return null;
-                    },
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              _submitButton(context),
-            ],
-          ),
-        ),
+  FormBuilderTextField _formBuilderTextFieldEmail(BuildContext context) {
+    return FormBuilderTextField(
+      name: "email",
+      decoration: InputDecoration(labelText: S.of(context).email),
+      maxLines: 1,
+      validator: FormBuilderValidators.compose(
+        [
+          FormBuilderValidators.required(errorText: S.of(context).email_required),
+          (value) {
+            if (value == null || value.isEmpty) {
+              return S.of(context).email_required;
+            }
+            return null;
+          },
+        ],
+      ),
+    );
+  }
+
+  FormBuilderTextField _formBuilderTextFieldLastName(BuildContext context) {
+    return FormBuilderTextField(
+      name: "lastname",
+      decoration: InputDecoration(labelText: S.of(context).last_name),
+      maxLines: 1,
+      validator: FormBuilderValidators.compose(
+        [
+          FormBuilderValidators.required(errorText: S.of(context).last_name),
+          (value) {
+            if (value == null || value.isEmpty) {
+              return S.of(context).lastname_required;
+            }
+            return null;
+          },
+        ],
+      ),
+    );
+  }
+
+  FormBuilderTextField _formBuilderTextFieldFirstName(BuildContext context) {
+    return FormBuilderTextField(
+      name: "firstname",
+      decoration: InputDecoration(labelText: S.of(context).first_name),
+      maxLines: 1,
+      validator: FormBuilderValidators.compose(
+        [
+          FormBuilderValidators.required(errorText: S.of(context).first_name),
+          (value) {
+            if (value == null || value.isEmpty) {
+              return S.of(context).firstname_required;
+            }
+            return null;
+          }
+        ],
       ),
     );
   }
@@ -117,19 +124,15 @@ class RegisterScreen extends StatelessWidget {
     return BlocBuilder<RegisterBloc, RegisterState>(builder: (context, state) {
       return SizedBox(
         child: ElevatedButton(
-          child: Text(S.of(context).register),
+          child: Text(S.of(context).save),
           onPressed: () {
             if (_registerFormKey.currentState!.saveAndValidate()) {
-              context.read<RegisterBloc>().add(
-                    RegisterEmailChanged(
-                      createUser: User(
-                        firstName: _registerFormKey.currentState!.fields["firstname"]!.value,
-                        lastName: _registerFormKey.currentState!.fields["lastname"]!.value,
-                        email: _registerFormKey.currentState!.fields["email"]!.value,
-                      ),
-                    ),
-                  );
-            } else {}
+              final firstName = _registerFormKey.currentState!.fields["firstname"]!.value;
+              final lastName = _registerFormKey.currentState!.fields["lastname"]!.value;
+              final email = _registerFormKey.currentState!.fields["email"]!.value;
+              final event = RegisterEmailChanged(createUser: User(firstName: firstName, lastName: lastName, email: email));
+              context.read<RegisterBloc>().add(event);
+            }
           },
         ),
       );
