@@ -48,17 +48,17 @@ void main() {
 
     // LoginInitialState
     test("LoginInitialState", () {
-      expect(LoginInitialState(), LoginInitialState());
+      expect(const LoginInitialState(), const LoginInitialState());
     });
 
     // LoginLoadingState
     test("LoginLoadingState", () {
-      expect(LoginLoadingState(), LoginLoadingState());
+      expect(const LoginLoadingState(), const LoginLoadingState());
     });
 
     // LoginLoadedState
     test("LoginLoadedState", () {
-      expect(LoginLoadedState(), LoginLoadedState());
+      expect(const LoginLoadedState(), const LoginLoadedState());
     });
 
     // LoginErrorState
