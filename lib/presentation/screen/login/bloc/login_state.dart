@@ -38,16 +38,28 @@ class LoginState extends Equatable {
   List<Object?> get props => [username, password, status, passwordVisible];
 }
 
-class LoginInitialState extends LoginState {}
+class LoginInitialState extends LoginState {
+  const LoginInitialState() : super(status: LoginStatus.initial);
+}
 
-class LoginLoadingState extends LoginState {}
+class LoginLoadingState extends LoginState {
+  const LoginLoadingState({super.username, super.password}) : super(status: LoginStatus.loading);
 
-class LoginLoadedState extends LoginState {}
+  @override
+  List<Object?> get props => [username, password, status];
+}
+
+class LoginLoadedState extends LoginState {
+  const LoginLoadedState({super.username, super.password}) : super(status: LoginStatus.success);
+
+  @override
+  List<Object?> get props => [username, password, status];
+}
 
 class LoginErrorState extends LoginState {
   final String message;
 
-  const LoginErrorState({required this.message});
+  const LoginErrorState({required this.message}) : super(status: LoginStatus.failure);
 
   @override
   List<Object?> get props => [message];

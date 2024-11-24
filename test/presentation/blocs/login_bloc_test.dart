@@ -119,12 +119,14 @@ void main() {
 
       final event = LoginFormSubmitted(username: input.username!, password: input.password!);
 
-      final loadingState = LoginState(status: LoginStatus.loading, username: input.username!, password: input.password!);
-      final successState = LoginState(status: LoginStatus.success, username: input.username!, password: input.password!);
-      final failureState = LoginState(status: LoginStatus.failure, username: input.username!, password: input.password!);
+      final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
+      final successState = LoginLoadedState(username: input.username!, password: input.password!);
+      const failureState = LoginErrorState(message: "Login API Error: Operation Unauthorized");
+      const failure2State = LoginErrorState(message: "Login Error: Access Token is null");
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
+      final states2Failure = [loadingState, failure2State];
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, success] when login is successful",
@@ -136,7 +138,7 @@ void main() {
       );
 
       blocTest<LoginBloc, LoginState>(
-        "emits [loading, failure] when invalid input failed",
+        "emits [loading, failure] when invalid operation input failed",
         setUp: () => when(method()).thenThrow(UnauthorizedException()),
         build: () => LoginBloc(loginRepository: repository),
         act: (bloc) => bloc..add(event),
@@ -149,7 +151,7 @@ void main() {
         setUp: () => when(method()).thenAnswer((_) async => const JWTToken(idToken: null)),
         build: () => LoginBloc(loginRepository: repository),
         act: (bloc) => bloc..add(event),
-        expect: () => statesFailure,
+        expect: () => states2Failure,
         verify: (_) => verify(method()).called(1),
       );
     });

@@ -145,9 +145,15 @@ class LoginScreen extends StatelessWidget {
         );
       },
       buildWhen: (previous, current) {
+        debugPrint("previous: $previous, current: $current");
+        if (current is LoginLoadingState) {
+          Message.getMessage(context: context, title: S.of(context).logging_in, content: "", duration: const Duration(seconds: 1));
+        }
         if (current is LoginLoadedState) {
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => true);
-        }else if (current is LoginErrorState) {
+          Message.getMessage(context: context, title: S.of(context).success, content: "");
+          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
+        }
+        if (current is LoginErrorState) {
           Message.errorMessage(context: context, title: S.of(context).login_error, content: "");
         }
         return true;

@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
@@ -31,8 +30,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
     _log.debug("BEGIN: onSubmit LoginFormSubmitted event: {}", [event.username]);
-
-    emit(state.copyWith(username: event.username, password: event.password, status: LoginStatus.loading));
+    emit(LoginLoadingState(username: event.username, password: event.password));
 
     UserJWT userJWT = UserJWT(state.username, state.password);
     try {
@@ -42,18 +40,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         _log.debug("onSubmit save storage token: {}", [token.idToken]);
         await AppLocalStorage().save(StorageKeys.username.name, event.username);
         _log.debug("onSubmit save storage username: {}", [event.username]);
-
-        emit(state.copyWith(status: LoginStatus.success, username: event.username, password: event.password));
+        emit(LoginLoadedState(username: event.username, password: event.password));
         _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [token.toString()]);
       } else {
-        emit(state.copyWith(status: LoginStatus.failure));
-        //emit(const LoginErrorState(message: "Login Error"));
+        emit(const LoginErrorState(message: "Login Error: Access Token is null"));
         _log.error("END:onSubmit LoginFormSubmitted event failure: {}", ["Login Error"]);
       }
     } catch (e) {
-      emit(state.copyWith(status: LoginStatus.failure));
-      //emit(const LoginErrorState(message: "Login Error"));
-      debugPrint(e.toString(), wrapWidth: 1024);
+      emit(LoginErrorState(message: "Login API Error: ${e.toString()}"));
       _log.error("END:onSubmit LoginFormSubmitted event error: {}", [e.toString()]);
     }
   }
