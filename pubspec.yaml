@@ -23,9 +23,9 @@ dependencies:
   http:
   device_preview:
   getwidget:
-  flutter_form_builder:
+  flutter_form_builder: ^9.5.0
+  form_builder_validators: ^11.0.0
   get:
-  form_builder_validators:
   intl:
   string_2_icon:
   intl_utils:

@@ -2,18 +2,16 @@ part of 'register_bloc.dart';
 
 abstract class RegisterEvent extends Equatable {
   const RegisterEvent();
-
-  @override
-  List<Object> get props => [];
-
-  @override
-  bool get stringify => true;
 }
 
-class RegisterEmailChanged extends RegisterEvent {
+class RegisterFormSubmitted extends RegisterEvent {
   final User createUser;
 
-  const RegisterEmailChanged({
+  const RegisterFormSubmitted({
     required this.createUser,
   });
+  
+  @override
+  List<Object> get props => [createUser];
 }
+

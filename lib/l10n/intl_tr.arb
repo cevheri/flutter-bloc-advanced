@@ -16,7 +16,7 @@
   "name": "İsim",
   "success": "Başarılı",
   "failed": "Başarısız",
-  "required_field": "Zorunlu Alan!",
+  "required_field": "Zorunlu Alan",
   "required_range": "Aralık gereklidir",
   "list": "Listele",
   "edit_user": "Kullanıcı Düzenle",

@@ -10,3 +10,9 @@ const Key loginButtonForgotPasswordKey = Key("loginButtonForgotPasswordKey");
 const Key loginButtonRegisterKey = Key("loginButtonRegisterKey");
 const Key loginButtonPasswordVisibilityKey = Key("loginButtonPasswordVisibilityKey");
 const Key forgotPasswordButtonSubmit = Key("forgotPasswordButtonSubmit");
+
+// register screen
+const Key registerSubmitButtonKey = Key("registerSubmitButtonKey");
+const Key registerFirstNameTextFieldKey = Key("registerFirstNameTextFieldKey");
+const Key registerLastNameTextFieldKey = Key("registerLastNameTextFieldKey");
+const Key registerEmailTextFieldKey = Key("registerEmailTextFieldKey");

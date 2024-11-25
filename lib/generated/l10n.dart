@@ -1,7 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-
 import 'intl/messages_all.dart';
 
 // **************************************************************************
@@ -171,10 +170,20 @@ class S {
     );
   }
 
-  /// `Authority`
+  /// `Authorities`
   String get authorities {
     return Intl.message(
       'Authorities',
+      name: 'authorities',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Authority`
+  String get authority {
+    return Intl.message(
+      'Authority',
       name: 'authority',
       desc: '',
       args: [],
@@ -211,10 +220,10 @@ class S {
     );
   }
 
-  /// `Required Field!`
+  /// `Required Field`
   String get required_field {
     return Intl.message(
-      'Required Field!',
+      'Required Field',
       name: 'required_field',
       desc: '',
       args: [],

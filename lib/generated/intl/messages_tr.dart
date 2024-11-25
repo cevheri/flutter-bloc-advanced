@@ -38,9 +38,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "account": MessageLookupByLibrary.simpleMessage("Hesabım"),
         "active": MessageLookupByLibrary.simpleMessage("Aktif"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
-        "authority": MessageLookupByLibrary.simpleMessage("Yetkiler"),
+        "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
         "authorities_required":
             MessageLookupByLibrary.simpleMessage("Yetki gereklidir"),
+        "authority": MessageLookupByLibrary.simpleMessage("Rol"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Şifre Değiştir"),
         "create_user":
@@ -119,7 +120,7 @@ class MessageLookup extends MessageLookupByLibrary {
             "Password changed successfully"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Tel No"),
         "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
-        "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan!"),
+        "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan"),
         "required_phone_type": MessageLookupByLibrary.simpleMessage(
             "Telefon numarası 5** *** ** ** formatında ve 10 karakter olmalıdır"),
         "required_range":

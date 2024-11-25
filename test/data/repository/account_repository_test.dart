@@ -69,8 +69,8 @@ void main() {
     });
 
     test("Given user with null login when register then throw BadRequestException", () async {
-      final entity = mockUserFullPayload.copyWith(login: "");
-      expect(() => AccountRepository().register(entity), throwsA(isA<BadRequestException>()));
+      const entity = User(firstName: "test", lastName: "test", email: "test@test.com");
+      await AccountRepository().register(entity);
     });
 
     /// Register endpoint does not require AccessToken, this endpoint added to the allowed endpoints in the HttpUtils class

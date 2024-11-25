@@ -17,8 +17,11 @@ class AccountRepository {
     if (newUser == null) {
       throw BadRequestException("User null");
     }
-    if (newUser.email == null || newUser.email!.isEmpty || newUser.login == null || newUser.login!.isEmpty) {
-      throw BadRequestException("User email or login null");
+    if (newUser.email == null || newUser.email!.isEmpty) {
+      throw BadRequestException("User email null");
+    }
+    if (newUser.login == null || newUser.login!.isEmpty) {
+      newUser = newUser.copyWith(login: newUser.email);
     }
     if (newUser.langKey == null || newUser.langKey!.isEmpty) {
       newUser = newUser.copyWith(langKey: "en");

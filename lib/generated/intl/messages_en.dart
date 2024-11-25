@@ -38,9 +38,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "account": MessageLookupByLibrary.simpleMessage("Account"),
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
-        "authority": MessageLookupByLibrary.simpleMessage("Authority"),
+        "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
         "authorities_required":
-            MessageLookupByLibrary.simpleMessage("Authority is required"),
+            MessageLookupByLibrary.simpleMessage("Authorities is required"),
+        "authority": MessageLookupByLibrary.simpleMessage("Authority"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Change Password"),
         "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
@@ -117,7 +118,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
         "register": MessageLookupByLibrary.simpleMessage("Register"),
         "required_field":
-            MessageLookupByLibrary.simpleMessage("Required Field!"),
+            MessageLookupByLibrary.simpleMessage("Required Field"),
         "required_phone_type": MessageLookupByLibrary.simpleMessage(
             "Phone Type Required 5** *** ** ** "),
         "required_range":
