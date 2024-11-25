@@ -7,124 +7,77 @@ import 'package:get/get.dart';
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
-import 'bloc/settings.dart';
 
 class SettingsScreen extends StatelessWidget {
-  const SettingsScreen({super.key});
+  SettingsScreen({super.key});
+
+  final _settingsFormKey = GlobalKey<FormBuilderState>();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  List<DropdownMenuItem<String>> createDropdownLanguageItems(Map<String, String> languages) {
-    return languages.keys
-        .map<DropdownMenuItem<String>>(
-          (String key) => DropdownMenuItem<String>(
-            value: key,
-            child: Text(languages[key]!),
-          ),
-        )
-        .toList();
-  }
-
-  submit(BuildContext context) {
-    return BlocBuilder<SettingsBloc, SettingsState>(builder: (context, state) {
-      return ElevatedButton(
-        child: SizedBox(
-            width: MediaQuery.of(context).size.width,
-            child: Center(
-              child: Visibility(
-                replacement: const CircularProgressIndicator(value: null),
-                visible: state.status != SettingsStatus.loaded,
-                child: Text(S.of(context).save),
-              ),
-            )),
-        onPressed: () {},
-      );
-    });
-  }
-
   _buildAppBar(BuildContext context) {
-    return AppBar(title: Text(S.of(context).settings));
+    return AppBar(
+        title: Text(S.of(context).settings), leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)));
   }
 
   _buildBody(BuildContext context) {
     return FormBuilder(
+      key: _settingsFormKey,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.max,
         children: [
           const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 150,
-              child: ElevatedButton(
-                onPressed: () => Navigator.pushNamed(context, ApplicationRoutes.changePassword),
-                child: Text(S.of(context).change_password, textAlign: TextAlign.center),
-              ),
-            ),
-          ),
+          Center(child: SizedBox(width: 150, child: _buildChangePasswordButton(context))),
           const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 150,
-              child: ElevatedButton(
-                onPressed: () => languageConfirmationDialog(context),
-                child: Text(S.of(context).language_select, textAlign: TextAlign.center),
-              ),
-            ),
-          ),
+          Center(child: SizedBox(width: 150, child: _buildChangeLanguageButton(context))),
           const SizedBox(height: 20),
-          Center(
-            child: SizedBox(
-              width: 150,
-              child: ElevatedButton(
-                onPressed: () => logOutDialog(context),
-                child: Text(S.of(context).logout, textAlign: TextAlign.center),
-              ),
-            ),
-          ),
+          Center(child: SizedBox(width: 150, child: _buildLogoutButton(context))),
         ],
       ),
     );
   }
 
-  Future<void> languageConfirmationDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return const LanguageConfirmationDialog();
-      },
+  ElevatedButton _buildChangePasswordButton(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () => Navigator.pushNamed(context, ApplicationRoutes.changePassword),
+      child: Text(S.of(context).change_password, textAlign: TextAlign.center),
     );
   }
 
-  Future logOutDialog(
-    BuildContext context,
-  ) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(S.of(context).logout),
-          content: Text(S.of(context).logout_sure),
-          actions: [
-            TextButton(onPressed: () => onLogout(context), child: Text(S.of(context).yes)),
-            TextButton(onPressed: () => onCancel(context), child: Text(S.of(context).no)),
-          ],
-        );
-      },
+  ElevatedButton _buildChangeLanguageButton(BuildContext context) {
+    return ElevatedButton(
+      child: Text(S.of(context).language_select, textAlign: TextAlign.center),
+      onPressed: () => showDialog(context: context, builder: (context) => const LanguageConfirmationDialog()),
+    );
+  }
+
+  ElevatedButton _buildLogoutButton(BuildContext context) {
+    return ElevatedButton(
+      child: Text(S.of(context).logout, textAlign: TextAlign.center),
+      onPressed: () => showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            title: Text(S.of(context).logout),
+            content: Text(S.of(context).logout_sure),
+            actions: [
+              TextButton(onPressed: () => onLogout(context), child: Text(S.of(context).yes)),
+              TextButton(onPressed: () => Navigator.pop(context), child: Text(S.of(context).no)),
+            ],
+          );
+        },
+      ),
     );
   }
 
   void onLogout(context) {
     BlocProvider.of<DrawerBloc>(context).add(Logout());
-    Navigator.pushNamed(context, ApplicationRoutes.login);
-  }
-
-  void onCancel(context) {
-    Navigator.pop(context);
+    Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
   }
 }
 

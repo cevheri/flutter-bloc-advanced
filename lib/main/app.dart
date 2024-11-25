@@ -129,7 +129,7 @@ class App extends StatelessWidget {
     },
     ApplicationRoutes.settings: (context) {
       return BlocProvider<SettingsBloc>(
-          create: (context) => SettingsBloc(accountRepository: AccountRepository()), child: const SettingsScreen());
+          create: (context) => SettingsBloc(), child: SettingsScreen());
     },
     ApplicationRoutes.forgotPassword: (context) {
       return BlocProvider<ForgotPasswordBloc>(

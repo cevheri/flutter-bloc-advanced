@@ -7,42 +7,22 @@ class SettingsEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class SettingsLoadCurrentUser extends SettingsEvent {}
+class Logout extends SettingsEvent {}
 
-class SettingsFirstNameChanged extends SettingsEvent {
-  final String firstName;
+class ChangeLanguage extends SettingsEvent {
+  final String? language;
 
-  const SettingsFirstNameChanged({required this.firstName});
-
-  @override
-  List<Object> get props => [];
-}
-
-class SettingsLastNameChanged extends SettingsEvent {
-  final String lastName;
-
-  const SettingsLastNameChanged({required this.lastName});
+  const ChangeLanguage({required this.language});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [language ?? ""];
 }
 
-class SettingsEmailChanged extends SettingsEvent {
-  final String email;
+class ChangeTheme extends SettingsEvent {
+  final AdaptiveThemeMode theme;
 
-  const SettingsEmailChanged({required this.email});
+  const ChangeTheme({required this.theme});
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [theme];
 }
-
-class SettingsLanguageChanged extends SettingsEvent {
-  final String language;
-
-  const SettingsLanguageChanged({required this.language});
-
-  @override
-  List<Object> get props => [];
-}
-
-class SettingsFormSubmitted extends SettingsEvent {}
