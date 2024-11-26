@@ -30,9 +30,13 @@ class AuthorityState extends Equatable {
   bool get stringify => true;
 }
 
-class AuthorityInitialState extends AuthorityState {}
+class AuthorityInitialState extends AuthorityState {
+  const AuthorityInitialState() : super(status: AuthorityStatus.initial);
+}
 
-class AuthorityLoadInProgressState extends AuthorityState {}
+class AuthorityLoadInProgressState extends AuthorityState {
+  const AuthorityLoadInProgressState() : super(status: AuthorityStatus.loading);
+}
 
 class AuthorityLoadSuccessState extends AuthorityState {
   const AuthorityLoadSuccessState({required List authorities}) : super(authorities: authorities, status: AuthorityStatus.success);
@@ -41,5 +45,8 @@ class AuthorityLoadSuccessState extends AuthorityState {
 class AuthorityLoadFailureState extends AuthorityState {
   final String message;
 
-  const AuthorityLoadFailureState({required this.message});
+  const AuthorityLoadFailureState({required this.message}): super(status: AuthorityStatus.failure);
+
+  @override
+  List<Object> get props => [status, message];
 }

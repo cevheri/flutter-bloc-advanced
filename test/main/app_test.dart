@@ -80,16 +80,6 @@ void main() {
       });
     });
 
-    // testWidgets('Theme data should have correct properties', (WidgetTester tester) async {
-    //   final lightTheme = app._buildLightTheme();
-    //   expect(lightTheme.brightness, equals(Brightness.light));
-    //   expect(lightTheme.useMaterial3, equals(false));
-    //
-    //   final darkTheme = app._buildDarkTheme();
-    //   expect(darkTheme.brightness, equals(Brightness.dark));
-    //   expect(darkTheme.useMaterial3, equals(false));
-    // });
-
     testWidgets('MultiBlocProvider should contain all required providers', (WidgetTester tester) async {
       await tester.pumpWidget(app);
       expect(find.byType(MultiBlocProvider), findsOneWidget);

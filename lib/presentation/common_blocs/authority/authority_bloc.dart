@@ -15,14 +15,14 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
 
   AuthorityBloc({required AuthorityRepository authorityRepository})
       : _authorityRepository = authorityRepository,
-        super(const AuthorityState()) {
+        super(const AuthorityInitialState()) {
     on<AuthorityEvent>((event, emit) {});
     on<AuthorityLoad>(_onLoad);
   }
 
   /// Load the current authority.
   FutureOr<void> _onLoad(AuthorityLoad event, Emitter<AuthorityState> emit) async {
-    emit(AuthorityInitialState());
+    emit(const AuthorityLoadInProgressState());
     try {
       final authorities = await _authorityRepository.getAuthorities();
       emit(AuthorityLoadSuccessState(authorities: authorities));
