@@ -16,3 +16,8 @@ const Key registerSubmitButtonKey = Key("registerSubmitButtonKey");
 const Key registerFirstNameTextFieldKey = Key("registerFirstNameTextFieldKey");
 const Key registerLastNameTextFieldKey = Key("registerLastNameTextFieldKey");
 const Key registerEmailTextFieldKey = Key("registerEmailTextFieldKey");
+
+// settings screen
+const Key settingsChangePasswordButtonKey = Key("settingsChangePasswordButtonKey");
+const Key settingsChangeLanguageButtonKey = Key("settingsChangeLanguageButtonKey");
+const Key settingsLogoutButtonKey = Key("settingsLogoutButtonKey");

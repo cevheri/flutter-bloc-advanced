@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
-import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
+import '../../common_widgets/drawer/drawer_bloc/drawer.dart';
 
 class SettingsScreen extends StatelessWidget {
   SettingsScreen({super.key});
@@ -44,6 +45,7 @@ class SettingsScreen extends StatelessWidget {
 
   ElevatedButton _buildChangePasswordButton(BuildContext context) {
     return ElevatedButton(
+      key: settingsChangePasswordButtonKey,
       onPressed: () => Navigator.pushNamed(context, ApplicationRoutes.changePassword),
       child: Text(S.of(context).change_password, textAlign: TextAlign.center),
     );
@@ -51,6 +53,7 @@ class SettingsScreen extends StatelessWidget {
 
   ElevatedButton _buildChangeLanguageButton(BuildContext context) {
     return ElevatedButton(
+      key: settingsChangeLanguageButtonKey,
       child: Text(S.of(context).language_select, textAlign: TextAlign.center),
       onPressed: () => showDialog(context: context, builder: (context) => const LanguageConfirmationDialog()),
     );
@@ -58,6 +61,7 @@ class SettingsScreen extends StatelessWidget {
 
   ElevatedButton _buildLogoutButton(BuildContext context) {
     return ElevatedButton(
+      key: settingsLogoutButtonKey,
       child: Text(S.of(context).logout, textAlign: TextAlign.center),
       onPressed: () => showDialog(
         context: context,
