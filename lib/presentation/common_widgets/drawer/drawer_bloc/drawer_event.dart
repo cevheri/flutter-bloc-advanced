@@ -5,9 +5,6 @@ abstract class DrawerEvent extends Equatable {
 
   @override
   List<Object> get props => [];
-
-  @override
-  bool get stringify => true;
 }
 
 class Logout extends DrawerEvent {}

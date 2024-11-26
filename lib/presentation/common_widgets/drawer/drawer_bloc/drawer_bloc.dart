@@ -27,36 +27,39 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
   }
 
   FutureOr<void> _onLogout(Logout event, Emitter<DrawerState> emit) async {
+    emit(const DrawerState(isLogout: false));
     try {
       await _loginRepository.logout();
       emit(state.copyWith(isLogout: true));
       MenuListCache.menus = [];
     } catch (e) {
-      rethrow;
+      emit(const DrawerState(isLogout: false));
     }
   }
 
   FutureOr<void> _loadMenus(LoadMenus event, Emitter<DrawerState> emit) async {
-    emit(state.copyWith(menus: []));
+    emit(const DrawerState(menus: []));
     try {
       if (MenuListCache.menus.isNotEmpty) {
         emit(state.copyWith(menus: MenuListCache.menus));
         return;
       }
       final menus = await _menuRepository.getMenus();
+      MenuListCache.menus = menus;
       emit(state.copyWith(menus: menus));
     } catch (e) {
-      emit(state.copyWith(menus: []));
+      emit(const DrawerState(menus: []));
     }
   }
 
   FutureOr<void> _refreshMenus(RefreshMenus event, Emitter<DrawerState> emit) async {
+    emit(const DrawerState(menus: []));
     try {
       final menus = await _menuRepository.getMenus();
       MenuListCache.menus = menus;
       emit(state.copyWith(menus: menus));
     } catch (e) {
-      emit(state.copyWith(menus: []));
+      emit(const DrawerState(menus: []));
     }
   }
 }

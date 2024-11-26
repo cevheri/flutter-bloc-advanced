@@ -18,7 +18,7 @@ import 'package:equatable/equatable.dart';
 @jsonSerializable
 class Menu extends Equatable {
   @JsonProperty(name: 'id')
-  final int id;
+  final String id;
 
   @JsonProperty(name: 'name')
   final String name;
@@ -47,7 +47,7 @@ class Menu extends Equatable {
   // salesPersonCode and salesPersonName
 
   const Menu({
-    this.id = 0,
+    this.id = '',
     this.name = '',
     this.description = '',
     this.url = '',
@@ -59,7 +59,7 @@ class Menu extends Equatable {
   });
 
   Menu copyWith({
-    int? id,
+    String? id,
     String? name,
     String? description,
     String? url,

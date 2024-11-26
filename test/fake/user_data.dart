@@ -34,7 +34,7 @@ const mockJWTTokenPayload = JWTToken(idToken: 'MOCK_TOKEN');
 
 /// Menu fake data with full payload
 const mockMenuPayload = Menu(
-  id: 0,
+  id: "0",
   name: 'test name',
   description: '',
   url: 'https://dhw-api.onrender.com/',

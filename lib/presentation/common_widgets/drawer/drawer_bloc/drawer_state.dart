@@ -21,7 +21,4 @@ class DrawerState extends Equatable {
 
   @override
   List<Object> get props => [menus, isLogout];
-
-  @override
-  bool get stringify => true;
 }

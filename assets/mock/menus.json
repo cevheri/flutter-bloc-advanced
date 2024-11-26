@@ -1,6 +1,6 @@
 [
   {
-    "id": 1,
+    "id": "1",
     "name": "home",
     "description": "home",
     "url": "/",
@@ -11,7 +11,7 @@
     "level": 0
   },
   {
-    "id": 2,
+    "id": "2",
     "name": "account",
     "description": "account",
     "url": "/account",
@@ -19,7 +19,7 @@
     "orderPriority": 10,
     "active": true,
     "parent": {
-      "id": 1,
+      "id": "1",
       "name": "home",
       "description": "home",
       "url": "/",
@@ -31,7 +31,7 @@
     "level": 1
   },
   {
-    "id": 3,
+    "id": "3",
     "name": "userManagement",
     "description": "userManagement",
     "url": "/admin",
@@ -39,7 +39,7 @@
     "orderPriority": 11,
     "active": true,
     "parent": {
-      "id": 1,
+      "id": "1",
       "name": "home",
       "description": "home",
       "url": "/",
@@ -51,7 +51,7 @@
     "level": 1
   },
   {
-    "id": 9,
+    "id": "9",
     "name": "create",
     "description": "createOffer",
     "url": "/admin/new-user",
@@ -59,7 +59,7 @@
     "orderPriority": 1,
     "active": true,
     "parent": {
-      "id": 3,
+      "id": "3",
       "name": "userManagement",
       "description": "userManagement",
       "url": "/admin",
@@ -71,7 +71,7 @@
     "level": 2
   },
   {
-    "id": 10,
+    "id": "10",
     "name": "list",
     "description": "listOffer",
     "url": "/admin/list-users",
@@ -79,7 +79,7 @@
     "orderPriority": 2,
     "active": true,
     "parent": {
-      "id": 3,
+      "id": "3",
       "name": "userManagement",
       "description": "userManagement",
       "url": "/admin",
@@ -91,7 +91,7 @@
     "level": 2
   },
   {
-    "id": 5,
+    "id": "5",
     "name": "settings",
     "description": "settings",
     "url": "/settings",
@@ -99,7 +99,7 @@
     "orderPriority": 60,
     "active": true,
     "parent": {
-      "id": 1,
+      "id": "1",
       "name": "home",
       "description": "home",
       "url": "/",

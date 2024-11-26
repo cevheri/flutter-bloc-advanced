@@ -29,9 +29,9 @@ void main() {
 
     test('should copy a Menu instance with new values (copyWith)', () {
       const entity = mockMenuPayload;
-      final entityUpd = entity.copyWith(id: 0, name: 'Home');
+      final entityUpd = entity.copyWith(id: "0", name: 'Home');
 
-      expect(entityUpd.id, 0);
+      expect(entityUpd.id, "0");
       expect(entityUpd.name, 'Home');
       expect(entityUpd.description, '');
       expect(entityUpd.url, 'https://dhw-api.onrender.com/');
@@ -46,7 +46,7 @@ void main() {
       const entity = mockMenuPayload;
       final entityUpd = entity.copyWith();
 
-      expect(entityUpd.id, 0);
+      expect(entityUpd.id, "0");
       expect(entityUpd.name, 'test name');
       expect(entityUpd.description, '');
       expect(entityUpd.url, 'https://dhw-api.onrender.com/');
