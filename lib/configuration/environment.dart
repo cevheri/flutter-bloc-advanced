@@ -18,8 +18,6 @@ class ProfileConstants {
       case Environment.prod:
         _config = _Config.prodConstants;
         break;
-      default:
-        _config = _Config.devConstants;
     }
   }
 

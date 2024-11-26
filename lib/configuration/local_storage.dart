@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -45,6 +46,12 @@ class AppLocalStorage {
   static final _log = AppLogger.getLogger("AppLocalStorage");
   static final AppLocalStorage _instance = AppLocalStorage._internal();
 
+  SharedPreferences? _prefsInstance;
+  @visibleForTesting
+  void setPreferencesInstance(SharedPreferences prefs) {
+    _prefsInstance = prefs;
+  }
+
   factory AppLocalStorage() {
     _log.trace("Creating AppLocalStorage instance");
     return _instance;
@@ -53,7 +60,7 @@ class AppLocalStorage {
   AppLocalStorage._internal();
 
   /// Shared Preferences private instance
-  Future<SharedPreferences> get _prefs async => SharedPreferences.getInstance();
+  Future<SharedPreferences> get _prefs async => _prefsInstance ??= await SharedPreferences.getInstance();
 
   /// Save data to local storage <br>
   /// <br>
