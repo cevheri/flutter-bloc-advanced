@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import '../../../data/models/city.dart';
 import '../../../data/models/district.dart';
 import '../../../data/repository/district_repository.dart';
 
@@ -16,15 +15,26 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
 
   DistrictBloc({required DistrictRepository districtRepository})
       : _districtRepository = districtRepository,
-        super(const DistrictState()) {
+        super(const DistrictInitialState()) {
     on<DistrictEvent>((event, emit) {});
-    on<DistrictLoadList>(_onLoad);
+    on<DistrictLoad>(_onLoad);
+    on<DistrictLoadByCity>(_onLoadByCity);
   }
 
-  FutureOr<void> _onLoad(DistrictLoadList event, Emitter<DistrictState> emit) async {
-    emit(DistrictInitialState());
+  FutureOr<void> _onLoad(DistrictLoad event, Emitter<DistrictState> emit) async {
+    emit(const DistrictLoadingState());
     try {
-      List<District?>? district = await _districtRepository.getDistrictsByCity(event.districtId);
+      List<District?>? district = await _districtRepository.getDistricts();
+      emit(DistrictLoadSuccessState(districts: district));
+    } catch (e) {
+      emit(DistrictLoadFailureState(message: e.toString()));
+    }
+  }
+
+  FutureOr<void> _onLoadByCity(DistrictLoadByCity event, Emitter<DistrictState> emit) async {
+    emit(const DistrictLoadingState());
+    try {
+      List<District?>? district = await _districtRepository.getDistrictsByCity(event.cityId);
       emit(DistrictLoadSuccessState(districts: district));
     } catch (e) {
       emit(DistrictLoadFailureState(message: e.toString()));

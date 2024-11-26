@@ -7,20 +7,18 @@ class DistrictEvent extends Equatable {
   List<Object> get props => [];
 }
 
+class DistrictLoadByCity extends DistrictEvent {
+  final String cityId;
+
+  const DistrictLoadByCity({required this.cityId});
+
+  @override
+  List<Object> get props => [cityId];
+}
+
 class DistrictLoad extends DistrictEvent {
-  const DistrictLoad({required City city});
+  const DistrictLoad();
 
   @override
   List<Object> get props => [];
-}
-
-class DistrictLoadList extends DistrictEvent {
-  const DistrictLoadList({
-    required this.districtId,
-  });
-
-  final String districtId;
-
-  @override
-  List<Object> get props => [districtId];
 }

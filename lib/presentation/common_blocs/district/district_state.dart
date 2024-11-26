@@ -24,13 +24,19 @@ class DistrictState extends Equatable {
   }
 
   @override
-  List<Object> get props => [districts ?? [], status];
+  List<Object> get props => [status, districts ?? []];
 
   @override
   bool get stringify => true;
 }
 
-class DistrictInitialState extends DistrictState {}
+class DistrictInitialState extends DistrictState {
+  const DistrictInitialState() : super(status: DistrictStatus.initial);
+}
+
+class DistrictLoadingState extends DistrictState {
+  const DistrictLoadingState() : super(status: DistrictStatus.loading);
+}
 
 class DistrictLoadSuccessState extends DistrictState {
   const DistrictLoadSuccessState({required super.districts}) : super(status: DistrictStatus.success);
@@ -39,5 +45,8 @@ class DistrictLoadSuccessState extends DistrictState {
 class DistrictLoadFailureState extends DistrictState {
   final String message;
 
-  const DistrictLoadFailureState({required this.message});
+  const DistrictLoadFailureState({required this.message}) : super(status: DistrictStatus.failure);
+
+  @override
+  List<Object> get props => [status, message];
 }
