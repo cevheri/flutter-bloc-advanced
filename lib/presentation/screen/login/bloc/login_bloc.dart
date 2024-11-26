@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 
 import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
@@ -32,21 +33,14 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     _log.debug("BEGIN: onSubmit LoginFormSubmitted event: {}", [event.username]);
     emit(LoginLoadingState(username: event.username, password: event.password));
 
-    if(event.username =="invalid") {
-      emit(const LoginErrorState(message: "Invalid username"));
-      _log.error("END:onSubmit LoginFormSubmitted event failure: {}", ["Invalid username"]);
-      return;
-    }
-
-    if(event.username.isEmpty || event.password.isEmpty) {
-      emit(const LoginErrorState(message: "Username or password is empty"));
-      _log.error("END:onSubmit LoginFormSubmitted event failure: {}", ["Username or password is empty"]);
-      return;
-    }
-
-
     UserJWT userJWT = UserJWT(state.username, state.password);
     try {
+      if(event.username =="invalid") {
+        throw BadRequestException("Invalid username");
+      }
+      // if(event.username.isEmpty || event.password.isEmpty) {
+      //   throw BadRequestException("Username or password is empty");
+      // }
       var token = await _loginRepository.authenticate(userJWT);
       if (token != null && token.idToken != null) {
         await AppLocalStorage().save(StorageKeys.jwtToken.name, token.idToken);
@@ -56,8 +50,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         emit(LoginLoadedState(username: event.username, password: event.password));
         _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [token.toString()]);
       } else {
-        emit(const LoginErrorState(message: "Login Error: Access Token is null"));
-        _log.error("END:onSubmit LoginFormSubmitted event failure: {}", ["Login Error"]);
+        throw BadRequestException("Invalid Access Token");
       }
     } catch (e) {
       emit(LoginErrorState(message: "Login API Error: ${e.toString()}"));

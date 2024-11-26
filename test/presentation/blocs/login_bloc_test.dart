@@ -115,14 +115,14 @@ void main() {
     group("LoginFormSubmitted", () {
       const input = mockUserJWTPayload;
       Future<JWTToken> output = Future<JWTToken>.value(mockJWTTokenPayload);
-      method() => repository.authenticate(input);
+      repositoryMethod() => repository.authenticate(input);
 
       final event = LoginFormSubmitted(username: input.username!, password: input.password!);
 
       final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
       final successState = LoginLoadedState(username: input.username!, password: input.password!);
       const failureState = LoginErrorState(message: "Login API Error: Operation Unauthorized");
-      const failure2State = LoginErrorState(message: "Login Error: Access Token is null");
+      const failure2State = LoginErrorState(message: "Login API Error: Invalid Request: Invalid Access Token");
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
@@ -130,30 +130,31 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, success] when login is successful",
-        setUp: () => when(method()).thenAnswer((_) async => output),
+        setUp: () => when(repositoryMethod()).thenAnswer((_) async => output),
         build: () => LoginBloc(loginRepository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
-        verify: (_) => verify(method()).called(1),
+        verify: (_) => verify(repositoryMethod()).called(1),
       );
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid operation input failed",
-        setUp: () => when(method()).thenThrow(UnauthorizedException()),
+        setUp: () => when(repositoryMethod()).thenThrow(UnauthorizedException()),
         build: () => LoginBloc(loginRepository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
-        verify: (_) => verify(method()).called(1),
+        verify: (_) => verify(repositoryMethod()).called(1),
       );
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid input then failed",
-        setUp: () => when(method()).thenAnswer((_) async => const JWTToken(idToken: null)),
+        setUp: () => when(repositoryMethod()).thenAnswer((_) async => const JWTToken(idToken: null)),
         build: () => LoginBloc(loginRepository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => states2Failure,
-        verify: (_) => verify(method()).called(1),
+        verify: (_) => verify(repositoryMethod()).called(1),
       );
+
     });
   });
 

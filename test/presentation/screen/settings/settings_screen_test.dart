@@ -147,10 +147,10 @@ void main() {
       await tester.tap(find.byKey(settingsLogoutButtonKey));
       await tester.pumpAndSettle();
 
-      //await tester.tap(find.text('No'));
-      //await tester.pumpAndSettle();
-      //
-      // expect(Get.currentRoute, ApplicationRoutes.settings);
+      await tester.tap(find.text('No'));
+      await tester.pumpAndSettle();
+
+      expect(Get.currentRoute, ApplicationRoutes.settings);
     });
   });
 

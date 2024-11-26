@@ -23,6 +23,12 @@ void main() {
   //region state
   /// Settings State Tests
   group("SettingsState Test", () {
+
+    test("settings.dart export test", () {
+      expect(SettingsBloc(), isA<SettingsBloc>());
+    });
+
+
     test("SettingsInitial", () {
       expect(const SettingsInitial(), const SettingsInitial());
       expect(const SettingsInitial().props, [SettingsStatus.initial]);
