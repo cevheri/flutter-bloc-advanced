@@ -30,7 +30,13 @@ class CityState extends Equatable {
   bool get stringify => true;
 }
 
-class CityInitialState extends CityState {}
+class CityInitialState extends CityState {
+  const CityInitialState() : super(status: CityStatus.initial);
+}
+
+class CityLoadingState extends CityState {
+  const CityLoadingState() : super(status: CityStatus.loading);
+}
 
 class CityLoadSuccessState extends CityState {
   const CityLoadSuccessState({required List<City?> cities}) : super(cities: cities, status: CityStatus.success);
@@ -39,5 +45,8 @@ class CityLoadSuccessState extends CityState {
 class CityLoadFailureState extends CityState {
   final String message;
 
-  const CityLoadFailureState({required this.message});
+  const CityLoadFailureState({required this.message}) : super(status: CityStatus.failure);
+
+  @override
+  List<Object> get props => [status, message];
 }

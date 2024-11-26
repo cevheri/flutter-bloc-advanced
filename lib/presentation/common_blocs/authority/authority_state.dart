@@ -34,8 +34,8 @@ class AuthorityInitialState extends AuthorityState {
   const AuthorityInitialState() : super(status: AuthorityStatus.initial);
 }
 
-class AuthorityLoadInProgressState extends AuthorityState {
-  const AuthorityLoadInProgressState() : super(status: AuthorityStatus.loading);
+class AuthorityLoadingState extends AuthorityState {
+  const AuthorityLoadingState() : super(status: AuthorityStatus.loading);
 }
 
 class AuthorityLoadSuccessState extends AuthorityState {

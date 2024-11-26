@@ -7,8 +7,8 @@ class CityEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class CityLoadList extends CityEvent {
-  const CityLoadList();
+class CityLoad extends CityEvent {
+  const CityLoad();
 
   @override
   List<Object> get props => [];

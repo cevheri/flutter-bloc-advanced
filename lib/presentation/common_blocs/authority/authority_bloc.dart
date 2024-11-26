@@ -22,7 +22,7 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
 
   /// Load the current authority.
   FutureOr<void> _onLoad(AuthorityLoad event, Emitter<AuthorityState> emit) async {
-    emit(const AuthorityLoadInProgressState());
+    emit(const AuthorityLoadingState());
     try {
       final authorities = await _authorityRepository.getAuthorities();
       emit(AuthorityLoadSuccessState(authorities: authorities));

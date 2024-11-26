@@ -15,13 +15,13 @@ class CityBloc extends Bloc<CityEvent, CityState> {
 
   CityBloc({required CityRepository cityRepository})
       : _cityRepository = cityRepository,
-        super(const CityState()) {
+        super(const CityInitialState()) {
     on<CityEvent>((event, emit) {});
-    on<CityLoadList>(_onLoad);
+    on<CityLoad>(_onLoad);
   }
 
-  FutureOr<void> _onLoad(CityLoadList event, Emitter<CityState> emit) async {
-    emit(CityInitialState());
+  FutureOr<void> _onLoad(CityLoad event, Emitter<CityState> emit) async {
+    emit(const CityLoadingState());
     try {
       List<City?> cities = await _cityRepository.getCities();
       emit(CityLoadSuccessState(cities: cities));

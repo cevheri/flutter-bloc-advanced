@@ -45,7 +45,7 @@ void main() {
     });
 
     test("AuthorityLoadInProgressState", () {
-      expect(const AuthorityLoadInProgressState(), const AuthorityLoadInProgressState());
+      expect(const AuthorityLoadingState(), const AuthorityLoadingState());
     });
 
     test("AuthorityLoadSuccessState", () {
@@ -68,7 +68,7 @@ void main() {
       expect(const AuthorityState(authorities: authorities).props, [AuthorityStatus.initial, authorities]);
 
       expect(const AuthorityInitialState().props, [AuthorityStatus.initial, []]);
-      expect(const AuthorityLoadInProgressState().props, [AuthorityStatus.loading, []]);
+      expect(const AuthorityLoadingState().props, [AuthorityStatus.loading, []]);
       expect(const AuthorityLoadSuccessState(authorities: authorities).props, [AuthorityStatus.success, authorities]);
       expect(const AuthorityLoadFailureState(message: "test").props, [AuthorityStatus.failure, "test"]);
     });
@@ -105,7 +105,7 @@ void main() {
       method() => repository.getAuthorities();
       Future<List<String?>> output = Future<List<String?>>.value(authoritiesMap);
       const event = AuthorityLoad();
-      const loadingState = AuthorityLoadInProgressState();
+      const loadingState = AuthorityLoadingState();
       final successState = AuthorityLoadSuccessState(authorities: authoritiesMap);
       const failureState = AuthorityLoadFailureState(message: "Exception: Error");
 
