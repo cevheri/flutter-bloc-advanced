@@ -12,15 +12,15 @@ part 'register_event.dart';
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-  RegisterBloc({required AccountRepository accountRepository})
-      : _accountRepository = accountRepository,
+
+  static final _log = AppLogger.getLogger("RegisterBloc");
+  final AccountRepository _repository;
+  
+  RegisterBloc({required AccountRepository repository})
+      : _repository = repository,
         super(const RegisterInitialState()) {
     on<RegisterFormSubmitted>(_onSubmit);
   }
-
-  static final _log = AppLogger.getLogger("RegisterBloc");
-
-  final AccountRepository _accountRepository;
 
   @override
   void onTransition(Transition<RegisterEvent, RegisterState> transition) {
@@ -34,7 +34,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     _log.debug("BEGIN: onSubmit RegisterFormSubmitted event: {}", [event.createUser.toString()]);
     emit(const RegisterLoadingState());
     try {
-      var user = await _accountRepository.register(event.createUser);
+      var user = await _repository.register(event.createUser);
       if (user != null) {
         emit(RegisterCompletedState(user: user));
         _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [user.toString()]);

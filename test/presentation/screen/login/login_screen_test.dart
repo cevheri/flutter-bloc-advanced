@@ -30,10 +30,10 @@ void main() {
   //region setup
   setUpAll(() async {
     await TestUtils().setupUnitTest();
-    loginBloc = LoginBloc(loginRepository: LoginRepository());
-    accountBloc = AccountBloc(accountRepository: AccountRepository());
-    forgotPasswordBloc = ForgotPasswordBloc(accountRepository: AccountRepository());
-    registerBloc = RegisterBloc(accountRepository: AccountRepository());
+    loginBloc = LoginBloc(repository: LoginRepository());
+    accountBloc = AccountBloc(repository: AccountRepository());
+    forgotPasswordBloc = ForgotPasswordBloc(repository: AccountRepository());
+    registerBloc = RegisterBloc(repository: AccountRepository());
   });
 
   tearDown(() async {

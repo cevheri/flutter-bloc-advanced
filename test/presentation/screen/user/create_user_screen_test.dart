@@ -27,8 +27,8 @@ void main() {
   });
 
   final blocs = [
-    BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
-    BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
+    BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
+    BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
   ];
   GetMaterialApp getWidget() {

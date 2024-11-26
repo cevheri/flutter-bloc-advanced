@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 
 import '../../../../data/models/menu.dart';
 import '../../../../data/repository/login_repository.dart';
@@ -12,6 +13,7 @@ part 'drawer_event.dart';
 part 'drawer_state.dart';
 
 class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
+  static final _log = AppLogger.getLogger("DrawerBloc");
   final LoginRepository _loginRepository;
   final MenuRepository _menuRepository;
 
@@ -27,39 +29,49 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
   }
 
   FutureOr<void> _onLogout(Logout event, Emitter<DrawerState> emit) async {
+    _log.debug("BEGIN: onLogout Logout event: {}", []);
     emit(const DrawerState(isLogout: false));
     try {
       await _loginRepository.logout();
       emit(state.copyWith(isLogout: true));
       MenuListCache.menus = [];
+      _log.debug("END:onLogout Logout event success: {}", []);
     } catch (e) {
       emit(const DrawerState(isLogout: false));
+      _log.error("END:onLogout Logout event error: {}", [e.toString()]);
     }
   }
 
   FutureOr<void> _loadMenus(LoadMenus event, Emitter<DrawerState> emit) async {
+    _log.debug("BEGIN: loadMenus LoadMenus event: {}", []);
     emit(const DrawerState(menus: []));
     try {
       if (MenuListCache.menus.isNotEmpty) {
         emit(state.copyWith(menus: MenuListCache.menus));
+        _log.info("END:loadMenus read from cache: {}", []);
         return;
       }
       final menus = await _menuRepository.getMenus();
       MenuListCache.menus = menus;
       emit(state.copyWith(menus: menus));
+      _log.debug("END:loadMenus LoadMenus event success: {}", []);
     } catch (e) {
       emit(const DrawerState(menus: []));
+      _log.error("END:loadMenus LoadMenus event error: {}", [e.toString()]);
     }
   }
 
   FutureOr<void> _refreshMenus(RefreshMenus event, Emitter<DrawerState> emit) async {
+    _log.debug("BEGIN: refreshMenus RefreshMenus event: {}", []);
     emit(const DrawerState(menus: []));
     try {
       final menus = await _menuRepository.getMenus();
       MenuListCache.menus = menus;
       emit(state.copyWith(menus: menus));
+      _log.debug("END:refreshMenus RefreshMenus event success: {}", []);
     } catch (e) {
       emit(const DrawerState(menus: []));
+      _log.error("END:refreshMenus RefreshMenus event error: {}", [e.toString()]);
     }
   }
 }

@@ -100,7 +100,7 @@ void main() {
 
     setUp(() {
       repository = MockAccountRepository();
-      bloc = AccountBloc(accountRepository: repository);
+      bloc = AccountBloc(repository: repository);
     });
 
     tearDown(() {

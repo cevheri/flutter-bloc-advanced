@@ -85,7 +85,7 @@ void main() {
   group("RegisterBloc", () {
     const initialState = RegisterInitialState();
     test("initial state is LoginState", () {
-      expect(RegisterBloc(accountRepository: repository).state, initialState);
+      expect(RegisterBloc(repository: repository).state, initialState);
     });
 
     group("LoginFormSubmitted", () {
@@ -104,7 +104,7 @@ void main() {
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, success] when submit is successful",
         setUp: () => when(method()).thenAnswer((_) async => output),
-        build: () => RegisterBloc(accountRepository: repository),
+        build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
         verify: (_) => verify(method()).called(1),
@@ -113,7 +113,7 @@ void main() {
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, failure] when invalid operation input failed",
         setUp: () => when(method()).thenThrow(Exception),
-        build: () => RegisterBloc(accountRepository: repository),
+        build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
         verify: (_) => verify(method()).called(1),
@@ -122,7 +122,7 @@ void main() {
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, failure] when invalid operation input failed",
         setUp: () => when(method()).thenAnswer((_) async => null),
-        build: () => RegisterBloc(accountRepository: repository),
+        build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
         verify: (_) => verify(method()).called(1),

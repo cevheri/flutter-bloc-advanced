@@ -85,11 +85,11 @@ class App extends StatelessWidget {
   MultiBlocProvider _buildMultiBlocProvider(ThemeData light, ThemeData dark) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
-        BlocProvider<AccountBloc>(create: (_) => AccountBloc(accountRepository: AccountRepository())),
+        BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
+        BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
         BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
-        BlocProvider<CityBloc>(create: (_) => CityBloc(cityRepository: CityRepository())),
-        BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(districtRepository: DistrictRepository())),
+        BlocProvider<CityBloc>(create: (_) => CityBloc(repository: CityRepository())),
+        BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(repository: DistrictRepository())),
         BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
       ],
       child: _buildGetMaterialApp(light, dark),
@@ -119,14 +119,14 @@ class App extends StatelessWidget {
   final _initialRoutes = {
     ApplicationRoutes.home: (context) {
       return BlocProvider<AccountBloc>(
-          create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: HomeScreen());
+          create: (context) => AccountBloc(repository: AccountRepository())..add(const AccountLoad()), child: HomeScreen());
     },
     ApplicationRoutes.account: (context) {
       return BlocProvider<AccountBloc>(
-          create: (context) => AccountBloc(accountRepository: AccountRepository())..add(const AccountLoad()), child: AccountsScreen());
+          create: (context) => AccountBloc(repository: AccountRepository())..add(const AccountLoad()), child: AccountsScreen());
     },
     ApplicationRoutes.login: (context) {
-      return BlocProvider<LoginBloc>(create: (context) => LoginBloc(loginRepository: LoginRepository()), child: LoginScreen());
+      return BlocProvider<LoginBloc>(create: (context) => LoginBloc(repository: LoginRepository()), child: LoginScreen());
     },
     ApplicationRoutes.settings: (context) {
       return BlocProvider<SettingsBloc>(
@@ -134,14 +134,14 @@ class App extends StatelessWidget {
     },
     ApplicationRoutes.forgotPassword: (context) {
       return BlocProvider<ForgotPasswordBloc>(
-          create: (context) => ForgotPasswordBloc(accountRepository: AccountRepository()), child: ForgotPasswordScreen());
+          create: (context) => ForgotPasswordBloc(repository: AccountRepository()), child: ForgotPasswordScreen());
     },
     ApplicationRoutes.register: (context) {
-      return BlocProvider<RegisterBloc>(create: (context) => RegisterBloc(accountRepository: AccountRepository()), child: RegisterScreen());
+      return BlocProvider<RegisterBloc>(create: (context) => RegisterBloc(repository: AccountRepository()), child: RegisterScreen());
     },
     ApplicationRoutes.changePassword: (context) {
       return BlocProvider<ChangePasswordBloc>(
-          create: (context) => ChangePasswordBloc(accountRepository: AccountRepository()), child: ChangePasswordScreen());
+          create: (context) => ChangePasswordBloc(repository: AccountRepository()), child: ChangePasswordScreen());
     },
     ApplicationRoutes.logout: (context) => const LogoutConfirmationDialog(),
     ApplicationRoutes.createUser: (context) {

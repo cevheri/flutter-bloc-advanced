@@ -56,7 +56,7 @@ void main() {
   });
 
   final blocs = [
-    BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(authorityRepository: AuthorityRepository())),
+    BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
   ];
 

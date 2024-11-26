@@ -14,15 +14,15 @@ part 'login_event.dart';
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
-  LoginBloc({required LoginRepository loginRepository})
-      : _loginRepository = loginRepository,
+  static final _log = AppLogger.getLogger("LoginBloc");
+  final LoginRepository _repository;
+  
+  LoginBloc({required LoginRepository repository})
+      : _repository = repository,
         super(const LoginState()) {
     on<LoginFormSubmitted>(_onSubmit);
     on<TogglePasswordVisibility>((event, emit) => emit(state.copyWith(passwordVisible: !state.passwordVisible)));
   }
-
-  static final _log = AppLogger.getLogger("LoginBloc");
-  final LoginRepository _loginRepository;
 
   @override
   void onTransition(Transition<LoginEvent, LoginState> transition) {
@@ -41,7 +41,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       // if(event.username.isEmpty || event.password.isEmpty) {
       //   throw BadRequestException("Username or password is empty");
       // }
-      var token = await _loginRepository.authenticate(userJWT);
+      var token = await _repository.authenticate(userJWT);
       if (token != null && token.idToken != null) {
         await AppLocalStorage().save(StorageKeys.jwtToken.name, token.idToken);
         _log.debug("onSubmit save storage token: {}", [token.idToken]);

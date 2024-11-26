@@ -11,13 +11,13 @@ part 'settings_state.dart';
 
 /// Bloc responsible for managing the Settings.
 class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
+  static final _log = AppLogger.getLogger("SettingsBloc");
+
   SettingsBloc() : super(const SettingsInitial()) {
     on<ChangeLanguage>(_onChangeLanguage);
     on<ChangeTheme>(_onChangeTheme);
     on<Logout>(_onLogout);
   }
-
-  static final _log = AppLogger.getLogger("SettingsBloc");
 
   FutureOr<void> _onChangeLanguage(ChangeLanguage event, Emitter<SettingsState> emit) async {
     _log.debug("BEGIN: onChangeLanguage ChangeLanguage event: {}", [event.language]);

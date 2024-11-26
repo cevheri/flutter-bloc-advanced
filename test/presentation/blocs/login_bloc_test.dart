@@ -79,7 +79,7 @@ void main() {
     });
 
     test("Initial state is LoginState", () {
-      expect(LoginBloc(loginRepository: MockLoginRepository()).state, const LoginState());
+      expect(LoginBloc(repository: MockLoginRepository()).state, const LoginState());
     });
 
     test("props", () {
@@ -109,7 +109,7 @@ void main() {
   /// Login Bloc Tests
   group("LoginBloc", () {
     test("initial state is LoginState", () {
-      expect(LoginBloc(loginRepository: repository).state, const LoginState());
+      expect(LoginBloc(repository: repository).state, const LoginState());
     });
 
     group("LoginFormSubmitted", () {
@@ -131,7 +131,7 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         "emits [loading, success] when login is successful",
         setUp: () => when(repositoryMethod()).thenAnswer((_) async => output),
-        build: () => LoginBloc(loginRepository: repository),
+        build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
         verify: (_) => verify(repositoryMethod()).called(1),
@@ -140,7 +140,7 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid operation input failed",
         setUp: () => when(repositoryMethod()).thenThrow(UnauthorizedException()),
-        build: () => LoginBloc(loginRepository: repository),
+        build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
         verify: (_) => verify(repositoryMethod()).called(1),
@@ -149,7 +149,7 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid input then failed",
         setUp: () => when(repositoryMethod()).thenAnswer((_) async => const JWTToken(idToken: null)),
-        build: () => LoginBloc(loginRepository: repository),
+        build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => states2Failure,
         verify: (_) => verify(repositoryMethod()).called(1),

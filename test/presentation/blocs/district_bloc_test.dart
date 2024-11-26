@@ -114,7 +114,7 @@ void main() {
   group("DistrictBloc", () {
     const initialState = DistrictInitialState();
     test("initial state is DistrictInitialState", () {
-      expect(DistrictBloc(districtRepository: repository).state, initialState);
+      expect(DistrictBloc(repository: repository).state, initialState);
     });
 
     group("DistrictLoad", () {
@@ -132,7 +132,7 @@ void main() {
       blocTest<DistrictBloc, DistrictState>(
         "emits [loading, success] when load is successful",
         setUp: () => when(method()).thenAnswer((_) => output),
-        build: () => DistrictBloc(districtRepository: repository),
+        build: () => DistrictBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
       );
@@ -140,7 +140,7 @@ void main() {
       blocTest<DistrictBloc, DistrictState>(
         "emits [loading, failure] when load is unsuccessful",
         setUp: () => when(method()).thenThrow(Exception("Error")),
-        build: () => DistrictBloc(districtRepository: repository),
+        build: () => DistrictBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );
@@ -161,7 +161,7 @@ void main() {
       blocTest<DistrictBloc, DistrictState>(
         "emits [loading, success] when load is successful",
         setUp: () => when(method()).thenAnswer((_) => output),
-        build: () => DistrictBloc(districtRepository: repository),
+        build: () => DistrictBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
       );
@@ -169,7 +169,7 @@ void main() {
       blocTest<DistrictBloc, DistrictState>(
         "emits [loading, failure] when load is unsuccessful",
         setUp: () => when(method()).thenThrow(Exception("Error")),
-        build: () => DistrictBloc(districtRepository: repository),
+        build: () => DistrictBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );

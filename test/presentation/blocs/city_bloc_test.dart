@@ -106,7 +106,7 @@ void main() {
   group("CityBloc", () {
     const initialState = CityInitialState();
     test("initial state is CityInitialState", () {
-      expect(CityBloc(cityRepository: repository).state, initialState);
+      expect(CityBloc(repository: repository).state, initialState);
     });
 
     group("CityLoad", () {
@@ -124,7 +124,7 @@ void main() {
       blocTest<CityBloc, CityState>(
         "emits [loading, success] when load is successful",
         setUp: () => when(method()).thenAnswer((_) => output),
-        build: () => CityBloc(cityRepository: repository),
+        build: () => CityBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
       );
@@ -132,7 +132,7 @@ void main() {
       blocTest<CityBloc, CityState>(
         "emits [loading, failure] when load is unsuccessful",
         setUp: () => when(method()).thenThrow(Exception("Error")),
-        build: () => CityBloc(cityRepository: repository),
+        build: () => CityBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );

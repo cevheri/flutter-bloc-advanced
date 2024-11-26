@@ -175,7 +175,7 @@ class LoginScreen extends StatelessWidget {
               MaterialPageRoute(
                   builder: (context) => BlocProvider<ForgotPasswordBloc>(
                         create: (context) => ForgotPasswordBloc(
-                          accountRepository: AccountRepository(),
+                          repository: AccountRepository(),
                         ),
                         child: ForgotPasswordScreen(),
                       )));
@@ -198,8 +198,8 @@ class LoginScreen extends StatelessWidget {
             MaterialPageRoute(
               builder: (context) => MultiBlocProvider(
                 providers: [
-                  BlocProvider<AccountBloc>.value(value: AccountBloc(accountRepository: AccountRepository())),
-                  BlocProvider<RegisterBloc>(create: (_) => RegisterBloc(accountRepository: AccountRepository())),
+                  BlocProvider<AccountBloc>.value(value: AccountBloc(repository: AccountRepository())),
+                  BlocProvider<RegisterBloc>(create: (_) => RegisterBloc(repository: AccountRepository())),
                 ],
                 child: RegisterScreen(),
               ),

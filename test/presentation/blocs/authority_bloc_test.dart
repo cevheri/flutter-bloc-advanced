@@ -96,7 +96,7 @@ void main() {
   group("AuthorityBloc", () {
     const initialState = AuthorityInitialState();
     test("initial state is AuthorityInitialState", () {
-      expect(AuthorityBloc(authorityRepository: repository).state, initialState);
+      expect(AuthorityBloc(repository: repository).state, initialState);
     });
 
     group("AuthorityLoad", () {
@@ -115,7 +115,7 @@ void main() {
       blocTest<AuthorityBloc, AuthorityState>(
         "emits [loading, success] when load is successful",
         setUp: () => when(method()).thenAnswer((_) => output),
-        build: () => AuthorityBloc(authorityRepository: repository),
+        build: () => AuthorityBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
       );
@@ -123,7 +123,7 @@ void main() {
       blocTest<AuthorityBloc, AuthorityState>(
         "emits [loading, failure] when load is unsuccessful",
         setUp: () => when(method()).thenThrow(Exception("Error")),
-        build: () => AuthorityBloc(authorityRepository: repository),
+        build: () => AuthorityBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );
