@@ -32,10 +32,24 @@ class HttpUtils {
   static const applicationJson = 'application/json';
   static const utf8Val = 'utf-8';
   static const noInternetConnectionError = 'No Internet connection';
-  static const requestTimeoutError = 'Request timeout';
+  static const requestTimeoutError = 'TimeoutException';
   static const _timeout = Duration(seconds: timeoutValue);
   static final _encoding = Encoding.getByName(utf8Val);
   static const _serOps = SerializationOptions(indent: '', ignoreDefaultMembers: true, ignoreNullMembers: true, ignoreUnknownTypes: true);
+
+  static http.Client? _httpClient;
+
+  static void setHttpClient(http.Client client) {
+    _httpClient = client;
+  }
+
+  static void resetHttpClient() {
+    _httpClient = null;
+  }
+
+  static http.Client get client {
+    return _httpClient ?? http.Client();
+  }
 
   ///   -H 'accept: application/json, text/plain, */*' \
   ///   -H 'content-type: application/json' \
@@ -52,9 +66,28 @@ class HttpUtils {
     _log.debug("END: Added custom headers");
   }
 
+  // static String decodeUTF8(String toEncode) {
+  //   return utf8.decode(toEncode.runes.toList());
+  // }
+
+  // static String decodeUTF8(String toEncode) {
+  //   try {
+  //     List<int> bytes = toEncode.codeUnits;
+  //     return utf8.decode(bytes, allowMalformed: true);
+  //   } catch (e) {
+  //     return toEncode;
+  //   }
+  // }
   static String decodeUTF8(String toEncode) {
-    return utf8.decode(toEncode.runes.toList());
+    try {
+      List<int> codePoints = toEncode.runes.toList();
+      List<int> utf8Bytes = utf8.encode(String.fromCharCodes(codePoints));
+      return utf8.decode(utf8Bytes, allowMalformed: true);
+    } catch (e) {
+      return toEncode;
+    }
   }
+
 
   ///   -H 'accept: application/json, text/plain, */*' \
   ///   -H 'content-type: application/json' \
@@ -107,7 +140,7 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await http.post(url, headers: headers, body: messageBody, encoding: _encoding).timeout(_timeout);
+      response = await client.post(url, headers: headers, body: messageBody, encoding: _encoding).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException catch (se) {
       debugPrint("Socket Exception: $se");
@@ -129,7 +162,7 @@ class HttpUtils {
     final headers = await HttpUtils.headers();
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await http.get(url, headers: headers).timeout(_timeout);
+      response = await client.get(url, headers: headers).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -170,7 +203,7 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await http.put(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
+      response = await client.put(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -189,7 +222,7 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await http.patch(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
+      response = await client.patch(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -207,7 +240,7 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await http.delete(url, headers: headers).timeout(_timeout);
+      response = await client.delete(url, headers: headers).timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);

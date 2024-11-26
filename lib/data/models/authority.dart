@@ -40,12 +40,7 @@ class Authority extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        name,
-      ];
-
-  @override
-  bool get stringify => true;
+  List<Object?> get props => [name];
 
   @override
   String toString() {

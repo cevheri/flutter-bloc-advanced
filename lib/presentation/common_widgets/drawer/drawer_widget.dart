@@ -187,7 +187,7 @@ class ApplicationDrawer extends StatelessWidget {
 
   void onLogout(context) {
     BlocProvider.of<DrawerBloc>(context).add(Logout());
-    Navigator.pushNamed(context, ApplicationRoutes.login);
+    Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
   }
 
   void onCancel(context) {
