@@ -50,16 +50,6 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
-  /// `Main Screen`
-  String get main_screen {
-    return Intl.message(
-      'Main Screen',
-      name: 'main_screen',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `List User`
   String get list_user {
     return Intl.message(
@@ -180,16 +170,6 @@ class S {
     );
   }
 
-  /// `Authority`
-  String get authority {
-    return Intl.message(
-      'Authority',
-      name: 'authority',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Name`
   String get name {
     return Intl.message(
@@ -260,26 +240,6 @@ class S {
     );
   }
 
-  /// `Edit Account`
-  String get edit_account {
-    return Intl.message(
-      'Edit Account',
-      name: 'edit_account',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Phone Type Required 5** *** ** ** `
-  String get required_phone_type {
-    return Intl.message(
-      'Phone Type Required 5** *** ** ** ',
-      name: 'required_phone_type',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Email is required`
   String get email_required {
     return Intl.message(
@@ -295,16 +255,6 @@ class S {
     return Intl.message(
       'Email must be a valid email address',
       name: 'email_pattern',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Username must be a valid`
-  String get user_name_pattern {
-    return Intl.message(
-      'Username must be a valid',
-      name: 'user_name_pattern',
       desc: '',
       args: [],
     );
@@ -430,41 +380,11 @@ class S {
     );
   }
 
-  /// `Authorities is required`
-  String get authorities_required {
-    return Intl.message(
-      'Authorities is required',
-      name: 'authorities_required',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Create User`
   String get create_user {
     return Intl.message(
       'Create User',
       name: 'create_user',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `User created successfully`
-  String get create_user_success {
-    return Intl.message(
-      'User created successfully',
-      name: 'create_user_success',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `User creation failed`
-  String get create_user_error {
-    return Intl.message(
-      'User creation failed',
-      name: 'create_user_error',
       desc: '',
       args: [],
     );
@@ -515,16 +435,6 @@ class S {
     return Intl.message(
       'Select Language',
       name: 'language_select',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Theme`
-  String get theme {
-    return Intl.message(
-      'Theme',
-      name: 'theme',
       desc: '',
       args: [],
     );
@@ -670,31 +580,11 @@ class S {
     );
   }
 
-  /// `New Password`
-  String get password_new {
-    return Intl.message(
-      'New Password',
-      name: 'password_new',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Password is required`
   String get password_required {
     return Intl.message(
       'Password is required',
       name: 'password_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Password changed successfully`
-  String get password_success {
-    return Intl.message(
-      'Password changed successfully',
-      name: 'password_success',
       desc: '',
       args: [],
     );
@@ -720,71 +610,11 @@ class S {
     );
   }
 
-  /// `Logging in...`
-  String get logging_in {
-    return Intl.message(
-      'Logging in...',
-      name: 'logging_in',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Login failed.`
-  String get login_error {
-    return Intl.message(
-      'Login failed.',
-      name: 'login_error',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Flutter Bloc Advanced`
-  String get description {
-    return Intl.message(
-      'Flutter Bloc Advanced',
-      name: 'description',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Send Email`
   String get email_send {
     return Intl.message(
       'Send Email',
       name: 'email_send',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Email address not found`
-  String get email_reset_password_error {
-    return Intl.message(
-      'Email address not found',
-      name: 'email_reset_password_error',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Sending email to reset password...`
-  String get email_reset_password_sending {
-    return Intl.message(
-      'Sending email to reset password...',
-      name: 'email_reset_password_sending',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Email sent successfully`
-  String get email_reset_password_success {
-    return Intl.message(
-      'Email sent successfully',
-      name: 'email_reset_password_success',
       desc: '',
       args: [],
     );

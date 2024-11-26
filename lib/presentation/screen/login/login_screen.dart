@@ -147,14 +147,14 @@ class LoginScreen extends StatelessWidget {
       buildWhen: (previous, current) {
         debugPrint("previous: $previous, current: $current");
         if (current is LoginLoadingState) {
-          Message.getMessage(context: context, title: S.of(context).logging_in, content: "", duration: const Duration(seconds: 1));
+          Message.getMessage(context: context, title: S.of(context).loading, content: "", duration: const Duration(seconds: 1));
         }
         if (current is LoginLoadedState) {
           Message.getMessage(context: context, title: S.of(context).success, content: "");
           Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
         }
         if (current is LoginErrorState) {
-          Message.errorMessage(context: context, title: S.of(context).login_error, content: "");
+          Message.errorMessage(context: context, title: S.of(context).failed, content: "");
         }
         return true;
       },
@@ -219,7 +219,7 @@ class LoginScreen extends StatelessWidget {
             visible: state.status == LoginStatus.failure,
             child: Center(
                 child: Text(
-              S.of(context).login_error,
+              S.of(context).failed,
               style: TextStyle(fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize, color: Theme.of(context).colorScheme.error),
               textAlign: TextAlign.center,
             )));

@@ -39,33 +39,17 @@ class MessageLookup extends MessageLookupByLibrary {
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
         "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
-        "authorities_required":
-            MessageLookupByLibrary.simpleMessage("Authorities is required"),
-        "authority": MessageLookupByLibrary.simpleMessage("Authority"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Change Password"),
         "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
-        "create_user_error":
-            MessageLookupByLibrary.simpleMessage("User creation failed"),
-        "create_user_success":
-            MessageLookupByLibrary.simpleMessage("User created successfully"),
         "current_password":
             MessageLookupByLibrary.simpleMessage("Current Password"),
-        "description":
-            MessageLookupByLibrary.simpleMessage("Flutter Bloc Advanced"),
-        "edit_account": MessageLookupByLibrary.simpleMessage("Edit Account"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Edit User"),
         "email": MessageLookupByLibrary.simpleMessage("Email"),
         "email_pattern": MessageLookupByLibrary.simpleMessage(
             "Email must be a valid email address"),
         "email_required":
             MessageLookupByLibrary.simpleMessage("Email is required"),
-        "email_reset_password_error":
-            MessageLookupByLibrary.simpleMessage("Email address not found"),
-        "email_reset_password_sending": MessageLookupByLibrary.simpleMessage(
-            "Sending email to reset password..."),
-        "email_reset_password_success":
-            MessageLookupByLibrary.simpleMessage("Email sent successfully"),
         "email_send": MessageLookupByLibrary.simpleMessage("Send Email"),
         "english": MessageLookupByLibrary.simpleMessage("English"),
         "failed": MessageLookupByLibrary.simpleMessage("Failed"),
@@ -89,16 +73,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "list": MessageLookupByLibrary.simpleMessage("List"),
         "list_user": MessageLookupByLibrary.simpleMessage("List User"),
         "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
-        "logging_in": MessageLookupByLibrary.simpleMessage("Logging in..."),
         "login": MessageLookupByLibrary.simpleMessage("Login"),
         "login_button": MessageLookupByLibrary.simpleMessage("Login"),
-        "login_error": MessageLookupByLibrary.simpleMessage("Login failed."),
         "login_password": MessageLookupByLibrary.simpleMessage("Password"),
         "login_user_name": MessageLookupByLibrary.simpleMessage("Username"),
         "logout": MessageLookupByLibrary.simpleMessage("Logout"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Are you sure you want to logout?"),
-        "main_screen": MessageLookupByLibrary.simpleMessage("Main Screen"),
         "name": MessageLookupByLibrary.simpleMessage("Name"),
         "new_password": MessageLookupByLibrary.simpleMessage("New Password"),
         "no": MessageLookupByLibrary.simpleMessage("No"),
@@ -110,17 +91,12 @@ class MessageLookup extends MessageLookupByLibrary {
             "Password cannot be more than 6 characters long"),
         "password_min_length": MessageLookupByLibrary.simpleMessage(
             "Password must be at least 5 characters long"),
-        "password_new": MessageLookupByLibrary.simpleMessage("New Password"),
         "password_required":
             MessageLookupByLibrary.simpleMessage("Password is required"),
-        "password_success": MessageLookupByLibrary.simpleMessage(
-            "Password changed successfully"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
         "register": MessageLookupByLibrary.simpleMessage("Register"),
         "required_field":
             MessageLookupByLibrary.simpleMessage("Required Field"),
-        "required_phone_type": MessageLookupByLibrary.simpleMessage(
-            "Phone Type Required 5** *** ** ** "),
         "required_range":
             MessageLookupByLibrary.simpleMessage("Range is required"),
         "role": MessageLookupByLibrary.simpleMessage("Role"),
@@ -129,11 +105,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Screen size is too small."),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "success": MessageLookupByLibrary.simpleMessage("Success"),
-        "theme": MessageLookupByLibrary.simpleMessage("Theme"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
-        "user_name_pattern":
-            MessageLookupByLibrary.simpleMessage("Username must be a valid"),
         "username_max_length": MessageLookupByLibrary.simpleMessage(
             "Username cannot be more than 20 characters long"),
         "username_min_length": MessageLookupByLibrary.simpleMessage(

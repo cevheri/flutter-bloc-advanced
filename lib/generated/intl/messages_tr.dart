@@ -39,34 +39,18 @@ class MessageLookup extends MessageLookupByLibrary {
         "active": MessageLookupByLibrary.simpleMessage("Aktif"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
         "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
-        "authorities_required":
-            MessageLookupByLibrary.simpleMessage("Yetki gereklidir"),
-        "authority": MessageLookupByLibrary.simpleMessage("Rol"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Şifre Değiştir"),
         "create_user":
             MessageLookupByLibrary.simpleMessage("Kullanıcı Oluştur"),
-        "create_user_error":
-            MessageLookupByLibrary.simpleMessage("Kullanıcı oluşturulamadı"),
-        "create_user_success": MessageLookupByLibrary.simpleMessage(
-            "Kullanıcı başarıyla oluşturuldu"),
         "current_password":
             MessageLookupByLibrary.simpleMessage("Mevcut Şifre"),
-        "description":
-            MessageLookupByLibrary.simpleMessage("Flutter Bloc Advanced"),
-        "edit_account": MessageLookupByLibrary.simpleMessage("Hesabı Düzenle"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Düzenle"),
         "email": MessageLookupByLibrary.simpleMessage("E-posta"),
         "email_pattern": MessageLookupByLibrary.simpleMessage(
             "E-posta adresi geçerli değil"),
         "email_required":
             MessageLookupByLibrary.simpleMessage("E-posta gereklidir"),
-        "email_reset_password_error": MessageLookupByLibrary.simpleMessage(
-            "Şifre sıfırlama e-postası gönderilemedi"),
-        "email_reset_password_sending": MessageLookupByLibrary.simpleMessage(
-            "Şifre sıfırlama e-postası gönderiliyor..."),
-        "email_reset_password_success": MessageLookupByLibrary.simpleMessage(
-            "Şifre sıfırlama e-postası başarıyla gönderildi"),
         "email_send": MessageLookupByLibrary.simpleMessage("E-posta Gönder"),
         "english": MessageLookupByLibrary.simpleMessage("İngilizce"),
         "failed": MessageLookupByLibrary.simpleMessage("Başarısız"),
@@ -89,19 +73,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "list": MessageLookupByLibrary.simpleMessage("Listele"),
         "list_user": MessageLookupByLibrary.simpleMessage("Kullanıcılar"),
         "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
-        "logging_in":
-            MessageLookupByLibrary.simpleMessage("Giriş yapılıyor..."),
         "login": MessageLookupByLibrary.simpleMessage("Kullanıcı Adı"),
         "login_button": MessageLookupByLibrary.simpleMessage("Giriş Yap"),
-        "login_error":
-            MessageLookupByLibrary.simpleMessage("Giriş yapılamadı."),
         "login_password": MessageLookupByLibrary.simpleMessage("Şifre"),
         "login_user_name":
             MessageLookupByLibrary.simpleMessage("Kullanıcı adı"),
         "logout": MessageLookupByLibrary.simpleMessage("Çıkış Yap"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Çıkış yapmak istediğinize emin misiniz?"),
-        "main_screen": MessageLookupByLibrary.simpleMessage("Ana Ekran"),
         "name": MessageLookupByLibrary.simpleMessage("İsim"),
         "new_password": MessageLookupByLibrary.simpleMessage("Yeni Şifre"),
         "no": MessageLookupByLibrary.simpleMessage("Hayır"),
@@ -113,16 +92,11 @@ class MessageLookup extends MessageLookupByLibrary {
             "Şifre en fazla 20 karakter uzunluğunda olmalıdır"),
         "password_min_length": MessageLookupByLibrary.simpleMessage(
             "Şifre en az 6 karakter uzunluğunda olmalıdır"),
-        "password_new": MessageLookupByLibrary.simpleMessage("New Password"),
         "password_required":
             MessageLookupByLibrary.simpleMessage("Şifre gereklidir"),
-        "password_success": MessageLookupByLibrary.simpleMessage(
-            "Password changed successfully"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Tel No"),
         "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
         "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan"),
-        "required_phone_type": MessageLookupByLibrary.simpleMessage(
-            "Telefon numarası 5** *** ** ** formatında ve 10 karakter olmalıdır"),
         "required_range":
             MessageLookupByLibrary.simpleMessage("Aralık gereklidir"),
         "role": MessageLookupByLibrary.simpleMessage("Rol"),
@@ -131,11 +105,8 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Ekran boyutu çok küçük."),
         "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
         "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
-        "theme": MessageLookupByLibrary.simpleMessage("Tema"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
-        "user_name_pattern":
-            MessageLookupByLibrary.simpleMessage("Kullanıcı adı geçerli değil"),
         "username_max_length": MessageLookupByLibrary.simpleMessage(
             "Kullanıcı adı en fazla 20 karakter uzunluğunda olmalıdır"),
         "username_min_length": MessageLookupByLibrary.simpleMessage(

@@ -158,7 +158,7 @@ class EditFormAuthorities extends StatelessWidget {
               hintText: S.of(context).authorities,
             ),
             validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(errorText: S.of(context).authorities_required),
+              FormBuilderValidators.required(errorText: S.of(context).required_field),
             ]),
             items: state.authorities!.map((role) => DropdownMenuItem(value: role, child: Text(role))).toList(),
             initialValue: () {}(),

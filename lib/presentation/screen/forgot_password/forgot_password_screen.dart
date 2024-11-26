@@ -104,15 +104,15 @@ class ForgotPasswordScreen extends StatelessWidget {
       );
     }, buildWhen: (previous, current) {
       if (current is AccountResetPasswordInitialState) {
-        Message.getMessage(context: context, title: S.of(context).email_reset_password_sending, content: "");
+        Message.getMessage(context: context, title: S.of(context).loading, content: "");
       }
       if (current is AccountResetPasswordCompletedState) {
         Navigator.pop(context);
-        Message.getMessage(context: context, title: S.of(context).email_reset_password_success, content: "");
+        Message.getMessage(context: context, title: S.of(context).success, content: "");
         Future.delayed(const Duration(seconds: 1), () {});
       }
       if (current is AccountResetPasswordErrorState) {
-        Message.errorMessage(title: S.of(context).email_reset_password_error, context: context, content: "");
+        Message.errorMessage(title: S.of(context).failed, context: context, content: "");
       }
       return true;
     });

@@ -58,6 +58,7 @@ void main() {
     expect(find.byType(FormBuilderTextField), findsNWidgets(3));
     expect(find.byType(ElevatedButton), findsOneWidget);
     expect(find.text('List'), findsOneWidget);
+    expect(find.text('List User'), findsOneWidget);
 
     // Then: Check if the table header is rendered
     expect(find.text('Role'), findsOneWidget);
