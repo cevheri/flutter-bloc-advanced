@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -7,7 +6,6 @@ import 'package:get/get.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
-import '../../common_widgets/drawer/drawer_bloc/drawer.dart';
 
 class SettingsScreen extends StatelessWidget {
   SettingsScreen({super.key});
@@ -80,7 +78,8 @@ class SettingsScreen extends StatelessWidget {
   }
 
   void onLogout(context) {
-    BlocProvider.of<DrawerBloc>(context).add(Logout());
+    //BlocProvider.of<DrawerBloc>(context).add(Logout());
+    AppLocalStorage().clear();
     Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
   }
 }

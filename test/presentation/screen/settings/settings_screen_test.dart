@@ -13,7 +13,7 @@ import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
 
 import '../../../test_utils.dart';
-import 'settings_screen_dart.mocks.dart';
+import 'settings_screen_test.mocks.dart';
 
 @GenerateMocks([DrawerBloc, AppLocalStorage])
 void main() {
@@ -130,11 +130,10 @@ void main() {
       await tester.tap(find.byKey(settingsLogoutButtonKey));
       await tester.pumpAndSettle();
 
-      //await tester.tap(find.text('Yes'));
-      //await tester.pumpAndSettle();
-      //
-      // verify(bloc.add(Logout())).called(1);
-      // expect(Get.currentRoute, ApplicationRoutes.login);
+      await tester.tap(find.text('Yes'));
+      await tester.pumpAndSettle();
+
+      expect(Get.currentRoute, ApplicationRoutes.login);
     });
     testWidgets('performs logout when confirmed', (WidgetTester tester) async {
       await TestUtils().setupAuthentication();
