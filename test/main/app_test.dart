@@ -65,7 +65,6 @@ void main() {
       expect(app.initialRoutes.containsKey(ApplicationRoutes.forgotPassword), true);
       expect(app.initialRoutes.containsKey(ApplicationRoutes.register), true);
       expect(app.initialRoutes.containsKey(ApplicationRoutes.changePassword), true);
-      expect(app.initialRoutes.containsKey(ApplicationRoutes.logout), true);
       expect(app.initialRoutes.containsKey(ApplicationRoutes.createUser), true);
       expect(app.initialRoutes.containsKey(ApplicationRoutes.listUsers), true);
     });

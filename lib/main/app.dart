@@ -20,7 +20,6 @@ import '../presentation/common_blocs/city/city_bloc.dart';
 import '../presentation/common_blocs/district/district_bloc.dart';
 import '../presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../presentation/screen/account/account_screen.dart';
-import '../presentation/screen/account/logout_widget.dart';
 import '../presentation/screen/change_password/bloc/change_password_bloc.dart';
 import '../presentation/screen/change_password/change_password_screen.dart';
 import '../presentation/screen/forgot_password/bloc/forgot_password_bloc.dart';
@@ -143,7 +142,6 @@ class App extends StatelessWidget {
       return BlocProvider<ChangePasswordBloc>(
           create: (context) => ChangePasswordBloc(repository: AccountRepository()), child: ChangePasswordScreen());
     },
-    ApplicationRoutes.logout: (context) => const LogoutConfirmationDialog(),
     ApplicationRoutes.createUser: (context) {
       return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: CreateUserScreen());
     },
