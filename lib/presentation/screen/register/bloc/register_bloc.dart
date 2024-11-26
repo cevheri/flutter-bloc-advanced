@@ -9,7 +9,6 @@ import '../../../../data/models/user.dart';
 import '../../../../data/repository/account_repository.dart';
 
 part 'register_event.dart';
-
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
@@ -40,12 +39,11 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         emit(RegisterCompletedState(user: user));
         _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [user.toString()]);
       } else {
-        _log.error("END:onSubmit RegisterFormSubmitted event failure: {}", ["Register Error"]);
-        throw BadRequestException("Register Error");
+        throw BadRequestException("Register Error: response is null");
       }
     } catch (e) {
-      emit(const RegisterErrorState(message: "Register Error"));
-      _log.error("END:onSubmit RegisterFormSubmitted event failure: {}", ["Register Error"]);
+      emit(RegisterErrorState(message: e.toString()));
+      _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [e.toString()]);
     }
   }
 }
