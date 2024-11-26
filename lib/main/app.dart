@@ -114,7 +114,8 @@ class App extends StatelessWidget {
       routes: _initialRoutes,
     );
   }
-
+  @visibleForTesting
+  Map<String, WidgetBuilder> get initialRoutes => _initialRoutes;
   final _initialRoutes = {
     ApplicationRoutes.home: (context) {
       return BlocProvider<AccountBloc>(
