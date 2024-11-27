@@ -12,7 +12,6 @@ import '../../fake/user_data.dart';
 import '../../test_utils.dart';
 import 'account_bloc_test.mocks.dart';
 
-
 /// BLoc Test for UserBloc
 ///
 /// Tests: <p>
@@ -48,23 +47,38 @@ void main() {
 
     // ChangePasswordInitialState prob state test
     test("ChangePasswordInitialState", () {
-      expect( ChangePasswordInitialState(),  ChangePasswordInitialState());
+      expect(const ChangePasswordInitialState(), const ChangePasswordInitialState());
     });
 
     // ChangePasswordPasswordCompletedState
     test("ChangePasswordPasswordCompletedState", () {
-      expect( ChangePasswordPasswordCompletedState(),  ChangePasswordPasswordCompletedState());
+      expect(const ChangePasswordPasswordCompletedState(), const ChangePasswordPasswordCompletedState());
     });
 
     // ChangePasswordPasswordErrorState
     test("ChangePasswordPasswordErrorState", () {
-      expect(const ChangePasswordPasswordErrorState(message: ""),const ChangePasswordPasswordErrorState(message: ""));
+      expect(const ChangePasswordPasswordErrorState(message: ""), const ChangePasswordPasswordErrorState(message: ""));
     });
-    //ChangePasswordEvent
+
+    test("copyWith state", () {
+      expect(const ChangePasswordState().copyWith(), const ChangePasswordState());
+    });
+    test("copyWith initialState", () {
+      expect(const ChangePasswordInitialState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.initial));
+    });
+    test("copyWith loadingState", () {
+      expect(const ChangePasswordLoadingState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.loading));
+    });
+    test("copyWith passwordCompletedState", () {
+      expect(const ChangePasswordPasswordCompletedState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.success));
+    });
+    test("copyWith passwordErrorState", () {
+      expect(const ChangePasswordPasswordErrorState(message: "").copyWith(), const ChangePasswordState(status: ChangePasswordStatus.failure));
+    });
   });
   //endregion state
 
-  //region bloc
+  //region event
   /// ChangePasswordEvent Tests
   group("ChangePasswordEvent", () {
     // ChangePasswordChanged
@@ -78,11 +92,13 @@ void main() {
       expect(const TogglePasswordVisibility(), const TogglePasswordVisibility());
     });
   });
+  //endregion event
 
+  //region bloc
   /// ChangePasswordBloc Tests
   group("ChangePasswordBloc", () {
     test("initial state is LoginState", () {
-      expect(ChangePasswordBloc(repository: repository).state, const ChangePasswordState());
+      expect(ChangePasswordBloc(repository: repository).state, const ChangePasswordInitialState());
     });
 
     group("ChangePasswordChanged", () {
@@ -91,11 +107,11 @@ void main() {
       method() => repository.changePassword(input);
 
       final event = ChangePasswordChanged(currentPassword: input.currentPassword!, newPassword: input.newPassword!);
-      var successState = ChangePasswordPasswordCompletedState();
-      const errorState = ChangePasswordPasswordErrorState(message: 'Hata oluştu');
+      const successState = ChangePasswordPasswordCompletedState();
 
-      final statesSuccess = [ ChangePasswordInitialState(), successState];
-      final statesError = [ ChangePasswordInitialState(), errorState];
+      const statesSuccess = [ChangePasswordLoadingState(), successState];
+      const statesError = [ChangePasswordLoadingState(), ChangePasswordPasswordErrorState(message: 'Reset Password API Error')];
+      const statesError2 = [ChangePasswordLoadingState(), ChangePasswordPasswordErrorState(message: 'Reset Password Unhandled Error')];
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [ChangePasswordInitialState, ChangePasswordPasswordCompletedState] when ChangePasswordChanged is added",
@@ -106,10 +122,18 @@ void main() {
         verify: (_) => verify(method()).called(1),
       );
 
-
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [ChangePasswordInitialState, ChangePasswordPasswordErrorState] when ChangePasswordChanged is added",
-        setUp: () => when(method()).thenThrow(BadRequestException("hata")),
+        setUp: () => when(method()).thenThrow(BadRequestException()),
+        build: () => ChangePasswordBloc(repository: repository),
+        act: (bloc) => bloc..add(event),
+        expect: () => statesError2,
+        verify: (_) => verify(method()).called(1),
+      );
+
+      blocTest<ChangePasswordBloc, ChangePasswordState>(
+        "emits [ChangePasswordInitialState, ChangePasswordPasswordErrorState] when repository return 400",
+        setUp: () => when(method()).thenAnswer((_) => Future.value(400)),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesError,
