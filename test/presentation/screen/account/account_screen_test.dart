@@ -29,6 +29,7 @@ void main() {
     await TestUtils().tearDownUnitTest();
   });
 
+
   final blocs = [
     BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
     BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
@@ -50,6 +51,7 @@ void main() {
     );
   }
   //endregion setup
+
 
   // app bar
   group("AccountsScreen AppBarTest", () {

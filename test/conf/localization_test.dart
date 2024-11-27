@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 
@@ -42,5 +43,12 @@ void main() {
       await S.load(locale);
       expect(Intl.defaultLocale, 'en');
     });
+  });
+
+  test('initializeJsonMapper', () {
+    initializeJsonMapper();
+  });
+  test('initializeJsonMapper async', () {
+    initializeJsonMapperAsync();
   });
 }
