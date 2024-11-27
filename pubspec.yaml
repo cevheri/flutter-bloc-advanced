@@ -40,6 +40,7 @@ dependencies:
   glob:
   shared_preferences:
   logger: ^2.5.0
+  get_storage:
 
 
 dev_dependencies:

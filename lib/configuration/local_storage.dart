@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppLocalStorageCached {
@@ -143,6 +144,78 @@ class AppLocalStorage {
     _log.info("Clearing all data from local storage");
     final prefs = await _prefs;
     prefs.clear();
+    await AppLocalStorageCached.loadCache();
+    _log.info("Cleared all data from local storage");
+  }
+}
+
+/// Application Local Storage with GetX
+///
+/// This class is used to store data locally with the help of get storage.
+class AppLocalStorageGetX{
+  static final _log = AppLogger.getLogger("AppLocalStorageGetX");
+  static final AppLocalStorageGetX _instance = AppLocalStorageGetX._internal();
+  AppLocalStorageGetX._internal();
+
+  factory AppLocalStorageGetX(){
+    _log.trace("Creating AppLocalStorageGetX instance");
+    return _instance;
+  }
+
+  GetStorage? _prefsInstance;
+
+  @visibleForTesting
+  void setPreferencesInstance(GetStorage prefs){
+    _prefsInstance = prefs;
+  }
+
+  /// GetStorage private instance
+  Future<GetStorage> get _prefs async => _prefsInstance ??= GetStorage();
+
+  /// Save data to local storage <br>
+  Future<bool> save(String key, dynamic value) async {
+    _log.trace("Saving data to local storage {} {}", [key, value]);
+    final prefs = await _prefs;
+    try {
+      prefs.write(key, value);
+      await AppLocalStorageCached.loadCache();
+      _log.trace("Saved data to local storage {} {}", [key, value]);
+      return true;
+    } catch (e) {
+      _log.error("Error saving data to local storage: {}, {}", [key, e]);
+      return false;
+    }
+  }
+
+  /// Get data from local storage <br>
+  Future<dynamic> read(String key) async {
+    _log.trace("Reading data from local storage");
+    final prefs = await _prefs;
+    final result = prefs.read(key);
+    _log.trace("Read data from local storage {} {}", [key, result]);
+    return result;
+  }
+
+  /// Remove data from local storage
+  Future<bool> remove(String key) async {
+    _log.trace("Removing data from local storage");
+    try {
+      final prefs = await _prefs;
+      prefs.remove(key);
+      await AppLocalStorageCached.loadCache();
+      _log.trace("Removed data from local storage {}", [key]);
+      return true;
+    } catch (e) {
+      _log.error("Error removing data from local storage: {}, {}", [key, e]);
+      return false;
+    }
+  }
+
+  /// Clear all data from local storage
+  Future<void> clear() async {
+    _log.info("Clearing all data from local storage");
+    final prefs = await _prefs;
+    prefs.erase();
     await AppLocalStorageCached.loadCache();
     _log.info("Cleared all data from local storage");
   }
