@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 
 import '../../../../data/repository/account_repository.dart';
 
@@ -16,7 +17,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   
   ForgotPasswordBloc({required AccountRepository repository})
       : _repository = repository,
-        super(const ForgotPasswordState()) {
+        super(const ForgotPasswordInitialState()) {
     on<ForgotPasswordEmailChanged>(_onSubmit);
   }
 
@@ -31,16 +32,18 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
 
   FutureOr<void> _onSubmit(ForgotPasswordEmailChanged event, Emitter<ForgotPasswordState> emit) async {
     _log.debug("BEGIN: forgotPassword bloc: _onSubmit");
-    emit(AccountResetPasswordInitialState());
+    emit(const ForgotPasswordLoadingState());
     try {
       String result = event.email.replaceAll('"', '');
       var resultStatusCode = await _repository.resetPassword(result);
-      resultStatusCode < HttpStatus.badRequest
-          ? emit(AccountResetPasswordCompletedState())
-          : emit(const AccountResetPasswordErrorState(message: "Reset Password Error"));
+      if(resultStatusCode < HttpStatus.badRequest){
+        emit(const ForgotPasswordCompletedState());
+      }else {
+        throw BadRequestException("API Error");
+      }
       _log.debug("END: forgotPassword bloc: _onSubmit success: {}", [resultStatusCode.toString()]);
     } catch (e) {
-      emit(const AccountResetPasswordErrorState(message: "Reset Password Error"));
+      emit(const ForgotPasswordErrorState(message: "Reset Password Error"));
       _log.error("END: forgotPassword bloc: _onSubmit error: {}", [e.toString()]);
     }
   }
