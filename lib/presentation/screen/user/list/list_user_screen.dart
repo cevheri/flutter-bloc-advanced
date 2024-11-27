@@ -118,6 +118,7 @@ class ListUserScreen extends StatelessWidget {
     return Expanded(
       flex: 3,
       child: IconButton(
+        key: const Key("listUserEditButtonKey"),
         alignment: Alignment.centerRight,
         focusColor: Colors.transparent,
         hoverColor: Colors.transparent,
@@ -362,6 +363,7 @@ class ListUserScreen extends StatelessWidget {
 
   _submitButton(BuildContext context) {
     return ElevatedButton(
+      key: const Key("listUserSubmitButtonKey"),
       style: ElevatedButton.styleFrom(
         elevation: 2,
         shape: RoundedRectangleBorder(
