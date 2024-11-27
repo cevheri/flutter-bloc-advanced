@@ -1,16 +1,14 @@
 part of 'change_password_bloc.dart';
 
-enum ChangePasswordStatus { none, authenticating, authenticated, failure }
+enum ChangePasswordStatus { initial, loading, success, failure }
 
 class ChangePasswordState extends Equatable {
-  final String email;
   final ChangePasswordStatus status;
 
   static const String authenticationFailKey = 'error.authenticate';
 
   const ChangePasswordState({
-    this.email = '',
-    this.status = ChangePasswordStatus.none,
+    this.status = ChangePasswordStatus.initial,
   });
 
   ChangePasswordState copyWith({
@@ -18,24 +16,34 @@ class ChangePasswordState extends Equatable {
     ChangePasswordStatus? status,
   }) {
     return ChangePasswordState(
-      email: email ?? this.email,
       status: status ?? this.status,
     );
   }
 
   @override
-  List<Object> get props => [email, status];
+  List<Object> get props => [status];
 
   @override
   bool get stringify => true;
 }
 
-class ChangePasswordInitialState extends ChangePasswordState {}
+class ChangePasswordInitialState extends ChangePasswordState {
+  const ChangePasswordInitialState() : super(status: ChangePasswordStatus.initial);
+}
 
-class ChangePasswordPasswordCompletedState extends ChangePasswordState {}
+class ChangePasswordLoadingState extends ChangePasswordState {
+  const ChangePasswordLoadingState() : super(status: ChangePasswordStatus.loading);
+}
+
+class ChangePasswordPasswordCompletedState extends ChangePasswordState {
+  const ChangePasswordPasswordCompletedState() : super(status: ChangePasswordStatus.success);
+}
 
 class ChangePasswordPasswordErrorState extends ChangePasswordState {
   final String message;
 
-  const ChangePasswordPasswordErrorState({required this.message});
+  const ChangePasswordPasswordErrorState({required this.message}) : super(status: ChangePasswordStatus.failure);
+
+  @override
+  List<Object> get props => [status, message];
 }

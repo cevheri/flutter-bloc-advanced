@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -20,7 +21,6 @@ class ChangePasswordScreen extends StatelessWidget {
       body: _buildBody(context),
     );
   }
-
 
   _buildAppBar(BuildContext context) {
     return AppBar(
@@ -60,11 +60,7 @@ class ChangePasswordScreen extends StatelessWidget {
   }
 
   _logo(BuildContext context) {
-    return Image.asset(
-      'assets/images/img.png',
-      width: 200,
-      height: 200,
-    );
+    return Image.asset(LocaleConstants.defaultImgUrl, width: 200, height: 200);
   }
 
   _currentPasswordField(BuildContext context) {
@@ -80,12 +76,7 @@ class ChangePasswordScreen extends StatelessWidget {
               obscureText: true,
               maxLines: 1,
               validator: FormBuilderValidators.compose(
-                [
-                  FormBuilderValidators.required(errorText: S.of(context).required_field),
-                  (val) {
-                    return null;
-                  },
-                ],
+                [FormBuilderValidators.required(errorText: S.of(context).required_field)],
               ),
             ),
           ),

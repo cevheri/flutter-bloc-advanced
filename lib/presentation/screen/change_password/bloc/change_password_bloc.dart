@@ -16,7 +16,7 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
   
   ChangePasswordBloc({required AccountRepository repository})
       : _repository = repository,
-        super(const ChangePasswordState()) {
+        super(const ChangePasswordInitialState()) {
     on<ChangePasswordChanged>(_onSubmit);
   }
 
@@ -31,19 +31,19 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
 
   FutureOr<void> _onSubmit(ChangePasswordChanged event, Emitter<ChangePasswordState> emit) async {
     _log.debug("BEGIN: changePassword bloc: _onSubmit");
-    emit(ChangePasswordInitialState());
+    emit(const ChangePasswordLoadingState());
     try {
       PasswordChangeDTO passwordChangeDTO = PasswordChangeDTO(
         currentPassword: event.currentPassword,
         newPassword: event.newPassword,
       );
       var result = await _repository.changePassword(passwordChangeDTO);
-      result == 200
-          ? emit(ChangePasswordPasswordCompletedState())
-          : emit(const ChangePasswordPasswordErrorState(message: "Reset Password Error"));
+      result < 300
+          ? emit(const ChangePasswordPasswordCompletedState())
+          : emit(const ChangePasswordPasswordErrorState(message: "Reset Password API Error"));
       _log.debug("END: changePassword bloc: _onSubmit success: {}", [result.toString()]);
     } catch (e) {
-      emit(const ChangePasswordPasswordErrorState(message: "Reset Password Error"));
+      emit(const ChangePasswordPasswordErrorState(message: "Reset Password Unhandled Error"));
       _log.error("END: changePassword bloc: _onSubmit error: {}", [e.toString()]);
     }
   }
