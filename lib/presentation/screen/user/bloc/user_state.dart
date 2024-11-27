@@ -36,9 +36,6 @@ class UserFindInitialState extends UserState {
     }
     return false;
   }
-
-  @override
-  int get hashCode => 0;
 }
 
 class UserLoadInProgressState extends UserState {}
