@@ -28,14 +28,6 @@ class UserEditInitialState extends UserState {}
 
 class UserFindInitialState extends UserState {
 
-  @override
-  bool operator ==(Object other) {
-    if (identical(this, other)) return true;
-    if (other is UserFindInitialState) {
-      return true;
-    }
-    return false;
-  }
 }
 
 class UserLoadInProgressState extends UserState {}
