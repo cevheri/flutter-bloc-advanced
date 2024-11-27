@@ -4,7 +4,7 @@
 import 'package:dart_json_mapper/dart_json_mapper.dart' show JsonMapper, JsonMapperAdapter, SerializationOptions, DeserializationOptions, typeOf;
 import 'package:flutter_bloc_advance/configuration/app_logger.dart' as x8 show LogFormat;
 import 'package:flutter_bloc_advance/configuration/environment.dart' as x9 show Environment;
-import 'package:flutter_bloc_advance/configuration/local_storage.dart' as x10 show StorageKeys;
+import 'package:flutter_bloc_advance/configuration/local_storage.dart' as x10 show StorageKeys, StorageType;
 import 'package:flutter_bloc_advance/data/models/authority.dart' as x2 show Authority;
 import 'package:flutter_bloc_advance/data/models/change_password.dart' as x0 show PasswordChangeDTO;
 import 'package:flutter_bloc_advance/data/models/city.dart' as x3 show City;
@@ -88,6 +88,8 @@ final mainProdGeneratedAdapter = JsonMapperAdapter(
     typeOf<Set<x9.Environment>>(): (value) => value.cast<x9.Environment>(),
     typeOf<List<x10.StorageKeys>>(): (value) => value.cast<x10.StorageKeys>(),
     typeOf<Set<x10.StorageKeys>>(): (value) => value.cast<x10.StorageKeys>(),
+    typeOf<List<x10.StorageType>>(): (value) => value.cast<x10.StorageType>(),
+    typeOf<Set<x10.StorageType>>(): (value) => value.cast<x10.StorageType>(),
     typeOf<List<x11.AccountStatus>>(): (value) => value.cast<x11.AccountStatus>(),
     typeOf<Set<x11.AccountStatus>>(): (value) => value.cast<x11.AccountStatus>(),
     typeOf<List<x12.AuthorityStatus>>(): (value) => value.cast<x12.AuthorityStatus>(),
@@ -113,6 +115,7 @@ final mainProdGeneratedAdapter = JsonMapperAdapter(
     x8.LogFormat: x8.LogFormat.values,
     x9.Environment: x9.Environment.values,
     x10.StorageKeys: x10.StorageKeys.values,
+    x10.StorageType: x10.StorageType.values,
     x11.AccountStatus: x11.AccountStatus.values,
     x12.AuthorityStatus: x12.AuthorityStatus.values,
     x13.CityStatus: x13.CityStatus.values,

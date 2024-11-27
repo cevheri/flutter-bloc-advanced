@@ -10,7 +10,6 @@ import 'package:flutter_bloc_advance/configuration/local_storage.dart' as _i5;
 import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart'
     as _i2;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:shared_preferences/shared_preferences.dart' as _i6;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -177,11 +176,10 @@ class MockAppLocalStorage extends _i1.Mock implements _i5.AppLocalStorage {
   }
 
   @override
-  void setPreferencesInstance(_i6.SharedPreferences? prefs) =>
-      super.noSuchMethod(
+  void setStrategy(_i5.StorageType? type) => super.noSuchMethod(
         Invocation.method(
-          #setPreferencesInstance,
-          [prefs],
+          #setStrategy,
+          [type],
         ),
         returnValueForMissingStub: null,
       );

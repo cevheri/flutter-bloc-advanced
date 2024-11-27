@@ -5,6 +5,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../test_utils.dart';
 import 'local_storage_test.mocks.dart';
 
 @GenerateMocks([SharedPreferences])
@@ -12,10 +13,25 @@ void main() {
   group('AppLocalStorage', () {
     late AppLocalStorage localStorage;
 
+    setUpAll(() async {
+      await TestUtils().setupUnitTest();
+    });
+
     setUp(() {
       AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       localStorage = AppLocalStorage();
       SharedPreferences.setMockInitialValues({});
+    });
+
+    test("set strategy sharedPreferences", () {
+      localStorage.setStrategy(StorageType.sharedPreferences);
+    });
+    test("set strategy getStorage", () {
+      localStorage.setStrategy(StorageType.getStorage);
+    });
+
+    test("set strategy sharedPreferences", () {
+      localStorage.setStrategy(StorageType.sharedPreferences);
     });
 
     test('save and read String value', () async {
@@ -83,12 +99,12 @@ void main() {
   });
 
   group('remove method error handling', () {
-    late AppLocalStorage localStorage;
+    late SharedPreferencesStrategy localStorage;
     late SharedPreferences mockPrefs;
 
     setUp(() {
       AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-      localStorage = AppLocalStorage();
+      localStorage = SharedPreferencesStrategy();
       mockPrefs = MockSharedPreferences();
       SharedPreferences.setMockInitialValues({});
       localStorage.setPreferencesInstance(mockPrefs);
@@ -106,12 +122,12 @@ void main() {
   });
 
   group('remove method error handling', () {
-    late AppLocalStorage localStorage;
+    late SharedPreferencesStrategy localStorage;
     late SharedPreferences mockPrefs;
 
     setUp(() {
       AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-      localStorage = AppLocalStorage();
+      localStorage = SharedPreferencesStrategy();
       mockPrefs = MockSharedPreferences();
       SharedPreferences.setMockInitialValues({});
       localStorage.setPreferencesInstance(mockPrefs);

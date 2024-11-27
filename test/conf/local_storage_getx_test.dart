@@ -10,7 +10,7 @@ import 'local_storage_getx_test.mocks.dart';
 @GenerateMocks([GetStorage])
 void main() {
   group('AppLocalStorageGetX Tests', () {
-    late AppLocalStorageGetX storage;
+    late GetStorageStrategy storage;
     late MockGetStorage mockPrefs;
 
     setUpAll(() async {
@@ -20,7 +20,7 @@ void main() {
     setUp(() {
       // Given
       mockPrefs = MockGetStorage();
-      storage = AppLocalStorageGetX();
+      storage = GetStorageStrategy();
       storage.setPreferencesInstance(mockPrefs);
     });
 

@@ -3,6 +3,16 @@ import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+abstract class StorageStrategy {
+  Future<bool> save(String key, dynamic value);
+
+  Future<dynamic> read(String key);
+
+  Future<bool> remove(String key);
+
+  Future<void> clear();
+}
+
 class AppLocalStorageCached {
   static final _log = AppLogger.getLogger("AppLocalStorageCached");
   static late String? jwtToken;
@@ -23,29 +33,21 @@ class AppLocalStorageCached {
 /// LocalStorage predefined keys
 enum StorageKeys { jwtToken, roles, language, username }
 
-// extension StorageKeysExtension on StorageKeys {
-//   String get name {
-//     switch (this) {
-//       case StorageKeys.jwtToken:
-//         return "TOKEN";
-//       case StorageKeys.roles:
-//         return "ROLES";
-//       case StorageKeys.language:
-//         return "LANGUAGE";
-//       case StorageKeys.username:
-//         return "USERNAME";
-//       default:
-//         return "";
-//     }
-//   }
-// }
 
 /// Application Local Storage
 ///
 /// This class is used to store data locally with the help of shared preferences.
-class AppLocalStorage {
+class SharedPreferencesStrategy implements StorageStrategy {
   static final _log = AppLogger.getLogger("AppLocalStorage");
-  static final AppLocalStorage _instance = AppLocalStorage._internal();
+
+  static final SharedPreferencesStrategy _instance = SharedPreferencesStrategy._internal();
+
+  SharedPreferencesStrategy._internal();
+
+  factory SharedPreferencesStrategy() {
+    _log.trace("Creating AppLocalStorage instance");
+    return _instance;
+  }
 
   SharedPreferences? _prefsInstance;
   @visibleForTesting
@@ -53,12 +55,6 @@ class AppLocalStorage {
     _prefsInstance = prefs;
   }
 
-  factory AppLocalStorage() {
-    _log.trace("Creating AppLocalStorage instance");
-    return _instance;
-  }
-
-  AppLocalStorage._internal();
 
   /// Shared Preferences private instance
   Future<SharedPreferences> get _prefs async => _prefsInstance ??= await SharedPreferences.getInstance();
@@ -76,6 +72,7 @@ class AppLocalStorage {
   /// <br>
   ///
   /// throws Exception if value type is not supported
+  @override
   Future<bool> save(String key, dynamic value) async {
     _log.trace("Saving data to local storage {} {}", [key, value]);
     final prefs = await _prefs;
@@ -112,6 +109,7 @@ class AppLocalStorage {
   /// - **double**
   /// - **bool**
   /// - **List String**
+  @override
   Future<dynamic> read(String key) async {
     _log.trace("Reading data from local storage");
     final prefs = await _prefs;
@@ -123,6 +121,7 @@ class AppLocalStorage {
   /// Remove data from local storage
   ///
   /// This method removes data from local storage. It takes a key as parameter.
+  @override
   Future<bool> remove(String key) async {
     _log.trace("Removing data from local storage");
     try {
@@ -140,6 +139,7 @@ class AppLocalStorage {
   /// Clear all data from local storage
   ///
   /// This method clears all data from local storage.
+  @override
   Future<void> clear() async {
     _log.info("Clearing all data from local storage");
     final prefs = await _prefs;
@@ -152,12 +152,12 @@ class AppLocalStorage {
 /// Application Local Storage with GetX
 ///
 /// This class is used to store data locally with the help of get storage.
-class AppLocalStorageGetX{
+class GetStorageStrategy implements StorageStrategy {
   static final _log = AppLogger.getLogger("AppLocalStorageGetX");
-  static final AppLocalStorageGetX _instance = AppLocalStorageGetX._internal();
-  AppLocalStorageGetX._internal();
+  static final GetStorageStrategy _instance = GetStorageStrategy._internal();
+  GetStorageStrategy._internal();
 
-  factory AppLocalStorageGetX(){
+  factory GetStorageStrategy(){
     _log.trace("Creating AppLocalStorageGetX instance");
     return _instance;
   }
@@ -173,6 +173,7 @@ class AppLocalStorageGetX{
   Future<GetStorage> get _prefs async => _prefsInstance ??= GetStorage();
 
   /// Save data to local storage <br>
+  @override
   Future<bool> save(String key, dynamic value) async {
     _log.trace("Saving data to local storage {} {}", [key, value]);
     final prefs = await _prefs;
@@ -188,6 +189,7 @@ class AppLocalStorageGetX{
   }
 
   /// Get data from local storage <br>
+  @override
   Future<dynamic> read(String key) async {
     _log.trace("Reading data from local storage");
     final prefs = await _prefs;
@@ -197,6 +199,7 @@ class AppLocalStorageGetX{
   }
 
   /// Remove data from local storage
+  @override
   Future<bool> remove(String key) async {
     _log.trace("Removing data from local storage");
     try {
@@ -212,11 +215,65 @@ class AppLocalStorageGetX{
   }
 
   /// Clear all data from local storage
+  @override
   Future<void> clear() async {
     _log.info("Clearing all data from local storage");
     final prefs = await _prefs;
     prefs.erase();
     await AppLocalStorageCached.loadCache();
     _log.info("Cleared all data from local storage");
+  }
+}
+
+enum StorageType {
+  sharedPreferences,
+  getStorage
+}
+
+class AppLocalStorage {
+  static final _log = AppLogger.getLogger("AppLocalStorage");
+  static final AppLocalStorage _instance = AppLocalStorage._internal();
+
+  late StorageStrategy _strategy;
+
+  AppLocalStorage._internal() {
+    _log.trace("Creating AppLocalStorage instance");
+    _strategy = SharedPreferencesStrategy();
+  }
+
+  factory AppLocalStorage() => _instance;
+
+  void setStrategy(StorageType type) {
+    _log.trace("Setting storage strategy to {}", [type]);
+    switch (type) {
+      case StorageType.sharedPreferences:
+        _strategy = SharedPreferencesStrategy();
+        break;
+      case StorageType.getStorage:
+        _strategy = GetStorageStrategy();
+        break;
+    }
+  }
+
+
+  Future<bool> save(String key, dynamic value) async {
+    final result = await _strategy.save(key, value);
+    await AppLocalStorageCached.loadCache();
+    return result;
+  }
+
+  Future<dynamic> read(String key) async {
+    return await _strategy.read(key);
+  }
+
+  Future<bool> remove(String key) async {
+    final result = await _strategy.remove(key);
+    await AppLocalStorageCached.loadCache();
+    return result;
+  }
+
+  Future<void> clear() async {
+    await _strategy.clear();
+    await AppLocalStorageCached.loadCache();
   }
 }
