@@ -1,16 +1,16 @@
 part of 'forgot_password_bloc.dart';
 
-enum ForgotPasswordStatus { none, authenticating, authenticated, failure }
+enum ForgotPasswordStatus { initial, loading, success, failure }
 
 class ForgotPasswordState extends Equatable {
-  final String email;
+  final String? email;
   final ForgotPasswordStatus status;
 
   static const String authenticationFailKey = 'error.authenticate';
 
   const ForgotPasswordState({
-    this.email = '',
-    this.status = ForgotPasswordStatus.none,
+    this.email,
+    this.status = ForgotPasswordStatus.initial,
   });
 
   ForgotPasswordState copyWith({
@@ -24,18 +24,30 @@ class ForgotPasswordState extends Equatable {
   }
 
   @override
-  List<Object> get props => [email, status];
+  List<Object> get props => [status, email ?? ""];
 
   @override
   bool get stringify => true;
 }
 
-class AccountResetPasswordInitialState extends ForgotPasswordState {}
+class ForgotPasswordInitialState extends ForgotPasswordState {
+  const ForgotPasswordInitialState() : super(status: ForgotPasswordStatus.initial);
+}
 
-class AccountResetPasswordCompletedState extends ForgotPasswordState {}
+class ForgotPasswordLoadingState extends ForgotPasswordState {
+  const ForgotPasswordLoadingState() : super(status: ForgotPasswordStatus.loading);
+}
 
-class AccountResetPasswordErrorState extends ForgotPasswordState {
+
+class ForgotPasswordCompletedState extends ForgotPasswordState {
+  const ForgotPasswordCompletedState() : super(status: ForgotPasswordStatus.success);
+}
+
+class ForgotPasswordErrorState extends ForgotPasswordState {
   final String message;
 
-  const AccountResetPasswordErrorState({required this.message});
+  const ForgotPasswordErrorState({required this.message}) : super(status: ForgotPasswordStatus.failure);
+
+  @override
+  List<Object> get props => [status, message];
 }

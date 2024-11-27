@@ -23,9 +23,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).password_forgot),
-    );
+    return AppBar(title: Text(S.of(context).password_forgot));
   }
 
   _buildBody(BuildContext context) {
@@ -62,6 +60,7 @@ class ForgotPasswordScreen extends StatelessWidget {
         return SizedBox(
           width: MediaQuery.of(context).size.width * 0.6,
           child: FormBuilderTextField(
+            key: forgotPasswordTextFieldEmail,
             name: "email",
             decoration: InputDecoration(labelText: S.of(context).email),
             maxLines: 1,
@@ -103,15 +102,15 @@ class ForgotPasswordScreen extends StatelessWidget {
         ),
       );
     }, buildWhen: (previous, current) {
-      if (current is AccountResetPasswordInitialState) {
+      if (current is ForgotPasswordInitialState) {
         Message.getMessage(context: context, title: S.of(context).loading, content: "");
       }
-      if (current is AccountResetPasswordCompletedState) {
+      if (current is ForgotPasswordCompletedState) {
         Navigator.pop(context);
         Message.getMessage(context: context, title: S.of(context).success, content: "");
         Future.delayed(const Duration(seconds: 1), () {});
       }
-      if (current is AccountResetPasswordErrorState) {
+      if (current is ForgotPasswordErrorState) {
         Message.errorMessage(title: S.of(context).failed, context: context, content: "");
       }
       return true;

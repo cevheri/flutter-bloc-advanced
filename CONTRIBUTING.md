@@ -52,7 +52,23 @@ bash
 
     git push origin your-branch-name
 
-6. Create a Pull Request
+6. Before Pull Request !!!
+- sync your fork on GitHub
+- git pull on your local machine
+- resolve conflicts
+- run commands sequentially
+    ```shell
+        flutter clean
+        flutter pub get
+        dart run build_runner build --delete-conflicting-outputs
+        dart run intl_utils:generate
+        flutter analyze
+        flutter test --coverage
+    ```
+- fix errors if needed
+
+
+7. Create a Pull Request
 
     Navigate to the original repository and click the "New Pull Request" button. Select your branch and provide a clear description of your changes.
         Description: Provide a concise summary of what you have changed and why.
