@@ -73,7 +73,7 @@ void main() {
     test('remove method should return true when successful', () async {
       // Given
       const key = 'test_key';
-      when(mockPrefs.remove(key)).thenAnswer((_) async => null);
+      when(mockPrefs.remove(key)).thenAnswer((_) async {});
 
       // When
       final result = await storage.remove(key);
@@ -98,7 +98,7 @@ void main() {
 
     test('clear method should call GetStorage.erase()', () async {
       // Given
-      when(mockPrefs.erase()).thenAnswer((_) async => null);
+      when(mockPrefs.erase()).thenAnswer((_) async {});
 
       // When
       await storage.clear();
