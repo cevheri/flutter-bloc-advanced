@@ -83,8 +83,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "name": MessageLookupByLibrary.simpleMessage("Name"),
         "new_password": MessageLookupByLibrary.simpleMessage("New Password"),
         "no": MessageLookupByLibrary.simpleMessage("No"),
-        "ok": MessageLookupByLibrary.simpleMessage("Ok"),
-        "password": MessageLookupByLibrary.simpleMessage("Password"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Forgot Password"),
         "password_max_length": MessageLookupByLibrary.simpleMessage(

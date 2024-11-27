@@ -44,8 +44,6 @@
   "no": "No",
   "login_user_name": "Username",
   "login_password": "Password",
-  "ok": "Ok",
-  "password": "Password",
   "current_password":"Current Password",
   "new_password": "New Password",
   "password_forgot": "Forgot Password",

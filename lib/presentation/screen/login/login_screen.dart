@@ -110,7 +110,7 @@ class LoginScreen extends StatelessWidget {
                 obscureText: !state.passwordVisible,
                 validator: FormBuilderValidators.compose(
                   [
-                    FormBuilderValidators.required(errorText: S.of(context).password_required),
+                    FormBuilderValidators.required(errorText: S.of(context).required_field),
                     FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
                     FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
                     (val) => null

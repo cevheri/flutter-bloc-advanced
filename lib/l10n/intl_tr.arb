@@ -44,8 +44,6 @@
   "no": "Hayır",
   "login_user_name": "Kullanıcı adı",
   "login_password": "Şifre",
-  "ok": "Tamam",
-  "password": "Password",
   "current_password":"Mevcut Şifre",
   "new_password": "Yeni Şifre",
   "password_forgot": "Şifremi unuttum",

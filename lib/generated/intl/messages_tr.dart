@@ -84,8 +84,6 @@ class MessageLookup extends MessageLookupByLibrary {
         "name": MessageLookupByLibrary.simpleMessage("İsim"),
         "new_password": MessageLookupByLibrary.simpleMessage("Yeni Şifre"),
         "no": MessageLookupByLibrary.simpleMessage("Hayır"),
-        "ok": MessageLookupByLibrary.simpleMessage("Tamam"),
-        "password": MessageLookupByLibrary.simpleMessage("Password"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
         "password_max_length": MessageLookupByLibrary.simpleMessage(
