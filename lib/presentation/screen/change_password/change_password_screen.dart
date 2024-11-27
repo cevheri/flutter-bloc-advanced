@@ -24,6 +24,12 @@ class ChangePasswordScreen extends StatelessWidget {
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).change_password),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
+          Navigator.pop(context);
+        },
+      ),
     );
   }
 
