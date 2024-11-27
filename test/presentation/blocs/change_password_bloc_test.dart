@@ -106,6 +106,7 @@ void main() {
         verify: (_) => verify(method()).called(1),
       );
 
+
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [ChangePasswordInitialState, ChangePasswordPasswordErrorState] when ChangePasswordChanged is added",
         setUp: () => when(method()).thenThrow(BadRequestException("hata")),
