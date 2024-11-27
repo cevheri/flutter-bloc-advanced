@@ -50,7 +50,6 @@
   "register": "Register",
   "password_max_length": "Password cannot be more than 6 characters long",
   "password_min_length": "Password must be at least 5 characters long",
-  "password_required": "Password is required",
   "login_button": "Login",
   "loading": "Loading...",
   "email_send": "Send Email",

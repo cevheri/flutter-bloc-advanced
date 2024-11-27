@@ -90,8 +90,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Şifre en fazla 20 karakter uzunluğunda olmalıdır"),
         "password_min_length": MessageLookupByLibrary.simpleMessage(
             "Şifre en az 6 karakter uzunluğunda olmalıdır"),
-        "password_required":
-            MessageLookupByLibrary.simpleMessage("Şifre gereklidir"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Tel No"),
         "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
         "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan"),

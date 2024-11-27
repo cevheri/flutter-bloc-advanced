@@ -65,7 +65,6 @@ class MockAccountRepository extends _i1.Mock implements _i4.AccountRepository {
         returnValue: _i5.Future<_i2.User?>.value(),
       ) as _i5.Future<_i2.User?>);
 
-
   @override
   _i5.Future<int> changePassword(_i6.PasswordChangeDTO? passwordChangeDTO) =>
       (super.noSuchMethod(

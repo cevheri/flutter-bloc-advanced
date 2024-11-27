@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/generated/intl/messages_all.dart';
+import 'package:flutter_bloc_advance/generated/intl/messages_en.dart' as message_en;
+import 'package:flutter_bloc_advance/generated/intl/messages_tr.dart' as message_tr;
+
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -50,5 +54,39 @@ void main() {
   });
   test('initializeJsonMapper async', () {
     initializeJsonMapperAsync();
+  });
+
+
+  group('initializeMessages tests in messages_all.dart', () {
+    test('should return false for unsupported locale', () async {
+      // Test for an unsupported locale
+      final result = await initializeMessages('fr');
+      expect(result, false);
+    });
+
+    test('should return false when locale is null', () async {
+      // Test when availableLocale becomes null
+      final result = await initializeMessages('invalid_locale');
+      expect(result, false);
+    });
+
+    test('should return true for supported locale', () async {
+      // Test for a supported locale (en or tr)
+      final result = await initializeMessages('en');
+      expect(result, true);
+    });
+  });
+
+  group("messages_en.dart localeName test", () {
+    test("should return 'en' as localeName", () {
+      final messages = message_en.MessageLookup();
+      expect(messages.localeName, 'en');
+    });
+  });
+  group("messages_tr.dart localeName test", () {
+    test("should return 'tr' as localeName", () {
+      final messages = message_tr.MessageLookup();
+      expect(messages.localeName, 'tr');
+    });
   });
 }

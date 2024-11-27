@@ -89,8 +89,6 @@ class MessageLookup extends MessageLookupByLibrary {
             "Password cannot be more than 6 characters long"),
         "password_min_length": MessageLookupByLibrary.simpleMessage(
             "Password must be at least 5 characters long"),
-        "password_required":
-            MessageLookupByLibrary.simpleMessage("Password is required"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
         "register": MessageLookupByLibrary.simpleMessage("Register"),
         "required_field":

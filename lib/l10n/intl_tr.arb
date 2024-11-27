@@ -50,7 +50,6 @@
   "register": "Kayıt Ol",
   "password_max_length": "Şifre en fazla 20 karakter uzunluğunda olmalıdır",
   "password_min_length": "Şifre en az 6 karakter uzunluğunda olmalıdır",
-  "password_required": "Şifre gereklidir",
   "login_button": "Giriş Yap",
   "loading": "Loading...",
   "email_send": "E-posta Gönder",

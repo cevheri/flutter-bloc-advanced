@@ -24,7 +24,6 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-
 class _FakeUser_0 extends _i1.SmartFake implements _i2.User {
   _FakeUser_0(
     Object parent,

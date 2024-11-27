@@ -560,16 +560,6 @@ class S {
     );
   }
 
-  /// `Password is required`
-  String get password_required {
-    return Intl.message(
-      'Password is required',
-      name: 'password_required',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Login`
   String get login_button {
     return Intl.message(
