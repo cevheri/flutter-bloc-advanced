@@ -84,6 +84,12 @@ void main() {
       expect(find.byType(IconButton), findsOneWidget);
       // appBar title
       expect(find.text("Edit User"), findsOneWidget);
+
+      //find back button
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+
+      //press back button
+      await tester.tap(find.byIcon(Icons.arrow_back));
     });
 
     testWidgets("Render screen validate field type successful", (tester) async {

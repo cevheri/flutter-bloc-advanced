@@ -69,6 +69,10 @@ void main() {
       expect(find.byType(FormBuilderTextField), findsNWidgets(4));
       expect(find.byType(FormBuilderSwitch), findsOneWidget);
       expect(find.byType(ElevatedButton), findsOneWidget);
+
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
     });
 
     /// validate field name with English translation
@@ -179,10 +183,6 @@ void main() {
     expect(find.text("admin@sekoya.tech"), findsOneWidget);
 
     await tester.tap(saveButtonFinder);
-    // TODO : expect result
-    // current screen dispose and go back
-    // snackbar message
-
 
   });
 
