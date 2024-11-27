@@ -98,12 +98,7 @@ class ChangePasswordScreen extends StatelessWidget {
               obscureText: true,
               maxLines: 1,
               validator: FormBuilderValidators.compose(
-                [
-                  FormBuilderValidators.required(errorText: S.of(context).required_field),
-                  (val) {
-                    return null;
-                  },
-                ],
+                [FormBuilderValidators.required(errorText: S.of(context).required_field)],
               ),
             ),
           ),
