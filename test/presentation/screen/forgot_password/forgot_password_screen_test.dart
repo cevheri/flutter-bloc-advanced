@@ -186,7 +186,7 @@ void main() {
 
   // Send Email  Button Test Success
   testWidgets("Validate send email button Successful", (WidgetTester tester) async {
-    when(forgotPasswordBloc.add(ForgotPasswordEmailChanged(email: "test@test.com"))).thenAnswer((_) => const ForgotPasswordCompletedState());
+    when(forgotPasswordBloc.add(const ForgotPasswordEmailChanged(email: "test@test.com"))).thenAnswer((_) => const ForgotPasswordCompletedState());
 
 
 
