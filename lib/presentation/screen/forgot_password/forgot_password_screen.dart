@@ -60,19 +60,13 @@ class ForgotPasswordScreen extends StatelessWidget {
         return SizedBox(
           width: MediaQuery.of(context).size.width * 0.6,
           child: FormBuilderTextField(
-            key: forgotPasswordTextFieldEmail,
+            key: forgotPasswordTextFieldEmailKey,
             name: "email",
             decoration: InputDecoration(labelText: S.of(context).email),
             maxLines: 1,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).email_required),
               FormBuilderValidators.email(errorText: S.of(context).email_pattern),
-              (value) {
-                if (value == null || value.isEmpty) {
-                  return S.of(context).email_pattern;
-                }
-                return null;
-              },
             ]),
           ),
         );
@@ -86,34 +80,89 @@ class ForgotPasswordScreen extends StatelessWidget {
     );
   }
 
+  // bad usage for bloc builder !!!
+  // _submitButton(BuildContext context) {
+  //   return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(builder: (context, state) {
+  //     return SizedBox(
+  //       child: ElevatedButton(
+  //         key: forgotPasswordButtonSubmit,
+  //         child: Text(S.of(context).email_send),
+  //         onPressed: () {
+  //           if (_forgotPasswordFormKey.currentState!.saveAndValidate()) {
+  //             context
+  //                 .read<ForgotPasswordBloc>()
+  //                 .add(ForgotPasswordEmailChanged(email: _forgotPasswordFormKey.currentState!.fields["email"]!.value));
+  //           } else {}
+  //         },
+  //       ),
+  //     );
+  //   }, buildWhen: (previous, current) {
+  //     if (current is ForgotPasswordInitialState) {
+  //       Message.getMessage(context: context, title: S.of(context).loading, content: "");
+  //     }
+  //     if (current is ForgotPasswordCompletedState) {
+  //       Navigator.pop(context);
+  //       Message.getMessage(context: context, title: S.of(context).success, content: "");
+  //       Future.delayed(const Duration(seconds: 1), () {});
+  //     }
+  //     if (current is ForgotPasswordErrorState) {
+  //       Message.errorMessage(title: S.of(context).failed, context: context, content: "");
+  //     }
+  //     return true;
+  //   });
+  // }
+
+  // good usage for bloc consumer
   _submitButton(BuildContext context) {
-    return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(builder: (context, state) {
-      return SizedBox(
-        child: ElevatedButton(
-          key: forgotPasswordButtonSubmit,
-          child: Text(S.of(context).email_send),
-          onPressed: () {
-            if (_forgotPasswordFormKey.currentState!.saveAndValidate()) {
-              context
-                  .read<ForgotPasswordBloc>()
-                  .add(ForgotPasswordEmailChanged(email: _forgotPasswordFormKey.currentState!.fields["email"]!.value));
-            } else {}
-          },
-        ),
-      );
-    }, buildWhen: (previous, current) {
-      if (current is ForgotPasswordInitialState) {
-        Message.getMessage(context: context, title: S.of(context).loading, content: "");
-      }
-      if (current is ForgotPasswordCompletedState) {
-        Navigator.pop(context);
-        Message.getMessage(context: context, title: S.of(context).success, content: "");
-        Future.delayed(const Duration(seconds: 1), () {});
-      }
-      if (current is ForgotPasswordErrorState) {
-        Message.errorMessage(title: S.of(context).failed, context: context, content: "");
-      }
-      return true;
-    });
+    final t = S.of(context);
+    return BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
+      listener: (context, state) {
+        // Loading state
+        if (state is ForgotPasswordLoadingState) {
+          Message.getMessage(context: context, title: t.loading, content: "");
+        }
+        // Completed state
+        else if (state is ForgotPasswordCompletedState) {
+          Navigator.pop(context);
+          Message.getMessage(context: context, title: t.success, content: "");
+          Future.delayed(const Duration(seconds: 1), () {});
+        }
+        // Error state
+        else if (state is ForgotPasswordErrorState) {
+          //Navigator.pop(context);
+          Message.errorMessage(title: t.failed, context: context, content: state.message);
+        }
+      },
+      listenWhen: (previous, current) {
+        if (current is ForgotPasswordLoadingState) {
+          return true;
+        }
+        if (current is ForgotPasswordCompletedState) {
+          return true;
+        }
+        if (current is ForgotPasswordErrorState) {
+          return true;
+        }
+        return false;
+      },
+      builder: (context, state) {
+        return SizedBox(
+          child: ElevatedButton(
+            key: forgotPasswordButtonSubmitKey,
+            child: Text(t.email_send),
+            onPressed: () {
+              if(state is ForgotPasswordLoadingState) {
+                return;
+              }
+              if (_forgotPasswordFormKey.currentState!.saveAndValidate()) {
+                context
+                    .read<ForgotPasswordBloc>()
+                    .add(ForgotPasswordEmailChanged(email: _forgotPasswordFormKey.currentState!.fields["email"]!.value));
+              }
+            },
+          ),
+        );
+      },
+    );
   }
 }

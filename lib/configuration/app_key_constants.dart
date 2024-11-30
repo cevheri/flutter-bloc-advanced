@@ -9,8 +9,8 @@ const Key loginButtonSubmitKey = Key("loginButtonSubmitKey");
 const Key loginButtonForgotPasswordKey = Key("loginButtonForgotPasswordKey");
 const Key loginButtonRegisterKey = Key("loginButtonRegisterKey");
 const Key loginButtonPasswordVisibilityKey = Key("loginButtonPasswordVisibilityKey");
-const Key forgotPasswordButtonSubmit = Key("forgotPasswordButtonSubmit");
-const Key forgotPasswordTextFieldEmail = Key("forgotPasswordTextFieldEmail");
+const Key forgotPasswordButtonSubmitKey = Key("forgotPasswordButtonSubmit");
+const Key forgotPasswordTextFieldEmailKey = Key("forgotPasswordTextFieldEmail");
 
 // register screen
 const Key registerSubmitButtonKey = Key("registerSubmitButtonKey");
