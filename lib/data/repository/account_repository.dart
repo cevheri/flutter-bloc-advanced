@@ -63,7 +63,7 @@ class AccountRepository {
     }
     //
     //sample usage for production
-    https://dhw-api.onrender.com/api/account/reset-password/init
+    // https://dhw-api.onrender.com/api/account/reset-password/init
     //curl 'https://dhw-api.onrender.com/api/account/reset-password/init' \
     //   -H 'accept: application/json, text/plain, */*' \
     //   -H 'accept-language: en-US,en;q=0.9,tr-TR;q=0.8,tr;q=0.7,az;q=0.6' \
