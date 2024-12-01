@@ -4,7 +4,7 @@ import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:get/get.dart';
+
 
 import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account_bloc.dart';
@@ -100,20 +100,19 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
-  _submitButton(BuildContext context) {
-    return BlocConsumer<RegisterBloc, RegisterState>(
+  Widget _submitButton(BuildContext context) {
+    return BlocListener<RegisterBloc, RegisterState>(
       listener: (context, state) {
         if (state is RegisterCompletedState) {
           Navigator.pop(context);
-          Get.snackbar("Create User", "Success");
+          //Get.snackbar("Create User", "Success");
         }
         if (state is RegisterErrorState) {
-          Get.snackbar("Create User", "Error");
+          //Get.snackbar("Create User", "Error");
         }
       },
-      builder: (context, state) {
-        return SizedBox(
-          child: ElevatedButton(
+      child: SizedBox(
+        child: ElevatedButton(
             key: registerSubmitButtonKey,
             child: Text(S.of(context).save),
             onPressed: () {
@@ -126,8 +125,7 @@ class RegisterScreen extends StatelessWidget {
               }
             },
           ),
-        );
-      },
+      ),
     );
   }
 }
