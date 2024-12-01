@@ -1,11 +1,11 @@
 part of 'change_password_bloc.dart';
 
 enum ChangePasswordStatus { initial, loading, success, failure }
+const String authenticationFailKey = 'error.authenticate';
 
 class ChangePasswordState extends Equatable {
   final ChangePasswordStatus status;
 
-  static const String authenticationFailKey = 'error.authenticate';
 
   const ChangePasswordState({
     this.status = ChangePasswordStatus.initial,
@@ -35,14 +35,14 @@ class ChangePasswordLoadingState extends ChangePasswordState {
   const ChangePasswordLoadingState() : super(status: ChangePasswordStatus.loading);
 }
 
-class ChangePasswordPasswordCompletedState extends ChangePasswordState {
-  const ChangePasswordPasswordCompletedState() : super(status: ChangePasswordStatus.success);
+class ChangePasswordCompletedState extends ChangePasswordState {
+  const ChangePasswordCompletedState() : super(status: ChangePasswordStatus.success);
 }
 
-class ChangePasswordPasswordErrorState extends ChangePasswordState {
+class ChangePasswordErrorState extends ChangePasswordState {
   final String message;
 
-  const ChangePasswordPasswordErrorState({required this.message}) : super(status: ChangePasswordStatus.failure);
+  const ChangePasswordErrorState({required this.message}) : super(status: ChangePasswordStatus.failure);
 
   @override
   List<Object> get props => [status, message];

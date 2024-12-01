@@ -52,12 +52,12 @@ void main() {
 
     // ChangePasswordPasswordCompletedState
     test("ChangePasswordPasswordCompletedState", () {
-      expect(const ChangePasswordPasswordCompletedState(), const ChangePasswordPasswordCompletedState());
+      expect(const ChangePasswordCompletedState(), const ChangePasswordCompletedState());
     });
 
     // ChangePasswordPasswordErrorState
     test("ChangePasswordPasswordErrorState", () {
-      expect(const ChangePasswordPasswordErrorState(message: ""), const ChangePasswordPasswordErrorState(message: ""));
+      expect(const ChangePasswordErrorState(message: ""), const ChangePasswordErrorState(message: ""));
     });
 
     test("copyWith state", () {
@@ -70,10 +70,10 @@ void main() {
       expect(const ChangePasswordLoadingState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.loading));
     });
     test("copyWith passwordCompletedState", () {
-      expect(const ChangePasswordPasswordCompletedState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.success));
+      expect(const ChangePasswordCompletedState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.success));
     });
     test("copyWith passwordErrorState", () {
-      expect(const ChangePasswordPasswordErrorState(message: "").copyWith(), const ChangePasswordState(status: ChangePasswordStatus.failure));
+      expect(const ChangePasswordErrorState(message: "").copyWith(), const ChangePasswordState(status: ChangePasswordStatus.failure));
     });
   });
   //endregion state
@@ -107,11 +107,11 @@ void main() {
       method() => repository.changePassword(input);
 
       final event = ChangePasswordChanged(currentPassword: input.currentPassword!, newPassword: input.newPassword!);
-      const successState = ChangePasswordPasswordCompletedState();
+      const successState = ChangePasswordCompletedState();
 
       const statesSuccess = [ChangePasswordLoadingState(), successState];
-      const statesError = [ChangePasswordLoadingState(), ChangePasswordPasswordErrorState(message: 'Reset Password API Error')];
-      const statesError2 = [ChangePasswordLoadingState(), ChangePasswordPasswordErrorState(message: 'Reset Password Unhandled Error')];
+      const statesError = [ChangePasswordLoadingState(), ChangePasswordErrorState(message: 'Reset Password API Error')];
+      const statesError2 = [ChangePasswordLoadingState(), ChangePasswordErrorState(message: 'Reset Password Unhandled Error')];
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [ChangePasswordInitialState, ChangePasswordPasswordCompletedState] when ChangePasswordChanged is added",

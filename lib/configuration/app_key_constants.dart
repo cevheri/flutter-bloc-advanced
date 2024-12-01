@@ -22,3 +22,8 @@ const Key registerEmailTextFieldKey = Key("registerEmailTextFieldKey");
 const Key settingsChangePasswordButtonKey = Key("settingsChangePasswordButtonKey");
 const Key settingsChangeLanguageButtonKey = Key("settingsChangeLanguageButtonKey");
 const Key settingsLogoutButtonKey = Key("settingsLogoutButtonKey");
+
+// change password screen
+const Key changePasswordButtonSubmitKey = Key("changePasswordButtonSubmitKey");
+const Key changePasswordTextFieldCurrentPasswordKey = Key("changePasswordTextFieldCurrentPasswordKey");
+const Key changePasswordTextFieldNewPasswordKey = Key("changePasswordTextFieldNewPasswordKey");

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,12 +39,12 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
         newPassword: event.newPassword,
       );
       var result = await _repository.changePassword(passwordChangeDTO);
-      result < 300
-          ? emit(const ChangePasswordPasswordCompletedState())
-          : emit(const ChangePasswordPasswordErrorState(message: "Reset Password API Error"));
+      result < HttpStatus.badRequest
+          ? emit(const ChangePasswordCompletedState())
+          : emit(const ChangePasswordErrorState(message: "Reset Password API Error"));
       _log.debug("END: changePassword bloc: _onSubmit success: {}", [result.toString()]);
     } catch (e) {
-      emit(const ChangePasswordPasswordErrorState(message: "Reset Password Unhandled Error"));
+      emit(const ChangePasswordErrorState(message: "Reset Password Unhandled Error"));
       _log.error("END: changePassword bloc: _onSubmit error: {}", [e.toString()]);
     }
   }

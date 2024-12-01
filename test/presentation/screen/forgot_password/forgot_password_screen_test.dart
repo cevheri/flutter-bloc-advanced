@@ -53,12 +53,8 @@ void main() {
       supportedLocales: S.delegate.supportedLocales,
       home: MultiBlocProvider(
         providers: [
-          BlocProvider<AccountBloc>(
-            create: (context) => accountBloc,
-          ),
-          BlocProvider<ForgotPasswordBloc>(
-            create: (context) => forgotPasswordBloc,
-          ),
+          BlocProvider<AccountBloc>(create: (context) => accountBloc),
+          BlocProvider<ForgotPasswordBloc>(create: (context) => forgotPasswordBloc),
         ],
         child: ForgotPasswordScreen(),
       ),

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
-import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 import '../../../utils/message.dart';
 import 'bloc/change_password_bloc.dart';
@@ -71,6 +71,7 @@ class ChangePasswordScreen extends StatelessWidget {
         children: [
           Expanded(
             child: FormBuilderTextField(
+              key: changePasswordTextFieldCurrentPasswordKey,
               name: 'currentPassword',
               decoration: InputDecoration(labelText: S.of(context).current_password),
               obscureText: true,
@@ -93,6 +94,7 @@ class ChangePasswordScreen extends StatelessWidget {
         children: [
           Expanded(
             child: FormBuilderTextField(
+              key: changePasswordTextFieldNewPasswordKey,
               name: 'newPassword',
               decoration: InputDecoration(labelText: S.of(context).new_password),
               obscureText: true,
@@ -107,39 +109,47 @@ class ChangePasswordScreen extends StatelessWidget {
     );
   }
 
-  _submitButton(BuildContext context) {
-    return BlocBuilder<ChangePasswordBloc, ChangePasswordState>(
-      builder: (context, state) {
-        return SizedBox(
-          child: ElevatedButton(
-            child: Text(S.of(context).change_password),
-            onPressed: () {
-              if (_changePasswordFormKey.currentState!.saveAndValidate() &&
-                  _changePasswordFormKey.currentState!.value['currentPassword'] != _changePasswordFormKey.currentState!.value['newPassword'] &&
-                  _changePasswordFormKey.currentState!.value['newPassword'] != null &&
-                  _changePasswordFormKey.currentState!.value['currentPassword'] != null) {
-                context.read<ChangePasswordBloc>().add(ChangePasswordChanged(
-                      currentPassword: _changePasswordFormKey.currentState!.value['currentPassword'],
-                      newPassword: _changePasswordFormKey.currentState!.value['newPassword'],
-                    ));
-              } else {}
-            },
-          ),
-        );
+  Widget _submitButton(BuildContext context) {
+    final t = S.of(context);
+    return BlocListener<ChangePasswordBloc, ChangePasswordState>(
+      listener: (context, state) {
+        // Loading state
+        if (state is ChangePasswordLoadingState) {
+          Message.getMessage(context: context, title: t.loading, content: "");
+        }
+        // Completed state
+        else if (state is ChangePasswordCompletedState) {
+          Navigator.pop(context);
+          Message.getMessage(context: context, title: t.success, content: "");
+          //Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
+        }
+        // Error state
+        else if (state is ChangePasswordErrorState) {
+          Message.errorMessage(title: t.failed, context: context, content: "");
+        }
       },
-      buildWhen: (previous, current) {
-        if (current is ChangePasswordInitialState) {
-          Message.getMessage(context: context, title: S.of(context).loading, content: "");
-        }
-        if (current is ChangePasswordPasswordCompletedState) {
-          Message.getMessage(context: context, title: S.of(context).success, content: "");
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
-        }
-        if (current is ChangePasswordPasswordErrorState) {
-          Message.errorMessage(title: S.of(context).failed, context: context, content: "");
-        }
-        return true;
+      listenWhen: (previous, current) {
+        return current is ChangePasswordLoadingState || current is ChangePasswordCompletedState || current is ChangePasswordErrorState;
       },
+      child: SizedBox(
+        child: ElevatedButton(
+          key: changePasswordButtonSubmitKey,
+          child: Text(S.of(context).change_password),
+          onPressed: () {
+            //without blocConsumer access to bloc directly
+            final currentState = context.read<ChangePasswordBloc>().state;
+            if (currentState is ChangePasswordLoadingState) {
+              return;
+            }
+
+            final currentPass = _changePasswordFormKey.currentState!.value['currentPassword'];
+            final newPass = _changePasswordFormKey.currentState!.value['newPassword'];
+            if (_changePasswordFormKey.currentState!.saveAndValidate() && currentPass != newPass && newPass != null && currentPass != null) {
+              context.read<ChangePasswordBloc>().add(ChangePasswordChanged(currentPassword: currentPass, newPassword: newPass));
+            }
+          },
+        ),
+      ),
     );
   }
 }

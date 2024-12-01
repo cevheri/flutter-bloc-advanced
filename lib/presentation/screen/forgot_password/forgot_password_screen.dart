@@ -113,7 +113,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   // }
 
   // good usage for bloc consumer
-  _submitButton(BuildContext context) {
+  Widget _submitButton(BuildContext context) {
     final t = S.of(context);
     return BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(
       listener: (context, state) {
