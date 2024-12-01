@@ -55,28 +55,17 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   _forgotPasswordField(BuildContext context) {
-    return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
-      builder: (context, state) {
-        return SizedBox(
-          width: MediaQuery.of(context).size.width * 0.6,
-          child: FormBuilderTextField(
+    final t = S.of(context);
+    return SizedBox(
+      width: MediaQuery.of(context).size.width * 0.6,
+      child: FormBuilderTextField(
             key: forgotPasswordTextFieldEmailKey,
             name: "email",
-            decoration: InputDecoration(labelText: S.of(context).email),
-            maxLines: 1,
-            validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(errorText: S.of(context).email_required),
-              FormBuilderValidators.email(errorText: S.of(context).email_pattern),
-            ]),
-          ),
-        );
-      },
-      buildWhen: (previous, current) {
-        if (previous.status != current.status) {
-          return true;
-        }
-        return false;
-      },
+        decoration: InputDecoration(labelText: t.email),
+        maxLines: 1,
+            validator: FormBuilderValidators.compose([FormBuilderValidators.required(errorText: t.email_required), FormBuilderValidators.email(errorText: t.email_pattern)],
+        ),
+      ),
     );
   }
 
@@ -134,16 +123,7 @@ class ForgotPasswordScreen extends StatelessWidget {
         }
       },
       listenWhen: (previous, current) {
-        if (current is ForgotPasswordLoadingState) {
-          return true;
-        }
-        if (current is ForgotPasswordCompletedState) {
-          return true;
-        }
-        if (current is ForgotPasswordErrorState) {
-          return true;
-        }
-        return false;
+        return current is ForgotPasswordLoadingState || current is ForgotPasswordCompletedState || current is ForgotPasswordErrorState;
       },
       builder: (context, state) {
         return SizedBox(
