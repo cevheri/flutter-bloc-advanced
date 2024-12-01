@@ -8,7 +8,6 @@ import 'package:flutter_bloc_advance/presentation/screen/forgot_password/bloc/fo
 import 'package:flutter_bloc_advance/presentation/screen/forgot_password/forgot_password_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register.dart';
 import 'package:flutter_bloc_advance/presentation/screen/register/register_screen.dart';
-
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -19,7 +18,7 @@ import '../../../utils/message.dart';
 import 'bloc/login.dart';
 
 class LoginScreen extends StatelessWidget {
-  final _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
+  final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
 
   LoginScreen({super.key});
 
@@ -128,36 +127,30 @@ class LoginScreen extends StatelessWidget {
     });
   }
 
-  _submitButton(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, state) {
-        return SizedBox(
-          child: ElevatedButton(
+  Widget _submitButton(BuildContext context) {
+    return BlocListener<LoginBloc, LoginState>(
+      listener: (context, state) {
+        if (state is LoginLoadingState) {
+          Message.getMessage(context: context, title: S.of(context).loading, content: "", duration: const Duration(seconds: 1));
+        } else if (state is LoginLoadedState) {
+          Message.getMessage(context: context, title: S.of(context).success, content: "");
+          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
+        } else if (state is LoginErrorState) {
+          Message.errorMessage(context: context, title: S.of(context).failed, content: state.message);
+        }
+      },
+      child: SizedBox(
+        child: ElevatedButton(
             key: loginButtonSubmitKey,
             child: Text(S.of(context).login_button),
             onPressed: () {
               if (_loginFormKey.currentState!.saveAndValidate()) {
                 _submitEvent(context,
                     username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']);
-              } else {}
+              }
             },
           ),
-        );
-      },
-      buildWhen: (previous, current) {
-        debugPrint("previous: $previous, current: $current");
-        if (current is LoginLoadingState) {
-          Message.getMessage(context: context, title: S.of(context).loading, content: "", duration: const Duration(seconds: 1));
-        }
-        if (current is LoginLoadedState) {
-          Message.getMessage(context: context, title: S.of(context).success, content: "");
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
-        }
-        if (current is LoginErrorState) {
-          Message.errorMessage(context: context, title: S.of(context).failed, content: "");
-        }
-        return true;
-      },
+      ),
     );
   }
 
@@ -213,10 +206,15 @@ class LoginScreen extends StatelessWidget {
 
   Widget _validationZone() {
     return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) => previous.status != current.status,
+      buildWhen: (previous, current) {
+        if (current is LoginErrorState) {
+          return true;
+        }
+        return false;
+      },
       builder: (context, state) {
         return Visibility(
-            visible: state.status == LoginStatus.failure,
+          visible: state is LoginErrorState,
             child: Center(
                 child: Text(
               S.of(context).failed,
