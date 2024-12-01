@@ -59,11 +59,18 @@ class CreateUserScreen extends StatelessWidget {
     );
   }
 
-  _submitButton(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        return SizedBox(
-          child: ElevatedButton(
+  Widget _submitButton(BuildContext context) {
+    return BlocListener<UserBloc, UserState>(
+      listener: (context, state) {
+        if (state is UserLoadFailureState) {
+          Message.errorMessage(title: S.of(context).failed, context: context, content: state.message);
+        } else if (state is UserLoadSuccessState) {
+          Message.getMessage(context: context, title: S.of(context).success, content: "");
+          Navigator.pop(context);
+        }
+      },
+      child: SizedBox(
+        child: ElevatedButton(
             key: const Key("createUserSubmitButton"),
             child: Text(S.of(context).save),
             onPressed: () {
@@ -81,22 +88,7 @@ class CreateUserScreen extends StatelessWidget {
               }
             },
           ),
-        );
-      },
-      buildWhen: (previous, current) {
-        if (current is UserInitialState) {
-          Message.getMessage(context: context, title: S.of(context).loading, content: "");
-        }
-        if (current is UserLoadSuccessState) {
-          Message.getMessage(context: context, title: S.of(context).success, content: "");
-          Navigator.pop(context);
-        }
-        if (current is UserLoadFailureState) {
-          Message.errorMessage(title: S.of(context).failed, context: context, content: "");
-        }
-
-        return true;
-      },
+      ),
     );
   }
 }

@@ -24,7 +24,6 @@ class EditUserScreen extends StatelessWidget {
         icon: const Icon(Icons.arrow_back),
         onPressed: () {
           Navigator.pop(context);
-          formKey.currentState!.fields['salesPersonCode']?.didChange(""); //TODO fix fieldName
         },
       ),
     );

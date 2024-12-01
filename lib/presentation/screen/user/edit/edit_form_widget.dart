@@ -187,58 +187,49 @@ class SubmitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        return SizedBox(
-          child: ElevatedButton(
+    User newUser = User(
+      id: user.id,
+      login: formKey.currentState!.fields['editLogin']!.value,
+      activated: formKey.currentState!.fields['editActive']!.value,
+      firstName: formKey.currentState!.fields['editFirstName']!.value,
+      lastName: formKey.currentState!.fields['editLastName']!.value,
+      email: formKey.currentState!.fields['editEmail']!.value,
+      // phoneNumber: formKey.currentState!.fields['editPhoneNumber']!.value,
+      authorities: [formKey.currentState!.fields['editAuthorities']?.value ?? ""],
+    );
+    User cacheUser = User(
+      id: user.id,
+      login: user.login,
+      activated: user.activated,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      email: user.email,
+      // phoneNumber: user.phoneNumber,
+      authorities: user.authorities,
+    );
+    return BlocListener<UserBloc, UserState>(
+      listener: (context, state) {
+        if (state is UserEditFailureState) {
+          Message.errorMessage(title: S.of(context).failed, context: context, content: state.message);
+        } else if (state is UserEditSuccessState) {
+          Message.getMessage(context: context, title: S.of(context).success, content: '');
+          Navigator.pop(context);
+        }
+      },
+      child: SizedBox(
+        child: ElevatedButton(
             child: Text(S.of(context).save),
             onPressed: () {
-              User newUser = User(
-                id: user.id,
-                login: formKey.currentState!.fields['editLogin']!.value,
-                activated: formKey.currentState!.fields['editActive']!.value,
-                firstName: formKey.currentState!.fields['editFirstName']!.value,
-                lastName: formKey.currentState!.fields['editLastName']!.value,
-                email: formKey.currentState!.fields['editEmail']!.value,
-                // phoneNumber: formKey.currentState!.fields['editPhoneNumber']!.value,
-                authorities: [formKey.currentState!.fields['editAuthorities']?.value ?? ""],
-              );
-              User cacheUser = User(
-                id: user.id,
-                login: user.login,
-                activated: user.activated,
-                firstName: user.firstName,
-                lastName: user.lastName,
-                email: user.email,
-                // phoneNumber: user.phoneNumber,
-                authorities: user.authorities,
-              );
               if (cacheUser != newUser) {
                 BlocProvider.of<UserBloc>(context).add(UserEdit(user: newUser));
               }
-
               if (cacheUser == newUser) {
                 Message.getMessage(context: context, title: S.of(context).success, content: '');
                 Navigator.pop(context);
               }
             },
           ),
-        );
-      },
-      buildWhen: (previous, current) {
-        if (current is UserEditInitialState) {
-          Message.getMessage(context: context, title: S.of(context).loading, content: '');
-        }
-        if (current is UserEditSuccessState) {
-          Message.getMessage(context: context, title: S.of(context).success, content: '');
-          Navigator.pop(context);
-        }
-        if (current is UserEditFailureState) {
-          Message.errorMessage(title: S.of(context).failed, context: context, content: '');
-        }
-
-        return true;
-      },
+      ),
     );
   }
 }
