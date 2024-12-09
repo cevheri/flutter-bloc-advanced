@@ -40,7 +40,7 @@ void main() {
     return GetMaterialApp(
       home: MultiBlocProvider(
         providers: blocs,
-        child: AccountsScreen(),
+        child: AccountScreen(),
       ),
       localizationsDelegates: const [
         S.delegate,
@@ -65,7 +65,7 @@ void main() {
       expect(find.byType(AppBar), findsOneWidget);
       // appBar title
 
-      expect(find.byType(AccountsScreen), findsOneWidget);
+      expect(find.byType(AccountScreen), findsOneWidget);
       expect(find.text("Account"), findsOneWidget);
       expect(find.byIcon(Icons.arrow_back), findsOneWidget);
       _log.debug("end Validate AppBar");
@@ -86,7 +86,7 @@ void main() {
       final backButtonFinder = find.byIcon(Icons.arrow_back);
       await tester.tap(backButtonFinder);
       await tester.pumpAndSettle();
-      expect(find.byType(AccountsScreen), findsNothing);
+      expect(find.byType(AccountScreen), findsNothing);
 
       _log.debug("end Validate AppBar Back Button");
     });

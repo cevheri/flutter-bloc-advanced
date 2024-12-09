@@ -6,8 +6,8 @@ import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account_bloc.dart';
 import '../user/edit/edit_form_widget.dart';
 
-class AccountsScreen extends StatelessWidget {
-  AccountsScreen({super.key});
+class AccountScreen extends StatelessWidget {
+  AccountScreen({super.key});
 
   final formKey = GlobalKey<FormBuilderState>();
 

@@ -113,8 +113,10 @@ class App extends StatelessWidget {
       routes: _initialRoutes,
     );
   }
+
   @visibleForTesting
   Map<String, WidgetBuilder> get initialRoutes => _initialRoutes;
+
   final _initialRoutes = {
     ApplicationRoutes.home: (context) {
       return BlocProvider<AccountBloc>(
@@ -122,7 +124,7 @@ class App extends StatelessWidget {
     },
     ApplicationRoutes.account: (context) {
       return BlocProvider<AccountBloc>(
-          create: (context) => AccountBloc(repository: AccountRepository())..add(const AccountLoad()), child: AccountsScreen());
+          create: (context) => AccountBloc(repository: AccountRepository())..add(const AccountLoad()), child: AccountScreen());
     },
     ApplicationRoutes.login: (context) {
       return BlocProvider<LoginBloc>(create: (context) => LoginBloc(repository: LoginRepository()), child: LoginScreen());

@@ -12,21 +12,23 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  flutter_bloc:
+  http:
+  go_router:
   adaptive_theme:
   cupertino_icons:
-  flutter_bloc:
   equatable:
+
+  get:
+  intl:
   pdf:
   printing:
   dart_json_mapper:
   expansion_tile_card:
-  http:
   device_preview:
   getwidget:
   flutter_form_builder: ^9.5.0
   form_builder_validators: ^11.0.0
-  get:
-  intl:
   string_2_icon:
   intl_utils:
   pattern_formatter:
