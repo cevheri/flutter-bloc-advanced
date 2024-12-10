@@ -62,7 +62,7 @@ void main() {
 
   GetMaterialApp getWidget(User user) {
     return GetMaterialApp(
-      home: MultiBlocProvider(providers: blocs, child: EditUserScreen(user: user)),
+      home: MultiBlocProvider(providers: blocs, child: EditUserScreen(id: user.id!)),
       localizationsDelegates: const [
         S.delegate,
         GlobalMaterialLocalizations.delegate,

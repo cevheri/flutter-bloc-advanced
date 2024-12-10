@@ -105,9 +105,7 @@ void main() {
         ),
       ],
       child: GetMaterialApp(
-        home: EditUserScreen(
-          user: mockUserFullPayload,
-        ),
+        home: EditUserScreen(id: mockUserFullPayload.id!),
         localizationsDelegates: const [
           S.delegate,
           GlobalMaterialLocalizations.delegate,

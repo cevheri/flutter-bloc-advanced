@@ -2,19 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
-import 'package:flutter_bloc_advance/presentation/screen/forgot_password/bloc/forgot_password.dart';
-import 'package:flutter_bloc_advance/presentation/screen/forgot_password/forgot_password_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register.dart';
-import 'package:flutter_bloc_advance/presentation/screen/register/register_screen.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
-import '../../../utils/message.dart';
 import 'bloc/login.dart';
 
 class LoginScreen extends StatelessWidget {
@@ -27,9 +22,9 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  _buildAppBar(BuildContext context) => AppBar(title: const Text(AppConstants.appName), leading: Container());
+  AppBar _buildAppBar(BuildContext context) => AppBar(title: const Text(AppConstants.appName), leading: Container());
 
-  _buildBody(BuildContext context) {
+  FormBuilder _buildBody(BuildContext context) {
     return FormBuilder(
       key: _loginFormKey,
       child: Center(
@@ -56,7 +51,7 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  _logo(BuildContext context) {
+  Image _logo(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
       return Image.asset(LocaleConstants.logoLightUrl, width: 200, height: 200);
     } else {
@@ -64,7 +59,7 @@ class LoginScreen extends StatelessWidget {
     }
   }
 
-  _usernameField(BuildContext context) {
+  Widget _usernameField(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
       return SizedBox(
         width: MediaQuery.of(context).size.width * 0.6,
@@ -76,8 +71,7 @@ class LoginScreen extends StatelessWidget {
             [
               FormBuilderValidators.required(errorText: S.of(context).username_required),
               FormBuilderValidators.minLength(4, errorText: S.of(context).username_min_length),
-              FormBuilderValidators.maxLength(20, errorText: S.of(context).username_max_length),
-              (val) => null,
+              FormBuilderValidators.maxLength(20, errorText: S.of(context).username_max_length)
             ],
           ),
         ),
@@ -85,7 +79,7 @@ class LoginScreen extends StatelessWidget {
     });
   }
 
-  _passwordField(BuildContext context) {
+  Widget _passwordField(BuildContext context) {
     final fieldWidth = MediaQuery.of(context).size.width * 0.6;
     return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
       return SizedBox(
@@ -111,8 +105,7 @@ class LoginScreen extends StatelessWidget {
                   [
                     FormBuilderValidators.required(errorText: S.of(context).required_field),
                     FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
-                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
-                    (val) => null
+                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length)
                   ],
                 ),
               ),
@@ -127,29 +120,38 @@ class LoginScreen extends StatelessWidget {
     });
   }
 
-  Widget _submitButton(BuildContext context) {
+  _submitButton(BuildContext context) {
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
         if (state is LoginLoadingState) {
-          Message.getMessage(context: context, title: S.of(context).loading, content: "", duration: const Duration(seconds: 1));
+          //Message.getMessage(context: context, title: S.of(context).loading, content: " ", duration: const Duration(seconds: 1));
         } else if (state is LoginLoadedState) {
-          Message.getMessage(context: context, title: S.of(context).success, content: "");
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
+          print("LoginScreen: LoginLoadedState");
+          //Message.getMessage(context: context, title: S.of(context).success, content: " ");
+          context.read<AccountBloc>().add(const AccountLoad());
+          Future.delayed(const Duration(seconds: 1), () {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (context.mounted) {
+                context.go(ApplicationRoutes.home);
+              }
+            });
+          });
         } else if (state is LoginErrorState) {
-          Message.errorMessage(context: context, title: S.of(context).failed, content: state.message);
+          //Message.errorMessage(context: context, title: S.of(context).failed, content: state.message);
         }
       },
       child: SizedBox(
         child: ElevatedButton(
-            key: loginButtonSubmitKey,
-            child: Text(S.of(context).login_button),
-            onPressed: () {
-              if (_loginFormKey.currentState!.saveAndValidate()) {
-                _submitEvent(context,
-                    username: _loginFormKey.currentState!.value['username'], password: _loginFormKey.currentState!.value['password']);
-              }
-            },
-          ),
+          key: loginButtonSubmitKey,
+          child: Text(S.of(context).login_button),
+          onPressed: () {
+            if (_loginFormKey.currentState!.saveAndValidate()) {
+              final username = _loginFormKey.currentState!.value['username'];
+              final password = _loginFormKey.currentState!.value['password'];
+              _submitEvent(context, username: username, password: password);
+            }
+          },
+        ),
       ),
     );
   }
@@ -162,20 +164,7 @@ class LoginScreen extends StatelessWidget {
     return SizedBox(
       child: TextButton(
         key: loginButtonForgotPasswordKey,
-        onPressed: () {
-          Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => BlocProvider<ForgotPasswordBloc>(
-                        create: (context) => ForgotPasswordBloc(
-                          repository: AccountRepository(),
-                        ),
-                        child: ForgotPasswordScreen(),
-                      )));
-          //Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.forgotPassword, (route) => false);
-          //Get.offAndToNamed(ApplicationRoutes.forgotPassword);
-          //Get.to(() => ForgotPasswordScreen());
-        },
+        onPressed: () => context.go(ApplicationRoutes.forgotPassword),
         child: Text(S.of(context).password_forgot),
       ),
     );
@@ -185,20 +174,7 @@ class LoginScreen extends StatelessWidget {
     return SizedBox(
       child: TextButton(
         key: loginButtonRegisterKey,
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => MultiBlocProvider(
-                providers: [
-                  BlocProvider<AccountBloc>.value(value: AccountBloc(repository: AccountRepository())),
-                  BlocProvider<RegisterBloc>(create: (_) => RegisterBloc(repository: AccountRepository())),
-                ],
-                child: RegisterScreen(),
-              ),
-            ),
-          );
-        },
+        onPressed: () => context.go(ApplicationRoutes.register),
         child: Text(S.of(context).register),
       ),
     );
@@ -206,21 +182,14 @@ class LoginScreen extends StatelessWidget {
 
   Widget _validationZone() {
     return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) {
-        if (current is LoginErrorState) {
-          return true;
-        }
-        return false;
-      },
+      buildWhen: (previous, current) => current is LoginErrorState,
       builder: (context, state) {
+        final font = Theme.of(context).textTheme.bodyLarge!.fontSize;
+        final color = Theme.of(context).colorScheme.error;
         return Visibility(
           visible: state is LoginErrorState,
-            child: Center(
-                child: Text(
-              S.of(context).failed,
-              style: TextStyle(fontSize: Theme.of(context).textTheme.bodyLarge!.fontSize, color: Theme.of(context).colorScheme.error),
-              textAlign: TextAlign.center,
-            )));
+          child: Center(child: Text(S.of(context).failed, style: TextStyle(fontSize: font, color: color), textAlign: TextAlign.center)),
+        );
       },
     );
   }

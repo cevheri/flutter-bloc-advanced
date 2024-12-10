@@ -1,8 +1,8 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/route/app_router.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
 
 import '../configuration/environment.dart';
 import '../configuration/routes.dart';
@@ -59,31 +59,22 @@ class App extends StatelessWidget {
       dark: _buildDarkTheme(),
       debugShowFloatingThemeButton: false,
       initial: initialTheme,
-      builder: (light, dark) {
-        return _buildMultiBlocProvider(light, dark);
-      },
+      builder: (light, dark) => _buildMultiBlocProvider(light, dark),
     );
   }
 
   ThemeData _buildDarkTheme() {
-    return ThemeData(
-      useMaterial3: false,
-      brightness: Brightness.dark,
-      primarySwatch: Colors.blueGrey,
-    );
+    return ThemeData(brightness: Brightness.dark, primarySwatch: Colors.blueGrey);
   }
 
   ThemeData _buildLightTheme() {
-    return ThemeData(
-      useMaterial3: false,
-      brightness: Brightness.light,
-      colorSchemeSeed: Colors.blueGrey,
-    );
+    return ThemeData(brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey);
   }
 
   MultiBlocProvider _buildMultiBlocProvider(ThemeData light, ThemeData dark) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider<LoginBloc>(create: (_) => LoginBloc(repository: LoginRepository())),
         BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
         BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
         BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
@@ -91,12 +82,12 @@ class App extends StatelessWidget {
         BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(repository: DistrictRepository())),
         BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
       ],
-      child: _buildGetMaterialApp(light, dark),
+      child: _buildMaterialApp(light, dark),
     );
   }
 
-  GetMaterialApp _buildGetMaterialApp(ThemeData light, ThemeData dark) {
-    return GetMaterialApp(
+  MaterialApp _buildMaterialApp(ThemeData light, ThemeData dark) {
+    return MaterialApp.router(
       theme: light,
       darkTheme: dark,
       debugShowCheckedModeBanner: ProfileConstants.isDevelopment,
@@ -109,46 +100,8 @@ class App extends StatelessWidget {
       ],
       supportedLocales: S.delegate.supportedLocales,
       locale: Locale(language),
-      initialRoute: initialRouteControl(),
-      routes: _initialRoutes,
+      routerConfig: AppRouter.router,
     );
   }
 
-  @visibleForTesting
-  Map<String, WidgetBuilder> get initialRoutes => _initialRoutes;
-
-  final _initialRoutes = {
-    ApplicationRoutes.home: (context) {
-      return BlocProvider<AccountBloc>(
-          create: (context) => AccountBloc(repository: AccountRepository())..add(const AccountLoad()), child: HomeScreen());
-    },
-    ApplicationRoutes.account: (context) {
-      return BlocProvider<AccountBloc>(
-          create: (context) => AccountBloc(repository: AccountRepository())..add(const AccountLoad()), child: AccountScreen());
-    },
-    ApplicationRoutes.login: (context) {
-      return BlocProvider<LoginBloc>(create: (context) => LoginBloc(repository: LoginRepository()), child: LoginScreen());
-    },
-    ApplicationRoutes.settings: (context) {
-      return BlocProvider<SettingsBloc>(
-          create: (context) => SettingsBloc(), child: SettingsScreen());
-    },
-    ApplicationRoutes.forgotPassword: (context) {
-      return BlocProvider<ForgotPasswordBloc>(
-          create: (context) => ForgotPasswordBloc(repository: AccountRepository()), child: ForgotPasswordScreen());
-    },
-    ApplicationRoutes.register: (context) {
-      return BlocProvider<RegisterBloc>(create: (context) => RegisterBloc(repository: AccountRepository()), child: RegisterScreen());
-    },
-    ApplicationRoutes.changePassword: (context) {
-      return BlocProvider<ChangePasswordBloc>(
-          create: (context) => ChangePasswordBloc(repository: AccountRepository()), child: ChangePasswordScreen());
-    },
-    ApplicationRoutes.createUser: (context) {
-      return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: CreateUserScreen());
-    },
-    ApplicationRoutes.listUsers: (context) {
-      return BlocProvider<UserBloc>(create: (context) => UserBloc(userRepository: UserRepository()), child: ListUserScreen());
-    },
-  };
 }

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
@@ -25,7 +26,7 @@ class HomeScreen extends StatelessWidget {
     return BlocListener<AccountBloc, AccountState>(
       listener: (context, state) {
         if (state.status == AccountStatus.failure) {
-          Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
+          context.go(ApplicationRoutes.login);
         }
       },
       child: BlocBuilder<AccountBloc, AccountState>(
@@ -38,8 +39,11 @@ class HomeScreen extends StatelessWidget {
               body: Center(child: Column(children: [backgroundImage(context)])),
               drawer: _buildDrawer(context),
             );
+          } else if (state.status == AccountStatus.loading) {
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          } else {
+            return Scaffold(body: Center(child: Text("Unexpected state : ${state.props}")));
           }
-          return Container();
         },
       ),
     );
@@ -80,7 +84,7 @@ class HomeScreen extends StatelessWidget {
     }
   }
 
-  _buildDrawer(BuildContext context) {
+  Widget _buildDrawer(BuildContext context) {
     return BlocProvider<DrawerBloc>(
       create: (context) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())..add(LoadMenus()),
       child: const ApplicationDrawer(),

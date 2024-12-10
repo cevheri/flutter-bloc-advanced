@@ -24,7 +24,7 @@ class AccountState extends Equatable {
   }
 
   @override
-  List<Object> get props => [status];
+  List<Object> get props => [status, account ?? ''];
 
   @override
   bool get stringify => true;

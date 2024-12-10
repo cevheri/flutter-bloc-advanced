@@ -22,26 +22,31 @@ class UserState extends Equatable {
   List<Object?> get props => [user, status];
 }
 
-class UserInitialState extends UserState {}
-
-class UserEditInitialState extends UserState {}
-
-class UserFindInitialState extends UserState {
-
+class UserInitialState extends UserState {
+  const UserInitialState(): super(status: UserStatus.initial);
 }
 
-class UserLoadInProgressState extends UserState {}
+class UserEditInitialState extends UserState {
+  const UserEditInitialState(): super(status: UserStatus.initial);
+}
+
+class UserFindInitialState extends UserState {
+  const UserFindInitialState(): super(status: UserStatus.initial);
+}
+
+class UserLoadInProgressState extends UserState {
+  const UserLoadInProgressState(): super(status: UserStatus.loading);
+}
 
 class UserLoadSuccessState extends UserState {
   final User userLoadSuccess;
 
-  const UserLoadSuccessState({required this.userLoadSuccess});
+  const UserLoadSuccessState({required this.userLoadSuccess}): super(user: userLoadSuccess, status: UserStatus.success);
 }
 
 class UserEditSuccessState extends UserState {
   final User userEditSuccess;
-
-  const UserEditSuccessState({required this.userEditSuccess});
+  const UserEditSuccessState({required this.userEditSuccess}): super(user: userEditSuccess, status: UserStatus.success);
 }
 
 class UserSearchSuccessState extends UserState {
@@ -53,31 +58,33 @@ class UserSearchSuccessState extends UserState {
 class UserLoadFailureState extends UserState {
   final String message;
 
-  const UserLoadFailureState({required this.message});
+  const UserLoadFailureState({required this.message}): super(status: UserStatus.failure);
 }
 
 class UserEditFailureState extends UserState {
   final String message;
 
-  const UserEditFailureState({required this.message});
+  const UserEditFailureState({required this.message}): super(status: UserStatus.failure);
 }
 
 class UserSearchFailureState extends UserState {
   final String message;
 
-  const UserSearchFailureState({required this.message});
+  const UserSearchFailureState({required this.message}): super(status: UserStatus.failure);
 }
 
-class UserListInitialState extends UserState {}
+class UserListInitialState extends UserState {
+  const UserListInitialState(): super(status: UserStatus.initial);
+}
 
 class UserListSuccessState extends UserState {
   final List<User> userList;
 
-  const UserListSuccessState({required this.userList});
+  const UserListSuccessState({required this.userList}) : super(status: UserStatus.success);
 }
 
 class UserListFailureState extends UserState {
   final String message;
 
-  const UserListFailureState({required this.message});
+  const UserListFailureState({required this.message}): super(status: UserStatus.failure);
 }

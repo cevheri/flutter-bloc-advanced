@@ -24,6 +24,20 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     on<UserSearch>(_onSearch);
     on<UserEdit>(_onEdit);
     on<UserList>(_onList);
+    on<FetchUserEvent>(_onFetchUser);
+  }
+
+  FutureOr<void> _onFetchUser(FetchUserEvent event, Emitter<UserState> emit) async {
+    _log.debug("BEGIN: onFetchUser FetchUserEvent event: {}", [event.id]);
+    emit(const UserLoadInProgressState());
+    try {
+      var user = await _userRepository.getUser(event.id);
+      emit(UserLoadSuccessState(userLoadSuccess: user!));
+      _log.debug("END:onFetchUser FetchUserEvent event success: {}", [user.toString()]);
+    } catch (e) {
+      emit(UserLoadFailureState(message: e.toString()));
+      _log.error("END:onFetchUser FetchUserEvent event error: {}", [e.toString()]);
+    }
   }
 
   FutureOr<void> _onCreate(UserCreate event, Emitter<UserState> emit) async {

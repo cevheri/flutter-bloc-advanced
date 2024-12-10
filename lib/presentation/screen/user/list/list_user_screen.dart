@@ -129,7 +129,7 @@ class ListUserScreen extends StatelessWidget {
           //TODO EditUserScreen page routing
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => EditUserScreen(user: state.userList[index])),
+            MaterialPageRoute(builder: (context) => EditUserScreen(id: state.userList[index].id!)),
           ).then((value) async {
             if (listFormKey.currentState!.saveAndValidate()) {
               if (context.mounted) {

@@ -22,9 +22,7 @@ class UserSearch extends UserEvent {
 }
 
 class UserCreate extends UserEvent {
-  const UserCreate({
-    required this.user,
-  });
+  const UserCreate({required this.user});
 
   final User user;
 
@@ -33,9 +31,7 @@ class UserCreate extends UserEvent {
 }
 
 class UserUpdate extends UserEvent {
-  const UserUpdate({
-    required this.user,
-  });
+  const UserUpdate({required this.user});
 
   final User user;
 
@@ -44,9 +40,7 @@ class UserUpdate extends UserEvent {
 }
 
 class UserEdit extends UserEvent {
-  const UserEdit({
-    required this.user,
-  });
+  const UserEdit({required this.user});
 
   final User user;
 
@@ -55,3 +49,12 @@ class UserEdit extends UserEvent {
 }
 
 class UserList extends UserEvent {}
+
+class FetchUserEvent extends UserEvent {
+  final String id;
+
+  const FetchUserEvent(this.id);
+
+  @override
+  List<Object> get props => [id];
+}
