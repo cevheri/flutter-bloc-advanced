@@ -2,10 +2,9 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../configuration/routes.dart';
 import '../../../data/repository/login_repository.dart';
 import '../../../data/repository/menu_repository.dart';
 import '../../common_blocs/account/account.dart';
@@ -23,15 +22,21 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return BlocListener<AccountBloc, AccountState>(
-      listener: (context, state) {
-        if (state.status == AccountStatus.failure) {
-          context.go(ApplicationRoutes.login);
-        }
+    debugPrint("HomeScreen _buildBody");
+    return BlocProvider(
+      create: (context) {
+        debugPrint("HomeScreen account blocProvider");
+        return AccountBloc(repository: AccountRepository())..add(const AccountLoad());
       },
       child: BlocBuilder<AccountBloc, AccountState>(
-        buildWhen: (previous, current) => previous.status != current.status,
+        buildWhen: (previous, current) {
+          if(previous.status != current.status) {
+            debugPrint("HomeScreen account bloc builder: ${current.status}");
+          }
+          return current.account != null;
+        },
         builder: (context, state) {
+          debugPrint("HomeScreen account bloc builder: ${state.status}");
           if (state.status == AccountStatus.success) {
             return Scaffold(
               appBar: AppBar(title: const Text(AppConstants.appName)),
@@ -39,11 +44,15 @@ class HomeScreen extends StatelessWidget {
               body: Center(child: Column(children: [backgroundImage(context)])),
               drawer: _buildDrawer(context),
             );
-          } else if (state.status == AccountStatus.loading) {
-            return const Scaffold(body: Center(child: CircularProgressIndicator()));
-          } else {
-            return Scaffold(body: Center(child: Text("Unexpected state : ${state.props}")));
           }
+
+          if (state.status == AccountStatus.loading) {
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
+          }
+          // else {
+          debugPrint("Unexpected state : ${state.toString()}");
+          return Scaffold(body: Center(child: Text("Home Screen Unexpected state : ${state.props}   ${state.toString()}")));
+          // }
         },
       ),
     );

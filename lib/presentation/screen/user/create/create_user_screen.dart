@@ -71,23 +71,23 @@ class CreateUserScreen extends StatelessWidget {
       },
       child: SizedBox(
         child: ElevatedButton(
-            key: const Key("createUserSubmitButton"),
-            child: Text(S.of(context).save),
-            onPressed: () {
-              if (formKey.currentState!.saveAndValidate()) {
-                var user = User(
-                  login: formKey.currentState!.fields['login']!.value,
-                  firstName: formKey.currentState!.fields['firstName']!.value,
-                  lastName: formKey.currentState!.fields['lastName']!.value,
-                  email: formKey.currentState!.fields['email']!.value,
-                  // phoneNumber: formKey.currentState!.fields['phoneNumber']!.value,
-                  authorities: [formKey.currentState!.fields['authority']?.value ?? ""],
-                  activated: formKey.currentState!.fields['userCreateActive']!.value,
-                );
-                context.read<UserBloc>().add(UserCreate(user: user));
-              }
-            },
-          ),
+          key: const Key("createUserSubmitButton"),
+          child: Text(S.of(context).save),
+          onPressed: () {
+            if (formKey.currentState!.saveAndValidate()) {
+              var user = User(
+                login: formKey.currentState!.fields['login']!.value,
+                firstName: formKey.currentState!.fields['firstName']!.value,
+                lastName: formKey.currentState!.fields['lastName']!.value,
+                email: formKey.currentState!.fields['email']!.value,
+                // phoneNumber: formKey.currentState!.fields['phoneNumber']!.value,
+                authorities: [formKey.currentState!.fields['authority']?.value ?? ""],
+                activated: formKey.currentState!.fields['userCreateActive']!.value,
+              );
+              context.read<UserBloc>().add(UserCreate(user: user));
+            }
+          },
+        ),
       ),
     );
   }

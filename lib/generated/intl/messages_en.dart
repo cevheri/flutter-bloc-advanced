@@ -34,42 +34,32 @@ class MessageLookup extends MessageLookupByLibrary {
           })}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
+
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
         "account": MessageLookupByLibrary.simpleMessage("Account"),
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
         "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
-        "change_password":
-            MessageLookupByLibrary.simpleMessage("Change Password"),
+        "change_password": MessageLookupByLibrary.simpleMessage("Change Password"),
         "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
-        "current_password":
-            MessageLookupByLibrary.simpleMessage("Current Password"),
+        "current_password": MessageLookupByLibrary.simpleMessage("Current Password"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Edit User"),
         "email": MessageLookupByLibrary.simpleMessage("Email"),
-        "email_pattern": MessageLookupByLibrary.simpleMessage(
-            "Email must be a valid email address"),
-        "email_required":
-            MessageLookupByLibrary.simpleMessage("Email is required"),
+        "email_pattern": MessageLookupByLibrary.simpleMessage("Email must be a valid email address"),
+        "email_required": MessageLookupByLibrary.simpleMessage("Email is required"),
         "email_send": MessageLookupByLibrary.simpleMessage("Send Email"),
         "english": MessageLookupByLibrary.simpleMessage("English"),
         "failed": MessageLookupByLibrary.simpleMessage("Failed"),
         "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
-        "firstname_max_length": MessageLookupByLibrary.simpleMessage(
-            "Firstname cannot be more than 20 characters long"),
-        "firstname_min_length": MessageLookupByLibrary.simpleMessage(
-            "Firstname must be at least 5 characters long"),
-        "firstname_required":
-            MessageLookupByLibrary.simpleMessage("Firstname is required"),
+        "firstname_max_length": MessageLookupByLibrary.simpleMessage("Firstname cannot be more than 20 characters long"),
+        "firstname_min_length": MessageLookupByLibrary.simpleMessage("Firstname must be at least 5 characters long"),
+        "firstname_required": MessageLookupByLibrary.simpleMessage("Firstname is required"),
         "guest": MessageLookupByLibrary.simpleMessage("Guest"),
-        "language_select":
-            MessageLookupByLibrary.simpleMessage("Select Language"),
+        "language_select": MessageLookupByLibrary.simpleMessage("Select Language"),
         "last_name": MessageLookupByLibrary.simpleMessage("Last Name"),
-        "lastname_max_length": MessageLookupByLibrary.simpleMessage(
-            "Lastname cannot be more than 20 characters long"),
-        "lastname_min_length": MessageLookupByLibrary.simpleMessage(
-            "Lastname must be at least 5 characters long"),
-        "lastname_required":
-            MessageLookupByLibrary.simpleMessage("Lastname is required"),
+        "lastname_max_length": MessageLookupByLibrary.simpleMessage("Lastname cannot be more than 20 characters long"),
+        "lastname_min_length": MessageLookupByLibrary.simpleMessage("Lastname must be at least 5 characters long"),
+        "lastname_required": MessageLookupByLibrary.simpleMessage("Lastname is required"),
         "list": MessageLookupByLibrary.simpleMessage("List"),
         "list_user": MessageLookupByLibrary.simpleMessage("List User"),
         "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
@@ -78,39 +68,28 @@ class MessageLookup extends MessageLookupByLibrary {
         "login_password": MessageLookupByLibrary.simpleMessage("Password"),
         "login_user_name": MessageLookupByLibrary.simpleMessage("Username"),
         "logout": MessageLookupByLibrary.simpleMessage("Logout"),
-        "logout_sure": MessageLookupByLibrary.simpleMessage(
-            "Are you sure you want to logout?"),
+        "logout_sure": MessageLookupByLibrary.simpleMessage("Are you sure you want to logout?"),
         "name": MessageLookupByLibrary.simpleMessage("Name"),
         "new_password": MessageLookupByLibrary.simpleMessage("New Password"),
         "no": MessageLookupByLibrary.simpleMessage("No"),
-        "password_forgot":
-            MessageLookupByLibrary.simpleMessage("Forgot Password"),
-        "password_max_length": MessageLookupByLibrary.simpleMessage(
-            "Password cannot be more than 6 characters long"),
-        "password_min_length": MessageLookupByLibrary.simpleMessage(
-            "Password must be at least 5 characters long"),
+        "password_forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
+        "password_max_length": MessageLookupByLibrary.simpleMessage("Password cannot be more than 6 characters long"),
+        "password_min_length": MessageLookupByLibrary.simpleMessage("Password must be at least 5 characters long"),
         "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
         "register": MessageLookupByLibrary.simpleMessage("Register"),
-        "required_field":
-            MessageLookupByLibrary.simpleMessage("Required Field"),
-        "required_range":
-            MessageLookupByLibrary.simpleMessage("Range is required"),
+        "required_field": MessageLookupByLibrary.simpleMessage("Required Field"),
+        "required_range": MessageLookupByLibrary.simpleMessage("Range is required"),
         "role": MessageLookupByLibrary.simpleMessage("Role"),
         "save": MessageLookupByLibrary.simpleMessage("Save"),
-        "screen_size_error":
-            MessageLookupByLibrary.simpleMessage("Screen size is too small."),
+        "screen_size_error": MessageLookupByLibrary.simpleMessage("Screen size is too small."),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "success": MessageLookupByLibrary.simpleMessage("Success"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
-        "username_max_length": MessageLookupByLibrary.simpleMessage(
-            "Username cannot be more than 20 characters long"),
-        "username_min_length": MessageLookupByLibrary.simpleMessage(
-            "Username must be at least 5 characters long"),
-        "username_regex_pattern": MessageLookupByLibrary.simpleMessage(
-            "Username must be a valid email address"),
-        "username_required":
-            MessageLookupByLibrary.simpleMessage("Username is required"),
+        "username_max_length": MessageLookupByLibrary.simpleMessage("Username cannot be more than 20 characters long"),
+        "username_min_length": MessageLookupByLibrary.simpleMessage("Username must be at least 5 characters long"),
+        "username_regex_pattern": MessageLookupByLibrary.simpleMessage("Username must be a valid email address"),
+        "username_required": MessageLookupByLibrary.simpleMessage("Username is required"),
         "yes": MessageLookupByLibrary.simpleMessage("Yes")
       };
 }

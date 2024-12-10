@@ -90,7 +90,7 @@ class Menu extends Equatable {
     return result;
   }
 
-  static Menu? fromJsonString(String json){
+  static Menu? fromJsonString(String json) {
     var result = JsonMapper.deserialize<Menu>(jsonDecode(json));
     if (result == null) {
       return null;

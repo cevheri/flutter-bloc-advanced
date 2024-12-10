@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 
 part 'settings_event.dart';
-
 part 'settings_state.dart';
 
 /// Bloc responsible for managing the Settings.

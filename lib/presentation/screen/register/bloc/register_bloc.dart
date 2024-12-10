@@ -12,10 +12,9 @@ part 'register_event.dart';
 part 'register_state.dart';
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
-
   static final _log = AppLogger.getLogger("RegisterBloc");
   final AccountRepository _repository;
-  
+
   RegisterBloc({required AccountRepository repository})
       : _repository = repository,
         super(const RegisterInitialState()) {

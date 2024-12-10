@@ -88,7 +88,6 @@ class HttpUtils {
     }
   }
 
-
   ///   -H 'accept: application/json, text/plain, */*' \
   ///   -H 'content-type: application/json' \
 

@@ -14,13 +14,12 @@ part 'change_password_state.dart';
 class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> {
   static final _log = AppLogger.getLogger("ChangePasswordBloc");
   final AccountRepository _repository;
-  
+
   ChangePasswordBloc({required AccountRepository repository})
       : _repository = repository,
         super(const ChangePasswordInitialState()) {
     on<ChangePasswordChanged>(_onSubmit);
   }
-
 
   @override
   void onTransition(Transition<ChangePasswordEvent, ChangePasswordState> transition) {

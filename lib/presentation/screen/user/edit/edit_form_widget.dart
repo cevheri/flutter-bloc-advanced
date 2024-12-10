@@ -218,17 +218,17 @@ class SubmitButton extends StatelessWidget {
       },
       child: SizedBox(
         child: ElevatedButton(
-            child: Text(S.of(context).save),
-            onPressed: () {
-              if (cacheUser != newUser) {
-                BlocProvider.of<UserBloc>(context).add(UserEdit(user: newUser));
-              }
-              if (cacheUser == newUser) {
-                Message.getMessage(context: context, title: S.of(context).success, content: '');
-                Navigator.pop(context);
-              }
-            },
-          ),
+          child: Text(S.of(context).save),
+          onPressed: () {
+            if (cacheUser != newUser) {
+              BlocProvider.of<UserBloc>(context).add(UserEdit(user: newUser));
+            }
+            if (cacheUser == newUser) {
+              Message.getMessage(context: context, title: S.of(context).success, content: '');
+              Navigator.pop(context);
+            }
+          },
+        ),
       ),
     );
   }

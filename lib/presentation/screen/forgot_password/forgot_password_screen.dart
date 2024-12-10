@@ -59,11 +59,12 @@ class ForgotPasswordScreen extends StatelessWidget {
     return SizedBox(
       width: MediaQuery.of(context).size.width * 0.6,
       child: FormBuilderTextField(
-            key: forgotPasswordTextFieldEmailKey,
-            name: "email",
+        key: forgotPasswordTextFieldEmailKey,
+        name: "email",
         decoration: InputDecoration(labelText: t.email),
         maxLines: 1,
-            validator: FormBuilderValidators.compose([FormBuilderValidators.required(errorText: t.email_required), FormBuilderValidators.email(errorText: t.email_pattern)],
+        validator: FormBuilderValidators.compose(
+          [FormBuilderValidators.required(errorText: t.email_required), FormBuilderValidators.email(errorText: t.email_pattern)],
         ),
       ),
     );
@@ -131,7 +132,7 @@ class ForgotPasswordScreen extends StatelessWidget {
             key: forgotPasswordButtonSubmitKey,
             child: Text(t.email_send),
             onPressed: () {
-              if(state is ForgotPasswordLoadingState) {
+              if (state is ForgotPasswordLoadingState) {
                 return;
               }
               if (_forgotPasswordFormKey.currentState!.saveAndValidate()) {

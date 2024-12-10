@@ -2,13 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/routes/go_router_routes/app_go_router_config.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 import 'bloc/login.dart';
 
@@ -121,21 +121,27 @@ class LoginScreen extends StatelessWidget {
   }
 
   _submitButton(BuildContext context) {
+    debugPrint("BEGIN: login submit button");
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
+        debugPrint("BEGIN: login submit button listener ${state.toString()}");
+
         if (state is LoginLoadingState) {
           //Message.getMessage(context: context, title: S.of(context).loading, content: " ", duration: const Duration(seconds: 1));
         } else if (state is LoginLoadedState) {
-          print("LoginScreen: LoginLoadedState");
           //Message.getMessage(context: context, title: S.of(context).success, content: " ");
-          context.read<AccountBloc>().add(const AccountLoad());
-          Future.delayed(const Duration(seconds: 1), () {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              if (context.mounted) {
-                context.go(ApplicationRoutes.home);
-              }
-            });
-          });
+          // debugPrint("before: context.read<AccountBloc>().add(const AccountLoad());");
+          // context.read<AccountBloc>().add(const AccountLoad());
+          // debugPrint("after : context.read<AccountBloc>().add(const AccountLoad());");
+          // Future.delayed(const Duration(seconds: 1), () {
+          //   debugPrint("Future.delayed(const Duration(seconds: 1), () {");
+          //   WidgetsBinding.instance.addPostFrameCallback((_) {
+          //     if (context.mounted) {
+          context.go(ApplicationRoutesConstants.home);
+          //       debugPrint("context.go(ApplicationRoutesConstants.home);");
+          //     }
+          //   });
+          // });
         } else if (state is LoginErrorState) {
           //Message.errorMessage(context: context, title: S.of(context).failed, content: state.message);
         }
@@ -164,7 +170,7 @@ class LoginScreen extends StatelessWidget {
     return SizedBox(
       child: TextButton(
         key: loginButtonForgotPasswordKey,
-        onPressed: () => context.go(ApplicationRoutes.forgotPassword),
+        onPressed: () => context.go(ApplicationRoutesConstants.forgotPassword),
         child: Text(S.of(context).password_forgot),
       ),
     );
@@ -174,7 +180,7 @@ class LoginScreen extends StatelessWidget {
     return SizedBox(
       child: TextButton(
         key: loginButtonRegisterKey,
-        onPressed: () => context.go(ApplicationRoutes.register),
+        onPressed: () => context.go(ApplicationRoutesConstants.register),
         child: Text(S.of(context).register),
       ),
     );

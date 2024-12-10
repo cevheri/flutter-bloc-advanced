@@ -10,13 +10,12 @@ import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
 
 part 'login_event.dart';
-
 part 'login_state.dart';
 
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   static final _log = AppLogger.getLogger("LoginBloc");
   final LoginRepository _repository;
-  
+
   LoginBloc({required LoginRepository repository})
       : _repository = repository,
         super(const LoginState()) {
@@ -35,7 +34,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
     UserJWT userJWT = UserJWT(state.username, state.password);
     try {
-      if(event.username =="invalid") {
+      if (event.username == "invalid") {
         throw BadRequestException("Invalid username");
       }
       // if(event.username.isEmpty || event.password.isEmpty) {

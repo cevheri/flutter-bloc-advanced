@@ -45,7 +45,7 @@ class AuthorityLoadSuccessState extends AuthorityState {
 class AuthorityLoadFailureState extends AuthorityState {
   final String message;
 
-  const AuthorityLoadFailureState({required this.message}): super(status: AuthorityStatus.failure);
+  const AuthorityLoadFailureState({required this.message}) : super(status: AuthorityStatus.failure);
 
   @override
   List<Object> get props => [status, message];

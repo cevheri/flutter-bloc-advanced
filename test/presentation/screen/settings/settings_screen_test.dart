@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
-import 'package:flutter_bloc_advance/configuration/routes.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
@@ -32,15 +32,15 @@ void main() {
 
   Widget createWidgetUnderTest() {
     return GetMaterialApp(
-      initialRoute: ApplicationRoutes.settings,
+      initialRoute: ApplicationRoutesConstants.settings,
       routes: {
-        ApplicationRoutes.settings: (context) => BlocProvider<DrawerBloc>(
+        ApplicationRoutesConstants.settings: (context) => BlocProvider<DrawerBloc>(
               create: (context) => bloc,
               child: SettingsScreen(),
             ),
-        ApplicationRoutes.changePassword: (context) => const Scaffold(),
-        ApplicationRoutes.login: (context) => const Scaffold(),
-        ApplicationRoutes.home: (context) => const Scaffold(),
+        ApplicationRoutesConstants.changePassword: (context) => const Scaffold(),
+        ApplicationRoutesConstants.login: (context) => const Scaffold(),
+        ApplicationRoutesConstants.home: (context) => const Scaffold(),
       },
       localizationsDelegates: const [
         S.delegate,
@@ -89,7 +89,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify navigation
-      expect(Get.currentRoute, ApplicationRoutes.changePassword);
+      expect(Get.currentRoute, ApplicationRoutesConstants.changePassword);
     });
 
     testWidgets('shows language selection dialog when button is pressed', (WidgetTester tester) async {
@@ -133,7 +133,7 @@ void main() {
       await tester.tap(find.text('Yes'));
       await tester.pumpAndSettle();
 
-      expect(Get.currentRoute, ApplicationRoutes.login);
+      expect(Get.currentRoute, ApplicationRoutesConstants.login);
     });
     testWidgets('performs logout when confirmed', (WidgetTester tester) async {
       await TestUtils().setupAuthentication();
@@ -150,7 +150,7 @@ void main() {
       await tester.tap(find.text('No'));
       await tester.pumpAndSettle();
 
-      expect(Get.currentRoute, ApplicationRoutes.settings);
+      expect(Get.currentRoute, ApplicationRoutesConstants.settings);
     });
   });
 

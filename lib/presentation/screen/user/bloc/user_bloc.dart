@@ -42,7 +42,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   FutureOr<void> _onCreate(UserCreate event, Emitter<UserState> emit) async {
     _log.debug("BEGIN: onCreate UserCreate event: {}", [event.user.toString()]);
-    emit(UserInitialState());
+    emit(const UserInitialState());
     try {
       var user = await _userRepository.createUser(event.user);
       emit(UserLoadSuccessState(userLoadSuccess: user!));
@@ -55,7 +55,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   FutureOr<void> _onSearch(UserSearch event, Emitter<UserState> emit) async {
     _log.debug("BEGIN: onSearch UserSearch event: {}", [event.name]);
-    emit(UserFindInitialState());
+    emit(const UserFindInitialState());
     try {
       if (event.name == "") {
         List<User> user = await _userRepository.findUserByAuthority(event.rangeStart, event.rangeEnd, event.authority);
@@ -75,7 +75,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   FutureOr<void> _onList(UserList event, Emitter<UserState> emit) async {
     _log.debug("BEGIN: onList UserList event: {}", []);
-    emit(UserListInitialState());
+    emit(const UserListInitialState());
     try {
       List<User> user = await _userRepository.listUser(0, 100);
       emit(UserListSuccessState(userList: user));
@@ -88,7 +88,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   FutureOr<void> _onEdit(UserEdit event, Emitter<UserState> emit) async {
     _log.debug("BEGIN: onEdit UserEdit event: {}", [event.user.toString()]);
-    emit(UserEditInitialState());
+    emit(const UserEditInitialState());
     try {
       var user = await _userRepository.updateUser(event.user);
       emit(UserEditSuccessState(userEditSuccess: user!));

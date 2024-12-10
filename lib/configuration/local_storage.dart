@@ -1,3 +1,8 @@
+// Storage wrapper for shared preferences and get storage in Application (with strategy pattern)
+// This file contains the implementation of the local storage for the application.
+// It uses shared preferences and get storage to store data locally.
+// It also contains the implementation of the cache for the application.
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:get_storage/get_storage.dart';
@@ -33,7 +38,6 @@ class AppLocalStorageCached {
 /// LocalStorage predefined keys
 enum StorageKeys { jwtToken, roles, language, username }
 
-
 /// Application Local Storage
 ///
 /// This class is used to store data locally with the help of shared preferences.
@@ -50,11 +54,11 @@ class SharedPreferencesStrategy implements StorageStrategy {
   }
 
   SharedPreferences? _prefsInstance;
+
   @visibleForTesting
   void setPreferencesInstance(SharedPreferences prefs) {
     _prefsInstance = prefs;
   }
-
 
   /// Shared Preferences private instance
   Future<SharedPreferences> get _prefs async => _prefsInstance ??= await SharedPreferences.getInstance();
@@ -155,9 +159,10 @@ class SharedPreferencesStrategy implements StorageStrategy {
 class GetStorageStrategy implements StorageStrategy {
   static final _log = AppLogger.getLogger("AppLocalStorageGetX");
   static final GetStorageStrategy _instance = GetStorageStrategy._internal();
+
   GetStorageStrategy._internal();
 
-  factory GetStorageStrategy(){
+  factory GetStorageStrategy() {
     _log.trace("Creating AppLocalStorageGetX instance");
     return _instance;
   }
@@ -165,7 +170,7 @@ class GetStorageStrategy implements StorageStrategy {
   GetStorage? _prefsInstance;
 
   @visibleForTesting
-  void setPreferencesInstance(GetStorage prefs){
+  void setPreferencesInstance(GetStorage prefs) {
     _prefsInstance = prefs;
   }
 
@@ -225,10 +230,7 @@ class GetStorageStrategy implements StorageStrategy {
   }
 }
 
-enum StorageType {
-  sharedPreferences,
-  getStorage
-}
+enum StorageType { sharedPreferences, getStorage }
 
 class AppLocalStorage {
   static final _log = AppLogger.getLogger("AppLocalStorage");
@@ -243,7 +245,7 @@ class AppLocalStorage {
 
   factory AppLocalStorage() => _instance;
 
-  void setStrategy(StorageType type) {
+  void setStorage(StorageType type) {
     _log.trace("Setting storage strategy to {}", [type]);
     switch (type) {
       case StorageType.sharedPreferences:
@@ -254,7 +256,6 @@ class AppLocalStorage {
         break;
     }
   }
-
 
   Future<bool> save(String key, dynamic value) async {
     final result = await _strategy.save(key, value);

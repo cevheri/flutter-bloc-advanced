@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
-import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account.dart';
 import 'drawer_bloc/drawer_bloc.dart';
@@ -104,7 +104,7 @@ class ApplicationDrawer extends StatelessWidget {
         listener: (context, state) {
           if (state.isLogout) {
             context.read<DrawerBloc>().add(Logout());
-            context.go(ApplicationRoutes.login);
+            context.go(ApplicationRoutesConstants.login);
           }
         },
       ),
@@ -112,7 +112,7 @@ class ApplicationDrawer extends StatelessWidget {
         listener: (context, state) {
           if (state.status == AccountStatus.failure) {
             context.read<DrawerBloc>().add(Logout());
-            context.go(ApplicationRoutes.login);
+            context.go(ApplicationRoutesConstants.login);
           }
         },
       ),
@@ -146,7 +146,7 @@ class ApplicationDrawer extends StatelessWidget {
   void onLogout(context) {
     BlocProvider.of<DrawerBloc>(context).add(Logout());
     Navigator.pop(context);
-    context.go(ApplicationRoutes.login);
+    context.go(ApplicationRoutesConstants.login);
   }
 
   void onCancel(context) {
@@ -221,7 +221,7 @@ class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
         await S.load(Locale(isTurkish ? 'tr' : 'en'));
         if (mounted) {
           setState(
-            () => context.go(ApplicationRoutes.home),
+            () => context.go(ApplicationRoutesConstants.home),
           );
         }
       },
