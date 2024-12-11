@@ -7,7 +7,6 @@ import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../generated/l10n.dart';
 import 'bloc/login.dart';
@@ -128,17 +127,29 @@ class LoginScreen extends StatelessWidget {
         debugPrint("BEGIN: login submit button listener ${state.username}");
 
         if (state is LoginLoadingState) {
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(S.of(context).loading), backgroundColor: Theme.of(context).colorScheme.primary, width: MediaQuery.of(context).size.width* 0.8));
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(S.of(context).loading),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              width: MediaQuery.of(context).size.width * 0.8));
         } else if (state is LoginLoadedState) {
           debugPrint("BEGIN: login submit button listener LoginLoadedState");
           AppRouter().push(context, ApplicationRoutesConstants.home);
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating,content: Text(S.of(context).success), backgroundColor: Theme.of(context).colorScheme.primary, width: MediaQuery.of(context).size.width* 0.8));
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(S.of(context).success),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              width: MediaQuery.of(context).size.width * 0.8));
           debugPrint("END: login submit button listener LoginLoadedState");
         } else if (state is LoginErrorState) {
           debugPrint("BEGIN: login submit button listener LoginErrorState");
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating,content: Text(S.of(context).failed), backgroundColor: Theme.of(context).colorScheme.primary, width: MediaQuery.of(context).size.width* 0.8));
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+              behavior: SnackBarBehavior.floating,
+              content: Text(S.of(context).failed),
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              width: MediaQuery.of(context).size.width * 0.8));
           debugPrint("END: login submit button listener LoginErrorState");
         }
       },
@@ -166,7 +177,7 @@ class LoginScreen extends StatelessWidget {
     return SizedBox(
       child: TextButton(
         key: loginButtonForgotPasswordKey,
-        onPressed: () => context.go(ApplicationRoutesConstants.forgotPassword),
+        onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.forgotPassword),
         child: Text(S.of(context).password_forgot),
       ),
     );
@@ -176,7 +187,7 @@ class LoginScreen extends StatelessWidget {
     return SizedBox(
       child: TextButton(
         key: loginButtonRegisterKey,
-        onPressed: () => context.go(ApplicationRoutesConstants.register),
+        onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.register),
         child: Text(S.of(context).register),
       ),
     );
