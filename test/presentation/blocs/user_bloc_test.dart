@@ -163,7 +163,7 @@ void main() {
         },
         act: (bloc) => bloc.add(UserList()),
         expect: () => [
-          UserListInitialState(),
+          const UserListInitialState(),
           UserListSuccessState(userList: [mockUserFullPayload]),
         ],
       );
@@ -176,7 +176,7 @@ void main() {
           return bloc;
         },
         act: (bloc) => bloc.add(UserList()),
-        expect: () => [UserListInitialState(), const UserListFailureState(message: "error")],
+        expect: () => [const UserListInitialState(), const UserListFailureState(message: "error")],
       );
     });
 
@@ -189,7 +189,7 @@ void main() {
         },
         act: (bloc) => bloc.add(UserCreate(user: mockUserFullPayload)),
         expect: () => [
-          UserInitialState(),
+          const UserInitialState(),
           UserLoadSuccessState(userLoadSuccess: mockUserFullPayload),
         ],
       );
@@ -201,7 +201,7 @@ void main() {
           return bloc;
         },
         act: (bloc) => bloc.add(UserCreate(user: mockUserFullPayload)),
-        expect: () => [UserInitialState(), const UserLoadFailureState(message: "Exception: error")],
+        expect: () => [const UserInitialState(), const UserLoadFailureState(message: "Exception: error")],
       );
     });
 
@@ -214,7 +214,7 @@ void main() {
           },
           act: (bloc) => bloc.add(const UserSearch(0, 10, "ROLE_USER", "")),
           expect: () => [
-                UserFindInitialState(),
+                const UserFindInitialState(),
                 UserSearchSuccessState(userList: [mockUserFullPayload])
               ]);
 
@@ -225,7 +225,7 @@ void main() {
           },
           act: (bloc) => bloc.add(const UserSearch(0, 10, "ROLE_USER", "test")),
           expect: () => [
-                UserFindInitialState(),
+                const UserFindInitialState(),
                 UserSearchSuccessState(userList: [mockUserFullPayload])
               ]);
 
@@ -236,7 +236,7 @@ void main() {
           return bloc;
         },
         act: (bloc) => bloc.add(const UserSearch(0, 10, "ROLE_USER", "")),
-        expect: () => [UserFindInitialState(), const UserSearchFailureState(message: "Exception: error")],
+        expect: () => [const UserFindInitialState(), const UserSearchFailureState(message: "Exception: error")],
       );
 
       blocTest<UserBloc, UserState>(
@@ -246,7 +246,7 @@ void main() {
           return bloc;
         },
         act: (bloc) => bloc.add(const UserSearch(0, 10, "ROLE_USER", "test")),
-        expect: () => [UserFindInitialState(), const UserSearchFailureState(message: "Exception: error")],
+        expect: () => [const UserFindInitialState(), const UserSearchFailureState(message: "Exception: error")],
       );
     });
 
@@ -258,7 +258,7 @@ void main() {
           return bloc;
         },
         act: (bloc) => bloc.add(UserEdit(user: mockUserFullPayload)),
-        expect: () => [UserEditInitialState(), UserEditSuccessState(userEditSuccess: mockUserFullPayload)],
+        expect: () => [const UserEditInitialState(), UserEditSuccessState(userEditSuccess: mockUserFullPayload)],
       );
 
       blocTest<UserBloc, UserState>(
@@ -268,7 +268,7 @@ void main() {
           return bloc;
         },
         act: (bloc) => bloc.add(UserEdit(user: mockUserFullPayload)),
-        expect: () => [UserEditInitialState(), const UserEditFailureState(message: "Exception: error")],
+        expect: () => [const UserEditInitialState(), const UserEditFailureState(message: "Exception: error")],
       );
     });
   });

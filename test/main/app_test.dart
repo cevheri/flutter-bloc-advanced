@@ -8,7 +8,6 @@ import 'package:get/get.dart';
 import '../test_utils.dart';
 
 void main() {
-
   setUpAll(() async {
     await TestUtils().setupUnitTest();
   });
@@ -17,10 +16,7 @@ void main() {
     late App app;
 
     setUp(() {
-      app = App(
-        language: 'tr',
-        initialTheme: AdaptiveThemeMode.light,
-      );
+      app = const App(language: 'tr', initialTheme: AdaptiveThemeMode.light);
     });
 
     testWidgets('App should build without errors', (WidgetTester tester) async {
@@ -35,10 +31,7 @@ void main() {
       expect(adaptiveTheme.initial, equals(AdaptiveThemeMode.light));
 
       // Test dark theme
-      app = App(
-        language: 'tr',
-        initialTheme: AdaptiveThemeMode.dark,
-      );
+      app = const App(language: 'tr', initialTheme: AdaptiveThemeMode.dark);
       await tester.pumpWidget(app);
 
       final AdaptiveTheme darkTheme = tester.widget(find.byType(AdaptiveTheme));
@@ -46,7 +39,7 @@ void main() {
     });
 
     testWidgets('App should handle different languages', (WidgetTester tester) async {
-      app = App(
+      app = const App(
         language: 'en',
         initialTheme: AdaptiveThemeMode.light,
       );

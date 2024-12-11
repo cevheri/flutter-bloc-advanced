@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/app_go_router_config.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -14,12 +14,13 @@ import 'bloc/login.dart';
 
 class LoginScreen extends StatelessWidget {
   final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(debugLabel: '__loginScaffoldKey__');
 
   LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
+    return Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   AppBar _buildAppBar(BuildContext context) => AppBar(title: const Text(AppConstants.appName), leading: Container());
@@ -124,26 +125,21 @@ class LoginScreen extends StatelessWidget {
     debugPrint("BEGIN: login submit button");
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
-        debugPrint("BEGIN: login submit button listener ${state.toString()}");
+        debugPrint("BEGIN: login submit button listener ${state.username}");
 
         if (state is LoginLoadingState) {
-          //Message.getMessage(context: context, title: S.of(context).loading, content: " ", duration: const Duration(seconds: 1));
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating, content: Text(S.of(context).loading), backgroundColor: Theme.of(context).colorScheme.primary, width: MediaQuery.of(context).size.width* 0.8));
         } else if (state is LoginLoadedState) {
-          //Message.getMessage(context: context, title: S.of(context).success, content: " ");
-          // debugPrint("before: context.read<AccountBloc>().add(const AccountLoad());");
-          // context.read<AccountBloc>().add(const AccountLoad());
-          // debugPrint("after : context.read<AccountBloc>().add(const AccountLoad());");
-          // Future.delayed(const Duration(seconds: 1), () {
-          //   debugPrint("Future.delayed(const Duration(seconds: 1), () {");
-          //   WidgetsBinding.instance.addPostFrameCallback((_) {
-          //     if (context.mounted) {
-          context.go(ApplicationRoutesConstants.home);
-          //       debugPrint("context.go(ApplicationRoutesConstants.home);");
-          //     }
-          //   });
-          // });
+          debugPrint("BEGIN: login submit button listener LoginLoadedState");
+          AppRouter().push(context, ApplicationRoutesConstants.home);
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating,content: Text(S.of(context).success), backgroundColor: Theme.of(context).colorScheme.primary, width: MediaQuery.of(context).size.width* 0.8));
+          debugPrint("END: login submit button listener LoginLoadedState");
         } else if (state is LoginErrorState) {
-          //Message.errorMessage(context: context, title: S.of(context).failed, content: state.message);
+          debugPrint("BEGIN: login submit button listener LoginErrorState");
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(behavior: SnackBarBehavior.floating,content: Text(S.of(context).failed), backgroundColor: Theme.of(context).colorScheme.primary, width: MediaQuery.of(context).size.width* 0.8));
+          debugPrint("END: login submit button listener LoginErrorState");
         }
       },
       child: SizedBox(

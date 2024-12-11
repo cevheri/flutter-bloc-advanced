@@ -1,10 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
-import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
-import 'package:flutter_bloc_advance/presentation/screen/login/bloc/login.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/account_routes.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/auth_routes.dart';
@@ -72,37 +72,8 @@ class AppGoRouterConfig {
           _log.debug("END: redirect with login - initial>failure");
           return ApplicationRoutesConstants.login;
         }
-        //   }
-        // if(accountBloc.state.status == AccountStatus.success) {
-        //   _log.debug("END: redirect with home - success");
-        //   return ApplicationRoutesConstants.home;
-        // }
-        //return null;
-        // }
-        // // check if the token is valid
-        // if (accountBloc.state.status == AccountStatus.failure) {
-        //   _log.debug("END: redirect with login - failure");
-        //   return ApplicationRoutesConstants.login;
-        // }
-
-        // final loginBloc = context.read<LoginBloc>();
-        // _log.debug("loginBloc.state: ${loginBloc.state}");
-        // if(loginBloc.state is LoginInitialState) {
-        //   _log.debug("redirect with login initial");
-        //   return ApplicationRoutesConstants.login;
-        // }
-        // if (loginBloc.state is LoginLoadedState) {
-        //   _log.debug("END: redirect with home - success");
-        //   return ApplicationRoutesConstants.home;
-        // }
-        // if (loginBloc.state is LoginErrorState) {
-        //   _log.debug("END: redirect with login - failure");
-        //   return ApplicationRoutesConstants.login;
-        // }
-
-
-        return null; // No redirection needed
       }
+      return null;
     },
   );
 

@@ -33,7 +33,7 @@ void main() {
       TestUtils().setupAuthentication();
 
       // Given:
-      await tester.pumpWidget(App(language: language, initialTheme: lightTheme).buildHomeApp());
+      await tester.pumpWidget(const App(language: language, initialTheme: lightTheme).buildHomeApp());
       //When:
       await tester.pumpAndSettle(const Duration(seconds: 5));
       //Then:
