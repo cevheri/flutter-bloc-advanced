@@ -71,7 +71,6 @@ class ApplicationDrawer extends StatelessWidget {
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               onTap: () {
-                Navigator.pop(context);
                 AppRouter().push(context, childMenu.url);
               },
             );
@@ -144,13 +143,16 @@ class ApplicationDrawer extends StatelessWidget {
   }
 
   void onLogout(context) {
+    debugPrint("BEGIN: logout");
     BlocProvider.of<DrawerBloc>(context).add(Logout());
-    Navigator.pop(context);
     AppRouter().push(context, ApplicationRoutesConstants.login);
+    debugPrint("END: logout");
   }
 
   void onCancel(context) {
-    Navigator.pop(context);
+    debugPrint("BEGIN: logout cancel");
+    AppRouter().pop(context);
+    debugPrint("END: logout cancel");
   }
 }
 

@@ -44,7 +44,7 @@ class AppGoRouterConfig {
   static final GoRouter router = GoRouter(
     initialLocation: ApplicationRoutesConstants.home,
     debugLogDiagnostics: true,
-    //errorBuilder: (context, state) => ErrorScreen(state.error),
+    errorBuilder: (context, state) => ErrorScreen(state.error),
     routes: [
       ...HomeRoutes.routes,
       ...AccountRoutes.routes,
@@ -54,9 +54,9 @@ class AppGoRouterConfig {
     ],
     redirect: (context, state) async {
       _log.debug("BEGIN: redirect");
-      _log.debug("redirect${state.uri} ${context.toString()}");
+      _log.debug("redirect - uri: ${state.uri}");
       final accountBloc = context.read<AccountBloc>();
-      _log.debug("accountBloc.state: ${accountBloc.state.toString()}");
+      _log.debug("redirect - accountBloc.state: ${accountBloc.state.status}");
       // check if the account is loaded
       if (accountBloc.state.status == AccountStatus.initial) {
         //
@@ -67,12 +67,14 @@ class AppGoRouterConfig {
         _log.debug("redirect with account load from initial - before delay");
         await Future.delayed(const Duration(seconds: 1));
         _log.debug("redirect with account load from initial - after delay");
-        // //
+        //
         if (accountBloc.state.status == AccountStatus.failure) {
-          _log.debug("END: redirect with login - initial>failure");
+          _log.debug("END: redirect - ${accountBloc.state.status}  with login - initial>failure");
           return ApplicationRoutesConstants.login;
         }
       }
+
+      _log.debug("END: redirect return null");
       return null;
     },
   );
