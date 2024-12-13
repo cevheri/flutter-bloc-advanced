@@ -44,7 +44,11 @@ class Menu extends Equatable {
   @JsonProperty(name: 'level')
   final int level;
 
-  // salesPersonCode and salesPersonName
+  @JsonProperty(name: 'leaf')
+  final bool? leaf;
+
+  @JsonProperty(name: 'authorities')
+  final List<String>? authorities;
 
   const Menu({
     this.id = '',
@@ -56,6 +60,8 @@ class Menu extends Equatable {
     this.active = false,
     this.parent,
     this.level = 0,
+    this.leaf = false,
+    this.authorities = const [],
   });
 
   Menu copyWith({
@@ -68,6 +74,8 @@ class Menu extends Equatable {
     bool? active,
     Menu? parent,
     int? level,
+    bool? leaf,
+    List<String>? authorities,
   }) {
     return Menu(
       id: id ?? this.id,
@@ -79,6 +87,8 @@ class Menu extends Equatable {
       active: active ?? this.active,
       parent: parent ?? this.parent,
       level: level ?? this.level,
+      leaf: leaf ?? this.leaf,
+      authorities: authorities ?? this.authorities,
     );
   }
 
@@ -101,17 +111,7 @@ class Menu extends Equatable {
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-        description,
-        url,
-        icon,
-        orderPriority,
-        active,
-        parent,
-        level,
-      ];
+  List<Object?> get props => [id, name, description, url, icon, orderPriority, active, parent, level, leaf, authorities];
 
   @override
   bool get stringify => true;

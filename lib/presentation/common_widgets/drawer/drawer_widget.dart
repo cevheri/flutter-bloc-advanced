@@ -23,14 +23,14 @@ class ApplicationDrawer extends StatelessWidget {
           if (state.menus.isEmpty) {
             return const Center(child: Text('No menu found'));
           }
-          final parentMenus = state.menus.where((e) => e.level == 1 && e.active).toList()
+          final menuNodes = state.menus.where((e) => e.level == 1 && e.active).toList()
             ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
           return Drawer(
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildMenuList(parentMenus, state),
+                  _buildMenuList(menuNodes, state),
                   const SizedBox(height: 20),
                   const ThemeSwitchButton(),
                   const SizedBox(height: 20),
@@ -46,36 +46,52 @@ class ApplicationDrawer extends StatelessWidget {
     );
   }
 
-  Widget _buildMenuList(List<dynamic> parentMenus, DrawerState state) {
+  Widget _buildMenuList(List<dynamic> menuNodes, DrawerState state) {
     return ListView.builder(
-      itemCount: parentMenus.length,
+      itemCount: menuNodes.length,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
-        final parentMenu = parentMenus[index];
-        // Filter child menus
+        debugPrint("menuNodes.length: ${menuNodes.length}");
+        final parentMenu = menuNodes[index];
+        debugPrint("parentMenu: ${parentMenu.name}");
+        // filter child menus
         final childMenus = state.menus.where((menu) => menu.parent?.id == parentMenu.id && menu.active).toList()
           ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
-        return ExpansionTile(
-          leading: Icon(String2Icon.getIconDataFromString(parentMenu.icon)),
-          title: Text(
-            S.of(context).translate_menu_title(parentMenu.name),
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          children: childMenus.map((childMenu) {
-            return ListTile(
-              leading: Icon(String2Icon.getIconDataFromString(childMenu.icon)),
-              title: Text(
-                S.of(context).translate_menu_title(childMenu.name),
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
-              onTap: () {
-                AppRouter().push(context, childMenu.url);
-              },
-            );
-          }).toList(),
-        );
+        if (childMenus.isEmpty) {
+          debugPrint("childMenus.isEmpty ");
+          // if child menu is leaf, add click event
+          return ListTile(
+            leading: Icon(String2Icon.getIconDataFromString(parentMenu.icon)),
+            title: Text(S.of(context).translate_menu_title(parentMenu.name), style: Theme.of(context).textTheme.bodyMedium),
+            onTap: () {
+              debugPrint("parent Menu: ${parentMenu.name}");
+              if (parentMenu.leaf && parentMenu.url.isNotEmpty) {
+                AppRouter().push(context, parentMenu.url);
+              }
+            },
+          );
+        } else {
+          debugPrint("childMenus.isNotEmpty");
+          // if menu is not leaf, use ExpansionTile for child menus
+          return ExpansionTile(
+            leading: Icon(String2Icon.getIconDataFromString(parentMenu.icon)),
+            title: Text(S.of(context).translate_menu_title(parentMenu.name), style: Theme.of(context).textTheme.bodyMedium),
+            children: childMenus.map((childMenu) {
+              return ListTile(
+                leading: Icon(String2Icon.getIconDataFromString(childMenu.icon)),
+                title: Text(S.of(context).translate_menu_title(childMenu.name), style: Theme.of(context).textTheme.bodySmall),
+                onTap: () {
+                  debugPrint("child menu name: ${childMenu.name}");
+                  if (childMenu.leaf! && childMenu.url.isNotEmpty) {
+                    AppRouter().push(context, childMenu.url);
+                  }
+                },
+              );
+            }).toList(),
+          );
+        }
       },
     );
   }
