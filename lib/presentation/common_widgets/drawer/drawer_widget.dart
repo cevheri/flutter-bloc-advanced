@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:string_2_icon/string_2_icon.dart';
@@ -47,6 +48,7 @@ class ApplicationDrawer extends StatelessWidget {
   }
 
   Widget _buildMenuList(List<dynamic> menuNodes, DrawerState state) {
+    final currentUserRoles = AppLocalStorageCached.roles;
     return ListView.builder(
       itemCount: menuNodes.length,
       shrinkWrap: true,
@@ -55,8 +57,13 @@ class ApplicationDrawer extends StatelessWidget {
         debugPrint("menuNodes.length: ${menuNodes.length}");
         final node = menuNodes[index];
         debugPrint("node: ${node.name}");
+
+        if (!_hasAccess(node, currentUserRoles)) {
+          return const SizedBox.shrink();
+        }
+
         // filter child menus
-        final childMenus = state.menus.where((menu) => menu.parent?.id == node.id && menu.active).toList()
+        final childMenus = state.menus.where((e) => e.parent?.id == node.id && e.active && _hasAccess(e, currentUserRoles)).toList()
           ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
         if (childMenus.isEmpty) {
@@ -170,6 +177,12 @@ class ApplicationDrawer extends StatelessWidget {
     AppRouter().pop(context);
     debugPrint("END: logout cancel");
   }
+}
+
+bool _hasAccess(Menu menu, List<String>? userRoles) {
+  if(userRoles == null) return false;
+  final menuAuthorities = menu.authorities ?? [];
+  return menuAuthorities.any((authority) => userRoles.contains(authority));
 }
 
 class ThemeSwitchButton extends StatelessWidget {

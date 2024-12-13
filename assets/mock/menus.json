@@ -9,11 +9,11 @@
     "active": true,
     "level": 0,
     "leaf": false,
-    "parent": null,
     "authorities": [
       "ROLE_USER",
       "ROLE_ADMIN"
-    ]
+    ],
+    "parent": null
   },
   {
     "id": "menu-001",
@@ -37,7 +37,8 @@
       "icon": "home",
       "orderPriority": 0,
       "active": true,
-      "level": 0
+      "level": 0,
+      "leaf": false
     }
   },
   {
@@ -62,7 +63,8 @@
       "icon": "home",
       "orderPriority": 0,
       "active": true,
-      "level": 0
+      "level": 0,
+      "leaf": false
     }
   },
   {
@@ -87,7 +89,8 @@
       "icon": "account-tie",
       "orderPriority": 11,
       "active": true,
-      "level": 1
+      "level": 1,
+      "leaf": false
     }
   },
   {
@@ -112,7 +115,8 @@
       "icon": "account-tie",
       "orderPriority": 11,
       "active": true,
-      "level": 1
+      "level": 1,
+      "leaf": false
     }
   },
   {
@@ -137,7 +141,8 @@
       "icon": "home",
       "orderPriority": 0,
       "active": true,
-      "level": 0
+      "level": 0,
+      "leaf": false
     }
   }
 ]
