@@ -100,6 +100,17 @@ class Menu extends Equatable {
     return result;
   }
 
+  static List<Menu> fromJsonList(List<dynamic> json) {
+    List<Menu> result = [];
+    for (var item in json) {
+      var menu = Menu.fromJson(item as Map<String, dynamic>);
+      if (menu != null) {
+        result.add(menu);
+      }
+    }
+    return result;
+  }
+
   static Menu? fromJsonString(String json) {
     var result = JsonMapper.deserialize<Menu>(jsonDecode(json));
     if (result == null) {
@@ -107,6 +118,19 @@ class Menu extends Equatable {
     }
     return result;
   }
+  static List<Menu> fromJsonStringList(String json) {
+    List<Menu> result = [];
+    var jsonList = jsonDecode(json) as List<dynamic>;
+    for (var item in jsonList) {
+      var menu = Menu.fromJson(item as Map<String, dynamic>);
+      if (menu != null) {
+        result.add(menu);
+      }
+    }
+    return result;
+  }
+
+
 
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 

@@ -10,7 +10,10 @@
     "level": 0,
     "leaf": false,
     "parent": null,
-    "authorities": [{"name": "ROLE_USER"}, {"name": "ROLE_ADMIN"}]
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ]
   },
   {
     "id": "menu-001",
@@ -22,7 +25,10 @@
     "active": true,
     "level": 1,
     "leaf": true,
-    "authorities": [{"name": "ROLE_USER"}, {"name": "ROLE_ADMIN"}],
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
     "parent": {
       "id": "menu-000",
       "name": "home",
@@ -44,7 +50,10 @@
     "active": true,
     "level": 1,
     "leaf": false,
-    "authorities": [{"name": "ROLE_USER"}, {"name": "ROLE_ADMIN"}],
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
     "parent": {
       "id": "menu-000",
       "name": "home",
@@ -58,7 +67,7 @@
   },
   {
     "id": "menu-020",
-    "name": "new",
+    "name": "new_user",
     "description": "userNew",
     "url": "/user/new",
     "icon": "account-multiple-plus-outline",
@@ -66,7 +75,10 @@
     "active": true,
     "level": 2,
     "leaf": true,
-    "authorities": [{"name": "ROLE_USER"}, {"name": "ROLE_ADMIN"}],
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
     "parent": {
       "id": "menu-002",
       "name": "userManagement",
@@ -80,7 +92,7 @@
   },
   {
     "id": "menu-021",
-    "name": "list",
+    "name": "list_user",
     "description": "userList",
     "url": "/user",
     "icon": "account-edit-outline",
@@ -88,7 +100,10 @@
     "active": true,
     "level": 2,
     "leaf": true,
-    "authorities": [{"name": "ROLE_USER"}, {"name": "ROLE_ADMIN"}],
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
     "parent": {
       "id": "menu-002",
       "name": "userManagement",
@@ -110,7 +125,10 @@
     "active": true,
     "level": 1,
     "leaf": true,
-    "authorities": [{"name": "ROLE_USER"}, {"name": "ROLE_ADMIN"}],
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
     "parent": {
       "id": "menu-000",
       "name": "home",

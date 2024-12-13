@@ -53,31 +53,31 @@ class ApplicationDrawer extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
         debugPrint("menuNodes.length: ${menuNodes.length}");
-        final parentMenu = menuNodes[index];
-        debugPrint("parentMenu: ${parentMenu.name}");
+        final node = menuNodes[index];
+        debugPrint("node: ${node.name}");
         // filter child menus
-        final childMenus = state.menus.where((menu) => menu.parent?.id == parentMenu.id && menu.active).toList()
+        final childMenus = state.menus.where((menu) => menu.parent?.id == node.id && menu.active).toList()
           ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
         if (childMenus.isEmpty) {
           debugPrint("childMenus.isEmpty ");
           // if child menu is leaf, add click event
           return ListTile(
-            leading: Icon(String2Icon.getIconDataFromString(parentMenu.icon)),
-            title: Text(S.of(context).translate_menu_title(parentMenu.name), style: Theme.of(context).textTheme.bodyMedium),
+            leading: Icon(String2Icon.getIconDataFromString(node.icon)),
+            title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
             onTap: () {
-              debugPrint("parent Menu: ${parentMenu.name}");
-              if (parentMenu.leaf && parentMenu.url.isNotEmpty) {
-                AppRouter().push(context, parentMenu.url);
+              debugPrint("parent Menu: ${node.name}");
+              if (node.leaf && node.url.isNotEmpty) {
+                AppRouter().push(context, node.url);
               }
             },
           );
         } else {
-          debugPrint("childMenus.isNotEmpty");
+          debugPrint("childMenus.isNotEmpty : ${childMenus.toString()}");
           // if menu is not leaf, use ExpansionTile for child menus
           return ExpansionTile(
-            leading: Icon(String2Icon.getIconDataFromString(parentMenu.icon)),
-            title: Text(S.of(context).translate_menu_title(parentMenu.name), style: Theme.of(context).textTheme.bodyMedium),
+            leading: Icon(String2Icon.getIconDataFromString(node.icon)),
+            title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
             children: childMenus.map((childMenu) {
               return ListTile(
                 leading: Icon(String2Icon.getIconDataFromString(childMenu.icon)),

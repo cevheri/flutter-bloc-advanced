@@ -11,7 +11,8 @@ class MenuRepository {
 
   Future<List<Menu>> getMenus() async {
     _log.debug("BEGIN:getMenus repository start");
-    final result = JsonMapper.deserialize<List<Menu>>(await rootBundle.loadString('assets/mock/menus.json'))!;
+    final json = await rootBundle.loadString('assets/mock/menus.json');
+    final result = Menu.fromJsonStringList(json);
     _log.debug("END:getMenus successful - response.body: {}", [result.toString()]);
     return result;
   }

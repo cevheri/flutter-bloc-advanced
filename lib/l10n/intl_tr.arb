@@ -1,5 +1,4 @@
 {
-  "list_user": "Kullanıcılar",
   "screen_size_error": "Ekran boyutu çok küçük.",
   "admin": "Admin",
   "guest": "Kullanıcı",
@@ -17,6 +16,8 @@
   "required_field": "Zorunlu Alan",
   "required_range": "Aralık gereklidir",
   "list": "Listele",
+  "list_user": "Kullanıcılar",
+  "new_user": "Yeni Kullanıcı Ekle",
   "edit_user": "Kullanıcı Düzenle",
   "email_required": "E-posta gereklidir",
   "email_pattern": "E-posta adresi geçerli değil",
@@ -44,7 +45,7 @@
   "no": "Hayır",
   "login_user_name": "Kullanıcı adı",
   "login_password": "Şifre",
-  "current_password":"Mevcut Şifre",
+  "current_password": "Mevcut Şifre",
   "new_password": "Yeni Şifre",
   "password_forgot": "Şifremi unuttum",
   "register": "Kayıt Ol",
@@ -53,5 +54,5 @@
   "login_button": "Giriş Yap",
   "loading": "Loading...",
   "email_send": "E-posta Gönder",
-  "translate_menu_title": "{translate, select, account{Hesabım}  userManagement{Kullanıcı Yönetimi} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  create{Oluştur}  list{Listele/Düzenle } other{Diğer}}"
+  "translate_menu_title": "{translate, select, account{Hesabım}  userManagement{Kullanıcı Yönetimi} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  new_user{Yeni Kullanıcı Ekle}  list_user{Kullanıcılar} other{Diğer}}"
 }

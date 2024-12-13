@@ -1,5 +1,4 @@
 {
-  "list_user": "List User",
   "screen_size_error": "Screen size is too small.",
   "admin": "Admin",
   "guest": "Guest",
@@ -17,6 +16,8 @@
   "required_field": "Required Field",
   "required_range": "Range is required",
   "list": "List",
+  "list_user": "List User",
+  "new_user": "New User",
   "edit_user": "Edit User",
   "email_required": "Email is required",
   "email_pattern": "Email must be a valid email address",
@@ -44,7 +45,7 @@
   "no": "No",
   "login_user_name": "Username",
   "login_password": "Password",
-  "current_password":"Current Password",
+  "current_password": "Current Password",
   "new_password": "New Password",
   "password_forgot": "Forgot Password",
   "register": "Register",
@@ -53,5 +54,5 @@
   "login_button": "Login",
   "loading": "Loading...",
   "email_send": "Send Email",
-  "translate_menu_title": "{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  create{Create}  list{List/Edit} other{Other}}"
+  "translate_menu_title": "{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  new_user{New}  list_user{List} other{Other}}"
 }
