@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
-import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/routes/go_router_routes/auth_routes.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/home_routes.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/settings_routes.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/user_routes.dart';
+import 'package:flutter_bloc_advance/utils/security_utils.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
@@ -56,38 +57,23 @@ class AppGoRouterConfig {
     redirect: (context, state) async {
       _log.debug("BEGIN: redirect");
       _log.debug("redirect - uri: ${state.uri}");
-      var accountBloc = context.read<AccountBloc>();
-      await Future.delayed(const Duration(microseconds: 100));
-      accountBloc.add(const AccountLoad());
-      // await Future.delayed(const Duration(microseconds: 3000));
-      // _log.debug("redirect - accountBloc.state: ${accountBloc.state.status}");
-      // // check if the account is loaded
-      // // if (accountBloc.state.status == AccountStatus.initial) {
-      // //   //
-      // //   _log.debug("redirect with account load from initial");
-      // //   accountBloc.add(const AccountLoad());
-      // //   _log.debug("redirect with account load from initial - after add");
-      // //   //
-      // //   _log.debug("redirect with account load from initial - before delay");
-      // //   await Future.delayed(const Duration(seconds: 1));
-      // //   _log.debug("redirect with account load from initial - after delay");
-      // //   //
-      // //   if (accountBloc.state.status == AccountStatus.failure) {
-      // //     _log.debug("END: redirect - ${accountBloc.state.status}  with login - initial>failure");
-      // //     return ApplicationRoutesConstants.login;
-      // //   }
-      // // } else
-      // if (accountBloc.state.status == AccountStatus.failure) {
-      //   _log.debug("END: redirect - ${accountBloc.state.status}  with login - initial>failure");
-      //   return ApplicationRoutesConstants.login;
-      // }
 
-      // check if the jwtToken is null
-      if(AppLocalStorageCached.jwtToken == null) {
+      // check : when redirect the new page then load the account data
+      var accountBloc = context.read<AccountBloc>();
+      await Future.delayed(const Duration(microseconds: 500));
+      accountBloc.add(const AccountLoad());
+      _log.debug("redirect - load event : accountBloc.add(AccountLoad())");
+
+      // check : when jwtToken is null then redirect to login page
+      if (!SecurityUtils.isUserLoggedIn()) {
         _log.debug("END: redirect - jwtToken is null");
         return ApplicationRoutesConstants.login;
       }
-      //TODO check if jwtToken is expired
+      // check : when running in production mode and jwtToken is expired then redirect to login page
+      if(ProfileConstants.isProduction && SecurityUtils.isTokenExpired()) {
+        _log.debug("END: redirect - jwtToken is expired");
+        return ApplicationRoutesConstants.login;
+      }
 
       _log.debug("END: redirect return null");
       return null;
