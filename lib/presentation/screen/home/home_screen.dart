@@ -30,10 +30,11 @@ class HomeScreen extends StatelessWidget {
       },
       child: BlocBuilder<AccountBloc, AccountState>(
         buildWhen: (previous, current) {
-          if(previous.status != current.status) {
-            debugPrint("HomeScreen account bloc builder: ${current.status}");
-          }
-          return current.account != null;
+          return current.status != previous.status;
+          // if(previous.status != current.status) {
+          //   debugPrint("HomeScreen account bloc builder: ${current.status}");
+          // }
+          // return current.account != null;
         },
         builder: (context, state) {
           debugPrint("HomeScreen account bloc builder: ${state.status}");
@@ -51,7 +52,8 @@ class HomeScreen extends StatelessWidget {
           }
           // else {
           debugPrint("Unexpected state : ${state.toString()}");
-          return Scaffold(body: Center(child: Text("Home Screen Unexpected state : ${state.props}   ${state.toString()}")));
+          //return Scaffold(body: Center(child: Text("Home Screen Unexpected state : ${state.props}   ${state.toString()}")));
+          return Container();
           // }
         },
       ),
