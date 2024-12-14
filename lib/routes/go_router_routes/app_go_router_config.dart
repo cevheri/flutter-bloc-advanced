@@ -56,22 +56,29 @@ class AppGoRouterConfig {
       _log.debug("BEGIN: redirect");
       _log.debug("redirect - uri: ${state.uri}");
       final accountBloc = context.read<AccountBloc>();
+      await Future.delayed(const Duration(microseconds: 100));
+      accountBloc.add(const AccountLoad());
+      await Future.delayed(const Duration(microseconds: 500));
       _log.debug("redirect - accountBloc.state: ${accountBloc.state.status}");
       // check if the account is loaded
-      if (accountBloc.state.status == AccountStatus.initial) {
-        //
-        _log.debug("redirect with account load from initial");
-        accountBloc.add(const AccountLoad());
-        _log.debug("redirect with account load from initial - after add");
-        //
-        _log.debug("redirect with account load from initial - before delay");
-        await Future.delayed(const Duration(seconds: 1));
-        _log.debug("redirect with account load from initial - after delay");
-        //
-        if (accountBloc.state.status == AccountStatus.failure) {
-          _log.debug("END: redirect - ${accountBloc.state.status}  with login - initial>failure");
-          return ApplicationRoutesConstants.login;
-        }
+      // if (accountBloc.state.status == AccountStatus.initial) {
+      //   //
+      //   _log.debug("redirect with account load from initial");
+      //   accountBloc.add(const AccountLoad());
+      //   _log.debug("redirect with account load from initial - after add");
+      //   //
+      //   _log.debug("redirect with account load from initial - before delay");
+      //   await Future.delayed(const Duration(seconds: 1));
+      //   _log.debug("redirect with account load from initial - after delay");
+      //   //
+      //   if (accountBloc.state.status == AccountStatus.failure) {
+      //     _log.debug("END: redirect - ${accountBloc.state.status}  with login - initial>failure");
+      //     return ApplicationRoutesConstants.login;
+      //   }
+      // } else
+      if (accountBloc.state.status == AccountStatus.failure) {
+        _log.debug("END: redirect - ${accountBloc.state.status}  with login - initial>failure");
+        return ApplicationRoutesConstants.login;
       }
 
       _log.debug("END: redirect return null");
