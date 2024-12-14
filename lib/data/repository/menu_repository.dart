@@ -1,4 +1,3 @@
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 

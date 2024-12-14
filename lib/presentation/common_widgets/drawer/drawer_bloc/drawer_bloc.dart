@@ -33,7 +33,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     emit(const DrawerState(isLogout: false, status: DrawerStateStatus.loading));
     try {
       await _loginRepository.logout();
-      emit(state.copyWith(isLogout: true, status: DrawerStateStatus.loaded));
+      emit(state.copyWith(isLogout: true, status: DrawerStateStatus.success));
       MenuListCache.menus = [];
       _log.debug("END:onLogout Logout event success: {}", []);
     } catch (e) {
@@ -47,7 +47,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     emit(const DrawerState(menus: [], status: DrawerStateStatus.loading));
     try {
       if (MenuListCache.menus.isNotEmpty) {
-        emit(state.copyWith(menus: MenuListCache.menus, status: DrawerStateStatus.loaded));
+        emit(state.copyWith(menus: MenuListCache.menus, status: DrawerStateStatus.success));
         _log.info("END:loadMenus read from cache: {}", []);
         return;
       }
@@ -57,7 +57,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
         return;
       }
       MenuListCache.menus = menus;
-      emit(state.copyWith(menus: menus, status: DrawerStateStatus.loaded));
+      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success));
       _log.debug("END:loadMenus LoadMenus event success: {}", []);
     } catch (e) {
       emit(const DrawerState(menus: [], status: DrawerStateStatus.error));
@@ -71,7 +71,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     try {
       final menus = await _menuRepository.getMenus();
       MenuListCache.menus = menus;
-      emit(state.copyWith(menus: menus, status: DrawerStateStatus.loaded));
+      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success));
       _log.debug("END:refreshMenus RefreshMenus event success: {}", []);
     } catch (e) {
       emit(const DrawerState(menus: [], status: DrawerStateStatus.error));

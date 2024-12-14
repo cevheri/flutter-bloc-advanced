@@ -1,6 +1,6 @@
 part of 'drawer_bloc.dart';
 
-enum DrawerStateStatus { initial, loading, loaded, error }
+enum DrawerStateStatus { initial, loading, success, error }
 
 class DrawerState extends Equatable {
   final List<Menu> menus;
@@ -38,7 +38,7 @@ class DrawerStateLoading extends DrawerState {
 }
 
 class DrawerStateLoaded extends DrawerState {
-  const DrawerStateLoaded({required super.menus}) : super(status: DrawerStateStatus.loaded);
+  const DrawerStateLoaded({required super.menus}) : super(status: DrawerStateStatus.success);
 }
 
 class DrawerStateError extends DrawerState {
