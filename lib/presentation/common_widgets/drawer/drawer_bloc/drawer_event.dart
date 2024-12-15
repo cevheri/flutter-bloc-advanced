@@ -9,7 +9,14 @@ abstract class DrawerEvent extends Equatable {
 
 class Logout extends DrawerEvent {}
 
-class LoadMenus extends DrawerEvent {}
+class LoadMenus extends DrawerEvent {
+  final String language;
+
+  const LoadMenus({required this.language});
+
+  @override
+  List<Object> get props => [language];
+}
 
 class RefreshMenus extends DrawerEvent {}
 

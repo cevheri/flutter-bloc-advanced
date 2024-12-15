@@ -2,6 +2,7 @@ import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 
@@ -22,10 +23,10 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    debugPrint("HomeScreen _buildBody");
+    //debugPrint("HomeScreen _buildBody");
     return BlocProvider(
       create: (context) {
-        debugPrint("HomeScreen account blocProvider");
+        //debugPrint("HomeScreen account blocProvider");
         return AccountBloc(repository: AccountRepository())..add(const AccountLoad());
       },
       child: BlocBuilder<AccountBloc, AccountState>(
@@ -97,7 +98,8 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildDrawer(BuildContext context) {
     return BlocProvider<DrawerBloc>(
-      create: (context) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())..add(LoadMenus()),
+      create: (context) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())
+        ..add(LoadMenus(language: AppLocalStorageCached.language ?? 'en')),
       child: const ApplicationDrawer(),
     );
   }

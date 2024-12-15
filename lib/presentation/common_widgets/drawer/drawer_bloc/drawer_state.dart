@@ -6,13 +6,13 @@ class DrawerState extends Equatable {
   final List<Menu> menus;
   final bool isLogout;
   final DrawerStateStatus status;
-  final String language;
+  final String? language;
 
   const DrawerState({
     this.menus = const [],
     this.isLogout = false,
     this.status = DrawerStateStatus.initial,
-    this.language='en',
+    this.language,
   });
 
   DrawerState copyWith({

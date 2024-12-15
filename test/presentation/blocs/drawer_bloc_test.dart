@@ -55,12 +55,12 @@ void main() {
   /// Drawer Event Tests
   group("DrawerEvent", () {
     test("supports value comparisons", () {
-      expect(LoadMenus(), LoadMenus());
+      expect(const LoadMenus(language:"en"), const LoadMenus(language: "en"));
       expect(RefreshMenus(), RefreshMenus());
       expect(Logout(), Logout());
     });
     test("props", () {
-      expect(LoadMenus().props, []);
+      expect(const LoadMenus(language: "en").props, []);
       expect(RefreshMenus().props, []);
       expect(Logout().props, []);
     });
@@ -76,7 +76,7 @@ void main() {
       });
       const input = [Menu(id: "test", name: "test")];
       final output = Future.value(input);
-      final event = LoadMenus();
+      const event = LoadMenus(language: "en");
       const loadingState = DrawerState(menus: [], status: DrawerStateStatus.loading);
       const successState = DrawerState(menus: input, status: DrawerStateStatus.success);
       const failureState = DrawerState(menus: [], status: DrawerStateStatus.error);

@@ -5,10 +5,8 @@ import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
-import 'package:go_router/go_router.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
 import 'drawer_bloc/drawer_bloc.dart';
@@ -19,32 +17,35 @@ class ApplicationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
-      listeners:  [
+      listeners: [
         BlocListener<DrawerBloc, DrawerState>(
           listener: (context, state) {
+            //debugPrint("INITIAL - current language : ${AppLocalStorageCached.language}");
+            //debugPrint("DrawerBloc listener: ${state.status}");
             if (state.isLogout) {
               context.read<DrawerBloc>().add(Logout());
               AppRouter().push(context, ApplicationRoutesConstants.login);
             }
           },
         ),
-        BlocListener<AccountBloc, AccountState>(
-          listener: (context, state) {
-            if (state.status == AccountStatus.failure) {
-              context.read<DrawerBloc>().add(Logout());
-              AppRouter().push(context, ApplicationRoutesConstants.login);
-            }
-          },
-        ),
+        // BlocListener<AccountBloc, AccountState>(
+        //   listener: (context, state) {
+        //     if (state.status == AccountStatus.failure) {
+        //       context.read<DrawerBloc>().add(Logout());
+        //       AppRouter().push(context, ApplicationRoutesConstants.login);
+        //     }
+        //   },
+        // ),
       ],
       child: BlocBuilder<DrawerBloc, DrawerState>(
         builder: (context, state) {
           final isDarkMode = AdaptiveTheme.of(context).mode.isDark;
+
+          //debugPrint("BUILDER - current language : ${AppLocalStorageCached.language}");
+          //debugPrint("BUILDER - state language : ${state.language}");
+
           var isEnglish = state.language == 'en';
-          var lang = isEnglish ? 'en' : 'tr';
-          // if (state.menus.isEmpty) {
-          //   return Container();
-          // }
+
           final menuNodes = state.menus.where((e) => e.level == 1 && e.active).toList()
             ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
@@ -83,12 +84,9 @@ class ApplicationDrawer extends StatelessWidget {
                     onChanged: (value) async {
                       final newLang = value ? 'en' : 'tr';
                       context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
+                      AppRouter().push(context, ApplicationRoutesConstants.home);
 
-                      await S.load(Locale(newLang));
-                      Navigator.of(context).pop();
-                      Scaffold.of(context).closeDrawer();
-                      context.go(ApplicationRoutesConstants.home);
-
+                      //debugPrint("ON_PRESSED - current language : ${AppLocalStorageCached.language}");
                     },
                   ),
                   const SizedBox(height: 20),

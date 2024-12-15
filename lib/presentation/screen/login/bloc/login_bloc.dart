@@ -47,6 +47,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await AppLocalStorage().save(StorageKeys.username.name, event.username);
         _log.debug("onSubmit save storage username: {}", [event.username]);
         emit(LoginLoadedState(username: event.username, password: event.password));
+
+
         _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [token.toString()]);
       } else {
         throw BadRequestException("Invalid Access Token");
