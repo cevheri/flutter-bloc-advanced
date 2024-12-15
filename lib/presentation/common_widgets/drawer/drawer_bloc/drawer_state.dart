@@ -6,22 +6,26 @@ class DrawerState extends Equatable {
   final List<Menu> menus;
   final bool isLogout;
   final DrawerStateStatus status;
+  final String language;
 
   const DrawerState({
     this.menus = const [],
     this.isLogout = false,
     this.status = DrawerStateStatus.initial,
+    this.language='en',
   });
 
   DrawerState copyWith({
     List<Menu>? menus,
     bool? isLogout,
     DrawerStateStatus? status,
+    String? language,
   }) {
     return DrawerState(
       menus: menus ?? this.menus,
       isLogout: isLogout ?? this.isLogout,
       status: status ?? this.status,
+      language: language ?? this.language,
     );
   }
 
@@ -45,4 +49,8 @@ class DrawerStateError extends DrawerState {
   final String message;
 
   const DrawerStateError({required this.message}) : super(status: DrawerStateStatus.error);
+}
+
+class DrawerLanguageChanged extends DrawerState {
+  const DrawerLanguageChanged({required super.language}) : super(status: DrawerStateStatus.success);
 }

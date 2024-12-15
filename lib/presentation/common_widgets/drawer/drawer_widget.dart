@@ -4,12 +4,13 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
+import 'package:go_router/go_router.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
-import '../../../generated/l10n.dart';
-import '../../common_blocs/account/account.dart';
 import 'drawer_bloc/drawer_bloc.dart';
 
 class ApplicationDrawer extends StatelessWidget {
@@ -18,24 +19,78 @@ class ApplicationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
-      listeners: _buildBlocListener(context),
+      listeners:  [
+        BlocListener<DrawerBloc, DrawerState>(
+          listener: (context, state) {
+            if (state.isLogout) {
+              context.read<DrawerBloc>().add(Logout());
+              AppRouter().push(context, ApplicationRoutesConstants.login);
+            }
+          },
+        ),
+        BlocListener<AccountBloc, AccountState>(
+          listener: (context, state) {
+            if (state.status == AccountStatus.failure) {
+              context.read<DrawerBloc>().add(Logout());
+              AppRouter().push(context, ApplicationRoutesConstants.login);
+            }
+          },
+        ),
+      ],
       child: BlocBuilder<DrawerBloc, DrawerState>(
         builder: (context, state) {
-          if (state.menus.isEmpty) {
-            return const Center(child: Text('No menu found'));
-          }
+          final isDarkMode = AdaptiveTheme.of(context).mode.isDark;
+          var isEnglish = state.language == 'en';
+          var lang = isEnglish ? 'en' : 'tr';
+          // if (state.menus.isEmpty) {
+          //   return Container();
+          // }
           final menuNodes = state.menus.where((e) => e.level == 1 && e.active).toList()
             ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
           return Drawer(
+            key: Key("drawer-${state.language}"),
             child: SingleChildScrollView(
               child: Column(
                 children: [
                   _buildMenuList(menuNodes, state),
                   const SizedBox(height: 20),
-                  const ThemeSwitchButton(),
+                  SwitchListTile(
+                    key: const Key("drawer-switch-theme"),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
+                      ],
+                    ),
+                    value: isDarkMode,
+                    onChanged: (value) {
+                      if (value) {
+                        AdaptiveTheme.of(context).setDark();
+                      } else {
+                        AdaptiveTheme.of(context).setLight();
+                      }
+                    },
+                  ),
                   const SizedBox(height: 20),
-                  const LanguageSwitchButton(),
+                  SwitchListTile(
+                    key: const Key("drawer-switch-language"),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [Text(isEnglish ? S.of(context).english : S.of(context).turkish)],
+                    ),
+                    value: isEnglish,
+                    onChanged: (value) async {
+                      final newLang = value ? 'en' : 'tr';
+                      context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
+
+                      await S.load(Locale(newLang));
+                      Navigator.of(context).pop();
+                      Scaffold.of(context).closeDrawer();
+                      context.go(ApplicationRoutesConstants.home);
+
+                    },
+                  ),
                   const SizedBox(height: 20),
                   _buildLogoutButton(context),
                 ],
@@ -54,9 +109,9 @@ class ApplicationDrawer extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemBuilder: (context, index) {
-        debugPrint("menuNodes.length: ${menuNodes.length}");
+        //debugPrint("menuNodes.length: ${menuNodes.length}");
         final node = menuNodes[index];
-        debugPrint("node: ${node.name}");
+        // debugPrint("node: ${node.name}");
 
         if (!_hasAccess(node, currentUserRoles)) {
           return const SizedBox.shrink();
@@ -67,20 +122,20 @@ class ApplicationDrawer extends StatelessWidget {
           ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
         if (childMenus.isEmpty) {
-          debugPrint("childMenus.isEmpty ");
+          // debugPrint("childMenus.isEmpty ");
           // if child menu is leaf, add click event
           return ListTile(
             leading: Icon(String2Icon.getIconDataFromString(node.icon)),
             title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
             onTap: () {
-              debugPrint("parent Menu: ${node.name}");
+              // debugPrint("parent Menu: ${node.name}");
               if (node.leaf && node.url.isNotEmpty) {
                 AppRouter().push(context, node.url);
               }
             },
           );
         } else {
-          debugPrint("childMenus.isNotEmpty : ${childMenus.toString()}");
+          // debugPrint("childMenus.isNotEmpty : ${childMenus.toString()}");
           // if menu is not leaf, use ExpansionTile for child menus
           return ExpansionTile(
             leading: Icon(String2Icon.getIconDataFromString(node.icon)),
@@ -90,7 +145,7 @@ class ApplicationDrawer extends StatelessWidget {
                 leading: Icon(String2Icon.getIconDataFromString(childMenu.icon)),
                 title: Text(S.of(context).translate_menu_title(childMenu.name), style: Theme.of(context).textTheme.bodySmall),
                 onTap: () {
-                  debugPrint("child menu name: ${childMenu.name}");
+                  // debugPrint("child menu name: ${childMenu.name}");
                   if (childMenu.leaf! && childMenu.url.isNotEmpty) {
                     AppRouter().push(context, childMenu.url);
                   }
@@ -118,27 +173,6 @@ class ApplicationDrawer extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  _buildBlocListener(BuildContext context) {
-    return [
-      BlocListener<DrawerBloc, DrawerState>(
-        listener: (context, state) {
-          if (state.isLogout) {
-            context.read<DrawerBloc>().add(Logout());
-            AppRouter().push(context, ApplicationRoutesConstants.login);
-          }
-        },
-      ),
-      BlocListener<AccountBloc, AccountState>(
-        listener: (context, state) {
-          if (state.status == AccountStatus.failure) {
-            context.read<DrawerBloc>().add(Logout());
-            AppRouter().push(context, ApplicationRoutesConstants.login);
-          }
-        },
-      ),
-    ];
   }
 
   Future logOutDialog(BuildContext context) {
@@ -180,82 +214,7 @@ class ApplicationDrawer extends StatelessWidget {
 }
 
 bool _hasAccess(Menu menu, List<String>? userRoles) {
-  if(userRoles == null) return false;
+  if (userRoles == null) return false;
   final menuAuthorities = menu.authorities ?? [];
   return menuAuthorities.any((authority) => userRoles.contains(authority));
-}
-
-class ThemeSwitchButton extends StatelessWidget {
-  const ThemeSwitchButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = AdaptiveTheme.of(context).mode.isDark;
-
-    return SwitchListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
-        ],
-      ),
-      value: isDarkMode,
-      onChanged: (value) {
-        if (value) {
-          AdaptiveTheme.of(context).setDark();
-        } else {
-          AdaptiveTheme.of(context).setLight();
-        }
-      },
-    );
-  }
-}
-
-class LanguageSwitchButton extends StatefulWidget {
-  const LanguageSwitchButton({super.key});
-
-  @override
-  LanguageSwitchButtonState createState() => LanguageSwitchButtonState();
-}
-
-class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
-  bool isTurkish = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLanguage();
-  }
-
-  Future<void> _loadLanguage() async {
-    final lang = await AppLocalStorage().read(StorageKeys.language.name);
-    setState(() {
-      isTurkish = lang == 'tr';
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(isTurkish ? S.of(context).turkish : S.of(context).english),
-        ],
-      ),
-      value: isTurkish,
-      onChanged: (value) async {
-        isTurkish = value;
-
-        final lang = isTurkish ? 'tr' : 'en';
-        await AppLocalStorage().save(StorageKeys.language.name, lang);
-        await S.load(Locale(isTurkish ? 'tr' : 'en'));
-        if (mounted) {
-          setState(
-            () => AppRouter().push(context, ApplicationRoutesConstants.home),
-          );
-        }
-      },
-    );
-  }
 }

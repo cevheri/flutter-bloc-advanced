@@ -12,3 +12,12 @@ class Logout extends DrawerEvent {}
 class LoadMenus extends DrawerEvent {}
 
 class RefreshMenus extends DrawerEvent {}
+
+class ChangeLanguageEvent extends DrawerEvent {
+  final String language;
+
+  const ChangeLanguageEvent({required this.language});
+
+  @override
+  List<Object> get props => [language];
+}

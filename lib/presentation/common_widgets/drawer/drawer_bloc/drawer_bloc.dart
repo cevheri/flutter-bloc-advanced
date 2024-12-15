@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 import '../../../../data/models/menu.dart';
 import '../../../../data/repository/login_repository.dart';
@@ -26,6 +27,21 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     on<LoadMenus>(_loadMenus);
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
+    on<ChangeLanguageEvent>(_onChangeLanguage);
+  }
+
+  FutureOr<void> _onChangeLanguage(ChangeLanguageEvent event, Emitter<DrawerState> emit) async {
+    _log.debug("BEGIN: onChangeLanguage ChangeLanguageEvent event: {}", []);
+    emit(const DrawerState(isLogout: false, status: DrawerStateStatus.loading));
+    try {
+      await AppLocalStorage().save(StorageKeys.language.name, event.language);
+      emit(DrawerLanguageChanged(language: event.language));
+      emit(state.copyWith(language: event.language, status: DrawerStateStatus.success));
+      _log.debug("END:onChangeLanguage ChangeLanguageEvent event success: {}", [event.language]);
+    } catch (e) {
+      emit(const DrawerState(isLogout: false, status: DrawerStateStatus.error));
+      _log.error("END:onChangeLanguage ChangeLanguageEvent event error: {}", [e.toString()]);
+    }
   }
 
   FutureOr<void> _onLogout(Logout event, Emitter<DrawerState> emit) async {
