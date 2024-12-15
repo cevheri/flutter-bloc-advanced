@@ -46,9 +46,9 @@ class App extends StatelessWidget {
     );
   }
 
-  ThemeData _buildDarkTheme() => ThemeData(brightness: Brightness.dark, primarySwatch: Colors.blueGrey);
+  ThemeData _buildDarkTheme() => ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey);
 
-  ThemeData _buildLightTheme() => ThemeData(brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey);
+  ThemeData _buildLightTheme() => ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey);
 
   MultiBlocProvider _buildMultiBlocProvider(ThemeData light, ThemeData dark) {
     return MultiBlocProvider(

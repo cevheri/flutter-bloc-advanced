@@ -1,3 +1,4 @@
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/data/repository/login_repository.dart';
@@ -55,12 +56,12 @@ void main() {
   /// Drawer Event Tests
   group("DrawerEvent", () {
     test("supports value comparisons", () {
-      expect(const LoadMenus(language:"en"), const LoadMenus(language: "en"));
+      expect(const LoadMenus(language:"en", theme: AdaptiveThemeMode.light), const LoadMenus(language: "en", theme: AdaptiveThemeMode.light));
       expect(RefreshMenus(), RefreshMenus());
       expect(Logout(), Logout());
     });
     test("props", () {
-      expect(const LoadMenus(language: "en").props, []);
+      expect(const LoadMenus(language: "en", theme: AdaptiveThemeMode.light).props, ['en', AdaptiveThemeMode.light]);
       expect(RefreshMenus().props, []);
       expect(Logout().props, []);
     });
@@ -76,7 +77,7 @@ void main() {
       });
       const input = [Menu(id: "test", name: "test")];
       final output = Future.value(input);
-      const event = LoadMenus(language: "en");
+      const event = LoadMenus(language: "en", theme: AdaptiveThemeMode.light);
       const loadingState = DrawerState(menus: [], status: DrawerStateStatus.loading);
       const successState = DrawerState(menus: input, status: DrawerStateStatus.success);
       const failureState = DrawerState(menus: [], status: DrawerStateStatus.error);

@@ -16,6 +16,7 @@ class ApplicationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("ApplicationDrawer build");
     return MultiBlocListener(
       listeners: [
         BlocListener<DrawerBloc, DrawerState>(
@@ -39,10 +40,14 @@ class ApplicationDrawer extends StatelessWidget {
       ],
       child: BlocBuilder<DrawerBloc, DrawerState>(
         builder: (context, state) {
-          final isDarkMode = AdaptiveTheme.of(context).mode.isDark;
+          final isDarkMode = state.theme == AdaptiveThemeMode.dark;
 
-          //debugPrint("BUILDER - current language : ${AppLocalStorageCached.language}");
-          //debugPrint("BUILDER - state language : ${state.language}");
+          // debugPrint("BUILDER - current lang : ${AppLocalStorageCached.language}");
+          // debugPrint("BUILDER - state lang : ${state.language}");
+          //
+          //
+          // debugPrint("BUILDER - current theme : ${AppLocalStorageCached.theme}");
+          // debugPrint("BUILDER - state theme : ${state.theme}");
 
           var isEnglish = state.language == 'en';
 
@@ -50,7 +55,7 @@ class ApplicationDrawer extends StatelessWidget {
             ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
           return Drawer(
-            key: Key("drawer-${state.language}"),
+            key: Key("drawer-${state.language}-${state.theme}"),
             child: SingleChildScrollView(
               child: Column(
                 children: [
@@ -60,17 +65,24 @@ class ApplicationDrawer extends StatelessWidget {
                     key: const Key("drawer-switch-theme"),
                     title: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
-                      ],
+                      children: [Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode)],
                     ),
                     value: isDarkMode,
                     onChanged: (value) {
+                      //debugPrint("BEGIN:ON_PRESSED.value - ${value}");
+                      final newTheme = value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
+                      //debugPrint("BEGIN:ON_PRESSED - current theme : ${AppLocalStorageCached.theme}");
+                      //debugPrint("BEGIN:ON_PRESSED - current newTheme : ${newTheme}");
+                      context.read<DrawerBloc>().add(ChangeThemeEvent(theme: newTheme));
                       if (value) {
                         AdaptiveTheme.of(context).setDark();
                       } else {
                         AdaptiveTheme.of(context).setLight();
                       }
+                      Scaffold.of(context).closeDrawer();
+                      AppRouter().push(context, ApplicationRoutesConstants.home);
+
+                      //debugPrint("END:ON_PRESSED - current cached theme : ${AppLocalStorageCached.theme}");
                     },
                   ),
                   const SizedBox(height: 20),
@@ -81,7 +93,7 @@ class ApplicationDrawer extends StatelessWidget {
                       children: [Text(isEnglish ? S.of(context).english : S.of(context).turkish)],
                     ),
                     value: isEnglish,
-                    onChanged: (value) async {
+                    onChanged: (value) {
                       final newLang = value ? 'en' : 'tr';
                       context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
                       AppRouter().push(context, ApplicationRoutesConstants.home);

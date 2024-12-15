@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 class UserRoutes {
   static final List<GoRoute> routes = [
     GoRoute(name: 'userList', path: '/user', builder: (context, state) => ListUserScreen()),
-    GoRoute(name: 'userNew', path: '/user/new', builder: (context, state) => CreateUserScreen()),
+    GoRoute(name: 'userNew', path: '/user/new', builder: (context, state) => CreateUserScreen()), // UserUpdateScreen(new, edit, view)
     GoRoute(name: 'userEdit', path: '/user/:id/edit', builder: (context, state) => EditUserScreen(id: state.pathParameters['id']!)),
     //GoRoute(name: 'userView'  , path: '/user/:id/view', builder: (context, state) => EditViewScreen(id: state.pathParameters['id']!)),
   ];

@@ -36,5 +36,10 @@ void main() async {
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runApp(const App(language: defaultLanguage, initialTheme: initialTheme));
   });
-  log.info("Started App with env: {} language: {} and theme: {}", [Environment.prod.name, defaultLanguage, initialTheme.name]);
+
+  //TODO change to the system theme(browser theme)
+  final defaultThemeName = initialTheme.name;
+  await AppLocalStorage().save(StorageKeys.theme.name, defaultThemeName);
+
+  log.info("Started App with local environment language: {} and theme: {}", [defaultLanguage, defaultThemeName]);
 }

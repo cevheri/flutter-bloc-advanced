@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
-import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/home/home_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/login/login_screen.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';

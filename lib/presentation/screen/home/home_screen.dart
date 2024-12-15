@@ -23,7 +23,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    //debugPrint("HomeScreen _buildBody");
+    debugPrint("HomeScreen _buildBody theme: ${AppLocalStorageCached.theme}");
     return BlocProvider(
       create: (context) {
         //debugPrint("HomeScreen account blocProvider");
@@ -41,7 +41,7 @@ class HomeScreen extends StatelessWidget {
           debugPrint("HomeScreen account bloc builder: ${state.status}");
           if (state.status == AccountStatus.success) {
             return Scaffold(
-              appBar: AppBar(title: const Text(AppConstants.appName)),
+              appBar: AppBar(title: const Text(AppConstants.appName),),
               key: _scaffoldKey,
               body: Center(child: Column(children: [backgroundImage(context)])),
               drawer: _buildDrawer(context),
@@ -97,9 +97,19 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildDrawer(BuildContext context) {
+    debugPrint("HomeScreen _buildDrawer : init-theme ${AppLocalStorageCached.theme}");
+    AdaptiveThemeMode initialAppThemeType;
+    if (AppLocalStorageCached.theme == 'light') {
+      initialAppThemeType = AdaptiveThemeMode.light;
+    } else {
+      initialAppThemeType = AdaptiveThemeMode.dark;
+    }
+    final initialAppLanguage = AppLocalStorageCached.language ?? 'en';
     return BlocProvider<DrawerBloc>(
       create: (context) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())
-        ..add(LoadMenus(language: AppLocalStorageCached.language ?? 'en')),
+        ..add(
+          LoadMenus(language: initialAppLanguage, theme: initialAppThemeType),
+        ),
       child: const ApplicationDrawer(),
     );
   }

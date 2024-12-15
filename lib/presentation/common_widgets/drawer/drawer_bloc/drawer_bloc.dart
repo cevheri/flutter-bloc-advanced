@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -30,6 +31,20 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
     on<ChangeLanguageEvent>(_onChangeLanguage);
+    on<ChangeThemeEvent>(_onChangeTheme);
+  }
+
+  FutureOr<void> _onChangeTheme(ChangeThemeEvent event, Emitter<DrawerState> emit) async {
+    _log.debug("BEGIN: onChangeTheme ChangeThemeEvent event: {}", []);
+    emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.loading));
+    try {
+      await AppLocalStorage().save(StorageKeys.theme.name, event.theme.name);
+      emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.success));
+      _log.debug("END:onChangeTheme ChangeThemeEvent event success: {}", [event.theme]);
+    } catch (e) {
+      emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.error));
+      _log.error("END:onChangeTheme ChangeThemeEvent event error: {}", [e.toString()]);
+    }
   }
 
   FutureOr<void> _onChangeLanguage(ChangeLanguageEvent event, Emitter<DrawerState> emit) async {
@@ -64,7 +79,12 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
 
   FutureOr<void> _loadMenus(LoadMenus event, Emitter<DrawerState> emit) async {
     _log.debug("BEGIN: loadMenus LoadMenus event: {}", []);
-    emit(state.copyWith(menus: [], status: DrawerStateStatus.loading, language: event.language));
+    emit(state.copyWith(
+      menus: [],
+      status: DrawerStateStatus.loading,
+      language: event.language,
+      theme: event.theme,
+    ));
     try {
       if (MenuListCache.menus.isNotEmpty) {
         emit(state.copyWith(menus: MenuListCache.menus, status: DrawerStateStatus.success));
@@ -72,7 +92,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
         return;
       }
       final menus = await _menuRepository.getMenus();
-      if(menus.isEmpty) {
+      if (menus.isEmpty) {
         emit(state.copyWith(menus: menus, status: DrawerStateStatus.error));
         return;
       }
