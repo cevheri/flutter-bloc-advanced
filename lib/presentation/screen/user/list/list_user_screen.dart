@@ -11,46 +11,79 @@ class ListUserScreen extends StatelessWidget {
   ListUserScreen({super.key});
 
   final _formKey = GlobalKey<FormBuilderState>();
-  final _headerStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AuthorityBloc>(context).add(const AuthorityLoad());
+    _loadAuthority(context);
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
-      listener: (context, state) {
-        if (state.status == UserStatus.success) {
-          _refreshList(context);
-        }
-      },
+      listener: _handleUserStateChanges,
       child: Scaffold(
-        appBar: _buildAppBar(context),
-        body: _buildBody(context),
+        appBar: AppBar(title: Text(S.of(context).list_user)),
+        body: const UserListView(),
       ),
     );
   }
 
-  _buildAppBar(BuildContext context) {
-    return AppBar(title: Text(S.of(context).list_user));
+  void _loadAuthority(BuildContext context) {
+    BlocProvider.of<AuthorityBloc>(context).add(const AuthorityLoad());
   }
 
-  _buildBody(BuildContext context) {
+  void _handleUserStateChanges(BuildContext context, UserState state) {
+    if (state.status == UserStatus.success) {
+      _refreshUserList(context);
+    }
+  }
+
+  void _refreshUserList(BuildContext context) {
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      context.read<UserBloc>().add(
+        UserSearch(
+          int.parse(_formKey.currentState!.fields['rangeStart']?.value),
+          int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
+          _formKey.currentState!.fields['authority']?.value ?? "-",
+          _formKey.currentState!.fields['name']?.value ?? "",
+        ),
+      );
+    }
+  }
+}
+
+class UserListView extends StatelessWidget {
+  const UserListView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return SingleChildScrollView(
       child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 900) {
-            return layoutBody(context, 200, 1100, constraints.maxWidth);
-          } else if (constraints.maxWidth > 700 && constraints.maxWidth < 900) {
-            return layoutBody(context, 200, 1200, constraints.maxWidth);
-          } else {
-            return Center(child: Text(S.of(context).screen_size_error));
-          }
-        },
+        builder: (context, constraints) => _buildResponsiveLayout(context, constraints),
       ),
     );
   }
 
-  Widget layoutBody(BuildContext context, double min, double max, double maxWidth) {
+  Widget _buildResponsiveLayout(BuildContext context, BoxConstraints constraints) {
+    if (constraints.maxWidth > 900) {
+      return UserListContent(horizontalPadding: 200, maxWidth: 1100);
+    } else if (constraints.maxWidth > 700) {
+      return UserListContent(horizontalPadding: 200, maxWidth: 1200);
+    }
+    return Center(child: Text(S.of(context).screen_size_error));
+  }
+}
+
+class UserListContent extends StatelessWidget {
+  final double horizontalPadding;
+  final double maxWidth;
+  final _formKey = GlobalKey<FormBuilderState>();
+
+  UserListContent({
+    super.key,
+    required this.horizontalPadding,
+    required this.maxWidth,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(30, 0, 30, 10),
       child: Column(
@@ -59,72 +92,262 @@ class ListUserScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           const SizedBox(height: 20),
-          _tableSearch(min, max, maxWidth, context),
+          UserSearchSection(formKey: _formKey),
           const SizedBox(height: 30),
-          _tableHeader(context),
-          _tableData(context),
+          const UserTableHeader(),
+          UserTableContent(formKey: _formKey),
         ],
       ),
     );
   }
+}
 
-  Widget _tableHeader(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          verticalDirection: VerticalDirection.down,
+class UserSearchSection extends StatelessWidget {
+  final GlobalKey<FormBuilderState> formKey;
+
+  const UserSearchSection({
+    super.key,
+    required this.formKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
+      child: FormBuilder(
+        key: formKey,
+        child: IntrinsicHeight(
+          child: Row(
+            mainAxisSize: MainAxisSize.max,
+            children: [
+              const Flexible(
+                flex: 2,
+                child: AuthorityDropdown(),
+              ),
+              const SizedBox(width: 10),
+              const SizedBox(
+                width: 200,
+                child: PaginationControls(),
+              ),
+              const SizedBox(width: 10),
+              Flexible(
+                child: SearchNameField(),
+              ),
+              const SizedBox(width: 10),
+              SearchActionButtons(formKey: formKey),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class AuthorityDropdown extends StatelessWidget {
+  const AuthorityDropdown({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 10),
+      child: BlocBuilder<AuthorityBloc, AuthorityState>(
+        builder: (context, state) {
+          if (state is AuthorityLoadSuccessState) {
+            return FormBuilderDropdown(
+              name: 'authority',
+              decoration: InputDecoration(
+                hintText: S.of(context).authorities,
+              ),
+              items: state.authorities!
+                  .map((role) => DropdownMenuItem(
+                value: role,
+                child: Text(role),
+              ))
+                  .toList(),
+              initialValue: state.authorities![0],
+            );
+          }
+          return const SizedBox.shrink();
+        },
+      ),
+    );
+  }
+}
+
+class PaginationControls extends StatelessWidget {
+  const PaginationControls({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return IntrinsicWidth(
+      child: SizedBox(
+        width: 200,
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            Expanded(
-              flex: 5,
-              child: Text(S.of(context).role, textAlign: TextAlign.left, style: _headerStyle),
+            Flexible(
+              child: FormBuilderTextField(
+                name: 'rangeStart',
+                initialValue: "0",
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(errorText: S.of(context).required_range),
+                  FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+                  FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
+                ]),
+              ),
             ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 3,
-              child: Text(S.of(context).login, textAlign: TextAlign.left, style: _headerStyle),
+            const SizedBox(width: 10),
+            const Text("/"),
+            const SizedBox(width: 10),
+            Flexible(
+              child: FormBuilderTextField(
+                name: 'rangeEnd',
+                initialValue: "100",
+                validator: FormBuilderValidators.compose([
+                  FormBuilderValidators.required(errorText: S.of(context).required_range),
+                  FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+                  FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
+                ]),
+              ),
             ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 4,
-              child: Text(S.of(context).first_name, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 4,
-              child: Text(S.of(context).last_name, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 4,
-              child: Text(S.of(context).email, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 3,
-              child: Text(S.of(context).active, textAlign: TextAlign.center, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 3,
-              child: Container(),
-            ),
-            const SizedBox(width: 5),
           ],
         ),
-        const SizedBox(height: 10),
-        const Divider(
-          height: 2,
-          color: Colors.grey,
-          thickness: 1.5,
+      ),
+    );
+  }
+}
+
+class SearchNameField extends StatelessWidget {
+  const SearchNameField({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return  FormBuilderTextField(
+        name: 'name',
+        decoration: InputDecoration(hintText: S.of(context).name),
+        initialValue: "",
+    );
+  }
+}
+
+class SearchActionButtons extends StatelessWidget {
+  final GlobalKey<FormBuilderState> formKey;
+
+  const SearchActionButtons({
+    super.key,
+    required this.formKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        ElevatedButton(
+          key: const Key("listUserSubmitButtonKey"),
+          style: _buttonStyle(),
+          onPressed: () => _handleSearch(context),
+          child: Text(S.of(context).list),
+        ),
+        const SizedBox(width: 10),
+        ElevatedButton(
+          key: const Key("listUserCreateButtonKey"),
+          style: _buttonStyle(),
+          onPressed: () => context.pushNamed('userCreate'),
+          child: Text(S.of(context).new_user),
         ),
       ],
     );
   }
 
-  BlocBuilder<UserBloc, UserState> _tableData(BuildContext context) {
+  ButtonStyle _buttonStyle() {
+    return ElevatedButton.styleFrom(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(5),
+      ),
+    );
+  }
+
+  void _handleSearch(BuildContext context) {
+    if (formKey.currentState!.saveAndValidate()) {
+      context.read<UserBloc>().add(
+        UserSearch(
+          int.parse(formKey.currentState!.fields['rangeStart']?.value),
+          int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+          formKey.currentState!.fields['authority']?.value ?? "-",
+          formKey.currentState!.fields['name']?.value ?? "",
+        ),
+      );
+    }
+  }
+}
+
+class UserTableHeader extends StatelessWidget {
+  const UserTableHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            TableColumnHeader(flex: 5, title: S.of(context).role),
+            const SizedBox(width: 5),
+            TableColumnHeader(flex: 3, title: S.of(context).login),
+            const SizedBox(width: 5),
+            TableColumnHeader(flex: 4, title: S.of(context).first_name),
+            const SizedBox(width: 5),
+            TableColumnHeader(flex: 4, title: S.of(context).last_name),
+            const SizedBox(width: 5),
+            TableColumnHeader(flex: 4, title: S.of(context).email),
+            const SizedBox(width: 5),
+            TableColumnHeader(flex: 3, title: S.of(context).active),
+            const SizedBox(width: 5),
+            const TableColumnHeader(flex: 3, title: "Actions"),
+          ],
+        ),
+        const Divider(height: 2, color: Colors.grey, thickness: 1.5),
+      ],
+    );
+  }
+}
+
+class TableColumnHeader extends StatelessWidget {
+  final int flex;
+  final String title;
+  final TextAlign alignment;
+
+  const TableColumnHeader({
+    super.key,
+    required this.flex,
+    required this.title,
+    this.alignment = TextAlign.left,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: flex,
+      child: Text(
+        title,
+        textAlign: alignment,
+        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      ),
+    );
+  }
+}
+
+class UserTableContent extends StatelessWidget {
+  final GlobalKey<FormBuilderState> formKey;
+
+  const UserTableContent({
+    super.key,
+    required this.formKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         if (state is UserSearchSuccessState) {
@@ -132,280 +355,163 @@ class ListUserScreen extends StatelessWidget {
             itemCount: state.userList.length,
             shrinkWrap: true,
             physics: const ClampingScrollPhysics(),
-            itemBuilder: (context, index) {
-              return Container(
-                height: 50,
-                decoration: buildTableRowDecoration(index, context),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.max,
-                  verticalDirection: VerticalDirection.down,
-                  children: [
-                    _tableDataAuthority(state, index, context),
-                    const SizedBox(width: 5),
-                    _tableDataLogin(state, index),
-                    const SizedBox(width: 5),
-                    _tableDataFirsName(state, index),
-                    const SizedBox(width: 5),
-                    _tableDataLastName(state, index),
-                    const SizedBox(width: 5),
-                    _tableDataEmail(state, index),
-                    const SizedBox(width: 5),
-                    _tableDataActivatedSwitch(state, index),
-                    const SizedBox(width: 5),
-                    _tableDataActionButtons(context, state, index),
-                    const SizedBox(width: 5),
-                  ],
-                ),
-              );
-            },
+            itemBuilder: (context, index) => UserTableRow(
+              user: state.userList[index],
+              index: index,
+              formKey: formKey,
+            ),
           );
-        } else {
-          return Container();
         }
+        return const SizedBox.shrink();
       },
     );
   }
+}
 
-  Expanded _tableDataAuthority(UserSearchSuccessState state, int index, BuildContext context) {
-    return Expanded(
-      flex: 5,
-      child:
-          Text(state.userList[index].authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest, textAlign: TextAlign.left),
-    );
-  }
+class UserTableRow extends StatelessWidget {
+  final dynamic user; // UserModel tipini import edip kullanmalısınız
+  final int index;
+  final GlobalKey<FormBuilderState> formKey;
 
-  Expanded _tableDataLogin(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 3, child: Text(state.userList[index].login.toString(), textAlign: TextAlign.left));
+  const UserTableRow({
+    super.key,
+    required this.user,
+    required this.index,
+    required this.formKey,
+  });
 
-  Expanded _tableDataFirsName(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 4, child: Text(state.userList[index].firstName.toString(), textAlign: TextAlign.left));
-
-  Expanded _tableDataLastName(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 4, child: Text(state.userList[index].lastName.toString(), textAlign: TextAlign.left));
-
-  Expanded _tableDataEmail(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 4, child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left));
-
-  Expanded _tableDataActivatedSwitch(UserSearchSuccessState state, int index) => Expanded(
-      flex: 3,
-      child: Text(
-        state.userList[index].activated! ? "active" : "passive",
-        textAlign: TextAlign.left,
-      ));
-
-  BoxDecoration buildTableRowDecoration(int index, BuildContext context) {
-    // dark or light mode row decoration
-    if (Theme.of(context).brightness == Brightness.dark) {
-      if (index % 2 == 0) {
-        return const BoxDecoration(color: Colors.black26);
-      } else {
-        return const BoxDecoration();
-      }
-    } else {
-      if (index % 2 == 0) {
-        return BoxDecoration(color: Colors.blueGrey[50]);
-      } else {
-        return const BoxDecoration();
-      }
-    }
-  }
-
-  Widget _tableSearch(double min, double max, double maxWidth, BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
-      child: FormBuilder(
-        key: _formKey,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: <Widget>[
-            Expanded(
-              flex: 2,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 10),
-                child: BlocBuilder<AuthorityBloc, AuthorityState>(
-                  builder: (context, state) {
-                    return _tableSearchAuthority(state, context);
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(width: 10),
-            _tableSearchPage(context),
-            const SizedBox(width: 10),
-            const Flexible(
-              child: Text("/"),
-            ),
-            const SizedBox(width: 10),
-            _tableSearchSize(context),
-            const SizedBox(width: 10),
-            _tableSearchName(context),
-            const SizedBox(width: 10),
-            _submitButton(context),
-            const SizedBox(width: 10),
-            Expanded(
-              flex: 1,
-              child: ElevatedButton(
-                key: const Key("listUserCreateButtonKey"),
-                style: ElevatedButton.styleFrom(
-                  elevation: 2,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5),
-                  ),
-                ),
-                child: Text(S.of(context).new_user),
-                onPressed: () => context.pushNamed('userCreate'),
-              ),
-            ),
-            const SizedBox(width: 5),
-            Expanded(flex: 3, child: Container()),
-          ],
-        ),
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 50,
+      decoration: _buildRowDecoration(context),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          UserTableCell(flex: 5, text: _getRoleText(context)),
+          const SizedBox(width: 5),
+          UserTableCell(flex: 3, text: user.login.toString()),
+          const SizedBox(width: 5),
+          UserTableCell(flex: 4, text: user.firstName.toString()),
+          const SizedBox(width: 5),
+          UserTableCell(flex: 4, text: user.lastName.toString()),
+          const SizedBox(width: 5),
+          UserTableCell(flex: 4, text: user.email.toString()),
+          const SizedBox(width: 5),
+          UserTableCell(flex: 3, text: user.activated! ? "active" : "passive"),
+          const SizedBox(width: 5),
+          UserActionButtons(userId: user.id!, formKey: formKey),
+        ],
       ),
     );
   }
 
-  Expanded _tableSearchName(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(right: 10),
-        child: FormBuilderTextField(
-          name: 'name',
-          decoration: InputDecoration(hintText: S.of(context).name),
-          initialValue: "",
-        ),
-      ),
-    );
+  String _getRoleText(BuildContext context) {
+    return user.authorities!.contains("ROLE_ADMIN")
+        ? S.of(context).admin
+        : S.of(context).guest;
   }
 
-  Expanded _tableSearchSize(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(right: 10),
-        child: FormBuilderTextField(
-          name: 'rangeEnd',
-          initialValue: "100",
-          validator: FormBuilderValidators.compose(
-            [
-              FormBuilderValidators.required(errorText: S.of(context).required_range),
-              FormBuilderValidators.numeric(errorText: S.of(context).required_range),
-              FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
+  BoxDecoration _buildRowDecoration(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+    final isEvenRow = index % 2 == 0;
 
-  Expanded _tableSearchPage(BuildContext context) {
-    return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.only(right: 10),
-        child: FormBuilderTextField(
-          name: 'rangeStart',
-          initialValue: "0",
-          validator: FormBuilderValidators.compose(
-            [
-              FormBuilderValidators.required(errorText: S.of(context).required_range),
-              FormBuilderValidators.numeric(errorText: S.of(context).required_range),
-              FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _tableSearchAuthority(AuthorityState state, BuildContext context) {
-    if (state is AuthorityLoadSuccessState) {
-      return FormBuilderDropdown(
-        name: 'authority',
-        decoration: InputDecoration(
-          hintText: S.of(context).authorities,
-        ),
-        items: state.authorities!
-            .map(
-              (role) => DropdownMenuItem(
-                value: role,
-                child: Text(role),
-              ),
-            )
-            .toList(),
-        initialValue: state.authorities![0],
+    if (isDarkMode) {
+      return BoxDecoration(
+        color: isEvenRow ? Colors.black26 : null,
       );
-    } else {
-      return Container();
     }
+    return BoxDecoration(
+      color: isEvenRow ? Colors.blueGrey[50] : null,
+    );
   }
+}
 
-  _submitButton(BuildContext context) {
-    return ElevatedButton(
-      key: const Key("listUserSubmitButtonKey"),
-      style: ElevatedButton.styleFrom(
-        elevation: 2,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(5),
-        ),
+class UserTableCell extends StatelessWidget {
+  final int flex;
+  final String text;
+  final TextAlign alignment;
+
+  const UserTableCell({
+    super.key,
+    required this.flex,
+    required this.text,
+    this.alignment = TextAlign.left,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: flex,
+      child: Text(text, textAlign: alignment),
+    );
+  }
+}
+
+class UserActionButtons extends StatelessWidget {
+  final String userId;
+  final GlobalKey<FormBuilderState> formKey;
+
+  const UserActionButtons({
+    super.key,
+    required this.userId,
+    required this.formKey,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: 3,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildActionButton(
+            icon: Icons.edit,
+            onPressed: () => _handleEdit(context),
+          ),
+          const SizedBox(width: 5),
+          _buildActionButton(
+            icon: Icons.visibility,
+            onPressed: () => _handleView(context),
+          ),
+          const SizedBox(width: 5),
+          _buildActionButton(
+            icon: Icons.delete,
+            onPressed: () => _showDeleteConfirmation(context),
+          ),
+        ],
       ),
-      child: Text(S.of(context).list),
-      onPressed: () {
-        if (_formKey.currentState!.saveAndValidate()) {
-          BlocProvider.of<UserBloc>(context).add(
-            UserSearch(
-              int.parse(_formKey.currentState!.fields['rangeStart']?.value),
-              int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
-              _formKey.currentState!.fields['authority']?.value ?? "-",
-              _formKey.currentState!.fields['name']?.value ?? "",
-            ),
-          );
-        }
-      },
     );
   }
 
-  Widget _tableDataActionButtons(BuildContext context, UserSearchSuccessState state, int index) {
-    return Expanded(
-        flex: 3,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(Icons.edit, size: 20),
-              onPressed: () {
-                context.pushNamed(
-                  'userEdit',
-                  pathParameters: {'id': state.userList[index].id!},
-                ).then((_) => _refreshList(context));
-              },
-            ),
-            const SizedBox(width: 5),
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(Icons.visibility, size: 20),
-              onPressed: () {
-                context.pushNamed(
-                  'userView',
-                  pathParameters: {'id': state.userList[index].id!},
-                );
-              },
-            ),
-            const SizedBox(width: 5),
-            IconButton(
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(),
-              icon: const Icon(Icons.delete, size: 20),
-              onPressed: () => _showDeleteConfirmation(context, state.userList[index].id!),
-            ),
-          ],
-        ));
+  Widget _buildActionButton({
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return IconButton(
+      padding: EdgeInsets.zero,
+      constraints: const BoxConstraints(),
+      icon: Icon(icon, size: 20),
+      onPressed: onPressed,
+    );
   }
 
-  void _showDeleteConfirmation(BuildContext context, String userId) {
+  void _handleEdit(BuildContext context) {
+    context.pushNamed(
+      'userEdit',
+      pathParameters: {'id': userId},
+    ).then((_) => _refreshList(context));
+  }
+
+  void _handleView(BuildContext context) {
+    context.pushNamed(
+      'userView',
+      pathParameters: {'id': userId},
+    );
+  }
+
+  void _showDeleteConfirmation(BuildContext context) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -429,15 +535,15 @@ class ListUserScreen extends StatelessWidget {
   }
 
   void _refreshList(BuildContext context) {
-    if (_formKey.currentState?.saveAndValidate() ?? false) {
+    if (formKey.currentState?.saveAndValidate() ?? false) {
       context.read<UserBloc>().add(
-            UserSearch(
-              int.parse(_formKey.currentState!.fields['rangeStart']?.value),
-              int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
-              _formKey.currentState!.fields['authority']?.value ?? "-",
-              _formKey.currentState!.fields['name']?.value ?? "",
-            ),
-          );
+        UserSearch(
+          int.parse(formKey.currentState!.fields['rangeStart']?.value),
+          int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+          formKey.currentState!.fields['authority']?.value ?? "-",
+          formKey.currentState!.fields['name']?.value ?? "",
+        ),
+      );
     }
   }
 }
