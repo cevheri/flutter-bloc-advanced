@@ -29,6 +29,7 @@
 
   "required_range": "Range is required",
   "list": "List",
+  "filter": "Filter",
   "list_user": "List User",
   "new_user": "New User",
   "edit_user": "Edit User",

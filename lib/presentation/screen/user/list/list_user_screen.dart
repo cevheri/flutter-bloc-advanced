@@ -38,13 +38,13 @@ class ListUserScreen extends StatelessWidget {
   void _refreshUserList(BuildContext context) {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       context.read<UserBloc>().add(
-        UserSearch(
-          int.parse(_formKey.currentState!.fields['rangeStart']?.value),
-          int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
-          _formKey.currentState!.fields['authority']?.value ?? "-",
-          _formKey.currentState!.fields['name']?.value ?? "",
-        ),
-      );
+            UserSearch(
+              int.parse(_formKey.currentState!.fields['rangeStart']?.value),
+              int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
+              _formKey.currentState!.fields['authority']?.value ?? "-",
+              _formKey.currentState!.fields['name']?.value ?? "",
+            ),
+          );
     }
   }
 }
@@ -120,19 +120,12 @@ class UserSearchSection extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.max,
             children: [
-              const Flexible(
-                flex: 2,
-                child: AuthorityDropdown(),
-              ),
+              SizedBox(width: 75, child: Text(S.of(context).filter)),
+              const Flexible(flex: 2, child: AuthorityDropdown()),
               const SizedBox(width: 10),
-              const SizedBox(
-                width: 200,
-                child: PaginationControls(),
-              ),
+              const SizedBox(width: 200, child: PaginationControls()),
               const SizedBox(width: 10),
-              Flexible(
-                child: SearchNameField(),
-              ),
+              const Flexible(child: SearchNameField()),
               const SizedBox(width: 10),
               SearchActionButtons(formKey: formKey),
             ],
@@ -160,9 +153,9 @@ class AuthorityDropdown extends StatelessWidget {
               ),
               items: state.authorities!
                   .map((role) => DropdownMenuItem(
-                value: role,
-                child: Text(role),
-              ))
+                        value: role,
+                        child: Text(role),
+                      ))
                   .toList(),
               initialValue: state.authorities![0],
             );
@@ -222,10 +215,10 @@ class SearchNameField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return  FormBuilderTextField(
-        name: 'name',
-        decoration: InputDecoration(hintText: S.of(context).name),
-        initialValue: "",
+    return FormBuilderTextField(
+      name: 'name',
+      decoration: InputDecoration(hintText: S.of(context).name),
+      initialValue: "",
     );
   }
 }
@@ -271,13 +264,13 @@ class SearchActionButtons extends StatelessWidget {
   void _handleSearch(BuildContext context) {
     if (formKey.currentState!.saveAndValidate()) {
       context.read<UserBloc>().add(
-        UserSearch(
-          int.parse(formKey.currentState!.fields['rangeStart']?.value),
-          int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-          formKey.currentState!.fields['authority']?.value ?? "-",
-          formKey.currentState!.fields['name']?.value ?? "",
-        ),
-      );
+            UserSearch(
+              int.parse(formKey.currentState!.fields['rangeStart']?.value),
+              int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+              formKey.currentState!.fields['authority']?.value ?? "-",
+              formKey.currentState!.fields['name']?.value ?? "",
+            ),
+          );
     }
   }
 }
@@ -369,7 +362,7 @@ class UserTableContent extends StatelessWidget {
 }
 
 class UserTableRow extends StatelessWidget {
-  final dynamic user; // UserModel tipini import edip kullanmalısınız
+  final dynamic user;
   final int index;
   final GlobalKey<FormBuilderState> formKey;
 
@@ -407,9 +400,7 @@ class UserTableRow extends StatelessWidget {
   }
 
   String _getRoleText(BuildContext context) {
-    return user.authorities!.contains("ROLE_ADMIN")
-        ? S.of(context).admin
-        : S.of(context).guest;
+    return user.authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest;
   }
 
   BoxDecoration _buildRowDecoration(BuildContext context) {
@@ -537,13 +528,13 @@ class UserActionButtons extends StatelessWidget {
   void _refreshList(BuildContext context) {
     if (formKey.currentState?.saveAndValidate() ?? false) {
       context.read<UserBloc>().add(
-        UserSearch(
-          int.parse(formKey.currentState!.fields['rangeStart']?.value),
-          int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-          formKey.currentState!.fields['authority']?.value ?? "-",
-          formKey.currentState!.fields['name']?.value ?? "",
-        ),
-      );
+            UserSearch(
+              int.parse(formKey.currentState!.fields['rangeStart']?.value),
+              int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+              formKey.currentState!.fields['authority']?.value ?? "-",
+              formKey.currentState!.fields['name']?.value ?? "",
+            ),
+          );
     }
   }
 }

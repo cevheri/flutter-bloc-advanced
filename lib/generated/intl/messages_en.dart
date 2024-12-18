@@ -55,6 +55,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "email_send": MessageLookupByLibrary.simpleMessage("Send Email"),
         "english": MessageLookupByLibrary.simpleMessage("English"),
         "failed": MessageLookupByLibrary.simpleMessage("Failed"),
+        "filter": MessageLookupByLibrary.simpleMessage("Filter"),
         "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
         "guest": MessageLookupByLibrary.simpleMessage("Guest"),
         "language_select":

@@ -134,6 +134,10 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     _log.debug("BEGIN: onDelete UserDelete event: {}", [event.id]);
     emit(const UserDeleteLoadingState());
     try {
+      if(event.id == "user-1") {
+        emit(const UserDeleteFailureState(message: "Admin user cannot be deleted"));
+        _log.error("END:onDelete UserDelete event error: {}", ["Admin user cannot be deleted"]);
+      }
       await _repository.deleteUser(event.id);
       emit(const UserDeleteSuccessState());
       _log.debug("END:onDelete UserDelete event success: {}", [event.id]);

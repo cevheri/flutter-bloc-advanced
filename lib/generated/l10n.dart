@@ -340,6 +340,16 @@ class S {
     );
   }
 
+  /// `Filter`
+  String get filter {
+    return Intl.message(
+      'Filter',
+      name: 'filter',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `List User`
   String get list_user {
     return Intl.message(

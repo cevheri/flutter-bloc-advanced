@@ -56,6 +56,7 @@ class MessageLookup extends MessageLookupByLibrary {
         "email_send": MessageLookupByLibrary.simpleMessage("E-posta Gönder"),
         "english": MessageLookupByLibrary.simpleMessage("İngilizce"),
         "failed": MessageLookupByLibrary.simpleMessage("Başarısız"),
+        "filter": MessageLookupByLibrary.simpleMessage("Filtrele"),
         "first_name": MessageLookupByLibrary.simpleMessage("İsim"),
         "guest": MessageLookupByLibrary.simpleMessage("Kullanıcı"),
         "language_select": MessageLookupByLibrary.simpleMessage("Dil Seçimi"),

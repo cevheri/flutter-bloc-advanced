@@ -28,6 +28,7 @@
   "max_length_1000": "Maksimum 1000 karakter uzunluğunda olmalıdır",
   "max_length_4000": "Maksimum 4000 karakter uzunluğunda olmalıdır",
   "list": "Listele",
+  "filter": "Filtrele",
   "list_user": "Kullanıcılar",
   "new_user": "Yeni Kullanıcı Ekle",
   "edit_user": "Kullanıcı Düzenle",
