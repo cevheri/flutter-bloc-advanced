@@ -152,11 +152,11 @@ class HttpUtils {
     return response;
   }
 
-  static Future<http.Response> getRequest(String endpoint) async {
+  static Future<http.Response> getRequest(String endpoint, {String? pathParams, Map<String, String>? queryParams}) async {
     debugPrint("BEGIN: GET Request Method start : ${ProfileConstants.api}$endpoint");
 
     /// if isMock is true, return mock data instead of making a request
-    if (!ProfileConstants.isProduction) return (await mockRequest('GET', endpoint));
+    if (!ProfileConstants.isProduction) return (await mockRequest('GET', endpoint, pathParams: pathParams, queryParams: queryParams));
     final http.Response response;
     final headers = await HttpUtils.headers();
     try {
@@ -232,9 +232,9 @@ class HttpUtils {
     return response;
   }
 
-  static Future<http.Response> deleteRequest(String endpoint) async {
+  static Future<http.Response> deleteRequest(String endpoint, {String? pathParams, Map<String, String>? queryParams}) async {
     debugPrint("BEGIN: DELETE Request Method start : ${ProfileConstants.api}$endpoint");
-    if (!ProfileConstants.isProduction) return await mockRequest('DELETE', endpoint);
+    if (!ProfileConstants.isProduction) return await mockRequest('DELETE', endpoint, pathParams: pathParams, queryParams: queryParams);
     var headers = await HttpUtils.headers();
     final http.Response response;
     try {
@@ -271,7 +271,7 @@ class HttpUtils {
   //   }
   // }
 
-  static Future<http.Response> mockRequest(String httpMethod, String endpoint) async {
+  static Future<http.Response> mockRequest(String httpMethod, String endpoint, {String? pathParams, Map<String, String>? queryParams}) async {
     debugPrint("BEGIN: Mock Request Method start : $httpMethod $endpoint");
 
     var headers = await HttpUtils.headers();
@@ -303,20 +303,27 @@ class HttpUtils {
       String path = ProfileConstants.api;
       // @formatter:off
       // use GET_resource.json for all GET requests except for id based GET requests
-      final queryParams =
-          endpoint
-              .replaceAll("/", "_")
-              .replaceAll("?", "_")
-              .replaceAll("&", "_")
-              .replaceAll("=", "_")
-              .replaceAll(",", "_")
-              .replaceAll(".", "_")
-              .replaceAll(";", "_")
-              .replaceAll("-", "_")
-      ;
+      // final queryParams =
+      //     endpoint
+      //         .replaceAll("/", "_")
+      //         .replaceAll("?", "_")
+      //         .replaceAll("&", "_")
+      //         .replaceAll("=", "_")
+      //         .replaceAll(",", "_")
+      //         .replaceAll(".", "_")
+      //         .replaceAll(";", "_")
+      //         .replaceAll("-", "_")
+      // ;
       // @formatter:on
-      String fileName = "$httpMethod$queryParams.json";
-      String mockDataPath = "$path/$fileName";
+      final filePath = endpoint.replaceAll("/", "_");
+      if (pathParams != null) {
+        path += "/$httpMethod${filePath}pathParams.json";
+      } else if (queryParams != null) {
+        path += "/$httpMethod${filePath}_queryParams.json";
+      } else {
+        path += "/$httpMethod$filePath.json";
+      }
+      final mockDataPath = "assets/$path";
       debugPrint("Mock data path: $mockDataPath");
       responseBody = await rootBundle.loadString(mockDataPath);
       response = Future.value(http.Response(responseBody, httpStatusCode));
