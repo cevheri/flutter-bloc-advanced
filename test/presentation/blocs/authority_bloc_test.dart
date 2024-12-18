@@ -33,7 +33,7 @@ void main() {
   //region state
   /// Authority State Tests
   group("AuthorityState", () {
-    const authorities = [Authority(name: "test")];
+    const authorities = [ "test"];
     const status = AuthorityStatus.initial;
 
     test("supports value comparisons", () {
