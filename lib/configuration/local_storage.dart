@@ -41,7 +41,6 @@ class AppLocalStorageCached {
 /// LocalStorage predefined keys
 enum StorageKeys { jwtToken, roles, language, username, theme }
 
-
 /// Application Local Storage
 ///
 /// This class is used to store data locally with the help of shared preferences.

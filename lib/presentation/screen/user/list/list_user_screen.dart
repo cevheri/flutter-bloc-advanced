@@ -1,12 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 
+/// Main screen widget for displaying user list functionality.
+/// Handles authority loading and user state changes.
+/// Contains the main layout structure and search functionality.
 class ListUserScreen extends StatelessWidget {
   ListUserScreen({super.key});
 
@@ -14,7 +19,6 @@ class ListUserScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    _loadAuthority(context);
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
@@ -25,30 +29,32 @@ class ListUserScreen extends StatelessWidget {
     );
   }
 
-  void _loadAuthority(BuildContext context) {
-    BlocProvider.of<AuthorityBloc>(context).add(const AuthorityLoad());
-  }
-
   void _handleUserStateChanges(BuildContext context, UserState state) {
-    if (state.status == UserStatus.success) {
-      _refreshUserList(context);
+    debugPrint("check: ${state.status}");
+    switch (state.status) {
+      case UserStatus.searchSuccess:
+      case UserStatus.deleteSuccess:
+      case UserStatus.saveSuccess:
+      case UserStatus.viewSuccess:
+        _refreshUserList(context);
+        break;
+      default:
+        break;
     }
   }
 
   void _refreshUserList(BuildContext context) {
+    debugPrint("checkpoint: refresh user list 1");
     if (_formKey.currentState?.saveAndValidate() ?? false) {
-      context.read<UserBloc>().add(
-            UserSearch(
-              int.parse(_formKey.currentState!.fields['rangeStart']?.value),
-              int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
-              _formKey.currentState!.fields['authority']?.value ?? "-",
-              _formKey.currentState!.fields['name']?.value ?? "",
-            ),
-          );
+      debugPrint("checkpoint: refresh user list 2");
+      context.read<UserBloc>().add(const UserSearchEvent());
     }
   }
 }
 
+/// Responsible for creating responsive layout for the user list.
+/// Adjusts the layout based on screen width constraints.
+/// Shows error message if screen size is too small.
 class UserListView extends StatelessWidget {
   const UserListView({super.key});
 
@@ -71,6 +77,9 @@ class UserListView extends StatelessWidget {
   }
 }
 
+/// Contains the main content structure for the user list.
+/// Manages the layout of search section, table header and content.
+/// Handles padding and spacing of main components.
 class UserListContent extends StatelessWidget {
   final double horizontalPadding;
   final double maxWidth;
@@ -102,6 +111,9 @@ class UserListContent extends StatelessWidget {
   }
 }
 
+/// Search section widget that contains filtering options.
+/// Includes authority dropdown, pagination controls, and name search.
+/// Manages form state for search parameters.
 class UserSearchSection extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
@@ -136,37 +148,9 @@ class UserSearchSection extends StatelessWidget {
   }
 }
 
-class AuthorityDropdown extends StatelessWidget {
-  const AuthorityDropdown({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(right: 10),
-      child: BlocBuilder<AuthorityBloc, AuthorityState>(
-        builder: (context, state) {
-          if (state is AuthorityLoadSuccessState) {
-            return FormBuilderDropdown(
-              name: 'authority',
-              decoration: InputDecoration(
-                hintText: S.of(context).authorities,
-              ),
-              items: state.authorities!
-                  .map((role) => DropdownMenuItem(
-                        value: role,
-                        child: Text(role),
-                      ))
-                  .toList(),
-              initialValue: state.authorities![0],
-            );
-          }
-          return const SizedBox.shrink();
-        },
-      ),
-    );
-  }
-}
-
+/// Handles pagination input controls.
+/// Contains start and end range text fields.
+/// Includes validation for numeric inputs.
 class PaginationControls extends StatelessWidget {
   const PaginationControls({super.key});
 
@@ -210,6 +194,8 @@ class PaginationControls extends StatelessWidget {
   }
 }
 
+/// Text field widget for user name search functionality.
+/// Provides filtering by user name.
 class SearchNameField extends StatelessWidget {
   const SearchNameField({super.key});
 
@@ -223,6 +209,9 @@ class SearchNameField extends StatelessWidget {
   }
 }
 
+/// Contains search and create user action buttons.
+/// Handles search submission and navigation to create user screen.
+/// Manages form validation before search.
 class SearchActionButtons extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
@@ -245,7 +234,7 @@ class SearchActionButtons extends StatelessWidget {
         ElevatedButton(
           key: const Key("listUserCreateButtonKey"),
           style: _buttonStyle(),
-          onPressed: () => context.pushNamed('userCreate'),
+          onPressed: () => context.goNamed('userCreate'),
           child: Text(S.of(context).new_user),
         ),
       ],
@@ -264,17 +253,20 @@ class SearchActionButtons extends StatelessWidget {
   void _handleSearch(BuildContext context) {
     if (formKey.currentState!.saveAndValidate()) {
       context.read<UserBloc>().add(
-            UserSearch(
-              int.parse(formKey.currentState!.fields['rangeStart']?.value),
-              int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-              formKey.currentState!.fields['authority']?.value ?? "-",
-              formKey.currentState!.fields['name']?.value ?? "",
+            UserSearchEvent(
+              page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
+              size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+              authority: formKey.currentState!.fields['authority']?.value ?? "-",
+              name: formKey.currentState!.fields['name']?.value ?? "",
             ),
           );
     }
   }
 }
 
+/// Displays the header row of the user table.
+/// Shows column titles for user properties.
+/// Manages layout and styling of header columns.
 class UserTableHeader extends StatelessWidget {
   const UserTableHeader({super.key});
 
@@ -306,6 +298,9 @@ class UserTableHeader extends StatelessWidget {
   }
 }
 
+/// Reusable widget for table column headers.
+/// Manages individual column header styling and layout.
+/// Handles text alignment and flex sizing.
 class TableColumnHeader extends StatelessWidget {
   final int flex;
   final String title;
@@ -331,6 +326,9 @@ class TableColumnHeader extends StatelessWidget {
   }
 }
 
+/// Displays the main content of the user table.
+/// Renders user list data from UserBloc state.
+/// Creates UserTableRow widgets for each user.
 class UserTableContent extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
@@ -343,13 +341,13 @@ class UserTableContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
-        if (state is UserSearchSuccessState) {
+        if (state.status == UserStatus.searchSuccess) {
           return ListView.builder(
-            itemCount: state.userList.length,
+            itemCount: state.userList?.length,
             shrinkWrap: true,
             physics: const ClampingScrollPhysics(),
             itemBuilder: (context, index) => UserTableRow(
-              user: state.userList[index],
+              user: state.userList?[index],
               index: index,
               formKey: formKey,
             ),
@@ -361,6 +359,9 @@ class UserTableContent extends StatelessWidget {
   }
 }
 
+/// Individual row widget for displaying user data.
+/// Handles row styling (alternating colors).
+/// Displays user properties and action buttons.
 class UserTableRow extends StatelessWidget {
   final dynamic user;
   final int index;
@@ -418,6 +419,9 @@ class UserTableRow extends StatelessWidget {
   }
 }
 
+/// Reusable cell widget for table data.
+/// Manages individual cell content display.
+/// Handles text alignment and flex sizing.
 class UserTableCell extends StatelessWidget {
   final int flex;
   final String text;
@@ -439,6 +443,9 @@ class UserTableCell extends StatelessWidget {
   }
 }
 
+/// Contains action buttons for each user row.
+/// Handles edit, view, and delete operations.
+/// Manages confirmation dialogs and navigation.
 class UserActionButtons extends StatelessWidget {
   final String userId;
   final GlobalKey<FormBuilderState> formKey;
@@ -489,17 +496,11 @@ class UserActionButtons extends StatelessWidget {
   }
 
   void _handleEdit(BuildContext context) {
-    context.pushNamed(
-      'userEdit',
-      pathParameters: {'id': userId},
-    ).then((_) => _refreshList(context));
+    context.goNamed('userEdit', pathParameters: {'id': userId}); //then((_) => !context.mounted ? null : _refreshList(context));
   }
 
   void _handleView(BuildContext context) {
-    context.pushNamed(
-      'userView',
-      pathParameters: {'id': userId},
-    );
+    context.goNamed('userView', pathParameters: {'id': userId}); //.then((_) => !context.mounted ? null : _refreshList(context));
   }
 
   void _showDeleteConfirmation(BuildContext context) {
@@ -514,27 +515,33 @@ class UserActionButtons extends StatelessWidget {
             child: Text(S.of(context).no),
           ),
           TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<UserBloc>().add(UserDeleteEvent(userId));
-            },
-            child: Text(S.of(context).yes),
-          ),
+              onPressed: () {
+                Navigator.pop(context);
+                context.read<UserBloc>().add(UserDeleteEvent(userId));
+                late final StreamSubscription<UserState> subscription;
+                subscription = context.read<UserBloc>().stream.listen((state) {
+                  if (state.status == UserStatus.deleteSuccess && context.mounted) {
+                    _refreshList(context);
+                    subscription.cancel();
+                  }
+                });
+              },
+              child: Text(S.of(context).yes)),
         ],
       ),
     );
   }
 
   void _refreshList(BuildContext context) {
-    if (formKey.currentState?.saveAndValidate() ?? false) {
-      context.read<UserBloc>().add(
-            UserSearch(
-              int.parse(formKey.currentState!.fields['rangeStart']?.value),
-              int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-              formKey.currentState!.fields['authority']?.value ?? "-",
-              formKey.currentState!.fields['name']?.value ?? "",
-            ),
-          );
-    }
+    //if (formKey.currentState?.saveAndValidate() ?? false) {
+    context.read<UserBloc>().add(
+          UserSearchEvent(
+            page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
+            size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+            authority: formKey.currentState!.fields['authority']?.value ?? "-",
+            name: formKey.currentState!.fields['name']?.value ?? "",
+          ),
+        );
+    // }
   }
 }

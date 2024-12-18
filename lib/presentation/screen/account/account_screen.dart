@@ -120,12 +120,12 @@ class AccountScreen extends StatelessWidget {
       final user = _createUserFromFormData(formData, state.data?.id);
 
       context.read<UserBloc>().add(UserSubmitEvent(user));
-      late final StreamSubscription<UserState> userSubscription;
-      userSubscription = context.read<UserBloc>().stream.listen((userState) {
-        if (userState.status == UserStatus.success && context.mounted) {
+      late final StreamSubscription<UserState> subscription;
+      subscription = context.read<UserBloc>().stream.listen((userState) {
+        if ((userState.status == UserStatus.success || userState.status == UserStatus.saveSuccess) && context.mounted) {
           context.read<AccountBloc>().add(const AccountFetchEvent());
           _formKey.currentState?.reset();
-          userSubscription.cancel();
+          subscription.cancel();
         }
       }); // cancel the stream after the first event
     }

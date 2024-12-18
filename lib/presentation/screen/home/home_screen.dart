@@ -41,7 +41,9 @@ class HomeScreen extends StatelessWidget {
           debugPrint("HomeScreen account bloc builder: ${state.status}");
           if (state.status == AccountStatus.success) {
             return Scaffold(
-              appBar: AppBar(title: const Text(AppConstants.appName),),
+              appBar: AppBar(
+                title: const Text(AppConstants.appName),
+              ),
               key: _scaffoldKey,
               body: Center(child: Column(children: [backgroundImage(context)])),
               drawer: _buildDrawer(context),

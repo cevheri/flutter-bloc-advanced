@@ -70,7 +70,7 @@ class AppGoRouterConfig {
         return ApplicationRoutesConstants.login;
       }
       // check : when running in production mode and jwtToken is expired then redirect to login page
-      if(ProfileConstants.isProduction && SecurityUtils.isTokenExpired()) {
+      if (ProfileConstants.isProduction && SecurityUtils.isTokenExpired()) {
         _log.debug("END: redirect - jwtToken is expired");
         return ApplicationRoutesConstants.login;
       }

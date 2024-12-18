@@ -1,4 +1,3 @@
-
 /// Enum for the mode of the editor form
 ///
 /// The editor form can be in one of three modes:

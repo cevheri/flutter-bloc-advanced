@@ -1,7 +1,8 @@
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter/material.dart';
 
 /// App stateless widget
 /// This class is used to create a stateless widget that can be used in the app.
@@ -51,7 +52,9 @@ abstract class AppStatelessWidget extends StatelessWidget {
   const AppStatelessWidget({super.key});
 
   Widget buildCupertinoWidget(BuildContext context);
+
   Widget buildMaterialWidget(BuildContext context);
+
   Widget buildWebWidget(BuildContext context);
 
   @override

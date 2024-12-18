@@ -26,7 +26,6 @@
   "max_length_500": "Field cannot be more than 500 characters long",
   "max_length_1000": "Field cannot be more than 1000 characters long",
   "max_length_4000": "Field cannot be more than 4000 characters long",
-
   "required_range": "Range is required",
   "list": "List",
   "filter": "Filter",
