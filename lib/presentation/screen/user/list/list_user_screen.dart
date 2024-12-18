@@ -68,6 +68,62 @@ class ListUserScreen extends StatelessWidget {
     );
   }
 
+  Widget _tableHeader(BuildContext context) {
+    return Column(
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.max,
+          verticalDirection: VerticalDirection.down,
+          children: [
+            Expanded(
+              flex: 5,
+              child: Text(S.of(context).role, textAlign: TextAlign.left, style: _headerStyle),
+            ),
+            const SizedBox(width: 5),
+            Expanded(
+              flex: 3,
+              child: Text(S.of(context).login, textAlign: TextAlign.left, style: _headerStyle),
+            ),
+            const SizedBox(width: 5),
+            Expanded(
+              flex: 4,
+              child: Text(S.of(context).first_name, textAlign: TextAlign.left, style: _headerStyle),
+            ),
+            const SizedBox(width: 5),
+            Expanded(
+              flex: 4,
+              child: Text(S.of(context).last_name, textAlign: TextAlign.left, style: _headerStyle),
+            ),
+            const SizedBox(width: 5),
+            Expanded(
+              flex: 4,
+              child: Text(S.of(context).email, textAlign: TextAlign.left, style: _headerStyle),
+            ),
+            const SizedBox(width: 5),
+            Expanded(
+              flex: 3,
+              child: Text(S.of(context).active, textAlign: TextAlign.center, style: _headerStyle),
+            ),
+            const SizedBox(width: 5),
+            Expanded(
+              flex: 3,
+              child: Container(),
+            ),
+            const SizedBox(width: 5),
+          ],
+        ),
+        const SizedBox(height: 10),
+        const Divider(
+          height: 2,
+          color: Colors.grey,
+          thickness: 1.5,
+        ),
+      ],
+    );
+  }
+
   BlocBuilder<UserBloc, UserState> _tableData(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
@@ -112,83 +168,32 @@ class ListUserScreen extends StatelessWidget {
     );
   }
 
-  Expanded _tableDataActivatedSwitch(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 3, child: Text(state.userList[index].activated! ? "active" : "passive"));
-
-  Expanded _tableDataEmail(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 15, child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left));
-
-  Expanded _tableDataLastName(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 10, child: Text(state.userList[index].lastName.toString(), textAlign: TextAlign.left));
-
-  Expanded _tableDataFirsName(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 10, child: Text(state.userList[index].firstName.toString(), textAlign: TextAlign.left));
-
-  Expanded _tableDataLogin(UserSearchSuccessState state, int index) =>
-      Expanded(flex: 10, child: Text(state.userList[index].login.toString(), textAlign: TextAlign.left));
-
   Expanded _tableDataAuthority(UserSearchSuccessState state, int index, BuildContext context) {
     return Expanded(
-        flex: 7,
-        child: Text(state.userList[index].authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest,
-            textAlign: TextAlign.left));
-  }
-
-  Widget _tableHeader(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.max,
-          verticalDirection: VerticalDirection.down,
-          children: [
-            Expanded(
-              flex: 7,
-              child: Text(S.of(context).role, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 10,
-              child: Text(S.of(context).login, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 10,
-              child: Text(S.of(context).first_name, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 10,
-              child: Text(S.of(context).last_name, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 15,
-              child: Text(S.of(context).email, textAlign: TextAlign.left, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 3,
-              child: Text(S.of(context).active, textAlign: TextAlign.center, style: _headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 3,
-              child: Container(),
-            ),
-            const SizedBox(width: 5),
-          ],
-        ),
-        const SizedBox(height: 10),
-        const Divider(
-          height: 2,
-          color: Colors.grey,
-          thickness: 1.5,
-        ),
-      ],
+      flex: 5,
+      child:
+          Text(state.userList[index].authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest, textAlign: TextAlign.left),
     );
   }
+
+  Expanded _tableDataLogin(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 3, child: Text(state.userList[index].login.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataFirsName(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 4, child: Text(state.userList[index].firstName.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataLastName(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 4, child: Text(state.userList[index].lastName.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataEmail(UserSearchSuccessState state, int index) =>
+      Expanded(flex: 4, child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left));
+
+  Expanded _tableDataActivatedSwitch(UserSearchSuccessState state, int index) => Expanded(
+      flex: 3,
+      child: Text(
+        state.userList[index].activated! ? "active" : "passive",
+        textAlign: TextAlign.left,
+      ));
 
   BoxDecoration buildTableRowDecoration(int index, BuildContext context) {
     // dark or light mode row decoration
