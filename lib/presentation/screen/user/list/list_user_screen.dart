@@ -23,11 +23,22 @@ class ListUserScreen extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
       child: Scaffold(
-        appBar: AppBar(title: Text(S.of(context).list_user)),
+        appBar: _buildAppBar(context),
         body: const UserListView(),
       ),
     );
   }
+
+  _buildAppBar(BuildContext context) {
+    return AppBar(
+      title: Text(S.of(context).list_user),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => context.go('/'),
+      ),
+    );
+  }
+
 
   void _handleUserStateChanges(BuildContext context, UserState state) {
     debugPrint("check: ${state.status}");
