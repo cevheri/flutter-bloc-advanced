@@ -77,17 +77,17 @@ void main() {
   /// Account Event Tests
   group("AccountEvent", () {
     test("supports value comparisons", () {
-      expect(const AccountLoad(), const AccountLoad());
+      expect(const AccountFetchEvent(), const AccountFetchEvent());
     });
 
     test("props returns []", () {
       expect(const AccountEvent().props, []);
-      expect(const AccountLoad().props, []);
+      expect(const AccountFetchEvent().props, []);
     });
 
     test("toString returns correct value", () {
       expect(const AccountEvent().toString(), "AccountEvent()");
-      expect(const AccountLoad().toString(), "AccountLoad()");
+      expect(const AccountFetchEvent().toString(), "AccountLoad()");
     });
   });
   //endregion event
@@ -118,7 +118,7 @@ void main() {
           when(repository.getAccount()).thenAnswer((_) async => mockUserFullPayload);
           return bloc;
         },
-        act: (bloc) => bloc.add(const AccountLoad()),
+        act: (bloc) => bloc.add(const AccountFetchEvent()),
         expect: () => [
           const AccountState(status: AccountStatus.loading),
           AccountState(account: mockUserFullPayload, status: AccountStatus.success),
@@ -131,7 +131,7 @@ void main() {
           when(repository.getAccount()).thenThrow(Exception("error"));
           return bloc;
         },
-        act: (bloc) => bloc.add(const AccountLoad()),
+        act: (bloc) => bloc.add(const AccountFetchEvent()),
         expect: () => [
           const AccountState(status: AccountStatus.loading),
           const AccountState(status: AccountStatus.failure),

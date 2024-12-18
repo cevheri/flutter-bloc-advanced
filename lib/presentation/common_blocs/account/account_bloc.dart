@@ -21,11 +21,11 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
       : _repository = repository,
         super(const AccountState()) {
     on<AccountEvent>((event, emit) {});
-    on<AccountLoad>(_onLoad);
+    on<AccountFetchEvent>(_onFetchAccount);
   }
 
   /// Load the current account.
-  FutureOr<void> _onLoad(AccountLoad event, Emitter<AccountState> emit) async {
+  FutureOr<void> _onFetchAccount(AccountFetchEvent event, Emitter<AccountState> emit) async {
     _log.debug("BEGIN: getAccount bloc: _onLoad");
     emit(state.copyWith(status: AccountStatus.loading));
 
