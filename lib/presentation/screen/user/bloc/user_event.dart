@@ -21,39 +21,65 @@ class UserSearch extends UserEvent {
   );
 }
 
-class UserCreate extends UserEvent {
-  const UserCreate({required this.user});
-
-  final User user;
+class UserEditorInit extends UserEvent {
+  const UserEditorInit();
 
   @override
   List<Object> get props => [];
 }
 
-class UserUpdate extends UserEvent {
-  const UserUpdate({required this.user});
-
+class UserSubmitEvent extends UserEvent {
   final User user;
 
-  @override
-  List<Object> get props => [];
-}
-
-class UserEdit extends UserEvent {
-  const UserEdit({required this.user});
-
-  final User user;
+  const UserSubmitEvent(this.user);
 
   @override
-  List<Object> get props => [];
+  List<Object> get props => [user];
 }
+
+
+// class UserCreate extends UserEvent {
+//   const UserCreate({required this.user});
+//
+//   final User user;
+//
+//   @override
+//   List<Object> get props => [];
+// }
+//
+// class UserSaveEvent extends UserEvent {
+//   const UserSaveEvent({required this.user});
+//
+//   final User user;
+//
+//   @override
+//   List<Object> get props => [];
+// }
+//
+// class UserEditEvent extends UserEvent {
+//   const UserEditEvent({required this.user});
+//
+//   final User user;
+//
+//   @override
+//   List<Object> get props => [];
+// }
 
 class UserList extends UserEvent {}
 
-class FetchUserEvent extends UserEvent {
+class UserFetchEvent extends UserEvent {
   final String id;
 
-  const FetchUserEvent(this.id);
+  const UserFetchEvent(this.id);
+
+  @override
+  List<Object> get props => [id];
+}
+
+class UserDeleteEvent extends UserEvent {
+  final String id;
+
+  const UserDeleteEvent(this.id);
 
   @override
   List<Object> get props => [id];

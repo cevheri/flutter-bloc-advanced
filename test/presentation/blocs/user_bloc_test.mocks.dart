@@ -69,9 +69,18 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
       ) as _i3.Future<_i4.User?>);
 
   @override
-  _i3.Future<_i4.User?> createUser(_i4.User? user) => (super.noSuchMethod(
+  _i3.Future<_i4.User?> create(_i4.User? user) => (super.noSuchMethod(
         Invocation.method(
-          #createUser,
+          #create,
+          [user],
+        ),
+        returnValue: _i3.Future<_i4.User?>.value(),
+      ) as _i3.Future<_i4.User?>);
+
+  @override
+  _i3.Future<_i4.User?> update(_i4.User? user) => (super.noSuchMethod(
+        Invocation.method(
+          #update,
           [user],
         ),
         returnValue: _i3.Future<_i4.User?>.value(),
@@ -132,15 +141,6 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
         ),
         returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
       ) as _i3.Future<List<_i4.User>>);
-
-  @override
-  _i3.Future<_i4.User?> updateUser(_i4.User? user) => (super.noSuchMethod(
-        Invocation.method(
-          #updateUser,
-          [user],
-        ),
-        returnValue: _i3.Future<_i4.User?>.value(),
-      ) as _i3.Future<_i4.User?>);
 
   @override
   _i3.Future<void> deleteUser(String? id) => (super.noSuchMethod(

@@ -69,9 +69,9 @@ class LoginScreen extends StatelessWidget {
           decoration: InputDecoration(labelText: S.of(context).login_user_name),
           validator: FormBuilderValidators.compose(
             [
-              FormBuilderValidators.required(errorText: S.of(context).username_required),
-              FormBuilderValidators.minLength(4, errorText: S.of(context).username_min_length),
-              FormBuilderValidators.maxLength(20, errorText: S.of(context).username_max_length)
+              FormBuilderValidators.required(errorText: S.of(context).required_field),
+              FormBuilderValidators.minLength(4, errorText: S.of(context).min_length_4),
+              FormBuilderValidators.maxLength(20, errorText: S.of(context).max_length_20)
             ],
           ),
         ),

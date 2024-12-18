@@ -27,7 +27,7 @@ class HomeScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) {
         //debugPrint("HomeScreen account blocProvider");
-        return AccountBloc(repository: AccountRepository())..add(const AccountLoad());
+        return AccountBloc(repository: AccountRepository())..add(const AccountFetchEvent());
       },
       child: BlocBuilder<AccountBloc, AccountState>(
         buildWhen: (previous, current) {

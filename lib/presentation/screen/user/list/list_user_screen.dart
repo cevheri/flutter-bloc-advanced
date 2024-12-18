@@ -1,14 +1,11 @@
-//ListUserScreen
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority.dart';
+import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-
-import '../../../../../generated/l10n.dart';
-import '../../../common_blocs/authority/authority_bloc.dart';
-import '../bloc/user_bloc.dart';
-import '../edit/edit_user_screen.dart';
+import 'package:go_router/go_router.dart';
 
 class ListUserScreen extends StatelessWidget {
   ListUserScreen({super.key});
@@ -64,6 +61,7 @@ class ListUserScreen extends StatelessWidget {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         if (state is UserSearchSuccessState) {
+          //TODO when create, update or delete user this list will be updated
           return ListView.builder(
             itemCount: state.userList.length,
             shrinkWrap: true,
@@ -95,10 +93,33 @@ class ListUserScreen extends StatelessWidget {
                     //       textAlign: TextAlign.left),
                     // ),
                     const SizedBox(width: 5),
+                    //activated switch button
                     _tableDataActivatedSwitch(state, index),
                     const SizedBox(width: 5),
-                    _tableDataEditButton(context, state, index),
+                    //edit button
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: () => context.pushNamed('userEdit', pathParameters: {'id': state.userList[index].id!}),
+                    ),
                     const SizedBox(width: 5),
+                    //view button
+                    Expanded(
+                      flex: 3,
+                      child: IconButton(
+                        icon: const Icon(Icons.file_present),
+                        onPressed: () => context.pushNamed('userView', pathParameters: {'id': state.userList[index].id!}),
+                      ),
+                    ),
+                    const SizedBox(width: 5),
+                    //TODO user delete button - it can be alert dialog
+                    // Expanded(
+                    //   flex: 3,
+                    //   child: IconButton(
+                    //     icon: const Icon(Icons.delete),
+                    //     onPressed: () => context.pushNamed('userDelete', pathParameters: {'id': state.userList[index].id!}),
+                    //   ),
+                    // ),
+                    // const SizedBox(width: 5),
                   ],
                 ),
               );
@@ -114,40 +135,40 @@ class ListUserScreen extends StatelessWidget {
   Expanded _tableDataActivatedSwitch(UserSearchSuccessState state, int index) =>
       Expanded(flex: 3, child: Text(state.userList[index].activated! ? "active" : "passive"));
 
-  Expanded _tableDataEditButton(BuildContext context, UserSearchSuccessState state, int index) {
-    return Expanded(
-      flex: 3,
-      child: IconButton(
-        key: const Key("listUserEditButtonKey"),
-        alignment: Alignment.centerRight,
-        focusColor: Colors.transparent,
-        hoverColor: Colors.transparent,
-        splashColor: Colors.transparent,
-        highlightColor: Colors.transparent,
-        icon: const Icon(Icons.edit),
-        onPressed: () {
-          //TODO EditUserScreen page routing
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => EditUserScreen(id: state.userList[index].id!)),
-          ).then((value) async {
-            if (listFormKey.currentState!.saveAndValidate()) {
-              if (context.mounted) {
-                BlocProvider.of<UserBloc>(context).add(
-                  UserSearch(
-                    int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
-                    int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
-                    listFormKey.currentState!.fields['authority']?.value ?? "-",
-                    listFormKey.currentState!.fields['name']?.value ?? "",
-                  ),
-                );
-              }
-            }
-          });
-        },
-      ),
-    );
-  }
+  // Expanded _tableDataEditButton(BuildContext context, UserSearchSuccessState state, int index) {
+  //   return Expanded(
+  //     flex: 3,
+  //     child: IconButton(
+  //       key: const Key("listUserEditButtonKey"),
+  //       alignment: Alignment.centerRight,
+  //       focusColor: Colors.transparent,
+  //       hoverColor: Colors.transparent,
+  //       splashColor: Colors.transparent,
+  //       highlightColor: Colors.transparent,
+  //       icon: const Icon(Icons.edit),
+  //       onPressed: () {
+  //         //TODO EditUserScreen page routing
+  //         Navigator.push(
+  //           context,
+  //           MaterialPageRoute(builder: (context) => UserEditorScreen(id: state.userList[index].id!, mode: EditorFormMode.edit)),
+  //         ).then((value) async {
+  //           if (listFormKey.currentState!.saveAndValidate()) {
+  //             if (context.mounted) {
+  //               BlocProvider.of<UserBloc>(context).add(
+  //                 UserSearch(
+  //                   int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
+  //                   int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
+  //                   listFormKey.currentState!.fields['authority']?.value ?? "-",
+  //                   listFormKey.currentState!.fields['name']?.value ?? "",
+  //                 ),
+  //               );
+  //             }
+  //           }
+  //         });
+  //       },
+  //     ),
+  //   );
+  // }
 
   Expanded _tableDataEmail(UserSearchSuccessState state, int index) =>
       Expanded(flex: 15, child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left));
@@ -282,6 +303,22 @@ class ListUserScreen extends StatelessWidget {
             _tableSearchName(context),
             const SizedBox(width: 10),
             _submitButton(context),
+            const SizedBox(width: 10),
+            Expanded(
+              flex: 1,
+              child: ElevatedButton(
+                key: const Key("listUserCreateButtonKey"),
+                style: ElevatedButton.styleFrom(
+                  elevation: 2,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                child: Text(S.of(context).new_user),
+                onPressed: () => context.pushNamed('userCreate'),
+              ),
+            ),
+            const SizedBox(width: 5),
             Expanded(flex: 3, child: Container()),
           ],
         ),

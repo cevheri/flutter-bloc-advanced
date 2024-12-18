@@ -18,8 +18,6 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AccountBloc>(context).add(const AccountLoad());
-
     return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 

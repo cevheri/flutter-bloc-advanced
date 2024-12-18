@@ -61,7 +61,7 @@ class AppGoRouterConfig {
       // check : when redirect the new page then load the account data
       var accountBloc = context.read<AccountBloc>();
       await Future.delayed(const Duration(microseconds: 500));
-      accountBloc.add(const AccountLoad());
+      accountBloc.add(const AccountFetchEvent());
       _log.debug("redirect - load event : accountBloc.add(AccountLoad())");
 
       // check : when jwtToken is null then redirect to login page

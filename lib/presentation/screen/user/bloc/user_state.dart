@@ -89,3 +89,17 @@ class UserListFailureState extends UserState {
 
   const UserListFailureState({required this.message}) : super(status: UserStatus.failure);
 }
+
+class UserDeleteLoadingState extends UserState {
+  const UserDeleteLoadingState() : super(status: UserStatus.loading);
+}
+
+class UserDeleteSuccessState extends UserState {
+  const UserDeleteSuccessState() : super(status: UserStatus.success);
+}
+
+class UserDeleteFailureState extends UserState {
+  final String message;
+
+  const UserDeleteFailureState({required this.message}) : super(status: UserStatus.failure);
+}

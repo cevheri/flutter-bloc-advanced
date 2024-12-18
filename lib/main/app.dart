@@ -56,7 +56,7 @@ class App extends StatelessWidget {
         BlocProvider<LoginBloc>(create: (_) => LoginBloc(repository: LoginRepository())),
         BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
         BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
-        BlocProvider<UserBloc>(create: (_) => UserBloc(userRepository: UserRepository())),
+        BlocProvider<UserBloc>(create: (_) => UserBloc(repository: UserRepository())),
         BlocProvider<CityBloc>(create: (_) => CityBloc(repository: CityRepository())),
         BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(repository: DistrictRepository())),
         BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),

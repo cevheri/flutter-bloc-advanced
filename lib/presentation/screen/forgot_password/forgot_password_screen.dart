@@ -64,7 +64,7 @@ class ForgotPasswordScreen extends StatelessWidget {
         decoration: InputDecoration(labelText: t.email),
         maxLines: 1,
         validator: FormBuilderValidators.compose(
-          [FormBuilderValidators.required(errorText: t.email_required), FormBuilderValidators.email(errorText: t.email_pattern)],
+          [FormBuilderValidators.required(errorText: t.required_field), FormBuilderValidators.email(errorText: t.email_pattern)],
         ),
       ),
     );

@@ -5,8 +5,6 @@ import 'package:flutter_bloc_advance/presentation/screen/forgot_password/forgot_
 import 'package:flutter_bloc_advance/presentation/screen/home/home_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/login/login_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/create/create_user_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/edit/edit_user_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
 import 'package:get/get.dart';
 
@@ -21,9 +19,10 @@ class AppGetRouterConfig {
     GetPage(name: 'settings', page: () => SettingsScreen()),
     GetPage(name: 'account', page: () => AccountScreen()),
     GetPage(name: 'user', page: () => ListUserScreen()),
+    //TODO user create, edit, view in GetX
     // GetPage(name:'user/:id', page:()=>ViewUserScreen()),
-    GetPage(name: 'user/new', page: () => CreateUserScreen()),
-    GetPage(name: 'user/:id/edit', page: () => EditUserScreen(id: "")),
+    // GetPage(name: 'user/new', page: () => CreateUserScreen()),
+    // GetPage(name: 'user/:id/edit', page: () => EditUserScreen(id: "")),
 
     // last item is the 404 page
     GetPage(name: 'not-found', page: () => const Scaffold(body: Center(child: Text('Not Found')))),

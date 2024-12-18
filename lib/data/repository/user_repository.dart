@@ -54,7 +54,7 @@ class UserRepository {
   /// Create user method that creates a new user
   ///
   /// @param user the user object
-  Future<User?> createUser(User user) async {
+  Future<User?> create(User user) async {
     _log.debug("BEGIN:createUser repository start : {}", [user.toString()]);
     if (user.login == null || user.login!.isEmpty) {
       throw BadRequestException("User login is required");
@@ -65,6 +65,17 @@ class UserRepository {
     final httpResponse = await HttpUtils.postRequest<User>("/admin/$_resource", user);
     final response = User.fromJsonString(httpResponse.body);
     _log.debug("END:createUser successful");
+    return response;
+  }
+  /// Edit user method that editUser a user
+  Future<User?> update(User user) async {
+    _log.debug("BEGIN:updateUser repository start : {}", [user.toString()]);
+    if (user.id == null || user.id!.isEmpty) {
+      throw BadRequestException(userIdRequired);
+    }
+    final httpResponse = await HttpUtils.putRequest<User>("/admin/$_resource", user);
+    final response = User.fromJsonString(httpResponse.body);
+    _log.debug("END:updateUser successful");
     return response;
   }
 
@@ -97,17 +108,7 @@ class UserRepository {
     return result;
   }
 
-  /// Edit user method that editUser a user
-  Future<User?> updateUser(User user) async {
-    _log.debug("BEGIN:updateUser repository start : {}", [user.toString()]);
-    if (user.id == null || user.id!.isEmpty) {
-      throw BadRequestException(userIdRequired);
-    }
-    final httpResponse = await HttpUtils.putRequest<User>("/admin/$_resource", user);
-    final response = User.fromJsonString(httpResponse.body);
-    _log.debug("END:updateUser successful");
-    return response;
-  }
+
 
   Future<void> deleteUser(String id) async {
     _log.debug("BEGIN:deleteUser repository start - id: {}", [id]);
