@@ -7,10 +7,10 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 /// This class contains the user form fields that are used in the user form.
 /// The user form fields are used to display the user form fields in the user form.
 class UserFormFields {
-
   static _requiredValidator(BuildContext context) {
     return FormBuilderValidators.required(errorText: S.of(context).required_field);
   }
+
   static _txtValidator(BuildContext context) {
     return [
       _requiredValidator(context),
@@ -106,11 +106,12 @@ class UserFormFields {
   /// [context] BuildContext current context
   /// [initialValue] List<String>? initial value of the field
   /// [enabled] bool enable the field default is true
-  static Widget authoritiesField(BuildContext context, List<String>? initialValue, {bool enabled = true}) => FormBuilderDropdown<String>(
+  static Widget authoritiesField(BuildContext context, List<String?>? initialValue, {bool enabled = true}) => FormBuilderDropdown<String>(
         key: const Key('userEditorAuthoritiesFieldKey'),
         name: 'authorities',
-        decoration: InputDecoration(labelText: S.of(context).authorities, enabled: enabled),
-        items: initialValue?.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList() ?? [],
+        enabled: enabled,
+        decoration: InputDecoration(labelText: S.of(context).authorities),
+        items: initialValue?.map((e) => DropdownMenuItem(value: e, child: Text(e ?? ''))).toList() ?? [],
         validator: FormBuilderValidators.compose([_requiredValidator(context)]),
       );
 }
