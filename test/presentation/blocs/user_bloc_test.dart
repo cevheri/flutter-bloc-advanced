@@ -38,16 +38,16 @@ void main() {
     });
 
     test("copyWith retains the same values if no arguments are provided", () {
-      const state = UserState(user: null, status: UserStatus.initial);
+      const state = UserState(data: null, status: UserStatus.initial);
       expect(state.copyWith(), state);
     });
 
     test("copyWith replaces non-null parameters", () {
-      const state = UserState(user: null, status: UserStatus.initial);
+      const state = UserState(data: null, status: UserStatus.initial);
       final user = mockUserFullPayload;
       expect(
-        state.copyWith(user: user, status: UserStatus.success),
-        UserState(user: user, status: UserStatus.success),
+        state.copyWith(data: user, status: UserStatus.success),
+        UserState(data: user, status: UserStatus.success),
       );
     });
   });

@@ -3,23 +3,23 @@ part of 'user_bloc.dart';
 enum UserStatus { initial, loading, success, failure }
 
 class UserState extends Equatable {
-  final User? user;
+  final User? data;
   final UserStatus status;
 
   const UserState({
-    this.user,
+    this.data,
     this.status = UserStatus.initial,
   });
 
   UserState copyWith({
-    User? user,
+    User? data,
     UserStatus? status,
   }) {
-    return UserState(status: status ?? this.status, user: user ?? this.user);
+    return UserState(status: status ?? this.status, data: data ?? this.data);
   }
 
   @override
-  List<Object?> get props => [user, status];
+  List<Object?> get props => [data, status];
 }
 
 class UserInitialState extends UserState {
@@ -41,13 +41,13 @@ class UserLoadInProgressState extends UserState {
 class UserLoadSuccessState extends UserState {
   final User userLoadSuccess;
 
-  const UserLoadSuccessState({required this.userLoadSuccess}) : super(user: userLoadSuccess, status: UserStatus.success);
+  const UserLoadSuccessState({required this.userLoadSuccess}) : super(data: userLoadSuccess, status: UserStatus.success);
 }
 
 class UserEditSuccessState extends UserState {
   final User userEditSuccess;
 
-  const UserEditSuccessState({required this.userEditSuccess}) : super(user: userEditSuccess, status: UserStatus.success);
+  const UserEditSuccessState({required this.userEditSuccess}) : super(data: userEditSuccess, status: UserStatus.success);
 }
 
 class UserSearchSuccessState extends UserState {

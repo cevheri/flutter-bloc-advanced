@@ -42,9 +42,9 @@ class AccountScreen extends StatelessWidget {
 
   _buildBody(BuildContext context) {
     return BlocBuilder<AccountBloc, AccountState>(
-      buildWhen: (previous, current) => previous.account != current.account || previous.status != current.status,
+      buildWhen: (previous, current) => previous.data != current.data || previous.status != current.status,
       builder: (context, state) {
-        if (state.account == null) {
+        if (state.data == null) {
           return Center(child: Text(S.of(context).no_data));
         }
         if (state.status == AccountStatus.loading) {
@@ -78,15 +78,15 @@ class AccountScreen extends StatelessWidget {
 
   _buildFormFields(BuildContext context, AccountState state) {
     return [
-      UserFormFields.usernameField(context, state.account?.login, enabled: false),
+      UserFormFields.usernameField(context, state.data?.login, enabled: false),
       const SizedBox(height: 16),
-      UserFormFields.firstNameField(context, state.account?.firstName),
+      UserFormFields.firstNameField(context, state.data?.firstName),
       const SizedBox(height: 16),
-      UserFormFields.lastNameField(context, state.account?.lastName),
+      UserFormFields.lastNameField(context, state.data?.lastName),
       const SizedBox(height: 16),
-      UserFormFields.emailField(context, state.account?.email),
+      UserFormFields.emailField(context, state.data?.email),
       const SizedBox(height: 16),
-      UserFormFields.activatedField(context, state.account?.activated),
+      UserFormFields.activatedField(context, state.data?.activated),
     ];
   }
 
@@ -117,7 +117,7 @@ class AccountScreen extends StatelessWidget {
 
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
-      final user = _createUserFromFormData(formData, state.account?.id);
+      final user = _createUserFromFormData(formData, state.data?.id);
 
       context.read<UserBloc>().add(UserSubmitEvent(user));
       late final StreamSubscription<UserState> userSubscription;

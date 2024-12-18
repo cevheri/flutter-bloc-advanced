@@ -43,7 +43,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(status: UserStatus.loading));
     try {
       final user = event.user.id == null ? await _repository.create(event.user) : await _repository.update(event.user);
-      emit(state.copyWith(status: UserStatus.success, user: user));
+      emit(state.copyWith(status: UserStatus.success, data: user));
       _log.debug("END:onSubmit UserSubmitEvent event success: {}", [user.toString()]);
     } catch (e) {
       emit(state.copyWith(status: UserStatus.failure));

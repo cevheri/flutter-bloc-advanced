@@ -40,7 +40,7 @@ void main() {
 
     test("copyWith retains the same values if no arguments are provided", () {
       const state = AccountState(
-        account: null,
+        data: null,
         status: AccountStatus.initial,
       );
       expect(state.copyWith(), state);
@@ -48,7 +48,7 @@ void main() {
 
     test("copyWith replaces non-null parameters", () {
       const state = AccountState(
-        account: null,
+        data: null,
         status: AccountStatus.initial,
       );
       final user = User(
@@ -66,8 +66,8 @@ void main() {
         authorities: const ["test"],
       );
       expect(
-        state.copyWith(account: user, status: AccountStatus.success),
-        AccountState(account: user, status: AccountStatus.success),
+        state.copyWith(data: user, status: AccountStatus.success),
+        AccountState(data: user, status: AccountStatus.success),
       );
     });
   });
@@ -121,7 +121,7 @@ void main() {
         act: (bloc) => bloc.add(const AccountFetchEvent()),
         expect: () => [
           const AccountState(status: AccountStatus.loading),
-          AccountState(account: mockUserFullPayload, status: AccountStatus.success),
+          AccountState(data: mockUserFullPayload, status: AccountStatus.success),
         ],
       );
 

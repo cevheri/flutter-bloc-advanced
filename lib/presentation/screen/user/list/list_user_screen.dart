@@ -61,7 +61,6 @@ class ListUserScreen extends StatelessWidget {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         if (state is UserSearchSuccessState) {
-          //TODO when create, update or delete user this list will be updated
           return ListView.builder(
             itemCount: state.userList.length,
             shrinkWrap: true,
@@ -106,7 +105,7 @@ class ListUserScreen extends StatelessWidget {
                     Expanded(
                       flex: 3,
                       child: IconButton(
-                        icon: const Icon(Icons.file_present),
+                        icon: const Icon(Icons.visibility),
                         onPressed: () => context.pushNamed('userView', pathParameters: {'id': state.userList[index].id!}),
                       ),
                     ),
