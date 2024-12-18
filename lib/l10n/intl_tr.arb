@@ -38,6 +38,8 @@
   "english": "İngilizce",
   "create_user": "Kullanıcı Oluştur",
   "save": "Kaydet",
+  "back": "Geri",
+  "delete_confirmation": "Silmek istediğinize emin misiniz?",
   "settings": "Ayarlar",
   "account": "Hesabım",
   "change_password": "Şifre Değiştir",

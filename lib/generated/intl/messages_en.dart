@@ -39,11 +39,14 @@ class MessageLookup extends MessageLookupByLibrary {
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
         "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
+        "back": MessageLookupByLibrary.simpleMessage("Back"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Change Password"),
         "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
         "current_password":
             MessageLookupByLibrary.simpleMessage("Current Password"),
+        "delete_confirmation": MessageLookupByLibrary.simpleMessage(
+            "Are you sure you want to delete?"),
         "delete_user": MessageLookupByLibrary.simpleMessage("Delete User"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Edit User"),
         "email": MessageLookupByLibrary.simpleMessage("Email"),

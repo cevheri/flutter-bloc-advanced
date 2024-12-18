@@ -7,7 +7,6 @@ import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_
 import 'package:flutter_bloc_advance/presentation/screen/components/user_form_fields.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 
 class UserEditorScreen extends StatelessWidget {
@@ -106,26 +105,8 @@ class UserEditorWidget extends StatelessWidget {
                 children: [
                   ..._buildFormFields(context, state),
                   const SizedBox(height: 20),
-                  if (state.data?.authorities?.isNotEmpty ?? false) ...[
-                    FormBuilderDropdown<String>(
-                      key: const Key('UserEditorAuthoritiesField'),
-                      name: 'authorities',
-                      decoration: InputDecoration(
-                        labelText: S.of(context).authorities,
-                        border: const OutlineInputBorder(),
-                        filled: true,
-                        enabled: mode != EditorFormMode.view,
-                      ),
-                      items: state.data?.authorities?.map((e) => DropdownMenuItem(value: e, child: Text(e))).toList() ?? [],
-                      validator: FormBuilderValidators.compose([FormBuilderValidators.required(errorText: S.of(context).required_field)]),
-                    ),
-                    const SizedBox(height: 24),
-                  ],
-                  if (mode != EditorFormMode.view)
-                    SizedBox(
-                        width: double.infinity,
-                        height: 48,
-                        child: ElevatedButton(onPressed: () => _onSubmit(context), child: Text(S.of(context).save))),
+                  if (mode == EditorFormMode.view) _backButtonField(context),
+                  if (mode != EditorFormMode.view) _submitButtonField(context, state),
                 ],
               ),
             ),
@@ -135,20 +116,28 @@ class UserEditorWidget extends StatelessWidget {
     );
   }
 
-  _buildFormFields(BuildContext context, UserState state) {
-    return [
-      UserFormFields.usernameField(context, state.data?.login, enabled: false),
-      const SizedBox(height: 16),
-      UserFormFields.firstNameField(context, state.data?.firstName),
-      const SizedBox(height: 16),
-      UserFormFields.lastNameField(context, state.data?.lastName),
-      const SizedBox(height: 16),
-      UserFormFields.emailField(context, state.data?.email),
-      const SizedBox(height: 16),
-      UserFormFields.activatedField(context, state.data?.activated),
-    ];
+  _backButtonField(BuildContext context) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: () => context.pop(),
+        child: Text(S.of(context).back),
+      ),
+    );
   }
-  
+
+  _submitButtonField(BuildContext context, UserState state) {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: ElevatedButton(
+        onPressed: () => _onSubmit(context),
+        child: Text(S.of(context).save),
+      ),
+    );
+  }
+
   void _onSubmit(BuildContext context) {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
@@ -165,6 +154,25 @@ class UserEditorWidget extends StatelessWidget {
 
       context.read<UserBloc>().add(UserSubmitEvent(user));
     }
+  }
+
+  _buildFormFields(BuildContext context, UserState state) {
+    return [
+      UserFormFields.usernameField(context, state.data?.login, enabled: false),
+      const SizedBox(height: 16),
+      UserFormFields.firstNameField(context, state.data?.firstName),
+      const SizedBox(height: 16),
+      UserFormFields.lastNameField(context, state.data?.lastName),
+      const SizedBox(height: 16),
+      UserFormFields.emailField(context, state.data?.email),
+      const SizedBox(height: 16),
+      UserFormFields.activatedField(context, state.data?.activated),
+      const SizedBox(height: 16),
+      if (state.data?.authorities?.isNotEmpty ?? false) ...[
+        UserFormFields.authoritiesField(context, state.data?.authorities),
+        const SizedBox(height: 16),
+      ],
+    ];
   }
 
   String _getTitle(BuildContext context) {

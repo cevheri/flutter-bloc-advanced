@@ -39,6 +39,8 @@
   "english": "English",
   "create_user": "Create User",
   "save": "Save",
+  "back": "Back",
+  "delete_confirmation": "Are you sure you want to delete?",
   "settings": "Settings",
   "account": "Account",
   "change_password": "Change Password",

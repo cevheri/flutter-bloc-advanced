@@ -39,12 +39,15 @@ class MessageLookup extends MessageLookupByLibrary {
         "active": MessageLookupByLibrary.simpleMessage("Aktif"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
         "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
+        "back": MessageLookupByLibrary.simpleMessage("Geri"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Şifre Değiştir"),
         "create_user":
             MessageLookupByLibrary.simpleMessage("Kullanıcı Oluştur"),
         "current_password":
             MessageLookupByLibrary.simpleMessage("Mevcut Şifre"),
+        "delete_confirmation": MessageLookupByLibrary.simpleMessage(
+            "Silmek istediğinize emin misiniz?"),
         "delete_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Sil"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Düzenle"),
         "email": MessageLookupByLibrary.simpleMessage("E-posta"),

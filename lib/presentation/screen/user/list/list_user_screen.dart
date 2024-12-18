@@ -10,13 +10,24 @@ import 'package:go_router/go_router.dart';
 class ListUserScreen extends StatelessWidget {
   ListUserScreen({super.key});
 
-  final listFormKey = GlobalKey<FormBuilderState>();
-  final headerStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
+  final _formKey = GlobalKey<FormBuilderState>();
+  final _headerStyle = const TextStyle(fontSize: 16, fontWeight: FontWeight.bold);
 
   @override
   Widget build(BuildContext context) {
     BlocProvider.of<AuthorityBloc>(context).add(const AuthorityLoad());
-    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
+    return BlocListener<UserBloc, UserState>(
+      listenWhen: (previous, current) => previous.status != current.status,
+      listener: (context, state) {
+        if (state.status == UserStatus.success) {
+          _refreshList(context);
+        }
+      },
+      child: Scaffold(
+        appBar: _buildAppBar(context),
+        body: _buildBody(context),
+      ),
+    );
   }
 
   _buildAppBar(BuildContext context) {
@@ -84,41 +95,11 @@ class ListUserScreen extends StatelessWidget {
                     _tableDataLastName(state, index),
                     const SizedBox(width: 5),
                     _tableDataEmail(state, index),
-                    // SizedBox(width: 5),
-                    // Expanded(
-                    //   flex: 10,
-                    //   child: Text(
-                    //       state.userList[index].phoneNumber.toString() == "null" ? "-" : state.userList[index].phoneNumber.toString(),
-                    //       textAlign: TextAlign.left),
-                    // ),
                     const SizedBox(width: 5),
-                    //activated switch button
                     _tableDataActivatedSwitch(state, index),
                     const SizedBox(width: 5),
-                    //edit button
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: () => context.pushNamed('userEdit', pathParameters: {'id': state.userList[index].id!}),
-                    ),
+                    _tableDataActionButtons(context, state, index),
                     const SizedBox(width: 5),
-                    //view button
-                    Expanded(
-                      flex: 3,
-                      child: IconButton(
-                        icon: const Icon(Icons.visibility),
-                        onPressed: () => context.pushNamed('userView', pathParameters: {'id': state.userList[index].id!}),
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    //TODO user delete button - it can be alert dialog
-                    // Expanded(
-                    //   flex: 3,
-                    //   child: IconButton(
-                    //     icon: const Icon(Icons.delete),
-                    //     onPressed: () => context.pushNamed('userDelete', pathParameters: {'id': state.userList[index].id!}),
-                    //   ),
-                    // ),
-                    // const SizedBox(width: 5),
                   ],
                 ),
               );
@@ -133,41 +114,6 @@ class ListUserScreen extends StatelessWidget {
 
   Expanded _tableDataActivatedSwitch(UserSearchSuccessState state, int index) =>
       Expanded(flex: 3, child: Text(state.userList[index].activated! ? "active" : "passive"));
-
-  // Expanded _tableDataEditButton(BuildContext context, UserSearchSuccessState state, int index) {
-  //   return Expanded(
-  //     flex: 3,
-  //     child: IconButton(
-  //       key: const Key("listUserEditButtonKey"),
-  //       alignment: Alignment.centerRight,
-  //       focusColor: Colors.transparent,
-  //       hoverColor: Colors.transparent,
-  //       splashColor: Colors.transparent,
-  //       highlightColor: Colors.transparent,
-  //       icon: const Icon(Icons.edit),
-  //       onPressed: () {
-  //         //TODO EditUserScreen page routing
-  //         Navigator.push(
-  //           context,
-  //           MaterialPageRoute(builder: (context) => UserEditorScreen(id: state.userList[index].id!, mode: EditorFormMode.edit)),
-  //         ).then((value) async {
-  //           if (listFormKey.currentState!.saveAndValidate()) {
-  //             if (context.mounted) {
-  //               BlocProvider.of<UserBloc>(context).add(
-  //                 UserSearch(
-  //                   int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
-  //                   int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
-  //                   listFormKey.currentState!.fields['authority']?.value ?? "-",
-  //                   listFormKey.currentState!.fields['name']?.value ?? "",
-  //                 ),
-  //               );
-  //             }
-  //           }
-  //         });
-  //       },
-  //     ),
-  //   );
-  // }
 
   Expanded _tableDataEmail(UserSearchSuccessState state, int index) =>
       Expanded(flex: 15, child: Text(state.userList[index].email.toString(), textAlign: TextAlign.left));
@@ -199,42 +145,32 @@ class ListUserScreen extends StatelessWidget {
           children: [
             Expanded(
               flex: 7,
-              child: Text(S.of(context).role, textAlign: TextAlign.left, style: headerStyle),
+              child: Text(S.of(context).role, textAlign: TextAlign.left, style: _headerStyle),
             ),
             const SizedBox(width: 5),
             Expanded(
               flex: 10,
-              child: Text(S.of(context).login, textAlign: TextAlign.left, style: headerStyle),
+              child: Text(S.of(context).login, textAlign: TextAlign.left, style: _headerStyle),
             ),
             const SizedBox(width: 5),
             Expanded(
               flex: 10,
-              child: Text(S.of(context).first_name, textAlign: TextAlign.left, style: headerStyle),
+              child: Text(S.of(context).first_name, textAlign: TextAlign.left, style: _headerStyle),
             ),
             const SizedBox(width: 5),
             Expanded(
               flex: 10,
-              child: Text(S.of(context).last_name, textAlign: TextAlign.left, style: headerStyle),
+              child: Text(S.of(context).last_name, textAlign: TextAlign.left, style: _headerStyle),
             ),
             const SizedBox(width: 5),
             Expanded(
               flex: 15,
-              child: Text(S.of(context).email, textAlign: TextAlign.left, style: headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 10,
-              child: Text(S.of(context).phone_number, textAlign: TextAlign.left, style: headerStyle),
+              child: Text(S.of(context).email, textAlign: TextAlign.left, style: _headerStyle),
             ),
             const SizedBox(width: 5),
             Expanded(
               flex: 3,
-              child: Text(S.of(context).guest, textAlign: TextAlign.left, style: headerStyle),
-            ),
-            const SizedBox(width: 5),
-            Expanded(
-              flex: 3,
-              child: Text(S.of(context).active, textAlign: TextAlign.center, style: headerStyle),
+              child: Text(S.of(context).active, textAlign: TextAlign.center, style: _headerStyle),
             ),
             const SizedBox(width: 5),
             Expanded(
@@ -275,7 +211,7 @@ class ListUserScreen extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
       child: FormBuilder(
-        key: listFormKey,
+        key: _formKey,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
@@ -409,17 +345,94 @@ class ListUserScreen extends StatelessWidget {
       ),
       child: Text(S.of(context).list),
       onPressed: () {
-        if (listFormKey.currentState!.saveAndValidate()) {
+        if (_formKey.currentState!.saveAndValidate()) {
           BlocProvider.of<UserBloc>(context).add(
             UserSearch(
-              int.parse(listFormKey.currentState!.fields['rangeStart']?.value),
-              int.parse(listFormKey.currentState!.fields['rangeEnd']?.value),
-              listFormKey.currentState!.fields['authority']?.value ?? "-",
-              listFormKey.currentState!.fields['name']?.value ?? "",
+              int.parse(_formKey.currentState!.fields['rangeStart']?.value),
+              int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
+              _formKey.currentState!.fields['authority']?.value ?? "-",
+              _formKey.currentState!.fields['name']?.value ?? "",
             ),
           );
         }
       },
     );
+  }
+
+  Widget _tableDataActionButtons(BuildContext context, UserSearchSuccessState state, int index) {
+    return Expanded(
+        flex: 3,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(Icons.edit, size: 20),
+              onPressed: () {
+                context.pushNamed(
+                  'userEdit',
+                  pathParameters: {'id': state.userList[index].id!},
+                ).then((_) => _refreshList(context));
+              },
+            ),
+            const SizedBox(width: 5),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(Icons.visibility, size: 20),
+              onPressed: () {
+                context.pushNamed(
+                  'userView',
+                  pathParameters: {'id': state.userList[index].id!},
+                );
+              },
+            ),
+            const SizedBox(width: 5),
+            IconButton(
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+              icon: const Icon(Icons.delete, size: 20),
+              onPressed: () => _showDeleteConfirmation(context, state.userList[index].id!),
+            ),
+          ],
+        ));
+  }
+
+  void _showDeleteConfirmation(BuildContext context, String userId) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(S.of(context).warning),
+        content: Text(S.of(context).delete_confirmation),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(S.of(context).no),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<UserBloc>().add(UserDeleteEvent(userId));
+            },
+            child: Text(S.of(context).yes),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _refreshList(BuildContext context) {
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      context.read<UserBloc>().add(
+            UserSearch(
+              int.parse(_formKey.currentState!.fields['rangeStart']?.value),
+              int.parse(_formKey.currentState!.fields['rangeEnd']?.value),
+              _formKey.currentState!.fields['authority']?.value ?? "-",
+              _formKey.currentState!.fields['name']?.value ?? "",
+            ),
+          );
+    }
   }
 }
