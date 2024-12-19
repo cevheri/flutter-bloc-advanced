@@ -14,13 +14,12 @@ part 'forgot_password_state.dart';
 class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> {
   static final _log = AppLogger.getLogger("ForgotPasswordBloc");
   final AccountRepository _repository;
-  
+
   ForgotPasswordBloc({required AccountRepository repository})
       : _repository = repository,
         super(const ForgotPasswordInitialState()) {
     on<ForgotPasswordEmailChanged>(_onSubmit);
   }
-
 
   @override
   void onTransition(Transition<ForgotPasswordEvent, ForgotPasswordState> transition) {
@@ -36,9 +35,9 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
     try {
       String result = event.email.replaceAll('"', '');
       var resultStatusCode = await _repository.resetPassword(result);
-      if(resultStatusCode < HttpStatus.badRequest){
+      if (resultStatusCode < HttpStatus.badRequest) {
         emit(const ForgotPasswordCompletedState());
-      }else {
+      } else {
         throw BadRequestException("API Error");
       }
       _log.debug("END: forgotPassword bloc: _onSubmit success: {}", [resultStatusCode.toString()]);

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/routes/app_router.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:get/get.dart';
 
-import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -19,7 +20,9 @@ class SettingsScreen extends StatelessWidget {
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-        title: Text(S.of(context).settings), leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)));
+      title: Text(S.of(context).settings),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home)),
+    );
   }
 
   _buildBody(BuildContext context) {
@@ -44,7 +47,7 @@ class SettingsScreen extends StatelessWidget {
   ElevatedButton _buildChangePasswordButton(BuildContext context) {
     return ElevatedButton(
       key: settingsChangePasswordButtonKey,
-      onPressed: () => Navigator.pushNamed(context, ApplicationRoutes.changePassword),
+      onPressed: () => Navigator.pushNamed(context, ApplicationRoutesConstants.changePassword),
       child: Text(S.of(context).change_password, textAlign: TextAlign.center),
     );
   }
@@ -80,7 +83,7 @@ class SettingsScreen extends StatelessWidget {
   void onLogout(context) {
     //BlocProvider.of<DrawerBloc>(context).add(Logout());
     AppLocalStorage().clear();
-    Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
+    Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutesConstants.login, (route) => false);
   }
 }
 

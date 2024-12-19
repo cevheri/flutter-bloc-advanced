@@ -10,8 +10,7 @@ class RegisterFormSubmitted extends RegisterEvent {
   const RegisterFormSubmitted({
     required this.createUser,
   });
-  
+
   @override
   List<Object> get props => [createUser];
 }
-

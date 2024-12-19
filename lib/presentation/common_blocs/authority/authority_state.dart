@@ -8,23 +8,26 @@ enum AuthorityStatus { initial, loading, success, failure }
 ///
 /// The state is immutable and copyWith is used to update the state.
 class AuthorityState extends Equatable {
-  final List? authorities;
+  final List<String?> authorities;
   final AuthorityStatus status;
 
   const AuthorityState({
-    this.authorities,
+    this.authorities = const [],
     this.status = AuthorityStatus.initial,
   });
 
   AuthorityState copyWith({
-    List? authorities,
+    List<String?>? authorities,
     AuthorityStatus? status,
   }) {
-    return AuthorityState(status: status ?? this.status, authorities: authorities ?? authorities);
+    return AuthorityState(
+      status: status ?? this.status,
+      authorities: authorities ?? this.authorities,
+    );
   }
 
   @override
-  List<Object> get props => [status, authorities ?? []];
+  List<Object> get props => [status, authorities];
 
   @override
   bool get stringify => true;
@@ -39,13 +42,13 @@ class AuthorityLoadingState extends AuthorityState {
 }
 
 class AuthorityLoadSuccessState extends AuthorityState {
-  const AuthorityLoadSuccessState({required List authorities}) : super(authorities: authorities, status: AuthorityStatus.success);
+  const AuthorityLoadSuccessState({required super.authorities}) : super(status: AuthorityStatus.success);
 }
 
 class AuthorityLoadFailureState extends AuthorityState {
   final String message;
 
-  const AuthorityLoadFailureState({required this.message}): super(status: AuthorityStatus.failure);
+  const AuthorityLoadFailureState({required this.message}) : super(status: AuthorityStatus.failure);
 
   @override
   List<Object> get props => [status, message];

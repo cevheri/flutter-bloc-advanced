@@ -615,9 +615,9 @@ class MockAppLocalStorage extends _i1.Mock implements _i8.AppLocalStorage {
   }
 
   @override
-  void setStrategy(_i8.StorageType? type) => super.noSuchMethod(
+  void setStorage(_i8.StorageType? type) => super.noSuchMethod(
         Invocation.method(
-          #setStrategy,
+          #setStorage,
           [type],
         ),
         returnValueForMissingStub: null,

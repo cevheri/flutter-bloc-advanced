@@ -1,11 +1,11 @@
 part of 'change_password_bloc.dart';
 
 enum ChangePasswordStatus { initial, loading, success, failure }
+
 const String authenticationFailKey = 'error.authenticate';
 
 class ChangePasswordState extends Equatable {
   final ChangePasswordStatus status;
-
 
   const ChangePasswordState({
     this.status = ChangePasswordStatus.initial,

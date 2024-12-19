@@ -3,6 +3,7 @@ import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
+import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -28,6 +29,7 @@ class TestUtils {
     EquatableConfig.stringify = true;
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.name, "en");
+    AppRouter().setRouter(RouterType.goRouter);
   }
   Future<void> setupRepositoryUnitTest() async {
     AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
@@ -35,6 +37,7 @@ class TestUtils {
     initializeJsonMapper();
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.name, "en");
+    AppRouter().setRouter(RouterType.goRouter);
   }
 
   Future<void> tearDownUnitTest() async {

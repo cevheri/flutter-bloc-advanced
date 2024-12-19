@@ -7,8 +7,8 @@ class AccountEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class AccountLoad extends AccountEvent {
-  const AccountLoad();
+class AccountFetchEvent extends AccountEvent {
+  const AccountFetchEvent();
 
   @override
   List<Object> get props => [];

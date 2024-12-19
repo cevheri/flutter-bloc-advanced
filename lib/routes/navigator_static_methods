@@ -1,0 +1,75 @@
+Navigator Static Methods
+
+
+canPop(BuildContext context) → bool
+Whether the navigator that most tightly encloses the given context can be popped.
+
+maybePop<T extends Object?>(BuildContext context, [T? result]) → Future<bool>
+Consults the current route's Route.popDisposition getter or Route.willPop method, and acts accordingly, potentially popping the route as a result; returns whether the pop request should be considered handled.
+
+pop<T extends Object?>(BuildContext context, [T? result]) → void
+Pop the top-most route off the navigator that most tightly encloses the given context.
+
+popAndPushNamed<T extends Object?, TO extends Object?>(BuildContext context, String routeName, {TO? result, Object? arguments}) → Future<T?>
+Pop the current route off the navigator that most tightly encloses the given context and push a named route in its place.
+
+popUntil(BuildContext context, RoutePredicate predicate) → void
+Calls pop repeatedly on the navigator that most tightly encloses the given context until the predicate returns true.
+
+push<T extends Object?>(BuildContext context, Route<T> route) → Future<T?>
+Push the given route onto the navigator that most tightly encloses the given context.
+
+pushAndRemoveUntil<T extends Object?>(BuildContext context, Route<T> newRoute, RoutePredicate predicate) → Future<T?>
+Push the given route onto the navigator that most tightly encloses the given context, and then remove all the previous routes until the predicate returns true.
+
+pushNamed<T extends Object?>(BuildContext context, String routeName, {Object? arguments}) → Future<T?>
+Push a named route onto the navigator that most tightly encloses the given context.
+
+pushNamedAndRemoveUntil<T extends Object?>(BuildContext context, String newRouteName, RoutePredicate predicate, {Object? arguments}) → Future<T?>
+Push the route with the given name onto the navigator that most tightly encloses the given context, and then remove all the previous routes until the predicate returns true.
+
+pushReplacement<T extends Object?, TO extends Object?>(BuildContext context, Route<T> newRoute, {TO? result}) → Future<T?>
+Replace the current route of the navigator that most tightly encloses the given context by pushing the given route and then disposing the previous route once the new route has finished animating in.
+
+pushReplacementNamed<T extends Object?, TO extends Object?>(BuildContext context, String routeName, {TO? result, Object? arguments}) → Future<T?>
+Replace the current route of the navigator that most tightly encloses the given context by pushing the route named routeName and then disposing the previous route once the new route has finished animating in.
+
+removeRoute(BuildContext context, Route route) → void
+Immediately remove route from the navigator that most tightly encloses the given context, and Route.dispose it.
+
+removeRouteBelow(BuildContext context, Route anchorRoute) → void
+Immediately remove a route from the navigator that most tightly encloses the given context, and Route.dispose it. The route to be removed is the one below the given anchorRoute.
+
+replace<T extends Object?>(BuildContext context, {required Route oldRoute, required Route<T> newRoute}) → void
+Replaces a route on the navigator that most tightly encloses the given context with a new route.
+
+replaceRouteBelow<T extends Object?>(BuildContext context, {required Route anchorRoute, required Route<T> newRoute}) → void
+Replaces a route on the navigator that most tightly encloses the given context with a new route. The route to be replaced is the one below the given anchorRoute.
+
+restorablePopAndPushNamed<T extends Object?, TO extends Object?>(BuildContext context, String routeName, {TO? result, Object? arguments}) → String
+Pop the current route off the navigator that most tightly encloses the given context and push a named route in its place.
+
+restorablePush<T extends Object?>(BuildContext context, RestorableRouteBuilder<T> routeBuilder, {Object? arguments}) → String
+Push a new route onto the navigator that most tightly encloses the given context.
+
+restorablePushAndRemoveUntil<T extends Object?>(BuildContext context, RestorableRouteBuilder<T> newRouteBuilder, RoutePredicate predicate, {Object? arguments}) → String
+Push a new route onto the navigator that most tightly encloses the given context, and then remove all the previous routes until the predicate returns true.
+
+restorablePushNamed<T extends Object?>(BuildContext context, String routeName, {Object? arguments}) → String
+Push a named route onto the navigator that most tightly encloses the given context.
+
+restorablePushNamedAndRemoveUntil<T extends Object?>(BuildContext context, String newRouteName, RoutePredicate predicate, {Object? arguments}) → String
+Push the route with the given name onto the navigator that most tightly encloses the given context, and then remove all the previous routes until the predicate returns true.
+
+restorablePushReplacement<T extends Object?, TO extends Object?>(BuildContext context, RestorableRouteBuilder<T> routeBuilder, {TO? result, Object? arguments}) → String
+Replace the current route of the navigator that most tightly encloses the given context by pushing a new route and then disposing the previous route once the new route has finished animating in.
+
+restorablePushReplacementNamed<T extends Object?, TO extends Object?>(BuildContext context, String routeName, {TO? result, Object? arguments}) → String
+Replace the current route of the navigator that most tightly encloses the given context by pushing the route named routeName and then disposing the previous route once the new route has finished animating in.
+
+restorableReplace<T extends Object?>(BuildContext context, {required Route oldRoute, required RestorableRouteBuilder<T> newRouteBuilder, Object? arguments}) → String
+Replaces a route on the navigator that most tightly encloses the given context with a new route.
+
+restorableReplaceRouteBelow<T extends Object?>(BuildContext context, {required Route anchorRoute, required RestorableRouteBuilder<T> newRouteBuilder, Object? arguments}) → String
+Replaces a route on the navigator that most tightly encloses the given context with a new route. The route to be replaced is the one below the given anchorRoute.
+

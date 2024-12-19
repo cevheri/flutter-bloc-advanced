@@ -24,14 +24,14 @@ void main() {
     });
 
     test("set strategy sharedPreferences", () {
-      localStorage.setStrategy(StorageType.sharedPreferences);
+      localStorage.setStorage(StorageType.sharedPreferences);
     });
     test("set strategy getStorage", () {
-      localStorage.setStrategy(StorageType.getStorage);
+      localStorage.setStorage(StorageType.getStorage);
     });
 
     test("set strategy sharedPreferences", () {
-      localStorage.setStrategy(StorageType.sharedPreferences);
+      localStorage.setStorage(StorageType.sharedPreferences);
     });
 
     test('save and read String value', () async {

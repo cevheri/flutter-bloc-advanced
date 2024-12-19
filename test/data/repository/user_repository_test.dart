@@ -99,7 +99,7 @@ void main() {
     test("Given valid user when createUser then return user successfully", () async {
       TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
-      final result = await UserRepository().createUser(entity);
+      final result = await UserRepository().create(entity);
 
       expect(result, isA<User>());
       expect(result?.id, "user-1");
@@ -117,19 +117,19 @@ void main() {
     });
 
     test("Given valid user without accessToken when createUser then return user fail", () async {
-      expect(() async => await UserRepository().createUser(mockUserFullPayload), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().create(mockUserFullPayload), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null user when createUser then return user fail", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().createUser(const User()), throwsA(isA<BadRequestException>()));
+      expect(() async => await UserRepository().create(const User()), throwsA(isA<BadRequestException>()));
     });
 
     test("Given null username when createUser then return user fail", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().createUser(const User(login: "admin")), throwsA(isA<BadRequestException>()));
+      expect(() async => await UserRepository().create(const User(login: "admin")), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -183,7 +183,7 @@ void main() {
     test("Given valid user when updateUser then return user successfully", () async {
       TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
-      final result = await UserRepository().updateUser(entity);
+      final result = await UserRepository().update(entity);
 
       expect(result, isA<User>());
       expect(result?.id, "user-1");
@@ -201,13 +201,13 @@ void main() {
     });
 
     test("Given valid user without accessToken when updateUser then return user fail", () async {
-      expect(() async => await UserRepository().updateUser(mockUserFullPayload), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().update(mockUserFullPayload), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null user when updateUser then return user fail", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().updateUser(const User()), throwsA(isA<BadRequestException>()));
+      expect(() async => await UserRepository().update(const User()), throwsA(isA<BadRequestException>()));
     });
   });
 

@@ -28,8 +28,8 @@ class MessageLookup extends MessageLookupByLibrary {
             'info': 'Bilgiler',
             'language': 'Diller',
             'theme': 'Tema',
-            'create': 'Oluştur',
-            'list': 'Listele/Düzenle ',
+            'new_user': 'Yeni Kullanıcı Ekle',
+            'list_user': 'Kullanıcılar',
             'other': 'Diğer',
           })}";
 
@@ -39,37 +39,28 @@ class MessageLookup extends MessageLookupByLibrary {
         "active": MessageLookupByLibrary.simpleMessage("Aktif"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
         "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
+        "back": MessageLookupByLibrary.simpleMessage("Geri"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Şifre Değiştir"),
         "create_user":
             MessageLookupByLibrary.simpleMessage("Kullanıcı Oluştur"),
         "current_password":
             MessageLookupByLibrary.simpleMessage("Mevcut Şifre"),
+        "delete_confirmation": MessageLookupByLibrary.simpleMessage(
+            "Silmek istediğinize emin misiniz?"),
+        "delete_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Sil"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Düzenle"),
         "email": MessageLookupByLibrary.simpleMessage("E-posta"),
         "email_pattern": MessageLookupByLibrary.simpleMessage(
             "E-posta adresi geçerli değil"),
-        "email_required":
-            MessageLookupByLibrary.simpleMessage("E-posta gereklidir"),
         "email_send": MessageLookupByLibrary.simpleMessage("E-posta Gönder"),
         "english": MessageLookupByLibrary.simpleMessage("İngilizce"),
         "failed": MessageLookupByLibrary.simpleMessage("Başarısız"),
+        "filter": MessageLookupByLibrary.simpleMessage("Filtrele"),
         "first_name": MessageLookupByLibrary.simpleMessage("İsim"),
-        "firstname_max_length": MessageLookupByLibrary.simpleMessage(
-            "İsim en fazla 20 karakter uzunluğunda olmalıdır"),
-        "firstname_min_length": MessageLookupByLibrary.simpleMessage(
-            "İsim en az 5 karakter uzunluğunda olmalıdır"),
-        "firstname_required":
-            MessageLookupByLibrary.simpleMessage("İsim gereklidir"),
         "guest": MessageLookupByLibrary.simpleMessage("Kullanıcı"),
         "language_select": MessageLookupByLibrary.simpleMessage("Dil Seçimi"),
         "last_name": MessageLookupByLibrary.simpleMessage("Soyisim"),
-        "lastname_max_length": MessageLookupByLibrary.simpleMessage(
-            "Soyisim en fazla 20 karakter uzunluğunda olmalıdır"),
-        "lastname_min_length": MessageLookupByLibrary.simpleMessage(
-            "Soyisim en az 5 karakter uzunluğunda olmalıdır"),
-        "lastname_required":
-            MessageLookupByLibrary.simpleMessage("Soyisim gereklidir"),
         "list": MessageLookupByLibrary.simpleMessage("Listele"),
         "list_user": MessageLookupByLibrary.simpleMessage("Kullanıcılar"),
         "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
@@ -81,9 +72,37 @@ class MessageLookup extends MessageLookupByLibrary {
         "logout": MessageLookupByLibrary.simpleMessage("Çıkış Yap"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Çıkış yapmak istediğinize emin misiniz?"),
+        "max_length_10": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 10 karakter uzunluğunda olmalıdır"),
+        "max_length_100": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 100 karakter uzunluğunda olmalıdır"),
+        "max_length_1000": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 1000 karakter uzunluğunda olmalıdır"),
+        "max_length_20": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 20 karakter uzunluğunda olmalıdır"),
+        "max_length_250": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 250 karakter uzunluğunda olmalıdır"),
+        "max_length_4000": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 4000 karakter uzunluğunda olmalıdır"),
+        "max_length_50": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 50 karakter uzunluğunda olmalıdır"),
+        "max_length_500": MessageLookupByLibrary.simpleMessage(
+            "Maksimum 500 karakter uzunluğunda olmalıdır"),
+        "min_length_2": MessageLookupByLibrary.simpleMessage(
+            "Minimum 2 karakter uzunluğunda olmalıdır"),
+        "min_length_3": MessageLookupByLibrary.simpleMessage(
+            "Minimum 3 karakter uzunluğunda olmalıdır"),
+        "min_length_4": MessageLookupByLibrary.simpleMessage(
+            "Minimum 4 karakter uzunluğunda olmalıdır"),
+        "min_length_5": MessageLookupByLibrary.simpleMessage(
+            "Minimum 5 karakter uzunluğunda olmalıdır"),
         "name": MessageLookupByLibrary.simpleMessage("İsim"),
         "new_password": MessageLookupByLibrary.simpleMessage("Yeni Şifre"),
+        "new_user": MessageLookupByLibrary.simpleMessage("Yeni Kullanıcı Ekle"),
         "no": MessageLookupByLibrary.simpleMessage("Hayır"),
+        "no_changes_made":
+            MessageLookupByLibrary.simpleMessage("Değişiklik yapılmadı"),
+        "no_data": MessageLookupByLibrary.simpleMessage("Veri Yok"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
         "password_max_length": MessageLookupByLibrary.simpleMessage(
@@ -103,14 +122,11 @@ class MessageLookup extends MessageLookupByLibrary {
         "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
-        "username_max_length": MessageLookupByLibrary.simpleMessage(
-            "Kullanıcı adı en fazla 20 karakter uzunluğunda olmalıdır"),
-        "username_min_length": MessageLookupByLibrary.simpleMessage(
-            "Kullanıcı adı en az 5 karakter uzunluğunda olmalıdır"),
-        "username_regex_pattern":
-            MessageLookupByLibrary.simpleMessage("Kullanıcı adı geçerli değil"),
-        "username_required":
-            MessageLookupByLibrary.simpleMessage("Kullanıcı adı gereklidir"),
+        "unsaved_changes": MessageLookupByLibrary.simpleMessage(
+            "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?"),
+        "view_user":
+            MessageLookupByLibrary.simpleMessage("Kullanıcı Görüntüle"),
+        "warning": MessageLookupByLibrary.simpleMessage("Uyarı"),
         "yes": MessageLookupByLibrary.simpleMessage("Evet")
       };
 }

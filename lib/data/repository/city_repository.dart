@@ -6,6 +6,7 @@ import '../models/city.dart';
 
 class CityRepository {
   static final _log = AppLogger.getLogger("CityRepository");
+
   CityRepository();
 
   final String _resource = "cities";
