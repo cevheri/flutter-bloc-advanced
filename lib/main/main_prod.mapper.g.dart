@@ -12,11 +12,11 @@ import 'package:flutter_bloc_advance/data/models/menu.dart' as x4 show Menu;
 import 'package:flutter_bloc_advance/data/models/user.dart' as x0 show User;
 import 'package:flutter_bloc_advance/data/models/user_jwt.dart' as x2 show UserJWT;
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart' as x10 show AccountStatus;
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart' as x18 show AuthorityStatus;
+import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart' as x17 show AuthorityStatus;
 import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart' as x16 show DrawerStateStatus;
 import 'package:flutter_bloc_advance/presentation/screen/change_password/bloc/change_password_bloc.dart' as x13 show ChangePasswordStatus;
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart' as x11 show DialogType;
-import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart' as x17 show EditorFormMode;
+import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart' as x18 show EditorFormMode;
 import 'package:flutter_bloc_advance/presentation/screen/forgot_password/bloc/forgot_password_bloc.dart' as x14 show ForgotPasswordStatus;
 import 'package:flutter_bloc_advance/presentation/screen/login/bloc/login_bloc.dart' as x15 show LoginStatus;
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user_bloc.dart' as x12 show UserStatus;
@@ -98,10 +98,10 @@ final mainProdGeneratedAdapter = JsonMapperAdapter(
     typeOf<Set<x15.LoginStatus>>(): (value) => value.cast<x15.LoginStatus>(),
     typeOf<List<x16.DrawerStateStatus>>(): (value) => value.cast<x16.DrawerStateStatus>(),
     typeOf<Set<x16.DrawerStateStatus>>(): (value) => value.cast<x16.DrawerStateStatus>(),
-    typeOf<List<x17.EditorFormMode>>(): (value) => value.cast<x17.EditorFormMode>(),
-    typeOf<Set<x17.EditorFormMode>>(): (value) => value.cast<x17.EditorFormMode>(),
-    typeOf<List<x18.AuthorityStatus>>(): (value) => value.cast<x18.AuthorityStatus>(),
-    typeOf<Set<x18.AuthorityStatus>>(): (value) => value.cast<x18.AuthorityStatus>()
+    typeOf<List<x17.AuthorityStatus>>(): (value) => value.cast<x17.AuthorityStatus>(),
+    typeOf<Set<x17.AuthorityStatus>>(): (value) => value.cast<x17.AuthorityStatus>(),
+    typeOf<List<x18.EditorFormMode>>(): (value) => value.cast<x18.EditorFormMode>(),
+    typeOf<Set<x18.EditorFormMode>>(): (value) => value.cast<x18.EditorFormMode>()
 },
   enumValues: {
     x6.LogFormat: x6.LogFormat.values,
@@ -116,8 +116,8 @@ final mainProdGeneratedAdapter = JsonMapperAdapter(
     x14.ForgotPasswordStatus: x14.ForgotPasswordStatus.values,
     x15.LoginStatus: x15.LoginStatus.values,
     x16.DrawerStateStatus: x16.DrawerStateStatus.values,
-    x17.EditorFormMode: x17.EditorFormMode.values,
-    x18.AuthorityStatus: x18.AuthorityStatus.values
+    x17.AuthorityStatus: x17.AuthorityStatus.values,
+    x18.EditorFormMode: x18.EditorFormMode.values
 });
 
 Future<JsonMapper> initializeJsonMapperAsync({Iterable<JsonMapperAdapter> adapters = const [], SerializationOptions? serializationOptions, DeserializationOptions? deserializationOptions}) => Future(() => initializeJsonMapper(adapters: adapters, serializationOptions: serializationOptions, deserializationOptions: deserializationOptions));
