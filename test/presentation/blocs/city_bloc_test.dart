@@ -112,7 +112,7 @@ void main() {
     group("CityLoad", () {
       const input = [City(id: "test", name: "test")];
       final output = Future.value(input);
-      method() => repository.getCities();
+      method() => repository.list();
       const event = CityLoad();
       const loadingState = CityLoadingState();
       const successState = CityLoadSuccessState(cities: input);

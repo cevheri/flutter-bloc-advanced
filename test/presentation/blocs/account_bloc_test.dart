@@ -87,7 +87,7 @@ void main() {
 
     test("toString returns correct value", () {
       expect(const AccountEvent().toString(), "AccountEvent()");
-      expect(const AccountFetchEvent().toString(), "AccountLoad()");
+      expect(const AccountFetchEvent().toString(), "AccountFetchEvent()");
     });
   });
   //endregion event

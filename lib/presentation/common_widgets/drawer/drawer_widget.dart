@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:string_2_icon/string_2_icon.dart';
@@ -177,7 +178,7 @@ class ApplicationDrawer extends StatelessWidget {
           child: ElevatedButton(
             key: drawerButtonLogoutKey,
             style: ElevatedButton.styleFrom(elevation: 0),
-            onPressed: () => logOutDialog(context),
+            onPressed: () => _handleLogout(context),
             child: Text(S.of(context).logout, textAlign: TextAlign.center),
           ),
         ),
@@ -185,41 +186,15 @@ class ApplicationDrawer extends StatelessWidget {
     );
   }
 
-  Future logOutDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(S.of(context).logout),
-          content: Text(S.of(context).logout_sure),
-          actions: [
-            TextButton(
-              key: drawerButtonLogoutYesKey,
-              onPressed: () => onLogout(context),
-              child: Text(S.of(context).yes),
-            ),
-            TextButton(
-              key: drawerButtonLogoutNoKey,
-              onPressed: () => onCancel(context),
-              child: Text(S.of(context).no),
-            ),
-          ],
-        );
-      },
-    );
-  }
+  Future<void> _handleLogout(BuildContext context) async {
+    final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
 
-  void onLogout(context) {
-    debugPrint("BEGIN: logout");
-    BlocProvider.of<DrawerBloc>(context).add(Logout());
-    AppRouter().push(context, ApplicationRoutesConstants.login);
-    debugPrint("END: logout");
-  }
-
-  void onCancel(context) {
-    debugPrint("BEGIN: logout cancel");
-    AppRouter().pop(context);
-    debugPrint("END: logout cancel");
+    if (shouldLogout && context.mounted) {
+      debugPrint("BEGIN: logout");
+      BlocProvider.of<DrawerBloc>(context).add(Logout());
+      AppRouter().push(context, ApplicationRoutesConstants.login);
+      debugPrint("END: logout");
+    }
   }
 }
 

@@ -74,7 +74,7 @@ void main() {
     //app bar back button test
     testWidgets("Validate AppBar Back Button", (tester) async {
       _log.debug("begin Validate AppBar Back Button");
-
+      TestUtils().setupAuthentication();
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
 

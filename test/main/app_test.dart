@@ -21,6 +21,7 @@ void main() {
 
     testWidgets('App should build without errors', (WidgetTester tester) async {
       await tester.pumpWidget(app);
+      await tester.pumpAndSettle();
       expect(find.byType(AdaptiveTheme), findsOneWidget);
     });
 

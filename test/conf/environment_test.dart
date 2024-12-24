@@ -14,7 +14,7 @@ void main() {
       ProfileConstants.setEnvironment(Environment.test);
       expect(ProfileConstants.isDevelopment, false);
       expect(ProfileConstants.isProduction, false);
-      expect(ProfileConstants.api, "assets/mock");
+      expect(ProfileConstants.api, "mock");
     });
 
     test('setEnvironment sets prod environment', () {

@@ -102,7 +102,7 @@ void main() {
     group("AuthorityLoad", () {
       const authorities = [Authority(name: "test")];
       final authoritiesMap = authorities.map((e) => e.name).toList();
-      method() => repository.getAuthorities();
+      method() => repository.list();
       Future<List<String?>> output = Future<List<String?>>.value(authoritiesMap);
       const event = AuthorityLoad();
       const loadingState = AuthorityLoadingState();

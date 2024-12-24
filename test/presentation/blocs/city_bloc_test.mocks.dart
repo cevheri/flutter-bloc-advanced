@@ -32,23 +32,23 @@ class MockCityRepository extends _i1.Mock implements _i2.CityRepository {
   }
 
   @override
-  _i3.Future<_i4.City?> createCity(_i4.City? city) => (super.noSuchMethod(
+  _i3.Future<_i4.City?> create(_i4.City? city) => (super.noSuchMethod(
         Invocation.method(
-          #createCity,
+          #create,
           [city],
         ),
         returnValue: _i3.Future<_i4.City?>.value(),
       ) as _i3.Future<_i4.City?>);
 
   @override
-  _i3.Future<List<_i4.City?>> getCities({
+  _i3.Future<List<_i4.City?>> list({
     int? page = 0,
     int? size = 10,
     List<String>? sort = const [r'id,desc'],
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #getCities,
+          #list,
           [],
           {
             #page: page,
@@ -60,18 +60,18 @@ class MockCityRepository extends _i1.Mock implements _i2.CityRepository {
       ) as _i3.Future<List<_i4.City?>>);
 
   @override
-  _i3.Future<_i4.City?> getCity(String? id) => (super.noSuchMethod(
+  _i3.Future<_i4.City?> retrieve(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #getCity,
+          #retrieve,
           [id],
         ),
         returnValue: _i3.Future<_i4.City?>.value(),
       ) as _i3.Future<_i4.City?>);
 
   @override
-  _i3.Future<void> deleteCity(String? id) => (super.noSuchMethod(
+  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #deleteCity,
+          #delete,
           [id],
         ),
         returnValue: _i3.Future<void>.value(),

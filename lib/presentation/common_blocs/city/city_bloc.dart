@@ -26,7 +26,7 @@ class CityBloc extends Bloc<CityEvent, CityState> {
     _log.debug("BEGIN: getCity bloc: _onLoad");
     emit(const CityLoadingState());
     try {
-      List<City?> cities = await _repository.getCities();
+      List<City?> cities = await _repository.list();
       emit(CityLoadSuccessState(cities: cities));
       _log.debug("END: getCity bloc: _onLoad success: {}", [cities.toString()]);
     } catch (e) {

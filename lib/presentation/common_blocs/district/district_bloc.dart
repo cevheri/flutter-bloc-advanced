@@ -27,7 +27,7 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
     _log.debug("BEGIN: getDistrict bloc: _onLoad");
     emit(const DistrictLoadingState());
     try {
-      List<District?>? district = await _repository.getDistricts();
+      List<District?>? district = await _repository.list();
       emit(DistrictLoadSuccessState(districts: district));
       _log.debug("END: getDistrict bloc: _onLoad success: {}", [district.toString()]);
     } catch (e) {
@@ -40,7 +40,7 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
     _log.debug("BEGIN: getDistrict bloc: _onLoadByCity");
     emit(const DistrictLoadingState());
     try {
-      List<District?>? district = await _repository.getDistrictsByCity(event.cityId);
+      List<District?>? district = await _repository.listByCity(event.cityId);
       emit(DistrictLoadSuccessState(districts: district));
       _log.debug("END: getDistrict bloc: _onLoadByCity success: {}", [district.toString()]);
     } catch (e) {

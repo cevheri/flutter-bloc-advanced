@@ -33,34 +33,34 @@ class MockDistrictRepository extends _i1.Mock
   }
 
   @override
-  _i3.Future<List<_i4.District?>> getDistrictsByCity(String? cityId) =>
+  _i3.Future<List<_i4.District?>> listByCity(String? cityId) =>
       (super.noSuchMethod(
         Invocation.method(
-          #getDistrictsByCity,
+          #listByCity,
           [cityId],
         ),
         returnValue: _i3.Future<List<_i4.District?>>.value(<_i4.District?>[]),
       ) as _i3.Future<List<_i4.District?>>);
 
   @override
-  _i3.Future<_i4.District?> createDistrict(_i4.District? district) =>
+  _i3.Future<_i4.District?> create(_i4.District? district) =>
       (super.noSuchMethod(
         Invocation.method(
-          #createDistrict,
+          #create,
           [district],
         ),
         returnValue: _i3.Future<_i4.District?>.value(),
       ) as _i3.Future<_i4.District?>);
 
   @override
-  _i3.Future<List<_i4.District?>> getDistricts({
+  _i3.Future<List<_i4.District?>> list({
     int? page = 0,
     int? size = 10,
     List<String>? sort = const [r'id,desc'],
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #getDistricts,
+          #list,
           [],
           {
             #page: page,
@@ -72,18 +72,18 @@ class MockDistrictRepository extends _i1.Mock
       ) as _i3.Future<List<_i4.District?>>);
 
   @override
-  _i3.Future<_i4.District?> getDistrict(String? id) => (super.noSuchMethod(
+  _i3.Future<_i4.District?> retrieve(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #getDistrict,
+          #retrieve,
           [id],
         ),
         returnValue: _i3.Future<_i4.District?>.value(),
       ) as _i3.Future<_i4.District?>);
 
   @override
-  _i3.Future<void> deleteDistrict(String? id) => (super.noSuchMethod(
+  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #deleteDistrict,
+          #delete,
           [id],
         ),
         returnValue: _i3.Future<void>.value(),

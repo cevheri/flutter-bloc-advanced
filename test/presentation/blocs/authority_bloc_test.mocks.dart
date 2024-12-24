@@ -33,37 +33,37 @@ class MockAuthorityRepository extends _i1.Mock
   }
 
   @override
-  _i3.Future<_i4.Authority?> createAuthority(_i4.Authority? authority) =>
+  _i3.Future<_i4.Authority?> create(_i4.Authority? authority) =>
       (super.noSuchMethod(
         Invocation.method(
-          #createAuthority,
+          #create,
           [authority],
         ),
         returnValue: _i3.Future<_i4.Authority?>.value(),
       ) as _i3.Future<_i4.Authority?>);
 
   @override
-  _i3.Future<List<String?>> getAuthorities() => (super.noSuchMethod(
+  _i3.Future<List<String?>> list() => (super.noSuchMethod(
         Invocation.method(
-          #getAuthorities,
+          #list,
           [],
         ),
         returnValue: _i3.Future<List<String?>>.value(<String?>[]),
       ) as _i3.Future<List<String?>>);
 
   @override
-  _i3.Future<_i4.Authority?> getAuthority(String? id) => (super.noSuchMethod(
+  _i3.Future<_i4.Authority?> retrieve(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #getAuthority,
+          #retrieve,
           [id],
         ),
         returnValue: _i3.Future<_i4.Authority?>.value(),
       ) as _i3.Future<_i4.Authority?>);
 
   @override
-  _i3.Future<void> deleteAuthority(String? id) => (super.noSuchMethod(
+  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #deleteAuthority,
+          #delete,
           [id],
         ),
         returnValue: _i3.Future<void>.value(),

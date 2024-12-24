@@ -120,7 +120,7 @@ void main() {
     group("DistrictLoad", () {
       const input = [District(id: "test", name: "test")];
       final output = Future.value(input);
-      method() => repository.getDistricts();
+      method() => repository.list();
       const event = DistrictLoad();
       const loadingState = DistrictLoadingState();
       const successState = DistrictLoadSuccessState(districts: input);
@@ -149,7 +149,7 @@ void main() {
     group("DistrictLoadByCity", () {
       const input = [District(id: "test", name: "test")];
       final output = Future.value(input);
-      method() => repository.getDistrictsByCity("test");
+      method() => repository.listByCity("test");
       const event = DistrictLoadByCity(cityId: "test");
       const loadingState = DistrictLoadingState();
       const successState = DistrictLoadSuccessState(districts: input);

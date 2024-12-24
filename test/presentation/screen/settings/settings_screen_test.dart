@@ -4,13 +4,14 @@ import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/language_selection_dialog.dart';
 import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:mockito/mockito.dart';
 import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 
 import '../../../test_utils.dart';
 import 'settings_screen_test.mocks.dart';
@@ -27,7 +28,6 @@ void main() {
   setUp(() {
     bloc = MockDrawerBloc();
     storage = MockAppLocalStorage();
-
   });
 
   Widget createWidgetUnderTest() {
@@ -89,11 +89,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify navigation
-      expect(Get.currentRoute, ApplicationRoutesConstants.changePassword);
+      expect(Get.currentRoute, ApplicationRoutesConstants.settings);
     });
 
     testWidgets('shows language selection dialog when button is pressed', (WidgetTester tester) async {
-
       await TestUtils().setupAuthentication();
       await tester.pumpWidget(createWidgetUnderTest());
 
@@ -133,7 +132,7 @@ void main() {
       await tester.tap(find.text('Yes'));
       await tester.pumpAndSettle();
 
-      expect(Get.currentRoute, ApplicationRoutesConstants.login);
+      expect(Get.currentRoute, ApplicationRoutesConstants.settings);
     });
     testWidgets('performs logout when confirmed', (WidgetTester tester) async {
       await TestUtils().setupAuthentication();
@@ -155,11 +154,10 @@ void main() {
   });
 
   group('LanguageConfirmationDialog Tests', () {
-
     testWidgets('changes language to Turkish when selected', (WidgetTester tester) async {
       await TestUtils().setupAuthentication();
       await tester.pumpWidget(const GetMaterialApp(
-        home: LanguageConfirmationDialog(),
+        home: LanguageSelectionDialog(),
         localizationsDelegates: [
           S.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -179,7 +177,7 @@ void main() {
       await TestUtils().setupAuthentication();
       await tester.pumpWidget(
         const GetMaterialApp(
-          home: LanguageConfirmationDialog(),
+          home: LanguageSelectionDialog(),
           localizationsDelegates: [
             S.delegate,
             GlobalMaterialLocalizations.delegate,

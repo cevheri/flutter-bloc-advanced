@@ -11,7 +11,7 @@ class CityRepository {
 
   final String _resource = "cities";
 
-  Future<City?> createCity(City city) async {
+  Future<City?> create(City city) async {
     _log.debug("BEGIN:createCity repository start : {}", [city.toString()]);
     if (city.name == null || city.name!.isEmpty) {
       throw BadRequestException("City name null");
@@ -22,31 +22,34 @@ class CityRepository {
     return response;
   }
 
-  Future<List<City?>> getCities({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
+  Future<List<City?>> list({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
     _log.debug("BEGIN:getCities repository start - page: {}, size: {}, sort: {}", [page, size, sort]);
-    final httpResponse = await HttpUtils.getRequest("/$_resource?page=$page&size=$size&sort=${sort.join("&sort=")}");
+    final queryParams = {"page": page.toString(), "size": size.toString(), "sort": sort.join("&sort=")};
+    final httpResponse = await HttpUtils.getRequest("/$_resource", queryParams: queryParams);
     var response = City.fromJsonStringList(httpResponse.body);
     _log.debug("END:getCities successful - response list size: {}", [response.length]);
     return response;
   }
 
-  Future<City?> getCity(String id) async {
+  Future<City?> retrieve(String id) async {
     _log.debug("BEGIN:getCity repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException("City id null");
     }
-    final httpResponse = await HttpUtils.getRequest("/$_resource/$id");
+    final pathParams = id;
+    final httpResponse = await HttpUtils.getRequest("/$_resource/", pathParams: pathParams);
     var response = City.fromJsonString(httpResponse.body);
     _log.debug("END:getCity successful - response.body: {}", [response.toString()]);
     return response;
   }
 
-  Future<void> deleteCity(String id) async {
+  Future<void> delete(String id) async {
     _log.debug("BEGIN:deleteCity repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException("City id null");
     }
-    final httpResponse = await HttpUtils.deleteRequest("/$_resource/$id");
+    final pathParams = id;
+    final httpResponse = await HttpUtils.deleteRequest("/$_resource/", pathParams: pathParams);
     _log.debug("END:deleteCity successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

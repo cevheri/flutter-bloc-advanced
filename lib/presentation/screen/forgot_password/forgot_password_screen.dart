@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/routes/app_router.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -23,7 +25,10 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   _buildAppBar(BuildContext context) {
-    return AppBar(title: Text(S.of(context).password_forgot));
+    return AppBar(
+      title: Text(S.of(context).password_forgot),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home)),
+    );
   }
 
   _buildBody(BuildContext context) {
@@ -70,39 +75,6 @@ class ForgotPasswordScreen extends StatelessWidget {
     );
   }
 
-  // bad usage for bloc builder !!!
-  // _submitButton(BuildContext context) {
-  //   return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(builder: (context, state) {
-  //     return SizedBox(
-  //       child: ElevatedButton(
-  //         key: forgotPasswordButtonSubmit,
-  //         child: Text(S.of(context).email_send),
-  //         onPressed: () {
-  //           if (_forgotPasswordFormKey.currentState!.saveAndValidate()) {
-  //             context
-  //                 .read<ForgotPasswordBloc>()
-  //                 .add(ForgotPasswordEmailChanged(email: _forgotPasswordFormKey.currentState!.fields["email"]!.value));
-  //           } else {}
-  //         },
-  //       ),
-  //     );
-  //   }, buildWhen: (previous, current) {
-  //     if (current is ForgotPasswordInitialState) {
-  //       Message.getMessage(context: context, title: S.of(context).loading, content: "");
-  //     }
-  //     if (current is ForgotPasswordCompletedState) {
-  //       Navigator.pop(context);
-  //       Message.getMessage(context: context, title: S.of(context).success, content: "");
-  //       Future.delayed(const Duration(seconds: 1), () {});
-  //     }
-  //     if (current is ForgotPasswordErrorState) {
-  //       Message.errorMessage(title: S.of(context).failed, context: context, content: "");
-  //     }
-  //     return true;
-  //   });
-  // }
-
-  // good usage for bloc consumer
   Widget _submitButton(BuildContext context) {
     final t = S.of(context);
     return BlocConsumer<ForgotPasswordBloc, ForgotPasswordState>(

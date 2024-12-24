@@ -5,18 +5,12 @@ import 'package:flutter_bloc_advance/routes/go_router_routes/app_go_router_confi
 
 import '../data/repository/account_repository.dart';
 import '../data/repository/authority_repository.dart';
-import '../data/repository/city_repository.dart';
-import '../data/repository/district_repository.dart';
 import '../data/repository/login_repository.dart';
 import '../data/repository/menu_repository.dart';
-import '../data/repository/user_repository.dart';
 import '../presentation/common_blocs/account/account.dart';
 import '../presentation/common_blocs/authority/authority_bloc.dart';
-import '../presentation/common_blocs/city/city_bloc.dart';
-import '../presentation/common_blocs/district/district_bloc.dart';
 import '../presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../presentation/screen/login/bloc/login.dart';
-import '../presentation/screen/user/bloc/user_bloc.dart';
 
 /// Main application widget. This widget is the root of your application.
 ///
@@ -56,9 +50,6 @@ class App extends StatelessWidget {
         BlocProvider<LoginBloc>(create: (_) => LoginBloc(repository: LoginRepository())),
         BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
         BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
-        BlocProvider<UserBloc>(create: (_) => UserBloc(repository: UserRepository())),
-        BlocProvider<CityBloc>(create: (_) => CityBloc(repository: CityRepository())),
-        BlocProvider<DistrictBloc>(create: (_) => DistrictBloc(repository: DistrictRepository())),
         BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
       ],
       child: AppGoRouterConfig.routeBuilder(light, dark, language),

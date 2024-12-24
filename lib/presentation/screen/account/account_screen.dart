@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/user_form_fields.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
@@ -176,29 +177,10 @@ class AccountScreen extends StatelessWidget {
       return;
     }
 
-    final shouldPop = await _buildShowDialog(context) ?? false;
+    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
       context.go(ApplicationRoutesConstants.home);
     }
   }
 
-  Future<bool?> _buildShowDialog(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(S.of(context).warning),
-        content: Text(S.of(context).unsaved_changes),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(S.of(context).yes),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(S.of(context).no),
-          ),
-        ],
-      ),
-    );
-  }
 }

@@ -42,7 +42,7 @@ class _Config {
   };
 
   static Map<String, dynamic> testConstants = {
-    api: "assets/mock",
+    api: "mock",
   };
 
   static Map<String, dynamic> prodConstants = {
