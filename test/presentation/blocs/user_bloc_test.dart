@@ -89,7 +89,7 @@ void main() {
         when(repository.create(newUser)).thenAnswer((_) async => testUser);
       },
       build: () => bloc,
-      act: (bloc) => bloc.add(UserSubmitEvent(newUser)),
+      act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
       expect: () => [
         isA<UserState>().having((state) => state.status, 'status', UserStatus.loading),
         isA<UserState>().having((state) => state.status, 'status', UserStatus.saveSuccess).having((state) => state.data, 'data', testUser),
@@ -102,7 +102,7 @@ void main() {
         when(repository.update(testUser)).thenAnswer((_) async => testUser);
       },
       build: () => bloc,
-      act: (bloc) => bloc.add(UserSubmitEvent(testUser)),
+      act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
       expect: () => [
         isA<UserState>().having((state) => state.status, 'status', UserStatus.loading),
         isA<UserState>().having((state) => state.status, 'status', UserStatus.saveSuccess).having((state) => state.data, 'data', testUser),
@@ -115,7 +115,7 @@ void main() {
         when(repository.create(newUser)).thenThrow(Exception('Failed to create user'));
       },
       build: () => bloc,
-      act: (bloc) => bloc.add(UserSubmitEvent(newUser)),
+      act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
       expect: () => [
         const UserState(status: UserStatus.loading),
         const UserState(status: UserStatus.failure),
@@ -128,7 +128,7 @@ void main() {
         when(repository.update(testUser)).thenThrow(Exception('Failed to update user'));
       },
       build: () => bloc,
-      act: (bloc) => bloc.add(UserSubmitEvent(testUser)),
+      act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
       expect: () => [
         const UserState(status: UserStatus.loading),
         const UserState(status: UserStatus.failure),

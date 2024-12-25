@@ -9,7 +9,6 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/presentation/screen/account/account_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
@@ -20,7 +19,6 @@ import 'account_screen_test.mocks.dart';
 
 @GenerateMocks([AccountBloc, AccountRepository, UserBloc, UserRepository])
 void main() {
-  late MockAccountRepository mockAccountRepository;
   late MockAccountBloc mockAccountBloc;
   late MockUserBloc mockUserBloc;
   late TestUtils testUtils;
@@ -29,7 +27,6 @@ void main() {
     testUtils = TestUtils();
     await testUtils.setupUnitTest();
 
-    mockAccountRepository = MockAccountRepository();
     mockAccountBloc = MockAccountBloc();
     mockUserBloc = MockUserBloc();
   });

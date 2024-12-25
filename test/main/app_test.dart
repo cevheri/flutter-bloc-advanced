@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart';
 
 import '../test_utils.dart';
 
@@ -47,7 +46,7 @@ void main() {
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
 
-      final expectedLocale = const Locale('en');
+      const expectedLocale = Locale('en');
       final materialApp = tester.widget(find.byType(MaterialApp)) as MaterialApp;
       expect(materialApp.locale, equals(expectedLocale));
     });

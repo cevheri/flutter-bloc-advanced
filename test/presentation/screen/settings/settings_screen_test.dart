@@ -1,12 +1,10 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/screen/components/language_selection_dialog.dart';
 import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/settings_routes.dart';
@@ -22,7 +20,6 @@ import 'settings_screen_test.mocks.dart';
 @GenerateMocks([DrawerBloc, AppLocalStorage])
 void main() {
   late DrawerBloc mockDrawerBloc;
-  late AppLocalStorage mockStorage;
   late TestUtils testUtils;
 
   setUp(() async {
@@ -30,7 +27,6 @@ void main() {
     await testUtils.setupUnitTest();
 
     mockDrawerBloc = MockDrawerBloc();
-    mockStorage = MockAppLocalStorage();
 
     when(mockDrawerBloc.stream).thenAnswer((_) => Stream.fromIterable([]));
     when(mockDrawerBloc.state).thenReturn(const DrawerState());

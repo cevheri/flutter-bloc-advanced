@@ -5,18 +5,14 @@ import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/presentation/screen/forgot_password/bloc/forgot_password.dart';
-import 'package:flutter_bloc_advance/presentation/screen/forgot_password/forgot_password_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/login/bloc/login.dart';
 import 'package:flutter_bloc_advance/presentation/screen/login/login_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register.dart';
-import 'package:flutter_bloc_advance/presentation/screen/register/register_screen.dart';
-import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart';
-import 'package:go_router/go_router.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
