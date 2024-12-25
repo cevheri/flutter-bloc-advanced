@@ -3,11 +3,11 @@ on:
   push:
     branches:
       - sonar
-#      - main
+      - main
   pull_request:
     branches:
       - sonar
-#      - main
+      - main
     types: [ opened, synchronize, reopened ]
 jobs:
   build:
