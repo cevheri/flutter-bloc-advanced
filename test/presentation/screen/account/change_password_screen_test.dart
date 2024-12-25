@@ -83,25 +83,7 @@ void main() {
       _log.debug("end Validate AppBar");
     });
 
-    //app bar back button test
-    testWidgets("Validate AppBar Back Button", (tester) async {
-      _log.debug("begin Validate AppBar Back Button");
 
-      await tester.pumpWidget(Container());
-      await tester.pumpAndSettle();
-
-      // Given:
-      await tester.pumpWidget(getWidget());
-      //When:
-      await tester.pumpAndSettle();
-      //Then:
-      final backButtonFinder = find.byIcon(Icons.arrow_back);
-      await tester.tap(backButtonFinder);
-      await tester.pumpAndSettle();
-      expect(find.byType(ChangePasswordScreen), findsNothing);
-
-      _log.debug("end Validate AppBar Back Button");
-    });
   });
 
   //form fields

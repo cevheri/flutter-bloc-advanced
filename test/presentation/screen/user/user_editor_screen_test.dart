@@ -61,7 +61,7 @@ void main() {
         authorityRepository: mockAuthorityRepository);
 
     final router = GoRouter(
-      initialLocation: id != null ? '/user/${id}/${mode.name}' : '/user/new',
+      initialLocation: id != null ? '/user/$id/${mode.name}' : '/user/new',
       routes: UserRoutes.routes,
     );
 
@@ -201,7 +201,7 @@ void main() {
       // Set up UserBloc
       final userStateController = StreamController<UserState>.broadcast();
       when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(UserState(data: mockUser));
+      when(mockUserBloc.state).thenReturn(const UserState(data: mockUser));
 
       // Set up AuthorityBloc
       when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
@@ -210,7 +210,7 @@ void main() {
       // Mock UserBloc event handling
       when(mockUserBloc.add(any)).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserFetchEvent) {
-          userStateController.add(UserState(data: mockUser));
+          userStateController.add(const UserState(data: mockUser));
         }
       });
 
@@ -300,14 +300,14 @@ void main() {
             const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
           ));
 
-      const newUser = User(
-        login: 'newuser',
-        firstName: 'New',
-        lastName: 'User',
-        email: 'new@example.com',
-        activated: true,
-        authorities: ['ROLE_USER'],
-      );
+      // const newUser = User(
+      //   login: 'newuser',
+      //   firstName: 'New',
+      //   lastName: 'User',
+      //   email: 'new@example.com',
+      //   activated: true,
+      //   authorities: ['ROLE_USER'],
+      // );
 
       // Mock UserBloc event handling
       when(mockUserBloc.add(any)).thenAnswer((invocation) {

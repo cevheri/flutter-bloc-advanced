@@ -39,7 +39,6 @@ class ListUserScreen extends StatelessWidget {
     );
   }
 
-
   void _handleUserStateChanges(BuildContext context, UserState state) {
     debugPrint("check: ${state.status}");
     switch (state.status) {
@@ -471,25 +470,30 @@ class UserActionButtons extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       flex: 3,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildActionButton(
-            icon: Icons.edit,
-            onPressed: () => _handleEdit(context),
-          ),
-          const SizedBox(width: 5),
-          _buildActionButton(
-            icon: Icons.visibility,
-            onPressed: () => _handleView(context),
-          ),
-          const SizedBox(width: 5),
-          _buildActionButton(
-            icon: Icons.delete,
-            onPressed: () => _showDeleteConfirmation(context),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildActionButton(
+                icon: Icons.edit,
+                onPressed: () => _handleEdit(context),
+                size: constraints.maxWidth / 4,
+              ),
+              _buildActionButton(
+                icon: Icons.visibility,
+                onPressed: () => _handleView(context),
+                size: constraints.maxWidth / 4,
+              ),
+              _buildActionButton(
+                icon: Icons.delete,
+                onPressed: () => _showDeleteConfirmation(context),
+                size: constraints.maxWidth / 4,
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -497,12 +501,20 @@ class UserActionButtons extends StatelessWidget {
   Widget _buildActionButton({
     required IconData icon,
     required VoidCallback onPressed,
+    required double size,
   }) {
-    return IconButton(
-      padding: EdgeInsets.zero,
-      constraints: const BoxConstraints(),
-      icon: Icon(icon, size: 20),
-      onPressed: onPressed,
+    return SizedBox(
+      width: size,
+      height: size,
+      child: IconButton(
+        padding: EdgeInsets.zero,
+        constraints: BoxConstraints(
+          maxWidth: size,
+          maxHeight: size,
+        ),
+        icon: Icon(icon, size: 16),
+        onPressed: onPressed,
+      ),
     );
   }
 
