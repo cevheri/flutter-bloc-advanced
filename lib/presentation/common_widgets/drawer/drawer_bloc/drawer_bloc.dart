@@ -91,7 +91,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
         _log.info("END:loadMenus read from cache: {}", []);
         return;
       }
-      final menus = await _menuRepository.getMenus();
+      final menus = await _menuRepository.list();
       if (menus.isEmpty) {
         emit(state.copyWith(menus: menus, status: DrawerStateStatus.error));
         return;
@@ -109,7 +109,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     _log.debug("BEGIN: refreshMenus RefreshMenus event: {}", []);
     emit(state.copyWith(menus: [], status: DrawerStateStatus.loading));
     try {
-      final menus = await _menuRepository.getMenus();
+      final menus = await _menuRepository.list();
       MenuListCache.menus = menus;
       emit(state.copyWith(menus: menus, status: DrawerStateStatus.success));
       _log.debug("END:refreshMenus RefreshMenus event success: {}", []);

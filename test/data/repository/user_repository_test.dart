@@ -19,7 +19,7 @@ void main() {
   group("User Repository getUsers", () {
     test("Given valid user when getUsers then return user list successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await UserRepository().getUsers();
+      final result = await UserRepository().list();
       //             GET_admin_users_queryParams.json
       // assets/mock/GET_admin_users_queryParams.json
       expect(result, isA<List<User>>());
@@ -27,7 +27,7 @@ void main() {
     });
 
     test("Given valid user without accessToken when getUsers then return user list fail", () async {
-      expect(() async => await UserRepository().getUsers(), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().list(), throwsA(isA<UnauthorizedException>()));
     });
   });
 
@@ -35,7 +35,7 @@ void main() {
   group("User Repository getUser", () {
     test("Given valid userId when getUser then return user successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await UserRepository().getUser("user-1");
+      final result = await UserRepository().retrieve("user-1");
 
       expect(result, isA<User>());
       expect(result?.id, "user-1");
@@ -53,13 +53,13 @@ void main() {
     });
 
     test("Given valid userId without accessToken when getUser then return user fail", () async {
-      expect(() async => await UserRepository().getUser("1"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().retrieve("1"), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null userId when getUser then return user fail", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().getUser(""), throwsA(isA<BadRequestException>()));
+      expect(() async => await UserRepository().retrieve(""), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -67,7 +67,7 @@ void main() {
   group("User Repository getUserByLogin", () {
     test("Given valid login when getUserByLogin then return user successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await UserRepository().getUserByLogin("username");
+      final result = await UserRepository().retrieveByLogin("username");
 
       expect(result, isA<User>());
       expect(result?.id, "user-1");
@@ -85,13 +85,13 @@ void main() {
     });
 
     test("Given valid login without accessToken when getUserByLogin then return user fail", () async {
-      expect(() async => await UserRepository().getUserByLogin("admin"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().retrieveByLogin("admin"), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null login when getUserByLogin then return user fail", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().getUserByLogin(""), throwsA(isA<BadRequestException>()));
+      expect(() async => await UserRepository().retrieveByLogin(""), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -138,29 +138,28 @@ void main() {
   group("User Repository listUser", () {
     test("Given valid range when listUser then return user list successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await UserRepository().listUser(0, 10);
+      final result = await UserRepository().list(page: 0, size: 10);
 
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
 
     test("Given valid range without accessToken when listUser then return user list fail", () async {
-      expect(() async => await UserRepository().listUser(0, 10), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().list(page: 0, size: 10), throwsA(isA<UnauthorizedException>()));
     });
   });
 
-  //findUserByAuthority Future<List<User>> findUserByAuthority(int rangeStart, int rangeEnd, String authority) async {
   group("User Repository findUserByAuthority", () {
     test("Given valid range and authority when findUserByAuthority then return user list successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await UserRepository().findUserByAuthority(0, 10, "ROLE_ADMIN");
+      final result = await UserRepository().listByAuthority(0, 10, "ROLE_ADMIN");
 
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
 
     test("Given valid range and authority without accessToken when findUserByAuthority then return user list fail", () async {
-      expect(() async => await UserRepository().findUserByAuthority(0, 10, "ROLE_ADMIN"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().listByAuthority(0, 10, "ROLE_ADMIN"), throwsA(isA<UnauthorizedException>()));
     });
   });
 
@@ -168,14 +167,14 @@ void main() {
   group("User Repository findUserByName", () {
     test("Given valid range, name and authority when findUserByName then return user list successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await UserRepository().findUserByName(0, 10, "admin", "ROLE_ADMIN");
+      final result = await UserRepository().listByNameAndRole(0, 10, "admin", "ROLE_ADMIN");
 
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
 
     test("Given valid range, name and authority without accessToken when findUserByName then return user list fail", () async {
-      expect(() async => await UserRepository().findUserByName(0, 10, "admin", "ROLE_ADMIN"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().listByNameAndRole(0, 10, "admin", "ROLE_ADMIN"), throwsA(isA<UnauthorizedException>()));
     });
   });
 
@@ -217,17 +216,17 @@ void main() {
     test("Given valid userId when deleteUser then return void successfully", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().deleteUser("user-1"), returnsNormally);
+      expect(() async => await UserRepository().delete("user-1"), returnsNormally);
     });
 
     test("Given valid userId without accessToken when deleteUser then return void fail", () async {
-      expect(() async => await UserRepository().deleteUser("1"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await UserRepository().delete("1"), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null userId when deleteUser then return void fail", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().deleteUser(""), throwsA(isA<BadRequestException>()));
+      expect(() async => await UserRepository().delete(""), throwsA(isA<BadRequestException>()));
     });
   });
 }

@@ -14,20 +14,10 @@ class UserRepository {
   static const String _resource = "users";
   static const String userIdRequired = "User id is required";
 
-  /// Retrieve all users method that retrieves all the users
-  Future<List<User?>> getUsers({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
-    _log.debug("BEGIN:getUsers repository start - page: {}, size: {}, sort: {}", [page, size, sort]);
-    final queryParams = {"page": page.toString(), "size": size.toString(), "sort": sort.join("&sort=")};
-    final httpResponse = await HttpUtils.getRequest("/admin/$_resource", queryParams: queryParams);
-    final response = User.fromJsonStringList(httpResponse.body);
-    _log.debug("END:getUsers successful - response list size: {}", [response.length]);
-    return response;
-  }
-
   /// Retrieve user method that retrieves a user by id
   ///
   /// @param id the user id
-  Future<User?> getUser(String id) async {
+  Future<User?> retrieve(String id) async {
     _log.debug("BEGIN:getUser repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException(userIdRequired);
@@ -42,7 +32,7 @@ class UserRepository {
   /// Retrieve user method that retrieves a user by username
   ///
   /// @param login the username
-  Future<User?> getUserByLogin(String login) async {
+  Future<User?> retrieveByLogin(String login) async {
     _log.debug("BEGIN:getUserByLogin repository start - login: {}", [login]);
     if (login.isEmpty) {
       throw BadRequestException("User login is required");
@@ -83,20 +73,20 @@ class UserRepository {
     return response;
   }
 
-  /// Find user method that findUser a user
-  Future<List<User>> listUser(int rangeStart, int rangeEnd, {List<String> sort = const ["id,desc"]}) async {
-    _log.debug("BEGIN:listUser repository start - rangeStart: {}, rangeEnd: {}, sort: {}", [rangeStart, rangeEnd, sort]);
-    final queryParams = {"page": rangeStart.toString(), "size": rangeEnd.toString(), "sort": sort.join("&sort=")};
-    final response = await HttpUtils.getRequest("/admin/$_resource", queryParams: queryParams);
-    var result = JsonMapper.deserialize<List<User>>(response.body)!;
-    _log.debug("END:listUser successful - response list size: {}", [result.length]);
-    return result;
+  /// Retrieve all users method that retrieves all the users
+  Future<List<User?>> list({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
+    _log.debug("BEGIN:getUsers repository start - page: {}, size: {}, sort: {}", [page, size, sort]);
+    final queryParams = {"page": page.toString(), "size": size.toString(), "sort": sort.join("&sort=")};
+    final httpResponse = await HttpUtils.getRequest("/admin/$_resource", queryParams: queryParams);
+    final response = User.fromJsonStringList(httpResponse.body);
+    _log.debug("END:getUsers successful - response list size: {}", [response.length]);
+    return response;
   }
 
   /// Find user method that findUserByAuthorities a user
-  Future<List<User>> findUserByAuthority(int rangeStart, int rangeEnd, String authority) async {
-    _log.debug("BEGIN:findUserByAuthority repository start - rangeStart: {}, rangeEnd: {}, authority: {}", [rangeStart, rangeEnd, authority]);
-    final queryParams = {"page": rangeStart.toString(), "size": rangeEnd.toString(), "authority": authority};
+  Future<List<User>> listByAuthority(int page, int size, String authority) async {
+    _log.debug("BEGIN:findUserByAuthority repository start - page: {}, size: {}, authority: {}", [page, size, authority]);
+    final queryParams = {"page": page.toString(), "size": size.toString(), "authority": authority};
     final response = await HttpUtils.getRequest("/admin/$_resource/list", queryParams: queryParams);
     var result = JsonMapper.deserialize<List<User>>(response.body)!;
     _log.debug("END:findUserByAuthority successful - response list size: {}", [result.length]);
@@ -104,17 +94,17 @@ class UserRepository {
   }
 
   /// Find user method that findUserByName a user
-  Future<List<User>> findUserByName(int rangeStart, int rangeEnd, String name, String authority) async {
-    _log.debug("BEGIN:findUserByName repository start - rangeStart: {}, rangeEnd: {}, name: {}, authority: {}",
-        [rangeStart, rangeEnd, name, authority]);
-    final queryParams = {"page": rangeStart.toString(), "size": rangeEnd.toString(), "name": name, "authority": authority};
+  Future<List<User>> listByNameAndRole(int page, int size, String name, String authority) async {
+    _log.debug("BEGIN:findUserByName repository start - page: {}, size: {}, name: {}, authority: {}",
+        [page, size, name, authority]);
+    final queryParams = {"page": page.toString(), "size": size.toString(), "name": name, "authority": authority};
     final response = await HttpUtils.getRequest("/admin/$_resource/filter", queryParams: queryParams);
     var result = JsonMapper.deserialize<List<User>>(response.body)!;
     _log.debug("END:findUserByName successful - response list size: {}", [result.length]);
     return result;
   }
 
-  Future<void> deleteUser(String id) async {
+  Future<void> delete(String id) async {
     _log.debug("BEGIN:deleteUser repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException(userIdRequired);

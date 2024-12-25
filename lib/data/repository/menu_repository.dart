@@ -8,7 +8,7 @@ class MenuRepository {
 
   MenuRepository();
 
-  Future<List<Menu>> getMenus() async {
+  Future<List<Menu>> list() async {
     _log.debug("BEGIN:getMenus repository start");
     final json = await rootBundle.loadString('assets/mock/menus.json');
     final result = Menu.fromJsonStringList(json);

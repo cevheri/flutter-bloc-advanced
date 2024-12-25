@@ -65,9 +65,9 @@ class MockMenuRepository extends _i1.Mock implements _i6.MenuRepository {
   }
 
   @override
-  _i3.Future<List<_i7.Menu>> getMenus() => (super.noSuchMethod(
+  _i3.Future<List<_i7.Menu>> list() => (super.noSuchMethod(
         Invocation.method(
-          #getMenus,
+          #list,
           [],
         ),
         returnValue: _i3.Future<List<_i7.Menu>>.value(<_i7.Menu>[]),

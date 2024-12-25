@@ -59,7 +59,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         emit(state.copyWith(status: UserStatus.failure, err: "Admin user cannot be deleted"));
         _log.error("END:onDelete UserDelete event error: {}", ["Admin user cannot be deleted"]);
       }
-      await _repository.deleteUser(event.id);
+      await _repository.delete(event.id);
       emit(state.copyWith(status: UserStatus.deleteSuccess));
       _log.debug("END:onDelete UserDelete event success: {}", [event.id]);
     } catch (e) {
@@ -73,7 +73,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     _log.debug("BEGIN: onFetchUser FetchUserEvent event: {}", [event.id]);
     emit(const UserState(status: UserStatus.loading));
     try {
-      final entity = await _repository.getUser(event.id);
+      final entity = await _repository.retrieve(event.id);
       emit(state.copyWith(status: UserStatus.fetchSuccess, data: entity));
       _log.debug("END:onFetchUser FetchUserEvent event success: {}", [entity.toString()]);
     } catch (e) {
@@ -88,12 +88,12 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(status: UserStatus.loading));
     try {
       if (event.name == "") {
-        final entities = await _repository.findUserByAuthority(event.page, event.size, event.authority);
+        final entities = await _repository.listByAuthority(event.page, event.size, event.authority);
         emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
         _log.debug("END:onSearch UserSearch event success content count: {}", [entities.length]);
       }
       if (event.name != "") {
-        final entities = await _repository.findUserByName(event.page, event.size, event.name, event.authority);
+        final entities = await _repository.listByNameAndRole(event.page, event.size, event.name, event.authority);
         emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
         _log.debug("END:onSearch UserSearch event with name success content count: {}", [entities.length]);
       }

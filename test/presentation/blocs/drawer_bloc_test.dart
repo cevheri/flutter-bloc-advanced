@@ -84,7 +84,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, success] when LoadMenus is added",
         setUp: () {
-          when(menuRepository.getMenus()).thenAnswer((_) => output);
+          when(menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -95,7 +95,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, failure] when LoadMenus is added",
         setUp: () {
-          when(menuRepository.getMenus()).thenThrow(Exception("Error"));
+          when(menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -114,7 +114,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, success] when RefreshMenus is added",
         setUp: () {
-          when(menuRepository.getMenus()).thenAnswer((_) => output);
+          when(menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -125,7 +125,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, failure] when RefreshMenus is added",
         setUp: () {
-          when(menuRepository.getMenus()).thenThrow(Exception("Error"));
+          when(menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),

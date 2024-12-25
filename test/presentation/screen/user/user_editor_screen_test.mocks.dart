@@ -193,37 +193,18 @@ class MockUserRepository extends _i1.Mock implements _i6.UserRepository {
   }
 
   @override
-  _i4.Future<List<_i7.User?>> getUsers({
-    int? page = 0,
-    int? size = 10,
-    List<String>? sort = const [r'id,desc'],
-  }) =>
-      (super.noSuchMethod(
+  _i4.Future<_i7.User?> retrieve(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #getUsers,
-          [],
-          {
-            #page: page,
-            #size: size,
-            #sort: sort,
-          },
-        ),
-        returnValue: _i4.Future<List<_i7.User?>>.value(<_i7.User?>[]),
-      ) as _i4.Future<List<_i7.User?>>);
-
-  @override
-  _i4.Future<_i7.User?> getUser(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #getUser,
+          #retrieve,
           [id],
         ),
         returnValue: _i4.Future<_i7.User?>.value(),
       ) as _i4.Future<_i7.User?>);
 
   @override
-  _i4.Future<_i7.User?> getUserByLogin(String? login) => (super.noSuchMethod(
+  _i4.Future<_i7.User?> retrieveByLogin(String? login) => (super.noSuchMethod(
         Invocation.method(
-          #getUserByLogin,
+          #retrieveByLogin,
           [login],
         ),
         returnValue: _i4.Future<_i7.User?>.value(),
@@ -248,35 +229,36 @@ class MockUserRepository extends _i1.Mock implements _i6.UserRepository {
       ) as _i4.Future<_i7.User?>);
 
   @override
-  _i4.Future<List<_i7.User>> listUser(
-    int? rangeStart,
-    int? rangeEnd, {
+  _i4.Future<List<_i7.User?>> list({
+    int? page = 0,
+    int? size = 10,
     List<String>? sort = const [r'id,desc'],
   }) =>
       (super.noSuchMethod(
         Invocation.method(
-          #listUser,
-          [
-            rangeStart,
-            rangeEnd,
-          ],
-          {#sort: sort},
+          #list,
+          [],
+          {
+            #page: page,
+            #size: size,
+            #sort: sort,
+          },
         ),
-        returnValue: _i4.Future<List<_i7.User>>.value(<_i7.User>[]),
-      ) as _i4.Future<List<_i7.User>>);
+        returnValue: _i4.Future<List<_i7.User?>>.value(<_i7.User?>[]),
+      ) as _i4.Future<List<_i7.User?>>);
 
   @override
-  _i4.Future<List<_i7.User>> findUserByAuthority(
-    int? rangeStart,
-    int? rangeEnd,
+  _i4.Future<List<_i7.User>> listByAuthority(
+    int? page,
+    int? size,
     String? authority,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
-          #findUserByAuthority,
+          #listByAuthority,
           [
-            rangeStart,
-            rangeEnd,
+            page,
+            size,
             authority,
           ],
         ),
@@ -284,18 +266,18 @@ class MockUserRepository extends _i1.Mock implements _i6.UserRepository {
       ) as _i4.Future<List<_i7.User>>);
 
   @override
-  _i4.Future<List<_i7.User>> findUserByName(
-    int? rangeStart,
-    int? rangeEnd,
+  _i4.Future<List<_i7.User>> listByNameAndRole(
+    int? page,
+    int? size,
     String? name,
     String? authority,
   ) =>
       (super.noSuchMethod(
         Invocation.method(
-          #findUserByName,
+          #listByNameAndRole,
           [
-            rangeStart,
-            rangeEnd,
+            page,
+            size,
             name,
             authority,
           ],
@@ -304,9 +286,9 @@ class MockUserRepository extends _i1.Mock implements _i6.UserRepository {
       ) as _i4.Future<List<_i7.User>>);
 
   @override
-  _i4.Future<void> deleteUser(String? id) => (super.noSuchMethod(
+  _i4.Future<void> delete(String? id) => (super.noSuchMethod(
         Invocation.method(
-          #deleteUser,
+          #delete,
           [id],
         ),
         returnValue: _i4.Future<void>.value(),

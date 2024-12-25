@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
@@ -23,11 +22,10 @@ class UserEditorScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bloc = context.read<UserBloc>();
     final initialEvent = id != null ? UserFetchEvent(id!) : const UserEditorInit();
-    return BlocProvider(
-      create: (context) => UserBloc(repository: UserRepository())..add(initialEvent),
-      child: UserEditorWidget(mode: mode),
-    );
+    bloc.add(initialEvent);
+    return UserEditorWidget(mode: mode);
   }
 }
 
@@ -192,6 +190,7 @@ class UserEditorWidget extends StatelessWidget {
       width: double.infinity,
       height: 48,
       child: ElevatedButton(
+        key: const Key('userEditorSubmitButtonKey'),
         onPressed: () => _onSubmit(context),
         child: Text(S.of(context).save),
       ),
