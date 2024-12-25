@@ -1,196 +1,165 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/presentation/screen/account/account_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:mockito/annotations.dart';
+import 'package:mockito/mockito.dart';
 
 import '../../../test_utils.dart';
+import 'account_screen_test.mocks.dart';
 
-final _log = AppLogger.getLogger("AccountsScreenTest");
-
-/// Accounts Screen Test
-/// claas AccountsScreen extent
+@GenerateMocks([AccountBloc, AccountRepository, UserBloc, UserRepository])
 void main() {
-  //region setup
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
+  late MockAccountRepository mockAccountRepository;
+  late MockAccountBloc mockAccountBloc;
+  late MockUserBloc mockUserBloc;
+  late TestUtils testUtils;
+
+  setUp(() async {
+    testUtils = TestUtils();
+    await testUtils.setupUnitTest();
+
+    mockAccountRepository = MockAccountRepository();
+    mockAccountBloc = MockAccountBloc();
+    mockUserBloc = MockUserBloc();
   });
+
   tearDown(() async {
-    await TestUtils().tearDownUnitTest();
+    await testUtils.tearDownUnitTest();
   });
 
-
-  final blocs = [
-    BlocProvider<UserBloc>(create: (_) => UserBloc(repository: UserRepository())),
-    BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
-    BlocProvider<AccountBloc>(create: (context) => AccountBloc(repository: AccountRepository())..add(const AccountFetchEvent()))
-  ];
-
-  GetMaterialApp getWidget() {
-    return GetMaterialApp(
-      home: MultiBlocProvider(
-        providers: blocs,
-        child: AccountScreen(),
-      ),
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
+  Widget buildTestableWidget() {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<AccountBloc>.value(value: mockAccountBloc),
+        BlocProvider<UserBloc>.value(value: mockUserBloc),
       ],
+      child: MaterialApp(
+        home: AccountScreen(),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+      ),
     );
   }
-  //endregion setup
 
+  group('AccountScreen Tests', () {
+    testWidgets('Should render account screen with user data', (tester) async {
+      // ARRANGE
+      const mockUser = User(
+        id: 'test-1',
+        login: 'testuser',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        activated: true,
+      );
 
-  // app bar
-  group("AccountsScreen AppBarTest", () {
-    testWidgets("Validate AppBar", (tester) async {
-      _log.debug("begin Validate AppBar");
-      // Given
-      await tester.pumpWidget(getWidget());
-      //When:
+      final accountStateController = StreamController<AccountState>.broadcast();
+      when(mockAccountBloc.stream).thenAnswer((_) => accountStateController.stream);
+      when(mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
+
+      // ACT
+      await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
-      //Then:
-      expect(find.byType(AppBar), findsOneWidget);
-      // appBar title
 
-      expect(find.byType(AccountScreen), findsOneWidget);
-      expect(find.text("Account"), findsOneWidget);
-      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
-      _log.debug("end Validate AppBar");
+      // ASSERT
+      expect(find.text('Account'), findsOneWidget);
+      expect(find.text('testuser'), findsOneWidget);
+      expect(find.text('Test'), findsOneWidget);
+      expect(find.text('User'), findsOneWidget);
+      expect(find.text('test@example.com'), findsOneWidget);
+
+      // Clean up
+      await accountStateController.close();
     });
 
-    //app bar back button test
-    testWidgets("Validate AppBar Back Button", (tester) async {
-      _log.debug("begin Validate AppBar Back Button");
-      TestUtils().setupAuthentication();
-      await tester.pumpWidget(Container());
+    testWidgets('Should handle form submission with changes', (tester) async {
+      // ARRANGE
+      const initialUser = User(
+        id: 'test-1',
+        login: 'testuser',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        activated: true,
+      );
+
+      final accountStateController = StreamController<AccountState>.broadcast();
+      final userStateController = StreamController<UserState>.broadcast();
+
+      when(mockAccountBloc.stream).thenAnswer((_) => accountStateController.stream);
+      when(mockAccountBloc.state).thenReturn(const AccountState(data: initialUser, status: AccountStatus.success));
+
+      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(mockUserBloc.state).thenReturn(const UserState());
+
+      // ACT
+      await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
-      // Given:
-      await tester.pumpWidget(getWidget());
-      //When:
-      await tester.pumpAndSettle();
-      //Then:
-      final backButtonFinder = find.byIcon(Icons.arrow_back);
-      await tester.tap(backButtonFinder);
-      await tester.pumpAndSettle();
-      expect(find.byType(AccountScreen), findsNothing);
+      // Form alanlarını değiştir
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Yeni İsim');
+      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'Yeni Soyisim');
 
-      _log.debug("end Validate AppBar Back Button");
-    });
-  });
-
-  //form fields
-  group("AccountsScreen DataTest", () {
-    testWidgets("Render Screen Validate Field Type Successful", (tester) async {
-      _log.debug("begin Validate Field Type");
-      await TestUtils().setupAuthentication();
-      _log.debug("getAccount initWidgetDependenciesWithToken");
-      // Given:
-      await tester.pumpWidget(getWidget());
-      _log.debug("getAccount getWidget");
-      //When:
+      // Kaydet butonuna tıkla
+      await tester.tap(find.text(S.current.save));
       await tester.pumpAndSettle();
-      _log.debug("getAccount pumpAndSettle");
 
-      //Then:
-      expect(find.byType(FormBuilderTextField), findsNWidgets(4)); // findsNWidget = 4?
-      //expect(find.byType(FormBuilderSwitch), findsOneWidget);
-      //expect(find.byType(ElevatedButton), findsOneWidget);
-      _log.debug("end Validate Field Type");
-    });
+      // ASSERT
+      verify(mockUserBloc.add(any)).called(greaterThan(0));
 
-    /// validate field name with English translation
-    testWidgets(skip: true, "Render Screen Validate Field Name Successful", (tester) async {
-      //Given
-      await tester.pumpWidget(getWidget());
-      //When
-      await tester.pumpAndSettle();
-      //Then:
-      // username / login name textField
-      expect(find.text("Login"), findsOneWidget);
-      // firstName textField
-      expect(find.text("First Name"), findsOneWidget);
-      // lastName textField
-      expect(find.text("Last Name"), findsOneWidget);
-      // email textField
-      expect(find.text("Email"), findsOneWidget);
-      // active switch button
-      expect(find.text("Active"), findsOneWidget);
-      // save button
-      expect(find.text("Save"), findsOneWidget);
+      // Clean up
+      await accountStateController.close();
+      await userStateController.close();
     });
 
-    ///Validate Mock Data
-    testWidgets(skip: true, "Render Screen Validate User Data Successful", (tester) async {
-      // Given:
-      /*await tester.pumpWidget(getWidget(mockUserFullPayload));
-      //When:
-      await tester.pumpAndSettle();
-      //Then:
-      // username / login name
-      expect(find.text("test_login"), findsOneWidget);
-      // firstName
-      expect(find.text("John"), findsOneWidget);
-      // lastName
-      expect(find.text("Doe"), findsOneWidget);
-      // email
-      expect(find.text("john.doe@example.com"), findsOneWidget);
-      // activated
-      expect(find.text("true"), findsOneWidget);*/
-    });
-  });
+    testWidgets('Should show warning dialog on back button with unsaved changes', (tester) async {
+      // ARRANGE
+      const mockUser = User(
+        id: 'test-1',
+        login: 'testuser',
+        firstName: 'Test',
+        lastName: 'User',
+        email: 'test@example.com',
+        activated: true,
+      );
 
-  group("AccountScreen Bloc Test", () {
-    testWidgets(skip: true, "Given valid user data with AccessToken when Save Button clicked then update user Successfully", (tester) async {
-      // Given: render screen with valid user data
-      await tester.pumpWidget(getWidget());
-      //When: wait screen is ready
+      final accountStateController = StreamController<AccountState>.broadcast();
+      when(mockAccountBloc.stream).thenAnswer((_) => accountStateController.stream);
+      when(mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
+
+      // ACT
+      await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
-      expect(find.byType(ElevatedButton), findsOneWidget);
-      expect(find.text("Save"), findsOneWidget);
-      //await tester.tap(find.text('Save'));
-      // await tester.pumpAndSettle();
-    });
+      // Form alanını değiştir
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Değiştirilmiş İsim');
 
-    testWidgets(skip: true, "Given valid user data without AccessToken when Save Button clicked then update user fail (Unauthorized)",
-        (tester) async {
-      expect(find.byType(ElevatedButton), findsOneWidget);
-      expect(find.text("Save"), findsOneWidget);
-      // await tester.tap(find.text('Save'));
-      // await tester.pumpAndSettle();
-      // Given: render screen with valid user data
-      await tester.pumpWidget(getWidget());
-      //When: wait screen is ready
+      // Geri butonuna tıkla
+      await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
 
-      //await tester.tap(find.text('Save'));
-      //await tester.pumpAndSettle();
-    });
+      // ASSERT
+      expect(find.text(S.current.warning), findsOneWidget);
+      expect(find.text(S.current.unsaved_changes), findsOneWidget);
 
-    testWidgets(skip: true, "Given same user data (no-changes) when Save Button clicked then no-action", (tester) async {
-      // Given: render screen with valid user data
-      await tester.pumpWidget(getWidget());
-      //When: wait screen is ready
-      await tester.pumpAndSettle();
-
-      expect(find.byType(ElevatedButton), findsOneWidget);
-      expect(find.text("Save"), findsOneWidget);
-
-      await tester.tap(find.text('Save'));
+      // Clean up
+      await accountStateController.close();
     });
   });
 }
