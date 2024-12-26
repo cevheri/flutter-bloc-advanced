@@ -1,12 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/presentation/screen/account/account_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/change_password/change_password_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/forgot_password/forgot_password_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/home/home_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/login/login_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
-import 'package:get/get.dart';
 
 /// GetX Router Configuration
 /// WARN: Not Tested
