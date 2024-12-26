@@ -251,6 +251,9 @@ class AppRouter {
     return _instance;
   }
 
+  @visibleForTesting
+  RouterStrategy get routeStrategy => _routeStrategy;
+
   /// Set the route strategy for the application
   /// @param routeStrategy The route strategy to use for the application
   void setRouter(RouterType routerType) {
@@ -268,8 +271,6 @@ class AppRouter {
       case RouterType.getRouter:
         _routeStrategy = GetRouteStrategy();
         break;
-      default:
-        _routeStrategy = GoRouterStrategy();
     }
   }
 

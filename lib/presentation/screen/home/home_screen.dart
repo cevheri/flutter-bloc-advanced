@@ -89,7 +89,7 @@ class HomeScreen extends StatelessWidget {
               image: DecorationImage(
                 image: const AssetImage(LocaleConstants.defaultImgUrl),
                 colorFilter: ColorFilter.mode(
-                    AdaptiveTheme.of(context).mode.isDark ? Colors.black.withOpacity(0.1) : Colors.white.withOpacity(0.1), BlendMode.dstIn),
+                    AdaptiveTheme.of(context).mode.isDark ? Colors.black.withAlpha(128) : Colors.white.withAlpha(128), BlendMode.dstIn),
               ),
             ),
           ),

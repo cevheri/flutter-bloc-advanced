@@ -150,7 +150,7 @@ void main() {
         act: (bloc) => bloc.add(const UserSearchEvent(authority: "ROLE_USER")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          UserState(status: UserStatus.searchSuccess, userList: users),
+          const UserState(status: UserStatus.searchSuccess, userList: users),
         ],
       );
 
@@ -166,7 +166,7 @@ void main() {
         )),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          UserState(status: UserStatus.searchSuccess, userList: users),
+          const UserState(status: UserStatus.searchSuccess, userList: users),
         ],
       );
 
@@ -216,7 +216,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits success state when delete is successful',
         setUp: () {
-          when(repository.delete("2")).thenAnswer((_) async => null);
+          when(repository.delete("2")).thenAnswer((_) async {});
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),
