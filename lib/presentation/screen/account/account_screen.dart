@@ -35,6 +35,7 @@ class AccountScreen extends StatelessWidget {
     return AppBar(
       title: Text(S.of(context).account),
       leading: IconButton(
+        key: const Key('accountScreenAppBarBackButtonKey'),
         icon: const Icon(Icons.arrow_back),
         onPressed: () async => _handlePopScope(false, null, context),
       ),
