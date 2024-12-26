@@ -58,6 +58,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
       if (event.id == "user-1") {
         emit(state.copyWith(status: UserStatus.failure, err: "Admin user cannot be deleted"));
         _log.error("END:onDelete UserDelete event error: {}", ["Admin user cannot be deleted"]);
+        return;
       }
       await _repository.delete(event.id);
       emit(state.copyWith(status: UserStatus.deleteSuccess));
@@ -116,5 +117,4 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(status: UserStatus.viewSuccess));
     _log.debug("END:onViewComplete UserViewCompleteEvent event success: {}", []);
   }
-
 }
