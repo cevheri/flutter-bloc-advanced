@@ -1,8 +1,12 @@
 import 'dart:async';
 
+import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 
 import '../../../../data/models/menu.dart';
 import '../../../../data/repository/login_repository.dart';
@@ -26,51 +30,91 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     on<LoadMenus>(_loadMenus);
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
+    on<ChangeLanguageEvent>(_onChangeLanguage);
+    on<ChangeThemeEvent>(_onChangeTheme);
+  }
+
+  FutureOr<void> _onChangeTheme(ChangeThemeEvent event, Emitter<DrawerState> emit) async {
+    _log.debug("BEGIN: onChangeTheme ChangeThemeEvent event: {}", []);
+    emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.loading));
+    try {
+      await AppLocalStorage().save(StorageKeys.theme.name, event.theme.name);
+      emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.success));
+      _log.debug("END:onChangeTheme ChangeThemeEvent event success: {}", [event.theme]);
+    } catch (e) {
+      emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.error));
+      _log.error("END:onChangeTheme ChangeThemeEvent event error: {}", [e.toString()]);
+    }
+  }
+
+  FutureOr<void> _onChangeLanguage(ChangeLanguageEvent event, Emitter<DrawerState> emit) async {
+    _log.debug("BEGIN: onChangeLanguage ChangeLanguageEvent event: {}", []);
+    emit(state.copyWith(language: event.language, status: DrawerStateStatus.loading));
+    try {
+      await AppLocalStorage().save(StorageKeys.language.name, event.language);
+      emit(state.copyWith(language: event.language, status: DrawerStateStatus.success));
+
+      await S.load(Locale(event.language));
+
+      _log.debug("END:onChangeLanguage ChangeLanguageEvent event success: {}", [event.language]);
+    } catch (e) {
+      emit(state.copyWith(language: event.language, status: DrawerStateStatus.error));
+      _log.error("END:onChangeLanguage ChangeLanguageEvent event error: {}", [e.toString()]);
+    }
   }
 
   FutureOr<void> _onLogout(Logout event, Emitter<DrawerState> emit) async {
     _log.debug("BEGIN: onLogout Logout event: {}", []);
-    emit(const DrawerState(isLogout: false));
+    emit(const DrawerState(isLogout: false, status: DrawerStateStatus.loading));
     try {
       await _loginRepository.logout();
-      emit(state.copyWith(isLogout: true));
+      emit(state.copyWith(isLogout: true, status: DrawerStateStatus.success));
       MenuListCache.menus = [];
       _log.debug("END:onLogout Logout event success: {}", []);
     } catch (e) {
-      emit(const DrawerState(isLogout: false));
+      emit(const DrawerState(isLogout: false, status: DrawerStateStatus.error));
       _log.error("END:onLogout Logout event error: {}", [e.toString()]);
     }
   }
 
   FutureOr<void> _loadMenus(LoadMenus event, Emitter<DrawerState> emit) async {
     _log.debug("BEGIN: loadMenus LoadMenus event: {}", []);
-    emit(const DrawerState(menus: []));
+    emit(state.copyWith(
+      menus: [],
+      status: DrawerStateStatus.loading,
+      language: event.language,
+      theme: event.theme,
+    ));
     try {
       if (MenuListCache.menus.isNotEmpty) {
-        emit(state.copyWith(menus: MenuListCache.menus));
+        emit(state.copyWith(menus: MenuListCache.menus, status: DrawerStateStatus.success));
         _log.info("END:loadMenus read from cache: {}", []);
         return;
       }
-      final menus = await _menuRepository.getMenus();
+      final menus = await _menuRepository.list();
+      if (menus.isEmpty) {
+        emit(state.copyWith(menus: menus, status: DrawerStateStatus.error));
+        return;
+      }
       MenuListCache.menus = menus;
-      emit(state.copyWith(menus: menus));
+      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success));
       _log.debug("END:loadMenus LoadMenus event success: {}", []);
     } catch (e) {
-      emit(const DrawerState(menus: []));
+      emit(state.copyWith(menus: [], status: DrawerStateStatus.error));
       _log.error("END:loadMenus LoadMenus event error: {}", [e.toString()]);
     }
   }
 
   FutureOr<void> _refreshMenus(RefreshMenus event, Emitter<DrawerState> emit) async {
     _log.debug("BEGIN: refreshMenus RefreshMenus event: {}", []);
-    emit(const DrawerState(menus: []));
+    emit(state.copyWith(menus: [], status: DrawerStateStatus.loading));
     try {
-      final menus = await _menuRepository.getMenus();
+      final menus = await _menuRepository.list();
       MenuListCache.menus = menus;
-      emit(state.copyWith(menus: menus));
+      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success));
       _log.debug("END:refreshMenus RefreshMenus event success: {}", []);
     } catch (e) {
-      emit(const DrawerState(menus: []));
+      emit(state.copyWith(menus: [], status: DrawerStateStatus.error));
       _log.error("END:refreshMenus RefreshMenus event error: {}", [e.toString()]);
     }
   }

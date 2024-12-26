@@ -7,51 +7,64 @@ class UserEvent extends Equatable {
   List<Object> get props => [];
 }
 
-class UserSearch extends UserEvent {
-  final int rangeStart;
-  final int rangeEnd;
+class UserSearchEvent extends UserEvent {
+  final int page;
+  final int size;
   final String authority;
   final String name;
 
-  const UserSearch(
-    this.rangeStart,
-    this.rangeEnd,
-    this.authority,
-    this.name,
-  );
+  const UserSearchEvent({
+    this.page = 0,
+    this.size = 10,
+    this.authority = "",
+    this.name = "",
+  });
 }
 
-class UserCreate extends UserEvent {
-  const UserCreate({
-    required this.user,
-  });
-
-  final User user;
+class UserEditorInit extends UserEvent {
+  const UserEditorInit();
 
   @override
   List<Object> get props => [];
 }
 
-class UserUpdate extends UserEvent {
-  const UserUpdate({
-    required this.user,
-  });
-
+class UserSubmitEvent extends UserEvent {
   final User user;
+
+  const UserSubmitEvent(this.user);
+
+  @override
+  List<Object> get props => [user];
+}
+
+class UserFetchEvent extends UserEvent {
+  final String id;
+
+  const UserFetchEvent(this.id);
+
+  @override
+  List<Object> get props => [id];
+}
+
+class UserDeleteEvent extends UserEvent {
+  final String id;
+
+  const UserDeleteEvent(this.id);
+
+  @override
+  List<Object> get props => [id];
+}
+
+class UserSaveCompleteEvent extends UserEvent {
+  const UserSaveCompleteEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class UserEdit extends UserEvent {
-  const UserEdit({
-    required this.user,
-  });
-
-  final User user;
+class UserViewCompleteEvent extends UserEvent {
+  const UserViewCompleteEvent();
 
   @override
   List<Object> get props => [];
 }
-
-class UserList extends UserEvent {}

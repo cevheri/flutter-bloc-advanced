@@ -1,83 +1,39 @@
 part of 'user_bloc.dart';
 
-enum UserStatus { initial, loading, success, failure }
+enum UserStatus {
+  initial,
+  loading,
+  success,
+  failure,
+  searchSuccess,
+  fetchSuccess,
+  deleteSuccess,
+  saveSuccess,
+  viewSuccess,
+}
 
 class UserState extends Equatable {
-  final User? user;
+  final User? data;
   final UserStatus status;
+  final List<User>? userList;
+  final String? err;
 
   const UserState({
-    this.user,
     this.status = UserStatus.initial,
+    this.data,
+    this.userList,
+    this.err,
   });
 
   UserState copyWith({
-    User? user,
     UserStatus? status,
+    User? data,
+    List<User>? userList,
+    String? err,
   }) {
-    return UserState(status: status ?? this.status, user: user ?? this.user);
+    return UserState(status: status ?? this.status, data: data ?? this.data, userList: userList ?? this.userList, err: err ?? this.err);
   }
 
   @override
-  List<Object?> get props => [user, status];
-}
-
-class UserInitialState extends UserState {}
-
-class UserEditInitialState extends UserState {}
-
-class UserFindInitialState extends UserState {
-
-}
-
-class UserLoadInProgressState extends UserState {}
-
-class UserLoadSuccessState extends UserState {
-  final User userLoadSuccess;
-
-  const UserLoadSuccessState({required this.userLoadSuccess});
-}
-
-class UserEditSuccessState extends UserState {
-  final User userEditSuccess;
-
-  const UserEditSuccessState({required this.userEditSuccess});
-}
-
-class UserSearchSuccessState extends UserState {
-  final List<User> userList;
-
-  const UserSearchSuccessState({required this.userList});
-}
-
-class UserLoadFailureState extends UserState {
-  final String message;
-
-  const UserLoadFailureState({required this.message});
-}
-
-class UserEditFailureState extends UserState {
-  final String message;
-
-  const UserEditFailureState({required this.message});
-}
-
-class UserSearchFailureState extends UserState {
-  final String message;
-
-  const UserSearchFailureState({required this.message});
-}
-
-class UserListInitialState extends UserState {}
-
-class UserListSuccessState extends UserState {
-  final List<User> userList;
-
-  const UserListSuccessState({required this.userList});
-}
-
-class UserListFailureState extends UserState {
-  final String message;
-
-  const UserListFailureState({required this.message});
+  List<Object?> get props => [status, data, userList, err];
 }

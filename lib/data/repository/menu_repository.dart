@@ -1,4 +1,3 @@
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 
@@ -9,9 +8,10 @@ class MenuRepository {
 
   MenuRepository();
 
-  Future<List<Menu>> getMenus() async {
+  Future<List<Menu>> list() async {
     _log.debug("BEGIN:getMenus repository start");
-    final result = JsonMapper.deserialize<List<Menu>>(await rootBundle.loadString('assets/mock/menus.json'))!;
+    final json = await rootBundle.loadString('assets/mock/menus.json');
+    final result = Menu.fromJsonStringList(json);
     _log.debug("END:getMenus successful - response.body: {}", [result.toString()]);
     return result;
   }

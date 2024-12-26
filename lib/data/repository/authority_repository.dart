@@ -10,7 +10,7 @@ class AuthorityRepository {
 
   final String _resource = "authorities";
 
-  Future<Authority?> createAuthority(Authority authority) async {
+  Future<Authority?> create(Authority authority) async {
     _log.debug("BEGIN:createAuthority repository start : {}", [authority.toString()]);
     if (authority.name == null || authority.name!.isEmpty) {
       throw BadRequestException("Authority name null");
@@ -21,31 +21,34 @@ class AuthorityRepository {
     return response;
   }
 
-  Future<List<String?>> getAuthorities() async {
+  Future<List<String?>> list() async {
     _log.debug("BEGIN:getAuthorities repository start");
-    final httpResponse = await HttpUtils.getRequest("/$_resource");
+    final queryParams = {"sort": "&sort=name"};
+    final httpResponse = await HttpUtils.getRequest("/$_resource", queryParams: queryParams);
     final response = Authority.fromJsonStringList(httpResponse.body);
     _log.debug("END:getAuthorities successful - response list size: {}", [response.length]);
     return response;
   }
 
-  Future<Authority?> getAuthority(String id) async {
+  Future<Authority?> retrieve(String id) async {
     _log.debug("BEGIN:getAuthority repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException("Authority id null");
     }
-    final httpResponse = await HttpUtils.getRequest("/$_resource/$id");
+    final pathParams = id;
+    final httpResponse = await HttpUtils.getRequest("/$_resource/", pathParams: pathParams);
     final response = Authority.fromJsonString(httpResponse.body);
     _log.debug("END:getAuthority successful - response.body: {}", [response.toString()]);
     return response;
   }
 
-  Future<void> deleteAuthority(String id) async {
+  Future<void> delete(String id) async {
     _log.debug("BEGIN:deleteAuthority repository start - id: {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException("Authority id null");
     }
-    final httpResponse = await HttpUtils.deleteRequest("/$_resource/$id");
+    final pathParams = id;
+    final httpResponse = await HttpUtils.deleteRequest("/$_resource/", pathParams: pathParams);
     _log.debug("END:deleteAuthority successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

@@ -27,7 +27,12 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
     _log.debug("BEGIN: getAuthorities bloc: _onLoad");
     emit(const AuthorityLoadingState());
     try {
-      final authorities = await _repository.getAuthorities();
+      final authorities = await _repository.list();
+      if (authorities.isEmpty) {
+        emit(const AuthorityLoadFailureState(message: "No authorities found"));
+        _log.error("END: getAuthorities bloc: _onLoad error: {}", ["No authorities found"]);
+        return;
+      }
       emit(AuthorityLoadSuccessState(authorities: authorities));
       _log.debug("END: getAuthorities bloc: _onLoad success: {}", [authorities.toString()]);
     } catch (e) {

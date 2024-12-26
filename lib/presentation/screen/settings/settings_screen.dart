@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/language_selection_dialog.dart';
+import 'package:flutter_bloc_advance/routes/app_router.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:get/get.dart';
+import 'package:go_router/go_router.dart';
 
-import '../../../configuration/routes.dart';
 import '../../../generated/l10n.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -19,7 +22,9 @@ class SettingsScreen extends StatelessWidget {
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-        title: Text(S.of(context).settings), leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)));
+      title: Text(S.of(context).settings),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home)),
+    );
   }
 
   _buildBody(BuildContext context) {
@@ -44,7 +49,7 @@ class SettingsScreen extends StatelessWidget {
   ElevatedButton _buildChangePasswordButton(BuildContext context) {
     return ElevatedButton(
       key: settingsChangePasswordButtonKey,
-      onPressed: () => Navigator.pushNamed(context, ApplicationRoutes.changePassword),
+      onPressed: () => context.go(ApplicationRoutesConstants.changePassword),
       child: Text(S.of(context).change_password, textAlign: TextAlign.center),
     );
   }
@@ -52,66 +57,25 @@ class SettingsScreen extends StatelessWidget {
   ElevatedButton _buildChangeLanguageButton(BuildContext context) {
     return ElevatedButton(
       key: settingsChangeLanguageButtonKey,
+      onPressed: () => LanguageSelectionDialog.show(context),
       child: Text(S.of(context).language_select, textAlign: TextAlign.center),
-      onPressed: () => showDialog(context: context, builder: (context) => const LanguageConfirmationDialog()),
     );
   }
 
   ElevatedButton _buildLogoutButton(BuildContext context) {
     return ElevatedButton(
       key: settingsLogoutButtonKey,
+      onPressed: () => _handleLogout(context),
       child: Text(S.of(context).logout, textAlign: TextAlign.center),
-      onPressed: () => showDialog(
-        context: context,
-        builder: (context) {
-          return AlertDialog(
-            title: Text(S.of(context).logout),
-            content: Text(S.of(context).logout_sure),
-            actions: [
-              TextButton(onPressed: () => onLogout(context), child: Text(S.of(context).yes)),
-              TextButton(onPressed: () => Navigator.pop(context), child: Text(S.of(context).no)),
-            ],
-          );
-        },
-      ),
     );
   }
 
-  void onLogout(context) {
-    //BlocProvider.of<DrawerBloc>(context).add(Logout());
-    AppLocalStorage().clear();
-    Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
-  }
-}
+  Future<void> _handleLogout(BuildContext context) async {
+    final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
 
-class LanguageConfirmationDialog extends StatelessWidget {
-  const LanguageConfirmationDialog({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(S.of(context).language_select, textAlign: TextAlign.center),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        TextButton(
-          style: TextButton.styleFrom(backgroundColor: Theme.of(context).colorScheme.primary),
-          onPressed: () => _setLanguage(context, 'tr'),
-          child: Text(S.of(context).turkish, style: const TextStyle(color: Colors.white)),
-        ),
-        TextButton(
-          style: TextButton.styleFrom(
-            backgroundColor: Theme.of(context).colorScheme.primary,
-          ),
-          onPressed: () => _setLanguage(context, 'en'),
-          child: Text(S.of(context).english, style: const TextStyle(color: Colors.white)),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _setLanguage(BuildContext context, String langCode) async {
-    await AppLocalStorage().save(StorageKeys.language.name, langCode);
-    await S.load(Locale(langCode));
-    Get.back();
+    if (shouldLogout && context.mounted) {
+      AppLocalStorage().clear();
+      context.go(ApplicationRoutesConstants.login);
+    }
   }
 }

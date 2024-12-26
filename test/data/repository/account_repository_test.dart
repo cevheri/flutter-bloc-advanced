@@ -145,29 +145,29 @@ void main() {
     test("Given valid user when saveAccount then return user successfully", () async {
       await TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
-      final result = await AccountRepository().saveAccount(entity);
+      final result = await AccountRepository().update(entity);
       expect(result, isA<User>());
     });
     //fail: without AccessToken
     test("Given valid user when saveAccount without AccessToken then return user successfully", () async {
       final entity = mockUserFullPayload;
-      expect(() => AccountRepository().saveAccount(entity), throwsA(isA<UnauthorizedException>()));
+      expect(() => AccountRepository().update(entity), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null user when saveAccount then throw BadRequestException", () async {
       await TestUtils().setupAuthentication();
-      expect(() => AccountRepository().saveAccount(null), throwsA(isA<BadRequestException>()));
+      expect(() => AccountRepository().update(null), throwsA(isA<BadRequestException>()));
     });
     test("Given user with null id when saveAccount then throw BadRequestException", () async {
       await TestUtils().setupAuthentication();
       const entity = User();
-      expect(() => AccountRepository().saveAccount(entity), throwsA(isA<BadRequestException>()));
+      expect(() => AccountRepository().update(entity), throwsA(isA<BadRequestException>()));
     });
 
     test("Given user with null id when saveAccount then throw BadRequestException", () async {
       await TestUtils().setupAuthentication();
       final entity = mockUserFullPayload.copyWith(id: "");
-      expect(() => AccountRepository().saveAccount(entity), throwsA(isA<BadRequestException>()));
+      expect(() => AccountRepository().update(entity), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -177,25 +177,25 @@ void main() {
     test("Given valid user when updateAccount then return user successfully", () async {
       await TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
-      final result = await AccountRepository().updateAccount(entity);
+      final result = await AccountRepository().update(entity);
       expect(result, isA<User>());
     });
     //fail: without AccessToken
     test("Given valid user when updateAccount without AccessToken then return user successfully", () async {
       final entity = mockUserFullPayload;
-      expect(() async => await AccountRepository().updateAccount(entity), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await AccountRepository().update(entity), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given user with null id when updateAccount then throw BadRequestException", () async {
       await TestUtils().setupAuthentication();
       const entity = User();
-      expect(() async => await AccountRepository().updateAccount(entity), throwsA(isA<BadRequestException>()));
+      expect(() async => await AccountRepository().update(entity), throwsA(isA<BadRequestException>()));
     });
 
     test("Given user with null id when updateAccount then throw BadRequestException", () async {
       await TestUtils().setupAuthentication();
       final entity = mockUserFullPayload.copyWith(id: "");
-      expect(() async => await AccountRepository().updateAccount(entity), throwsA(isA<BadRequestException>()));
+      expect(() async => await AccountRepository().update(entity), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -204,17 +204,17 @@ void main() {
     //success
     test("Given valid id when deleteAccount then return void", () async {
       await TestUtils().setupAuthentication();
-      final result = await AccountRepository().deleteAccount("id");
+      final result = await AccountRepository().delete("id");
       expect(result, isTrue);
     });
     //fail: without AccessToken
     test("Given valid id when deleteAccount without AccessToken then return void", () async {
-      expect(() async => await AccountRepository().deleteAccount("id"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await AccountRepository().delete("id"), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null id when deleteAccount then throw BadRequestException", () async {
       await TestUtils().setupAuthentication();
-      expect(() async => await AccountRepository().deleteAccount(""), throwsA(isA<BadRequestException>()));
+      expect(() async => await AccountRepository().delete(""), throwsA(isA<BadRequestException>()));
     });
   });
 }

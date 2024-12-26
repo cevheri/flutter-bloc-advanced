@@ -28,8 +28,8 @@ class MessageLookup extends MessageLookupByLibrary {
             'info': 'Info',
             'language': 'Language',
             'theme': 'Theme',
-            'create': 'Create',
-            'list': 'List/Edit',
+            'new_user': 'New',
+            'list_user': 'List',
             'other': 'Other',
           })}";
 
@@ -39,37 +39,28 @@ class MessageLookup extends MessageLookupByLibrary {
         "active": MessageLookupByLibrary.simpleMessage("Active"),
         "admin": MessageLookupByLibrary.simpleMessage("Admin"),
         "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
+        "back": MessageLookupByLibrary.simpleMessage("Back"),
         "change_password":
             MessageLookupByLibrary.simpleMessage("Change Password"),
         "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
         "current_password":
             MessageLookupByLibrary.simpleMessage("Current Password"),
+        "delete_confirmation": MessageLookupByLibrary.simpleMessage(
+            "Are you sure you want to delete?"),
+        "delete_user": MessageLookupByLibrary.simpleMessage("Delete User"),
         "edit_user": MessageLookupByLibrary.simpleMessage("Edit User"),
         "email": MessageLookupByLibrary.simpleMessage("Email"),
         "email_pattern": MessageLookupByLibrary.simpleMessage(
             "Email must be a valid email address"),
-        "email_required":
-            MessageLookupByLibrary.simpleMessage("Email is required"),
         "email_send": MessageLookupByLibrary.simpleMessage("Send Email"),
         "english": MessageLookupByLibrary.simpleMessage("English"),
         "failed": MessageLookupByLibrary.simpleMessage("Failed"),
+        "filter": MessageLookupByLibrary.simpleMessage("Filter"),
         "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
-        "firstname_max_length": MessageLookupByLibrary.simpleMessage(
-            "Firstname cannot be more than 20 characters long"),
-        "firstname_min_length": MessageLookupByLibrary.simpleMessage(
-            "Firstname must be at least 5 characters long"),
-        "firstname_required":
-            MessageLookupByLibrary.simpleMessage("Firstname is required"),
         "guest": MessageLookupByLibrary.simpleMessage("Guest"),
         "language_select":
             MessageLookupByLibrary.simpleMessage("Select Language"),
         "last_name": MessageLookupByLibrary.simpleMessage("Last Name"),
-        "lastname_max_length": MessageLookupByLibrary.simpleMessage(
-            "Lastname cannot be more than 20 characters long"),
-        "lastname_min_length": MessageLookupByLibrary.simpleMessage(
-            "Lastname must be at least 5 characters long"),
-        "lastname_required":
-            MessageLookupByLibrary.simpleMessage("Lastname is required"),
         "list": MessageLookupByLibrary.simpleMessage("List"),
         "list_user": MessageLookupByLibrary.simpleMessage("List User"),
         "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
@@ -80,9 +71,37 @@ class MessageLookup extends MessageLookupByLibrary {
         "logout": MessageLookupByLibrary.simpleMessage("Logout"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Are you sure you want to logout?"),
+        "max_length_10": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 10 characters long"),
+        "max_length_100": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 100 characters long"),
+        "max_length_1000": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 1000 characters long"),
+        "max_length_20": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 20 characters long"),
+        "max_length_250": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 250 characters long"),
+        "max_length_4000": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 4000 characters long"),
+        "max_length_50": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 50 characters long"),
+        "max_length_500": MessageLookupByLibrary.simpleMessage(
+            "Field cannot be more than 500 characters long"),
+        "min_length_2": MessageLookupByLibrary.simpleMessage(
+            "Field must be at least 2 characters long"),
+        "min_length_3": MessageLookupByLibrary.simpleMessage(
+            "Field must be at least 3 characters long"),
+        "min_length_4": MessageLookupByLibrary.simpleMessage(
+            "Field must be at least 4 characters long"),
+        "min_length_5": MessageLookupByLibrary.simpleMessage(
+            "Field must be at least 5 characters long"),
         "name": MessageLookupByLibrary.simpleMessage("Name"),
         "new_password": MessageLookupByLibrary.simpleMessage("New Password"),
+        "new_user": MessageLookupByLibrary.simpleMessage("New User"),
         "no": MessageLookupByLibrary.simpleMessage("No"),
+        "no_changes_made":
+            MessageLookupByLibrary.simpleMessage("No changes made"),
+        "no_data": MessageLookupByLibrary.simpleMessage("No Data"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Forgot Password"),
         "password_max_length": MessageLookupByLibrary.simpleMessage(
@@ -103,14 +122,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "success": MessageLookupByLibrary.simpleMessage("Success"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
-        "username_max_length": MessageLookupByLibrary.simpleMessage(
-            "Username cannot be more than 20 characters long"),
-        "username_min_length": MessageLookupByLibrary.simpleMessage(
-            "Username must be at least 5 characters long"),
-        "username_regex_pattern": MessageLookupByLibrary.simpleMessage(
-            "Username must be a valid email address"),
-        "username_required":
-            MessageLookupByLibrary.simpleMessage("Username is required"),
+        "unsaved_changes": MessageLookupByLibrary.simpleMessage(
+            "You have unsaved changes. Are you sure you want to leave?"),
+        "view_user": MessageLookupByLibrary.simpleMessage("View User"),
+        "warning": MessageLookupByLibrary.simpleMessage("Warning"),
         "yes": MessageLookupByLibrary.simpleMessage("Yes")
       };
 }

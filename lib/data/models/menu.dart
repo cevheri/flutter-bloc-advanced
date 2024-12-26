@@ -44,7 +44,11 @@ class Menu extends Equatable {
   @JsonProperty(name: 'level')
   final int level;
 
-  // salesPersonCode and salesPersonName
+  @JsonProperty(name: 'leaf')
+  final bool? leaf;
+
+  @JsonProperty(name: 'authorities')
+  final List<String>? authorities;
 
   const Menu({
     this.id = '',
@@ -56,6 +60,8 @@ class Menu extends Equatable {
     this.active = false,
     this.parent,
     this.level = 0,
+    this.leaf = false,
+    this.authorities = const [],
   });
 
   Menu copyWith({
@@ -68,6 +74,8 @@ class Menu extends Equatable {
     bool? active,
     Menu? parent,
     int? level,
+    bool? leaf,
+    List<String>? authorities,
   }) {
     return Menu(
       id: id ?? this.id,
@@ -79,6 +87,8 @@ class Menu extends Equatable {
       active: active ?? this.active,
       parent: parent ?? this.parent,
       level: level ?? this.level,
+      leaf: leaf ?? this.leaf,
+      authorities: authorities ?? this.authorities,
     );
   }
 
@@ -90,7 +100,18 @@ class Menu extends Equatable {
     return result;
   }
 
-  static Menu? fromJsonString(String json){
+  static List<Menu> fromJsonList(List<dynamic> json) {
+    List<Menu> result = [];
+    for (var item in json) {
+      var menu = Menu.fromJson(item as Map<String, dynamic>);
+      if (menu != null) {
+        result.add(menu);
+      }
+    }
+    return result;
+  }
+
+  static Menu? fromJsonString(String json) {
     var result = JsonMapper.deserialize<Menu>(jsonDecode(json));
     if (result == null) {
       return null;
@@ -98,20 +119,22 @@ class Menu extends Equatable {
     return result;
   }
 
+  static List<Menu> fromJsonStringList(String json) {
+    List<Menu> result = [];
+    var jsonList = jsonDecode(json) as List<dynamic>;
+    for (var item in jsonList) {
+      var menu = Menu.fromJson(item as Map<String, dynamic>);
+      if (menu != null) {
+        result.add(menu);
+      }
+    }
+    return result;
+  }
+
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-        description,
-        url,
-        icon,
-        orderPriority,
-        active,
-        parent,
-        level,
-      ];
+  List<Object?> get props => [id, name, description, url, icon, orderPriority, active, parent, level, leaf, authorities];
 
   @override
   bool get stringify => true;

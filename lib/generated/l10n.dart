@@ -50,16 +50,6 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
-  /// `List User`
-  String get list_user {
-    return Intl.message(
-      'List User',
-      name: 'list_user',
-      desc: '',
-      args: [],
-    );
-  }
-
   /// `Screen size is too small.`
   String get screen_size_error {
     return Intl.message(
@@ -210,6 +200,126 @@ class S {
     );
   }
 
+  /// `Field must be at least 2 characters long`
+  String get min_length_2 {
+    return Intl.message(
+      'Field must be at least 2 characters long',
+      name: 'min_length_2',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field must be at least 3 characters long`
+  String get min_length_3 {
+    return Intl.message(
+      'Field must be at least 3 characters long',
+      name: 'min_length_3',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field must be at least 4 characters long`
+  String get min_length_4 {
+    return Intl.message(
+      'Field must be at least 4 characters long',
+      name: 'min_length_4',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field must be at least 5 characters long`
+  String get min_length_5 {
+    return Intl.message(
+      'Field must be at least 5 characters long',
+      name: 'min_length_5',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 10 characters long`
+  String get max_length_10 {
+    return Intl.message(
+      'Field cannot be more than 10 characters long',
+      name: 'max_length_10',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 20 characters long`
+  String get max_length_20 {
+    return Intl.message(
+      'Field cannot be more than 20 characters long',
+      name: 'max_length_20',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 50 characters long`
+  String get max_length_50 {
+    return Intl.message(
+      'Field cannot be more than 50 characters long',
+      name: 'max_length_50',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 100 characters long`
+  String get max_length_100 {
+    return Intl.message(
+      'Field cannot be more than 100 characters long',
+      name: 'max_length_100',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 250 characters long`
+  String get max_length_250 {
+    return Intl.message(
+      'Field cannot be more than 250 characters long',
+      name: 'max_length_250',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 500 characters long`
+  String get max_length_500 {
+    return Intl.message(
+      'Field cannot be more than 500 characters long',
+      name: 'max_length_500',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 1000 characters long`
+  String get max_length_1000 {
+    return Intl.message(
+      'Field cannot be more than 1000 characters long',
+      name: 'max_length_1000',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Field cannot be more than 4000 characters long`
+  String get max_length_4000 {
+    return Intl.message(
+      'Field cannot be more than 4000 characters long',
+      name: 'max_length_4000',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Range is required`
   String get required_range {
     return Intl.message(
@@ -230,6 +340,36 @@ class S {
     );
   }
 
+  /// `Filter`
+  String get filter {
+    return Intl.message(
+      'Filter',
+      name: 'filter',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `List User`
+  String get list_user {
+    return Intl.message(
+      'List User',
+      name: 'list_user',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New User`
+  String get new_user {
+    return Intl.message(
+      'New User',
+      name: 'new_user',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Edit User`
   String get edit_user {
     return Intl.message(
@@ -240,11 +380,21 @@ class S {
     );
   }
 
-  /// `Email is required`
-  String get email_required {
+  /// `View User`
+  String get view_user {
     return Intl.message(
-      'Email is required',
-      name: 'email_required',
+      'View User',
+      name: 'view_user',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Delete User`
+  String get delete_user {
+    return Intl.message(
+      'Delete User',
+      name: 'delete_user',
       desc: '',
       args: [],
     );
@@ -255,106 +405,6 @@ class S {
     return Intl.message(
       'Email must be a valid email address',
       name: 'email_pattern',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lastname is required`
-  String get lastname_required {
-    return Intl.message(
-      'Lastname is required',
-      name: 'lastname_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lastname must be at least 5 characters long`
-  String get lastname_min_length {
-    return Intl.message(
-      'Lastname must be at least 5 characters long',
-      name: 'lastname_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Lastname cannot be more than 20 characters long`
-  String get lastname_max_length {
-    return Intl.message(
-      'Lastname cannot be more than 20 characters long',
-      name: 'lastname_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Firstname is required`
-  String get firstname_required {
-    return Intl.message(
-      'Firstname is required',
-      name: 'firstname_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Firstname must be at least 5 characters long`
-  String get firstname_min_length {
-    return Intl.message(
-      'Firstname must be at least 5 characters long',
-      name: 'firstname_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Firstname cannot be more than 20 characters long`
-  String get firstname_max_length {
-    return Intl.message(
-      'Firstname cannot be more than 20 characters long',
-      name: 'firstname_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Username is required`
-  String get username_required {
-    return Intl.message(
-      'Username is required',
-      name: 'username_required',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Username cannot be more than 20 characters long`
-  String get username_max_length {
-    return Intl.message(
-      'Username cannot be more than 20 characters long',
-      name: 'username_max_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Username must be at least 5 characters long`
-  String get username_min_length {
-    return Intl.message(
-      'Username must be at least 5 characters long',
-      name: 'username_min_length',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Username must be a valid email address`
-  String get username_regex_pattern {
-    return Intl.message(
-      'Username must be a valid email address',
-      name: 'username_regex_pattern',
       desc: '',
       args: [],
     );
@@ -395,6 +445,26 @@ class S {
     return Intl.message(
       'Save',
       name: 'save',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Back`
+  String get back {
+    return Intl.message(
+      'Back',
+      name: 'back',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Are you sure you want to delete?`
+  String get delete_confirmation {
+    return Intl.message(
+      'Are you sure you want to delete?',
+      name: 'delete_confirmation',
       desc: '',
       args: [],
     );
@@ -475,6 +545,46 @@ class S {
     return Intl.message(
       'No',
       name: 'no',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Warning`
+  String get warning {
+    return Intl.message(
+      'Warning',
+      name: 'warning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You have unsaved changes. Are you sure you want to leave?`
+  String get unsaved_changes {
+    return Intl.message(
+      'You have unsaved changes. Are you sure you want to leave?',
+      name: 'unsaved_changes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No changes made`
+  String get no_changes_made {
+    return Intl.message(
+      'No changes made',
+      name: 'no_changes_made',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `No Data`
+  String get no_data {
+    return Intl.message(
+      'No Data',
+      name: 'no_data',
       desc: '',
       args: [],
     );
@@ -590,7 +700,7 @@ class S {
     );
   }
 
-  /// `{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  create{Create}  list{List/Edit} other{Other}}`
+  /// `{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  new_user{New}  list_user{List} other{Other}}`
   String translate_menu_title(Object translate) {
     return Intl.select(
       translate,
@@ -602,8 +712,8 @@ class S {
         'info': 'Info',
         'language': 'Language',
         'theme': 'Theme',
-        'create': 'Create',
-        'list': 'List/Edit',
+        'new_user': 'New',
+        'list_user': 'List',
         'other': 'Other',
       },
       name: 'translate_menu_title',

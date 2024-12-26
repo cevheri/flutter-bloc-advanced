@@ -19,6 +19,7 @@ dependencies:
   cupertino_icons:
   equatable:
 
+  auto_route:
   get:
   intl:
   pdf:

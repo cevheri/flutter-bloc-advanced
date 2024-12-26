@@ -95,7 +95,7 @@ class AccountRepository {
     return result;
   }
 
-  Future<User> saveAccount(User? user) async {
+  Future<User> update(User? user) async {
     _log.debug("BEGIN:saveAccount repository start : {}", [user.toString()]);
     if (user == null) {
       throw BadRequestException("User null");
@@ -110,18 +110,7 @@ class AccountRepository {
     return result;
   }
 
-  Future<User> updateAccount(User account) async {
-    _log.debug("BEGIN:updateAccount repository start : {}", [account.toString()]);
-    if (account.id == null || account.id!.isEmpty) {
-      throw BadRequestException(userIdNotNull);
-    }
-    final response = await HttpUtils.putRequest<User>("/$_resource", account);
-    final result = User.fromJsonString(response.body.toString())!;
-    _log.debug("END:updateAccount successful");
-    return result;
-  }
-
-  Future<bool> deleteAccount(String id) async {
+  Future<bool> delete(String id) async {
     _log.debug("BEGIN:deleteAccount repository start : {}", [id]);
     if (id.isEmpty) {
       throw BadRequestException(userIdNotNull);

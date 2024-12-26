@@ -8,23 +8,23 @@ enum AccountStatus { initial, loading, success, failure }
 ///
 /// The state is immutable and copyWith is used to update the state.
 class AccountState extends Equatable {
-  final User? account;
+  final User? data;
   final AccountStatus status;
 
   const AccountState({
-    this.account,
+    this.data,
     this.status = AccountStatus.initial,
   });
 
   AccountState copyWith({
-    User? account,
+    User? data,
     AccountStatus? status,
   }) {
-    return AccountState(status: status ?? this.status, account: account ?? this.account);
+    return AccountState(status: status ?? this.status, data: data ?? this.data);
   }
 
   @override
-  List<Object> get props => [status];
+  List<Object> get props => [status, data ?? ''];
 
   @override
   bool get stringify => true;

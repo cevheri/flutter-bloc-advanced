@@ -22,21 +22,21 @@ void main() {
     test("Given valid authority when create then return authority successfully", () async {
       TestUtils().setupAuthentication();
       const entity = mockAuthorityPayload;
-      final result = await AuthorityRepository().createAuthority(entity);
+      final result = await AuthorityRepository().create(entity);
 
       expect(result, isA<Authority>());
       expect(result?.name, "ROLE_USER");
     });
     test("Given valid authority without AccessToken when create then return authority fail", () async {
       const entity = mockAuthorityPayload;
-      expect(() async => await AuthorityRepository().createAuthority(entity), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await AuthorityRepository().create(entity), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null authority when create then return authority fail", () async {
-      expect(() async => await AuthorityRepository().createAuthority(const Authority()), throwsA(isA<BadRequestException>()));
+      expect(() async => await AuthorityRepository().create(const Authority()), throwsA(isA<BadRequestException>()));
     });
     test("Given null authority when create then return authority fail", () async {
-      expect(() async => await AuthorityRepository().createAuthority(const Authority(name: "")), throwsA(isA<BadRequestException>()));
+      expect(() async => await AuthorityRepository().create(const Authority(name: "")), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -44,7 +44,7 @@ void main() {
   group("AuthorityRepository Get success", () {
     test("Given valid when getAuthorities then return authorities successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await AuthorityRepository().getAuthorities();
+      final result = await AuthorityRepository().list();
 
       expect(result, isA<List>());
       expect(result.length, 2);
@@ -52,7 +52,7 @@ void main() {
       expect(result[1], "ROLE_ADMIN");
     });
     test("Given valid without AccessToken when getAuthorities then return authorities fail", () async {
-      expect(() async => await AuthorityRepository().getAuthorities(), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await AuthorityRepository().list(), throwsA(isA<UnauthorizedException>()));
     });
   });
 
@@ -60,17 +60,17 @@ void main() {
   group("AuthorityRepository Get success", () {
     test("Given valid id when getAuthority then return authority successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await AuthorityRepository().getAuthority("1");
+      final result = await AuthorityRepository().retrieve("1");
 
       expect(result, isA<Authority>());
       expect(result?.name, "ROLE_USER");
     });
     test("Given valid id without AccessToken when getAuthority then return authority fail", () async {
-      expect(() async => await AuthorityRepository().getAuthority("1"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await AuthorityRepository().retrieve("1"), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null id when getAuthority then return authority fail", () async {
-      expect(() async => await AuthorityRepository().getAuthority(""), throwsA(isA<BadRequestException>()));
+      expect(() async => await AuthorityRepository().retrieve(""), throwsA(isA<BadRequestException>()));
     });
   });
 
@@ -78,14 +78,14 @@ void main() {
   group("AuthorityRepository Delete success", () {
     test("Given valid id when deleteAuthority then return successful", () async {
       TestUtils().setupAuthentication();
-      await AuthorityRepository().deleteAuthority("1");
+      await AuthorityRepository().delete("1");
     });
     test("Given valid id without AccessToken when deleteAuthority then return fail", () async {
-      expect(() async => await AuthorityRepository().deleteAuthority("1"), throwsA(isA<UnauthorizedException>()));
+      expect(() async => await AuthorityRepository().delete("1"), throwsA(isA<UnauthorizedException>()));
     });
 
     test("Given null id when deleteAuthority then return fail", () async {
-      expect(() async => await AuthorityRepository().deleteAuthority(""), throwsA(isA<BadRequestException>()));
+      expect(() async => await AuthorityRepository().delete(""), throwsA(isA<BadRequestException>()));
     });
   });
 }

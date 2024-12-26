@@ -176,7 +176,7 @@ void main() {
       await tester.tap(submitButtonFinder);
       await tester.pumpAndSettle(const Duration(seconds: 5));
       //Then:
-      expect(find.text('Email is required'), findsOneWidget);
+      expect(find.text(S.current.required_field), findsOneWidget);
       expect(find.byType(ForgotPasswordScreen), findsOneWidget);
     });
 

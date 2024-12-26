@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
+import 'package:flutter_bloc_advance/routes/app_router.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
-
 
 import '../../../generated/l10n.dart';
 import '../../common_blocs/account/account_bloc.dart';
@@ -17,14 +18,14 @@ class RegisterScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    BlocProvider.of<AccountBloc>(context).add(const AccountLoad());
-
     return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
   _buildAppBar(BuildContext context) {
     return AppBar(
-        title: Text(S.of(context).register), leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => Navigator.pop(context)));
+      title: Text(S.of(context).register),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home)),
+    );
   }
 
   _buildBody(BuildContext context) {
@@ -113,18 +114,18 @@ class RegisterScreen extends StatelessWidget {
       },
       child: SizedBox(
         child: ElevatedButton(
-            key: registerSubmitButtonKey,
-            child: Text(S.of(context).save),
-            onPressed: () {
-              if (_registerFormKey.currentState?.saveAndValidate() ?? false) {
-                context.read<RegisterBloc>().add(RegisterFormSubmitted(
-                    createUser: User(
-                        firstName: _registerFormKey.currentState!.fields["firstname"]!.value,
-                        lastName: _registerFormKey.currentState!.fields["lastname"]!.value,
-                        email: _registerFormKey.currentState!.fields["email"]!.value)));
-              }
-            },
-          ),
+          key: registerSubmitButtonKey,
+          child: Text(S.of(context).save),
+          onPressed: () {
+            if (_registerFormKey.currentState?.saveAndValidate() ?? false) {
+              context.read<RegisterBloc>().add(RegisterFormSubmitted(
+                  createUser: User(
+                      firstName: _registerFormKey.currentState!.fields["firstname"]!.value,
+                      lastName: _registerFormKey.currentState!.fields["lastname"]!.value,
+                      email: _registerFormKey.currentState!.fields["email"]!.value)));
+            }
+          },
+        ),
       ),
     );
   }

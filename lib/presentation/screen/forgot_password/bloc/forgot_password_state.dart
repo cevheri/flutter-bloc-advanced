@@ -1,12 +1,12 @@
 part of 'forgot_password_bloc.dart';
 
 enum ForgotPasswordStatus { initial, loading, success, failure }
+
 const String authenticationFailKey = 'error.authenticate';
 
 class ForgotPasswordState extends Equatable {
   final String? email;
   final ForgotPasswordStatus status;
-
 
   const ForgotPasswordState({
     this.email,
@@ -37,7 +37,6 @@ class ForgotPasswordInitialState extends ForgotPasswordState {
 class ForgotPasswordLoadingState extends ForgotPasswordState {
   const ForgotPasswordLoadingState() : super(status: ForgotPasswordStatus.loading);
 }
-
 
 class ForgotPasswordCompletedState extends ForgotPasswordState {
   const ForgotPasswordCompletedState() : super(status: ForgotPasswordStatus.success);

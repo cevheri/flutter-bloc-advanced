@@ -40,7 +40,7 @@ void main() {
 
     test("copyWith retains the same values if no arguments are provided", () {
       const state = AccountState(
-        account: null,
+        data: null,
         status: AccountStatus.initial,
       );
       expect(state.copyWith(), state);
@@ -48,7 +48,7 @@ void main() {
 
     test("copyWith replaces non-null parameters", () {
       const state = AccountState(
-        account: null,
+        data: null,
         status: AccountStatus.initial,
       );
       final user = User(
@@ -66,8 +66,8 @@ void main() {
         authorities: const ["test"],
       );
       expect(
-        state.copyWith(account: user, status: AccountStatus.success),
-        AccountState(account: user, status: AccountStatus.success),
+        state.copyWith(data: user, status: AccountStatus.success),
+        AccountState(data: user, status: AccountStatus.success),
       );
     });
   });
@@ -77,17 +77,17 @@ void main() {
   /// Account Event Tests
   group("AccountEvent", () {
     test("supports value comparisons", () {
-      expect(const AccountLoad(), const AccountLoad());
+      expect(const AccountFetchEvent(), const AccountFetchEvent());
     });
 
     test("props returns []", () {
       expect(const AccountEvent().props, []);
-      expect(const AccountLoad().props, []);
+      expect(const AccountFetchEvent().props, []);
     });
 
     test("toString returns correct value", () {
       expect(const AccountEvent().toString(), "AccountEvent()");
-      expect(const AccountLoad().toString(), "AccountLoad()");
+      expect(const AccountFetchEvent().toString(), "AccountFetchEvent()");
     });
   });
   //endregion event
@@ -118,10 +118,10 @@ void main() {
           when(repository.getAccount()).thenAnswer((_) async => mockUserFullPayload);
           return bloc;
         },
-        act: (bloc) => bloc.add(const AccountLoad()),
+        act: (bloc) => bloc.add(const AccountFetchEvent()),
         expect: () => [
           const AccountState(status: AccountStatus.loading),
-          AccountState(account: mockUserFullPayload, status: AccountStatus.success),
+          AccountState(data: mockUserFullPayload, status: AccountStatus.success),
         ],
       );
 
@@ -131,7 +131,7 @@ void main() {
           when(repository.getAccount()).thenThrow(Exception("error"));
           return bloc;
         },
-        act: (bloc) => bloc.add(const AccountLoad()),
+        act: (bloc) => bloc.add(const AccountFetchEvent()),
         expect: () => [
           const AccountState(status: AccountStatus.loading),
           const AccountState(status: AccountStatus.failure),

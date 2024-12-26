@@ -1,16 +1,15 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
-import 'package:expansion_tile_card/expansion_tile_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
-import 'package:flutter_bloc_advance/utils/security_utils.dart';
+import 'package:flutter_bloc_advance/data/models/menu.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
+import 'package:flutter_bloc_advance/routes/app_router.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:string_2_icon/string_2_icon.dart';
 
-import '../../../configuration/routes.dart';
-import '../../../data/models/menu.dart';
-import '../../../generated/l10n.dart';
-import '../../common_blocs/account/account.dart';
 import 'drawer_bloc/drawer_bloc.dart';
 
 class ApplicationDrawer extends StatelessWidget {
@@ -18,26 +17,91 @@ class ApplicationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint("ApplicationDrawer build");
     return MultiBlocListener(
-      listeners: _buildBlocListener(context),
+      listeners: [
+        BlocListener<DrawerBloc, DrawerState>(
+          listener: (context, state) {
+            //debugPrint("INITIAL - current language : ${AppLocalStorageCached.language}");
+            //debugPrint("DrawerBloc listener: ${state.status}");
+            if (state.isLogout) {
+              context.read<DrawerBloc>().add(Logout());
+              AppRouter().push(context, ApplicationRoutesConstants.login);
+            }
+          },
+        ),
+        // BlocListener<AccountBloc, AccountState>(
+        //   listener: (context, state) {
+        //     if (state.status == AccountStatus.failure) {
+        //       context.read<DrawerBloc>().add(Logout());
+        //       AppRouter().push(context, ApplicationRoutesConstants.login);
+        //     }
+        //   },
+        // ),
+      ],
       child: BlocBuilder<DrawerBloc, DrawerState>(
         builder: (context, state) {
-          var parentMenus = [];
-          if (state.menus.isEmpty) {
-            return Container();
-          }
-          parentMenus = state.menus.where((element) => element.level == 1).toList();
-          parentMenus.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
+          final isDarkMode = state.theme == AdaptiveThemeMode.dark;
+
+          // debugPrint("BUILDER - current lang : ${AppLocalStorageCached.language}");
+          // debugPrint("BUILDER - state lang : ${state.language}");
+          //
+          //
+          // debugPrint("BUILDER - current theme : ${AppLocalStorageCached.theme}");
+          // debugPrint("BUILDER - state theme : ${state.theme}");
+
+          var isEnglish = state.language == 'en';
+
+          final menuNodes = state.menus.where((e) => e.level == 1 && e.active).toList()
+            ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
           return Drawer(
+            key: Key("drawer-${state.language}-${state.theme}"),
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  _buildMenuList(parentMenus, state),
+                  _buildMenuList(menuNodes, state),
                   const SizedBox(height: 20),
-                  const ThemeSwitchButton(),
+                  SwitchListTile(
+                    key: const Key("drawer-switch-theme"),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode)],
+                    ),
+                    value: isDarkMode,
+                    onChanged: (value) {
+                      //debugPrint("BEGIN:ON_PRESSED.value - ${value}");
+                      final newTheme = value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
+                      //debugPrint("BEGIN:ON_PRESSED - current theme : ${AppLocalStorageCached.theme}");
+                      //debugPrint("BEGIN:ON_PRESSED - current newTheme : ${newTheme}");
+                      context.read<DrawerBloc>().add(ChangeThemeEvent(theme: newTheme));
+                      if (value) {
+                        AdaptiveTheme.of(context).setDark();
+                      } else {
+                        AdaptiveTheme.of(context).setLight();
+                      }
+                      Scaffold.of(context).closeDrawer();
+                      AppRouter().push(context, ApplicationRoutesConstants.home);
+
+                      //debugPrint("END:ON_PRESSED - current cached theme : ${AppLocalStorageCached.theme}");
+                    },
+                  ),
                   const SizedBox(height: 20),
-                  const LanguageSwitchButton(),
+                  SwitchListTile(
+                    key: const Key("drawer-switch-language"),
+                    title: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [Text(isEnglish ? S.of(context).english : S.of(context).turkish)],
+                    ),
+                    value: isEnglish,
+                    onChanged: (value) {
+                      final newLang = value ? 'en' : 'tr';
+                      context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
+                      AppRouter().push(context, ApplicationRoutesConstants.home);
+
+                      //debugPrint("ON_PRESSED - current language : ${AppLocalStorageCached.language}");
+                    },
+                  ),
                   const SizedBox(height: 20),
                   _buildLogoutButton(context),
                 ],
@@ -46,6 +110,62 @@ class ApplicationDrawer extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+
+  Widget _buildMenuList(List<dynamic> menuNodes, DrawerState state) {
+    final currentUserRoles = AppLocalStorageCached.roles;
+    return ListView.builder(
+      itemCount: menuNodes.length,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemBuilder: (context, index) {
+        //debugPrint("menuNodes.length: ${menuNodes.length}");
+        final node = menuNodes[index];
+        // debugPrint("node: ${node.name}");
+
+        if (!_hasAccess(node, currentUserRoles)) {
+          return const SizedBox.shrink();
+        }
+
+        // filter child menus
+        final childMenus = state.menus.where((e) => e.parent?.id == node.id && e.active && _hasAccess(e, currentUserRoles)).toList()
+          ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
+
+        if (childMenus.isEmpty) {
+          // debugPrint("childMenus.isEmpty ");
+          // if child menu is leaf, add click event
+          return ListTile(
+            leading: Icon(String2Icon.getIconDataFromString(node.icon)),
+            title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
+            onTap: () {
+              // debugPrint("parent Menu: ${node.name}");
+              if (node.leaf && node.url.isNotEmpty) {
+                AppRouter().push(context, node.url);
+              }
+            },
+          );
+        } else {
+          // debugPrint("childMenus.isNotEmpty : ${childMenus.toString()}");
+          // if menu is not leaf, use ExpansionTile for child menus
+          return ExpansionTile(
+            leading: Icon(String2Icon.getIconDataFromString(node.icon)),
+            title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
+            children: childMenus.map((childMenu) {
+              return ListTile(
+                leading: Icon(String2Icon.getIconDataFromString(childMenu.icon)),
+                title: Text(S.of(context).translate_menu_title(childMenu.name), style: Theme.of(context).textTheme.bodySmall),
+                onTap: () {
+                  // debugPrint("child menu name: ${childMenu.name}");
+                  if (childMenu.leaf! && childMenu.url.isNotEmpty) {
+                    AppRouter().push(context, childMenu.url);
+                  }
+                },
+              );
+            }).toList(),
+          );
+        }
+      },
     );
   }
 
@@ -58,7 +178,7 @@ class ApplicationDrawer extends StatelessWidget {
           child: ElevatedButton(
             key: drawerButtonLogoutKey,
             style: ElevatedButton.styleFrom(elevation: 0),
-            onPressed: () => logOutDialog(context),
+            onPressed: () => _handleLogout(context),
             child: Text(S.of(context).logout, textAlign: TextAlign.center),
           ),
         ),
@@ -66,206 +186,20 @@ class ApplicationDrawer extends StatelessWidget {
     );
   }
 
-  ListView _buildMenuList(List<dynamic> parentMenus, DrawerState state) {
-    return ListView.builder(
-      itemCount: parentMenus.length,
-      shrinkWrap: true,
-      physics: const ClampingScrollPhysics(),
-      itemBuilder: (context, index) {
-        if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
-          return _buildMenuListUserManagement(state, parentMenus, index, context);
-        } else if (SecurityUtils.isCurrentUserAdmin() && parentMenus[index].name == 'userManagement') {
-          return Container();
-        } else {
-          return _buildMenuListListTile(parentMenus, index, context);
-        }
-      },
-    );
-  }
+  Future<void> _handleLogout(BuildContext context) async {
+    final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
 
-  ListTile _buildMenuListListTile(List<dynamic> parentMenus, int index, BuildContext context) {
-    return ListTile(
-      leading: Icon(String2Icon.getIconDataFromString(parentMenus[index].icon)),
-      title: Text(S.of(context).translate_menu_title(parentMenus[index].name), style: Theme.of(context).textTheme.bodyMedium),
-      onTap: () {
-        Navigator.pop(context);
-        Navigator.pushNamed(context, parentMenus[index].url);
-      },
-    );
-  }
-
-  ExpansionTileCard _buildMenuListUserManagement(DrawerState state, List<dynamic> parentMenus, int index, BuildContext context) {
-    List<Menu> sublistMenu = state.menus.where((element) => element.parent?.id == parentMenus[index].id).toList();
-    sublistMenu.sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
-    return ExpansionTileCard(
-      trailing: sublistMenu.isNotEmpty ? const Icon(Icons.keyboard_arrow_down) : const Icon(Icons.keyboard_arrow_right),
-      onExpansionChanged: (value) {
-        if (value) {
-          if (sublistMenu.isEmpty) {
-            Navigator.pop(context);
-            Navigator.pushNamed(context, parentMenus[index].url);
-          }
-        }
-      },
-      elevation: 0,
-      isThreeLine: false,
-      initiallyExpanded: false,
-      leading: Icon(String2Icon.getIconDataFromString(parentMenus[index].icon)),
-      title: Text(S.of(context).translate_menu_title(parentMenus[index].name), style: Theme.of(context).textTheme.bodyLarge),
-      children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 20),
-          child: ListView.builder(
-            itemCount: sublistMenu.length,
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            itemBuilder: (context, index) {
-              return ListTile(
-                leading: Icon(
-                  String2Icon.getIconDataFromString(sublistMenu[index].icon),
-                ),
-                title: Text(
-                  S.of(context).translate_menu_title(sublistMenu[index].name),
-                  style: Theme.of(context).textTheme.bodyMedium,
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.pushNamed(context, sublistMenu[index].url);
-                },
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
-  _buildBlocListener(BuildContext context) {
-    return [
-      BlocListener<DrawerBloc, DrawerState>(
-        listener: (context, state) {
-          if (state.isLogout) {
-            Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
-            Navigator.pushNamed(context, ApplicationRoutes.login);
-          }
-        },
-      ),
-      BlocListener<AccountBloc, AccountState>(
-        listener: (context, state) {
-          if (state.status == AccountStatus.failure) {
-            Navigator.popUntil(context, ModalRoute.withName(ApplicationRoutes.login));
-            Navigator.pushNamed(context, ApplicationRoutes.login);
-          }
-        },
-      ),
-    ];
-  }
-
-  Future logOutDialog(BuildContext context) {
-    return showDialog(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: Text(S.of(context).logout),
-          content: Text(S.of(context).logout_sure),
-          actions: [
-            TextButton(
-              key: drawerButtonLogoutYesKey,
-              onPressed: () => onLogout(context),
-              child: Text(S.of(context).yes),
-            ),
-            TextButton(
-              key: drawerButtonLogoutNoKey,
-              onPressed: () => onCancel(context),
-              child: Text(S.of(context).no),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void onLogout(context) {
-    BlocProvider.of<DrawerBloc>(context).add(Logout());
-    Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
-  }
-
-  void onCancel(context) {
-    Navigator.pop(context);
+    if (shouldLogout && context.mounted) {
+      debugPrint("BEGIN: logout");
+      BlocProvider.of<DrawerBloc>(context).add(Logout());
+      AppRouter().push(context, ApplicationRoutesConstants.login);
+      debugPrint("END: logout");
+    }
   }
 }
 
-class ThemeSwitchButton extends StatelessWidget {
-  const ThemeSwitchButton({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final isDarkMode = AdaptiveTheme.of(context).mode.isDark;
-
-    return SwitchListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
-        ],
-      ),
-      value: isDarkMode,
-      onChanged: (value) {
-        if (value) {
-          AdaptiveTheme.of(context).setDark();
-        } else {
-          AdaptiveTheme.of(context).setLight();
-        }
-      },
-    );
-  }
-}
-
-class LanguageSwitchButton extends StatefulWidget {
-  const LanguageSwitchButton({super.key});
-
-  @override
-  LanguageSwitchButtonState createState() => LanguageSwitchButtonState();
-}
-
-class LanguageSwitchButtonState extends State<LanguageSwitchButton> {
-  bool isTurkish = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadLanguage();
-  }
-
-  Future<void> _loadLanguage() async {
-    final lang = await AppLocalStorage().read(StorageKeys.language.name);
-    setState(() {
-      isTurkish = lang == 'tr';
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SwitchListTile(
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Text(isTurkish ? S.of(context).turkish : S.of(context).english),
-        ],
-      ),
-      value: isTurkish,
-      onChanged: (value) async {
-        isTurkish = value;
-
-        final lang = isTurkish ? 'tr' : 'en';
-        await AppLocalStorage().save(StorageKeys.language.name, lang);
-        await S.load(Locale(isTurkish ? 'tr' : 'en'));
-        if (mounted) {
-          setState(() {
-            Navigator.pushNamed(context, ApplicationRoutes.home);
-          });
-        }
-      },
-    );
-  }
+bool _hasAccess(Menu menu, List<String>? userRoles) {
+  if (userRoles == null) return false;
+  final menuAuthorities = menu.authorities ?? [];
+  return menuAuthorities.any((authority) => userRoles.contains(authority));
 }

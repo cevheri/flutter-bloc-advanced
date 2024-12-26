@@ -44,9 +44,6 @@ class User extends Equatable {
   @JsonProperty(name: 'authorities')
   final List<String>? authorities;
 
-  // @JsonProperty(name: 'phoneNumber')
-  // final String? phoneNumber;
-
   //Constructor
   const User({
     this.id,
@@ -61,7 +58,6 @@ class User extends Equatable {
     this.lastModifiedBy,
     this.lastModifiedDate,
     this.authorities,
-    // this.phoneNumber,
   });
 
   /// CopyWith method to create a new instance of the User class with new values
@@ -78,7 +74,6 @@ class User extends Equatable {
     String? lastModifiedBy,
     DateTime? lastModifiedDate,
     List<String>? authorities,
-    // String? phoneNumber,
   }) {
     return User(
       id: id ?? this.id,
@@ -93,7 +88,6 @@ class User extends Equatable {
       lastModifiedBy: lastModifiedBy ?? this.lastModifiedBy,
       lastModifiedDate: lastModifiedDate ?? this.lastModifiedDate,
       authorities: authorities ?? this.authorities,
-      // phoneNumber: phoneNumber ?? this.phoneNumber,
     );
   }
 
@@ -133,7 +127,6 @@ class User extends Equatable {
         lastModifiedBy,
         lastModifiedDate,
         authorities,
-        // phoneNumber,
       ];
 
   @override
