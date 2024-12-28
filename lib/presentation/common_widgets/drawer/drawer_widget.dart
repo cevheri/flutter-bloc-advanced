@@ -59,9 +59,9 @@ class ApplicationDrawer extends StatelessWidget {
             key: Key("drawer-${state.language}-${state.theme}"),
             child: SingleChildScrollView(
               child: Column(
+                spacing: 16,
                 children: [
-                  _buildMenuList(menuNodes, state),
-                  const SizedBox(height: 20),
+                  _buildMenuList(menuNodes, state), 
                   SwitchListTile(
                     key: const Key("drawer-switch-theme"),
                     title: Row(
@@ -86,7 +86,6 @@ class ApplicationDrawer extends StatelessWidget {
                       //debugPrint("END:ON_PRESSED - current cached theme : ${AppLocalStorageCached.theme}");
                     },
                   ),
-                  const SizedBox(height: 20),
                   SwitchListTile(
                     key: const Key("drawer-switch-language"),
                     title: Row(
@@ -102,7 +101,6 @@ class ApplicationDrawer extends StatelessWidget {
                       //debugPrint("ON_PRESSED - current language : ${AppLocalStorageCached.language}");
                     },
                   ),
-                  const SizedBox(height: 20),
                   _buildLogoutButton(context),
                 ],
               ),

@@ -62,10 +62,10 @@ class AccountScreen extends StatelessWidget {
                 child: FormBuilder(
                   key: _formKey,
                   child: Column(
+                    spacing: 16,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       ..._buildFormFields(context, state),
-                      const SizedBox(height: 20),
                       _submitButton(context, state),
                     ],
                   ),
@@ -81,13 +81,9 @@ class AccountScreen extends StatelessWidget {
   _buildFormFields(BuildContext context, AccountState state) {
     return [
       UserFormFields.usernameField(context, state.data?.login, enabled: false),
-      const SizedBox(height: 16),
       UserFormFields.firstNameField(context, state.data?.firstName),
-      const SizedBox(height: 16),
       UserFormFields.lastNameField(context, state.data?.lastName),
-      const SizedBox(height: 16),
       UserFormFields.emailField(context, state.data?.email),
-      const SizedBox(height: 16),
       UserFormFields.activatedField(context, state.data?.activated),
     ];
   }

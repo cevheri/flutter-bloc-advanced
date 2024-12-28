@@ -36,20 +36,20 @@ class ChangePasswordScreen extends StatelessWidget {
       key: _changePasswordFormKey,
       child: Center(
         child: Column(
+          spacing: 16,
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            _logo(context),
-            _currentPasswordField(context),
-            _newPasswordField(context),
-            const SizedBox(height: 20),
-            SizedBox(
+            Expanded(flex: 5, child: _logo(context)),
+            Expanded(flex: 1, child: _currentPasswordField(context)),
+            Expanded(flex: 1, child: _newPasswordField(context)),
+            Expanded(flex: 1, child: SizedBox(
               width: MediaQuery.of(context).size.width * 0.6,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: <Widget>[_submitButton(context)],
               ),
-            ),
+            )),
           ],
         ),
       ),
@@ -57,7 +57,7 @@ class ChangePasswordScreen extends StatelessWidget {
   }
 
   _logo(BuildContext context) {
-    return Image.asset(LocaleConstants.defaultImgUrl, width: 200, height: 200);
+    return Image.asset(LocaleConstants.defaultImgUrl);
   }
 
   _currentPasswordField(BuildContext context) {

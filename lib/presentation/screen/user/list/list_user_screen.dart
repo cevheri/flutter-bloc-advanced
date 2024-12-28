@@ -106,13 +106,12 @@ class UserListContent extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.fromLTRB(30, 0, 30, 10),
       child: Column(
+        spacing: 16,
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          const SizedBox(height: 20),
           UserSearchSection(formKey: _formKey),
-          const SizedBox(height: 30),
           const UserTableHeader(),
           UserTableContent(formKey: _formKey),
         ],
