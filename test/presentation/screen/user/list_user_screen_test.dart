@@ -9,7 +9,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/user_routes.dart';
+import 'package:flutter_bloc_advance/routes/go_router_routes/routes/user_routes.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

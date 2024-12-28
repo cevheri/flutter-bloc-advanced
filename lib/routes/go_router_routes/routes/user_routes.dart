@@ -8,7 +8,7 @@ import 'package:flutter_bloc_advance/presentation/screen/user/editor/user_editor
 import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../presentation/screen/user/bloc/user.dart';
+import '../../../presentation/screen/user/bloc/user.dart';
 
 class UserRoutes {
   static UserRepository? _userRepository;

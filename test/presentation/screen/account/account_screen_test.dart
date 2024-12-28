@@ -8,7 +8,7 @@ import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/account_routes.dart';
+import 'package:flutter_bloc_advance/routes/go_router_routes/routes/account_routes.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

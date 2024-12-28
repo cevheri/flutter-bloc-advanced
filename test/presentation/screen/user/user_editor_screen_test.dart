@@ -10,7 +10,7 @@ import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authori
 import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/user_routes.dart';
+import 'package:flutter_bloc_advance/routes/go_router_routes/routes/user_routes.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

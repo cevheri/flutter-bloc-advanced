@@ -7,7 +7,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/settings_routes.dart';
+import 'package:flutter_bloc_advance/routes/go_router_routes/routes/settings_routes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
