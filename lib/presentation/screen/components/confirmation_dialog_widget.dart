@@ -65,6 +65,7 @@ class ConfirmationDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    debugPrint('BEGIN: ConfirmationDialog.build');
     final theme = Theme.of(parentContext);
 
     var result = AlertDialog(

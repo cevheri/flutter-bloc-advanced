@@ -18,27 +18,14 @@ class ApplicationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     debugPrint("ApplicationDrawer build");
-    return MultiBlocListener(
-      listeners: [
-        BlocListener<DrawerBloc, DrawerState>(
-          listener: (context, state) {
-            //debugPrint("INITIAL - current language : ${AppLocalStorageCached.language}");
-            //debugPrint("DrawerBloc listener: ${state.status}");
-            if (state.isLogout) {
-              context.read<DrawerBloc>().add(Logout());
-              AppRouter().push(context, ApplicationRoutesConstants.login);
-            }
-          },
-        ),
-        // BlocListener<AccountBloc, AccountState>(
-        //   listener: (context, state) {
-        //     if (state.status == AccountStatus.failure) {
-        //       context.read<DrawerBloc>().add(Logout());
-        //       AppRouter().push(context, ApplicationRoutesConstants.login);
-        //     }
-        //   },
-        // ),
-      ],
+    return BlocListener<DrawerBloc, DrawerState>(
+      listener: (context, state) {
+        //debugPrint("INITIAL - current language : ${AppLocalStorageCached.language}");
+        //debugPrint("DrawerBloc listener: ${state.status}");
+        if (state.isLogout) {
+          AppRouter().push(context, ApplicationRoutesConstants.login);
+        }
+      },
       child: BlocBuilder<DrawerBloc, DrawerState>(
         builder: (context, state) {
           final isDarkMode = state.theme == AdaptiveThemeMode.dark;
@@ -61,7 +48,7 @@ class ApplicationDrawer extends StatelessWidget {
               child: Column(
                 spacing: 16,
                 children: [
-                  _buildMenuList(menuNodes, state), 
+                  _buildMenuList(menuNodes, state),
                   SwitchListTile(
                     key: const Key("drawer-switch-theme"),
                     title: Row(
