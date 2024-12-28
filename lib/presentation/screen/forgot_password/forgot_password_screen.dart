@@ -36,12 +36,12 @@ class ForgotPasswordScreen extends StatelessWidget {
       key: _forgotPasswordFormKey,
       child: Center(
         child: Column(
+          spacing: 16,
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             _logo(context),
             _forgotPasswordField(context),
-            const SizedBox(height: 20),
             SizedBox(
               width: MediaQuery.of(context).size.width * 0.6,
               child: Row(

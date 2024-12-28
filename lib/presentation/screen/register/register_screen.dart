@@ -45,15 +45,13 @@ class RegisterScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(30.0),
                       child: Column(
+                        spacing: 16,
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: <Widget>[
                           _formBuilderTextFieldFirstName(context),
-                          const SizedBox(height: 20),
                           _formBuilderTextFieldLastName(context),
-                          const SizedBox(height: 20),
                           _formBuilderTextFieldEmail(context),
-                          const SizedBox(height: 20),
                           _submitButton(context),
                         ],
                       ),
@@ -101,6 +99,8 @@ class RegisterScreen extends StatelessWidget {
     );
   }
 
+
+  //TODO create a new SubmitButton widget and use it all formBuilder submit buttons
   Widget _submitButton(BuildContext context) {
     return BlocListener<RegisterBloc, RegisterState>(
       listener: (context, state) {
@@ -113,6 +113,8 @@ class RegisterScreen extends StatelessWidget {
         }
       },
       child: SizedBox(
+        width: double.infinity,
+        height: 48,
         child: ElevatedButton(
           key: registerSubmitButtonKey,
           child: Text(S.of(context).save),

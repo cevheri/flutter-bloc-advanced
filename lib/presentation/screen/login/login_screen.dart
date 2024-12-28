@@ -30,13 +30,13 @@ class LoginScreen extends StatelessWidget {
       child: Center(
         child: SingleChildScrollView(
           child: Column(
+            spacing: 16,
             crossAxisAlignment: CrossAxisAlignment.center,
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               _logo(context),
               _usernameField(context),
               _passwordField(context),
-              const SizedBox(height: 20),
               SizedBox(
                 width: MediaQuery.of(context).size.width * 0.6,
                 child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[_submitButton(context)]),
@@ -53,9 +53,9 @@ class LoginScreen extends StatelessWidget {
 
   Image _logo(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      return Image.asset(LocaleConstants.logoLightUrl, width: 200, height: 200);
+      return Image.asset(LocaleConstants.logoLightUrl, width: MediaQuery.of(context).size.width * 0.2);
     } else {
-      return Image.asset(LocaleConstants.defaultImgUrl, width: 200, height: 200);
+      return Image.asset(LocaleConstants.defaultImgUrl, width: MediaQuery.of(context).size.width * 0.2);
     }
   }
 
