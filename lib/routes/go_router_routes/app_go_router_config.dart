@@ -58,6 +58,12 @@ class AppGoRouterConfig {
       _log.debug("BEGIN: redirect");
       _log.debug("redirect - uri: ${state.uri}");
 
+      // Skip redirect for login page
+      if (state.uri.toString() == ApplicationRoutesConstants.login) {
+        _log.debug("END: redirect - on login page");
+        return null;
+      }
+
       // check : when redirect the new page then load the account data
       var accountBloc = context.read<AccountBloc>();
       await Future.delayed(const Duration(microseconds: 500));
@@ -65,12 +71,12 @@ class AppGoRouterConfig {
       _log.debug("redirect - load event : accountBloc.add(AccountLoad())");
 
       // check : when jwtToken is null then redirect to login page
-      if (!SecurityUtils.isUserLoggedIn() && !SecurityUtils.isAllowedPath(state.uri.toString())) {
+      if (!SecurityUtils.isUserLoggedIn() && !SecurityUtils.isAllowedPath(state.uri.toString()) && state.uri.toString() != ApplicationRoutesConstants.login) {
         _log.debug("END: isUserLoggedIn is false and isAllowedPath is false");
         return ApplicationRoutesConstants.login;
       }
       // check : when running in production mode and jwtToken is expired then redirect to login page
-      if (ProfileConstants.isProduction && SecurityUtils.isTokenExpired()) {
+      if (ProfileConstants.isProduction && SecurityUtils.isTokenExpired() && state.uri.toString() != ApplicationRoutesConstants.login) {
         _log.debug("END: redirect - jwtToken is expired");
         return ApplicationRoutesConstants.login;
       }
