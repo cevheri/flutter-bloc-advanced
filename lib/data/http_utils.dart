@@ -276,6 +276,7 @@ class HttpUtils {
 
     var headers = await HttpUtils.headers();
     if (!allowedPaths.contains(endpoint)) {
+      debugPrint("mockRequest: Unauthorized Access. endpoint: $endpoint, httpMethod: $httpMethod, headers: $headers, allowedPaths: $allowedPaths");
       if (headers['Authorization'] == null) {
         throw UnauthorizedException("Unauthorized Access");
       }

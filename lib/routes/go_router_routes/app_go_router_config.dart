@@ -65,8 +65,8 @@ class AppGoRouterConfig {
       _log.debug("redirect - load event : accountBloc.add(AccountLoad())");
 
       // check : when jwtToken is null then redirect to login page
-      if (!SecurityUtils.isUserLoggedIn()) {
-        _log.debug("END: redirect - jwtToken is null");
+      if (!SecurityUtils.isUserLoggedIn() && !SecurityUtils.isAllowedPath(state.uri.toString())) {
+        _log.debug("END: isUserLoggedIn is false and isAllowedPath is false");
         return ApplicationRoutesConstants.login;
       }
       // check : when running in production mode and jwtToken is expired then redirect to login page
