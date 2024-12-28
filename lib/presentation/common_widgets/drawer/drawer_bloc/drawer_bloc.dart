@@ -64,15 +64,16 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
   }
 
   FutureOr<void> _onLogout(Logout event, Emitter<DrawerState> emit) async {
-    _log.debug("BEGIN: onLogout Logout event: {}", []);
-    emit(const DrawerState(isLogout: false, status: DrawerStateStatus.loading));
+    _log.debug("BEGIN: onLogout Logout event: {} {}", [state.status, event]);
+    emit(state.copyWith(isLogout: false, status: DrawerStateStatus.loading));
+
     try {
       await _loginRepository.logout();
-      emit(state.copyWith(isLogout: true, status: DrawerStateStatus.success));
       MenuListCache.menus = [];
-      _log.debug("END:onLogout Logout event success: {}", []);
+      emit(state.copyWith(isLogout: true, status: DrawerStateStatus.success));
+      _log.debug("END:onLogout Logout event success: {}");
     } catch (e) {
-      emit(const DrawerState(isLogout: false, status: DrawerStateStatus.error));
+      emit(state.copyWith(isLogout: false, status: DrawerStateStatus.error));
       _log.error("END:onLogout Logout event error: {}", [e.toString()]);
     }
   }
