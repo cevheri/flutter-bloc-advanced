@@ -1,5 +1,5 @@
 name: flutter_bloc_advance
-description: Flutter Bloc Advance Template
+description: "Flutter Bloc Advance Template"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,15 +10,14 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  cupertino_icons: ^1.0.8
   flutter_localizations:
     sdk: flutter
   flutter_bloc:
   http:
   go_router:
   adaptive_theme:
-  cupertino_icons:
   equatable:
-
   auto_route:
   get:
   intl:
@@ -45,26 +44,24 @@ dependencies:
   logger: ^2.5.0
   get_storage:
 
-
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^4.0.0
   integration_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
   build_runner:
   test: ^1.25.7
   bloc_test: ^9.1.7
   mockito: ^5.4.4
-  mocktail:
-
-
-
 
 flutter_secure_storage:
   enabled: true
   class_name: SecureStorage
   main_locale: en
+
+flutter_intl:
+  enabled: true
 
 flutter:
   uses-material-design: true
@@ -72,6 +69,3 @@ flutter:
   assets:
     - assets/mock/
     - assets/images/
-
-flutter_intl:
-  enabled: true

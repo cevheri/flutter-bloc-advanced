@@ -28,7 +28,8 @@ void main() {
       '/authenticate',
       '/register',
       '/logout',
-      '/account/reset-password/init'
+      '/account/reset-password/init',
+      '/forgot-password'
     ]);
   });
 }
