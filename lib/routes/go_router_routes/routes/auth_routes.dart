@@ -23,5 +23,9 @@ class AuthRoutes {
       builder: (context, state) =>
           BlocProvider(create: (_) => ChangePasswordBloc(repository: AccountRepository()), child: ChangePasswordScreen()),
     ),
+    GoRoute(
+        name: 'register',
+        path: ApplicationRoutesConstants.register,
+        builder: (context, state) => BlocProvider(create: (_) => RegisterBloc(repository: AccountRepository()), child: RegisterScreen())),
   ];
 }
