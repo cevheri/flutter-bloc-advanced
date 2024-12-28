@@ -5,6 +5,8 @@ import 'package:flutter_bloc_advance/presentation/screen/change_password/change_
 import 'package:flutter_bloc_advance/presentation/screen/forgot_password/bloc/forgot_password.dart';
 import 'package:flutter_bloc_advance/presentation/screen/forgot_password/forgot_password_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/login/login_screen.dart';
+import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register.dart';
+import 'package:flutter_bloc_advance/presentation/screen/register/register_screen.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
 
