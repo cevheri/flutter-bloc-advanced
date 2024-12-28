@@ -22,14 +22,14 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2.16.0
+        uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: 3.24.5
+          flutter-version: 3.27.1
           channel: stable
       - name: Setup Dart
-        uses: dart-lang/setup-dart@v1.6.5
+        uses: dart-lang/setup-dart@v1.7.0
         with:
-          dart-version: 3.5.4
+          dart-version: 3.6.0
 
       - name: Setup Java JDK 17
         uses: actions/setup-java@v4
