@@ -4,6 +4,8 @@ import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/user_form_fields.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
@@ -77,6 +79,7 @@ class UserEditorWidget extends StatelessWidget {
     return AppBar(
       title: Text(_getTitle(context)),
       leading: IconButton(
+        key: const Key('userEditorAppBarBackButtonKey'),
         icon: const Icon(Icons.arrow_back),
         onPressed: () async => _handlePopScope(false, null, context),
       ),
@@ -146,58 +149,59 @@ class UserEditorWidget extends StatelessWidget {
       'authorities': state.data?.authorities?.first ?? state.data?.authorities?.firstOrNull,
     };
     debugPrint("checkpoint initial value: $initialValue");
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 700),
-            child: FormBuilder(
-              key: _formKey,
-              initialValue: initialValue,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ..._buildFormFields(context, state),
-                  const SizedBox(height: 20),
-                  if (mode == EditorFormMode.view) _backButtonField(context),
-                  if (mode != EditorFormMode.view) _submitButtonField(context, state),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+    // return SingleChildScrollView(
+    //   child: Padding(
+    //     padding: const EdgeInsets.all(16.0),
+    //     child: Center(
+    //       child: ConstrainedBox(
+    //         constraints: const BoxConstraints(maxWidth: 700),
+    //         child: FormBuilder(
+    //           key: _formKey,
+    //           initialValue: initialValue,
+    //           child: Column(
+    //             crossAxisAlignment: CrossAxisAlignment.stretch,
+    //             children: [
+    //               ..._buildFormFields(context, state),
+    //               const SizedBox(height: 20),
+    //               if (mode == EditorFormMode.view) _backButtonField(context),
+    //               if (mode != EditorFormMode.view) _submitButtonField(context, state),
+    //             ],
+    //           ),
+    //         ),
+    //       ),
+    //     ),
+    //   ),
+    // );
+    return ResponsiveFormBuilder(
+      formKey: _formKey,
+      initialValue: initialValue,
+      children: [
+        ..._buildFormFields(context, state),
+        if (mode == EditorFormMode.view) _backButtonField(context),
+        if (mode != EditorFormMode.view) _submitButtonField(context, state),
+      ],
     );
   }
 
-  _backButtonField(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
+  Widget _backButtonField(BuildContext context) {
+    return ResponsiveSubmitButton(
+        key: const Key('userEditorFormBackButtonKey'),
+        buttonText: S.of(context).back,
         onPressed: () {
-          context.go('/user');
+          context.go(ApplicationRoutesConstants.userList);
           context.read<UserBloc>().add(const UserViewCompleteEvent());
-        },
-        child: Text(S.of(context).back),
-      ),
+        });
+  }
+
+  Widget _submitButtonField(BuildContext context, UserState state) {
+    return ResponsiveSubmitButton(
+      key: const Key('userEditorSubmitButtonKey'),
+      onPressed: () => state.status == UserStatus.loading ? null : _onSubmit(context, state),
+      isLoading: state.status == UserStatus.loading,
     );
   }
 
-  _submitButtonField(BuildContext context, UserState state) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
-        key: const Key('userEditorSubmitButtonKey'),
-        onPressed: () => _onSubmit(context),
-        child: Text(S.of(context).save),
-      ),
-    );
-  }
-
-  void _onSubmit(BuildContext context) {
+  void _onSubmit(BuildContext context, UserState state) {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
       final id = context.read<UserBloc>().state.data?.id;
@@ -220,24 +224,18 @@ class UserEditorWidget extends StatelessWidget {
     }
   }
 
-  _buildFormFields(BuildContext context, UserState state) {
+  List<Widget> _buildFormFields(BuildContext context, UserState state) {
     return [
       UserFormFields.usernameField(context, state.data?.login, enabled: mode == EditorFormMode.create),
-      const SizedBox(height: 16),
       UserFormFields.firstNameField(context, state.data?.firstName, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 16),
       UserFormFields.lastNameField(context, state.data?.lastName, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 16),
       UserFormFields.emailField(context, state.data?.email, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 16),
       UserFormFields.activatedField(context, state.data?.activated, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 16),
       //TODO when mode == EditorFormMode.view, select the user authorities
       // if (state.data?.authorities?.isNotEmpty ?? false) ...[
       //   const SizedBox(height: 16),
       // ],
       AuthorityDropdown(enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 16),
     ];
   }
 

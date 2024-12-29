@@ -9,7 +9,8 @@ class ResponsiveFormBuilder extends StatelessWidget {
   final CrossAxisAlignment crossAxisAlignment;
   final bool autovalidateMode;
   final VoidCallback? onChanged;
-  final bool shrinkWrap;   
+  final bool shrinkWrap;
+  final Map<String, dynamic> initialValue;
 
   const ResponsiveFormBuilder({
     super.key,
@@ -19,13 +20,15 @@ class ResponsiveFormBuilder extends StatelessWidget {
     this.crossAxisAlignment = CrossAxisAlignment.start,
     this.autovalidateMode = false,
     this.onChanged,
-    this.shrinkWrap = false, 
+    this.shrinkWrap = false,
+    this.initialValue = const <String, dynamic>{},
   });
 
   @override
   Widget build(BuildContext context) {
     return FormBuilder(
       key: formKey,
+      initialValue: initialValue,
       autovalidateMode: autovalidateMode ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
       onChanged: onChanged,
       child: SingleChildScrollView(
