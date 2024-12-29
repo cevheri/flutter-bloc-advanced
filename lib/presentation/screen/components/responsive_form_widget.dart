@@ -9,7 +9,7 @@ class ResponsiveFormBuilder extends StatelessWidget {
   final CrossAxisAlignment crossAxisAlignment;
   final bool autovalidateMode;
   final VoidCallback? onChanged;
-  final bool shrinkWrap;
+  final bool shrinkWrap;   
 
   const ResponsiveFormBuilder({
     super.key,
@@ -19,7 +19,7 @@ class ResponsiveFormBuilder extends StatelessWidget {
     this.crossAxisAlignment = CrossAxisAlignment.start,
     this.autovalidateMode = false,
     this.onChanged,
-    this.shrinkWrap = false,
+    this.shrinkWrap = false, 
   });
 
   @override

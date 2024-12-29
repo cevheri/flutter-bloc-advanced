@@ -6,8 +6,9 @@ class ResponsiveSubmitButton extends StatelessWidget {
   final String buttonText;
   final VoidCallback? onPressed;
   final bool isLoading;
-
-  const ResponsiveSubmitButton({super.key, this.buttonText = 'Save', this.onPressed, this.isLoading = false});
+  @visibleForTesting
+  final bool? isWebPlatform;
+  const ResponsiveSubmitButton({super.key, this.buttonText = 'Save', this.onPressed, this.isLoading = false, this.isWebPlatform});
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +17,7 @@ class ResponsiveSubmitButton extends StatelessWidget {
       child: ButtonContent(text: buttonText, isLoading: isLoading),
     );
 
-    if (kIsWeb) {
+    if (isWebPlatform ?? kIsWeb) {
       return Align(alignment: Alignment.centerRight, child: submitButton);
     }
     return submitButton;
