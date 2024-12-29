@@ -58,6 +58,7 @@ class RegisterScreen extends StatelessWidget {
 
   Widget _submitButton(BuildContext context, RegisterState state) {
     return ResponsiveSubmitButton(
+      key: const Key('registerSubmitButtonKey'),
       onPressed: () => state.status == RegisterStatus.loading ? null : _onSubmit(context, state),
       isLoading: state.status == RegisterStatus.loading,
     );

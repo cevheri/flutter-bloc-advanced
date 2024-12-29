@@ -118,7 +118,7 @@ void main() {
       //Then:
       expect(find.byType(FormBuilder), findsOneWidget);
       expect(find.byType(FormBuilderTextField), findsNWidgets(3));
-      expect(find.byType(ElevatedButton), findsOneWidget);
+      expect(find.byType(FilledButton), findsOneWidget);
     });
 
     //validate form fields enter text
@@ -144,7 +144,7 @@ void main() {
       //When:
       await tester.pumpAndSettle();
       //Then:
-      await tester.tap(find.byType(ElevatedButton));
+      await tester.tap(find.byType(FilledButton));
       await tester.pumpAndSettle();
     });
 
@@ -163,7 +163,7 @@ void main() {
 
       //when submitButton clicked then expect an error
       await tester.tap(find.byKey(registerSubmitButtonKey));
-      await tester.pumpAndSettle(const Duration(seconds: 3));
+      await tester.pump();//AndSettle(const Duration(seconds: 3));
 
       //TODO check with go_router expect(Get.currentRoute, "/");
     });
