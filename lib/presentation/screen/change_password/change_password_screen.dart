@@ -3,57 +3,56 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
-import 'package:flutter_bloc_advance/routes/app_router.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../generated/l10n.dart';
-import '../../../utils/message.dart';
 import 'bloc/change_password_bloc.dart';
 
 class ChangePasswordScreen extends StatelessWidget {
   ChangePasswordScreen({super.key});
 
-  final _changePasswordFormKey = GlobalKey<FormBuilderState>();
+  final _formKey = GlobalKey<FormBuilderState>();
+  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
+    return BlocListener<ChangePasswordBloc, ChangePasswordState>(
+      listenWhen: (previous, current) => previous.status != current.status,
+      listener: (context, state) => _handleStateChanges(context, state),
+      child: PopScope(
+        canPop: !(_formKey.currentState?.isDirty ?? false),
+        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(didPop, data),
+        child: Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context)),
+      ),
     );
   }
 
   AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).change_password),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home)),
+      leading: IconButton(
+        key: const Key('changePasswordScreenAppBarBackButtonKey'),
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () async => _handlePopScope(false, null, context),
+      ),
     );
   }
 
-  FormBuilder _buildBody(BuildContext context) {
-    return FormBuilder(
-      key: _changePasswordFormKey,
-      child: SingleChildScrollView(
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: Spacing.formMaxWidthLarge),
-            child: Padding(
-              padding: const EdgeInsets.all(Spacing.medium),
-              child: Column(
-                spacing: Spacing.medium,
-                children: <Widget>[
-                  _logo(context),
-                  _currentPasswordField(context),
-                  _newPasswordField(context),
-                  Align(alignment: Alignment.centerRight, child: _submitButton(context)),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
+  Widget _buildBody(BuildContext context) {
+    return BlocBuilder<ChangePasswordBloc, ChangePasswordState>(
+      buildWhen: (previous, current) => previous.status != current.status,
+      builder: (context, state) {
+        return ResponsiveFormBuilder(
+          formKey: _formKey,
+          children: [_logo(context), _currentPasswordField(context), _newPasswordField(context), _submitButton(context, state)],
+        );
+      },
     );
   }
 
@@ -87,45 +86,78 @@ class ChangePasswordScreen extends StatelessWidget {
     );
   }
 
-  Widget _submitButton(BuildContext context) {
-    final t = S.of(context);
-    return BlocListener<ChangePasswordBloc, ChangePasswordState>(
-      listener: (context, state) {
-        // Loading state
-        if (state is ChangePasswordLoadingState) {
-          Message.getMessage(context: context, title: t.loading, content: "");
-        }
-        // Completed state
-        else if (state is ChangePasswordCompletedState) {
-          Navigator.pop(context);
-          Message.getMessage(context: context, title: t.success, content: "");
-          //Navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.home, (route) => false);
-        }
-        // Error state
-        else if (state is ChangePasswordErrorState) {
-          Message.errorMessage(title: t.failed, context: context, content: "");
-        }
-      },
-      listenWhen: (previous, current) {
-        return current is ChangePasswordLoadingState || current is ChangePasswordCompletedState || current is ChangePasswordErrorState;
-      },
-      child: FilledButton(
-        key: changePasswordButtonSubmitKey,
-        child: Text(S.of(context).save),
-        onPressed: () {
-          //without blocConsumer access to bloc directly
-          final currentState = context.read<ChangePasswordBloc>().state;
-          if (currentState is ChangePasswordLoadingState) {
-            return;
-          }
-
-          final currentPass = _changePasswordFormKey.currentState!.value['currentPassword'];
-          final newPass = _changePasswordFormKey.currentState!.value['newPassword'];
-          if (_changePasswordFormKey.currentState!.saveAndValidate() && currentPass != newPass && newPass != null && currentPass != null) {
-            context.read<ChangePasswordBloc>().add(ChangePasswordChanged(currentPassword: currentPass, newPassword: newPass));
-          }
-        },
-      ),
+  Widget _submitButton(BuildContext context, ChangePasswordState state) {
+    return ResponsiveSubmitButton(
+      key: changePasswordButtonSubmitKey,
+      onPressed: () => state.status == ChangePasswordStatus.loading ? null : _onSubmit(context, state),
+      isLoading: state.status == ChangePasswordStatus.loading,
     );
+  }
+
+  void _onSubmit(BuildContext context, ChangePasswordState state) {
+    debugPrint("onSubmit");
+    FocusScope.of(context).unfocus();
+
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      debugPrint("validate");
+      _showSnackBar(context, S.of(context).failed, const Duration(milliseconds: 1000));
+      return;
+    }
+
+    if (!(_formKey.currentState?.isDirty ?? false)) {
+      debugPrint("no changes made");
+      _showSnackBar(context, S.of(context).no_changes_made, const Duration(milliseconds: 1000));
+      return;
+    }
+
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      debugPrint("saveAndValidate");
+      final currentPass = _formKey.currentState!.value['currentPassword'];
+      final newPass = _formKey.currentState!.value['newPassword'];
+      context.read<ChangePasswordBloc>().add(ChangePasswordChanged(currentPassword: currentPass, newPassword: newPass));
+    }
+  }
+
+  void _handleStateChanges(BuildContext context, ChangePasswordState state) {
+    const duration = Duration(milliseconds: 1000);
+    switch (state.status) {
+      case ChangePasswordStatus.initial:
+        //
+        break;
+      case ChangePasswordStatus.loading:
+        _showSnackBar(context, S.of(context).loading, duration);
+        break;
+      case ChangePasswordStatus.success:
+        _formKey.currentState?.fields['currentPassword']?.reset();
+        _formKey.currentState?.fields['newPassword']?.reset();
+        _formKey.currentState?.reset();
+        _showSnackBar(context, S.of(context).success, duration);
+        break;
+      case ChangePasswordStatus.failure:
+        _showSnackBar(context, S.of(context).failed, duration);
+        break;
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message, Duration duration) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: duration),
+    );
+  }
+
+  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
+    final context = contextParam ?? data as BuildContext;
+
+    if (!context.mounted) return;
+
+    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+      context.go(ApplicationRoutesConstants.home);
+      return;
+    }
+
+    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
+    if (shouldPop && context.mounted) {
+      context.go(ApplicationRoutesConstants.home);
+    }
   }
 }

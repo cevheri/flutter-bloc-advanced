@@ -334,7 +334,7 @@ void main() {
     await tester.enterText(find.byKey(registerEmailTextFieldKey), "test@test.com");
 
     const User user = User(firstName: "test", lastName: "test", email: "test@test.com");
-    when(mockRegisterBloc.add(const RegisterFormSubmitted(createUser: user))).thenReturn(null);
+    when(mockRegisterBloc.add(const RegisterFormSubmitted(data: user))).thenReturn(null);
     //verify(() => mockRegisterBloc.add(any())).called(1);
 
     //when submitButton clicked then expect an error
@@ -386,7 +386,6 @@ void main() {
     when(mockRegisterBloc.state).thenReturn(const RegisterLoadingState());
     await tester.pump();
 
-
     final saveButton = find.byKey(registerSubmitButtonKey);
     await tester.tap(saveButton);
     await tester.pump();
@@ -408,8 +407,10 @@ void main() {
     await tester.enterText(lastNameFieldFinder, 'test');
     await tester.enterText(emailFieldFinder, 'test@test.com');
 
-    when(mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterCompletedState(user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'))]));
-    when(mockRegisterBloc.state).thenReturn(const RegisterCompletedState(user: User(firstName: 'test', lastName: 'test', email: 'test@test.com')));
+    when(mockRegisterBloc.stream).thenAnswer(
+        (_) => Stream.fromIterable([const RegisterCompletedState(user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'))]));
+    when(mockRegisterBloc.state)
+        .thenReturn(const RegisterCompletedState(user: User(firstName: 'test', lastName: 'test', email: 'test@test.com')));
     //await tester.pump();
 
     final saveButton = find.byKey(registerSubmitButtonKey);
@@ -417,7 +418,7 @@ void main() {
     await tester.pumpAndSettle(const Duration(milliseconds: 3000));
 
     //expect(find.byType(RegisterScreen), findsNothing);
-    verify(mockRegisterBloc.add(const RegisterFormSubmitted(createUser: User(firstName: 'test', lastName: 'test', email: 'test@test.com')))).called(1);
+    verify(mockRegisterBloc.add(const RegisterFormSubmitted(data: User(firstName: 'test', lastName: 'test', email: 'test@test.com')))).called(1);
   });
 
   //error state test
@@ -443,6 +444,6 @@ void main() {
     await tester.pumpAndSettle(const Duration(milliseconds: 3000));
 
     expect(find.byType(RegisterScreen), findsOneWidget);
-    verifyNever(mockRegisterBloc.add(const RegisterFormSubmitted(createUser: User(firstName: 'test', lastName: 'test', email: 'test@test.com'))));
+    verifyNever(mockRegisterBloc.add(const RegisterFormSubmitted(data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'))));
   });
 }

@@ -76,7 +76,7 @@ void main() {
 
     //ForgotPasswordState İnitial Test
     test('initial state is ForgotPasswordState', () {
-      expect(ForgotPasswordBloc(repository: repository).state, const ForgotPasswordInitialState());
+      expect(ForgotPasswordBloc(repository: repository).state, const ForgotPasswordState(status: ForgotPasswordStatus.initial));
     });
 
     //ForgotPasswordInitialState Test
@@ -106,7 +106,7 @@ void main() {
     });
 
     test("initial state is ForgotPasswordState", () {
-      expect(ForgotPasswordBloc(repository: repository).state, const ForgotPasswordInitialState());
+      expect(ForgotPasswordBloc(repository: repository).state, const ForgotPasswordState(status: ForgotPasswordStatus.initial));
     });
   });
   //endregion state
@@ -119,7 +119,7 @@ void main() {
       setUp: () => when(repository.resetPassword(email)).thenAnswer((_) => Future.value(HttpStatus.ok)),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
-      expect: () => [const ForgotPasswordLoadingState(), const ForgotPasswordCompletedState()],
+      expect: () => [const ForgotPasswordState(status: ForgotPasswordStatus.loading), const ForgotPasswordState(status: ForgotPasswordStatus.success, email: email)],
     );
 
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
@@ -127,14 +127,14 @@ void main() {
       setUp: () => when(repository.resetPassword(email)).thenAnswer((_) => Future.value(HttpStatus.badRequest)),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
-      expect: () => [const ForgotPasswordLoadingState(), const ForgotPasswordErrorState(message: "Reset Password Error")],
+      expect: () => [const ForgotPasswordState(status: ForgotPasswordStatus.loading), const ForgotPasswordState(status: ForgotPasswordStatus.failure)],
     );
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
-      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when resetPassword fails',
+      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when invalid-email then resetPassword fails',
       setUp: () => when(repository.resetPassword(email)).thenThrow(BadRequestException()),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: 'invalid-email')),
-      expect: () => [const ForgotPasswordLoadingState(), const ForgotPasswordErrorState(message: "Reset Password Error")],
+      expect: () => [const ForgotPasswordState(status: ForgotPasswordStatus.loading), const ForgotPasswordState(status: ForgotPasswordStatus.failure)],
     );
 
   });

@@ -5,12 +5,12 @@ abstract class RegisterEvent extends Equatable {
 }
 
 class RegisterFormSubmitted extends RegisterEvent {
-  final User createUser;
+  final User data;
 
   const RegisterFormSubmitted({
-    required this.createUser,
+    required this.data,
   });
 
   @override
-  List<Object> get props => [createUser];
+  List<Object> get props => [data];
 }

@@ -17,7 +17,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
 
   ForgotPasswordBloc({required AccountRepository repository})
       : _repository = repository,
-        super(const ForgotPasswordInitialState()) {
+        super(const ForgotPasswordState(status: ForgotPasswordStatus.initial)) {
     on<ForgotPasswordEmailChanged>(_onSubmit);
   }
 
@@ -31,18 +31,18 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
 
   FutureOr<void> _onSubmit(ForgotPasswordEmailChanged event, Emitter<ForgotPasswordState> emit) async {
     _log.debug("BEGIN: forgotPassword bloc: _onSubmit");
-    emit(const ForgotPasswordLoadingState());
+    emit(state.copyWith(status: ForgotPasswordStatus.loading));
     try {
       String result = event.email.replaceAll('"', '');
       var resultStatusCode = await _repository.resetPassword(result);
       if (resultStatusCode < HttpStatus.badRequest) {
-        emit(const ForgotPasswordCompletedState());
+        emit(state.copyWith(status: ForgotPasswordStatus.success, email: result));
       } else {
         throw BadRequestException("API Error");
       }
       _log.debug("END: forgotPassword bloc: _onSubmit success: {}", [resultStatusCode.toString()]);
     } catch (e) {
-      emit(const ForgotPasswordErrorState(message: "Reset Password Error"));
+      emit(state.copyWith(status: ForgotPasswordStatus.failure));
       _log.error("END: forgotPassword bloc: _onSubmit error: {}", [e.toString()]);
     }
   }

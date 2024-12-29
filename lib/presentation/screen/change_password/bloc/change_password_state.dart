@@ -7,14 +7,9 @@ const String authenticationFailKey = 'error.authenticate';
 class ChangePasswordState extends Equatable {
   final ChangePasswordStatus status;
 
-  const ChangePasswordState({
-    this.status = ChangePasswordStatus.initial,
-  });
+  const ChangePasswordState({this.status = ChangePasswordStatus.initial});
 
-  ChangePasswordState copyWith({
-    String? email,
-    ChangePasswordStatus? status,
-  }) {
+  ChangePasswordState copyWith({ChangePasswordStatus? status}) {
     return ChangePasswordState(
       status: status ?? this.status,
     );

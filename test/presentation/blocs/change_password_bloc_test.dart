@@ -98,7 +98,7 @@ void main() {
   /// ChangePasswordBloc Tests
   group("ChangePasswordBloc", () {
     test("initial state is LoginState", () {
-      expect(ChangePasswordBloc(repository: repository).state, const ChangePasswordInitialState());
+      expect(ChangePasswordBloc(repository: repository).state, const ChangePasswordState(status: ChangePasswordStatus.initial));
     });
 
     group("ChangePasswordChanged", () {
@@ -107,14 +107,15 @@ void main() {
       method() => repository.changePassword(input);
 
       final event = ChangePasswordChanged(currentPassword: input.currentPassword!, newPassword: input.newPassword!);
-      const successState = ChangePasswordCompletedState();
+      const loadingState = ChangePasswordState(status: ChangePasswordStatus.loading);
+      const successState = ChangePasswordState(status: ChangePasswordStatus.success);
+      const errorState = ChangePasswordState(status: ChangePasswordStatus.failure);
 
-      const statesSuccess = [ChangePasswordLoadingState(), successState];
-      const statesError = [ChangePasswordLoadingState(), ChangePasswordErrorState(message: 'Reset Password API Error')];
-      const statesError2 = [ChangePasswordLoadingState(), ChangePasswordErrorState(message: 'Reset Password Unhandled Error')];
+      const statesSuccess = [loadingState, successState];
+      const statesError = [loadingState, errorState];
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
-        "emits [ChangePasswordInitialState, ChangePasswordPasswordCompletedState] when ChangePasswordChanged is added",
+        "emits [loading, success] when ChangePasswordChanged is added",
         setUp: () => when(method()).thenAnswer((_) => Future.value(output)),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
@@ -123,16 +124,16 @@ void main() {
       );
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
-        "emits [ChangePasswordInitialState, ChangePasswordPasswordErrorState] when ChangePasswordChanged is added",
+        "emits [loading, error] when ChangePasswordChanged is added",
         setUp: () => when(method()).thenThrow(BadRequestException()),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
-        expect: () => statesError2,
+        expect: () => statesError,
         verify: (_) => verify(method()).called(1),
       );
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
-        "emits [ChangePasswordInitialState, ChangePasswordPasswordErrorState] when repository return 400",
+        "emits [loading error400] when repository return 400",
         setUp: () => when(method()).thenAnswer((_) => Future.value(400)),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),

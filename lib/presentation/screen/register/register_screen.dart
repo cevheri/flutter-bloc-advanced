@@ -1,134 +1,131 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/routes/app_router.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/user_form_fields.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:form_builder_validators/form_builder_validators.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../generated/l10n.dart';
-import '../../common_blocs/account/account_bloc.dart';
 import 'bloc/register_bloc.dart';
 
 class RegisterScreen extends StatelessWidget {
   RegisterScreen({super.key});
 
-  final _registerFormKey = GlobalKey<FormBuilderState>();
+  final _formKey = GlobalKey<FormBuilderState>();
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
+    return BlocListener<RegisterBloc, RegisterState>(
+      listenWhen: (previous, current) => previous.status != current.status,
+      listener: (context, state) => _handleStateChanges(context, state),
+      child: Scaffold(appBar: _buildAppBar(context), body: _buildBody(context)),
+    );
   }
 
-  _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).register),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home)),
-    );
-  }
-
-  _buildBody(BuildContext context) {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 50),
-        child: BlocBuilder<AccountBloc, AccountState>(
-          builder: (context, state) {
-            // if (state.account == null) {
-            //   return Container();
-            // }
-            return Column(
-              children: [
-                FormBuilder(
-                  key: _registerFormKey,
-                  child: Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(30.0),
-                      child: Column(
-                        spacing: 16,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          _formBuilderTextFieldFirstName(context),
-                          _formBuilderTextFieldLastName(context),
-                          _formBuilderTextFieldEmail(context),
-                          _submitButton(context),
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-              ],
-            );
-          },
-        ),
+      leading: IconButton(
+        key: const Key('registerScreenAppBarBackButtonKey'),
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => _handlePopScope(false, null, context),
       ),
     );
   }
 
-  FormBuilderTextField _formBuilderTextFieldFirstName(BuildContext context) {
-    return FormBuilderTextField(
-      key: registerFirstNameTextFieldKey,
-      name: "firstname",
-      decoration: InputDecoration(labelText: S.of(context).first_name),
-      maxLines: 1,
-      validator: FormBuilderValidators.required(errorText: S.of(context).required_field),
-    );
-  }
-
-  FormBuilderTextField _formBuilderTextFieldLastName(BuildContext context) {
-    return FormBuilderTextField(
-      key: registerLastNameTextFieldKey,
-      name: "lastname",
-      decoration: InputDecoration(labelText: S.of(context).last_name),
-      maxLines: 1,
-      validator: FormBuilderValidators.required(errorText: S.of(context).required_field),
-    );
-  }
-
-  FormBuilderTextField _formBuilderTextFieldEmail(BuildContext context) {
-    return FormBuilderTextField(
-      key: registerEmailTextFieldKey,
-      name: "email",
-      decoration: InputDecoration(labelText: S.of(context).email),
-      maxLines: 1,
-      validator: FormBuilderValidators.compose([
-        FormBuilderValidators.required(errorText: S.of(context).required_field),
-        FormBuilderValidators.email(errorText: S.of(context).email_pattern),
-      ]),
-    );
-  }
-
-
-  //TODO create a new SubmitButton widget and use it all formBuilder submit buttons
-  Widget _submitButton(BuildContext context) {
-    return BlocListener<RegisterBloc, RegisterState>(
-      listener: (context, state) {
-        if (state is RegisterCompletedState) {
-          Navigator.pop(context);
-          //Get.snackbar("Create User", "Success");
-        }
-        if (state is RegisterErrorState) {
-          //Get.snackbar("Create User", "Error");
-        }
+  Widget _buildBody(BuildContext context) {
+    return BlocBuilder<RegisterBloc, RegisterState>(
+      builder: (context, state) {
+        return ResponsiveFormBuilder(
+          formKey: _formKey,
+          children: [..._buildFormFields(context, state), _submitButton(context, state)],
+        );
       },
-      child: SizedBox(
-        width: double.infinity,
-        height: 48,
-        child: ElevatedButton(
-          key: registerSubmitButtonKey,
-          child: Text(S.of(context).save),
-          onPressed: () {
-            if (_registerFormKey.currentState?.saveAndValidate() ?? false) {
-              context.read<RegisterBloc>().add(RegisterFormSubmitted(
-                  createUser: User(
-                      firstName: _registerFormKey.currentState!.fields["firstname"]!.value,
-                      lastName: _registerFormKey.currentState!.fields["lastname"]!.value,
-                      email: _registerFormKey.currentState!.fields["email"]!.value)));
-            }
-          },
-        ),
-      ),
     );
+  }
+
+  List<Widget> _buildFormFields(BuildContext context, RegisterState state) {
+    return [
+      UserFormFields.firstNameField(context, state.data?.firstName),
+      UserFormFields.lastNameField(context, state.data?.lastName),
+      UserFormFields.emailField(context, state.data?.email),
+    ];
+  }
+
+  Widget _submitButton(BuildContext context, RegisterState state) {
+    return ResponsiveSubmitButton(
+      onPressed: () => state.status == RegisterStatus.loading ? null : _onSubmit(context, state),
+      isLoading: state.status == RegisterStatus.loading,
+    );
+  }
+
+  void _onSubmit(BuildContext context, RegisterState state) {
+    debugPrint("onSubmit");
+    FocusScope.of(context).unfocus();
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      debugPrint("validate");
+      _showSnackBar(context, S.of(context).failed, const Duration(milliseconds: 1000));
+      return;
+    }
+
+    if (!(_formKey.currentState?.isDirty ?? false)) {
+      debugPrint("no changes made");
+      _showSnackBar(context, S.of(context).no_changes_made, const Duration(milliseconds: 1000));
+      return;
+    }
+
+    if (_formKey.currentState?.saveAndValidate() ?? false) {
+      debugPrint("saveAndValidate");
+      User data = User(
+          firstName: _formKey.currentState!.value['firstName'],
+          lastName: _formKey.currentState!.value['lastName'],
+          email: _formKey.currentState!.value['email']);
+      context.read<RegisterBloc>().add(RegisterFormSubmitted(data: data));
+    }
+  }
+
+  void _handleStateChanges(BuildContext context, RegisterState state) {
+    const duration = Duration(milliseconds: 1000);
+    switch (state.status) {
+      case RegisterStatus.initial:
+        //
+        break;
+      case RegisterStatus.loading:
+        _showSnackBar(context, S.of(context).loading, duration);
+        break;
+      case RegisterStatus.success:
+        _formKey.currentState?.reset();
+        _showSnackBar(context, S.of(context).success, duration);
+        break;
+      case RegisterStatus.error:
+        _showSnackBar(context, S.of(context).failed, duration);
+        break;
+    }
+  }
+
+  void _showSnackBar(BuildContext context, String message, Duration duration) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: duration),
+    );
+  }
+
+  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
+    final context = contextParam ?? data as BuildContext;
+
+    if (!context.mounted) return;
+
+    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+      context.go(ApplicationRoutesConstants.home);
+      return;
+    }
+
+    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
+    if (shouldPop && context.mounted) {
+      context.go(ApplicationRoutesConstants.home);
+    }
   }
 }

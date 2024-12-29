@@ -321,7 +321,7 @@ class HttpUtils {
       //         .replaceAll("-", "_")
       // ;
       // @formatter:on
-      final filePath = endpoint.replaceAll("/", "_");
+      final filePath = endpoint.replaceAll("/", "_").replaceAll("-", "_");
       if (pathParams != null) {
         path += "/$httpMethod${filePath}pathParams.json";
       } else if (queryParams != null) {

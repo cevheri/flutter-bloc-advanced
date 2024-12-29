@@ -30,10 +30,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   FutureOr<void> _onSubmit(RegisterFormSubmitted event, Emitter<RegisterState> emit) async {
-    _log.debug("BEGIN: onSubmit RegisterFormSubmitted event: {}", [event.createUser.toString()]);
+    _log.debug("BEGIN: onSubmit RegisterFormSubmitted event: {}", [event.data.toString()]);
     emit(const RegisterLoadingState());
     try {
-      var user = await _repository.register(event.createUser);
+      var user = await _repository.register(event.data);
       if (user != null) {
         emit(RegisterCompletedState(user: user));
         _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [user.toString()]);

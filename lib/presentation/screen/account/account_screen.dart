@@ -45,7 +45,7 @@ class AccountScreen extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     return BlocBuilder<AccountBloc, AccountState>(
-      buildWhen: (previous, current) => previous.status != current.status, //previous.data != current.data ||
+      buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
         return ResponsiveFormBuilder(
           formKey: _formKey,
@@ -66,7 +66,6 @@ class AccountScreen extends StatelessWidget {
   }
 
   Widget _submitButton(BuildContext context, AccountState state) {
-    debugPrint('state.status: ${state.status}');
     return ResponsiveSubmitButton(
       onPressed: () => state.status == AccountStatus.loading ? null : _onSubmit(context, state),
       isLoading: state.status == AccountStatus.loading,
@@ -74,10 +73,17 @@ class AccountScreen extends StatelessWidget {
   }
 
   void _onSubmit(BuildContext context, AccountState state) {
+    debugPrint("onSubmit");
+    FocusScope.of(context).unfocus();
+    if (!(_formKey.currentState?.validate() ?? false)) {
+      debugPrint("validate");
+      _showSnackBar(context, S.of(context).failed, const Duration(milliseconds: 1000));
+      return;
+    }
+
     if (!(_formKey.currentState?.isDirty ?? false)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.of(context).no_changes_made)),
-      );
+      debugPrint("no changes made");
+      _showSnackBar(context, S.of(context).no_changes_made, const Duration(milliseconds: 1000));
       return;
     }
 
@@ -85,19 +91,6 @@ class AccountScreen extends StatelessWidget {
       final formData = _formKey.currentState!.value;
       final user = _createUserFromData(formData, state.data?.id);
       context.read<AccountBloc>().add(AccountSubmitEvent(user));
-      if (state.status == AccountStatus.success) {
-        _formKey.currentState?.reset();
-      }
-
-      //context.read<UserBloc>().add(UserSubmitEvent(user));
-      // late final StreamSubscription<UserState> subscription;
-      // subscription = context.read<UserBloc>().stream.listen((userState) {
-      //   if ((userState.status == UserStatus.success || userState.status == UserStatus.saveSuccess) && context.mounted) {
-      //     context.read<AccountBloc>().add(const AccountFetchEvent());
-      //     _formKey.currentState?.reset();
-      //     subscription.cancel();
-      //   }
-      // }); // cancel the stream after the first event
     }
   }
 

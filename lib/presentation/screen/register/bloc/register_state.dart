@@ -3,26 +3,26 @@ part of 'register_bloc.dart';
 enum RegisterStatus { initial, loading, success, error }
 
 class RegisterState extends Equatable {
-  final User? user;
+  final User? data;
   final RegisterStatus status;
 
   const RegisterState({
-    this.user,
+    this.data,
     this.status = RegisterStatus.initial,
   });
 
   RegisterState copyWith({
-    User? user,
+    User? data,
     RegisterStatus? status,
   }) {
     return RegisterState(
-      user: user ?? this.user,
+      data: data ?? this.data,
       status: status ?? this.status,
     );
   }
 
   @override
-  List<Object> get props => [status, user ?? ''];
+  List<Object> get props => [status, data ?? ''];
 
   @override
   bool get stringify => true;
@@ -37,7 +37,7 @@ class RegisterLoadingState extends RegisterState {
 }
 
 class RegisterCompletedState extends RegisterState {
-  const RegisterCompletedState({required User user}) : super(user: user, status: RegisterStatus.success);
+  const RegisterCompletedState({required User user}) : super(data: user, status: RegisterStatus.success);
 }
 
 class RegisterErrorState extends RegisterState {

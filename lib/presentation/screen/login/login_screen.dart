@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
@@ -24,30 +25,25 @@ class LoginScreen extends StatelessWidget {
 
   AppBar _buildAppBar(BuildContext context) => AppBar(title: const Text(AppConstants.appName), leading: Container());
 
-  FormBuilder _buildBody(BuildContext context) {
-    return FormBuilder(
-      key: _loginFormKey,
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            spacing: 16,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              _logo(context),
-              _usernameField(context),
-              _passwordField(context),
-              SizedBox(
-                width: MediaQuery.of(context).size.width * 0.6,
-                child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[_submitButton(context)]),
-              ),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
-              Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
-              _validationZone(),
-            ],
-          ),
-        ),
-      ),
+  Widget _buildBody(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return ResponsiveFormBuilder(
+          formKey: _loginFormKey,
+          children: <Widget>[
+            _logo(context),
+            _usernameField(context),
+            _passwordField(context),
+            SizedBox(
+              width: MediaQuery.of(context).size.width * 0.6,
+              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[_submitButton(context)]),
+            ),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
+            _validationZone(),
+          ],
+        );
+      },
     );
   }
 
@@ -121,10 +117,9 @@ class LoginScreen extends StatelessWidget {
   }
 
   _submitButton(BuildContext context) {
-    debugPrint("BEGIN: login submit button");
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
-        debugPrint("BEGIN: login submit button listener ${state.username}");
+        debugPrint("BEGIN: login submit button listener username${state.username}");
 
         if (state is LoginLoadingState) {
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
@@ -154,7 +149,7 @@ class LoginScreen extends StatelessWidget {
         }
       },
       child: SizedBox(
-        child: ElevatedButton(
+        child: FilledButton(
           key: loginButtonSubmitKey,
           child: Text(S.of(context).login_button),
           onPressed: () {

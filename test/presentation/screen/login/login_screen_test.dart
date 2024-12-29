@@ -137,7 +137,7 @@ void main() {
       await tester.pump();
 
       // Submit form using ElevatedButton
-      final submitButton = find.byType(ElevatedButton);
+      final submitButton = find.byType(FilledButton);
       expect(submitButton, findsOneWidget);
       await tester.tap(submitButton);
       await tester.pumpAndSettle();

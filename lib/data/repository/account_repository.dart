@@ -81,6 +81,7 @@ class AccountRepository {
     //   --data-raw 'cevheribozoglan@gmail.com'
     HttpUtils.addCustomHttpHeader('Accept', 'application/json, text/plain, */*');
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
+    // final body = {"email": mailAddress};
     final httpResponse = await HttpUtils.postRequest<String>("/$_resource/reset-password/init", mailAddress);
     _log.debug("END:resetPassword successful");
     return httpResponse.statusCode;

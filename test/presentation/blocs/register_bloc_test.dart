@@ -20,7 +20,6 @@ import 'register_bloc_test.mocks.dart';
 /// 3. Bloc test <p>
 @GenerateMocks([AccountRepository])
 void main() {
-
   //region main setup
   late AccountRepository repository;
 
@@ -42,7 +41,7 @@ void main() {
     const status = RegisterStatus.initial;
 
     test("supports value comparisons", () {
-      expect(const RegisterState(user: user, status: status), const RegisterState(user: user, status: status));
+      expect(const RegisterState(data: user, status: status), const RegisterState(data: user, status: status));
     });
 
     test("RegisterInitialState", () {
@@ -63,7 +62,7 @@ void main() {
 
     test("RegisterState copyWith", () {
       expect(const RegisterState().copyWith(), const RegisterState());
-      expect(const RegisterState().copyWith(user: user), const RegisterState(user: user));
+      expect(const RegisterState().copyWith(data: user), const RegisterState(data: user));
       expect(const RegisterState().copyWith(status: status), const RegisterState(status: status));
     });
   });
@@ -75,7 +74,7 @@ void main() {
     const user = User(firstName: "test", lastName: "test", email: "test@test.com");
 
     test("RegisterFormSubmitted", () {
-      expect(const RegisterFormSubmitted(createUser: user).props, [user]);
+      expect(const RegisterFormSubmitted(data: user).props, [user]);
     });
   });
   //endregion event
@@ -93,7 +92,7 @@ void main() {
       method() => repository.register(input);
       Future<User?> output = Future<User?>.value(input);
 
-      const event = RegisterFormSubmitted(createUser: input);
+      const event = RegisterFormSubmitted(data: input);
       const loadingState = RegisterLoadingState();
       const successState = RegisterCompletedState(user: input);
       const failureState = RegisterErrorState(message: "Register Error");
@@ -127,10 +126,8 @@ void main() {
         expect: () => statesFailure,
         verify: (_) => verify(method()).called(1),
       );
-
     });
   });
 
 //endregion bloc
-
 }
