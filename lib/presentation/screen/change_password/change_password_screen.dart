@@ -111,7 +111,7 @@ class ChangePasswordScreen extends StatelessWidget {
       },
       child: FilledButton(
         key: changePasswordButtonSubmitKey,
-        child: Text(S.of(context).change_password),
+        child: Text(S.of(context).save),
         onPressed: () {
           //without blocConsumer access to bloc directly
           final currentState = context.read<ChangePasswordBloc>().state;

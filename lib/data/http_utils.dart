@@ -274,9 +274,14 @@ class HttpUtils {
   static Future<http.Response> mockRequest(String httpMethod, String endpoint, {String? pathParams, Map<String, String>? queryParams}) async {
     debugPrint("BEGIN: Mock Request Method start : $httpMethod $endpoint");
 
+    if (!ProfileConstants.isTest) {
+      await Future.delayed(const Duration(milliseconds: 500));
+    }
+
     var headers = await HttpUtils.headers();
     if (!allowedPaths.contains(endpoint)) {
-      debugPrint("mockRequest: Unauthorized Access. endpoint: $endpoint, httpMethod: $httpMethod, headers: $headers, allowedPaths: $allowedPaths");
+      debugPrint(
+          "mockRequest: Unauthorized Access. endpoint: $endpoint, httpMethod: $httpMethod, headers: $headers, allowedPaths: $allowedPaths");
       if (headers['Authorization'] == null) {
         throw UnauthorizedException("Unauthorized Access");
       }

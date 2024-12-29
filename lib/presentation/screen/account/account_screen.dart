@@ -6,8 +6,9 @@ import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/user_form_fields.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
@@ -31,7 +32,7 @@ class AccountScreen extends StatelessWidget {
     );
   }
 
-  _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).account),
       leading: IconButton(
@@ -42,43 +43,19 @@ class AccountScreen extends StatelessWidget {
     );
   }
 
-  _buildBody(BuildContext context) {
+  Widget _buildBody(BuildContext context) {
     return BlocBuilder<AccountBloc, AccountState>(
-      buildWhen: (previous, current) => previous.data != current.data || previous.status != current.status,
+      buildWhen: (previous, current) => previous.status != current.status, //previous.data != current.data ||
       builder: (context, state) {
-        if (state.data == null) {
-          return Center(child: Text(S.of(context).no_data));
-        }
-        if (state.status == AccountStatus.loading) {
-          return const Center(child: CircularProgressIndicator());
-        }
-
-        return SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 700),
-                child: FormBuilder(
-                  key: _formKey,
-                  child: Column(
-                    spacing: 16,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      ..._buildFormFields(context, state),
-                      _submitButton(context, state),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
+        return ResponsiveFormBuilder(
+          formKey: _formKey,
+          children: [..._buildFormFields(context, state), _submitButton(context, state)],
         );
       },
     );
   }
 
-  _buildFormFields(BuildContext context, AccountState state) {
+  List<Widget> _buildFormFields(BuildContext context, AccountState state) {
     return [
       UserFormFields.usernameField(context, state.data?.login, enabled: false),
       UserFormFields.firstNameField(context, state.data?.firstName),
@@ -88,20 +65,11 @@ class AccountScreen extends StatelessWidget {
     ];
   }
 
-  /// Submit button
-  /// This button is used to submit the form.
-  ///
-  /// [context] BuildContext current context
-  /// [state] AccountState state of the bloc
-  /// return ElevatedButton
   Widget _submitButton(BuildContext context, AccountState state) {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton(
-        onPressed: () => state.status == AccountStatus.loading ? null : _onSubmit(context, state),
-        child: Text(S.of(context).save),
-      ),
+    debugPrint('state.status: ${state.status}');
+    return ResponsiveSubmitButton(
+      onPressed: () => state.status == AccountStatus.loading ? null : _onSubmit(context, state),
+      isLoading: state.status == AccountStatus.loading,
     );
   }
 
@@ -115,30 +83,31 @@ class AccountScreen extends StatelessWidget {
 
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
-      final user = _createUserFromFormData(formData, state.data?.id);
+      final user = _createUserFromData(formData, state.data?.id);
+      context.read<AccountBloc>().add(AccountSubmitEvent(user));
+      if (state.status == AccountStatus.success) {
+        _formKey.currentState?.reset();
+      }
 
-      context.read<UserBloc>().add(UserSubmitEvent(user));
-      late final StreamSubscription<UserState> subscription;
-      subscription = context.read<UserBloc>().stream.listen((userState) {
-        if ((userState.status == UserStatus.success || userState.status == UserStatus.saveSuccess) && context.mounted) {
-          context.read<AccountBloc>().add(const AccountFetchEvent());
-          _formKey.currentState?.reset();
-          subscription.cancel();
-        }
-      }); // cancel the stream after the first event
+      //context.read<UserBloc>().add(UserSubmitEvent(user));
+      // late final StreamSubscription<UserState> subscription;
+      // subscription = context.read<UserBloc>().stream.listen((userState) {
+      //   if ((userState.status == UserStatus.success || userState.status == UserStatus.saveSuccess) && context.mounted) {
+      //     context.read<AccountBloc>().add(const AccountFetchEvent());
+      //     _formKey.currentState?.reset();
+      //     subscription.cancel();
+      //   }
+      // }); // cancel the stream after the first event
     }
   }
 
-  User _createUserFromFormData(Map<String, dynamic> formData, String? userId) {
-    return User(
+  User _createUserFromData(Map<String, dynamic> formData, String? userId) => User(
       id: userId,
       login: formData['login'],
       firstName: formData['firstName'],
       lastName: formData['lastName'],
       email: formData['email'],
-      activated: formData['activated'],
-    );
-  }
+      activated: formData['activated']);
 
   void _handleStateChanges(BuildContext context, AccountState state) {
     const duration = Duration(milliseconds: 1000);
@@ -179,5 +148,4 @@ class AccountScreen extends StatelessWidget {
       context.go(ApplicationRoutesConstants.home);
     }
   }
-
 }

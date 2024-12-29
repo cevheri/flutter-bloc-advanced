@@ -29,6 +29,10 @@ class ProfileConstants {
     return _config == _Config.devConstants;
   }
 
+  static bool get isTest {
+    return _config == _Config.testConstants;
+  }
+
   static get api {
     return _config![_Config.api];
   }

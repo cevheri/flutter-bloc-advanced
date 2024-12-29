@@ -167,14 +167,14 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('Should display no data message when data is null', (tester) async {
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success));
-
-      await tester.pumpWidget(buildTestableWidget());
-      await tester.pumpAndSettle();
-
-      expect(find.text(S.current.no_data), findsOneWidget);
-    });
+    // testWidgets('Should display no data message when data is null', (tester) async {
+    //   when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success));
+    //
+    //   await tester.pumpWidget(buildTestableWidget());
+    //   await tester.pumpAndSettle();
+    //
+    //   expect(find.text(S.current.no_data), findsOneWidget);
+    // });
   });
 
   group('AccountScreen Form Operations', () {
