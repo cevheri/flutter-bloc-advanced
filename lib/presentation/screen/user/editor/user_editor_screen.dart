@@ -14,18 +14,21 @@ import 'package:go_router/go_router.dart';
 
 class UserEditorScreen extends StatelessWidget {
   final String? id;
+  final String? username;
   final EditorFormMode mode;
 
   const UserEditorScreen({
     super.key,
     this.id,
+    this.username,
     required this.mode,
   });
 
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<UserBloc>();
-    final initialEvent = id != null ? UserFetchEvent(id!) : const UserEditorInit();
+    final userId = id ?? username ?? '';
+    final initialEvent = userId.isNotEmpty ? UserFetchEvent(userId) : const UserEditorInit();
     bloc.add(initialEvent);
     return UserEditorWidget(mode: mode);
   }
@@ -149,29 +152,6 @@ class UserEditorWidget extends StatelessWidget {
       'authorities': state.data?.authorities?.first ?? state.data?.authorities?.firstOrNull,
     };
     debugPrint("checkpoint initial value: $initialValue");
-    // return SingleChildScrollView(
-    //   child: Padding(
-    //     padding: const EdgeInsets.all(16.0),
-    //     child: Center(
-    //       child: ConstrainedBox(
-    //         constraints: const BoxConstraints(maxWidth: 700),
-    //         child: FormBuilder(
-    //           key: _formKey,
-    //           initialValue: initialValue,
-    //           child: Column(
-    //             crossAxisAlignment: CrossAxisAlignment.stretch,
-    //             children: [
-    //               ..._buildFormFields(context, state),
-    //               const SizedBox(height: 20),
-    //               if (mode == EditorFormMode.view) _backButtonField(context),
-    //               if (mode != EditorFormMode.view) _submitButtonField(context, state),
-    //             ],
-    //           ),
-    //         ),
-    //       ),
-    //     ),
-    //   ),
-    // );
     return ResponsiveFormBuilder(
       formKey: _formKey,
       initialValue: initialValue,
@@ -226,6 +206,7 @@ class UserEditorWidget extends StatelessWidget {
   }
 
   List<Widget> _buildFormFields(BuildContext context, UserState state) {
+    debugPrint("checkpoint build form fields: ${state.data?.login}");
     return [
       UserFormFields.usernameField(context, state.data?.login, enabled: mode == EditorFormMode.create),
       UserFormFields.firstNameField(context, state.data?.firstName, enabled: mode != EditorFormMode.view),

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
@@ -139,15 +140,13 @@ class UserSearchSection extends StatelessWidget {
         key: formKey,
         child: IntrinsicHeight(
           child: Row(
+            spacing: Spacing.small,
             mainAxisSize: MainAxisSize.max,
             children: [
               SizedBox(width: 75, child: Text(S.of(context).filter)),
               const Flexible(flex: 2, child: AuthorityDropdown()),
-              const SizedBox(width: 10),
               const SizedBox(width: 200, child: PaginationControls()),
-              const SizedBox(width: 10),
               const Flexible(child: SearchNameField()),
-              const SizedBox(width: 10),
               SearchActionButtons(formKey: formKey),
             ],
           ),
@@ -403,7 +402,7 @@ class UserTableRow extends StatelessWidget {
           const SizedBox(width: 5),
           UserTableCell(flex: 3, text: user.activated! ? "active" : "passive"),
           const SizedBox(width: 5),
-          UserActionButtons(userId: user.id!, formKey: formKey),
+          UserActionButtons(userId: user.login!, formKey: formKey),
         ],
       ),
     );
@@ -456,12 +455,14 @@ class UserTableCell extends StatelessWidget {
 /// Handles edit, view, and delete operations.
 /// Manages confirmation dialogs and navigation.
 class UserActionButtons extends StatelessWidget {
-  final String userId;
+  final String? userId;
+  final String? username;
   final GlobalKey<FormBuilderState> formKey;
 
   const UserActionButtons({
     super.key,
-    required this.userId,
+    this.userId,
+    this.username,
     required this.formKey,
   });
 
@@ -518,11 +519,11 @@ class UserActionButtons extends StatelessWidget {
   }
 
   void _handleEdit(BuildContext context) {
-    context.goNamed('userEdit', pathParameters: {'id': userId}); //then((_) => !context.mounted ? null : _refreshList(context));
+    context.goNamed('userEdit', pathParameters: {'id': userId ?? username ?? ""});
   }
 
   void _handleView(BuildContext context) {
-    context.goNamed('userView', pathParameters: {'id': userId}); //.then((_) => !context.mounted ? null : _refreshList(context));
+    context.goNamed('userView', pathParameters: {'id': userId ?? username ?? ""});
   }
 
   void _showDeleteConfirmation(BuildContext context) {
@@ -539,7 +540,7 @@ class UserActionButtons extends StatelessWidget {
           TextButton(
               onPressed: () {
                 Navigator.pop(context);
-                context.read<UserBloc>().add(UserDeleteEvent(userId));
+                context.read<UserBloc>().add(UserDeleteEvent(userId ?? username ?? ""));
                 late final StreamSubscription<UserState> subscription;
                 subscription = context.read<UserBloc>().stream.listen((state) {
                   if (state.status == UserStatus.deleteSuccess && context.mounted) {
