@@ -104,6 +104,7 @@ class AccountRepository {
     if (user.id == null || user.id!.isEmpty) {
       throw BadRequestException(userIdNotNull);
     }
+    user = user.copyWith(langKey: user.langKey ?? "en");
     final httpResponse = await HttpUtils.postRequest<User>("/$_resource", user);
     final response = HttpUtils.decodeUTF8(httpResponse.body.toString());
     var result = User.fromJsonString(response)!;

@@ -47,8 +47,16 @@ class AccountScreen extends StatelessWidget {
     return BlocBuilder<AccountBloc, AccountState>(
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
+        // final initialValues = {
+        //   'login': state.data?.login,
+        //   'firstName': state.data?.firstName,
+        //   'lastName': state.data?.lastName,
+        //   'email': state.data?.email
+        // };
+
         return ResponsiveFormBuilder(
           formKey: _formKey,
+          // initialValue: initialValues,
           children: [..._buildFormFields(context, state), _submitButton(context, state)],
         );
       },
@@ -61,7 +69,7 @@ class AccountScreen extends StatelessWidget {
       UserFormFields.firstNameField(context, state.data?.firstName),
       UserFormFields.lastNameField(context, state.data?.lastName),
       UserFormFields.emailField(context, state.data?.email),
-      UserFormFields.activatedField(context, state.data?.activated),
+      //UserFormFields.activatedField(context, state.data?.activated),
     ];
   }
 
@@ -91,6 +99,8 @@ class AccountScreen extends StatelessWidget {
       final formData = _formKey.currentState!.value;
       final user = _createUserFromData(formData, state.data?.id);
       context.read<AccountBloc>().add(AccountSubmitEvent(user));
+     _formKey.currentState?.save();
+      context.read<AccountBloc>().add(const AccountFetchEvent());
     }
   }
 
@@ -113,6 +123,7 @@ class AccountScreen extends StatelessWidget {
         break;
       case AccountStatus.success:
         _showSnackBar(context, S.of(context).success, duration);
+        //_formKey.currentState?.reset();
         break;
       case AccountStatus.failure:
         _showSnackBar(context, S.of(context).failed, duration);

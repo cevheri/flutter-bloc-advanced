@@ -4,7 +4,6 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 
 import '../../../data/models/user.dart';
 import '../../../data/repository/account_repository.dart';
@@ -25,8 +24,6 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     on<AccountFetchEvent>(_onFetchAccount);
     on<AccountSubmitEvent>(_onSubmit);
   }
-
-  final UserRepository _userRepository = UserRepository();
 
   /// Load the current account.
   FutureOr<void> _onFetchAccount(AccountFetchEvent event, Emitter<AccountState> emit) async {
@@ -50,7 +47,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     _log.debug("BEGIN: onSubmit AccountSubmitEvent event: {}", [event.data.toString()]);
     emit(state.copyWith(status: AccountStatus.loading));
     try {
-      final user = await _userRepository.update(event.data);
+      final user = await _repository.update(event.data);
       emit(state.copyWith(status: AccountStatus.success, data: user));
       _log.debug("END:onSubmitAccountSubmitEvent event success: {}", [user.toString()]);
     } catch (e) {
