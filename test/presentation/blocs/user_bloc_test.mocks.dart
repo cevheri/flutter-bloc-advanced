@@ -69,7 +69,7 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
       ) as _i3.Future<_i4.User?>);
 
   @override
-  _i3.Future<List<_i4.User?>> list({
+  _i3.Future<List<_i4.User>> list({
     int? page = 0,
     int? size = 10,
     List<String>? sort = const ['id,desc'],
@@ -84,8 +84,8 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
             #sort: sort,
           },
         ),
-        returnValue: _i3.Future<List<_i4.User?>>.value(<_i4.User?>[]),
-      ) as _i3.Future<List<_i4.User?>>);
+        returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
+      ) as _i3.Future<List<_i4.User>>);
 
   @override
   _i3.Future<List<_i4.User>> listByAuthority(

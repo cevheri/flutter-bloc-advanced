@@ -20,7 +20,6 @@ class ApplicationDrawer extends StatelessWidget {
     debugPrint("ApplicationDrawer build");
     return BlocListener<DrawerBloc, DrawerState>(
       listener: (context, state) {
-        //debugPrint("INITIAL - current language : ${AppLocalStorageCached.language}");
         //debugPrint("DrawerBloc listener: ${state.status}");
         if (state.isLogout) {
           AppRouter().push(context, ApplicationRoutesConstants.login);
@@ -30,11 +29,9 @@ class ApplicationDrawer extends StatelessWidget {
         builder: (context, state) {
           final isDarkMode = state.theme == AdaptiveThemeMode.dark;
 
-          // debugPrint("BUILDER - current lang : ${AppLocalStorageCached.language}");
           // debugPrint("BUILDER - state lang : ${state.language}");
           //
           //
-          // debugPrint("BUILDER - current theme : ${AppLocalStorageCached.theme}");
           // debugPrint("BUILDER - state theme : ${state.theme}");
 
           var isEnglish = state.language == 'en';
@@ -59,7 +56,6 @@ class ApplicationDrawer extends StatelessWidget {
                     onChanged: (value) {
                       //debugPrint("BEGIN:ON_PRESSED.value - ${value}");
                       final newTheme = value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
-                      //debugPrint("BEGIN:ON_PRESSED - current theme : ${AppLocalStorageCached.theme}");
                       //debugPrint("BEGIN:ON_PRESSED - current newTheme : ${newTheme}");
                       context.read<DrawerBloc>().add(ChangeThemeEvent(theme: newTheme));
                       if (value) {
@@ -70,7 +66,6 @@ class ApplicationDrawer extends StatelessWidget {
                       Scaffold.of(context).closeDrawer();
                       AppRouter().push(context, ApplicationRoutesConstants.home);
 
-                      //debugPrint("END:ON_PRESSED - current cached theme : ${AppLocalStorageCached.theme}");
                     },
                   ),
                   SwitchListTile(
@@ -85,7 +80,6 @@ class ApplicationDrawer extends StatelessWidget {
                       context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
                       AppRouter().push(context, ApplicationRoutesConstants.home);
 
-                      //debugPrint("ON_PRESSED - current language : ${AppLocalStorageCached.language}");
                     },
                   ),
                   _buildLogoutButton(context),

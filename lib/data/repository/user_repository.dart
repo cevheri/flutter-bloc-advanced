@@ -23,7 +23,7 @@ class UserRepository {
       throw BadRequestException(userIdRequired);
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.getRequest("/admin/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.getRequest("/admin/$_resource", pathParams: pathParams);
     final response = User.fromJsonString(httpResponse.body)!;
     _log.debug("END:getUser successful - response.body: {}", [response.toString()]);
     return response;
@@ -38,7 +38,7 @@ class UserRepository {
       throw BadRequestException("User login is required");
     }
     final pathParams = login;
-    final httpResponse = await HttpUtils.getRequest("/admin/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.getRequest("/admin/$_resource", pathParams: pathParams);
     final response = User.fromJsonString(httpResponse.body)!;
     _log.debug("END:getUserByLogin successful - response.body: {}", [response.toString()]);
     return response;
@@ -74,7 +74,7 @@ class UserRepository {
   }
 
   /// Retrieve all users method that retrieves all the users
-  Future<List<User?>> list({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
+  Future<List<User>> list({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
     _log.debug("BEGIN:getUsers repository start - page: {}, size: {}, sort: {}", [page, size, sort]);
     final queryParams = {"page": page.toString(), "size": size.toString(), "sort": sort.join("&sort=")};
     final httpResponse = await HttpUtils.getRequest("/admin/$_resource", queryParams: queryParams);
@@ -86,8 +86,10 @@ class UserRepository {
   /// Find user method that findUserByAuthorities a user
   Future<List<User>> listByAuthority(int page, int size, String authority) async {
     _log.debug("BEGIN:findUserByAuthority repository start - page: {}, size: {}, authority: {}", [page, size, authority]);
-    final queryParams = {"page": page.toString(), "size": size.toString(), "authority": authority};
-    final response = await HttpUtils.getRequest("/admin/$_resource/list", queryParams: queryParams);
+    final queryParams = {"page": page.toString(), "size": size.toString()};
+    final pathParams = authority;
+    final response = await HttpUtils.getRequest("/admin/$_resource/authorities",pathParams: pathParams, queryParams: queryParams);
+    // var r = response.body;
     var result = JsonMapper.deserialize<List<User>>(response.body)!;
     _log.debug("END:findUserByAuthority successful - response list size: {}", [result.length]);
     return result;
@@ -110,7 +112,7 @@ class UserRepository {
       throw BadRequestException(userIdRequired);
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.deleteRequest("/admin/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.deleteRequest("/admin/$_resource", pathParams: pathParams);
     _log.debug("END:deleteUser successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

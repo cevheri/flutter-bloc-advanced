@@ -15,7 +15,7 @@ import 'main_prod.mapper.g.dart' show initializeJsonMapper;
 /// main entry point of PRODUCTION
 void main() async {
   // first configure the logger
-  AppLogger.configure(isProduction: true);
+  AppLogger.configure(isProduction: false);
   final log = AppLogger.getLogger("main_prod.dart");
 
   ProfileConstants.setEnvironment(Environment.prod);

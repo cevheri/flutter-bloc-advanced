@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
+import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 
 import '../../../../data/models/user_jwt.dart';
 import '../../../../data/repository/login_repository.dart';
@@ -46,6 +47,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         _log.debug("onSubmit save storage token: {}", [token.idToken]);
         await AppLocalStorage().save(StorageKeys.username.name, event.username);
         _log.debug("onSubmit save storage username: {}", [event.username]);
+        final user = await AccountRepository().getAccount();
+        await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
+        _log.debug("onSubmit save storage roles: {}", [user.authorities]);
+
+
         emit(LoginLoadedState(username: event.username, password: event.password));
 
         _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [token.toString()]);

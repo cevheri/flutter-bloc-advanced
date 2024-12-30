@@ -18,7 +18,7 @@ class DistrictRepository {
       throw BadRequestException("City id null");
     }
     final pathParams = cityId;
-    final httpResponse = await HttpUtils.getRequest("/$_resource/cities/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.getRequest("/$_resource/cities", pathParams: pathParams);
     final response = District.fromJsonStringList(httpResponse.body);
     _log.debug("END:getDistrictsByCity successful - response list size: {}", [response.length]);
     return response;
@@ -50,7 +50,7 @@ class DistrictRepository {
       throw BadRequestException("District id null");
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.getRequest("/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.getRequest("/$_resource", pathParams: pathParams);
     final response = District.fromJsonString(httpResponse.body);
     _log.debug("END:getDistrict successful - response.body: {}", [response.toString()]);
     return response;
@@ -62,7 +62,7 @@ class DistrictRepository {
       throw BadRequestException("District id null");
     }
     final pathParams = id;
-    var httpResponse = await HttpUtils.deleteRequest("/$_resource/", pathParams: pathParams);
+    var httpResponse = await HttpUtils.deleteRequest("/$_resource", pathParams: pathParams);
     _log.debug("END:deleteDistrict successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

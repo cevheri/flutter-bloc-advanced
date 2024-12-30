@@ -85,18 +85,24 @@ class UserBloc extends Bloc<UserEvent, UserState> {
 
   /// Search a user by name or authority.
   FutureOr<void> _onSearch(UserSearchEvent event, Emitter<UserState> emit) async {
-    _log.debug("BEGIN: onSearch UserSearch event: {}", [event.name]);
+    _log.debug("BEGIN: onSearch UserSearch event. name:{} authority: {}", [event.name, event.authority]);
     emit(state.copyWith(status: UserStatus.loading));
     try {
-      if (event.name == "") {
-        final entities = await _repository.listByAuthority(event.page, event.size, event.authority);
+      if ((event.name == null || event.name == "") && (event.authority == null || event.authority == "")) {
+        final entities = await _repository.list();
         emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
-        _log.debug("END:onSearch UserSearch event success content count: {}", [entities.length]);
-      }
-      if (event.name != "") {
-        final entities = await _repository.listByNameAndRole(event.page, event.size, event.name, event.authority);
+        _log.debug("END:onSearch UserSearch event success - list. content count: {}", [entities.length]);
+        return;
+      } else if (event.name != null && event.name!.isNotEmpty && event.authority != null && event.authority!.isNotEmpty) {
+        final entities = await _repository.listByNameAndRole(event.page, event.size, event.name!, event.authority!);
         emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
-        _log.debug("END:onSearch UserSearch event with name success content count: {}", [entities.length]);
+        _log.debug("END:onSearch UserSearch event with name success - name and authority content count: {}", [entities.length]);
+        return;
+      } else if (event.authority != null && event.authority!.isNotEmpty) {
+        final entities = await _repository.listByAuthority(event.page, event.size, event.authority!);
+        emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
+        _log.debug("END:onSearch UserSearch event success authority - content count: {}", [entities.length]);
+        return;
       }
     } catch (e) {
       emit(state.copyWith(status: UserStatus.failure, err: e.toString()));

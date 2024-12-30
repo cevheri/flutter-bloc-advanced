@@ -160,8 +160,19 @@ class HttpUtils {
     final http.Response response;
     final headers = await HttpUtils.headers();
     try {
-      final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await client.get(url, headers: headers).timeout(_timeout);
+      final String path;
+      if (pathParams != null) {
+        path = '${ProfileConstants.api}$endpoint/$pathParams';
+      }else {
+        path = '${ProfileConstants.api}$endpoint';
+      }
+      final url = Uri.parse(path);
+
+      if (queryParams != null) {
+        response = await client.get(url.replace(queryParameters: queryParams), headers: headers).timeout(_timeout);
+      } else {
+        response = await client.get(url, headers: headers).timeout(_timeout);
+      }
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -323,7 +334,7 @@ class HttpUtils {
       // @formatter:on
       final filePath = endpoint.replaceAll("/", "_").replaceAll("-", "_");
       if (pathParams != null) {
-        path += "/$httpMethod${filePath}pathParams.json";
+        path += "/$httpMethod${filePath}_pathParams.json";
       } else if (queryParams != null) {
         path += "/$httpMethod${filePath}_queryParams.json";
       } else {

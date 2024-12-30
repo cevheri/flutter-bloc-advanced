@@ -265,8 +265,8 @@ class SearchActionButtons extends StatelessWidget {
             UserSearchEvent(
               page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
               size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-              authority: formKey.currentState!.fields['authority']?.value ?? "-",
-              name: formKey.currentState!.fields['name']?.value ?? "",
+              authority: formKey.currentState!.fields['authority']?.value,
+              name: formKey.currentState!.fields['name']?.value,
             ),
           );
     }
@@ -560,8 +560,8 @@ class UserActionButtons extends StatelessWidget {
           UserSearchEvent(
             page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
             size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-            authority: formKey.currentState!.fields['authority']?.value ?? "-",
-            name: formKey.currentState!.fields['name']?.value ?? "",
+            authority: formKey.currentState!.fields['authority']?.value,
+            name: formKey.currentState!.fields['name']?.value,
           ),
         );
     // }

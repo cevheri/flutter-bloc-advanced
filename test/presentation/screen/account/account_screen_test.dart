@@ -109,7 +109,7 @@ void main() {
       expect(find.byKey(const Key('userEditorFirstNameFieldKey')), findsOneWidget);
       expect(find.byKey(const Key('userEditorLastNameFieldKey')), findsOneWidget);
       expect(find.byKey(const Key('userEditorEmailFieldKey')), findsOneWidget);
-      expect(find.byKey(const Key('userEditorActivatedFieldKey')), findsOneWidget);
+      expect(find.byKey(const Key('userEditorActivatedFieldKey')), findsNothing);
     });
   });
 

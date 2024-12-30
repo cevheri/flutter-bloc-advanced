@@ -10,14 +10,14 @@ class UserEvent extends Equatable {
 class UserSearchEvent extends UserEvent {
   final int page;
   final int size;
-  final String authority;
-  final String name;
+  final String? authority;
+  final String? name;
 
   const UserSearchEvent({
     this.page = 0,
     this.size = 10,
-    this.authority = "",
-    this.name = "",
+    this.authority,
+    this.name,
   });
 }
 

@@ -36,7 +36,7 @@ class AuthorityRepository {
       throw BadRequestException("Authority id null");
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.getRequest("/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.getRequest("/$_resource", pathParams: pathParams);
     final response = Authority.fromJsonString(httpResponse.body);
     _log.debug("END:getAuthority successful - response.body: {}", [response.toString()]);
     return response;
@@ -48,7 +48,7 @@ class AuthorityRepository {
       throw BadRequestException("Authority id null");
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.deleteRequest("/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.deleteRequest("/$_resource", pathParams: pathParams);
     _log.debug("END:deleteAuthority successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

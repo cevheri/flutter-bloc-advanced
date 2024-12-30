@@ -37,7 +37,7 @@ class CityRepository {
       throw BadRequestException("City id null");
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.getRequest("/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.getRequest("/$_resource", pathParams: pathParams);
     var response = City.fromJsonString(httpResponse.body);
     _log.debug("END:getCity successful - response.body: {}", [response.toString()]);
     return response;
@@ -49,7 +49,7 @@ class CityRepository {
       throw BadRequestException("City id null");
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.deleteRequest("/$_resource/", pathParams: pathParams);
+    final httpResponse = await HttpUtils.deleteRequest("/$_resource", pathParams: pathParams);
     _log.debug("END:deleteCity successful - response status code: {}", [httpResponse.statusCode]);
   }
 }

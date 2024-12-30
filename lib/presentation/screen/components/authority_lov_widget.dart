@@ -20,12 +20,13 @@ class AuthorityDropdown extends StatelessWidget {
       child: BlocBuilder<AuthorityBloc, AuthorityState>(
         builder: (context, state) {
           if (state is AuthorityLoadSuccessState) {
+            final authorities = ["", ...state.authorities];
             return FormBuilderDropdown(
               enabled: enabled,
               name: 'authority',
               decoration: InputDecoration(hintText: S.of(context).authorities),
-              items: state.authorities.map((role) => DropdownMenuItem(value: role, child: Text(role ?? ""))).toList(),
-              initialValue: state.authorities.first,
+              items: authorities.map((e) => DropdownMenuItem(value: e, child: Text(e ?? ""))).toList(),
+              initialValue: authorities.first,
             );
           }
           return const SizedBox.shrink();

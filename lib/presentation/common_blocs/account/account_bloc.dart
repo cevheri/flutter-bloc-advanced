@@ -3,7 +3,6 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
-import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 
 import '../../../data/models/user.dart';
 import '../../../data/repository/account_repository.dart';
@@ -32,9 +31,6 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
     try {
       User user = await _repository.getAccount();
-      await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
-      await AppLocalStorage().save(StorageKeys.username.name, user.login);
-
       emit(state.copyWith(data: user, status: AccountStatus.success));
       _log.debug("END: getAccount bloc: _onLoad success: {}", [user.toString()]);
     } catch (e) {
