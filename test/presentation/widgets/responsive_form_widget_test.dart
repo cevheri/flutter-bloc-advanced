@@ -86,7 +86,7 @@ void main() {
           home: Scaffold(
             body: ResponsiveFormBuilder(
               formKey: formKey,
-              autovalidateMode: true,
+              autoValidateMode: true,
               children: const [
                 Text('Test Child'),
               ],

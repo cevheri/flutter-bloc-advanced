@@ -95,7 +95,7 @@ void main() {
       const event = RegisterFormSubmitted(data: input);
       const loadingState = RegisterLoadingState();
       const successState = RegisterCompletedState(user: input);
-      const failureState = RegisterErrorState(message: "Register Error");
+      const failureState = RegisterErrorState(message: 'Register Error');
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
@@ -110,8 +110,8 @@ void main() {
       );
 
       blocTest<RegisterBloc, RegisterState>(
-        "emits [loading, failure] when invalid operation input failed",
-        setUp: () => when(method()).thenThrow(Exception),
+        "emits [loading, failure] when exception occurs",
+        setUp: () => when(method()).thenThrow(Exception()),
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
@@ -119,7 +119,7 @@ void main() {
       );
 
       blocTest<RegisterBloc, RegisterState>(
-        "emits [loading, failure] when invalid operation input failed",
+        "emits [loading, failure] when response is null",
         setUp: () => when(method()).thenAnswer((_) async => null),
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),

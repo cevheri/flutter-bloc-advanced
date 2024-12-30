@@ -16,7 +16,7 @@ class ResponsiveSubmitButton extends StatelessWidget {
       onPressed: isLoading ? null : onPressed,
       child: ButtonContent(text: buttonText, isLoading: isLoading),
     );
-
+    debugPrint("isWebPlatform: $isWebPlatform kIsWeb: $kIsWeb");
     if (isWebPlatform ?? kIsWeb) {
       return Align(alignment: Alignment.centerRight, child: submitButton);
     }

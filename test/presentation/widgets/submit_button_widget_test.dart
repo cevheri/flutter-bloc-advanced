@@ -85,7 +85,7 @@ void main() {
         ),
       );
 
-      // FilledButton'ı içeren Align widget'ını bul
+
       final alignFinder = find.ancestor(
         of: find.byType(FilledButton),
         matching: find.byType(Align),
