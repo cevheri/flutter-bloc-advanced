@@ -7,7 +7,7 @@ import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority.dart';
-import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/routes/user_routes.dart';
@@ -117,7 +117,7 @@ void main() {
       expect(find.byKey(const Key('userEditorLastNameFieldKey')), findsOneWidget);
       expect(find.byKey(const Key('userEditorEmailFieldKey')), findsOneWidget);
       expect(find.byKey(const Key('userEditorActivatedFieldKey')), findsOneWidget);
-      expect(find.byType(AuthorityDropdown), findsOneWidget);
+      expect(find.byType(AuthoritiesDropdown), findsOneWidget);
 
       // Verify bloc interactions
       verify(mockUserBloc.add(any)).called(1);

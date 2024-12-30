@@ -147,7 +147,7 @@ void main() {
           when(repository.listByAuthority(0, 10, "ROLE_USER")).thenAnswer((_) async => users);
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(const UserSearchEvent(authority: "ROLE_USER")),
+        act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
         expect: () => [
           const UserState(status: UserStatus.loading),
           const UserState(status: UserStatus.searchSuccess, userList: users),
@@ -162,7 +162,7 @@ void main() {
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(
           name: "Test",
-          authority: "ROLE_USER",
+          authorities: "ROLE_USER",
         )),
         expect: () => [
           const UserState(status: UserStatus.loading),
@@ -176,7 +176,7 @@ void main() {
           when(repository.listByAuthority(0, 10, "ROLE_USER")).thenThrow(Exception('Search failed'));
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(const UserSearchEvent(authority: "ROLE_USER")),
+        act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
         expect: () => [
           const UserState(status: UserStatus.loading),
           const UserState(status: UserStatus.failure, err: "Exception: Search failed"),

@@ -4,14 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 
 /// Main screen widget for displaying user list functionality.
-/// Handles authority loading and user state changes.
+/// Handles authorities loading and user state changes.
 /// Contains the main layout structure and search functionality.
 class ListUserScreen extends StatelessWidget {
   ListUserScreen({super.key});
@@ -122,7 +122,7 @@ class UserListContent extends StatelessWidget {
 }
 
 /// Search section widget that contains filtering options.
-/// Includes authority dropdown, pagination controls, and name search.
+/// Includes authorities dropdown, pagination controls, and name search.
 /// Manages form state for search parameters.
 class UserSearchSection extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
@@ -144,7 +144,7 @@ class UserSearchSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               SizedBox(width: 75, child: Text(S.of(context).filter)),
-              const Flexible(flex: 2, child: AuthorityDropdown()),
+              const Flexible(flex: 2, child: AuthoritiesDropdown()),
               const SizedBox(width: 200, child: PaginationControls()),
               const Flexible(child: SearchNameField()),
               SearchActionButtons(formKey: formKey),
@@ -264,7 +264,7 @@ class SearchActionButtons extends StatelessWidget {
             UserSearchEvent(
               page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
               size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-              authority: formKey.currentState!.fields['authority']?.value,
+              authorities: formKey.currentState!.fields['authorities']?.value,
               name: formKey.currentState!.fields['name']?.value,
             ),
           );
@@ -561,7 +561,7 @@ class UserActionButtons extends StatelessWidget {
           UserSearchEvent(
             page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
             size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-            authority: formKey.currentState!.fields['authority']?.value,
+            authorities: formKey.currentState!.fields['authorities']?.value,
             name: formKey.currentState!.fields['name']?.value,
           ),
         );

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/screen/components/authority_lov_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
@@ -46,10 +46,7 @@ class UserEditorWidget extends StatelessWidget {
   final _formKey = GlobalKey<FormBuilderState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  UserEditorWidget({
-    super.key,
-    required this.mode,
-  });
+  UserEditorWidget({super.key, required this.mode});
 
   @override
   Widget build(BuildContext context) {
@@ -149,7 +146,7 @@ class UserEditorWidget extends StatelessWidget {
       'lastName': state.data?.lastName ?? '',
       'email': state.data?.email ?? '',
       'activated': state.data?.activated ?? true,
-      'authorities': state.data?.authorities?.first ?? state.data?.authorities?.firstOrNull,
+      'authorities': state.data?.authorities?.firstOrNull ?? '',
     };
     debugPrint("checkpoint initial value: $initialValue");
     return ResponsiveFormBuilder(
@@ -196,7 +193,7 @@ class UserEditorWidget extends StatelessWidget {
         email: formData['email'],
         activated: formData['activated'],
         langKey: 'en',
-        authorities: [formData['authority'] ?? ''],
+        authorities: [formData['authorities'] ?? ''],
       );
 
       context.read<UserBloc>().add(UserSubmitEvent(user));
@@ -213,11 +210,7 @@ class UserEditorWidget extends StatelessWidget {
       UserFormFields.lastNameField(context, state.data?.lastName, enabled: mode != EditorFormMode.view),
       UserFormFields.emailField(context, state.data?.email, enabled: mode != EditorFormMode.view),
       UserFormFields.activatedField(context, state.data?.activated, enabled: mode != EditorFormMode.view),
-      //TODO when mode == EditorFormMode.view, select the user authorities
-      // if (state.data?.authorities?.isNotEmpty ?? false) ...[
-      //   const SizedBox(height: 16),
-      // ],
-      AuthorityDropdown(enabled: mode != EditorFormMode.view),
+      AuthoritiesDropdown(enabled: mode != EditorFormMode.view, initialValue: state.data?.authorities?.firstOrNull),
     ];
   }
 
