@@ -22,6 +22,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         super(const LoginState()) {
     on<LoginFormSubmitted>(_onSubmit);
     on<TogglePasswordVisibility>((event, emit) => emit(state.copyWith(passwordVisible: !state.passwordVisible)));
+    on<ChangeLoginMethod>(_onChangeLoginMethod);
+    on<SendOtpRequested>(_onSendOtpRequested);
+    on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted);
   }
 
   @override
@@ -51,7 +54,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
         _log.debug("onSubmit save storage roles: {}", [user.authorities]);
 
-
         emit(LoginLoadedState(username: event.username, password: event.password));
 
         _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [token.toString()]);
@@ -61,6 +63,49 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     } catch (e) {
       emit(LoginErrorState(message: "Login API Error: ${e.toString()}"));
       _log.error("END:onSubmit LoginFormSubmitted event error: {}", [e.toString()]);
+    }
+  }
+
+  void _onChangeLoginMethod(ChangeLoginMethod event, Emitter<LoginState> emit) {
+    emit(state.copyWith(
+      loginMethod: event.method,
+      status: LoginStatus.initial,
+      isOtpSent: false,
+    ));
+  }
+
+  Future<void> _onSendOtpRequested(SendOtpRequested event, Emitter<LoginState> emit) async {
+    _log.debug("BEGIN: onSendOtpRequested SendOtpRequested event: {}", [event.email]);
+    emit(LoginLoadingState(username: event.email));
+    try {
+      await _repository.sendOtp(SendOtpRequest(email: event.email));
+      emit(LoginOtpSentState(email: event.email));
+      _log.debug("END: onSendOtpRequested SendOtpRequested event success: {}", [event.email]);
+    } catch (e) {
+      emit(LoginErrorState(message: "OTP gönderme hatası: ${e.toString()}"));
+      _log.error("END: onSendOtpRequested SendOtpRequested event error: {}", [e.toString()]);
+    }
+  }
+
+  Future<void> _onVerifyOtpSubmitted(VerifyOtpSubmitted event, Emitter<LoginState> emit) async {
+    _log.debug("BEGIN: onVerifyOtpSubmitted VerifyOtpSubmitted event: {}", [event.email]);
+    emit(state.copyWith(status: LoginStatus.loading));
+    try {
+      final token = await _repository.verifyOtp(VerifyOtpRequest(email: event.email, otp: event.otpCode));
+      _log.debug("onVerifyOtpSubmitted token: {}", [token.toString()]);
+      if (token != null && token.idToken != null) {
+        await AppLocalStorage().save(StorageKeys.jwtToken.name, token.idToken);
+        await AppLocalStorage().save(StorageKeys.username.name, event.email);
+
+        final user = await AccountRepository().getAccount();
+        await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
+
+        emit(LoginLoadedState(username: event.email, password: event.otpCode));
+      } else {
+        throw BadRequestException("Geçersiz OTP Token");
+      }
+    } catch (e) {
+      emit(LoginErrorState(message: "OTP doğrulama hatası: ${e.toString()}"));
     }
   }
 }

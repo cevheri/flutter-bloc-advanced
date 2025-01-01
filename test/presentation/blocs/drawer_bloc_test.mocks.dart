@@ -55,6 +55,26 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
         returnValue: _i3.Future<void>.value(),
         returnValueForMissingStub: _i3.Future<void>.value(),
       ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<void> sendOtp(_i2.SendOtpRequest? request) => (super.noSuchMethod(
+        Invocation.method(
+          #sendOtp,
+          [request],
+        ),
+        returnValue: _i3.Future<void>.value(),
+        returnValueForMissingStub: _i3.Future<void>.value(),
+      ) as _i3.Future<void>);
+
+  @override
+  _i3.Future<_i4.JWTToken?> verifyOtp(_i2.VerifyOtpRequest? request) =>
+      (super.noSuchMethod(
+        Invocation.method(
+          #verifyOtp,
+          [request],
+        ),
+        returnValue: _i3.Future<_i4.JWTToken?>.value(),
+      ) as _i3.Future<_i4.JWTToken?>);
 }
 
 /// A class which mocks [MenuRepository].

@@ -64,5 +64,14 @@
   "login_button": "Login",
   "loading": "Loading...",
   "email_send": "Send Email",
-  "translate_menu_title": "{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  new_user{New}  list_user{List} other{Other}}"
+  "translate_menu_title": "{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  new_user{New}  list_user{List} other{Other}}",
+  "login_with_email": "Login with Email",
+  "send_otp_code": "Send OTP Code",
+  "invalid_email": "Invalid email address",
+  "resend_otp_code": "Resend OTP Code",
+  "verify_otp_code": "Verify OTP Code",
+  "only_numbers": "Only numbers are allowed",
+  "otp_length": "OTP must be 6 characters long",
+  "otp_code": "OTP Code",
+  "otp_sent_to": "OTP sent to"
 }

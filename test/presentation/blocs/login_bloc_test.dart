@@ -84,7 +84,7 @@ void main() {
 
     test("props", () {
       expect(const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test", password: "test").props,
-          ["test", "test", LoginStatus.initial, false]);
+          ["test", "test", LoginStatus.initial, false, null, null, false, LoginMethod.password]);
     });
   });
   //endregion state

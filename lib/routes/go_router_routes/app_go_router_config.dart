@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/configuration/allowed_paths.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/environment.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
@@ -57,24 +58,28 @@ class AppGoRouterConfig {
     redirect: (context, state) async {
       _log.debug("BEGIN: redirect");
       _log.debug("redirect - uri: ${state.uri}");
-
+      _log.debug("authPaths: $authPaths");
       // Skip redirect for login page
-      if (state.uri.toString() == ApplicationRoutesConstants.login) {
-        _log.debug("END: redirect - on login page");
+      if (authPaths.any((p) => state.uri.path.startsWith(p))) {
+        _log.debug("END: redirect null - with authPaths");
         return null;
       }
 
       // check : when redirect the new page then load the account data
-      if(state.uri.toString() == ApplicationRoutesConstants.home) {
+      if (state.uri.toString() == ApplicationRoutesConstants.home) {
         var accountBloc = context.read<AccountBloc>();
         await Future.delayed(const Duration(microseconds: 500));
         accountBloc.add(const AccountFetchEvent());
         _log.debug("redirect - load event : accountBloc.add(AccountLoad())");
       }
       // check : when jwtToken is null then redirect to login page
-      if (!SecurityUtils.isUserLoggedIn() && !SecurityUtils.isAllowedPath(state.uri.toString()) && state.uri.toString() != ApplicationRoutesConstants.login) {
+      if (!SecurityUtils.isUserLoggedIn() && !SecurityUtils.isAllowedPath(state.uri.toString())) {
         _log.debug("END: isUserLoggedIn is false and isAllowedPath is false");
-        return ApplicationRoutesConstants.login;
+        if (state.uri.toString() != ApplicationRoutesConstants.login) {
+          return ApplicationRoutesConstants.login;
+        } else {
+          return null;
+        }
       }
       // check : when running in production mode and jwtToken is expired then redirect to login page
       if (ProfileConstants.isProduction && SecurityUtils.isTokenExpired() && state.uri.toString() != ApplicationRoutesConstants.login) {

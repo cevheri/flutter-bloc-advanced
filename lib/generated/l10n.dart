@@ -721,6 +721,96 @@ class S {
       args: [translate],
     );
   }
+
+  /// `Login with Email`
+  String get login_with_email {
+    return Intl.message(
+      'Login with Email',
+      name: 'login_with_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send OTP Code`
+  String get send_otp_code {
+    return Intl.message(
+      'Send OTP Code',
+      name: 'send_otp_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid email address`
+  String get invalid_email {
+    return Intl.message(
+      'Invalid email address',
+      name: 'invalid_email',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Resend OTP Code`
+  String get resend_otp_code {
+    return Intl.message(
+      'Resend OTP Code',
+      name: 'resend_otp_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Verify OTP Code`
+  String get verify_otp_code {
+    return Intl.message(
+      'Verify OTP Code',
+      name: 'verify_otp_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Only numbers are allowed`
+  String get only_numbers {
+    return Intl.message(
+      'Only numbers are allowed',
+      name: 'only_numbers',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OTP must be 6 characters long`
+  String get otp_length {
+    return Intl.message(
+      'OTP must be 6 characters long',
+      name: 'otp_length',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OTP Code`
+  String get otp_code {
+    return Intl.message(
+      'OTP Code',
+      name: 'otp_code',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OTP sent to`
+  String get otp_sent_to {
+    return Intl.message(
+      'OTP sent to',
+      name: 'otp_sent_to',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

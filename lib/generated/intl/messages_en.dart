@@ -58,6 +58,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "filter": MessageLookupByLibrary.simpleMessage("Filter"),
         "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
         "guest": MessageLookupByLibrary.simpleMessage("Guest"),
+        "invalid_email":
+            MessageLookupByLibrary.simpleMessage("Invalid email address"),
         "language_select":
             MessageLookupByLibrary.simpleMessage("Select Language"),
         "last_name": MessageLookupByLibrary.simpleMessage("Last Name"),
@@ -68,6 +70,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "login_button": MessageLookupByLibrary.simpleMessage("Login"),
         "login_password": MessageLookupByLibrary.simpleMessage("Password"),
         "login_user_name": MessageLookupByLibrary.simpleMessage("Username"),
+        "login_with_email":
+            MessageLookupByLibrary.simpleMessage("Login with Email"),
         "logout": MessageLookupByLibrary.simpleMessage("Logout"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Are you sure you want to logout?"),
@@ -102,6 +106,12 @@ class MessageLookup extends MessageLookupByLibrary {
         "no_changes_made":
             MessageLookupByLibrary.simpleMessage("No changes made"),
         "no_data": MessageLookupByLibrary.simpleMessage("No Data"),
+        "only_numbers":
+            MessageLookupByLibrary.simpleMessage("Only numbers are allowed"),
+        "otp_code": MessageLookupByLibrary.simpleMessage("OTP Code"),
+        "otp_length": MessageLookupByLibrary.simpleMessage(
+            "OTP must be 6 characters long"),
+        "otp_sent_to": MessageLookupByLibrary.simpleMessage("OTP sent to"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Forgot Password"),
         "password_max_length": MessageLookupByLibrary.simpleMessage(
@@ -114,16 +124,21 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("Required Field"),
         "required_range":
             MessageLookupByLibrary.simpleMessage("Range is required"),
+        "resend_otp_code":
+            MessageLookupByLibrary.simpleMessage("Resend OTP Code"),
         "role": MessageLookupByLibrary.simpleMessage("Role"),
         "save": MessageLookupByLibrary.simpleMessage("Save"),
         "screen_size_error":
             MessageLookupByLibrary.simpleMessage("Screen size is too small."),
+        "send_otp_code": MessageLookupByLibrary.simpleMessage("Send OTP Code"),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "success": MessageLookupByLibrary.simpleMessage("Success"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
         "unsaved_changes": MessageLookupByLibrary.simpleMessage(
             "You have unsaved changes. Are you sure you want to leave?"),
+        "verify_otp_code":
+            MessageLookupByLibrary.simpleMessage("Verify OTP Code"),
         "view_user": MessageLookupByLibrary.simpleMessage("View User"),
         "warning": MessageLookupByLibrary.simpleMessage("Warning"),
         "yes": MessageLookupByLibrary.simpleMessage("Yes")

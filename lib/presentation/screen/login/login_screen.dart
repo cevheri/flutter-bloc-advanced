@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
@@ -40,6 +41,7 @@ class LoginScreen extends StatelessWidget {
             ),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
             Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
+            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_otpLoginButton(context)]),
             _validationZone(),
           ],
         );
@@ -199,6 +201,170 @@ class LoginScreen extends StatelessWidget {
           child: Center(child: Text(S.of(context).failed, style: TextStyle(fontSize: font, color: color), textAlign: TextAlign.center)),
         );
       },
+    );
+  }
+}
+
+Widget _otpLoginButton(BuildContext context) {
+  return TextButton(
+    key: const Key('loginButtonOtpKey'),
+    onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
+    child: Text(S.of(context).login_with_email),
+  );
+}
+
+class OtpEmailScreen extends StatelessWidget {
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  OtpEmailScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        title: Text(S.of(context).login_with_email),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.login),
+        ),
+      ),
+      body: BlocListener<LoginBloc, LoginState>(
+        listenWhen: (previous, current) => previous.status != current.status, // && current.loginMethod == LoginMethod.otp,
+        listener: (context, state) {
+          debugPrint("BEGIN: otp email screen listener state: ${state.props}");
+          if (state.isOtpSent && state.status == LoginStatus.success) {
+            AppRouter().push(
+              context,
+              '${ApplicationRoutesConstants.loginOtpVerify}/${state.email}',
+              args: state.email,
+            );
+          }
+        },
+        child: ResponsiveFormBuilder(
+          formKey: _formKey,
+          children: [
+            _emailField(context),
+            _submitButton(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _emailField(BuildContext context) {
+    return FormBuilderTextField(
+      name: 'email',
+      decoration: InputDecoration(
+        labelText: S.of(context).email,
+        prefixIcon: const Icon(Icons.email),
+      ),
+      validator: FormBuilderValidators.compose([
+        FormBuilderValidators.required(errorText: S.of(context).required_field),
+        FormBuilderValidators.email(errorText: S.of(context).invalid_email),
+      ]),
+    );
+  }
+
+  Widget _submitButton(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      buildWhen: (previous, current) => previous.status != current.status,
+      builder: (context, state) {
+        debugPrint("BEGIN: otp email screen submit button builder state: $state");
+        return ResponsiveSubmitButton(
+          buttonText: S.of(context).send_otp_code,
+          isLoading: state.status == LoginStatus.loading,
+          onPressed: () {
+            if (_formKey.currentState?.saveAndValidate() ?? false) {
+              final email = _formKey.currentState!.value['email'] as String;
+              context.read<LoginBloc>().add(SendOtpRequested(email: email));
+            }
+          },
+        );
+      },
+    );
+  }
+}
+
+class OtpVerifyScreen extends StatelessWidget {
+  final String email;
+  final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  OtpVerifyScreen({super.key, required this.email});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      key: _scaffoldKey,
+      appBar: AppBar(
+        title: Text(S.of(context).verify_otp_code),
+        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp)),
+      ),
+      body: BlocListener<LoginBloc, LoginState>(
+        // listenWhen: (previous, current) =>
+        //   previous.status != current.status &&
+        //   current.loginMethod == LoginMethod.otp,
+        listener: (context, state) {
+          debugPrint("BEGIN: otp verify screen listener state: $state");
+          if (state is LoginLoadedState) {
+            AppRouter().push(context, ApplicationRoutesConstants.home);
+          }
+        },
+        child: ResponsiveFormBuilder(
+          formKey: _formKey,
+          children: [
+            Text('${S.of(context).otp_sent_to} $email'),
+            _otpField(context),
+            _submitButton(context),
+            _resendButton(context),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _otpField(BuildContext context) {
+    return FormBuilderTextField(
+      name: 'otpCode',
+      decoration: InputDecoration(
+        labelText: S.of(context).otp_code,
+        prefixIcon: const Icon(Icons.lock_clock),
+      ),
+      validator: FormBuilderValidators.compose([
+        FormBuilderValidators.required(errorText: S.of(context).required_field),
+        FormBuilderValidators.numeric(errorText: S.of(context).only_numbers),
+        FormBuilderValidators.minLength(6, errorText: S.of(context).otp_length),
+        FormBuilderValidators.maxLength(6, errorText: S.of(context).otp_length),
+      ]),
+    );
+  }
+
+  Widget _submitButton(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      buildWhen: (previous, current) => previous.status != current.status && current.loginMethod == LoginMethod.otp,
+      builder: (context, state) {
+        return ResponsiveSubmitButton(
+          buttonText: S.of(context).verify_otp_code,
+          isLoading: state.status == LoginStatus.loading,
+          onPressed: () {
+            if (_formKey.currentState?.saveAndValidate() ?? false) {
+              final otpCode = _formKey.currentState!.value['otpCode'] as String;
+              context.read<LoginBloc>().add(
+                    VerifyOtpSubmitted(email: email, otpCode: otpCode),
+                  );
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Widget _resendButton(BuildContext context) {
+    return TextButton(
+      onPressed: () => context.read<LoginBloc>().add(SendOtpRequested(email: email)),
+      child: Text(S.of(context).resend_otp_code),
     );
   }
 }

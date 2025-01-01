@@ -20,3 +20,35 @@ class LoginFormSubmitted extends LoginEvent {
   @override
   List<Object?> get props => [username, password];
 }
+
+enum LoginMethod {otp, password}
+
+class ChangeLoginMethod extends LoginEvent {
+  final LoginMethod method;
+
+  const ChangeLoginMethod({required this.method});
+
+  @override
+  List<Object?> get props => [method];
+}
+
+class SendOtpRequested extends LoginEvent {
+  final String email;
+
+  const SendOtpRequested({required this.email});
+
+  @override
+  List<Object?> get props => [email];
+}
+
+class VerifyOtpSubmitted extends LoginEvent {
+  final String email;
+  final String otpCode;
+
+  const VerifyOtpSubmitted({required this.email, required this.otpCode});
+
+  @override
+  List<Object?> get props => [email, otpCode];
+}
+
+

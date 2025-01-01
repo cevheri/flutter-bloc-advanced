@@ -127,10 +127,13 @@ class HttpUtils {
     /// if isMock is true, return mock data instead of making a request
     if (!ProfileConstants.isProduction) return await mockRequest('POST', endpoint);
 
-    final headers = await HttpUtils.headers();
-    String messageBody = "";
+    final requestHeaders = await HttpUtils.headers();
+    if (headers != null) {
+      requestHeaders.addAll(headers);
+    }
 
-    if (headers['Content-Type'] == applicationJson) {
+    String messageBody = "";
+    if (requestHeaders['Content-Type'] == applicationJson) {
       messageBody = JsonMapper.serialize(body, _serOps);
     } else {
       messageBody = body as String;
@@ -139,7 +142,8 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await client.post(url, headers: headers, body: messageBody, encoding: _encoding).timeout(_timeout);
+      response = await client.post(url, headers: requestHeaders, body: messageBody, encoding: _encoding).timeout(_timeout);
+      //final a = response.body;
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException catch (se) {
       debugPrint("Socket Exception: $se");

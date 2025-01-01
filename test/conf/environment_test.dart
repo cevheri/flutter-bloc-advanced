@@ -23,13 +23,15 @@ void main() {
       expect(ProfileConstants.api, "https://dhw-api.onrender.com/api");
     });
   });
-  test("allowed paths",(){
+  test("allowed paths", () {
     expect(allowedPaths, [
       '/authenticate',
       '/register',
       '/logout',
       '/account/reset-password/init',
-      '/forgot-password'
+      '/forgot-password',
+      '/login-otp',
+      '/login-otp-verify',
     ]);
   });
 }
