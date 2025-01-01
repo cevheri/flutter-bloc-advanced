@@ -59,6 +59,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "filter": MessageLookupByLibrary.simpleMessage("Filtrele"),
         "first_name": MessageLookupByLibrary.simpleMessage("İsim"),
         "guest": MessageLookupByLibrary.simpleMessage("Kullanıcı"),
+        "invalid_email":
+            MessageLookupByLibrary.simpleMessage("Geçersiz e-posta adresi"),
         "language_select": MessageLookupByLibrary.simpleMessage("Dil Seçimi"),
         "last_name": MessageLookupByLibrary.simpleMessage("Soyisim"),
         "list": MessageLookupByLibrary.simpleMessage("Listele"),
@@ -69,6 +71,8 @@ class MessageLookup extends MessageLookupByLibrary {
         "login_password": MessageLookupByLibrary.simpleMessage("Şifre"),
         "login_user_name":
             MessageLookupByLibrary.simpleMessage("Kullanıcı adı"),
+        "login_with_email":
+            MessageLookupByLibrary.simpleMessage("E-posta ile Giriş"),
         "logout": MessageLookupByLibrary.simpleMessage("Çıkış Yap"),
         "logout_sure": MessageLookupByLibrary.simpleMessage(
             "Çıkış yapmak istediğinize emin misiniz?"),
@@ -103,6 +107,13 @@ class MessageLookup extends MessageLookupByLibrary {
         "no_changes_made":
             MessageLookupByLibrary.simpleMessage("Değişiklik yapılmadı"),
         "no_data": MessageLookupByLibrary.simpleMessage("Veri Yok"),
+        "only_numbers": MessageLookupByLibrary.simpleMessage(
+            "Sadece sayılar kullanılabilir"),
+        "otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu"),
+        "otp_length":
+            MessageLookupByLibrary.simpleMessage("OTP 6 haneli olmalıdır"),
+        "otp_sent_to":
+            MessageLookupByLibrary.simpleMessage("OTP kodu gönderildi"),
         "password_forgot":
             MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
         "password_max_length": MessageLookupByLibrary.simpleMessage(
@@ -114,16 +125,22 @@ class MessageLookup extends MessageLookupByLibrary {
         "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan"),
         "required_range":
             MessageLookupByLibrary.simpleMessage("Aralık gereklidir"),
+        "resend_otp_code":
+            MessageLookupByLibrary.simpleMessage("OTP Kodu Tekrar Gönder"),
         "role": MessageLookupByLibrary.simpleMessage("Rol"),
         "save": MessageLookupByLibrary.simpleMessage("Kaydet"),
         "screen_size_error":
             MessageLookupByLibrary.simpleMessage("Ekran boyutu çok küçük."),
+        "send_otp_code":
+            MessageLookupByLibrary.simpleMessage("OTP Kodu Gönder"),
         "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
         "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
         "unsaved_changes": MessageLookupByLibrary.simpleMessage(
             "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?"),
+        "verify_otp_code":
+            MessageLookupByLibrary.simpleMessage("OTP Kodu Doğrula"),
         "view_user":
             MessageLookupByLibrary.simpleMessage("Kullanıcı Görüntüle"),
         "warning": MessageLookupByLibrary.simpleMessage("Uyarı"),

@@ -32,6 +32,8 @@ void main() {
       '/forgot-password',
       '/login-otp',
       '/login-otp-verify',
+      '/authenticate/send-otp',
+      '/authenticate/verify-otp'
     ]);
   });
 }

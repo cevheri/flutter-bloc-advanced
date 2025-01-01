@@ -6,6 +6,8 @@ List<String> allowedPaths = [
   '/forgot-password',
   '/login-otp',
   '/login-otp-verify',
+  '/authenticate/send-otp',
+  '/authenticate/verify-otp'
 ];
 
 List<String> authPaths = [

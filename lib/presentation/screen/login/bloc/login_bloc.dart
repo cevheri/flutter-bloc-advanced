@@ -102,10 +102,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
         emit(LoginLoadedState(username: event.email, password: event.otpCode));
       } else {
-        throw BadRequestException("Geçersiz OTP Token");
+        throw BadRequestException("Invalid OTP Token");
       }
     } catch (e) {
-      emit(LoginErrorState(message: "OTP doğrulama hatası: ${e.toString()}"));
+      emit(LoginErrorState(message: "OTP validation error: ${e.toString()}"));
     }
   }
 }

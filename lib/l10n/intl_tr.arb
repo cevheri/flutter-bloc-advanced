@@ -64,5 +64,14 @@
   "login_button": "Giriş Yap",
   "loading": "Loading...",
   "email_send": "E-posta Gönder",
-  "translate_menu_title": "{translate, select, account{Hesabım}  userManagement{Kullanıcı Yönetimi} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  new_user{Yeni Kullanıcı Ekle}  list_user{Kullanıcılar} other{Diğer}}"
+  "translate_menu_title": "{translate, select, account{Hesabım}  userManagement{Kullanıcı Yönetimi} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  new_user{Yeni Kullanıcı Ekle}  list_user{Kullanıcılar} other{Diğer}}",
+  "login_with_email": "E-posta ile Giriş",
+  "send_otp_code": "OTP Kodu Gönder",
+  "invalid_email": "Geçersiz e-posta adresi",
+  "resend_otp_code": "OTP Kodu Tekrar Gönder",
+  "verify_otp_code": "OTP Kodu Doğrula",
+  "only_numbers": "Sadece sayılar kullanılabilir",
+  "otp_length": "OTP 6 haneli olmalıdır",
+  "otp_code": "OTP Kodu",
+  "otp_sent_to": "OTP kodu gönderildi"
 }

@@ -231,14 +231,19 @@ class OtpEmailScreen extends StatelessWidget {
         ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
-        listenWhen: (previous, current) => previous.status != current.status, // && current.loginMethod == LoginMethod.otp,
+        listenWhen: (previous, current) =>
+            previous.status != current.status || previous.isOtpSent != current.isOtpSent || previous.email != current.email,
         listener: (context, state) {
           debugPrint("BEGIN: otp email screen listener state: ${state.props}");
-          if (state.isOtpSent && state.status == LoginStatus.success) {
+          if (state.status == LoginStatus.success && state.isOtpSent == true && state.email != null) {
+            debugPrint("Navigating to verify screen with email: ${state.email}");
             AppRouter().push(
               context,
               '${ApplicationRoutesConstants.loginOtpVerify}/${state.email}',
-              args: state.email,
+            );
+          } else if (state.status == LoginStatus.failure) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text(S.of(context).failed)),
             );
           }
         },
@@ -351,9 +356,7 @@ class OtpVerifyScreen extends StatelessWidget {
           onPressed: () {
             if (_formKey.currentState?.saveAndValidate() ?? false) {
               final otpCode = _formKey.currentState!.value['otpCode'] as String;
-              context.read<LoginBloc>().add(
-                    VerifyOtpSubmitted(email: email, otpCode: otpCode),
-                  );
+              context.read<LoginBloc>().add(VerifyOtpSubmitted(email: email, otpCode: otpCode));
             }
           },
         );
