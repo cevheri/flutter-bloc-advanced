@@ -1,36 +1,14 @@
 import 'dart:io';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
+import 'package:flutter_bloc_advance/data/models/send_otp_request.dart';
+import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart';
 
 import '../http_utils.dart';
 import '../models/jwt_token.dart';
 import '../models/user_jwt.dart';
-
-@JsonSerializable()
-class SendOtpRequest {
-  final String email;
-
-  SendOtpRequest({required this.email});
-
-  Map<String, dynamic> toJson() => {"email": email};
-
-  static SendOtpRequest? fromJson(Map<String, dynamic> json) => JsonMapper.fromMap<SendOtpRequest>(json);
-}
-
-@JsonSerializable()
-class VerifyOtpRequest {
-  final String email;
-  final String otp;
-
-  VerifyOtpRequest({required this.email, required this.otp});
-
-  Map<String, dynamic> toJson() => {"email": email, "otp": otp};
-
-  static VerifyOtpRequest? fromJson(Map<String, dynamic> json) => JsonMapper.fromMap<VerifyOtpRequest>(json);
-}
 
 class LoginRepository {
   static final _log = AppLogger.getLogger("LoginRepository");
@@ -71,9 +49,12 @@ class LoginRepository {
 
   Future<void> sendOtp(SendOtpRequest request) async {
     _log.debug("BEGIN:sendOtp repository start email: {}", [request.email]);
+    if (request.email.isEmpty) {
+      throw BadRequestException("Invalid email");
+    }
     final headers = {"Content-Type": "application/json"};
     final response = await HttpUtils.postRequest<SendOtpRequest>("/authenticate/send-otp", request, headers: headers);
-    if(response.statusCode >= HttpStatus.badRequest){
+    if (response.statusCode >= HttpStatus.badRequest) {
       throw BadRequestException(response.body);
     }
     _log.debug("successful response: {}", [response.body]);
@@ -82,6 +63,14 @@ class LoginRepository {
 
   Future<JWTToken?> verifyOtp(VerifyOtpRequest request) async {
     _log.debug("BEGIN:verifyOtp repository start email: {}", [request.email]);
+    if (request.email.isEmpty || request.otp.isEmpty) {
+      throw BadRequestException("Invalid email or OTP");
+    }
+
+    if (request.otp.length != 6) {
+      throw BadRequestException("Invalid OTP");
+    }
+
     final headers = {"Content-Type": "application/json"};
     final response = await HttpUtils.postRequest<VerifyOtpRequest>("/authenticate/verify-otp", request, headers: headers);
     return JWTToken.fromJsonString(response.body);

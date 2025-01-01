@@ -6,12 +6,15 @@
 import 'dart:async' as _i3;
 
 import 'package:flutter_bloc_advance/data/models/jwt_token.dart' as _i4;
-import 'package:flutter_bloc_advance/data/models/menu.dart' as _i7;
+import 'package:flutter_bloc_advance/data/models/menu.dart' as _i9;
+import 'package:flutter_bloc_advance/data/models/send_otp_request.dart' as _i6;
 import 'package:flutter_bloc_advance/data/models/user_jwt.dart' as _i5;
+import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart'
+    as _i7;
 import 'package:flutter_bloc_advance/data/repository/login_repository.dart'
     as _i2;
 import 'package:flutter_bloc_advance/data/repository/menu_repository.dart'
-    as _i6;
+    as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -57,7 +60,7 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<void> sendOtp(_i2.SendOtpRequest? request) => (super.noSuchMethod(
+  _i3.Future<void> sendOtp(_i6.SendOtpRequest? request) => (super.noSuchMethod(
         Invocation.method(
           #sendOtp,
           [request],
@@ -67,7 +70,7 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
       ) as _i3.Future<void>);
 
   @override
-  _i3.Future<_i4.JWTToken?> verifyOtp(_i2.VerifyOtpRequest? request) =>
+  _i3.Future<_i4.JWTToken?> verifyOtp(_i7.VerifyOtpRequest? request) =>
       (super.noSuchMethod(
         Invocation.method(
           #verifyOtp,
@@ -80,17 +83,17 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
 /// A class which mocks [MenuRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockMenuRepository extends _i1.Mock implements _i6.MenuRepository {
+class MockMenuRepository extends _i1.Mock implements _i8.MenuRepository {
   MockMenuRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
-  _i3.Future<List<_i7.Menu>> list() => (super.noSuchMethod(
+  _i3.Future<List<_i9.Menu>> list() => (super.noSuchMethod(
         Invocation.method(
           #list,
           [],
         ),
-        returnValue: _i3.Future<List<_i7.Menu>>.value(<_i7.Menu>[]),
-      ) as _i3.Future<List<_i7.Menu>>);
+        returnValue: _i3.Future<List<_i9.Menu>>.value(<_i9.Menu>[]),
+      ) as _i3.Future<List<_i9.Menu>>);
 }

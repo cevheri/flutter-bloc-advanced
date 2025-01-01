@@ -5,6 +5,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
+import 'package:flutter_bloc_advance/data/models/send_otp_request.dart';
+import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 
 import '../../../../data/models/user_jwt.dart';
@@ -16,9 +18,11 @@ part 'login_state.dart';
 class LoginBloc extends Bloc<LoginEvent, LoginState> {
   static final _log = AppLogger.getLogger("LoginBloc");
   final LoginRepository _repository;
+  final AccountRepository _accountRepository;
 
-  LoginBloc({required LoginRepository repository})
+  LoginBloc({required LoginRepository repository, AccountRepository? accountRepository})
       : _repository = repository,
+        _accountRepository =  accountRepository ?? AccountRepository(),
         super(const LoginState()) {
     on<LoginFormSubmitted>(_onSubmit);
     on<TogglePasswordVisibility>((event, emit) => emit(state.copyWith(passwordVisible: !state.passwordVisible)));
@@ -26,6 +30,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<SendOtpRequested>(_onSendOtpRequested);
     on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted);
   }
+
+
 
   @override
   void onTransition(Transition<LoginEvent, LoginState> transition) {
@@ -50,7 +56,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         _log.debug("onSubmit save storage token: {}", [token.idToken]);
         await AppLocalStorage().save(StorageKeys.username.name, event.username);
         _log.debug("onSubmit save storage username: {}", [event.username]);
-        final user = await AccountRepository().getAccount();
+        final user = await _accountRepository.getAccount();
         await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
         _log.debug("onSubmit save storage roles: {}", [user.authorities]);
 
@@ -82,7 +88,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       emit(LoginOtpSentState(email: event.email));
       _log.debug("END: onSendOtpRequested SendOtpRequested event success: {}", [event.email]);
     } catch (e) {
-      emit(LoginErrorState(message: "OTP gönderme hatası: ${e.toString()}"));
+      emit(LoginErrorState(message: "Send OTP error: ${e.toString()}"));
       _log.error("END: onSendOtpRequested SendOtpRequested event error: {}", [e.toString()]);
     }
   }
@@ -97,7 +103,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         await AppLocalStorage().save(StorageKeys.jwtToken.name, token.idToken);
         await AppLocalStorage().save(StorageKeys.username.name, event.email);
 
-        final user = await AccountRepository().getAccount();
+        final user = await _accountRepository.getAccount();
         await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
 
         emit(LoginLoadedState(username: event.email, password: event.otpCode));
@@ -105,7 +111,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         throw BadRequestException("Invalid OTP Token");
       }
     } catch (e) {
-      emit(LoginErrorState(message: "OTP validation error: ${e.toString()}"));
+      emit(const LoginErrorState(message: "OTP validation error"));
     }
   }
 }
