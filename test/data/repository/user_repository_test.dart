@@ -15,7 +15,6 @@ void main() {
     await TestUtils().tearDownUnitTest();
   });
 
-
   group("User Repository getUsers", () {
     test("Given valid user when getUsers then return user list successfully", () async {
       TestUtils().setupAuthentication();
@@ -59,7 +58,6 @@ void main() {
       expect(() async => await UserRepository().retrieve(""), throwsA(isA<BadRequestException>()));
     });
   });
-
 
   group("User Repository getUserByLogin", () {
     test("Given valid login when getUserByLogin then return user successfully", () async {
