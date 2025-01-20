@@ -92,7 +92,6 @@ void main() {
     });
   });
 
-  //createUser
   group("User Repository createUser", () {
     test("Given valid user when createUser then return user successfully", () async {
       TestUtils().setupAuthentication();
@@ -131,7 +130,6 @@ void main() {
     });
   });
 
-  //listUser
   group("User Repository listUser", () {
     test("Given valid range when listUser then return user list successfully", () async {
       TestUtils().setupAuthentication();
@@ -160,7 +158,6 @@ void main() {
     });
   });
 
-  //FindUserByName Future<List<User>> findUserByName(int rangeStart, int rangeEnd, String name, String authority) async {
   group("User Repository findUserByName", () {
     test("Given valid range, name and authority when findUserByName then return user list successfully", () async {
       TestUtils().setupAuthentication();
@@ -175,7 +172,6 @@ void main() {
     });
   });
 
-  //updateUser
   group("User Repository updateUser", () {
     test("Given valid user when updateUser then return user successfully", () async {
       TestUtils().setupAuthentication();
@@ -208,7 +204,6 @@ void main() {
     });
   });
 
-  //deleteUser
   group("User Repository deleteUser", () {
     test("Given valid userId when deleteUser then return void successfully", () async {
       TestUtils().setupAuthentication();
