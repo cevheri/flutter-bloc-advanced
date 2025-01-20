@@ -1,7 +1,7 @@
 {
   "id": "user-1",
   "login": "admin",
-  "email": "admin@sekoya.tech",
+  "email": "admin@sample.tech",
   "firstName": "Admin",
   "lastName": "User",
   "activated": true,

@@ -27,7 +27,7 @@ void main() {
       expect(result, isA<User>());
       expect(result?.id, "user-2");
       expect(result?.login, "user");
-      expect(result?.email, "user@sekoya.tech");
+      expect(result?.email, "user@sample.tech");
       expect(result?.firstName, "User");
       expect(result?.lastName, "User");
       expect(result?.langKey, "en");
@@ -47,7 +47,7 @@ void main() {
       expect(result, isA<User>());
       expect(result?.id, "user-2");
       expect(result?.login, "user");
-      expect(result?.email, "user@sekoya.tech");
+      expect(result?.email, "user@sample.tech");
       expect(result?.firstName, "User");
       expect(result?.lastName, "User");
       expect(result?.langKey, "en");
@@ -107,7 +107,7 @@ void main() {
   group("AccountRepository Reset Password", () {
     test("Given valid mailAddress when resetPassword then return 200", () async {
       await TestUtils().setupAuthentication();
-      const mailAddress = "admin@sekoya.tech";
+      const mailAddress = "admin@sample.tech";
       final result = await AccountRepository().resetPassword(mailAddress);
       expect(result, lessThan(300));
     });

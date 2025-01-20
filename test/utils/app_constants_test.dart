@@ -16,11 +16,11 @@ void main() {
     test('appDescription should be', () {
       expect(AppConstants.appDescription, 'Flutter Template with BLOC and Clean Architecture');
     });
-    test('appAuthor should be sekoya.tech', () {
-      expect(AppConstants.appAuthor, 'sekoya.tech');
+    test('appAuthor should be sample.tech', () {
+      expect(AppConstants.appAuthor, 'sample.tech');
     });
     test('appAuthorEmail should be', () {
-      expect(AppConstants.appAuthorEmail, 'info@sekoya.tech');
+      expect(AppConstants.appAuthorEmail, 'info@sample.tech');
     });
   });
 

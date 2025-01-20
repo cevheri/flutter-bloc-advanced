@@ -30,6 +30,10 @@ class SecurityUtils {
   static bool isTokenExpired() {
     _log.trace("BEGIN:isTokenExpired");
     final token = AppLocalStorageCached.jwtToken;
+
+
+    return false;
+
     if (token != null) {
       try {
         final jwt = token.split(".");

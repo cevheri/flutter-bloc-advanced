@@ -42,7 +42,7 @@ void main() {
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");
       expect(result?.lastName, "User");
-      expect(result?.email, "admin@sekoya.tech");
+      expect(result?.email, "admin@sample.tech");
       expect(result?.activated, true);
       expect(result?.langKey, "en");
       expect(result?.createdBy, "system");
@@ -74,7 +74,7 @@ void main() {
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");
       expect(result?.lastName, "User");
-      expect(result?.email, "admin@sekoya.tech");
+      expect(result?.email, "admin@sample.tech");
       expect(result?.activated, true);
       expect(result?.langKey, "en");
       expect(result?.createdBy, "system");
@@ -107,7 +107,7 @@ void main() {
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");
       expect(result?.lastName, "User");
-      expect(result?.email, "admin@sekoya.tech");
+      expect(result?.email, "admin@sample.tech");
       expect(result?.activated, true);
       expect(result?.langKey, "en");
       expect(result?.createdBy, "system");
@@ -190,7 +190,7 @@ void main() {
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");
       expect(result?.lastName, "User");
-      expect(result?.email, "admin@sekoya.tech");
+      expect(result?.email, "admin@sample.tech");
       expect(result?.activated, true);
       expect(result?.langKey, "en");
       expect(result?.createdBy, "system");

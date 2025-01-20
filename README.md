@@ -93,7 +93,7 @@ ProfileConstants.isProduction = true;
 API URL
 
 ```text
-https://flutter-mock-api.sekoya.tech/api/v1 ....
+https://flutter-mock-api.sample.tech/api/v1 ....
 ```
 
 ---
