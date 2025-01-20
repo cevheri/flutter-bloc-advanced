@@ -15,13 +15,11 @@ void main() {
     await TestUtils().tearDownUnitTest();
   });
 
-  //getUsers
+
   group("User Repository getUsers", () {
     test("Given valid user when getUsers then return user list successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().list();
-      //             GET_admin_users_queryParams.json
-      // assets/mock/GET_admin_users_queryParams.json
       expect(result, isA<List<User>>());
       expect(result.length, 4);
     });
@@ -31,7 +29,6 @@ void main() {
     });
   });
 
-  //getUser
   group("User Repository getUser", () {
     test("Given valid userId when getUser then return user successfully", () async {
       TestUtils().setupAuthentication();
@@ -63,7 +60,7 @@ void main() {
     });
   });
 
-  //getUserByLogin
+
   group("User Repository getUserByLogin", () {
     test("Given valid login when getUserByLogin then return user successfully", () async {
       TestUtils().setupAuthentication();
