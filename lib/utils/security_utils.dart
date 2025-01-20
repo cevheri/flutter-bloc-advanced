@@ -31,7 +31,7 @@ class SecurityUtils {
     _log.trace("BEGIN:isTokenExpired");
     final token = AppLocalStorageCached.jwtToken;
 
-
+    //TODO activate your token expiration check
     return false;
 
     if (token != null) {
