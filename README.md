@@ -2,7 +2,7 @@
 
 * This project is an open-source template built with Flutter and BLOC architecture.
 * It comes with a range of features and lets you quickly get started by adding your own
-  screens, models, and BLOCs.
+  screens, models, and BLOCs. 
 * The template is designed to help you build scalable and maintainable applications with ease.
 * It includes public and private routes, user management, roles and permissions, dark and light
   themes, mock data or API data, API client, internationalization, access control with Flutter and
@@ -28,6 +28,7 @@
 ## Out-of-the-box Features
 
 - Public and Private Routes
+- 
 - Home Page
     - Private Pages
         - Admin Pages
@@ -35,12 +36,23 @@
     - Public Pages
         - Guest Pages
         - Access the public pages
-- User Management
+- Authenticate
     - Login
     - Register
     - Forgot Password
     - Update Profile
     - Change Password
+- One Time Password (OTP)
+    - Send OTP
+    - Verify OTP
+- User Management
+  - User Create
+  - User Update
+  - User Delete
+  - User List
+- Account 
+    - Get Account
+    - Update Account
 - Role-based Access Control
     - Admin Role
     - User Role
@@ -53,6 +65,16 @@
 ---
 
 ## Development Environment
+
+When you run the main_local.dart file, the app will use the development configuration settings. All requests will be made to the mock API.
+    
+```text
+ProfileConstants.isProduction = false;
+```
+
+```shell
+flutter run --target lib/main/main_local.dart
+```
 
 ### Login
 Login with username/password: admin/admin
@@ -221,9 +243,11 @@ To add new screens, models, and BLOCs, follow these steps:
 
 ## CI/CD with Github Actions
 
-- [Flutter CI/CD with Github Actions]()
+- [Flutter CI/CD with Github Actions](.github/workflows/build_and_test.yml)
 
-## Firebase
+## Firebase 
+
+Not Implemented Yet!!!
 
 ### How to Setup Firebase
 
@@ -248,7 +272,9 @@ To add new screens, models, and BLOCs, follow these steps:
 
 ## References
 
+- [Understanding Flutter BLoC: A Comprehensive Guide](https://cevheri.medium.com/understanding-flutter-bloc-a-comprehensive-guide-7100dabe3975)
 - https://flutter.dev/
 - https://bloclibrary.dev/
 - https://pub.dev/packages/flutter_bloc
 - https://pub.dev/packages/get
+- [How to deploy your docker image to cloud for free?](https://cevheri.medium.com/how-to-deploy-your-docker-image-to-cloud-for-free-6bd1c61d01ef)
