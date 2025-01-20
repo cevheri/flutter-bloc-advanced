@@ -1,4 +1,4 @@
-import 'dart:convert';
+//import 'dart:convert';
 
 import 'package:flutter_bloc_advance/configuration/allowed_paths.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
@@ -29,11 +29,11 @@ class SecurityUtils {
 
   static bool isTokenExpired() {
     _log.trace("BEGIN:isTokenExpired");
-    final token = AppLocalStorageCached.jwtToken;
 
     //TODO activate your token expiration check
     return false;
-
+/*
+    final token = AppLocalStorageCached.jwtToken;
     if (token != null) {
       try {
         final jwt = token.split(".");
@@ -68,6 +68,8 @@ class SecurityUtils {
     }
     _log.trace("END:isTokenExpired - token null");
     return true;
+
+ */
   }
 
   /// Check if the path is allowed
