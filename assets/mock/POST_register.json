@@ -1,4 +1,5 @@
 {
+
   "id": "user-2",
   "login": "user",
   "email": "user@sample.tech",
@@ -10,4 +11,5 @@
   "lastModifiedBy": "admin",
   "lastModifiedDate": "2024-01-04T06:02:47.757Z",
   "authorities": ["ROLE_USER"]
+
 }
