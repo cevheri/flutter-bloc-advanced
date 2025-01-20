@@ -92,8 +92,14 @@ ProfileConstants.isProduction = true;
 
 API URL
 
+Production API URLs like these:
+
 ```text
-https://flutter-mock-api.sample.tech/api/v1 ....
+https://mock-api.sample.tech/api/v1
+
+https://python-mock-api.sample.tech/api/v1
+
+https://java-mock-api.sample.tech/api/v1
 ```
 
 ---
@@ -141,10 +147,13 @@ flutter run dev environment
 - Run `flutter run -d chrome --target lib/main/main_prod.dart` for web prod environment
 
 ## Usage for local environment with mock data
-* Run `flutter run -d chrome --web-port 3000 --target lib/main/main_local.dart` for web dev environment
+
+* Run `flutter run -d chrome --web-port 3000 --target lib/main/main_local.dart` for web dev
+  environment
 * Open `http://localhost:3000` in your browser
 * Login with `admin` and `admin` for admin role
 * Login with `user` and `user` for user role
+
 ---
 
 ## How to Build
@@ -181,13 +190,14 @@ Following test should run
 
 Or 1 Thread
 
-- Run `flutter test --concurrency=1 --test-randomize-ordering-seed=random` 
+- Run `flutter test --concurrency=1 --test-randomize-ordering-seed=random`
 
 ---
 
 ## Code Quality Analysis with SonarQube
 
 GitHub Actions already implemented with SonarQube
+
 * You can create a secret for your repository ```SONAR_TOKEN```
 
 ---
