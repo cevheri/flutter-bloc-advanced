@@ -1,4 +1,5 @@
 [
+
   {
     "id": "user-1",
     "login": "admin",
@@ -11,11 +12,11 @@
     "createdDate": "2024-01-04T06:02:47.757Z",
     "lastModifiedBy": "admin",
     "lastModifiedDate": "2024-01-04T06:02:47.757Z",
-    "authorities": [
-      "ROLE_ADMIN", "ROLE_USER"
-    ]
+    "authorities": ["ROLE_ADMIN", "ROLE_USER"]
+
   },
   {
+
     "id": "user-2",
     "login": "new_user-2",
     "firstName": "Mock new user First Name",
@@ -27,11 +28,11 @@
     "createdDate": null,
     "lastModifiedBy": "admin",
     "lastModifiedDate": "2024-01-04T06:02:47.757Z",
-    "authorities": [
-      "ROLE_ADMIN"
-    ]
+    "authorities": ["ROLE_ADMIN"]
+
   },
   {
+
     "id": "user-3",
     "login": "new_user-3",
     "firstName": "Mock new user First Name",
@@ -43,11 +44,11 @@
     "createdDate": null,
     "lastModifiedBy": "admin",
     "lastModifiedDate": "2024-01-04T06:02:47.757Z",
-    "authorities": [
-      "ROLE_ADMIN"
-    ]
+    "authorities": ["ROLE_ADMIN"]
+
   },
   {
+
     "id": "user-4",
     "login": "new_user-4",
     "firstName": "Mock new user First Name",
@@ -59,8 +60,7 @@
     "createdDate": null,
     "lastModifiedBy": "admin",
     "lastModifiedDate": "2024-01-04T06:02:47.757Z",
-    "authorities": [
-      "ROLE_ADMIN"
-    ]
+    "authorities": ["ROLE_ADMIN"]
+
   }
 ]
