@@ -1,12 +1,12 @@
 # Advanced Flutter BLOC Template
 
 * This project is an open-source template built with Flutter and BLOC architecture.
-* It comes with a range of features and allows you to quickly get started by adding your own
+* It comes with a range of features and lets you quickly get started by adding your own
   screens, models, and BLOCs.
 * The template is designed to help you build scalable and maintainable applications with ease.
 * It includes public and private routes, user management, roles and permissions, dark and light
   themes, mock data or API data, API client, internationalization, access control with Flutter and
-  Firebase, and CI/CD with Github Actions.
+  Firebase, and CI/CD with GitHub Actions.
 * The template is suitable for building applications for Android, iOS, and the web.
 * It is easy to customize and extend the template to meet your specific requirements.
 * The template is well-documented and easy to use.
@@ -41,7 +41,7 @@
     - Forgot Password
     - Update Profile
     - Change Password
-- Role based Access Control
+- Role-based Access Control
     - Admin Role
     - User Role
 - Dark and Light Themes
@@ -54,9 +54,13 @@
 
 ## Development Environment
 
+### Login
+Login with username/password: admin/admin
+
+
 When you run the app in the development environment, the app will use the development configuration
 settings.
-API run on the mock data automatically.
+API runs on the mock data automatically.
 
 ```text
 ProfileConstants.isProduction = false;
