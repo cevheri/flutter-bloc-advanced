@@ -167,6 +167,7 @@ update environment!!!
 ### For MacOS
 ```shell
 brew tap leoafarias/fvm
+brew install fvm
 ```
 
 ### For Windows
