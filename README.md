@@ -154,6 +154,16 @@ dart analyze --fix
 
 ---
 
+## Use FVM
+
+[FVM Documentation](https://fvm.app/documentation/getting-started/installation)
+
+```shell
+fvm install 3.27.1
+fvm use 3.27.1
+```
+update environment!!!
+
 ## Install Dependencies
 
 ```bash
