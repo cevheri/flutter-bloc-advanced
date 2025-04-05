@@ -154,6 +154,33 @@ dart analyze --fix
 
 ---
 
+## Use FVM
+
+[FVM Documentation](https://fvm.app/documentation/getting-started/installation)
+
+```shell
+fvm install 3.27.1
+fvm use 3.27.1
+```
+update environment!!!
+
+### For MacOS
+```shell
+brew tap leoafarias/fvm
+brew install fvm
+```
+
+### For Windows
+```shell
+choco install fvm
+```
+
+### For Linux
+```shell
+brew tap leoafarias/fvm
+brew install fvm
+```
+
 ## Install Dependencies
 
 ```bash
