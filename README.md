@@ -1,5 +1,8 @@
 # Advanced Flutter BLOC Template
 
+[Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced)
+
+---
 * This project is an open-source template built with Flutter and BLOC architecture.
 * It comes with a range of features and lets you quickly get started by adding your own
   screens, models, and BLOCs. 
