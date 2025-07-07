@@ -4,13 +4,13 @@ publish_to: 'none'
 version: 0.13.1+1
 
 environment:
-  sdk: ^3.6.0
-  flutter: '3.27.1'
+  sdk: ^3.8.1
+  flutter: '3.32.5'
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
+  cupertino_icons:
   flutter_localizations:
     sdk: flutter
   flutter_bloc:
@@ -27,11 +27,10 @@ dependencies:
   expansion_tile_card:
   device_preview:
   getwidget:
-  flutter_form_builder: ^9.5.0
-  form_builder_validators: ^11.0.0
+  flutter_form_builder:
+  form_builder_validators:
   string_2_icon:
   intl_utils:
-  pattern_formatter:
   http_certificate_pinning:
   bloc_concurrency:
   modbus_client_tcp:
@@ -41,7 +40,7 @@ dependencies:
   reflectable:
   glob:
   shared_preferences:
-  logger: ^2.5.0
+  logger:
   get_storage:
 
 dev_dependencies:
