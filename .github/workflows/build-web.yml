@@ -24,7 +24,7 @@ jobs:
         run: flutter pub get
 
       - name: Build release project
-        run: flutter build web --base-href /flutter-bloc-advanced/
+        run: flutter build web --base-href /flutter-bloc-advanced/ --target lib/main/main_local.dart
 
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v4
