@@ -8,7 +8,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
-import 'package:string_2_icon/string_2_icon.dart';
+import 'package:flutter_bloc_advance/utils/icon_utils.dart';
 
 import 'drawer_bloc/drawer_bloc.dart';
 
@@ -115,7 +115,7 @@ class ApplicationDrawer extends StatelessWidget {
           // debugPrint("childMenus.isEmpty ");
           // if child menu is leaf, add click event
           return ListTile(
-            leading: Icon(String2Icon.getIconDataFromString(node.icon)),
+            leading: Icon(getIconFromString(node.icon)),
             title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
             onTap: () {
               // debugPrint("parent Menu: ${node.name}");
@@ -128,11 +128,11 @@ class ApplicationDrawer extends StatelessWidget {
           // debugPrint("childMenus.isNotEmpty : ${childMenus.toString()}");
           // if menu is not leaf, use ExpansionTile for child menus
           return ExpansionTile(
-            leading: Icon(String2Icon.getIconDataFromString(node.icon)),
+            leading: Icon(getIconFromString(node.icon)),
             title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
             children: childMenus.map((childMenu) {
               return ListTile(
-                leading: Icon(String2Icon.getIconDataFromString(childMenu.icon)),
+                leading: Icon(getIconFromString(childMenu.icon)),
                 title: Text(S.of(context).translate_menu_title(childMenu.name), style: Theme.of(context).textTheme.bodySmall),
                 onTap: () {
                   // debugPrint("child menu name: ${childMenu.name}");

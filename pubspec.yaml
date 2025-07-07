@@ -29,7 +29,6 @@ dependencies:
   getwidget:
   flutter_form_builder:
   form_builder_validators:
-  string_2_icon:
   intl_utils:
   http_certificate_pinning:
   bloc_concurrency:
@@ -61,6 +60,9 @@ flutter_secure_storage:
 
 flutter_intl:
   enabled: true
+  template-arb-file: lib/l10n/intl_en.arb
+  output-localization-file: l10n.dart
+  output-class: S
 
 flutter:
   uses-material-design: true
