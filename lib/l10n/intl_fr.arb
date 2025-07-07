@@ -1,0 +1,22 @@
+{
+  "@@locale": "fr",
+  "locale": "fr",
+  "title": "Application de gestion des tâches",
+  "homeScreenTitle": "Tâches",
+  "loginScreenTitle": "Connexion",
+  "settingsScreenTitle": "Paramètres",
+  "accountScreenTitle": "Compte",
+  "tasksScreenTitle": "Tâches",
+  "taskSaveScreenTitle": "Enregistrer une tâche",
+  "drawerMenuHome": "Accueil",
+  "drawerSettingsTitle": "Paramètres",
+  "drawerLogoutTitle": "Déconnexion",
+  "drawerTasks": "Tâches",
+  "pageSettingsTitle": "",
+  "firstName": "",
+  "taskPrice": "",
+  "taskName" : "",
+  "save": "",
+  "taskSaveScreenTitle": "Task Save"
+
+}
