@@ -58,6 +58,8 @@ class HttpUtils {
 
   static final _customHttpHeaders = <String, String>{};
 
+  static const errorHeader = "error";
+
   /// Add custom http headers when you need to override the default ones
   static void addCustomHttpHeader(String key, String value) {
     _log.debug("BEGIN: Adding custom headers {} : {}", [key, value]);
