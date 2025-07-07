@@ -73,5 +73,9 @@
   "only_numbers": "Sadece sayılar kullanılabilir",
   "otp_length": "OTP 6 haneli olmalıdır",
   "otp_code": "OTP Kodu",
-  "otp_sent_to": "OTP kodu gönderildi"
+  "otp_sent_to": "OTP kodu gönderildi",
+  "taskSaveScreenTitle": "Görev Kaydet",
+  "taskName": "Görev Adı",
+  "taskPrice": "Görev Fiyatı"
+
 }

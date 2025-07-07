@@ -811,6 +811,36 @@ class S {
       args: [],
     );
   }
+
+  /// `Task Save`
+  String get taskSaveScreenTitle {
+    return Intl.message(
+      'Task Save',
+      name: 'taskSaveScreenTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Task Name`
+  String get taskName {
+    return Intl.message(
+      'Task Name',
+      name: 'taskName',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Task Price`
+  String get taskPrice {
+    return Intl.message(
+      'Task Price',
+      name: 'taskPrice',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
@@ -819,6 +849,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
   List<Locale> get supportedLocales {
     return const <Locale>[
       Locale.fromSubtags(languageCode: 'en'),
+      Locale.fromSubtags(languageCode: 'fr'),
       Locale.fromSubtags(languageCode: 'tr'),
     ];
   }

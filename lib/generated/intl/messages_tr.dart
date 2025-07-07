@@ -135,6 +135,10 @@ class MessageLookup extends MessageLookupByLibrary {
             MessageLookupByLibrary.simpleMessage("OTP Kodu Gönder"),
         "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
         "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
+        "taskName": MessageLookupByLibrary.simpleMessage("Görev Adı"),
+        "taskPrice": MessageLookupByLibrary.simpleMessage("Görev Fiyatı"),
+        "taskSaveScreenTitle":
+            MessageLookupByLibrary.simpleMessage("Görev Kaydet"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
         "unsaved_changes": MessageLookupByLibrary.simpleMessage(

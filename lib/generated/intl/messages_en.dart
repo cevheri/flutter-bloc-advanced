@@ -133,6 +133,10 @@ class MessageLookup extends MessageLookupByLibrary {
         "send_otp_code": MessageLookupByLibrary.simpleMessage("Send OTP Code"),
         "settings": MessageLookupByLibrary.simpleMessage("Settings"),
         "success": MessageLookupByLibrary.simpleMessage("Success"),
+        "taskName": MessageLookupByLibrary.simpleMessage("Task Name"),
+        "taskPrice": MessageLookupByLibrary.simpleMessage("Task Price"),
+        "taskSaveScreenTitle":
+            MessageLookupByLibrary.simpleMessage("Task Save"),
         "translate_menu_title": m0,
         "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
         "unsaved_changes": MessageLookupByLibrary.simpleMessage(
