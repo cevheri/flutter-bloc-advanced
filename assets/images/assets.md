@@ -1,0 +1,1 @@
+# Flutter image assets
