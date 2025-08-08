@@ -34,7 +34,7 @@ class DrawerState extends Equatable {
   }
 
   @override
-  List<Object> get props => [status, menus, isLogout];
+  List<Object?> get props => [status, menus, isLogout, language, theme];
 }
 
 //TODO add default language and theme

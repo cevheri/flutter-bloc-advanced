@@ -37,6 +37,8 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.loading));
     try {
       await AppLocalStorage().save(StorageKeys.theme.name, event.theme.name);
+      // update in-memory cache immediately to avoid stale reads
+      AppLocalStorageCached.theme = event.theme.name;
       emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.success));
       _log.debug("END:onChangeTheme ChangeThemeEvent event success: {}", [event.theme]);
     } catch (e) {
@@ -50,6 +52,8 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     emit(state.copyWith(language: event.language, status: DrawerStateStatus.loading));
     try {
       await AppLocalStorage().save(StorageKeys.language.name, event.language);
+      // update in-memory cache immediately
+      AppLocalStorageCached.language = event.language;
       emit(state.copyWith(language: event.language, status: DrawerStateStatus.success));
 
       await S.load(Locale(event.language));
@@ -78,7 +82,8 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
 
   FutureOr<void> _loadMenus(LoadMenus event, Emitter<DrawerState> emit) async {
     _log.debug("BEGIN: loadMenus LoadMenus event: {}", []);
-    emit(state.copyWith(menus: [], status: DrawerStateStatus.loading, language: event.language, theme: event.theme));
+    // Keep language/theme unchanged during loading to avoid unexpected state diffs in tests
+    emit(state.copyWith(menus: [], status: DrawerStateStatus.loading));
     try {
       if (MenuListCache.menus.isNotEmpty) {
         emit(state.copyWith(menus: MenuListCache.menus, status: DrawerStateStatus.success));
@@ -91,10 +96,16 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
         return;
       }
       MenuListCache.menus = menus;
-      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success));
+      // Apply language and theme when loading is complete
+      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success, language: event.language, theme: event.theme));
       _log.debug("END:loadMenus LoadMenus event success: {}", []);
     } catch (e) {
-      emit(state.copyWith(menus: [], status: DrawerStateStatus.error));
+      emit(state.copyWith(
+        menus: [],
+        status: DrawerStateStatus.error,
+        language: event.language,
+        theme: event.theme,
+      ));
       _log.error("END:loadMenus LoadMenus event error: {}", [e.toString()]);
     }
   }

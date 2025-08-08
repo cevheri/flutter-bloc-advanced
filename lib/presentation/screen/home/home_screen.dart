@@ -6,8 +6,6 @@ import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 import 'package:flutter_bloc_advance/utils/app_constants.dart';
 
-import '../../../data/repository/login_repository.dart';
-import '../../../data/repository/menu_repository.dart';
 import '../../common_blocs/account/account.dart';
 import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../../common_widgets/drawer/drawer_widget.dart';
@@ -106,18 +104,16 @@ class HomeScreen extends StatelessWidget {
 
   Widget _buildDrawer(BuildContext context) {
     debugPrint("HomeScreen _buildDrawer : init-theme ${AppLocalStorageCached.theme}");
-    AdaptiveThemeMode initialAppThemeType;
-    if (AppLocalStorageCached.theme == 'light') {
-      initialAppThemeType = AdaptiveThemeMode.light;
-    } else {
-      initialAppThemeType = AdaptiveThemeMode.dark;
+    // Reuse existing DrawerBloc from app-level provider to avoid multiple instances
+    final drawerBloc = context.read<DrawerBloc>();
+    // Ensure menus are loaded once if empty
+    if (drawerBloc.state.menus.isEmpty) {
+      final initialTheme = (AppLocalStorageCached.theme == 'light')
+          ? AdaptiveThemeMode.light
+          : AdaptiveThemeMode.dark;
+      final initialLanguage = AppLocalStorageCached.language ?? 'en';
+      drawerBloc.add(LoadMenus(language: initialLanguage, theme: initialTheme));
     }
-    final initialAppLanguage = AppLocalStorageCached.language ?? 'en';
-    return BlocProvider<DrawerBloc>(
-      create: (context) =>
-          DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())
-            ..add(LoadMenus(language: initialAppLanguage, theme: initialAppThemeType)),
-      child: const ApplicationDrawer(),
-    );
+    return const ApplicationDrawer();
   }
 }

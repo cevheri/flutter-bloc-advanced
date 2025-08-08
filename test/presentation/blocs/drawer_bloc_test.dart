@@ -82,8 +82,18 @@ void main() {
       final output = Future.value(input);
       const event = LoadMenus(language: "en", theme: AdaptiveThemeMode.light);
       const loadingState = DrawerState(menus: [], status: DrawerStateStatus.loading);
-      const successState = DrawerState(menus: input, status: DrawerStateStatus.success);
-      const failureState = DrawerState(menus: [], status: DrawerStateStatus.error);
+      const successState = DrawerState(
+        menus: input,
+        status: DrawerStateStatus.success,
+        language: 'en',
+        theme: AdaptiveThemeMode.light,
+      );
+      const failureState = DrawerState(
+        menus: [],
+        status: DrawerStateStatus.error,
+        language: 'en',
+        theme: AdaptiveThemeMode.light,
+      );
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, success] when LoadMenus is added",
         setUp: () {

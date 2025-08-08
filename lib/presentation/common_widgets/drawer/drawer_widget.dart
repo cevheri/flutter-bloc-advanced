@@ -64,7 +64,7 @@ class ApplicationDrawer extends StatelessWidget {
                         AdaptiveTheme.of(context).setLight();
                       }
                       Scaffold.of(context).closeDrawer();
-                      AppRouter().push(context, ApplicationRoutesConstants.home);
+                       // Stay on the same route; theme change rebuilds automatically
                     },
                   ),
                   SwitchListTile(
@@ -77,7 +77,7 @@ class ApplicationDrawer extends StatelessWidget {
                     onChanged: (value) {
                       final newLang = value ? 'en' : 'tr';
                       context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
-                      AppRouter().push(context, ApplicationRoutesConstants.home);
+                       // Stay on the same route; localization builder will rebuild
                     },
                   ),
                   _buildLogoutButton(context),
