@@ -33,13 +33,12 @@ class MockCityRepository extends _i1.Mock implements _i2.CityRepository {
   }
 
   @override
-  _i3.Future<_i4.City?> create(_i4.City? city) => (super.noSuchMethod(
-        Invocation.method(
-          #create,
-          [city],
-        ),
-        returnValue: _i3.Future<_i4.City?>.value(),
-      ) as _i3.Future<_i4.City?>);
+  _i3.Future<_i4.City?> create(_i4.City? city) =>
+      (super.noSuchMethod(
+            Invocation.method(#create, [city]),
+            returnValue: _i3.Future<_i4.City?>.value(),
+          )
+          as _i3.Future<_i4.City?>);
 
   @override
   _i3.Future<List<_i4.City?>> list({
@@ -48,34 +47,29 @@ class MockCityRepository extends _i1.Mock implements _i2.CityRepository {
     List<String>? sort = const ['id,desc'],
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #list,
-          [],
-          {
-            #page: page,
-            #size: size,
-            #sort: sort,
-          },
-        ),
-        returnValue: _i3.Future<List<_i4.City?>>.value(<_i4.City?>[]),
-      ) as _i3.Future<List<_i4.City?>>);
+            Invocation.method(#list, [], {
+              #page: page,
+              #size: size,
+              #sort: sort,
+            }),
+            returnValue: _i3.Future<List<_i4.City?>>.value(<_i4.City?>[]),
+          )
+          as _i3.Future<List<_i4.City?>>);
 
   @override
-  _i3.Future<_i4.City?> retrieve(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #retrieve,
-          [id],
-        ),
-        returnValue: _i3.Future<_i4.City?>.value(),
-      ) as _i3.Future<_i4.City?>);
+  _i3.Future<_i4.City?> retrieve(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i3.Future<_i4.City?>.value(),
+          )
+          as _i3.Future<_i4.City?>);
 
   @override
-  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #delete,
-          [id],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> delete(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#delete, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

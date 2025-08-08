@@ -8,19 +8,10 @@ class ForgotPasswordState extends Equatable {
   final String? email;
   final ForgotPasswordStatus status;
 
-  const ForgotPasswordState({
-    this.email,
-    this.status = ForgotPasswordStatus.initial,
-  });
+  const ForgotPasswordState({this.email, this.status = ForgotPasswordStatus.initial});
 
-  ForgotPasswordState copyWith({
-    String? email,
-    ForgotPasswordStatus? status,
-  }) {
-    return ForgotPasswordState(
-      email: email ?? this.email,
-      status: status ?? this.status,
-    );
+  ForgotPasswordState copyWith({String? email, ForgotPasswordStatus? status}) {
+    return ForgotPasswordState(email: email ?? this.email, status: status ?? this.status);
   }
 
   @override

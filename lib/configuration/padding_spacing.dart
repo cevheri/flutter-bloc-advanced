@@ -27,8 +27,10 @@ class Spacing {
   static double widthPercentage90(BuildContext context) => MediaQuery.of(context).size.width * 0.9;
   static double widthPercentage100(BuildContext context) => MediaQuery.of(context).size.width;
 
-  static double heightPercentage(BuildContext context, double percentage) => MediaQuery.of(context).size.height * percentage;
-  static double widthPercentage(BuildContext context, double percentage) => MediaQuery.of(context).size.width * percentage;
+  static double heightPercentage(BuildContext context, double percentage) =>
+      MediaQuery.of(context).size.height * percentage;
+  static double widthPercentage(BuildContext context, double percentage) =>
+      MediaQuery.of(context).size.width * percentage;
 
   static const double formMaxWidthSmall = 200;
   static const double formMaxWidthMedium = 400;

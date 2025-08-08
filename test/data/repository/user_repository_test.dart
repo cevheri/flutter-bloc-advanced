@@ -124,7 +124,10 @@ void main() {
     test("Given null username when createUser then return user fail", () async {
       TestUtils().setupAuthentication();
 
-      expect(() async => await UserRepository().create(const User(login: "admin")), throwsA(isA<BadRequestException>()));
+      expect(
+        () async => await UserRepository().create(const User(login: "admin")),
+        throwsA(isA<BadRequestException>()),
+      );
     });
   });
 
@@ -151,9 +154,15 @@ void main() {
       expect(result.length, 4);
     });
 
-    test("Given valid range and authority without accessToken when findUserByAuthority then return user list fail", () async {
-      expect(() async => await UserRepository().listByAuthority(0, 10, "ROLE_ADMIN"), throwsA(isA<UnauthorizedException>()));
-    });
+    test(
+      "Given valid range and authority without accessToken when findUserByAuthority then return user list fail",
+      () async {
+        expect(
+          () async => await UserRepository().listByAuthority(0, 10, "ROLE_ADMIN"),
+          throwsA(isA<UnauthorizedException>()),
+        );
+      },
+    );
   });
 
   group("User Repository findUserByName", () {
@@ -165,9 +174,15 @@ void main() {
       expect(result.length, 4);
     });
 
-    test("Given valid range, name and authority without accessToken when findUserByName then return user list fail", () async {
-      expect(() async => await UserRepository().listByNameAndRole(0, 10, "admin", "ROLE_ADMIN"), throwsA(isA<UnauthorizedException>()));
-    });
+    test(
+      "Given valid range, name and authority without accessToken when findUserByName then return user list fail",
+      () async {
+        expect(
+          () async => await UserRepository().listByNameAndRole(0, 10, "admin", "ROLE_ADMIN"),
+          throwsA(isA<UnauthorizedException>()),
+        );
+      },
+    );
   });
 
   group("User Repository updateUser", () {

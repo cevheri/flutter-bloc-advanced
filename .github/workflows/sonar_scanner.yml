@@ -3,18 +3,16 @@ on:
   push:
     branches:
       - sonar
-      - main
   pull_request:
     branches:
       - sonar
-      - main
     types: [ opened, synchronize, reopened ]
 jobs:
   build:
     name: Build and analyze
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/cirruslabs/flutter:3.27.1
+      image: ghcr.io/cirruslabs/flutter:3.32.8
     steps:
       - uses: actions/checkout@v4
         with:

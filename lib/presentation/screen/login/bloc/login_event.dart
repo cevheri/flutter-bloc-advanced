@@ -21,7 +21,7 @@ class LoginFormSubmitted extends LoginEvent {
   List<Object?> get props => [username, password];
 }
 
-enum LoginMethod {otp, password}
+enum LoginMethod { otp, password }
 
 class ChangeLoginMethod extends LoginEvent {
   final LoginMethod method;
@@ -50,5 +50,3 @@ class VerifyOtpSubmitted extends LoginEvent {
   @override
   List<Object?> get props => [email, otpCode];
 }
-
-

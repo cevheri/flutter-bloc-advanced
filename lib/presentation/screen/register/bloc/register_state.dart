@@ -6,19 +6,10 @@ class RegisterState extends Equatable {
   final User? data;
   final RegisterStatus status;
 
-  const RegisterState({
-    this.data,
-    this.status = RegisterStatus.initial,
-  });
+  const RegisterState({this.data, this.status = RegisterStatus.initial});
 
-  RegisterState copyWith({
-    User? data,
-    RegisterStatus? status,
-  }) {
-    return RegisterState(
-      data: data ?? this.data,
-      status: status ?? this.status,
-    );
+  RegisterState copyWith({User? data, RegisterStatus? status}) {
+    return RegisterState(data: data ?? this.data, status: status ?? this.status);
   }
 
   @override

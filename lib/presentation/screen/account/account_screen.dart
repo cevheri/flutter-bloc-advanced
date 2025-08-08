@@ -99,18 +99,19 @@ class AccountScreen extends StatelessWidget {
       final formData = _formKey.currentState!.value;
       final user = _createUserFromData(formData, state.data?.id);
       context.read<AccountBloc>().add(AccountSubmitEvent(user));
-     _formKey.currentState?.save();
+      _formKey.currentState?.save();
       context.read<AccountBloc>().add(const AccountFetchEvent());
     }
   }
 
   User _createUserFromData(Map<String, dynamic> formData, String? userId) => User(
-      id: userId,
-      login: formData['login'],
-      firstName: formData['firstName'],
-      lastName: formData['lastName'],
-      email: formData['email'],
-      activated: formData['activated']);
+    id: userId,
+    login: formData['login'],
+    firstName: formData['firstName'],
+    lastName: formData['lastName'],
+    email: formData['email'],
+    activated: formData['activated'],
+  );
 
   void _handleStateChanges(BuildContext context, AccountState state) {
     const duration = Duration(milliseconds: 1000);
@@ -132,9 +133,7 @@ class AccountScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: duration),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {

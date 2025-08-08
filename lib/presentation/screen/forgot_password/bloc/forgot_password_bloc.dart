@@ -16,8 +16,8 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   final AccountRepository _repository;
 
   ForgotPasswordBloc({required AccountRepository repository})
-      : _repository = repository,
-        super(const ForgotPasswordState(status: ForgotPasswordStatus.initial)) {
+    : _repository = repository,
+      super(const ForgotPasswordState(status: ForgotPasswordStatus.initial)) {
     on<ForgotPasswordEmailChanged>(_onSubmit);
   }
 

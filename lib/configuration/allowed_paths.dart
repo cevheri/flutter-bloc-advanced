@@ -7,11 +7,7 @@ List<String> allowedPaths = [
   '/login-otp',
   '/login-otp-verify',
   '/authenticate/send-otp',
-  '/authenticate/verify-otp'
+  '/authenticate/verify-otp',
 ];
 
-List<String> authPaths = [
-  '/authenticate',
-  '/login-otp',
-  '/login-otp-verify',
-];
+List<String> authPaths = ['/authenticate', '/login-otp', '/login-otp-verify'];

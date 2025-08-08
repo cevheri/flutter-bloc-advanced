@@ -31,10 +31,7 @@ class ErrorScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Error: ${error?.message}'),
-            ElevatedButton(
-              onPressed: () => context.pop(),
-              child: const Text('Go back'),
-            ),
+            ElevatedButton(onPressed: () => context.pop(), child: const Text('Go back')),
           ],
         ),
       ),
@@ -82,7 +79,9 @@ class AppGoRouterConfig {
         }
       }
       // check : when running in production mode and jwtToken is expired then redirect to login page
-      if (ProfileConstants.isProduction && SecurityUtils.isTokenExpired() && state.uri.toString() != ApplicationRoutesConstants.login) {
+      if (ProfileConstants.isProduction &&
+          SecurityUtils.isTokenExpired() &&
+          state.uri.toString() != ApplicationRoutesConstants.login) {
         _log.debug("END: redirect - jwtToken is expired");
         return ApplicationRoutesConstants.login;
       }

@@ -27,7 +27,9 @@ void main() {
 
   // main application unittest end-to-end
   group("HomeScreen Test Most critical APP UnitTest ***** ", () {
-    testWidgets("Given valid AccessToken and lightTheme when open homeScreen then load AppBar successfully", (tester) async {
+    testWidgets("Given valid AccessToken and lightTheme when open homeScreen then load AppBar successfully", (
+      tester,
+    ) async {
       TestUtils().setupAuthentication();
 
       // Given:
@@ -156,7 +158,8 @@ void main() {
     });
 
     testWidgets("Given an invalid AccessToken when HomeScreen is opened then navigate to loginScreen", (tester) async {
-      AdaptiveTheme getWidget({AdaptiveThemeMode mode = AdaptiveThemeMode.dark}) => App(language: language, initialTheme: mode).buildHomeApp();
+      AdaptiveTheme getWidget({AdaptiveThemeMode mode = AdaptiveThemeMode.dark}) =>
+          App(language: language, initialTheme: mode).buildHomeApp();
 
       // Given:
       await tester.pumpWidget(getWidget(mode: darkTheme));

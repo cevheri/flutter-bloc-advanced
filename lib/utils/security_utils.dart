@@ -32,7 +32,7 @@ class SecurityUtils {
 
     //TODO activate your token expiration check
     return false;
-/*
+    /*
     final token = AppLocalStorageCached.jwtToken;
     if (token != null) {
       try {

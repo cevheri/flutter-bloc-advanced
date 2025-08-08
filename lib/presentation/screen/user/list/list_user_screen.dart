@@ -23,20 +23,14 @@ class ListUserScreen extends StatelessWidget {
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
-      child: Scaffold(
-        appBar: _buildAppBar(context),
-        body: const UserListView(),
-      ),
+      child: Scaffold(appBar: _buildAppBar(context), body: const UserListView()),
     );
   }
 
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).list_user),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => context.go('/'),
-      ),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/')),
     );
   }
 
@@ -72,9 +66,7 @@ class UserListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: LayoutBuilder(
-        builder: (context, constraints) => _buildResponsiveLayout(context, constraints),
-      ),
+      child: LayoutBuilder(builder: (context, constraints) => _buildResponsiveLayout(context, constraints)),
     );
   }
 
@@ -96,11 +88,7 @@ class UserListContent extends StatelessWidget {
   final double maxWidth;
   final _formKey = GlobalKey<FormBuilderState>();
 
-  UserListContent({
-    super.key,
-    required this.horizontalPadding,
-    required this.maxWidth,
-  });
+  UserListContent({super.key, required this.horizontalPadding, required this.maxWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -127,10 +115,7 @@ class UserListContent extends StatelessWidget {
 class UserSearchSection extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
-  const UserSearchSection({
-    super.key,
-    required this.formKey,
-  });
+  const UserSearchSection({super.key, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -223,10 +208,7 @@ class SearchNameField extends StatelessWidget {
 class SearchActionButtons extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
-  const SearchActionButtons({
-    super.key,
-    required this.formKey,
-  });
+  const SearchActionButtons({super.key, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -252,22 +234,20 @@ class SearchActionButtons extends StatelessWidget {
   ButtonStyle _buttonStyle() {
     return ElevatedButton.styleFrom(
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(5),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
     );
   }
 
   void _handleSearch(BuildContext context) {
     if (formKey.currentState!.saveAndValidate()) {
       context.read<UserBloc>().add(
-            UserSearchEvent(
-              page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
-              size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-              authorities: formKey.currentState!.fields['authorities']?.value,
-              name: formKey.currentState!.fields['name']?.value,
-            ),
-          );
+        UserSearchEvent(
+          page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
+          size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+          authorities: formKey.currentState!.fields['authorities']?.value,
+          name: formKey.currentState!.fields['name']?.value,
+        ),
+      );
     }
   }
 }
@@ -314,12 +294,7 @@ class TableColumnHeader extends StatelessWidget {
   final String title;
   final TextAlign alignment;
 
-  const TableColumnHeader({
-    super.key,
-    required this.flex,
-    required this.title,
-    this.alignment = TextAlign.left,
-  });
+  const TableColumnHeader({super.key, required this.flex, required this.title, this.alignment = TextAlign.left});
 
   @override
   Widget build(BuildContext context) {
@@ -340,10 +315,7 @@ class TableColumnHeader extends StatelessWidget {
 class UserTableContent extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
-  const UserTableContent({
-    super.key,
-    required this.formKey,
-  });
+  const UserTableContent({super.key, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -354,11 +326,7 @@ class UserTableContent extends StatelessWidget {
             itemCount: state.userList?.length,
             shrinkWrap: true,
             physics: const ClampingScrollPhysics(),
-            itemBuilder: (context, index) => UserTableRow(
-              user: state.userList?[index],
-              index: index,
-              formKey: formKey,
-            ),
+            itemBuilder: (context, index) => UserTableRow(user: state.userList?[index], index: index, formKey: formKey),
           );
         }
         return const SizedBox.shrink();
@@ -375,12 +343,7 @@ class UserTableRow extends StatelessWidget {
   final int index;
   final GlobalKey<FormBuilderState> formKey;
 
-  const UserTableRow({
-    super.key,
-    required this.user,
-    required this.index,
-    required this.formKey,
-  });
+  const UserTableRow({super.key, required this.user, required this.index, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -417,13 +380,9 @@ class UserTableRow extends StatelessWidget {
     final isEvenRow = index % 2 == 0;
 
     if (isDarkMode) {
-      return BoxDecoration(
-        color: isEvenRow ? Colors.black26 : null,
-      );
+      return BoxDecoration(color: isEvenRow ? Colors.black26 : null);
     }
-    return BoxDecoration(
-      color: isEvenRow ? Colors.blueGrey[50] : null,
-    );
+    return BoxDecoration(color: isEvenRow ? Colors.blueGrey[50] : null);
   }
 }
 
@@ -435,12 +394,7 @@ class UserTableCell extends StatelessWidget {
   final String text;
   final TextAlign alignment;
 
-  const UserTableCell({
-    super.key,
-    required this.flex,
-    required this.text,
-    this.alignment = TextAlign.left,
-  });
+  const UserTableCell({super.key, required this.flex, required this.text, this.alignment = TextAlign.left});
 
   @override
   Widget build(BuildContext context) {
@@ -459,12 +413,7 @@ class UserActionButtons extends StatelessWidget {
   final String? username;
   final GlobalKey<FormBuilderState> formKey;
 
-  const UserActionButtons({
-    super.key,
-    this.userId,
-    this.username,
-    required this.formKey,
-  });
+  const UserActionButtons({super.key, this.userId, this.username, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -498,20 +447,13 @@ class UserActionButtons extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required double size,
-  }) {
+  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed, required double size}) {
     return SizedBox(
       width: size,
       height: size,
       child: IconButton(
         padding: EdgeInsets.zero,
-        constraints: BoxConstraints(
-          maxWidth: size,
-          maxHeight: size,
-        ),
+        constraints: BoxConstraints(maxWidth: size, maxHeight: size),
         icon: Icon(icon, size: 16),
         onPressed: onPressed,
       ),
@@ -533,23 +475,21 @@ class UserActionButtons extends StatelessWidget {
         title: Text(S.of(context).warning),
         content: Text(S.of(context).delete_confirmation),
         actions: [
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(S.of(context).no)),
           TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(S.of(context).no),
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<UserBloc>().add(UserDeleteEvent(userId ?? username ?? ""));
+              late final StreamSubscription<UserState> subscription;
+              subscription = context.read<UserBloc>().stream.listen((state) {
+                if (state.status == UserStatus.deleteSuccess && context.mounted) {
+                  _refreshList(context);
+                  subscription.cancel();
+                }
+              });
+            },
+            child: Text(S.of(context).yes),
           ),
-          TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-                context.read<UserBloc>().add(UserDeleteEvent(userId ?? username ?? ""));
-                late final StreamSubscription<UserState> subscription;
-                subscription = context.read<UserBloc>().stream.listen((state) {
-                  if (state.status == UserStatus.deleteSuccess && context.mounted) {
-                    _refreshList(context);
-                    subscription.cancel();
-                  }
-                });
-              },
-              child: Text(S.of(context).yes)),
         ],
       ),
     );
@@ -558,13 +498,13 @@ class UserActionButtons extends StatelessWidget {
   void _refreshList(BuildContext context) {
     //if (formKey.currentState?.saveAndValidate() ?? false) {
     context.read<UserBloc>().add(
-          UserSearchEvent(
-            page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
-            size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-            authorities: formKey.currentState!.fields['authorities']?.value,
-            name: formKey.currentState!.fields['name']?.value,
-          ),
-        );
+      UserSearchEvent(
+        page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
+        size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+        authorities: formKey.currentState!.fields['authorities']?.value,
+        name: formKey.currentState!.fields['name']?.value,
+      ),
+    );
     // }
   }
 }

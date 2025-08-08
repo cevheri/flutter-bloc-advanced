@@ -73,17 +73,32 @@ class NavigatorStrategy implements RouterStrategy {
   }
 
   @override
-  Future<void> push(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> push(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     Navigator.of(context).pushNamed(routeName, arguments: args);
   }
 
   @override
-  Future<void> pushRemoveUntil(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushRemoveUntil(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
   }
 
   @override
-  Future<void> pushReplacement(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushReplacement(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     Navigator.of(context).pushReplacementNamed(routeName, arguments: args);
   }
 }
@@ -97,7 +112,12 @@ class GoRouterStrategy implements RouterStrategy {
   }
 
   @override
-  Future<void> push(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> push(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     if (args != null && kwargs.isNotEmpty) {
       Map<String, String> pathParameters = args as Map<String, String>;
       go_router.GoRouter.of(context).goNamed(routeName, pathParameters: pathParameters, queryParameters: kwargs);
@@ -109,7 +129,12 @@ class GoRouterStrategy implements RouterStrategy {
   }
 
   @override
-  Future<void> pushRemoveUntil(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushRemoveUntil(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     if (args != null && kwargs.isNotEmpty) {
       Map<String, String> pathParameters = args as Map<String, String>;
       go_router.GoRouter.of(context).goNamed(routeName, pathParameters: pathParameters, queryParameters: kwargs);
@@ -121,7 +146,12 @@ class GoRouterStrategy implements RouterStrategy {
   }
 
   @override
-  Future<void> pushReplacement(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushReplacement(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     if (args != null && kwargs.isNotEmpty) {
       Map<String, String> pathParameters = args as Map<String, String>;
       go_router.GoRouter.of(context).goNamed(routeName, pathParameters: pathParameters, queryParameters: kwargs);
@@ -139,47 +169,56 @@ class GoRouterStrategy implements RouterStrategy {
 class AutoRouteStrategy implements RouterStrategy {
   @override
   Future<void> pop(BuildContext context) async {
-    auto_route.AutoRouter.of(context).popForced();
+    auto_route.AutoRouter.of(context).pop();
     // auto_route.AutoRouter.of(context).maybePop();
     // auto_route.AutoRouter.of(context).back();
   }
 
   @override
-  Future<void> push(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> push(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     if (args != null && kwargs.isNotEmpty) {
-      // final pathParams = args as Map<String, String>;
-      // final queryParams = kwargs;
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamed(routeName, arguments: args);
     } else if (args != null) {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamed(routeName, arguments: args);
     } else {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamed(routeName);
     }
   }
 
   @override
-  Future<void> pushRemoveUntil(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushRemoveUntil(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     if (args != null && kwargs.isNotEmpty) {
-      // final pathParams = args as Map<String, String>;
-      // final queryParams = kwargs;
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
     } else if (args != null) {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
     } else {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false);
     }
   }
 
   @override
-  Future<void> pushReplacement(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushReplacement(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     if (args != null && kwargs.isNotEmpty) {
-      // final pathParams = args as Map<String, String>;
-      // final queryParams = kwargs;
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushReplacementNamed(routeName, arguments: args);
     } else if (args != null) {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushReplacementNamed(routeName, arguments: args);
     } else {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushReplacementNamed(routeName);
     }
   }
 }
@@ -194,7 +233,12 @@ class GetRouteStrategy implements RouterStrategy {
   }
 
   @override
-  Future<void> push(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> push(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     final queryParams = kwargs as Map<String, String>;
     if (args != null && kwargs.isNotEmpty) {
       get_router.Get.toNamed(routeName, arguments: args, parameters: queryParams);
@@ -206,7 +250,12 @@ class GetRouteStrategy implements RouterStrategy {
   }
 
   @override
-  Future<void> pushRemoveUntil(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushRemoveUntil(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     final queryParams = kwargs as Map<String, String>;
     if (args != null && kwargs.isNotEmpty) {
       get_router.Get.offNamedUntil(routeName, (route) => false, arguments: args, parameters: queryParams);
@@ -218,7 +267,12 @@ class GetRouteStrategy implements RouterStrategy {
   }
 
   @override
-  Future<void> pushReplacement(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushReplacement(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     final queryParams = kwargs as Map<String, String>;
     if (args != null && kwargs.isNotEmpty) {
       get_router.Get.offNamed(routeName, arguments: args, parameters: queryParams);
@@ -298,7 +352,12 @@ class AppRouter {
   /// ```dart
   /// await AppRouter.push(context, "/myScreen", arguments: {"id": 1});
   /// ```
-  Future<void> push(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> push(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     await _routeStrategy.push(context, routeName, args: args, kwargs: kwargs);
   }
 
@@ -314,7 +373,12 @@ class AppRouter {
   ///
   /// await AppRouter.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
   /// ```
-  Future<void> pushRemoveUntil(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushRemoveUntil(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     await _routeStrategy.pushRemoveUntil(context, routeName, args: args, kwargs: kwargs);
   }
 
@@ -324,7 +388,12 @@ class AppRouter {
   /// @param routeName The name of the route to push onto the navigator.
   /// @param arguments The arguments to pass to the route.
   /// @param kwargs The query parameters to pass to the route.
-  Future<void> pushReplacement(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs = const {}}) async {
+  Future<void> pushReplacement(
+    BuildContext context,
+    String routeName, {
+    Object? args,
+    Map<String, dynamic> kwargs = const {},
+  }) async {
     await _routeStrategy.pushReplacement(context, routeName, args: args, kwargs: kwargs);
   }
 }

@@ -39,18 +39,12 @@ void main() {
     });
 
     test("copyWith retains the same values if no arguments are provided", () {
-      const state = AccountState(
-        data: null,
-        status: AccountStatus.initial,
-      );
+      const state = AccountState(data: null, status: AccountStatus.initial);
       expect(state.copyWith(), state);
     });
 
     test("copyWith replaces non-null parameters", () {
-      const state = AccountState(
-        data: null,
-        status: AccountStatus.initial,
-      );
+      const state = AccountState(data: null, status: AccountStatus.initial);
       final user = User(
         id: "1",
         login: "test_login",
@@ -139,5 +133,5 @@ void main() {
       );
     });
   });
-//endregion bloc
+  //endregion bloc
 }

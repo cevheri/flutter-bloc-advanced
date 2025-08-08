@@ -36,22 +36,20 @@ class MockDistrictRepository extends _i1.Mock
   @override
   _i3.Future<List<_i4.District?>> listByCity(String? cityId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #listByCity,
-          [cityId],
-        ),
-        returnValue: _i3.Future<List<_i4.District?>>.value(<_i4.District?>[]),
-      ) as _i3.Future<List<_i4.District?>>);
+            Invocation.method(#listByCity, [cityId]),
+            returnValue: _i3.Future<List<_i4.District?>>.value(
+              <_i4.District?>[],
+            ),
+          )
+          as _i3.Future<List<_i4.District?>>);
 
   @override
   _i3.Future<_i4.District?> create(_i4.District? district) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #create,
-          [district],
-        ),
-        returnValue: _i3.Future<_i4.District?>.value(),
-      ) as _i3.Future<_i4.District?>);
+            Invocation.method(#create, [district]),
+            returnValue: _i3.Future<_i4.District?>.value(),
+          )
+          as _i3.Future<_i4.District?>);
 
   @override
   _i3.Future<List<_i4.District?>> list({
@@ -60,34 +58,31 @@ class MockDistrictRepository extends _i1.Mock
     List<String>? sort = const ['id,desc'],
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #list,
-          [],
-          {
-            #page: page,
-            #size: size,
-            #sort: sort,
-          },
-        ),
-        returnValue: _i3.Future<List<_i4.District?>>.value(<_i4.District?>[]),
-      ) as _i3.Future<List<_i4.District?>>);
+            Invocation.method(#list, [], {
+              #page: page,
+              #size: size,
+              #sort: sort,
+            }),
+            returnValue: _i3.Future<List<_i4.District?>>.value(
+              <_i4.District?>[],
+            ),
+          )
+          as _i3.Future<List<_i4.District?>>);
 
   @override
-  _i3.Future<_i4.District?> retrieve(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #retrieve,
-          [id],
-        ),
-        returnValue: _i3.Future<_i4.District?>.value(),
-      ) as _i3.Future<_i4.District?>);
+  _i3.Future<_i4.District?> retrieve(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i3.Future<_i4.District?>.value(),
+          )
+          as _i3.Future<_i4.District?>);
 
   @override
-  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #delete,
-          [id],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> delete(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#delete, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

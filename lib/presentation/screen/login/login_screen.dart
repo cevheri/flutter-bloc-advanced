@@ -58,64 +58,65 @@ class LoginScreen extends StatelessWidget {
   }
 
   Widget _usernameField(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
-      return SizedBox(
-        width: MediaQuery.of(context).size.width * 0.6,
-        child: FormBuilderTextField(
-          key: loginTextFieldUsernameKey,
-          name: 'username',
-          decoration: InputDecoration(labelText: S.of(context).login_user_name),
-          validator: FormBuilderValidators.compose(
-            [
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return SizedBox(
+          width: MediaQuery.of(context).size.width * 0.6,
+          child: FormBuilderTextField(
+            key: loginTextFieldUsernameKey,
+            name: 'username',
+            decoration: InputDecoration(labelText: S.of(context).login_user_name),
+            validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).required_field),
               FormBuilderValidators.minLength(4, errorText: S.of(context).min_length_4),
-              FormBuilderValidators.maxLength(20, errorText: S.of(context).max_length_20)
-            ],
+              FormBuilderValidators.maxLength(20, errorText: S.of(context).max_length_20),
+            ]),
           ),
-        ),
-      );
-    });
+        );
+      },
+    );
   }
 
   Widget _passwordField(BuildContext context) {
     final fieldWidth = MediaQuery.of(context).size.width * 0.6;
-    return BlocBuilder<LoginBloc, LoginState>(builder: (context, state) {
-      return SizedBox(
-        width: fieldWidth,
-        child: Row(
-          children: [
-            Expanded(
-              child: FormBuilderTextField(
-                key: loginTextFieldPasswordKey,
-                name: 'password',
-                decoration: InputDecoration(labelText: S.of(context).login_password),
-                // when press the enter key, call submit button function
-                textInputAction: TextInputAction.done,
-                onSubmitted: (value) {
-                  if (_loginFormKey.currentState!.saveAndValidate()) {
-                    final username = _loginFormKey.currentState!.value['username'];
-                    final password = _loginFormKey.currentState!.value['password'];
-                    _submitEvent(context, username: username, password: password);
-                  }
-                },
-                obscureText: !state.passwordVisible,
-                validator: FormBuilderValidators.compose(
-                  [
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return SizedBox(
+          width: fieldWidth,
+          child: Row(
+            children: [
+              Expanded(
+                child: FormBuilderTextField(
+                  key: loginTextFieldPasswordKey,
+                  name: 'password',
+                  decoration: InputDecoration(labelText: S.of(context).login_password),
+                  // when press the enter key, call submit button function
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (value) {
+                    if (_loginFormKey.currentState!.saveAndValidate()) {
+                      final username = _loginFormKey.currentState!.value['username'];
+                      final password = _loginFormKey.currentState!.value['password'];
+                      _submitEvent(context, username: username, password: password);
+                    }
+                  },
+                  obscureText: !state.passwordVisible,
+                  validator: FormBuilderValidators.compose([
                     FormBuilderValidators.required(errorText: S.of(context).required_field),
                     FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
-                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length)
-                  ],
+                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
+                  ]),
                 ),
               ),
-            ),
-            IconButton(
+              IconButton(
                 key: loginButtonPasswordVisibilityKey,
                 icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
-                onPressed: () => context.read<LoginBloc>().add(const TogglePasswordVisibility())),
-          ],
-        ),
-      );
-    });
+                onPressed: () => context.read<LoginBloc>().add(const TogglePasswordVisibility()),
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 
   _submitButton(BuildContext context) {
@@ -124,29 +125,38 @@ class LoginScreen extends StatelessWidget {
         debugPrint("BEGIN: login submit button listener username${state.username}");
 
         if (state is LoginLoadingState) {
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+            SnackBar(
               behavior: SnackBarBehavior.floating,
               content: Text(S.of(context).loading),
               backgroundColor: Theme.of(context).colorScheme.primary,
-              width: MediaQuery.of(context).size.width * 0.8));
+              width: MediaQuery.of(context).size.width * 0.8,
+            ),
+          );
         } else if (state is LoginLoadedState) {
           debugPrint("BEGIN: login submit button listener LoginLoadedState");
           AppRouter().push(context, ApplicationRoutesConstants.home);
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+            SnackBar(
               behavior: SnackBarBehavior.floating,
               content: Text(S.of(context).success),
               backgroundColor: Theme.of(context).colorScheme.primary,
-              width: MediaQuery.of(context).size.width * 0.8));
+              width: MediaQuery.of(context).size.width * 0.8,
+            ),
+          );
           debugPrint("END: login submit button listener LoginLoadedState");
         } else if (state is LoginErrorState) {
           debugPrint("BEGIN: login submit button listener LoginErrorState");
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(SnackBar(
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+            SnackBar(
               behavior: SnackBarBehavior.floating,
               content: Text(S.of(context).failed),
               backgroundColor: Theme.of(context).colorScheme.primary,
-              width: MediaQuery.of(context).size.width * 0.8));
+              width: MediaQuery.of(context).size.width * 0.8,
+            ),
+          );
           debugPrint("END: login submit button listener LoginErrorState");
         }
       },
@@ -198,7 +208,13 @@ class LoginScreen extends StatelessWidget {
         final color = Theme.of(context).colorScheme.error;
         return Visibility(
           visible: state is LoginErrorState,
-          child: Center(child: Text(S.of(context).failed, style: TextStyle(fontSize: font, color: color), textAlign: TextAlign.center)),
+          child: Center(
+            child: Text(
+              S.of(context).failed,
+              style: TextStyle(fontSize: font, color: color),
+              textAlign: TextAlign.center,
+            ),
+          ),
         );
       },
     );
@@ -232,28 +248,19 @@ class OtpEmailScreen extends StatelessWidget {
       ),
       body: BlocListener<LoginBloc, LoginState>(
         listenWhen: (previous, current) =>
-            previous.status != current.status || previous.isOtpSent != current.isOtpSent || previous.email != current.email,
+            previous.status != current.status ||
+            previous.isOtpSent != current.isOtpSent ||
+            previous.email != current.email,
         listener: (context, state) {
           debugPrint("BEGIN: otp email screen listener state: ${state.props}");
           if (state.status == LoginStatus.success && state.isOtpSent == true && state.email != null) {
             debugPrint("Navigating to verify screen with email: ${state.email}");
-            AppRouter().push(
-              context,
-              '${ApplicationRoutesConstants.loginOtpVerify}/${state.email}',
-            );
+            AppRouter().push(context, '${ApplicationRoutesConstants.loginOtpVerify}/${state.email}');
           } else if (state.status == LoginStatus.failure) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(S.of(context).failed)),
-            );
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).failed)));
           }
         },
-        child: ResponsiveFormBuilder(
-          formKey: _formKey,
-          children: [
-            _emailField(context),
-            _submitButton(context),
-          ],
-        ),
+        child: ResponsiveFormBuilder(formKey: _formKey, children: [_emailField(context), _submitButton(context)]),
       ),
     );
   }
@@ -261,10 +268,7 @@ class OtpEmailScreen extends StatelessWidget {
   Widget _emailField(BuildContext context) {
     return FormBuilderTextField(
       name: 'email',
-      decoration: InputDecoration(
-        labelText: S.of(context).email,
-        prefixIcon: const Icon(Icons.email),
-      ),
+      decoration: InputDecoration(labelText: S.of(context).email, prefixIcon: const Icon(Icons.email)),
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
         FormBuilderValidators.email(errorText: S.of(context).invalid_email),
@@ -305,7 +309,10 @@ class OtpVerifyScreen extends StatelessWidget {
       key: _scaffoldKey,
       appBar: AppBar(
         title: Text(S.of(context).verify_otp_code),
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
+        ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
         // listenWhen: (previous, current) =>
@@ -333,10 +340,7 @@ class OtpVerifyScreen extends StatelessWidget {
   Widget _otpField(BuildContext context) {
     return FormBuilderTextField(
       name: 'otpCode',
-      decoration: InputDecoration(
-        labelText: S.of(context).otp_code,
-        prefixIcon: const Icon(Icons.lock_clock),
-      ),
+      decoration: InputDecoration(labelText: S.of(context).otp_code, prefixIcon: const Icon(Icons.lock_clock)),
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
         FormBuilderValidators.numeric(errorText: S.of(context).only_numbers),

@@ -1,6 +1,6 @@
 import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
-import 'package:flutter_test/flutter_test.dart'; 
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('VerifyOtpRequest', () {
@@ -27,19 +27,13 @@ void main() {
       final json = request.toJson();
 
       // then
-      expect(json, {
-        'email': 'test@example.com',
-        'otp': '123456',
-      });
+      expect(json, {'email': 'test@example.com', 'otp': '123456'});
     });
 
     test('should create VerifyOtpRequest from JSON correctly', () {
       initializeJsonMapper();
       // given
-      final json = {
-        'email': 'test@example.com',
-        'otp': '123456',
-      };
+      final json = {'email': 'test@example.com', 'otp': '123456'};
 
       // when
       final request = VerifyOtpRequest.fromJson(json);
@@ -52,9 +46,7 @@ void main() {
 
     test('should return null when fromJson is called with invalid JSON', () {
       // given
-      final invalidJson = {
-        'invalid_key': 'test@example.com',
-      };
+      final invalidJson = {'invalid_key': 'test@example.com'};
 
       // when
       final request = VerifyOtpRequest.fromJson(invalidJson);
@@ -65,9 +57,7 @@ void main() {
 
     test('should return null when fromJson is called with missing otp', () {
       // given
-      final invalidJson = {
-        'email': 'test@example.com',
-      };
+      final invalidJson = {'email': 'test@example.com'};
 
       // when
       final request = VerifyOtpRequest.fromJson(invalidJson);
@@ -78,9 +68,7 @@ void main() {
 
     test('should return null when fromJson is called with missing email', () {
       // given
-      final invalidJson = {
-        'otp': '123456',
-      };
+      final invalidJson = {'otp': '123456'};
 
       // when
       final request = VerifyOtpRequest.fromJson(invalidJson);

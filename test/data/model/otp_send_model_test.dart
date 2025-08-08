@@ -24,17 +24,13 @@ void main() {
       final json = request.toJson();
 
       // then
-      expect(json, {
-        'email': 'test@example.com',
-      });
+      expect(json, {'email': 'test@example.com'});
     });
 
     test('should create SendOtpRequest from JSON correctly', () {
       initializeJsonMapper();
       // given
-      final json = {
-        'email': 'test@example.com',
-      };
+      final json = {'email': 'test@example.com'};
 
       // when
       final request = SendOtpRequest.fromJson(json);
@@ -47,9 +43,7 @@ void main() {
     test('should return null when fromJson is called with invalid JSON', () {
       initializeJsonMapper();
       // given
-      final invalidJson = {
-        'invalid_key': 'test@example.com',
-      };
+      final invalidJson = {'invalid_key': 'test@example.com'};
 
       // when
       final request = SendOtpRequest.fromJson(invalidJson);

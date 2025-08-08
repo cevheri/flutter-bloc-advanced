@@ -26,13 +26,8 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeDrawerState_0 extends _i1.SmartFake implements _i2.DrawerState {
-  _FakeDrawerState_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeDrawerState_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [DrawerBloc].
@@ -44,128 +39,87 @@ class MockDrawerBloc extends _i1.Mock implements _i2.DrawerBloc {
   }
 
   @override
-  _i2.DrawerState get state => (super.noSuchMethod(
-        Invocation.getter(#state),
-        returnValue: _FakeDrawerState_0(
-          this,
-          Invocation.getter(#state),
-        ),
-      ) as _i2.DrawerState);
+  _i2.DrawerState get state =>
+      (super.noSuchMethod(
+            Invocation.getter(#state),
+            returnValue: _FakeDrawerState_0(this, Invocation.getter(#state)),
+          )
+          as _i2.DrawerState);
 
   @override
-  _i3.Stream<_i2.DrawerState> get stream => (super.noSuchMethod(
-        Invocation.getter(#stream),
-        returnValue: _i3.Stream<_i2.DrawerState>.empty(),
-      ) as _i3.Stream<_i2.DrawerState>);
+  _i3.Stream<_i2.DrawerState> get stream =>
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i3.Stream<_i2.DrawerState>.empty(),
+          )
+          as _i3.Stream<_i2.DrawerState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(
-        Invocation.getter(#isClosed),
-        returnValue: false,
-      ) as bool);
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
 
   @override
   void add(_i2.DrawerEvent? event) => super.noSuchMethod(
-        Invocation.method(
-          #add,
-          [event],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void onEvent(_i2.DrawerEvent? event) => super.noSuchMethod(
-        Invocation.method(
-          #onEvent,
-          [event],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void emit(_i2.DrawerState? state) => super.noSuchMethod(
-        Invocation.method(
-          #emit,
-          [state],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i2.DrawerEvent>(
     _i4.EventHandler<E, _i2.DrawerState>? handler, {
     _i4.EventTransformer<E>? transformer,
-  }) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #on,
-          [handler],
-          {#transformer: transformer},
-        ),
-        returnValueForMissingStub: null,
-      );
+  }) => super.noSuchMethod(
+    Invocation.method(#on, [handler], {#transformer: transformer}),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void onTransition(
-          _i4.Transition<_i2.DrawerEvent, _i2.DrawerState>? transition) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #onTransition,
-          [transition],
-        ),
-        returnValueForMissingStub: null,
-      );
+    _i4.Transition<_i2.DrawerEvent, _i2.DrawerState>? transition,
+  ) => super.noSuchMethod(
+    Invocation.method(#onTransition, [transition]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  _i3.Future<void> close() => (super.noSuchMethod(
-        Invocation.method(
-          #close,
-          [],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> close() =>
+      (super.noSuchMethod(
+            Invocation.method(#close, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 
   @override
   void onChange(_i4.Change<_i2.DrawerState>? change) => super.noSuchMethod(
-        Invocation.method(
-          #onChange,
-          [change],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void addError(
-    Object? error, [
-    StackTrace? stackTrace,
-  ]) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #addError,
-          [
-            error,
-            stackTrace,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(
-    Object? error,
-    StackTrace? stackTrace,
-  ) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #onError,
-          [
-            error,
-            stackTrace,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }
 
 /// A class which mocks [AppLocalStorage].
@@ -178,54 +132,40 @@ class MockAppLocalStorage extends _i1.Mock implements _i5.AppLocalStorage {
 
   @override
   void setStorage(_i5.StorageType? type) => super.noSuchMethod(
-        Invocation.method(
-          #setStorage,
-          [type],
-        ),
-        returnValueForMissingStub: null,
-      );
+    Invocation.method(#setStorage, [type]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  _i3.Future<bool> save(
-    String? key,
-    dynamic value,
-  ) =>
+  _i3.Future<bool> save(String? key, dynamic value) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #save,
-          [
-            key,
-            value,
-          ],
-        ),
-        returnValue: _i3.Future<bool>.value(false),
-      ) as _i3.Future<bool>);
+            Invocation.method(#save, [key, value]),
+            returnValue: _i3.Future<bool>.value(false),
+          )
+          as _i3.Future<bool>);
 
   @override
-  _i3.Future<dynamic> read(String? key) => (super.noSuchMethod(
-        Invocation.method(
-          #read,
-          [key],
-        ),
-        returnValue: _i3.Future<dynamic>.value(),
-      ) as _i3.Future<dynamic>);
+  _i3.Future<dynamic> read(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#read, [key]),
+            returnValue: _i3.Future<dynamic>.value(),
+          )
+          as _i3.Future<dynamic>);
 
   @override
-  _i3.Future<bool> remove(String? key) => (super.noSuchMethod(
-        Invocation.method(
-          #remove,
-          [key],
-        ),
-        returnValue: _i3.Future<bool>.value(false),
-      ) as _i3.Future<bool>);
+  _i3.Future<bool> remove(String? key) =>
+      (super.noSuchMethod(
+            Invocation.method(#remove, [key]),
+            returnValue: _i3.Future<bool>.value(false),
+          )
+          as _i3.Future<bool>);
 
   @override
-  _i3.Future<void> clear() => (super.noSuchMethod(
-        Invocation.method(
-          #clear,
-          [],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> clear() =>
+      (super.noSuchMethod(
+            Invocation.method(#clear, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

@@ -38,12 +38,12 @@ void main() {
     mockAuthorityRepository = MockAuthorityRepository();
 
     // Set up default AuthorityBloc behavior
-    when(mockAuthorityBloc.stream).thenAnswer((_) => Stream.fromIterable([
-          const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])
-        ]));
-    when(mockAuthorityBloc.state).thenReturn(
-      const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
+    when(mockAuthorityBloc.stream).thenAnswer(
+      (_) => Stream.fromIterable([
+        const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
+      ]),
     );
+    when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
   });
 
   tearDown(() async {
@@ -59,26 +59,24 @@ void main() {
       authorityRepository: mockAuthorityRepository,
     );
 
-    final router = GoRouter(
-      initialLocation: '/user',
-      routes: UserRoutes.routes,
-    );
+    final router = GoRouter(initialLocation: '/user', routes: UserRoutes.routes);
 
     return MultiBlocProvider(
-        providers: [
-          BlocProvider<UserBloc>.value(value: mockUserBloc),
-          BlocProvider<AuthorityBloc>.value(value: mockAuthorityBloc),
+      providers: [
+        BlocProvider<UserBloc>.value(value: mockUserBloc),
+        BlocProvider<AuthorityBloc>.value(value: mockAuthorityBloc),
+      ],
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
         ],
-        child: MaterialApp.router(
-          routerConfig: router,
-          localizationsDelegates: const [
-            S.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: S.delegate.supportedLocales,
-        ));
+        supportedLocales: S.delegate.supportedLocales,
+      ),
+    );
   }
 
   group('ListUserScreen Tests', () {
@@ -163,14 +161,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Fill search form
-      await tester.enterText(
-        find.byType(FormBuilderTextField).first,
-        '0',
-      );
-      await tester.enterText(
-        find.byType(FormBuilderTextField).at(1),
-        '100',
-      );
+      await tester.enterText(find.byType(FormBuilderTextField).first, '0');
+      await tester.enterText(find.byType(FormBuilderTextField).at(1), '100');
 
       // Tap search button
       await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));

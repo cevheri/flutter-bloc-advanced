@@ -33,13 +33,8 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeUser_0 extends _i1.SmartFake implements _i2.User {
-  _FakeUser_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeUser_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [LoginRepository].
@@ -53,42 +48,36 @@ class MockLoginRepository extends _i1.Mock implements _i3.LoginRepository {
   @override
   _i4.Future<_i5.JWTToken?> authenticate(_i6.UserJWT? userJWT) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #authenticate,
-          [userJWT],
-        ),
-        returnValue: _i4.Future<_i5.JWTToken?>.value(),
-      ) as _i4.Future<_i5.JWTToken?>);
+            Invocation.method(#authenticate, [userJWT]),
+            returnValue: _i4.Future<_i5.JWTToken?>.value(),
+          )
+          as _i4.Future<_i5.JWTToken?>);
 
   @override
-  _i4.Future<void> logout() => (super.noSuchMethod(
-        Invocation.method(
-          #logout,
-          [],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+  _i4.Future<void> logout() =>
+      (super.noSuchMethod(
+            Invocation.method(#logout, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 
   @override
-  _i4.Future<void> sendOtp(_i7.SendOtpRequest? request) => (super.noSuchMethod(
-        Invocation.method(
-          #sendOtp,
-          [request],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+  _i4.Future<void> sendOtp(_i7.SendOtpRequest? request) =>
+      (super.noSuchMethod(
+            Invocation.method(#sendOtp, [request]),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 
   @override
   _i4.Future<_i5.JWTToken?> verifyOtp(_i8.VerifyOtpRequest? request) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #verifyOtp,
-          [request],
-        ),
-        returnValue: _i4.Future<_i5.JWTToken?>.value(),
-      ) as _i4.Future<_i5.JWTToken?>);
+            Invocation.method(#verifyOtp, [request]),
+            returnValue: _i4.Future<_i5.JWTToken?>.value(),
+          )
+          as _i4.Future<_i5.JWTToken?>);
 }
 
 /// A class which mocks [AccountRepository].
@@ -100,69 +89,54 @@ class MockAccountRepository extends _i1.Mock implements _i9.AccountRepository {
   }
 
   @override
-  _i4.Future<_i2.User?> register(_i2.User? newUser) => (super.noSuchMethod(
-        Invocation.method(
-          #register,
-          [newUser],
-        ),
-        returnValue: _i4.Future<_i2.User?>.value(),
-      ) as _i4.Future<_i2.User?>);
+  _i4.Future<_i2.User?> register(_i2.User? newUser) =>
+      (super.noSuchMethod(
+            Invocation.method(#register, [newUser]),
+            returnValue: _i4.Future<_i2.User?>.value(),
+          )
+          as _i4.Future<_i2.User?>);
 
   @override
   _i4.Future<int> changePassword(_i10.PasswordChangeDTO? passwordChangeDTO) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #changePassword,
-          [passwordChangeDTO],
-        ),
-        returnValue: _i4.Future<int>.value(0),
-      ) as _i4.Future<int>);
+            Invocation.method(#changePassword, [passwordChangeDTO]),
+            returnValue: _i4.Future<int>.value(0),
+          )
+          as _i4.Future<int>);
 
   @override
-  _i4.Future<int> resetPassword(String? mailAddress) => (super.noSuchMethod(
-        Invocation.method(
-          #resetPassword,
-          [mailAddress],
-        ),
-        returnValue: _i4.Future<int>.value(0),
-      ) as _i4.Future<int>);
+  _i4.Future<int> resetPassword(String? mailAddress) =>
+      (super.noSuchMethod(
+            Invocation.method(#resetPassword, [mailAddress]),
+            returnValue: _i4.Future<int>.value(0),
+          )
+          as _i4.Future<int>);
 
   @override
-  _i4.Future<_i2.User> getAccount() => (super.noSuchMethod(
-        Invocation.method(
-          #getAccount,
-          [],
-        ),
-        returnValue: _i4.Future<_i2.User>.value(_FakeUser_0(
-          this,
-          Invocation.method(
-            #getAccount,
-            [],
-          ),
-        )),
-      ) as _i4.Future<_i2.User>);
+  _i4.Future<_i2.User> getAccount() =>
+      (super.noSuchMethod(
+            Invocation.method(#getAccount, []),
+            returnValue: _i4.Future<_i2.User>.value(
+              _FakeUser_0(this, Invocation.method(#getAccount, [])),
+            ),
+          )
+          as _i4.Future<_i2.User>);
 
   @override
-  _i4.Future<_i2.User> update(_i2.User? user) => (super.noSuchMethod(
-        Invocation.method(
-          #update,
-          [user],
-        ),
-        returnValue: _i4.Future<_i2.User>.value(_FakeUser_0(
-          this,
-          Invocation.method(
-            #update,
-            [user],
-          ),
-        )),
-      ) as _i4.Future<_i2.User>);
+  _i4.Future<_i2.User> update(_i2.User? user) =>
+      (super.noSuchMethod(
+            Invocation.method(#update, [user]),
+            returnValue: _i4.Future<_i2.User>.value(
+              _FakeUser_0(this, Invocation.method(#update, [user])),
+            ),
+          )
+          as _i4.Future<_i2.User>);
 
   @override
-  _i4.Future<bool> delete(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #delete,
-          [id],
-        ),
-        returnValue: _i4.Future<bool>.value(false),
-      ) as _i4.Future<bool>);
+  _i4.Future<bool> delete(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#delete, [id]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
+          as _i4.Future<bool>);
 }

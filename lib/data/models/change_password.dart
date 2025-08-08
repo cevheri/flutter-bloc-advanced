@@ -11,15 +11,9 @@ class PasswordChangeDTO extends Equatable {
   @JsonProperty(name: 'newPassword')
   final String? newPassword;
 
-  const PasswordChangeDTO({
-    this.currentPassword,
-    this.newPassword,
-  });
+  const PasswordChangeDTO({this.currentPassword, this.newPassword});
 
-  PasswordChangeDTO copyWith({
-    String? currentPassword,
-    String? newPassword,
-  }) {
+  PasswordChangeDTO copyWith({String? currentPassword, String? newPassword}) {
     return PasswordChangeDTO(
       currentPassword: currentPassword ?? this.currentPassword,
       newPassword: newPassword ?? this.newPassword,

@@ -14,30 +14,14 @@ class District extends Equatable {
   @JsonProperty(name: 'code')
   final String? code;
 
-  const District({
-    this.id,
-    this.name,
-    this.code,
-  });
+  const District({this.id, this.name, this.code});
 
-  District copyWith({
-    String? id,
-    String? name,
-    String? code,
-  }) {
-    return District(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      code: code ?? this.code,
-    );
+  District copyWith({String? id, String? name, String? code}) {
+    return District(id: id ?? this.id, name: name ?? this.name, code: code ?? this.code);
   }
 
   static District? fromJson(Map<String, dynamic> json) {
-    return const District().copyWith(
-      id: json['id'],
-      name: json['name'],
-      code: json['code'],
-    );
+    return const District().copyWith(id: json['id'], name: json['name'], code: json['code']);
   }
 
   static District? fromJsonString(String json) => fromJson(jsonDecode(json));
@@ -61,11 +45,7 @@ class District extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-        id,
-        name,
-        code,
-      ];
+  List<Object?> get props => [id, name, code];
 
   @override
   bool get stringify => true;

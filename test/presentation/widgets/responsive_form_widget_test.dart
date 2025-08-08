@@ -15,12 +15,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ResponsiveFormBuilder(
-              formKey: formKey,
-              children: const [
-                Text('Test Child'),
-              ],
-            ),
+            body: ResponsiveFormBuilder(formKey: formKey, children: const [Text('Test Child')]),
           ),
         ),
       );
@@ -42,9 +37,7 @@ void main() {
               formKey: formKey,
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
-              children: const [
-                Text('Test Child'),
-              ],
+              children: const [Text('Test Child')],
             ),
           ),
         ),
@@ -57,18 +50,14 @@ void main() {
 
     testWidgets('should handle onChanged callback', (tester) async {
       bool wasCallbackCalled = false;
-      
+
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
             body: ResponsiveFormBuilder(
               formKey: formKey,
               onChanged: () => wasCallbackCalled = true,
-              children: [
-                FormBuilderTextField(
-                  name: 'test_field',
-                ),
-              ],
+              children: [FormBuilderTextField(name: 'test_field')],
             ),
           ),
         ),
@@ -84,13 +73,7 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ResponsiveFormBuilder(
-              formKey: formKey,
-              autoValidateMode: true,
-              children: const [
-                Text('Test Child'),
-              ],
-            ),
+            body: ResponsiveFormBuilder(formKey: formKey, autoValidateMode: true, children: const [Text('Test Child')]),
           ),
         ),
       );

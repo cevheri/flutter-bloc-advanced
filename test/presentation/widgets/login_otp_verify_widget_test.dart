@@ -19,10 +19,7 @@ import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
 import '../../test_utils.dart';
-@GenerateNiceMocks([
-  MockSpec<LoginBloc>(),
-  MockSpec<AccountBloc>(),
-])
+@GenerateNiceMocks([MockSpec<LoginBloc>(), MockSpec<AccountBloc>()])
 import 'login_otp_verify_widget_test.mocks.dart';
 
 void main() {
@@ -40,10 +37,7 @@ void main() {
       routes: [
         GoRoute(
           path: ApplicationRoutesConstants.loginOtp,
-          builder: (context, state) => BlocProvider.value(
-            value: mockLoginBloc,
-            child: OtpEmailScreen(),
-          ),
+          builder: (context, state) => BlocProvider.value(value: mockLoginBloc, child: OtpEmailScreen()),
         ),
         GoRoute(
           path: '${ApplicationRoutesConstants.loginOtpVerify}/:email',
@@ -54,33 +48,24 @@ void main() {
         ),
         GoRoute(
           path: ApplicationRoutesConstants.login,
-          builder: (context, state) => BlocProvider.value(
-            value: mockLoginBloc,
-            child: LoginScreen(),
-          ),
+          builder: (context, state) => BlocProvider.value(value: mockLoginBloc, child: LoginScreen()),
         ),
         GoRoute(
-            path: ApplicationRoutesConstants.home,
-            builder: (context, state) => Scaffold(appBar: AppBar(title: const Text("home")), body: Container())),
+          path: ApplicationRoutesConstants.home,
+          builder: (context, state) => Scaffold(
+            appBar: AppBar(title: const Text("home")),
+            body: Container(),
+          ),
+        ),
       ],
     );
 
     testWidget = AdaptiveTheme(
-      light: ThemeData(
-        useMaterial3: false,
-        brightness: Brightness.light,
-        colorSchemeSeed: Colors.blueGrey,
-      ),
-      dark: ThemeData(
-        useMaterial3: false,
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blueGrey,
-      ),
+      light: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
+      dark: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
       initial: AdaptiveThemeMode.light,
       builder: (light, dark) => MultiBlocProvider(
-        providers: [
-          BlocProvider<LoginBloc>.value(value: mockLoginBloc),
-        ],
+        providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],
         child: MaterialApp.router(
           theme: light,
           darkTheme: dark,
@@ -232,8 +217,15 @@ void main() {
       await tester.tap(submitButtonFinder);
       await tester.pump();
 
-      loginStateController.add(const LoginState(
-          email: "test@example.com", otpCode: "123456", status: LoginStatus.loading, isOtpSent: true, loginMethod: LoginMethod.otp));
+      loginStateController.add(
+        const LoginState(
+          email: "test@example.com",
+          otpCode: "123456",
+          status: LoginStatus.loading,
+          isOtpSent: true,
+          loginMethod: LoginMethod.otp,
+        ),
+      );
       await tester.pump();
 
       await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
@@ -270,8 +262,15 @@ void main() {
       await tester.tap(submitButtonFinder);
       await tester.pump();
 
-      loginStateController.add(const LoginState(
-          email: "test@example.com", otpCode: "123456", status: LoginStatus.loading, isOtpSent: true, loginMethod: LoginMethod.otp));
+      loginStateController.add(
+        const LoginState(
+          email: "test@example.com",
+          otpCode: "123456",
+          status: LoginStatus.loading,
+          isOtpSent: true,
+          loginMethod: LoginMethod.otp,
+        ),
+      );
       await tester.pump();
 
       loginStateController.add(const LoginErrorState(message: "Invalid OTP Token"));
@@ -281,7 +280,10 @@ void main() {
       //expect(find.text("Invalid OTP Token"), findsOneWidget);
       verify(mockLoginBloc.add(const VerifyOtpSubmitted(email: "test@example.com", otpCode: "123456"))).called(1);
 
-      expect(mockGoRouter.routerDelegate.currentConfiguration.uri.path, "${ApplicationRoutesConstants.loginOtpVerify}/test@example.com");
+      expect(
+        mockGoRouter.routerDelegate.currentConfiguration.uri.path,
+        "${ApplicationRoutesConstants.loginOtpVerify}/test@example.com",
+      );
 
       //finally
       loginStateController.close();

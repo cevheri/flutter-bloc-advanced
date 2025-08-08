@@ -8,16 +8,10 @@ class JWTToken extends Equatable {
   @JsonProperty(name: 'id_token')
   final String? idToken;
 
-  const JWTToken({
-    this.idToken,
-  });
+  const JWTToken({this.idToken});
 
-  JWTToken copyWith({
-    String? idToken,
-  }) {
-    return JWTToken(
-      idToken: idToken ?? this.idToken,
-    );
+  JWTToken copyWith({String? idToken}) {
+    return JWTToken(idToken: idToken ?? this.idToken);
   }
 
   static JWTToken? fromJson(Map<String, dynamic> json) {
@@ -39,15 +33,14 @@ class JWTToken extends Equatable {
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is JWTToken && runtimeType == other.runtimeType && idToken == other.idToken;
+  bool operator ==(Object other) =>
+      identical(this, other) || other is JWTToken && runtimeType == other.runtimeType && idToken == other.idToken;
 
   @override
   int get hashCode => idToken.hashCode;
 
   @override
-  List<Object?> get props => [
-        idToken,
-      ];
+  List<Object?> get props => [idToken];
 
   @override
   bool get stringify => true;

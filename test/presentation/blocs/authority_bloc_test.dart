@@ -33,11 +33,14 @@ void main() {
   //region state
   /// Authority State Tests
   group("AuthorityState", () {
-    const authorities = [ "test"];
+    const authorities = ["test"];
     const status = AuthorityStatus.initial;
 
     test("supports value comparisons", () {
-      expect(const AuthorityState(authorities: authorities, status: status), const AuthorityState(authorities: authorities, status: status));
+      expect(
+        const AuthorityState(authorities: authorities, status: status),
+        const AuthorityState(authorities: authorities, status: status),
+      );
     });
 
     test("AuthorityInitialState", () {
@@ -49,7 +52,10 @@ void main() {
     });
 
     test("AuthorityLoadSuccessState", () {
-      expect(const AuthorityLoadSuccessState(authorities: authorities), const AuthorityLoadSuccessState(authorities: authorities));
+      expect(
+        const AuthorityLoadSuccessState(authorities: authorities),
+        const AuthorityLoadSuccessState(authorities: authorities),
+      );
     });
 
     test("AuthorityLoadFailureState", () {
@@ -58,7 +64,10 @@ void main() {
     test("AuthorityState copyWith", () {
       expect(const AuthorityState().copyWith(), const AuthorityState());
       expect(const AuthorityState().copyWith(authorities: authorities), const AuthorityState(authorities: authorities));
-      expect(const AuthorityState().copyWith(status: AuthorityStatus.success), const AuthorityState(status: AuthorityStatus.success));
+      expect(
+        const AuthorityState().copyWith(status: AuthorityStatus.success),
+        const AuthorityState(status: AuthorityStatus.success),
+      );
     });
     test("AuthorityState stringify", () {
       expect(const AuthorityState().stringify, true);

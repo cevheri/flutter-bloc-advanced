@@ -13,16 +13,20 @@ void main() {
     test('current throws assertion error when not initialized', () {
       expect(
         () => S.current,
-        throwsA(isA<AssertionError>().having(
-          (error) => error.message,
-          'message',
-          'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
-        )),
+        throwsA(
+          isA<AssertionError>().having(
+            (error) => error.message,
+            'message',
+            'No instance of S was loaded. Try to initialize the S delegate before accessing S.current.',
+          ),
+        ),
       );
     });
 
     testWidgets('current returns instance after initialization', (WidgetTester tester) async {
-      await tester.pumpWidget(MaterialApp(localizationsDelegates: const [S.delegate], supportedLocales: S.delegate.supportedLocales));
+      await tester.pumpWidget(
+        MaterialApp(localizationsDelegates: const [S.delegate], supportedLocales: S.delegate.supportedLocales),
+      );
       await tester.pumpAndSettle();
 
       expect(S.current, isNotNull);
@@ -55,7 +59,6 @@ void main() {
   test('initializeJsonMapper async', () {
     initializeJsonMapperAsync();
   });
-
 
   group('initializeMessages tests in messages_all.dart', () {
     test('should return false for unsupported locale', () async {

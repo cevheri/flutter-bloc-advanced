@@ -24,11 +24,7 @@ void main() {
   late GoRouter router;
 
   // Test user data
-  const testUser = User(
-    firstName: 'John',
-    lastName: 'Doe',
-    email: 'john.doe@example.com',
-  );
+  const testUser = User(firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com');
 
   setUp(() {
     mockRegisterBloc = MockRegisterBloc();
@@ -48,15 +44,14 @@ void main() {
             child: RegisterScreen(),
           ),
         ),
-        GoRoute(
-          path: ApplicationRoutesConstants.home,
-          builder: (context, state) => const SizedBox(),
-        ),
+        GoRoute(path: ApplicationRoutesConstants.home, builder: (context, state) => const SizedBox()),
       ],
     );
 
     // Setup default bloc behaviors
-    when(mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterState(status: RegisterStatus.initial)]));
+    when(
+      mockRegisterBloc.stream,
+    ).thenAnswer((_) => Stream.fromIterable([const RegisterState(status: RegisterStatus.initial)]));
     when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
     when(mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
     when(mockAccountBloc.state).thenReturn(const AccountState());
@@ -112,10 +107,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Act - Enter invalid email
-      await tester.enterText(
-        find.byKey(const Key('userEditorEmailFieldKey')),
-        'invalid-email',
-      );
+      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'invalid-email');
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pump();
 
@@ -186,9 +178,7 @@ void main() {
       await tester.pump(); // For state change
 
       // Verify loading state
-      final submitButton = tester.widget<ResponsiveSubmitButton>(
-        find.byKey(const Key('registerSubmitButtonKey')),
-      );
+      final submitButton = tester.widget<ResponsiveSubmitButton>(find.byKey(const Key('registerSubmitButtonKey')));
       expect(submitButton.isLoading, true);
 
       // Clean up
@@ -262,9 +252,7 @@ void main() {
       await tester.pump();
 
       // Verify loading state
-      final loadingButton = tester.widget<ResponsiveSubmitButton>(
-        find.byKey(const Key('registerSubmitButtonKey')),
-      );
+      final loadingButton = tester.widget<ResponsiveSubmitButton>(find.byKey(const Key('registerSubmitButtonKey')));
       expect(loadingButton.isLoading, true);
 
       // Emit success state

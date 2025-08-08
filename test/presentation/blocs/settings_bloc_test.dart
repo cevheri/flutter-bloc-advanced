@@ -23,11 +23,9 @@ void main() {
   //region state
   /// Settings State Tests
   group("SettingsState Test", () {
-
     test("settings.dart export test", () {
       expect(SettingsBloc(), isA<SettingsBloc>());
     });
-
 
     test("SettingsInitial", () {
       expect(const SettingsInitial(), const SettingsInitial());
@@ -46,8 +44,14 @@ void main() {
       expect(const SettingsLanguageChanged(language: "en").props, [SettingsStatus.success, "en"]);
     });
     test("SettingsThemeChanged", () {
-      expect(const SettingsThemeChanged(theme: AdaptiveThemeMode.system), const SettingsThemeChanged(theme: AdaptiveThemeMode.system));
-      expect(const SettingsThemeChanged(theme: AdaptiveThemeMode.system).props, [AdaptiveThemeMode.system, SettingsStatus.success]);
+      expect(
+        const SettingsThemeChanged(theme: AdaptiveThemeMode.system),
+        const SettingsThemeChanged(theme: AdaptiveThemeMode.system),
+      );
+      expect(const SettingsThemeChanged(theme: AdaptiveThemeMode.system).props, [
+        AdaptiveThemeMode.system,
+        SettingsStatus.success,
+      ]);
     });
     test("SettingsFailure", () {
       expect(const SettingsFailure(message: "Error"), const SettingsFailure(message: "Error"));

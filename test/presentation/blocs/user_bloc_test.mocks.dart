@@ -33,40 +33,36 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
   }
 
   @override
-  _i3.Future<_i4.User?> retrieve(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #retrieve,
-          [id],
-        ),
-        returnValue: _i3.Future<_i4.User?>.value(),
-      ) as _i3.Future<_i4.User?>);
+  _i3.Future<_i4.User?> retrieve(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i3.Future<_i4.User?>.value(),
+          )
+          as _i3.Future<_i4.User?>);
 
   @override
-  _i3.Future<_i4.User?> retrieveByLogin(String? login) => (super.noSuchMethod(
-        Invocation.method(
-          #retrieveByLogin,
-          [login],
-        ),
-        returnValue: _i3.Future<_i4.User?>.value(),
-      ) as _i3.Future<_i4.User?>);
+  _i3.Future<_i4.User?> retrieveByLogin(String? login) =>
+      (super.noSuchMethod(
+            Invocation.method(#retrieveByLogin, [login]),
+            returnValue: _i3.Future<_i4.User?>.value(),
+          )
+          as _i3.Future<_i4.User?>);
 
   @override
-  _i3.Future<_i4.User?> create(_i4.User? user) => (super.noSuchMethod(
-        Invocation.method(
-          #create,
-          [user],
-        ),
-        returnValue: _i3.Future<_i4.User?>.value(),
-      ) as _i3.Future<_i4.User?>);
+  _i3.Future<_i4.User?> create(_i4.User? user) =>
+      (super.noSuchMethod(
+            Invocation.method(#create, [user]),
+            returnValue: _i3.Future<_i4.User?>.value(),
+          )
+          as _i3.Future<_i4.User?>);
 
   @override
-  _i3.Future<_i4.User?> update(_i4.User? user) => (super.noSuchMethod(
-        Invocation.method(
-          #update,
-          [user],
-        ),
-        returnValue: _i3.Future<_i4.User?>.value(),
-      ) as _i3.Future<_i4.User?>);
+  _i3.Future<_i4.User?> update(_i4.User? user) =>
+      (super.noSuchMethod(
+            Invocation.method(#update, [user]),
+            returnValue: _i3.Future<_i4.User?>.value(),
+          )
+          as _i3.Future<_i4.User?>);
 
   @override
   _i3.Future<List<_i4.User>> list({
@@ -75,17 +71,14 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
     List<String>? sort = const ['id,desc'],
   }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #list,
-          [],
-          {
-            #page: page,
-            #size: size,
-            #sort: sort,
-          },
-        ),
-        returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
-      ) as _i3.Future<List<_i4.User>>);
+            Invocation.method(#list, [], {
+              #page: page,
+              #size: size,
+              #sort: sort,
+            }),
+            returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
+          )
+          as _i3.Future<List<_i4.User>>);
 
   @override
   _i3.Future<List<_i4.User>> listByAuthority(
@@ -94,16 +87,10 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
     String? authority,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #listByAuthority,
-          [
-            page,
-            size,
-            authority,
-          ],
-        ),
-        returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
-      ) as _i3.Future<List<_i4.User>>);
+            Invocation.method(#listByAuthority, [page, size, authority]),
+            returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
+          )
+          as _i3.Future<List<_i4.User>>);
 
   @override
   _i3.Future<List<_i4.User>> listByNameAndRole(
@@ -113,25 +100,22 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
     String? authority,
   ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #listByNameAndRole,
-          [
-            page,
-            size,
-            name,
-            authority,
-          ],
-        ),
-        returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
-      ) as _i3.Future<List<_i4.User>>);
+            Invocation.method(#listByNameAndRole, [
+              page,
+              size,
+              name,
+              authority,
+            ]),
+            returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
+          )
+          as _i3.Future<List<_i4.User>>);
 
   @override
-  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #delete,
-          [id],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> delete(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#delete, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

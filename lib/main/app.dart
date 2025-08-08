@@ -40,9 +40,11 @@ class App extends StatelessWidget {
     );
   }
 
-  ThemeData _buildDarkTheme() => ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey);
+  ThemeData _buildDarkTheme() =>
+      ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey);
 
-  ThemeData _buildLightTheme() => ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey);
+  ThemeData _buildLightTheme() =>
+      ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey);
 
   MultiBlocProvider _buildMultiBlocProvider(ThemeData light, ThemeData dark) {
     return MultiBlocProvider(
@@ -50,7 +52,9 @@ class App extends StatelessWidget {
         BlocProvider<LoginBloc>(create: (_) => LoginBloc(repository: LoginRepository())),
         BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
         BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
-        BlocProvider<DrawerBloc>(create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())),
+        BlocProvider<DrawerBloc>(
+          create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository()),
+        ),
       ],
       child: AppGoRouterConfig.routeBuilder(light, dark, language),
     );

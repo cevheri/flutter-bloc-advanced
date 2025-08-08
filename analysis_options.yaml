@@ -43,3 +43,8 @@ analyzer:
     - "**/*.router.dart"
     - "**/*.theme.dart"
     - "**/*.theme.g.dart"
+
+# Dart formatter configuration
+# Requires a recent Dart SDK that supports reading formatter options from analysis_options.yaml
+formatter:
+  page_width: 120

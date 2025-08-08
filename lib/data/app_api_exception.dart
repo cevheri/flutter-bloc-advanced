@@ -6,9 +6,7 @@ abstract class AppException implements Exception {
   final String? _message;
   final String? _prefix;
 
-  AppException(String? message, String? prefix)
-      : _message = message,
-        _prefix = prefix {
+  AppException(String? message, String? prefix) : _message = message, _prefix = prefix {
     _log.error("$_prefix$_message");
   }
 

@@ -21,17 +21,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final AccountRepository _accountRepository;
 
   LoginBloc({required LoginRepository repository, AccountRepository? accountRepository})
-      : _repository = repository,
-        _accountRepository =  accountRepository ?? AccountRepository(),
-        super(const LoginState()) {
+    : _repository = repository,
+      _accountRepository = accountRepository ?? AccountRepository(),
+      super(const LoginState()) {
     on<LoginFormSubmitted>(_onSubmit);
     on<TogglePasswordVisibility>((event, emit) => emit(state.copyWith(passwordVisible: !state.passwordVisible)));
     on<ChangeLoginMethod>(_onChangeLoginMethod);
     on<SendOtpRequested>(_onSendOtpRequested);
     on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted);
   }
-
-
 
   @override
   void onTransition(Transition<LoginEvent, LoginState> transition) {
@@ -73,11 +71,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   }
 
   void _onChangeLoginMethod(ChangeLoginMethod event, Emitter<LoginState> emit) {
-    emit(state.copyWith(
-      loginMethod: event.method,
-      status: LoginStatus.initial,
-      isOtpSent: false,
-    ));
+    emit(state.copyWith(loginMethod: event.method, status: LoginStatus.initial, isOtpSent: false));
   }
 
   Future<void> _onSendOtpRequested(SendOtpRequested event, Emitter<LoginState> emit) async {

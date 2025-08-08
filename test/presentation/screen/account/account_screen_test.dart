@@ -85,10 +85,7 @@ void main() {
   group('AccountScreen Basic UI Tests', () {
     testWidgets('Should render AppBar correctly', (tester) async {
       // ARRANGE
-      when(mockAccountBloc.state).thenReturn(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -151,15 +148,9 @@ void main() {
       //expect(find.byType(CircularProgressIndicator), findsOneWidget);
 
       // Success durumuna geçiş
-      when(mockAccountBloc.state).thenReturn(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
-      accountStateController.add(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      accountStateController.add(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpAndSettle(); // Animasyonların tamamlanmasını bekle
 
@@ -220,12 +211,11 @@ void main() {
   });
 
   group('AccountScreen Form Operations', () {
-    testWidgets('Given form with changes When submit button is pressed Then should handle submission successfully', (tester) async {
+    testWidgets('Given form with changes When submit button is pressed Then should handle submission successfully', (
+      tester,
+    ) async {
       // ARRANGE
-      when(mockAccountBloc.state).thenReturn(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -244,10 +234,7 @@ void main() {
 
     testWidgets('Given form submission When server returns error Then should display failure message', (tester) async {
       // ARRANGE - Set up initial successful state
-      when(mockAccountBloc.state).thenReturn(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -268,17 +255,17 @@ void main() {
       await tester.pump(const Duration(milliseconds: 100));
 
       // ASSERT - Verify SnackBar is visible with error message
-      expect(find.descendant(of: find.byType(SnackBar), matching: find.text(S.current.failed)), findsOneWidget,
-          reason: 'SnackBar should be visible with failure message');
+      expect(
+        find.descendant(of: find.byType(SnackBar), matching: find.text(S.current.failed)),
+        findsOneWidget,
+        reason: 'SnackBar should be visible with failure message',
+      );
     });
 
     // Alternative approach using ScaffoldMessenger
     testWidgets('Given form submission When server returns error Then should show error in SnackBar', (tester) async {
       // ARRANGE - Initialize widget with success state
-      when(mockAccountBloc.state).thenReturn(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -300,8 +287,11 @@ void main() {
       // ASSERT - Verify SnackBar is visible with error message
       expect(find.byType(SnackBar), findsOneWidget, reason: 'SnackBar should be visible');
 
-      expect(find.descendant(of: find.byType(SnackBar), matching: find.text(S.current.failed)), findsOneWidget,
-          reason: 'SnackBar should display failure message');
+      expect(
+        find.descendant(of: find.byType(SnackBar), matching: find.text(S.current.failed)),
+        findsOneWidget,
+        reason: 'SnackBar should display failure message',
+      );
 
       final snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       final snackBarText = (snackBar.content as Text).data;
@@ -311,10 +301,7 @@ void main() {
 
   group('AccountScreen Navigation Tests', () {
     testWidgets('Should show confirmation dialog when back button is pressed with changes', (tester) async {
-      when(mockAccountBloc.state).thenReturn(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -331,10 +318,7 @@ void main() {
   group('AccountScreen State Management Tests', () {
     testWidgets('Should show snackbar messages for different states', (tester) async {
       // ARRANGE - Set up initial state
-      when(mockAccountBloc.state).thenReturn(const AccountState(
-        status: AccountStatus.success,
-        data: mockUser,
-      ));
+      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pump();
@@ -348,12 +332,10 @@ void main() {
 
       // Verify loading indicator in button using more specific finder
       expect(
-          find.descendant(
-            of: find.byType(ResponsiveSubmitButton),
-            matching: find.byType(CircularProgressIndicator),
-          ),
-          findsOneWidget,
-          reason: 'Should show loading indicator in submit button');
+        find.descendant(of: find.byType(ResponsiveSubmitButton), matching: find.byType(CircularProgressIndicator)),
+        findsOneWidget,
+        reason: 'Should show loading indicator in submit button',
+      );
 
       // Verify loading message
       expect(find.text(S.current.loading), findsOneWidget, reason: 'Should show loading message');
@@ -365,12 +347,10 @@ void main() {
 
       // Verify success state
       expect(
-          find.descendant(
-            of: find.byType(ResponsiveSubmitButton),
-            matching: find.byType(CircularProgressIndicator),
-          ),
-          findsNothing,
-          reason: 'Should not show loading indicator');
+        find.descendant(of: find.byType(ResponsiveSubmitButton), matching: find.byType(CircularProgressIndicator)),
+        findsNothing,
+        reason: 'Should not show loading indicator',
+      );
 
       // Test failure state
       accountStateController.add(const AccountState(status: AccountStatus.failure));
@@ -379,12 +359,10 @@ void main() {
 
       // Verify failure state
       expect(
-          find.descendant(
-            of: find.byType(ResponsiveSubmitButton),
-            matching: find.byType(CircularProgressIndicator),
-          ),
-          findsNothing,
-          reason: 'Should not show loading indicator');
+        find.descendant(of: find.byType(ResponsiveSubmitButton), matching: find.byType(CircularProgressIndicator)),
+        findsNothing,
+        reason: 'Should not show loading indicator',
+      );
     });
 
     testWidgets('Should show snackbar messages for different states2', (tester) async {
@@ -404,15 +382,16 @@ void main() {
 
       // Verify loading state
       expect(
-          find.descendant(
-            of: find.byType(ResponsiveSubmitButton),
-            matching: find.byType(CircularProgressIndicator),
-          ),
-          findsOneWidget,
-          reason: 'Should show loading indicator in submit button');
+        find.descendant(of: find.byType(ResponsiveSubmitButton), matching: find.byType(CircularProgressIndicator)),
+        findsOneWidget,
+        reason: 'Should show loading indicator in submit button',
+      );
 
-      expect(find.descendant(of: find.byType(ScaffoldMessenger), matching: find.text(S.current.loading)), findsOneWidget,
-          reason: 'Should show loading message in SnackBar');
+      expect(
+        find.descendant(of: find.byType(ScaffoldMessenger), matching: find.text(S.current.loading)),
+        findsOneWidget,
+        reason: 'Should show loading message in SnackBar',
+      );
 
       // Test success state
       accountStateController.add(const AccountState(status: AccountStatus.success));

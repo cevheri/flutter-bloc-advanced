@@ -36,38 +36,33 @@ class MockAuthorityRepository extends _i1.Mock
   @override
   _i3.Future<_i4.Authority?> create(_i4.Authority? authority) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #create,
-          [authority],
-        ),
-        returnValue: _i3.Future<_i4.Authority?>.value(),
-      ) as _i3.Future<_i4.Authority?>);
+            Invocation.method(#create, [authority]),
+            returnValue: _i3.Future<_i4.Authority?>.value(),
+          )
+          as _i3.Future<_i4.Authority?>);
 
   @override
-  _i3.Future<List<String?>> list() => (super.noSuchMethod(
-        Invocation.method(
-          #list,
-          [],
-        ),
-        returnValue: _i3.Future<List<String?>>.value(<String?>[]),
-      ) as _i3.Future<List<String?>>);
+  _i3.Future<List<String?>> list() =>
+      (super.noSuchMethod(
+            Invocation.method(#list, []),
+            returnValue: _i3.Future<List<String?>>.value(<String?>[]),
+          )
+          as _i3.Future<List<String?>>);
 
   @override
-  _i3.Future<_i4.Authority?> retrieve(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #retrieve,
-          [id],
-        ),
-        returnValue: _i3.Future<_i4.Authority?>.value(),
-      ) as _i3.Future<_i4.Authority?>);
+  _i3.Future<_i4.Authority?> retrieve(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i3.Future<_i4.Authority?>.value(),
+          )
+          as _i3.Future<_i4.Authority?>);
 
   @override
-  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #delete,
-          [id],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> delete(String? id) =>
+      (super.noSuchMethod(
+            Invocation.method(#delete, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

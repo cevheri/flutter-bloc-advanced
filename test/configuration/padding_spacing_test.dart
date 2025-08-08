@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
-import 'package:flutter_test/flutter_test.dart'; 
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   group('Spacing', () {
@@ -22,29 +22,33 @@ void main() {
     });
 
     group('Height percentage calculations', () {
-      testWidgets('Given context When height percentage methods called Then should calculate correct values', 
-          (WidgetTester tester) async {
+      testWidgets('Given context When height percentage methods called Then should calculate correct values', (
+        WidgetTester tester,
+      ) async {
         // Given
-        await tester.pumpWidget(MaterialApp(
-          home: Builder(
-            builder: (context) {
-              final height = MediaQuery.of(context).size.height;
-              
-              // When & Then
-              expect(Spacing.heightPercentage10(context), height * 0.1);
-              expect(Spacing.heightPercentage50(context), height * 0.5);
-              expect(Spacing.heightPercentage100(context), height);
-              
-              // Dynamic percentage test
-              expect(Spacing.heightPercentage(context, 0.15), height * 0.15);
-              return Container();
-            },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (context) {
+                final height = MediaQuery.of(context).size.height;
+
+                // When & Then
+                expect(Spacing.heightPercentage10(context), height * 0.1);
+                expect(Spacing.heightPercentage50(context), height * 0.5);
+                expect(Spacing.heightPercentage100(context), height);
+
+                // Dynamic percentage test
+                expect(Spacing.heightPercentage(context, 0.15), height * 0.15);
+                return Container();
+              },
+            ),
           ),
-        ));
+        );
       });
 
-      testWidgets('Given invalid context When height percentage methods called Then should throw exception', 
-          (WidgetTester tester) async {
+      testWidgets('Given invalid context When height percentage methods called Then should throw exception', (
+        WidgetTester tester,
+      ) async {
         // Given
         BuildContext? invalidContext;
 
@@ -55,29 +59,33 @@ void main() {
     });
 
     group('Width percentage calculations', () {
-      testWidgets('Given context When width percentage methods called Then should calculate correct values', 
-          (WidgetTester tester) async {
+      testWidgets('Given context When width percentage methods called Then should calculate correct values', (
+        WidgetTester tester,
+      ) async {
         // Given
-        await tester.pumpWidget(MaterialApp(
-          home: Builder(
-            builder: (context) {
-              final width = MediaQuery.of(context).size.width;
-              
-              // When & Then
-              expect(Spacing.widthPercentage10(context), width * 0.1);
-              expect(Spacing.widthPercentage50(context), width * 0.5);
-              expect(Spacing.widthPercentage100(context), width);
-              
-              // Dynamic percentage test
-              expect(Spacing.widthPercentage(context, 0.15), width * 0.15);
-              return Container();
-            },
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Builder(
+              builder: (context) {
+                final width = MediaQuery.of(context).size.width;
+
+                // When & Then
+                expect(Spacing.widthPercentage10(context), width * 0.1);
+                expect(Spacing.widthPercentage50(context), width * 0.5);
+                expect(Spacing.widthPercentage100(context), width);
+
+                // Dynamic percentage test
+                expect(Spacing.widthPercentage(context, 0.15), width * 0.15);
+                return Container();
+              },
+            ),
           ),
-        ));
+        );
       });
 
-      testWidgets('Given invalid context When width percentage methods called Then should throw exception', 
-          (WidgetTester tester) async {
+      testWidgets('Given invalid context When width percentage methods called Then should throw exception', (
+        WidgetTester tester,
+      ) async {
         // Given
         BuildContext? invalidContext;
 

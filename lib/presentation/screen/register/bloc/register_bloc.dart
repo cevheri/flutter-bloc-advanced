@@ -16,8 +16,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final AccountRepository _repository;
 
   RegisterBloc({required AccountRepository repository})
-      : _repository = repository,
-        super(const RegisterInitialState()) {
+    : _repository = repository,
+      super(const RegisterInitialState()) {
     on<RegisterFormSubmitted>(_onSubmit);
   }
 

@@ -50,14 +50,23 @@ class ChangePasswordScreen extends StatelessWidget {
       builder: (context, state) {
         return ResponsiveFormBuilder(
           formKey: _formKey,
-          children: [_logo(context), _currentPasswordField(context), _newPasswordField(context), _submitButton(context, state)],
+          children: [
+            _logo(context),
+            _currentPasswordField(context),
+            _newPasswordField(context),
+            _submitButton(context, state),
+          ],
         );
       },
     );
   }
 
   Image _logo(BuildContext context) {
-    return Image.asset(LocaleConstants.defaultImgUrl, width: Spacing.widthPercentage50(context), height: Spacing.heightPercentage30(context));
+    return Image.asset(
+      LocaleConstants.defaultImgUrl,
+      width: Spacing.widthPercentage50(context),
+      height: Spacing.heightPercentage30(context),
+    );
   }
 
   FormBuilderTextField _currentPasswordField(BuildContext context) {
@@ -67,9 +76,9 @@ class ChangePasswordScreen extends StatelessWidget {
       decoration: InputDecoration(labelText: S.of(context).current_password),
       obscureText: true,
       maxLines: 1,
-      validator: FormBuilderValidators.compose(
-        [FormBuilderValidators.required(errorText: S.of(context).required_field)],
-      ),
+      validator: FormBuilderValidators.compose([
+        FormBuilderValidators.required(errorText: S.of(context).required_field),
+      ]),
     );
   }
 
@@ -80,9 +89,9 @@ class ChangePasswordScreen extends StatelessWidget {
       decoration: InputDecoration(labelText: S.of(context).new_password),
       obscureText: true,
       maxLines: 1,
-      validator: FormBuilderValidators.compose(
-        [FormBuilderValidators.required(errorText: S.of(context).required_field)],
-      ),
+      validator: FormBuilderValidators.compose([
+        FormBuilderValidators.required(errorText: S.of(context).required_field),
+      ]),
     );
   }
 
@@ -140,9 +149,7 @@ class ChangePasswordScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: duration),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {

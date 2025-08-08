@@ -85,10 +85,18 @@ class UserRepository {
 
   /// Find user method that findUserByAuthorities a user
   Future<List<User>> listByAuthority(int page, int size, String authority) async {
-    _log.debug("BEGIN:findUserByAuthority repository start - page: {}, size: {}, authority: {}", [page, size, authority]);
+    _log.debug("BEGIN:findUserByAuthority repository start - page: {}, size: {}, authority: {}", [
+      page,
+      size,
+      authority,
+    ]);
     final queryParams = {"page": page.toString(), "size": size.toString()};
     final pathParams = authority;
-    final response = await HttpUtils.getRequest("/admin/$_resource/authorities",pathParams: pathParams, queryParams: queryParams);
+    final response = await HttpUtils.getRequest(
+      "/admin/$_resource/authorities",
+      pathParams: pathParams,
+      queryParams: queryParams,
+    );
     // var r = response.body;
     var result = JsonMapper.deserialize<List<User>>(response.body)!;
     _log.debug("END:findUserByAuthority successful - response list size: {}", [result.length]);
@@ -97,8 +105,12 @@ class UserRepository {
 
   /// Find user method that findUserByName a user
   Future<List<User>> listByNameAndRole(int page, int size, String name, String authority) async {
-    _log.debug("BEGIN:findUserByName repository start - page: {}, size: {}, name: {}, authority: {}",
-        [page, size, name, authority]);
+    _log.debug("BEGIN:findUserByName repository start - page: {}, size: {}, name: {}, authority: {}", [
+      page,
+      size,
+      name,
+      authority,
+    ]);
     final queryParams = {"page": page.toString(), "size": size.toString(), "name": name, "authority": authority};
     final response = await HttpUtils.getRequest("/admin/$_resource/filter", queryParams: queryParams);
     var result = JsonMapper.deserialize<List<User>>(response.body)!;

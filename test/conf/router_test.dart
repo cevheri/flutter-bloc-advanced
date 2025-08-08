@@ -22,20 +22,12 @@ void main() {
     final goRouter = GoRouter(
       initialLocation: '/',
       routes: [
-        GoRoute(
-          path: '/',
-          builder: (context, state) => child,
-        ),
-        GoRoute(
-          path: '/home',
-          builder: (context, state) => const SizedBox(),
-        ),
+        GoRoute(path: '/', builder: (context, state) => child),
+        GoRoute(path: '/home', builder: (context, state) => const SizedBox()),
       ],
     );
 
-    return MaterialApp.router(
-      routerConfig: goRouter,
-    );
+    return MaterialApp.router(routerConfig: goRouter);
   }
 
   group('AppRouter Tests', () {
@@ -54,42 +46,45 @@ void main() {
 
     group('Navigation Tests', () {
       testWidgets(skip: true, 'pop should call strategy pop', (tester) async {
-        await tester.pumpWidget(buildTestableWidget(
-          child: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => router.pop(context),
-              child: const Text('Pop'),
+        await tester.pumpWidget(
+          buildTestableWidget(
+            child: Builder(
+              builder: (context) => TextButton(onPressed: () => router.pop(context), child: const Text('Pop')),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Pop'));
         await tester.pumpAndSettle();
       });
 
       testWidgets('push should call strategy push', (tester) async {
-        await tester.pumpWidget(buildTestableWidget(
-          child: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => router.push(context, ApplicationRoutesConstants.home),
-              child: const Text('Push'),
+        await tester.pumpWidget(
+          buildTestableWidget(
+            child: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => router.push(context, ApplicationRoutesConstants.home),
+                child: const Text('Push'),
+              ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Push'));
         await tester.pumpAndSettle();
       });
 
       testWidgets('pushReplacement should call strategy pushReplacement', (tester) async {
-        await tester.pumpWidget(buildTestableWidget(
-          child: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => router.pushReplacement(context, ApplicationRoutesConstants.home),
-              child: const Text('Replace'),
+        await tester.pumpWidget(
+          buildTestableWidget(
+            child: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => router.pushReplacement(context, ApplicationRoutesConstants.home),
+                child: const Text('Replace'),
+              ),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Replace'));
         await tester.pumpAndSettle();
@@ -98,14 +93,14 @@ void main() {
 
     group('Error Handling Tests', () {
       testWidgets(skip: true, 'should handle invalid routes gracefully', (tester) async {
-        await tester.pumpWidget(buildTestableWidget(
-          child: Builder(
-            builder: (context) => TextButton(
-              onPressed: () => router.push(context, '/invalid-route'),
-              child: const Text('Invalid'),
+        await tester.pumpWidget(
+          buildTestableWidget(
+            child: Builder(
+              builder: (context) =>
+                  TextButton(onPressed: () => router.push(context, '/invalid-route'), child: const Text('Invalid')),
             ),
           ),
-        ));
+        );
 
         await tester.tap(find.text('Invalid'));
         expect(tester.takeException(), isA<Exception>());

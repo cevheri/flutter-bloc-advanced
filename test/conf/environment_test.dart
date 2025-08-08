@@ -33,7 +33,7 @@ void main() {
       '/login-otp',
       '/login-otp-verify',
       '/authenticate/send-otp',
-      '/authenticate/verify-otp'
+      '/authenticate/verify-otp',
     ]);
   });
 }

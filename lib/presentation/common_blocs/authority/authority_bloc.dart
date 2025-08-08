@@ -16,8 +16,8 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
   final AuthorityRepository _repository;
 
   AuthorityBloc({required AuthorityRepository repository})
-      : _repository = repository,
-        super(const AuthorityInitialState()) {
+    : _repository = repository,
+      super(const AuthorityInitialState()) {
     on<AuthorityEvent>((event, emit) {});
     on<AuthorityLoad>(_onLoad);
   }

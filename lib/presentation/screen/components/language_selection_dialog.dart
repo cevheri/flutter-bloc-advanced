@@ -16,28 +16,18 @@ class LanguageSelectionDialog extends StatelessWidget {
     final l10n = S.of(context);
 
     return AlertDialog(
-      title: Text(
-        l10n.language_select,
-        style: theme.textTheme.titleLarge,
-        textAlign: TextAlign.center,
-      ),
+      title: Text(l10n.language_select, style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
       actionsAlignment: MainAxisAlignment.center,
       actions: [
         TextButton(
           style: TextButton.styleFrom(backgroundColor: theme.colorScheme.primary),
           onPressed: () => _setLanguage(context, 'tr'),
-          child: Text(
-            l10n.turkish,
-            style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary),
-          ),
+          child: Text(l10n.turkish, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
         ),
         TextButton(
           style: TextButton.styleFrom(backgroundColor: theme.colorScheme.primary),
           onPressed: () => _setLanguage(context, 'en'),
-          child: Text(
-            l10n.english,
-            style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary),
-          ),
+          child: Text(l10n.english, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
         ),
       ],
     );
