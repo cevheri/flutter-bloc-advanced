@@ -22,13 +22,13 @@ class DashboardPage extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              _DashboardHeader(),
+              const _DashboardHeader(),
               const SizedBox(height: 16),
               _SummaryCardsRow(isWide: isWide),
               const SizedBox(height: 16),
-              _KpiPlaceholder(),
+              const _KpiPlaceholder(),
               const SizedBox(height: 16),
-              _TwoColumns(left: _RecentActivityList(), right: _QuickActionsGrid(), isWide: isWide),
+              _TwoColumns(left: const _RecentActivityList(), right: const _QuickActionsGrid(), isWide: isWide),
             ],
           ),
         );
@@ -38,6 +38,7 @@ class DashboardPage extends StatelessWidget {
 }
 
 class _DashboardHeader extends StatelessWidget {
+  const _DashboardHeader();
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
@@ -69,9 +70,9 @@ class _SummaryCardsRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final children = [
-      _SummaryCard(label: 'Leads', value: '120', trend: 8),
-      _SummaryCard(label: 'Customers', value: '54', trend: -2),
-      _SummaryCard(label: 'Revenue', value: '₺12.500', trend: 12),
+      const _SummaryCard(label: 'Leads', value: '120', trend: 8),
+      const _SummaryCard(label: 'Customers', value: '54', trend: -2),
+      const _SummaryCard(label: 'Revenue', value: '₺12.500', trend: 12),
     ];
     if (isWide) {
       return Row(
@@ -111,7 +112,7 @@ class _SummaryCard extends StatelessWidget {
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: color.primary.withOpacity(0.12),
+            backgroundColor: color.primary.withValues(alpha: 0.12),
             child: Icon(icon, color: color.primary),
           ),
           const SizedBox(width: 12),
@@ -139,6 +140,7 @@ class _SummaryCard extends StatelessWidget {
 }
 
 class _KpiPlaceholder extends StatelessWidget {
+  const _KpiPlaceholder();
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
@@ -177,6 +179,7 @@ class _TwoColumns extends StatelessWidget {
 }
 
 class _RecentActivityList extends StatelessWidget {
+  const _RecentActivityList();
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
@@ -218,6 +221,7 @@ class _ActivityTile extends StatelessWidget {
 }
 
 class _QuickActionsGrid extends StatelessWidget {
+  const _QuickActionsGrid();
   @override
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;

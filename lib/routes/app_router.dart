@@ -169,7 +169,7 @@ class GoRouterStrategy implements RouterStrategy {
 class AutoRouteStrategy implements RouterStrategy {
   @override
   Future<void> pop(BuildContext context) async {
-    auto_route.AutoRouter.of(context).popForced();
+    auto_route.AutoRouter.of(context).pop();
     // auto_route.AutoRouter.of(context).maybePop();
     // auto_route.AutoRouter.of(context).back();
   }
@@ -182,13 +182,11 @@ class AutoRouteStrategy implements RouterStrategy {
     Map<String, dynamic> kwargs = const {},
   }) async {
     if (args != null && kwargs.isNotEmpty) {
-      // final pathParams = args as Map<String, String>;
-      // final queryParams = kwargs;
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamed(routeName, arguments: args);
     } else if (args != null) {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamed(routeName, arguments: args);
     } else {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamed(routeName);
     }
   }
 
@@ -200,13 +198,11 @@ class AutoRouteStrategy implements RouterStrategy {
     Map<String, dynamic> kwargs = const {},
   }) async {
     if (args != null && kwargs.isNotEmpty) {
-      // final pathParams = args as Map<String, String>;
-      // final queryParams = kwargs;
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
     } else if (args != null) {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
     } else {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false);
     }
   }
 
@@ -218,13 +214,11 @@ class AutoRouteStrategy implements RouterStrategy {
     Map<String, dynamic> kwargs = const {},
   }) async {
     if (args != null && kwargs.isNotEmpty) {
-      // final pathParams = args as Map<String, String>;
-      // final queryParams = kwargs;
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushReplacementNamed(routeName, arguments: args);
     } else if (args != null) {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushReplacementNamed(routeName, arguments: args);
     } else {
-      auto_route.AutoRouter.of(context).pushNamed(routeName);
+      Navigator.of(context).pushReplacementNamed(routeName);
     }
   }
 }

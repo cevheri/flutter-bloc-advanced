@@ -173,8 +173,9 @@ class HttpUtils {
     debugPrint("BEGIN: GET Request Method start : ${ProfileConstants.api}$endpoint");
 
     /// if isMock is true, return mock data instead of making a request
-    if (!ProfileConstants.isProduction)
-      return (await mockRequest('GET', endpoint, pathParams: pathParams, queryParams: queryParams));
+    if (!ProfileConstants.isProduction) {
+      return await mockRequest('GET', endpoint, pathParams: pathParams, queryParams: queryParams);
+    }
     final http.Response response;
     final headers = await HttpUtils.headers();
     try {
@@ -271,8 +272,9 @@ class HttpUtils {
     Map<String, String>? queryParams,
   }) async {
     debugPrint("BEGIN: DELETE Request Method start : ${ProfileConstants.api}$endpoint");
-    if (!ProfileConstants.isProduction)
+    if (!ProfileConstants.isProduction) {
       return await mockRequest('DELETE', endpoint, pathParams: pathParams, queryParams: queryParams);
+    }
     var headers = await HttpUtils.headers();
     final http.Response response;
     try {
