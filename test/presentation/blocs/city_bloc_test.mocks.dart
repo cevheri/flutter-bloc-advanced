@@ -6,7 +6,8 @@
 import 'dart:async' as _i3;
 
 import 'package:flutter_bloc_advance/data/models/city.dart' as _i4;
-import 'package:flutter_bloc_advance/data/repository/city_repository.dart' as _i2;
+import 'package:flutter_bloc_advance/data/repository/city_repository.dart'
+    as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -33,20 +34,34 @@ class MockCityRepository extends _i1.Mock implements _i2.CityRepository {
 
   @override
   _i3.Future<_i4.City?> create(_i4.City? city) =>
-      (super.noSuchMethod(Invocation.method(#create, [city]), returnValue: _i3.Future<_i4.City?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#create, [city]),
+            returnValue: _i3.Future<_i4.City?>.value(),
+          )
           as _i3.Future<_i4.City?>);
 
   @override
-  _i3.Future<List<_i4.City?>> list({int? page = 0, int? size = 10, List<String>? sort = const ['id,desc']}) =>
+  _i3.Future<List<_i4.City?>> list({
+    int? page = 0,
+    int? size = 10,
+    List<String>? sort = const ['id,desc'],
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#list, [], {#page: page, #size: size, #sort: sort}),
+            Invocation.method(#list, [], {
+              #page: page,
+              #size: size,
+              #sort: sort,
+            }),
             returnValue: _i3.Future<List<_i4.City?>>.value(<_i4.City?>[]),
           )
           as _i3.Future<List<_i4.City?>>);
 
   @override
   _i3.Future<_i4.City?> retrieve(String? id) =>
-      (super.noSuchMethod(Invocation.method(#retrieve, [id]), returnValue: _i3.Future<_i4.City?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i3.Future<_i4.City?>.value(),
+          )
           as _i3.Future<_i4.City?>);
 
   @override

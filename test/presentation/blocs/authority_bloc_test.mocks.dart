@@ -6,7 +6,8 @@
 import 'dart:async' as _i3;
 
 import 'package:flutter_bloc_advance/data/models/authority.dart' as _i4;
-import 'package:flutter_bloc_advance/data/repository/authority_repository.dart' as _i2;
+import 'package:flutter_bloc_advance/data/repository/authority_repository.dart'
+    as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -26,24 +27,34 @@ import 'package:mockito/mockito.dart' as _i1;
 /// A class which mocks [AuthorityRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthorityRepository extends _i1.Mock implements _i2.AuthorityRepository {
+class MockAuthorityRepository extends _i1.Mock
+    implements _i2.AuthorityRepository {
   MockAuthorityRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i3.Future<_i4.Authority?> create(_i4.Authority? authority) =>
-      (super.noSuchMethod(Invocation.method(#create, [authority]), returnValue: _i3.Future<_i4.Authority?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#create, [authority]),
+            returnValue: _i3.Future<_i4.Authority?>.value(),
+          )
           as _i3.Future<_i4.Authority?>);
 
   @override
   _i3.Future<List<String?>> list() =>
-      (super.noSuchMethod(Invocation.method(#list, []), returnValue: _i3.Future<List<String?>>.value(<String?>[]))
+      (super.noSuchMethod(
+            Invocation.method(#list, []),
+            returnValue: _i3.Future<List<String?>>.value(<String?>[]),
+          )
           as _i3.Future<List<String?>>);
 
   @override
   _i3.Future<_i4.Authority?> retrieve(String? id) =>
-      (super.noSuchMethod(Invocation.method(#retrieve, [id]), returnValue: _i3.Future<_i4.Authority?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i3.Future<_i4.Authority?>.value(),
+          )
           as _i3.Future<_i4.Authority?>);
 
   @override

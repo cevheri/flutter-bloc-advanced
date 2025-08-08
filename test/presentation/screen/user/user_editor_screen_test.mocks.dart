@@ -8,10 +8,14 @@ import 'dart:async' as _i4;
 import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
 import 'package:flutter_bloc_advance/data/models/authority.dart' as _i9;
 import 'package:flutter_bloc_advance/data/models/user.dart' as _i7;
-import 'package:flutter_bloc_advance/data/repository/authority_repository.dart' as _i8;
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart' as _i6;
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart' as _i3;
-import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user_bloc.dart' as _i2;
+import 'package:flutter_bloc_advance/data/repository/authority_repository.dart'
+    as _i8;
+import 'package:flutter_bloc_advance/data/repository/user_repository.dart'
+    as _i6;
+import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart'
+    as _i3;
+import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user_bloc.dart'
+    as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -29,11 +33,14 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeUserState_0 extends _i1.SmartFake implements _i2.UserState {
-  _FakeUserState_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+  _FakeUserState_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
-class _FakeAuthorityState_1 extends _i1.SmartFake implements _i3.AuthorityState {
-  _FakeAuthorityState_1(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+class _FakeAuthorityState_1 extends _i1.SmartFake
+    implements _i3.AuthorityState {
+  _FakeAuthorityState_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [UserBloc].
@@ -46,28 +53,42 @@ class MockUserBloc extends _i1.Mock implements _i2.UserBloc {
 
   @override
   _i2.UserState get state =>
-      (super.noSuchMethod(Invocation.getter(#state), returnValue: _FakeUserState_0(this, Invocation.getter(#state)))
+      (super.noSuchMethod(
+            Invocation.getter(#state),
+            returnValue: _FakeUserState_0(this, Invocation.getter(#state)),
+          )
           as _i2.UserState);
 
   @override
   _i4.Stream<_i2.UserState> get stream =>
-      (super.noSuchMethod(Invocation.getter(#stream), returnValue: _i4.Stream<_i2.UserState>.empty())
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i4.Stream<_i2.UserState>.empty(),
+          )
           as _i4.Stream<_i2.UserState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false) as bool);
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
 
   @override
-  void add(_i2.UserEvent? event) =>
-      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
+  void add(_i2.UserEvent? event) => super.noSuchMethod(
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onEvent(_i2.UserEvent? event) =>
-      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
+  void onEvent(_i2.UserEvent? event) => super.noSuchMethod(
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void emit(_i2.UserState? state) =>
-      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
+  void emit(_i2.UserState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i2.UserEvent>(
@@ -80,7 +101,10 @@ class MockUserBloc extends _i1.Mock implements _i2.UserBloc {
 
   @override
   void onTransition(_i5.Transition<_i2.UserEvent, _i2.UserState>? transition) =>
-      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
+      super.noSuchMethod(
+        Invocation.method(#onTransition, [transition]),
+        returnValueForMissingStub: null,
+      );
 
   @override
   _i4.Future<void> close() =>
@@ -92,16 +116,22 @@ class MockUserBloc extends _i1.Mock implements _i2.UserBloc {
           as _i4.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i2.UserState>? change) =>
-      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
+  void onChange(_i5.Change<_i2.UserState>? change) => super.noSuchMethod(
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void addError(Object? error, [StackTrace? stackTrace]) =>
-      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(Object? error, StackTrace? stackTrace) =>
-      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }
 
 /// A class which mocks [UserRepository].
@@ -114,34 +144,58 @@ class MockUserRepository extends _i1.Mock implements _i6.UserRepository {
 
   @override
   _i4.Future<_i7.User?> retrieve(String? id) =>
-      (super.noSuchMethod(Invocation.method(#retrieve, [id]), returnValue: _i4.Future<_i7.User?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i4.Future<_i7.User?>.value(),
+          )
           as _i4.Future<_i7.User?>);
 
   @override
   _i4.Future<_i7.User?> retrieveByLogin(String? login) =>
-      (super.noSuchMethod(Invocation.method(#retrieveByLogin, [login]), returnValue: _i4.Future<_i7.User?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#retrieveByLogin, [login]),
+            returnValue: _i4.Future<_i7.User?>.value(),
+          )
           as _i4.Future<_i7.User?>);
 
   @override
   _i4.Future<_i7.User?> create(_i7.User? user) =>
-      (super.noSuchMethod(Invocation.method(#create, [user]), returnValue: _i4.Future<_i7.User?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#create, [user]),
+            returnValue: _i4.Future<_i7.User?>.value(),
+          )
           as _i4.Future<_i7.User?>);
 
   @override
   _i4.Future<_i7.User?> update(_i7.User? user) =>
-      (super.noSuchMethod(Invocation.method(#update, [user]), returnValue: _i4.Future<_i7.User?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#update, [user]),
+            returnValue: _i4.Future<_i7.User?>.value(),
+          )
           as _i4.Future<_i7.User?>);
 
   @override
-  _i4.Future<List<_i7.User>> list({int? page = 0, int? size = 10, List<String>? sort = const ['id,desc']}) =>
+  _i4.Future<List<_i7.User>> list({
+    int? page = 0,
+    int? size = 10,
+    List<String>? sort = const ['id,desc'],
+  }) =>
       (super.noSuchMethod(
-            Invocation.method(#list, [], {#page: page, #size: size, #sort: sort}),
+            Invocation.method(#list, [], {
+              #page: page,
+              #size: size,
+              #sort: sort,
+            }),
             returnValue: _i4.Future<List<_i7.User>>.value(<_i7.User>[]),
           )
           as _i4.Future<List<_i7.User>>);
 
   @override
-  _i4.Future<List<_i7.User>> listByAuthority(int? page, int? size, String? authority) =>
+  _i4.Future<List<_i7.User>> listByAuthority(
+    int? page,
+    int? size,
+    String? authority,
+  ) =>
       (super.noSuchMethod(
             Invocation.method(#listByAuthority, [page, size, authority]),
             returnValue: _i4.Future<List<_i7.User>>.value(<_i7.User>[]),
@@ -149,9 +203,19 @@ class MockUserRepository extends _i1.Mock implements _i6.UserRepository {
           as _i4.Future<List<_i7.User>>);
 
   @override
-  _i4.Future<List<_i7.User>> listByNameAndRole(int? page, int? size, String? name, String? authority) =>
+  _i4.Future<List<_i7.User>> listByNameAndRole(
+    int? page,
+    int? size,
+    String? name,
+    String? authority,
+  ) =>
       (super.noSuchMethod(
-            Invocation.method(#listByNameAndRole, [page, size, name, authority]),
+            Invocation.method(#listByNameAndRole, [
+              page,
+              size,
+              name,
+              authority,
+            ]),
             returnValue: _i4.Future<List<_i7.User>>.value(<_i7.User>[]),
           )
           as _i4.Future<List<_i7.User>>);
@@ -184,23 +248,34 @@ class MockAuthorityBloc extends _i1.Mock implements _i3.AuthorityBloc {
 
   @override
   _i4.Stream<_i3.AuthorityState> get stream =>
-      (super.noSuchMethod(Invocation.getter(#stream), returnValue: _i4.Stream<_i3.AuthorityState>.empty())
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i4.Stream<_i3.AuthorityState>.empty(),
+          )
           as _i4.Stream<_i3.AuthorityState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false) as bool);
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
 
   @override
-  void add(_i3.AuthorityEvent? event) =>
-      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
+  void add(_i3.AuthorityEvent? event) => super.noSuchMethod(
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onEvent(_i3.AuthorityEvent? event) =>
-      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
+  void onEvent(_i3.AuthorityEvent? event) => super.noSuchMethod(
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void emit(_i3.AuthorityState? state) =>
-      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
+  void emit(_i3.AuthorityState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i3.AuthorityEvent>(
@@ -212,8 +287,12 @@ class MockAuthorityBloc extends _i1.Mock implements _i3.AuthorityBloc {
   );
 
   @override
-  void onTransition(_i5.Transition<_i3.AuthorityEvent, _i3.AuthorityState>? transition) =>
-      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
+  void onTransition(
+    _i5.Transition<_i3.AuthorityEvent, _i3.AuthorityState>? transition,
+  ) => super.noSuchMethod(
+    Invocation.method(#onTransition, [transition]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   _i4.Future<void> close() =>
@@ -225,39 +304,55 @@ class MockAuthorityBloc extends _i1.Mock implements _i3.AuthorityBloc {
           as _i4.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i3.AuthorityState>? change) =>
-      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
+  void onChange(_i5.Change<_i3.AuthorityState>? change) => super.noSuchMethod(
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void addError(Object? error, [StackTrace? stackTrace]) =>
-      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(Object? error, StackTrace? stackTrace) =>
-      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }
 
 /// A class which mocks [AuthorityRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockAuthorityRepository extends _i1.Mock implements _i8.AuthorityRepository {
+class MockAuthorityRepository extends _i1.Mock
+    implements _i8.AuthorityRepository {
   MockAuthorityRepository() {
     _i1.throwOnMissingStub(this);
   }
 
   @override
   _i4.Future<_i9.Authority?> create(_i9.Authority? authority) =>
-      (super.noSuchMethod(Invocation.method(#create, [authority]), returnValue: _i4.Future<_i9.Authority?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#create, [authority]),
+            returnValue: _i4.Future<_i9.Authority?>.value(),
+          )
           as _i4.Future<_i9.Authority?>);
 
   @override
   _i4.Future<List<String?>> list() =>
-      (super.noSuchMethod(Invocation.method(#list, []), returnValue: _i4.Future<List<String?>>.value(<String?>[]))
+      (super.noSuchMethod(
+            Invocation.method(#list, []),
+            returnValue: _i4.Future<List<String?>>.value(<String?>[]),
+          )
           as _i4.Future<List<String?>>);
 
   @override
   _i4.Future<_i9.Authority?> retrieve(String? id) =>
-      (super.noSuchMethod(Invocation.method(#retrieve, [id]), returnValue: _i4.Future<_i9.Authority?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#retrieve, [id]),
+            returnValue: _i4.Future<_i9.Authority?>.value(),
+          )
           as _i4.Future<_i9.Authority?>);
 
   @override
