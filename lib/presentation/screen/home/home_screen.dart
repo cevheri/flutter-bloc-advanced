@@ -11,6 +11,7 @@ import '../../../data/repository/menu_repository.dart';
 import '../../common_blocs/account/account.dart';
 import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../../common_widgets/drawer/drawer_widget.dart';
+import '../dashboard/dashboard_page.dart';
 
 class HomeScreen extends StatelessWidget {
   HomeScreen({super.key});
@@ -45,7 +46,7 @@ class HomeScreen extends StatelessWidget {
                 title: const Text(AppConstants.appName),
               ),
               key: _scaffoldKey,
-              body: Center(child: Column(children: [backgroundImage(context)])),
+              body: const DashboardPage(),
               drawer: _buildDrawer(context),
             );
           }
