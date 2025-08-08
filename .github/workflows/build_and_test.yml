@@ -29,7 +29,7 @@ jobs:
       - name: Setup Dart
         uses: dart-lang/setup-dart@v1.7.1
         with:
-          dart-version: 3.8.1
+          sdk: '3.8.1'
 
       - name: Setup Java JDK 17
         uses: actions/setup-java@v4
