@@ -61,13 +61,22 @@ A specification for adding human and machine readable meaning to commit messages
 
 ## [Unreleased]()
 ### Added
-- None
+- Dashboard: model, mock repository, cubit, and basic UI wiring.
+- Dashboard: provide `DashboardCubit` with mock repository in `HomeScreen`.
+- Dashboard: quick actions redesigned as chip-like buttons with a “More” bottom-sheet.
+- Web build: add build web actions.
 
 ### Changed
-- None
+- Drawer: refactor state management and initialization.
+- Icon utilities: replace `string_2_icon` with `icon_utils` and update drawer widget.
+- Formatting: set Dart formatter `page_width` to 125 in `analysis_options.yaml`; clean up trailing newlines and apply consistent formatting.
+- Dependencies: update Flutter and package versions.
+- Dashboard: initial design/wireframe, repo scan, and baseline tests.
 
 ### Fixed
-- None
+- Theme: resolve race-condition during theme switching.
+- Dashboard: remove direct `part` import from `HomeScreen`.
+- Web: fix web build and deploy to target.
 
 ### Removed
 - None
