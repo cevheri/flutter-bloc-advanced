@@ -1,4 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/utils/icon_utils.dart';
+
+import 'bloc/dashboard_cubit.dart';
+import '../../../data/models/dashboard_model.dart';
 
 /// DashboardPage body widget
 ///
@@ -217,6 +222,17 @@ class _QuickActionsGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final color = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final state = context.watch<DashboardCubit>().state;
+
+    final List<DashboardQuickAction> actions = state.status == DashboardStatus.loaded
+        ? state.model!.quickActions
+        : const [
+            DashboardQuickAction(id: 'qa1', label: 'New Lead', icon: 'person_add'),
+            DashboardQuickAction(id: 'qa2', label: 'Add Task', icon: 'task'),
+            DashboardQuickAction(id: 'qa3', label: 'New Deal', icon: 'wallet'),
+            DashboardQuickAction(id: 'qa4', label: 'Send Email', icon: 'email'),
+          ];
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -228,50 +244,70 @@ class _QuickActionsGrid extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text('Quick Actions', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          GridView.count(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            children: const [
-              _QuickActionTile(icon: Icons.person_add, label: 'New Lead'),
-              _QuickActionTile(icon: Icons.task_alt, label: 'Add Task'),
-              _QuickActionTile(icon: Icons.wallet, label: 'New Deal'),
-              _QuickActionTile(icon: Icons.email, label: 'Send Email'),
-            ],
-          ),
+          const SizedBox(height: 12),
+          Wrap(spacing: 8, runSpacing: 8, children: actions.take(6).map((a) => _ActionButton(action: a)).toList()),
+          if (actions.length > 6) ...[
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton.icon(
+                onPressed: () => _showAllActions(context, actions),
+                icon: const Icon(Icons.more_horiz),
+                label: const Text('More'),
+              ),
+            ),
+          ],
         ],
       ),
     );
   }
+
+  void _showAllActions(BuildContext context, List<DashboardQuickAction> actions) {
+    showModalBottomSheet(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) {
+        return SafeArea(
+          child: ListView.separated(
+            itemCount: actions.length,
+            separatorBuilder: (_, __) => const Divider(height: 1),
+            itemBuilder: (_, i) {
+              final a = actions[i];
+              return ListTile(
+                leading: Icon(getIconFromString(a.icon)),
+                title: Text(a.label),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.of(ctx).pop();
+                  _onActionTap(context, a);
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _onActionTap(BuildContext context, DashboardQuickAction action) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
+  }
 }
 
-class _QuickActionTile extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _QuickActionTile({required this.icon, required this.label});
+class _ActionButton extends StatelessWidget {
+  final DashboardQuickAction action;
+  const _ActionButton({required this.action});
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
-    return InkWell(
-      borderRadius: BorderRadius.circular(12),
-      onTap: () {},
-      child: Container(
-        decoration: BoxDecoration(color: color.secondaryContainer, borderRadius: BorderRadius.circular(12)),
-        child: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, color: color.onSecondaryContainer),
-              const SizedBox(height: 6),
-              Text(label),
-            ],
-          ),
-        ),
-      ),
+    return FilledButton.tonalIcon(
+      onPressed: () => _onTap(context),
+      icon: Icon(getIconFromString(action.icon)),
+      label: Text(action.label),
     );
+  }
+
+  void _onTap(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
   }
 }
