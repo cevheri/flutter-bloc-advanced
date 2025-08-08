@@ -47,4 +47,4 @@ analyzer:
 # Dart formatter configuration
 # Requires a recent Dart SDK that supports reading formatter options from analysis_options.yaml
 formatter:
-  page_width: 125
+  page_width: 120

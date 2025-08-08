@@ -34,7 +34,13 @@ class AppLocalStorageCached {
     language = await AppLocalStorage().read(StorageKeys.language.name) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.name);
     theme = await AppLocalStorage().read(StorageKeys.theme.name) ?? AdaptiveThemeMode.light.name;
-    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}", [username, roles, language, jwtToken, theme]);
+    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}", [
+      username,
+      roles,
+      language,
+      jwtToken,
+      theme,
+    ]);
   }
 }
 

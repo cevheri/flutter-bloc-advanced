@@ -62,7 +62,10 @@ void main() {
       expect(() async => await DistrictRepository().create(const District()), throwsA(isA<BadRequestException>()));
     });
     test("Given null district when create then return district fail", () async {
-      expect(() async => await DistrictRepository().create(const District(name: "")), throwsA(isA<BadRequestException>()));
+      expect(
+        () async => await DistrictRepository().create(const District(name: "")),
+        throwsA(isA<BadRequestException>()),
+      );
     });
   });
 

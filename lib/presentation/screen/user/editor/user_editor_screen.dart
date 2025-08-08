@@ -17,12 +17,7 @@ class UserEditorScreen extends StatelessWidget {
   final String? username;
   final EditorFormMode mode;
 
-  const UserEditorScreen({
-    super.key,
-    this.id,
-    this.username,
-    required this.mode,
-  });
+  const UserEditorScreen({super.key, this.id, this.username, required this.mode});
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +30,7 @@ class UserEditorScreen extends StatelessWidget {
 }
 
 _showMessage(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String title, String content) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-    content: Text(content),
-    duration: const Duration(seconds: 2),
-  ));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content), duration: const Duration(seconds: 2)));
 }
 
 class UserEditorWidget extends StatelessWidget {
@@ -67,10 +59,7 @@ class UserEditorWidget extends StatelessWidget {
       },
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
-        return Scaffold(
-          appBar: _buildAppBar(context),
-          body: _buildBody(context, state),
-        );
+        return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context, state));
       },
     );
   }
@@ -115,14 +104,8 @@ class UserEditorWidget extends StatelessWidget {
         title: Text(S.of(context).warning),
         content: Text(S.of(context).unsaved_changes),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: Text(S.of(context).yes),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(S.of(context).no),
-          ),
+          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(S.of(context).yes)),
+          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(S.of(context).no)),
         ],
       ),
     );
@@ -162,12 +145,13 @@ class UserEditorWidget extends StatelessWidget {
 
   Widget _backButtonField(BuildContext context) {
     return ResponsiveSubmitButton(
-        key: const Key('userEditorFormBackButtonKey'),
-        buttonText: S.of(context).back,
-        onPressed: () {
-          context.go(ApplicationRoutesConstants.userList);
-          context.read<UserBloc>().add(const UserViewCompleteEvent());
-        });
+      key: const Key('userEditorFormBackButtonKey'),
+      buttonText: S.of(context).back,
+      onPressed: () {
+        context.go(ApplicationRoutesConstants.userList);
+        context.read<UserBloc>().add(const UserViewCompleteEvent());
+      },
+    );
   }
 
   //TODO loading state

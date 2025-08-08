@@ -21,12 +21,10 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
   final LoginRepository _loginRepository;
   final MenuRepository _menuRepository;
 
-  DrawerBloc({
-    required LoginRepository loginRepository,
-    required MenuRepository menuRepository,
-  })  : _loginRepository = loginRepository,
-        _menuRepository = menuRepository,
-        super(const DrawerState()) {
+  DrawerBloc({required LoginRepository loginRepository, required MenuRepository menuRepository})
+    : _loginRepository = loginRepository,
+      _menuRepository = menuRepository,
+      super(const DrawerState()) {
     on<LoadMenus>(_loadMenus);
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
@@ -80,12 +78,7 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
 
   FutureOr<void> _loadMenus(LoadMenus event, Emitter<DrawerState> emit) async {
     _log.debug("BEGIN: loadMenus LoadMenus event: {}", []);
-    emit(state.copyWith(
-      menus: [],
-      status: DrawerStateStatus.loading,
-      language: event.language,
-      theme: event.theme,
-    ));
+    emit(state.copyWith(menus: [], status: DrawerStateStatus.loading, language: event.language, theme: event.theme));
     try {
       if (MenuListCache.menus.isNotEmpty) {
         emit(state.copyWith(menus: MenuListCache.menus, status: DrawerStateStatus.success));

@@ -20,7 +20,6 @@ class TestUtils {
   /// 4. Equatable Configuration <p>
   /// 5. Mock Method Call Handler for Path Provider <p>
 
-
   Future<void> setupUnitTest() async {
     AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
     ProfileConstants.setEnvironment(Environment.test);
@@ -31,6 +30,7 @@ class TestUtils {
     await AppLocalStorage().save(StorageKeys.language.name, "en");
     AppRouter().setRouter(RouterType.goRouter);
   }
+
   Future<void> setupRepositoryUnitTest() async {
     AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
     ProfileConstants.setEnvironment(Environment.test);
@@ -43,7 +43,7 @@ class TestUtils {
   Future<void> tearDownUnitTest() async {
     return await _clearStorage();
   }
-  
+
   // add mock token to storage
   Future<void> setupAuthentication() async {
     await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");

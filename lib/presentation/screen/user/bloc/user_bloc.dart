@@ -15,10 +15,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   static final _log = AppLogger.getLogger("UserBloc");
   final UserRepository _repository;
 
-  UserBloc({
-    required UserRepository repository,
-  })  : _repository = repository,
-        super(const UserState()) {
+  UserBloc({required UserRepository repository}) : _repository = repository, super(const UserState()) {
     on<UserEvent>((event, emit) {});
     on<UserSearchEvent>(_onSearch);
     on<UserFetchEvent>(_onFetchUser);
@@ -93,10 +90,15 @@ class UserBloc extends Bloc<UserEvent, UserState> {
         emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
         _log.debug("END:onSearch UserSearch event success - list. content count: {}", [entities.length]);
         return;
-      } else if (event.name != null && event.name!.isNotEmpty && event.authorities != null && event.authorities!.isNotEmpty) {
+      } else if (event.name != null &&
+          event.name!.isNotEmpty &&
+          event.authorities != null &&
+          event.authorities!.isNotEmpty) {
         final entities = await _repository.listByNameAndRole(event.page, event.size, event.name!, event.authorities!);
         emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
-        _log.debug("END:onSearch UserSearch event with name success - name and authority content count: {}", [entities.length]);
+        _log.debug("END:onSearch UserSearch event with name success - name and authority content count: {}", [
+          entities.length,
+        ]);
         return;
       } else if (event.authorities != null && event.authorities!.isNotEmpty) {
         final entities = await _repository.listByAuthority(event.page, event.size, event.authorities!);

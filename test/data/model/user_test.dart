@@ -7,8 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import '../../fake/user_data.dart';
 
 /// Test the User model
-void main() { 
-
+void main() {
   setUp(() {
     initializeJsonMapper();
   });

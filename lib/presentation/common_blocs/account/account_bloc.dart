@@ -16,9 +16,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   static final _log = AppLogger.getLogger("AccountBloc");
   final AccountRepository _repository;
 
-  AccountBloc({required AccountRepository repository})
-      : _repository = repository,
-        super(const AccountState()) {
+  AccountBloc({required AccountRepository repository}) : _repository = repository, super(const AccountState()) {
     on<AccountEvent>((event, emit) {});
     on<AccountFetchEvent>(_onFetchAccount);
     on<AccountSubmitEvent>(_onSubmit);

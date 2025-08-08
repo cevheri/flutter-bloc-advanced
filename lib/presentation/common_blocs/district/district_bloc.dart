@@ -16,8 +16,8 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
   final DistrictRepository _repository;
 
   DistrictBloc({required DistrictRepository repository})
-      : _repository = repository,
-        super(const DistrictInitialState()) {
+    : _repository = repository,
+      super(const DistrictInitialState()) {
     on<DistrictEvent>((event, emit) {});
     on<DistrictLoad>(_onLoad);
     on<DistrictLoadByCity>(_onLoadByCity);

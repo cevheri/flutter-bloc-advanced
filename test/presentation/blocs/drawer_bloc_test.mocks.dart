@@ -9,12 +9,9 @@ import 'package:flutter_bloc_advance/data/models/jwt_token.dart' as _i4;
 import 'package:flutter_bloc_advance/data/models/menu.dart' as _i9;
 import 'package:flutter_bloc_advance/data/models/send_otp_request.dart' as _i6;
 import 'package:flutter_bloc_advance/data/models/user_jwt.dart' as _i5;
-import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart'
-    as _i7;
-import 'package:flutter_bloc_advance/data/repository/login_repository.dart'
-    as _i2;
-import 'package:flutter_bloc_advance/data/repository/menu_repository.dart'
-    as _i8;
+import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart' as _i7;
+import 'package:flutter_bloc_advance/data/repository/login_repository.dart' as _i2;
+import 'package:flutter_bloc_advance/data/repository/menu_repository.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -41,43 +38,31 @@ class MockLoginRepository extends _i1.Mock implements _i2.LoginRepository {
 
   @override
   _i3.Future<_i4.JWTToken?> authenticate(_i5.UserJWT? userJWT) =>
+      (super.noSuchMethod(Invocation.method(#authenticate, [userJWT]), returnValue: _i3.Future<_i4.JWTToken?>.value())
+          as _i3.Future<_i4.JWTToken?>);
+
+  @override
+  _i3.Future<void> logout() =>
       (super.noSuchMethod(
-        Invocation.method(
-          #authenticate,
-          [userJWT],
-        ),
-        returnValue: _i3.Future<_i4.JWTToken?>.value(),
-      ) as _i3.Future<_i4.JWTToken?>);
+            Invocation.method(#logout, []),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 
   @override
-  _i3.Future<void> logout() => (super.noSuchMethod(
-        Invocation.method(
-          #logout,
-          [],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
-
-  @override
-  _i3.Future<void> sendOtp(_i6.SendOtpRequest? request) => (super.noSuchMethod(
-        Invocation.method(
-          #sendOtp,
-          [request],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+  _i3.Future<void> sendOtp(_i6.SendOtpRequest? request) =>
+      (super.noSuchMethod(
+            Invocation.method(#sendOtp, [request]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 
   @override
   _i3.Future<_i4.JWTToken?> verifyOtp(_i7.VerifyOtpRequest? request) =>
-      (super.noSuchMethod(
-        Invocation.method(
-          #verifyOtp,
-          [request],
-        ),
-        returnValue: _i3.Future<_i4.JWTToken?>.value(),
-      ) as _i3.Future<_i4.JWTToken?>);
+      (super.noSuchMethod(Invocation.method(#verifyOtp, [request]), returnValue: _i3.Future<_i4.JWTToken?>.value())
+          as _i3.Future<_i4.JWTToken?>);
 }
 
 /// A class which mocks [MenuRepository].
@@ -89,11 +74,7 @@ class MockMenuRepository extends _i1.Mock implements _i8.MenuRepository {
   }
 
   @override
-  _i3.Future<List<_i9.Menu>> list() => (super.noSuchMethod(
-        Invocation.method(
-          #list,
-          [],
-        ),
-        returnValue: _i3.Future<List<_i9.Menu>>.value(<_i9.Menu>[]),
-      ) as _i3.Future<List<_i9.Menu>>);
+  _i3.Future<List<_i9.Menu>> list() =>
+      (super.noSuchMethod(Invocation.method(#list, []), returnValue: _i3.Future<List<_i9.Menu>>.value(<_i9.Menu>[]))
+          as _i3.Future<List<_i9.Menu>>);
 }

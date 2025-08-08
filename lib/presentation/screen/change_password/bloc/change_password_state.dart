@@ -10,9 +10,7 @@ class ChangePasswordState extends Equatable {
   const ChangePasswordState({this.status = ChangePasswordStatus.initial});
 
   ChangePasswordState copyWith({ChangePasswordStatus? status}) {
-    return ChangePasswordState(
-      status: status ?? this.status,
-    );
+    return ChangePasswordState(status: status ?? this.status);
   }
 
   @override

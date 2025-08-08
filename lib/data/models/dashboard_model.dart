@@ -18,7 +18,8 @@ class DashboardSummary extends Equatable {
     trend: (json['trend'] as num).toInt(),
   );
 
-  static List<DashboardSummary> fromJsonList(List<dynamic> list) => list.map((e) => DashboardSummary.fromJson(e)).toList();
+  static List<DashboardSummary> fromJsonList(List<dynamic> list) =>
+      list.map((e) => DashboardSummary.fromJson(e)).toList();
 
   @override
   List<Object?> get props => [id, label, value, trend];
@@ -48,7 +49,8 @@ class DashboardActivity extends Equatable {
     type: json['type'] as String,
   );
 
-  static List<DashboardActivity> fromJsonList(List<dynamic> list) => list.map((e) => DashboardActivity.fromJson(e)).toList();
+  static List<DashboardActivity> fromJsonList(List<dynamic> list) =>
+      list.map((e) => DashboardActivity.fromJson(e)).toList();
 
   @override
   List<Object?> get props => [id, title, subtitle, time, type];

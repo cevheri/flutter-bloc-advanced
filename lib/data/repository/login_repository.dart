@@ -31,7 +31,10 @@ class LoginRepository {
   Future<JWTToken?> authenticate(UserJWT userJWT) async {
     _log.debug("BEGIN:authenticate repository start username: {}", [userJWT.username]);
     JWTToken? result;
-    if (userJWT.username == null || userJWT.username!.isEmpty || userJWT.password == null || userJWT.password!.isEmpty) {
+    if (userJWT.username == null ||
+        userJWT.username!.isEmpty ||
+        userJWT.password == null ||
+        userJWT.password!.isEmpty) {
       throw BadRequestException("Invalid username or password");
     }
 
@@ -72,7 +75,11 @@ class LoginRepository {
     }
 
     final headers = {"Content-Type": "application/json"};
-    final response = await HttpUtils.postRequest<VerifyOtpRequest>("/authenticate/verify-otp", request, headers: headers);
+    final response = await HttpUtils.postRequest<VerifyOtpRequest>(
+      "/authenticate/verify-otp",
+      request,
+      headers: headers,
+    );
     return JWTToken.fromJsonString(response.body);
   }
 }

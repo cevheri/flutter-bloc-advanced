@@ -6,8 +6,7 @@
 import 'dart:async' as _i3;
 
 import 'package:flutter_bloc_advance/data/models/district.dart' as _i4;
-import 'package:flutter_bloc_advance/data/repository/district_repository.dart'
-    as _i2;
+import 'package:flutter_bloc_advance/data/repository/district_repository.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -27,8 +26,7 @@ import 'package:mockito/mockito.dart' as _i1;
 /// A class which mocks [DistrictRepository].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockDistrictRepository extends _i1.Mock
-    implements _i2.DistrictRepository {
+class MockDistrictRepository extends _i1.Mock implements _i2.DistrictRepository {
   MockDistrictRepository() {
     _i1.throwOnMissingStub(this);
   }
@@ -36,58 +34,35 @@ class MockDistrictRepository extends _i1.Mock
   @override
   _i3.Future<List<_i4.District?>> listByCity(String? cityId) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #listByCity,
-          [cityId],
-        ),
-        returnValue: _i3.Future<List<_i4.District?>>.value(<_i4.District?>[]),
-      ) as _i3.Future<List<_i4.District?>>);
+            Invocation.method(#listByCity, [cityId]),
+            returnValue: _i3.Future<List<_i4.District?>>.value(<_i4.District?>[]),
+          )
+          as _i3.Future<List<_i4.District?>>);
 
   @override
   _i3.Future<_i4.District?> create(_i4.District? district) =>
+      (super.noSuchMethod(Invocation.method(#create, [district]), returnValue: _i3.Future<_i4.District?>.value())
+          as _i3.Future<_i4.District?>);
+
+  @override
+  _i3.Future<List<_i4.District?>> list({int? page = 0, int? size = 10, List<String>? sort = const ['id,desc']}) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #create,
-          [district],
-        ),
-        returnValue: _i3.Future<_i4.District?>.value(),
-      ) as _i3.Future<_i4.District?>);
+            Invocation.method(#list, [], {#page: page, #size: size, #sort: sort}),
+            returnValue: _i3.Future<List<_i4.District?>>.value(<_i4.District?>[]),
+          )
+          as _i3.Future<List<_i4.District?>>);
 
   @override
-  _i3.Future<List<_i4.District?>> list({
-    int? page = 0,
-    int? size = 10,
-    List<String>? sort = const ['id,desc'],
-  }) =>
+  _i3.Future<_i4.District?> retrieve(String? id) =>
+      (super.noSuchMethod(Invocation.method(#retrieve, [id]), returnValue: _i3.Future<_i4.District?>.value())
+          as _i3.Future<_i4.District?>);
+
+  @override
+  _i3.Future<void> delete(String? id) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #list,
-          [],
-          {
-            #page: page,
-            #size: size,
-            #sort: sort,
-          },
-        ),
-        returnValue: _i3.Future<List<_i4.District?>>.value(<_i4.District?>[]),
-      ) as _i3.Future<List<_i4.District?>>);
-
-  @override
-  _i3.Future<_i4.District?> retrieve(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #retrieve,
-          [id],
-        ),
-        returnValue: _i3.Future<_i4.District?>.value(),
-      ) as _i3.Future<_i4.District?>);
-
-  @override
-  _i3.Future<void> delete(String? id) => (super.noSuchMethod(
-        Invocation.method(
-          #delete,
-          [id],
-        ),
-        returnValue: _i3.Future<void>.value(),
-        returnValueForMissingStub: _i3.Future<void>.value(),
-      ) as _i3.Future<void>);
+            Invocation.method(#delete, [id]),
+            returnValue: _i3.Future<void>.value(),
+            returnValueForMissingStub: _i3.Future<void>.value(),
+          )
+          as _i3.Future<void>);
 }

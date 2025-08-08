@@ -64,16 +64,28 @@ void main() {
       expect(const ChangePasswordState().copyWith(), const ChangePasswordState());
     });
     test("copyWith initialState", () {
-      expect(const ChangePasswordInitialState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.initial));
+      expect(
+        const ChangePasswordInitialState().copyWith(),
+        const ChangePasswordState(status: ChangePasswordStatus.initial),
+      );
     });
     test("copyWith loadingState", () {
-      expect(const ChangePasswordLoadingState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.loading));
+      expect(
+        const ChangePasswordLoadingState().copyWith(),
+        const ChangePasswordState(status: ChangePasswordStatus.loading),
+      );
     });
     test("copyWith passwordCompletedState", () {
-      expect(const ChangePasswordCompletedState().copyWith(), const ChangePasswordState(status: ChangePasswordStatus.success));
+      expect(
+        const ChangePasswordCompletedState().copyWith(),
+        const ChangePasswordState(status: ChangePasswordStatus.success),
+      );
     });
     test("copyWith passwordErrorState", () {
-      expect(const ChangePasswordErrorState(message: "").copyWith(), const ChangePasswordState(status: ChangePasswordStatus.failure));
+      expect(
+        const ChangePasswordErrorState(message: "").copyWith(),
+        const ChangePasswordState(status: ChangePasswordStatus.failure),
+      );
     });
   });
   //endregion state
@@ -98,7 +110,10 @@ void main() {
   /// ChangePasswordBloc Tests
   group("ChangePasswordBloc", () {
     test("initial state is LoginState", () {
-      expect(ChangePasswordBloc(repository: repository).state, const ChangePasswordState(status: ChangePasswordStatus.initial));
+      expect(
+        ChangePasswordBloc(repository: repository).state,
+        const ChangePasswordState(status: ChangePasswordStatus.initial),
+      );
     });
 
     group("ChangePasswordChanged", () {

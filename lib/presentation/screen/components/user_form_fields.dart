@@ -26,7 +26,8 @@ class UserFormFields {
   /// [initialValue] String? initial value of the field
   /// [enabled] bool enable the field default is true
   /// return TextField
-  static Widget usernameField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
+  static Widget usernameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
+      FormBuilderTextField(
         key: const Key('userEditorLoginFieldKey'),
         name: 'login',
         enabled: enabled,
@@ -42,7 +43,8 @@ class UserFormFields {
   /// [initialValue] String? initial value of the field
   /// [enabled] bool enable the field default is true
   /// return TextField
-  static Widget firstNameField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
+  static Widget firstNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
+      FormBuilderTextField(
         key: const Key('userEditorFirstNameFieldKey'),
         enabled: enabled,
         initialValue: initialValue,
@@ -58,7 +60,8 @@ class UserFormFields {
   /// [initialValue] String? initial value of the field
   /// [enabled] bool enable the field default is true
   /// return TextField
-  static Widget lastNameField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
+  static Widget lastNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
+      FormBuilderTextField(
         key: const Key('userEditorLastNameFieldKey'),
         enabled: enabled,
         initialValue: initialValue,
@@ -75,16 +78,16 @@ class UserFormFields {
   /// [enabled] bool enable the field default is true
   /// return TextField
   static Widget emailField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
-        key: const Key('userEditorEmailFieldKey'),
-        enabled: enabled,
-        initialValue: initialValue,
-        name: 'email',
-        decoration: InputDecoration(labelText: S.of(context).email),
-        validator: FormBuilderValidators.compose([
-          ..._txtValidator(context),
-          FormBuilderValidators.email(errorText: S.of(context).email_pattern),
-        ]),
-      );
+    key: const Key('userEditorEmailFieldKey'),
+    enabled: enabled,
+    initialValue: initialValue,
+    name: 'email',
+    decoration: InputDecoration(labelText: S.of(context).email),
+    validator: FormBuilderValidators.compose([
+      ..._txtValidator(context),
+      FormBuilderValidators.email(errorText: S.of(context).email_pattern),
+    ]),
+  );
 
   /// Activated field
   /// This field is a switch that is used to display the activated.
@@ -94,11 +97,12 @@ class UserFormFields {
   /// [enabled] bool enable the field default is true
   /// return Switch
   static Widget activatedField(BuildContext context, bool? initialValue, {bool enabled = true}) => FormBuilderSwitch(
-      key: const Key('userEditorActivatedFieldKey'),
-      enabled: enabled,
-      initialValue: initialValue,
-      name: 'activated',
-      title: Text(S.of(context).active));
+    key: const Key('userEditorActivatedFieldKey'),
+    enabled: enabled,
+    initialValue: initialValue,
+    name: 'activated',
+    title: Text(S.of(context).active),
+  );
 
   /// Authorities dropDown field
   /// This field is a dropDown field that is used to display the authorities.
@@ -106,7 +110,8 @@ class UserFormFields {
   /// [context] BuildContext current context
   /// [initialValue] List<String>? initial value of the field
   /// [enabled] bool enable the field default is true
-  static Widget authoritiesField(BuildContext context, List<String?>? initialValue, {bool enabled = true}) => FormBuilderDropdown<String>(
+  static Widget authoritiesField(BuildContext context, List<String?>? initialValue, {bool enabled = true}) =>
+      FormBuilderDropdown<String>(
         key: const Key('userEditorAuthoritiesFieldKey'),
         name: 'authorities',
         enabled: enabled,

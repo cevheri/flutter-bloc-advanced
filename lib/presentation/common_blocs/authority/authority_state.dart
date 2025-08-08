@@ -11,19 +11,10 @@ class AuthorityState extends Equatable {
   final List<String?> authorities;
   final AuthorityStatus status;
 
-  const AuthorityState({
-    this.authorities = const [],
-    this.status = AuthorityStatus.initial,
-  });
+  const AuthorityState({this.authorities = const [], this.status = AuthorityStatus.initial});
 
-  AuthorityState copyWith({
-    List<String?>? authorities,
-    AuthorityStatus? status,
-  }) {
-    return AuthorityState(
-      status: status ?? this.status,
-      authorities: authorities ?? this.authorities,
-    );
+  AuthorityState copyWith({List<String?>? authorities, AuthorityStatus? status}) {
+    return AuthorityState(status: status ?? this.status, authorities: authorities ?? this.authorities);
   }
 
   @override

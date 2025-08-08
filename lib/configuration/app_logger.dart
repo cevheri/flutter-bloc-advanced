@@ -21,11 +21,7 @@ class AppLogger {
     _name = name;
   }
 
-  static void configure({
-    required bool isProduction,
-    bool logToFile = false,
-    LogFormat logFormat = LogFormat.simple,
-  }) {
+  static void configure({required bool isProduction, bool logToFile = false, LogFormat logFormat = LogFormat.simple}) {
     _level = isProduction ? Level.info : Level.debug;
     _logFormat = logFormat;
     final simple = SimplePrinter(printTime: true);

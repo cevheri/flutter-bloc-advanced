@@ -96,12 +96,14 @@ void main() {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.post(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-          body: anyNamed('body'),
-          encoding: anyNamed('encoding'),
-        )).thenAnswer((_) async => http.Response('{"success": true}', 200));
+        when(
+          mockClient.post(
+            Uri.parse('https://dhw-api.onrender.com/api/test'),
+            headers: anyNamed('headers'),
+            body: anyNamed('body'),
+            encoding: anyNamed('encoding'),
+          ),
+        ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
         final response = await HttpUtils.postRequest('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
@@ -111,54 +113,63 @@ void main() {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.post(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-          body: anyNamed('body'),
-          encoding: anyNamed('encoding'),
-        )).thenThrow(const SocketException('No Internet Connection'));
+        when(
+          mockClient.post(
+            Uri.parse('https://dhw-api.onrender.com/api/test'),
+            headers: anyNamed('headers'),
+            body: anyNamed('body'),
+            encoding: anyNamed('encoding'),
+          ),
+        ).thenThrow(const SocketException('No Internet Connection'));
 
         expect(HttpUtils.postRequest('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
         await expectLater(
-            HttpUtils.postRequest('/test', {'data': 'test'}),
-            throwsA(allOf([
+          HttpUtils.postRequest('/test', {'data': 'test'}),
+          throwsA(
+            allOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
-              predicate((e) => e.toString().contains('No Internet connection'))
-            ])));
+              predicate((e) => e.toString().contains('No Internet connection')),
+            ]),
+          ),
+        );
       });
 
       test('given valid data when post request is made then should return TimeoutException', () async {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.post(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-          body: anyNamed('body'),
-          encoding: anyNamed('encoding'),
-        )).thenThrow(TimeoutException('Timeout Exception'));
+        when(
+          mockClient.post(
+            Uri.parse('https://dhw-api.onrender.com/api/test'),
+            headers: anyNamed('headers'),
+            body: anyNamed('body'),
+            encoding: anyNamed('encoding'),
+          ),
+        ).thenThrow(TimeoutException('Timeout Exception'));
 
         expect(HttpUtils.postRequest('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
         await expectLater(
-            HttpUtils.postRequest('/test', {'data': 'test'}),
-            throwsA(anyOf([
+          HttpUtils.postRequest('/test', {'data': 'test'}),
+          throwsA(
+            anyOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
               predicate((e) => e.toString().contains('No Internet connection')),
               predicate((e) => e.toString().contains('Timeout Exception')),
               predicate((e) => e.toString().contains('Timeout')),
-            ])));
+            ]),
+          ),
+        );
       });
 
       test('given valid data when get request is made then should return success 200', () async {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.get(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenAnswer((_) async => http.Response('{"success": true}', 200));
+        when(
+          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
         final response = await HttpUtils.getRequest('/test');
         expect(response.statusCode, lessThan(300));
@@ -169,20 +180,22 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
 
-        when(mockClient.get(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenThrow(const SocketException('No Internet Connection'));
+        when(
+          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenThrow(const SocketException('No Internet Connection'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<FetchDataException>()));
 
         await expectLater(
-            HttpUtils.getRequest('/test'),
-            throwsA(allOf([
+          HttpUtils.getRequest('/test'),
+          throwsA(
+            allOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
-              predicate((e) => e.toString().contains('No Internet connection'))
-            ])));
+              predicate((e) => e.toString().contains('No Internet connection')),
+            ]),
+          ),
+        );
       });
 
       test('given no AccessToken when get request is made then should throw UnauthorizedException', () async {
@@ -190,19 +203,16 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
 
-        when(mockClient.get(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenThrow(UnauthorizedException('Unauthorized'));
+        when(
+          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenThrow(UnauthorizedException('Unauthorized'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<UnauthorizedException>()));
 
         await expectLater(
-            HttpUtils.getRequest('/test'),
-            throwsA(allOf([
-              isA<UnauthorizedException>(),
-              predicate((e) => e.toString().contains('Unauthorized')),
-            ])));
+          HttpUtils.getRequest('/test'),
+          throwsA(allOf([isA<UnauthorizedException>(), predicate((e) => e.toString().contains('Unauthorized'))])),
+        );
       });
 
       test('given no internet connection when get request is made then should throw SocketException', () async {
@@ -210,20 +220,22 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
 
-        when(mockClient.get(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenThrow(const SocketException('No Internet Connection'));
+        when(
+          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenThrow(const SocketException('No Internet Connection'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<FetchDataException>()));
 
         await expectLater(
-            HttpUtils.getRequest('/test'),
-            throwsA(allOf([
+          HttpUtils.getRequest('/test'),
+          throwsA(
+            allOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
-              predicate((e) => e.toString().contains('No Internet connection'))
-            ])));
+              predicate((e) => e.toString().contains('No Internet connection')),
+            ]),
+          ),
+        );
       });
 
       test('given no internet connection when get request is made then should throw TimeoutException', () async {
@@ -232,34 +244,38 @@ void main() {
         HttpUtils.setHttpClient(mockClient);
         await TestUtils().setupAuthentication();
 
-        when(mockClient.get(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenThrow(TimeoutException('Timeout'));
+        when(
+          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenThrow(TimeoutException('Timeout'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<FetchDataException>()));
 
         await expectLater(
-            HttpUtils.getRequest('/test'),
-            throwsA(anyOf([
+          HttpUtils.getRequest('/test'),
+          throwsA(
+            anyOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
               predicate((e) => e.toString().contains('No Internet connection')),
               predicate((e) => e.toString().contains('TimeoutException')),
-              predicate((e) => e.toString().contains('Timeout'))
-            ])));
+              predicate((e) => e.toString().contains('Timeout')),
+            ]),
+          ),
+        );
       });
 
       test('given valid data when put request is made then should return success 200', () async {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.put(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-          body: anyNamed('body'),
-          encoding: anyNamed('encoding'),
-        )).thenAnswer((_) async => http.Response('{"success": true}', 200));
+        when(
+          mockClient.put(
+            Uri.parse('https://dhw-api.onrender.com/api/test'),
+            headers: anyNamed('headers'),
+            body: anyNamed('body'),
+            encoding: anyNamed('encoding'),
+          ),
+        ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
         final response = await HttpUtils.putRequest('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
@@ -269,48 +285,58 @@ void main() {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.put(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-          body: anyNamed('body'),
-          encoding: anyNamed('encoding'),
-        )).thenThrow(const SocketException('No Internet connection'));
+        when(
+          mockClient.put(
+            Uri.parse('https://dhw-api.onrender.com/api/test'),
+            headers: anyNamed('headers'),
+            body: anyNamed('body'),
+            encoding: anyNamed('encoding'),
+          ),
+        ).thenThrow(const SocketException('No Internet connection'));
 
         await expectLater(HttpUtils.putRequest('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
 
         await expectLater(
-            HttpUtils.putRequest('/test', {'data': 'test'}),
-            throwsA(anyOf([
+          HttpUtils.putRequest('/test', {'data': 'test'}),
+          throwsA(
+            anyOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
               predicate((e) => e.toString().contains('No Internet connection')),
               predicate((e) => e.toString().contains('Request timeout')),
               predicate((e) => e.toString().contains('TimeoutException')),
-              predicate((e) => e.toString().contains('Timeout'))
-            ])));
+              predicate((e) => e.toString().contains('Timeout')),
+            ]),
+          ),
+        );
       });
       test('given network timeout when put request is made then should throw TimeoutException', () async {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.put(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-          body: anyNamed('body'),
-          encoding: anyNamed('encoding'),
-        )).thenThrow(TimeoutException('Timeout'));
+        when(
+          mockClient.put(
+            Uri.parse('https://dhw-api.onrender.com/api/test'),
+            headers: anyNamed('headers'),
+            body: anyNamed('body'),
+            encoding: anyNamed('encoding'),
+          ),
+        ).thenThrow(TimeoutException('Timeout'));
 
         await expectLater(HttpUtils.putRequest('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
 
         await expectLater(
-            HttpUtils.putRequest('/test', {'data': 'test'}),
-            throwsA(anyOf([
+          HttpUtils.putRequest('/test', {'data': 'test'}),
+          throwsA(
+            anyOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
               predicate((e) => e.toString().contains('Request timeout')),
               predicate((e) => e.toString().contains('TimeoutException')),
-              predicate((e) => e.toString().contains('Timeout'))
-            ])));
+              predicate((e) => e.toString().contains('Timeout')),
+            ]),
+          ),
+        );
       });
 
       group('PATCH', () {
@@ -318,12 +344,14 @@ void main() {
           // ProfileConstants.isProduction = true;
           ProfileConstants.setEnvironment(Environment.prod);
           HttpUtils.setHttpClient(mockClient);
-          when(mockClient.patch(
-            Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
-          )).thenAnswer((_) async => http.Response('{"success": true}', 200));
+          when(
+            mockClient.patch(
+              Uri.parse('https://dhw-api.onrender.com/api/test'),
+              headers: anyNamed('headers'),
+              body: anyNamed('body'),
+              encoding: anyNamed('encoding'),
+            ),
+          ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
           final response = await HttpUtils.patchRequest('/test', {'data': 'test'});
           expect(response.statusCode, lessThan(300));
@@ -333,48 +361,58 @@ void main() {
           // ProfileConstants.isProduction = true;
           ProfileConstants.setEnvironment(Environment.prod);
           HttpUtils.setHttpClient(mockClient);
-          when(mockClient.patch(
-            Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
-          )).thenThrow(const SocketException('No Internet connection'));
+          when(
+            mockClient.patch(
+              Uri.parse('https://dhw-api.onrender.com/api/test'),
+              headers: anyNamed('headers'),
+              body: anyNamed('body'),
+              encoding: anyNamed('encoding'),
+            ),
+          ).thenThrow(const SocketException('No Internet connection'));
 
           await expectLater(HttpUtils.patchRequest('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
 
           await expectLater(
-              HttpUtils.patchRequest('/test', {'data': 'test'}),
-              throwsA(anyOf([
+            HttpUtils.patchRequest('/test', {'data': 'test'}),
+            throwsA(
+              anyOf([
                 isA<FetchDataException>(),
                 predicate((e) => e.toString().contains('Error During Communication')),
                 predicate((e) => e.toString().contains('No Internet connection')),
                 predicate((e) => e.toString().contains('Request timeout')),
                 predicate((e) => e.toString().contains('TimeoutException')),
-                predicate((e) => e.toString().contains('Timeout'))
-              ])));
+                predicate((e) => e.toString().contains('Timeout')),
+              ]),
+            ),
+          );
         });
         test('given network timeout when patch request is made then should throw TimeoutException', () async {
           // ProfileConstants.isProduction = true;
           ProfileConstants.setEnvironment(Environment.prod);
           HttpUtils.setHttpClient(mockClient);
-          when(mockClient.patch(
-            Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
-          )).thenThrow(TimeoutException('Timeout'));
+          when(
+            mockClient.patch(
+              Uri.parse('https://dhw-api.onrender.com/api/test'),
+              headers: anyNamed('headers'),
+              body: anyNamed('body'),
+              encoding: anyNamed('encoding'),
+            ),
+          ).thenThrow(TimeoutException('Timeout'));
 
           await expectLater(HttpUtils.patchRequest('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
 
           await expectLater(
-              HttpUtils.patchRequest('/test', {'data': 'test'}),
-              throwsA(anyOf([
+            HttpUtils.patchRequest('/test', {'data': 'test'}),
+            throwsA(
+              anyOf([
                 isA<FetchDataException>(),
                 predicate((e) => e.toString().contains('Error During Communication')),
                 predicate((e) => e.toString().contains('Request timeout')),
                 predicate((e) => e.toString().contains('TimeoutException')),
-                predicate((e) => e.toString().contains('Timeout'))
-              ])));
+                predicate((e) => e.toString().contains('Timeout')),
+              ]),
+            ),
+          );
         });
       });
 
@@ -382,10 +420,9 @@ void main() {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.delete(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenAnswer((_) async => http.Response('{"success": true}', 204));
+        when(
+          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenAnswer((_) async => http.Response('{"success": true}', 204));
 
         final response = await HttpUtils.deleteRequest('/test');
         expect(response.statusCode, lessThan(300));
@@ -395,54 +432,59 @@ void main() {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.delete(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenAnswer((_) async => http.Response('{"error": "Unauthorized"}', 401));
+        when(
+          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenAnswer((_) async => http.Response('{"error": "Unauthorized"}', 401));
 
         await expectLater(HttpUtils.deleteRequest('/test'), throwsA(isA<UnauthorizedException>()));
 
-        await expectLater(HttpUtils.deleteRequest('/test'),
-            throwsA(allOf([isA<UnauthorizedException>(), predicate((e) => e.toString().contains('Unauthorized'))])));
+        await expectLater(
+          HttpUtils.deleteRequest('/test'),
+          throwsA(allOf([isA<UnauthorizedException>(), predicate((e) => e.toString().contains('Unauthorized'))])),
+        );
       });
 
       test('given unauthorized user when delete request is made then should throw SocketException', () async {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.delete(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenThrow(const SocketException('No Internet connection'));
+        when(
+          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenThrow(const SocketException('No Internet connection'));
 
         expect(HttpUtils.deleteRequest('/test'), throwsA(isA<FetchDataException>()));
         await expectLater(
-            HttpUtils.deleteRequest('/test'),
-            throwsA(allOf([
+          HttpUtils.deleteRequest('/test'),
+          throwsA(
+            allOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
-              predicate((e) => e.toString().contains('No Internet connection'))
-            ])));
+              predicate((e) => e.toString().contains('No Internet connection')),
+            ]),
+          ),
+        );
       });
 
       test('given unauthorized user when delete request is made then should throw TimeoutException', () async {
         // ProfileConstants.isProduction = true;
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
-        when(mockClient.delete(
-          Uri.parse('https://dhw-api.onrender.com/api/test'),
-          headers: anyNamed('headers'),
-        )).thenThrow(TimeoutException('TimeoutException'));
+        when(
+          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+        ).thenThrow(TimeoutException('TimeoutException'));
 
         expect(HttpUtils.deleteRequest('/test'), throwsA(isA<FetchDataException>()));
         await expectLater(
-            HttpUtils.deleteRequest('/test'),
-            throwsA(anyOf([
+          HttpUtils.deleteRequest('/test'),
+          throwsA(
+            anyOf([
               isA<FetchDataException>(),
               predicate((e) => e.toString().contains('Error During Communication')),
               predicate((e) => e.toString().contains('Request timeout')),
-              predicate((e) => e.toString().contains('TimeoutException'))
-            ])));
+              predicate((e) => e.toString().contains('TimeoutException')),
+            ]),
+          ),
+        );
       });
 
       group('Mock Requests', () {
@@ -453,18 +495,24 @@ void main() {
           final response = await HttpUtils.mockRequest('GET', '/test');
           expect(response.statusCode, lessThan(300));
         });
-        test('given development environment without AccessToken when GET request is made then should return 401 error', () async {
-          // ProfileConstants.isProduction = true;
-          ProfileConstants.setEnvironment(Environment.dev);
-          expect(() => HttpUtils.mockRequest('GET', '/test'), throwsA(isA<UnauthorizedException>()));
-          await expectLater(
+        test(
+          'given development environment without AccessToken when GET request is made then should return 401 error',
+          () async {
+            // ProfileConstants.isProduction = true;
+            ProfileConstants.setEnvironment(Environment.dev);
+            expect(() => HttpUtils.mockRequest('GET', '/test'), throwsA(isA<UnauthorizedException>()));
+            await expectLater(
               HttpUtils.mockRequest('GET', '/test'),
-              throwsA(allOf([
-                isA<UnauthorizedException>(),
-                predicate((e) => e.toString().contains('Unauthorized')),
-                predicate((e) => e.toString().contains('Unauthorized Access'))
-              ])));
-        });
+              throwsA(
+                allOf([
+                  isA<UnauthorizedException>(),
+                  predicate((e) => e.toString().contains('Unauthorized')),
+                  predicate((e) => e.toString().contains('Unauthorized Access')),
+                ]),
+              ),
+            );
+          },
+        );
 
         test('given development environment when POST request is made then should return 200 status code', () async {
           // ProfileConstants.isProduction = true;
@@ -474,18 +522,24 @@ void main() {
           expect(response.statusCode, lessThan(300));
         });
 
-        test('given development environment without AccessToken when POST request is made then should return 401 error', () async {
-          // ProfileConstants.isProduction = true;
-          ProfileConstants.setEnvironment(Environment.dev);
-          expect(() => HttpUtils.mockRequest('POST', '/test'), throwsA(isA<UnauthorizedException>()));
-          await expectLater(
+        test(
+          'given development environment without AccessToken when POST request is made then should return 401 error',
+          () async {
+            // ProfileConstants.isProduction = true;
+            ProfileConstants.setEnvironment(Environment.dev);
+            expect(() => HttpUtils.mockRequest('POST', '/test'), throwsA(isA<UnauthorizedException>()));
+            await expectLater(
               HttpUtils.mockRequest('POST', '/test'),
-              throwsA(allOf([
-                isA<UnauthorizedException>(),
-                predicate((e) => e.toString().contains('Unauthorized')),
-                predicate((e) => e.toString().contains('Unauthorized Access'))
-              ])));
-        });
+              throwsA(
+                allOf([
+                  isA<UnauthorizedException>(),
+                  predicate((e) => e.toString().contains('Unauthorized')),
+                  predicate((e) => e.toString().contains('Unauthorized Access')),
+                ]),
+              ),
+            );
+          },
+        );
 
         test('given development environment when PUT request is made then should return 200 status code', () async {
           // ProfileConstants.isProduction = true;
@@ -495,18 +549,24 @@ void main() {
           expect(response.statusCode, lessThan(300));
         });
 
-        test('given development environment without AccessToken when PUT request is made then should return 401 error', () async {
-          // ProfileConstants.isProduction = true;
-          ProfileConstants.setEnvironment(Environment.dev);
-          expect(() => HttpUtils.mockRequest('PUT', '/test'), throwsA(isA<UnauthorizedException>()));
-          await expectLater(
+        test(
+          'given development environment without AccessToken when PUT request is made then should return 401 error',
+          () async {
+            // ProfileConstants.isProduction = true;
+            ProfileConstants.setEnvironment(Environment.dev);
+            expect(() => HttpUtils.mockRequest('PUT', '/test'), throwsA(isA<UnauthorizedException>()));
+            await expectLater(
               HttpUtils.mockRequest('PUT', '/test'),
-              throwsA(allOf([
-                isA<UnauthorizedException>(),
-                predicate((e) => e.toString().contains('Unauthorized')),
-                predicate((e) => e.toString().contains('Unauthorized Access'))
-              ])));
-        });
+              throwsA(
+                allOf([
+                  isA<UnauthorizedException>(),
+                  predicate((e) => e.toString().contains('Unauthorized')),
+                  predicate((e) => e.toString().contains('Unauthorized Access')),
+                ]),
+              ),
+            );
+          },
+        );
 
         test('given development environment when DELETE request is made then should return 200 status code', () async {
           // ProfileConstants.isProduction = true;
@@ -516,18 +576,24 @@ void main() {
           expect(response.statusCode, lessThan(300));
         });
 
-        test('given development environment without AccessToken when DELETE request is made then should return 401 error', () async {
-          // ProfileConstants.isProduction = true;
-          ProfileConstants.setEnvironment(Environment.dev);
-          expect(() => HttpUtils.mockRequest('DELETE', '/test'), throwsA(isA<UnauthorizedException>()));
-          await expectLater(
+        test(
+          'given development environment without AccessToken when DELETE request is made then should return 401 error',
+          () async {
+            // ProfileConstants.isProduction = true;
+            ProfileConstants.setEnvironment(Environment.dev);
+            expect(() => HttpUtils.mockRequest('DELETE', '/test'), throwsA(isA<UnauthorizedException>()));
+            await expectLater(
               HttpUtils.mockRequest('DELETE', '/test'),
-              throwsA(allOf([
-                isA<UnauthorizedException>(),
-                predicate((e) => e.toString().contains('Unauthorized')),
-                predicate((e) => e.toString().contains('Unauthorized Access'))
-              ])));
-        });
+              throwsA(
+                allOf([
+                  isA<UnauthorizedException>(),
+                  predicate((e) => e.toString().contains('Unauthorized')),
+                  predicate((e) => e.toString().contains('Unauthorized Access')),
+                ]),
+              ),
+            );
+          },
+        );
       });
     });
   });

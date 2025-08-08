@@ -1,4 +1,3 @@
-
 /// GetX Router Configuration
 /// WARN: Not Tested
 class AppGetRouterConfig {

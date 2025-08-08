@@ -11,15 +11,9 @@ class AccountState extends Equatable {
   final User? data;
   final AccountStatus status;
 
-  const AccountState({
-    this.data,
-    this.status = AccountStatus.initial,
-  });
+  const AccountState({this.data, this.status = AccountStatus.initial});
 
-  AccountState copyWith({
-    User? data,
-    AccountStatus? status,
-  }) {
+  AccountState copyWith({User? data, AccountStatus? status}) {
     return AccountState(status: status ?? this.status, data: data ?? this.data);
   }
 

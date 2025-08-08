@@ -11,7 +11,7 @@ void main() {
       expect(AppConstants.appName, 'FlutterTemplate');
     });
     test('appVersion should be 1.0.0', () {
-      expect(AppConstants.appVersion,  AppConstants.appVersion);
+      expect(AppConstants.appVersion, AppConstants.appVersion);
     });
     test('appDescription should be', () {
       expect(AppConstants.appDescription, 'Flutter Template with BLOC and Clean Architecture');

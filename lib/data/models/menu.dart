@@ -134,7 +134,19 @@ class Menu extends Equatable {
   Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
 
   @override
-  List<Object?> get props => [id, name, description, url, icon, orderPriority, active, parent, level, leaf, authorities];
+  List<Object?> get props => [
+    id,
+    name,
+    description,
+    url,
+    icon,
+    orderPriority,
+    active,
+    parent,
+    level,
+    leaf,
+    authorities,
+  ];
 
   @override
   bool get stringify => true;

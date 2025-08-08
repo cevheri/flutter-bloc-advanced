@@ -38,9 +38,11 @@ void main() {
     mockAuthorityBloc = MockAuthorityBloc();
     mockAuthorityRepository = MockAuthorityRepository();
 
-    when(mockAuthorityBloc.stream).thenAnswer((_) => Stream.fromIterable([
-          const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])
-        ]));
+    when(mockAuthorityBloc.stream).thenAnswer(
+      (_) => Stream.fromIterable([
+        const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
+      ]),
+    );
     when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
   });
 
@@ -49,16 +51,14 @@ void main() {
     UserRoutes.dispose();
   });
 
-  Widget buildTestableWidget({
-    required EditorFormMode mode,
-    String? id,
-  }) {
+  Widget buildTestableWidget({required EditorFormMode mode, String? id}) {
     // Initialize UserRoutes with mock objects
     UserRoutes.init(
-        userBloc: mockUserBloc,
-        userRepository: mockUserRepository,
-        authorityBloc: mockAuthorityBloc,
-        authorityRepository: mockAuthorityRepository);
+      userBloc: mockUserBloc,
+      userRepository: mockUserRepository,
+      authorityBloc: mockAuthorityBloc,
+      authorityRepository: mockAuthorityRepository,
+    );
 
     final router = GoRouter(
       initialLocation: id != null ? '/user/$id/${mode.name}' : '/user/new',
@@ -92,8 +92,12 @@ void main() {
       when(mockUserBloc.state).thenReturn(const UserState());
 
       // Set up AuthorityBloc
-      when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(mockAuthorityBloc.stream).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(
+        mockAuthorityBloc.state,
+      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(
+        mockAuthorityBloc.stream,
+      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // Mock UserBloc event handling
       when(mockUserBloc.add(any)).thenAnswer((invocation) {
@@ -161,10 +165,7 @@ void main() {
       });
 
       // ACT
-      await tester.pumpWidget(buildTestableWidget(
-        mode: EditorFormMode.edit,
-        id: userId,
-      ));
+      await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.edit, id: userId));
 
       // Wait for initial build
       await tester.pump();
@@ -204,8 +205,12 @@ void main() {
       when(mockUserBloc.state).thenReturn(const UserState(data: mockUser));
 
       // Set up AuthorityBloc
-      when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(mockAuthorityBloc.stream).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(
+        mockAuthorityBloc.state,
+      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(
+        mockAuthorityBloc.stream,
+      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // Mock UserBloc event handling
       when(mockUserBloc.add(any)).thenAnswer((invocation) {
@@ -215,10 +220,7 @@ void main() {
       });
 
       // ACT
-      await tester.pumpWidget(buildTestableWidget(
-        mode: EditorFormMode.view,
-        id: userId,
-      ));
+      await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.view, id: userId));
 
       // Wait for initial build
       await tester.pump();
@@ -228,10 +230,7 @@ void main() {
 
       // ASSERT
       final loginField = tester.widget<TextField>(
-        find.descendant(
-          of: find.byKey(const Key('userEditorLoginFieldKey')),
-          matching: find.byType(TextField),
-        ),
+        find.descendant(of: find.byKey(const Key('userEditorLoginFieldKey')), matching: find.byType(TextField)),
       );
       expect(loginField.enabled, false);
 
@@ -253,8 +252,12 @@ void main() {
       when(mockUserBloc.state).thenReturn(const UserState());
 
       // Set up AuthorityBloc
-      when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(mockAuthorityBloc.stream).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(
+        mockAuthorityBloc.state,
+      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(
+        mockAuthorityBloc.stream,
+      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // Mock UserBloc event handling
       when(mockUserBloc.add(any)).thenAnswer((invocation) {
@@ -293,12 +296,12 @@ void main() {
       when(mockUserBloc.state).thenReturn(const UserState());
 
       // Set up AuthorityBloc
-      when(mockAuthorityBloc.state).thenReturn(
-        const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
-      );
-      when(mockAuthorityBloc.stream).thenAnswer((_) => Stream.value(
-            const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
-          ));
+      when(
+        mockAuthorityBloc.state,
+      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(
+        mockAuthorityBloc.stream,
+      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // const newUser = User(
       //   login: 'newuser',
@@ -323,22 +326,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Fill form
-      await tester.enterText(
-        find.byKey(const Key('userEditorLoginFieldKey')),
-        'newuser',
-      );
-      await tester.enterText(
-        find.byKey(const Key('userEditorFirstNameFieldKey')),
-        'New',
-      );
-      await tester.enterText(
-        find.byKey(const Key('userEditorLastNameFieldKey')),
-        'User',
-      );
-      await tester.enterText(
-        find.byKey(const Key('userEditorEmailFieldKey')),
-        'new@example.com',
-      );
+      await tester.enterText(find.byKey(const Key('userEditorLoginFieldKey')), 'newuser');
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'New');
+      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'User');
+      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'new@example.com');
 
       // Submit form
       await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
@@ -358,12 +349,12 @@ void main() {
       when(mockUserBloc.state).thenReturn(const UserState());
 
       // Set up AuthorityBloc
-      when(mockAuthorityBloc.state).thenReturn(
-        const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
-      );
-      when(mockAuthorityBloc.stream).thenAnswer((_) => Stream.value(
-            const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
-          ));
+      when(
+        mockAuthorityBloc.state,
+      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(
+        mockAuthorityBloc.stream,
+      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // Mock UserBloc event handling
       when(mockUserBloc.add(any)).thenAnswer((invocation) {
@@ -377,10 +368,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Fill some data to make form dirty
-      await tester.enterText(
-        find.byKey(const Key('userEditorLoginFieldKey')),
-        'testuser',
-      );
+      await tester.enterText(find.byKey(const Key('userEditorLoginFieldKey')), 'testuser');
 
       // Tap back button
       await tester.tap(find.byIcon(Icons.arrow_back));

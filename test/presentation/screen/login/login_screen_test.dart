@@ -76,18 +76,9 @@ void main() {
             child: LoginScreen(),
           ),
         ),
-        GoRoute(
-          path: ApplicationRoutesConstants.register,
-          builder: (context, state) => const SizedBox(),
-        ),
-        GoRoute(
-          path: ApplicationRoutesConstants.forgotPassword,
-          builder: (context, state) => const SizedBox(),
-        ),
-        GoRoute(
-          path: ApplicationRoutesConstants.home,
-          builder: (context, state) => const SizedBox(),
-        ),
+        GoRoute(path: ApplicationRoutesConstants.register, builder: (context, state) => const SizedBox()),
+        GoRoute(path: ApplicationRoutesConstants.forgotPassword, builder: (context, state) => const SizedBox()),
+        GoRoute(path: ApplicationRoutesConstants.home, builder: (context, state) => const SizedBox()),
       ],
       redirect: (context, state) {
         // Disable redirect for tests
@@ -189,8 +180,12 @@ void main() {
     testWidgets('Login error scenario', (tester) async {
       // Arrange
       when(loginBloc.state).thenReturn(const LoginState());
-      when(loginBloc.stream).thenAnswer((_) =>
-          Stream.fromIterable([const LoginLoadingState(username: 'test', password: 'test'), const LoginErrorState(message: 'Error message')]));
+      when(loginBloc.stream).thenAnswer(
+        (_) => Stream.fromIterable([
+          const LoginLoadingState(username: 'test', password: 'test'),
+          const LoginErrorState(message: 'Error message'),
+        ]),
+      );
 
       await tester.pumpWidget(getWidget());
       await tester.pumpAndSettle();

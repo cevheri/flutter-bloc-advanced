@@ -17,7 +17,12 @@ class UserRoutes {
   static AuthorityBloc? _authorityBloc;
   static AuthorityRepository? _authorityRepository;
 
-  static void init({UserBloc? userBloc, UserRepository? userRepository, AuthorityBloc? authorityBloc, AuthorityRepository? authorityRepository}) {
+  static void init({
+    UserBloc? userBloc,
+    UserRepository? userRepository,
+    AuthorityBloc? authorityBloc,
+    AuthorityRepository? authorityRepository,
+  }) {
     _userBloc = userBloc;
     _userRepository = userRepository;
     _authorityBloc = authorityBloc;
@@ -45,16 +50,13 @@ class UserRoutes {
     GoRoute(
       name: 'userList',
       path: '/user',
-      builder: (BuildContext context, GoRouterState state) => _blocProvider(
-        ListUserScreen(),
-      ),
+      builder: (BuildContext context, GoRouterState state) => _blocProvider(ListUserScreen()),
     ),
     GoRoute(
       name: 'userCreate',
       path: '/user/new',
-      builder: (BuildContext context, GoRouterState state) => _blocProvider(
-        const UserEditorScreen(mode: EditorFormMode.create),
-      ),
+      builder: (BuildContext context, GoRouterState state) =>
+          _blocProvider(const UserEditorScreen(mode: EditorFormMode.create)),
     ),
     GoRoute(
       name: 'userEdit',

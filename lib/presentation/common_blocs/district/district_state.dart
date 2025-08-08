@@ -11,15 +11,9 @@ class DistrictState extends Equatable {
   final List<District?>? districts;
   final DistrictStatus status;
 
-  const DistrictState({
-    this.districts,
-    this.status = DistrictStatus.initial,
-  });
+  const DistrictState({this.districts, this.status = DistrictStatus.initial});
 
-  DistrictState copyWith({
-    List<District>? districts,
-    DistrictStatus? status,
-  }) {
+  DistrictState copyWith({List<District>? districts, DistrictStatus? status}) {
     return DistrictState(status: status ?? this.status, districts: districts ?? districts);
   }
 

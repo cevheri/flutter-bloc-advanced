@@ -34,12 +34,7 @@ void main() {
 
     test('should copy a Customer instance with new values (copyWith) new values', () {
       const entity = mockCustomerFullPayload;
-      final entityUpd = entity.copyWith(
-        name: 'new Acme',
-        cityName: 'izmir',
-        districtName: 'göztepe',
-        address: 'yazır',
-      );
+      final entityUpd = entity.copyWith(name: 'new Acme', cityName: 'izmir', districtName: 'göztepe', address: 'yazır');
 
       expect(entityUpd.id, '1');
       expect(entityUpd.name, 'new Acme');
@@ -91,7 +86,10 @@ void main() {
     test('should return string', () {
       const entity = mockCustomerFullPayload;
 
-      expect(entity.toString(), 'Customer(1, Acme, 5055055050, john.doe@example.com, Konya, selçuklu, yazır mh., true)');
+      expect(
+        entity.toString(),
+        'Customer(1, Acme, 5055055050, john.doe@example.com, Konya, selçuklu, yazır mh., true)',
+      );
     });
   });
 }

@@ -36,7 +36,10 @@ void main() {
       expect(() async => await AuthorityRepository().create(const Authority()), throwsA(isA<BadRequestException>()));
     });
     test("Given null authority when create then return authority fail", () async {
-      expect(() async => await AuthorityRepository().create(const Authority(name: "")), throwsA(isA<BadRequestException>()));
+      expect(
+        () async => await AuthorityRepository().create(const Authority(name: "")),
+        throwsA(isA<BadRequestException>()),
+      );
     });
   });
 

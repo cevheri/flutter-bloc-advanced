@@ -23,7 +23,10 @@ class SettingsScreen extends StatelessWidget {
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).settings),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home)),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.home),
+      ),
     );
   }
 

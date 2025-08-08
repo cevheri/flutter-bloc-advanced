@@ -30,8 +30,7 @@ class HomeScreen extends StatelessWidget {
     return BlocProvider(
       create: (context) {
         //debugPrint("HomeScreen account blocProvider");
-        return AccountBloc(repository: AccountRepository())
-          ..add(const AccountFetchEvent());
+        return AccountBloc(repository: AccountRepository())..add(const AccountFetchEvent());
       },
       child: BlocBuilder<AccountBloc, AccountState>(
         buildWhen: (previous, current) {
@@ -48,9 +47,7 @@ class HomeScreen extends StatelessWidget {
               appBar: AppBar(title: const Text(AppConstants.appName)),
               key: _scaffoldKey,
               body: BlocProvider(
-                create: (context) => DashboardCubit(
-                  repository: DashboardMockRepository(),
-                )..load(),
+                create: (context) => DashboardCubit(repository: DashboardMockRepository())..load(),
                 child: const DashboardPage(),
               ),
               drawer: _buildDrawer(context),
@@ -58,9 +55,7 @@ class HomeScreen extends StatelessWidget {
           }
 
           if (state.status == AccountStatus.loading) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
+            return const Scaffold(body: Center(child: CircularProgressIndicator()));
           }
           // else {
           debugPrint("Unexpected state : ${state.toString()}");
@@ -82,11 +77,7 @@ class HomeScreen extends StatelessWidget {
             height: 300,
             width: 300,
             decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage(LocaleConstants.logoLightUrl),
-                scale: 1,
-                fit: BoxFit.contain,
-              ),
+              image: DecorationImage(image: AssetImage(LocaleConstants.logoLightUrl), scale: 1, fit: BoxFit.contain),
             ),
           ),
         ),
@@ -102,9 +93,7 @@ class HomeScreen extends StatelessWidget {
               image: DecorationImage(
                 image: const AssetImage(LocaleConstants.defaultImgUrl),
                 colorFilter: ColorFilter.mode(
-                  AdaptiveTheme.of(context).mode.isDark
-                      ? Colors.black.withAlpha(128)
-                      : Colors.white.withAlpha(128),
+                  AdaptiveTheme.of(context).mode.isDark ? Colors.black.withAlpha(128) : Colors.white.withAlpha(128),
                   BlendMode.dstIn,
                 ),
               ),
@@ -116,9 +105,7 @@ class HomeScreen extends StatelessWidget {
   }
 
   Widget _buildDrawer(BuildContext context) {
-    debugPrint(
-      "HomeScreen _buildDrawer : init-theme ${AppLocalStorageCached.theme}",
-    );
+    debugPrint("HomeScreen _buildDrawer : init-theme ${AppLocalStorageCached.theme}");
     AdaptiveThemeMode initialAppThemeType;
     if (AppLocalStorageCached.theme == 'light') {
       initialAppThemeType = AdaptiveThemeMode.light;
@@ -128,12 +115,8 @@ class HomeScreen extends StatelessWidget {
     final initialAppLanguage = AppLocalStorageCached.language ?? 'en';
     return BlocProvider<DrawerBloc>(
       create: (context) =>
-          DrawerBloc(
-            loginRepository: LoginRepository(),
-            menuRepository: MenuRepository(),
-          )..add(
-            LoadMenus(language: initialAppLanguage, theme: initialAppThemeType),
-          ),
+          DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository())
+            ..add(LoadMenus(language: initialAppLanguage, theme: initialAppThemeType)),
       child: const ApplicationDrawer(),
     );
   }

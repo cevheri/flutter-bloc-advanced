@@ -36,10 +36,7 @@ class ForgotPasswordScreen extends StatelessWidget {
     return AppBar(
       key: const Key('forgotPasswordScreenAppBarKey'),
       title: Text(S.of(context).password_forgot),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => _handlePopScope(false, null, context),
-      ),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => _handlePopScope(false, null, context)),
     );
   }
 
@@ -66,9 +63,10 @@ class ForgotPasswordScreen extends StatelessWidget {
       name: "email",
       decoration: InputDecoration(labelText: t.email),
       maxLines: 1,
-      validator: FormBuilderValidators.compose(
-        [FormBuilderValidators.required(errorText: t.required_field), FormBuilderValidators.email(errorText: t.email_pattern)],
-      ),
+      validator: FormBuilderValidators.compose([
+        FormBuilderValidators.required(errorText: t.required_field),
+        FormBuilderValidators.email(errorText: t.email_pattern),
+      ]),
     );
   }
 
@@ -122,9 +120,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: duration),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {

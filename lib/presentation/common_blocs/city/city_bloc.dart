@@ -15,9 +15,7 @@ class CityBloc extends Bloc<CityEvent, CityState> {
   static final _log = AppLogger.getLogger("CityBloc");
   final CityRepository _repository;
 
-  CityBloc({required CityRepository repository})
-      : _repository = repository,
-        super(const CityInitialState()) {
+  CityBloc({required CityRepository repository}) : _repository = repository, super(const CityInitialState()) {
     on<CityEvent>((event, emit) {});
     on<CityLoad>(_onLoad);
   }

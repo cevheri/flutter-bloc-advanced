@@ -13,14 +13,8 @@ class UserJWT extends Equatable {
 
   const UserJWT(this.username, this.password);
 
-  UserJWT copyWith({
-    String? username,
-    String? password,
-  }) {
-    return UserJWT(
-      username ?? this.username,
-      password ?? this.password,
-    );
+  UserJWT copyWith({String? username, String? password}) {
+    return UserJWT(username ?? this.username, password ?? this.password);
   }
 
   static UserJWT? fromJson(Map<String, dynamic> json) {

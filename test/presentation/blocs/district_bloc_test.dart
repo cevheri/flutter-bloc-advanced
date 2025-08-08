@@ -38,7 +38,10 @@ void main() {
     const status = DistrictStatus.initial;
 
     test("supports value comparisons", () {
-      expect(const DistrictState(districts: districts, status: status), const DistrictState(districts: districts, status: status));
+      expect(
+        const DistrictState(districts: districts, status: status),
+        const DistrictState(districts: districts, status: status),
+      );
     });
 
     test("DistrictInitialState", () {
@@ -50,7 +53,10 @@ void main() {
     });
 
     test("DistrictLoadSuccessState", () {
-      expect(const DistrictLoadSuccessState(districts: districts), const DistrictLoadSuccessState(districts: districts));
+      expect(
+        const DistrictLoadSuccessState(districts: districts),
+        const DistrictLoadSuccessState(districts: districts),
+      );
     });
 
     test("DistrictLoadFailureState", () {

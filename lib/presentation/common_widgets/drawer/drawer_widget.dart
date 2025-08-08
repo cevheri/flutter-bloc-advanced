@@ -65,7 +65,6 @@ class ApplicationDrawer extends StatelessWidget {
                       }
                       Scaffold.of(context).closeDrawer();
                       AppRouter().push(context, ApplicationRoutesConstants.home);
-
                     },
                   ),
                   SwitchListTile(
@@ -79,7 +78,6 @@ class ApplicationDrawer extends StatelessWidget {
                       final newLang = value ? 'en' : 'tr';
                       context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
                       AppRouter().push(context, ApplicationRoutesConstants.home);
-
                     },
                   ),
                   _buildLogoutButton(context),
@@ -108,8 +106,9 @@ class ApplicationDrawer extends StatelessWidget {
         }
 
         // filter child menus
-        final childMenus = state.menus.where((e) => e.parent?.id == node.id && e.active && _hasAccess(e, currentUserRoles)).toList()
-          ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
+        final childMenus =
+            state.menus.where((e) => e.parent?.id == node.id && e.active && _hasAccess(e, currentUserRoles)).toList()
+              ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
         if (childMenus.isEmpty) {
           // debugPrint("childMenus.isEmpty ");
@@ -133,7 +132,10 @@ class ApplicationDrawer extends StatelessWidget {
             children: childMenus.map((childMenu) {
               return ListTile(
                 leading: Icon(getIconFromString(childMenu.icon)),
-                title: Text(S.of(context).translate_menu_title(childMenu.name), style: Theme.of(context).textTheme.bodySmall),
+                title: Text(
+                  S.of(context).translate_menu_title(childMenu.name),
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
                 onTap: () {
                   // debugPrint("child menu name: ${childMenu.name}");
                   if (childMenu.leaf! && childMenu.url.isNotEmpty) {

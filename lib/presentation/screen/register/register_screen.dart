@@ -82,9 +82,10 @@ class RegisterScreen extends StatelessWidget {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       debugPrint("saveAndValidate");
       User data = User(
-          firstName: _formKey.currentState!.value['firstName'],
-          lastName: _formKey.currentState!.value['lastName'],
-          email: _formKey.currentState!.value['email']);
+        firstName: _formKey.currentState!.value['firstName'],
+        lastName: _formKey.currentState!.value['lastName'],
+        email: _formKey.currentState!.value['email'],
+      );
       context.read<RegisterBloc>().add(RegisterFormSubmitted(data: data));
     }
   }
@@ -109,9 +110,7 @@ class RegisterScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: duration),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
   Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {

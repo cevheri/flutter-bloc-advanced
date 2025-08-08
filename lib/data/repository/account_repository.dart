@@ -46,7 +46,10 @@ class AccountRepository {
         passwordChangeDTO.newPassword!.isEmpty) {
       throw BadRequestException("PasswordChangeDTO currentPassword or newPassword null");
     }
-    final httpResponse = await HttpUtils.postRequest<PasswordChangeDTO>("/$_resource/change-password", passwordChangeDTO);
+    final httpResponse = await HttpUtils.postRequest<PasswordChangeDTO>(
+      "/$_resource/change-password",
+      passwordChangeDTO,
+    );
     var result = httpResponse.statusCode;
     _log.debug("END:changePassword successful");
     return result;

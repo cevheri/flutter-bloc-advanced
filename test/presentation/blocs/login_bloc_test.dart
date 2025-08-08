@@ -90,8 +90,10 @@ void main() {
     });
 
     test("props", () {
-      expect(const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test", password: "test").props,
-          ["test", "test", LoginStatus.initial, false, null, null, false, LoginMethod.password]);
+      expect(
+        const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test", password: "test").props,
+        ["test", "test", LoginStatus.initial, false, null, null, false, LoginMethod.password],
+      );
     });
   });
   //endregion state
@@ -100,7 +102,10 @@ void main() {
   /// Login Event Tests
   group("LoginEvent", () {
     test("supports value comparisons", () {
-      expect(const LoginFormSubmitted(username: "test", password: "test"), const LoginFormSubmitted(username: "test", password: "test"));
+      expect(
+        const LoginFormSubmitted(username: "test", password: "test"),
+        const LoginFormSubmitted(username: "test", password: "test"),
+      );
     });
     test("TogglePasswordVisibility", () {
       expect(const TogglePasswordVisibility(), const TogglePasswordVisibility());
@@ -164,7 +169,7 @@ void main() {
     });
   });
 
-//endregion bloc
+  //endregion bloc
 
   group('LoginBloc test 2', () {
     test('initial state is LoginState', () {
@@ -229,10 +234,7 @@ void main() {
         setUp: () => when(repository.sendOtp(request)).thenThrow(Exception("Invalid email")),
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc.add(event),
-        expect: () => [
-          const LoginLoadingState(username: email),
-          const LoginOtpSentState(email: email),
-        ],
+        expect: () => [const LoginLoadingState(username: email), const LoginOtpSentState(email: email)],
       );
     });
 
@@ -283,13 +285,7 @@ void main() {
         'given OTP method when changed then updates login method',
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc.add(const ChangeLoginMethod(method: LoginMethod.otp)),
-        expect: () => [
-          const LoginState(
-            loginMethod: LoginMethod.otp,
-            status: LoginStatus.initial,
-            isOtpSent: false,
-          )
-        ],
+        expect: () => [const LoginState(loginMethod: LoginMethod.otp, status: LoginStatus.initial, isOtpSent: false)],
       );
     });
 

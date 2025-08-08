@@ -71,7 +71,7 @@ void main() {
     S.delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate
+    GlobalCupertinoLocalizations.delegate,
   ];
 
   GetMaterialApp getWidget() {
@@ -163,7 +163,7 @@ void main() {
 
       //when submitButton clicked then expect an error
       await tester.tap(find.byKey(registerSubmitButtonKey));
-      await tester.pump();//AndSettle(const Duration(seconds: 3));
+      await tester.pump(); //AndSettle(const Duration(seconds: 3));
 
       //TODO check with go_router expect(Get.currentRoute, "/");
     });
@@ -408,9 +408,17 @@ void main() {
     await tester.enterText(emailFieldFinder, 'test@test.com');
 
     when(mockRegisterBloc.stream).thenAnswer(
-        (_) => Stream.fromIterable([const RegisterCompletedState(user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'))]));
-    when(mockRegisterBloc.state)
-        .thenReturn(const RegisterCompletedState(user: User(firstName: 'test', lastName: 'test', email: 'test@test.com')));
+      (_) => Stream.fromIterable([
+        const RegisterCompletedState(
+          user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
+        ),
+      ]),
+    );
+    when(mockRegisterBloc.state).thenReturn(
+      const RegisterCompletedState(
+        user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
+      ),
+    );
     //await tester.pump();
 
     final saveButton = find.byKey(registerSubmitButtonKey);
@@ -418,7 +426,13 @@ void main() {
     await tester.pumpAndSettle(const Duration(milliseconds: 3000));
 
     //expect(find.byType(RegisterScreen), findsNothing);
-    verify(mockRegisterBloc.add(const RegisterFormSubmitted(data: User(firstName: 'test', lastName: 'test', email: 'test@test.com')))).called(1);
+    verify(
+      mockRegisterBloc.add(
+        const RegisterFormSubmitted(
+          data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
+        ),
+      ),
+    ).called(1);
   });
 
   //error state test
@@ -444,6 +458,12 @@ void main() {
     await tester.pumpAndSettle(const Duration(milliseconds: 3000));
 
     expect(find.byType(RegisterScreen), findsOneWidget);
-    verifyNever(mockRegisterBloc.add(const RegisterFormSubmitted(data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'))));
+    verifyNever(
+      mockRegisterBloc.add(
+        const RegisterFormSubmitted(
+          data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
+        ),
+      ),
+    );
   });
 }

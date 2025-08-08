@@ -35,7 +35,12 @@ class HttpUtils {
   static const requestTimeoutError = 'TimeoutException';
   static const _timeout = Duration(seconds: timeoutValue);
   static final _encoding = Encoding.getByName(utf8Val);
-  static const _serOps = SerializationOptions(indent: '', ignoreDefaultMembers: true, ignoreNullMembers: true, ignoreUnknownTypes: true);
+  static const _serOps = SerializationOptions(
+    indent: '',
+    ignoreDefaultMembers: true,
+    ignoreNullMembers: true,
+    ignoreUnknownTypes: true,
+  );
 
   static http.Client? _httpClient;
 
@@ -144,7 +149,9 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await client.post(url, headers: requestHeaders, body: messageBody, encoding: _encoding).timeout(_timeout);
+      response = await client
+          .post(url, headers: requestHeaders, body: messageBody, encoding: _encoding)
+          .timeout(_timeout);
       //final a = response.body;
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException catch (se) {
@@ -158,18 +165,23 @@ class HttpUtils {
     return response;
   }
 
-  static Future<http.Response> getRequest(String endpoint, {String? pathParams, Map<String, String>? queryParams}) async {
+  static Future<http.Response> getRequest(
+    String endpoint, {
+    String? pathParams,
+    Map<String, String>? queryParams,
+  }) async {
     debugPrint("BEGIN: GET Request Method start : ${ProfileConstants.api}$endpoint");
 
     /// if isMock is true, return mock data instead of making a request
-    if (!ProfileConstants.isProduction) return (await mockRequest('GET', endpoint, pathParams: pathParams, queryParams: queryParams));
+    if (!ProfileConstants.isProduction)
+      return (await mockRequest('GET', endpoint, pathParams: pathParams, queryParams: queryParams));
     final http.Response response;
     final headers = await HttpUtils.headers();
     try {
       final String path;
       if (pathParams != null) {
         path = '${ProfileConstants.api}$endpoint/$pathParams';
-      }else {
+      } else {
         path = '${ProfileConstants.api}$endpoint';
       }
       final url = Uri.parse(path);
@@ -219,7 +231,9 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await client.put(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
+      response = await client
+          .put(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
+          .timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -238,7 +252,9 @@ class HttpUtils {
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
-      response = await client.patch(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val)).timeout(_timeout);
+      response = await client
+          .patch(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
+          .timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
       throw FetchDataException(noInternetConnectionError);
@@ -249,9 +265,14 @@ class HttpUtils {
     return response;
   }
 
-  static Future<http.Response> deleteRequest(String endpoint, {String? pathParams, Map<String, String>? queryParams}) async {
+  static Future<http.Response> deleteRequest(
+    String endpoint, {
+    String? pathParams,
+    Map<String, String>? queryParams,
+  }) async {
     debugPrint("BEGIN: DELETE Request Method start : ${ProfileConstants.api}$endpoint");
-    if (!ProfileConstants.isProduction) return await mockRequest('DELETE', endpoint, pathParams: pathParams, queryParams: queryParams);
+    if (!ProfileConstants.isProduction)
+      return await mockRequest('DELETE', endpoint, pathParams: pathParams, queryParams: queryParams);
     var headers = await HttpUtils.headers();
     final http.Response response;
     try {
@@ -288,7 +309,12 @@ class HttpUtils {
   //   }
   // }
 
-  static Future<http.Response> mockRequest(String httpMethod, String endpoint, {String? pathParams, Map<String, String>? queryParams}) async {
+  static Future<http.Response> mockRequest(
+    String httpMethod,
+    String endpoint, {
+    String? pathParams,
+    Map<String, String>? queryParams,
+  }) async {
     debugPrint("BEGIN: Mock Request Method start : $httpMethod $endpoint");
 
     if (!ProfileConstants.isTest) {
@@ -298,7 +324,8 @@ class HttpUtils {
     var headers = await HttpUtils.headers();
     if (!allowedPaths.contains(endpoint)) {
       debugPrint(
-          "mockRequest: Unauthorized Access. endpoint: $endpoint, httpMethod: $httpMethod, headers: $headers, allowedPaths: $allowedPaths");
+        "mockRequest: Unauthorized Access. endpoint: $endpoint, httpMethod: $httpMethod, headers: $headers, allowedPaths: $allowedPaths",
+      );
       if (headers['Authorization'] == null) {
         throw UnauthorizedException("Unauthorized Access");
       }

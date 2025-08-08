@@ -8,16 +8,10 @@ class Authority extends Equatable {
   @JsonProperty(name: 'name')
   final String? name;
 
-  const Authority({
-    this.name,
-  });
+  const Authority({this.name});
 
-  Authority copyWith({
-    String? name,
-  }) {
-    return Authority(
-      name: name ?? this.name,
-    );
+  Authority copyWith({String? name}) {
+    return Authority(name: name ?? this.name);
   }
 
   static Authority? fromJson(Map<String, dynamic> json) {
@@ -29,14 +23,13 @@ class Authority extends Equatable {
 
   static Authority? fromJsonString(String json) => fromJson(jsonDecode(json));
 
-  static List<String?> fromJsonList(List<dynamic> json) => json.map((value) => Authority.fromJson(value)?.name).toList();
+  static List<String?> fromJsonList(List<dynamic> json) =>
+      json.map((value) => Authority.fromJson(value)?.name).toList();
 
   static List<String?> fromJsonStringList(String json) => fromJsonList(jsonDecode(json));
 
   Map<String, dynamic>? toJson() {
-    return {
-      'name': name,
-    };
+    return {'name': name};
   }
 
   @override

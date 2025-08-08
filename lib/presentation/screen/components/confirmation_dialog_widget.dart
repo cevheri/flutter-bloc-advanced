@@ -15,14 +15,15 @@ class ConfirmationDialog extends StatelessWidget {
   final BuildContext parentContext;
   final bool barrierDismissible;
 
-  const ConfirmationDialog(
-      {super.key,
-      required this.title,
-      required this.message,
-      required this.parentContext,
-      this.confirmText,
-      this.cancelText,
-      this.barrierDismissible = false});
+  const ConfirmationDialog({
+    super.key,
+    required this.title,
+    required this.message,
+    required this.parentContext,
+    this.confirmText,
+    this.cancelText,
+    this.barrierDismissible = false,
+  });
 
   /// Shows a confirmation dialog with the given parameters.
   /// Returns a Future<bool?> indicating the user's choice.
@@ -59,7 +60,13 @@ class ConfirmationDialog extends StatelessWidget {
     return showDialog<bool>(
       context: context,
       barrierDismissible: barrierDismissible,
-      builder: (_) => ConfirmationDialog(parentContext: context, title: title, message: msg, confirmText: confirmText, cancelText: cancelText),
+      builder: (_) => ConfirmationDialog(
+        parentContext: context,
+        title: title,
+        message: msg,
+        confirmText: confirmText,
+        cancelText: cancelText,
+      ),
     );
   }
 

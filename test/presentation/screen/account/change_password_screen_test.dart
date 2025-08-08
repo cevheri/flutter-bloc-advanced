@@ -49,7 +49,7 @@ void main() {
     S.delegate,
     GlobalMaterialLocalizations.delegate,
     GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate
+    GlobalCupertinoLocalizations.delegate,
   ];
 
   GetMaterialApp getWidget() {
@@ -124,7 +124,9 @@ void main() {
 
     testWidgets("Validate loading state", (WidgetTester tester) async {
       // Given
-      when(changePasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ChangePasswordState(status: ChangePasswordStatus.loading)]));
+      when(
+        changePasswordBloc.stream,
+      ).thenAnswer((_) => Stream.fromIterable([const ChangePasswordState(status: ChangePasswordStatus.loading)]));
       when(changePasswordBloc.state).thenReturn(const ChangePasswordState(status: ChangePasswordStatus.loading));
       await tester.pumpWidget(getWidget());
       //When:
@@ -135,7 +137,9 @@ void main() {
 
     testWidgets("Validate success state", (WidgetTester tester) async {
       // Given
-      when(changePasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ChangePasswordState(status: ChangePasswordStatus.success)]));
+      when(
+        changePasswordBloc.stream,
+      ).thenAnswer((_) => Stream.fromIterable([const ChangePasswordState(status: ChangePasswordStatus.success)]));
       when(changePasswordBloc.state).thenReturn(const ChangePasswordState(status: ChangePasswordStatus.success));
       await tester.pumpWidget(getWidget());
       //When:
@@ -146,7 +150,9 @@ void main() {
 
     testWidgets("Validate failure state", (WidgetTester tester) async {
       // Given
-      when(changePasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ChangePasswordErrorState(message: "Failed")]));
+      when(
+        changePasswordBloc.stream,
+      ).thenAnswer((_) => Stream.fromIterable([const ChangePasswordErrorState(message: "Failed")]));
       when(changePasswordBloc.state).thenReturn(const ChangePasswordErrorState(message: "Failed"));
       await tester.pumpWidget(getWidget());
       //When:
@@ -173,8 +179,11 @@ void main() {
 
   group("ChangePasswordScreen SubmitButtonTest", () {
     testWidgets('given valid password when submit button clicked then change password', (tester) async {
-      when(changePasswordBloc.add(const ChangePasswordChanged(currentPassword: "currentPassword", newPassword: "newPassword")))
-          .thenAnswer((_) async => const ChangePasswordCompletedState());
+      when(
+        changePasswordBloc.add(
+          const ChangePasswordChanged(currentPassword: "currentPassword", newPassword: "newPassword"),
+        ),
+      ).thenAnswer((_) async => const ChangePasswordCompletedState());
       // Given
       await tester.pumpWidget(Container());
       await tester.pumpAndSettle();
@@ -237,12 +246,16 @@ void main() {
       //
       //verifyNever(changePasswordBloc.add(const ChangePasswordChanged(currentPassword: 'samePassword', newPassword: 'samePassword')));
 
-      //  
+      //
       //expect(find.text(S.current.failed), findsOneWidget);
 
       //Then
       //When enter same password then bloc should emit failure state
-      verify(changePasswordBloc.add(const ChangePasswordChanged(currentPassword: 'samePassword', newPassword: 'samePassword')));
+      verify(
+        changePasswordBloc.add(
+          const ChangePasswordChanged(currentPassword: 'samePassword', newPassword: 'samePassword'),
+        ),
+      );
       // expect(changePasswordBloc.state, const ChangePasswordState(status: ChangePasswordStatus.failure));
     });
   });

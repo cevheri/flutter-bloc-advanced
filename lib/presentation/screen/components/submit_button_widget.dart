@@ -8,7 +8,13 @@ class ResponsiveSubmitButton extends StatelessWidget {
   final bool isLoading;
   @visibleForTesting
   final bool? isWebPlatform;
-  const ResponsiveSubmitButton({super.key, this.buttonText = 'Save', this.onPressed, this.isLoading = false, this.isWebPlatform});
+  const ResponsiveSubmitButton({
+    super.key,
+    this.buttonText = 'Save',
+    this.onPressed,
+    this.isLoading = false,
+    this.isWebPlatform,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -28,11 +34,7 @@ class ButtonContent extends StatelessWidget {
   final String text;
   final bool isLoading;
 
-  const ButtonContent({
-    super.key,
-    required this.text,
-    required this.isLoading,
-  });
+  const ButtonContent({super.key, required this.text, required this.isLoading});
 
   @override
   Widget build(BuildContext context) {

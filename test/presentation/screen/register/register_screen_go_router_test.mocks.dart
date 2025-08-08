@@ -6,10 +6,8 @@
 import 'dart:async' as _i4;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart'
-    as _i3;
-import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register_bloc.dart'
-    as _i2;
+import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart' as _i3;
+import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register_bloc.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -27,23 +25,11 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeRegisterState_0 extends _i1.SmartFake implements _i2.RegisterState {
-  _FakeRegisterState_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeRegisterState_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 class _FakeAccountState_1 extends _i1.SmartFake implements _i3.AccountState {
-  _FakeAccountState_1(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeAccountState_1(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 /// A class which mocks [RegisterBloc].
@@ -55,128 +41,63 @@ class MockRegisterBloc extends _i1.Mock implements _i2.RegisterBloc {
   }
 
   @override
-  _i2.RegisterState get state => (super.noSuchMethod(
-        Invocation.getter(#state),
-        returnValue: _FakeRegisterState_0(
-          this,
-          Invocation.getter(#state),
-        ),
-      ) as _i2.RegisterState);
+  _i2.RegisterState get state =>
+      (super.noSuchMethod(Invocation.getter(#state), returnValue: _FakeRegisterState_0(this, Invocation.getter(#state)))
+          as _i2.RegisterState);
 
   @override
-  _i4.Stream<_i2.RegisterState> get stream => (super.noSuchMethod(
-        Invocation.getter(#stream),
-        returnValue: _i4.Stream<_i2.RegisterState>.empty(),
-      ) as _i4.Stream<_i2.RegisterState>);
+  _i4.Stream<_i2.RegisterState> get stream =>
+      (super.noSuchMethod(Invocation.getter(#stream), returnValue: _i4.Stream<_i2.RegisterState>.empty())
+          as _i4.Stream<_i2.RegisterState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(
-        Invocation.getter(#isClosed),
-        returnValue: false,
-      ) as bool);
+  bool get isClosed => (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false) as bool);
 
   @override
-  void onTransition(
-          _i5.Transition<_i2.RegisterEvent, _i2.RegisterState>? transition) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #onTransition,
-          [transition],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onTransition(_i5.Transition<_i2.RegisterEvent, _i2.RegisterState>? transition) =>
+      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
 
   @override
-  void add(_i2.RegisterEvent? event) => super.noSuchMethod(
-        Invocation.method(
-          #add,
-          [event],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void add(_i2.RegisterEvent? event) =>
+      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
 
   @override
-  void onEvent(_i2.RegisterEvent? event) => super.noSuchMethod(
-        Invocation.method(
-          #onEvent,
-          [event],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onEvent(_i2.RegisterEvent? event) =>
+      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
 
   @override
-  void emit(_i2.RegisterState? state) => super.noSuchMethod(
-        Invocation.method(
-          #emit,
-          [state],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void emit(_i2.RegisterState? state) =>
+      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
 
   @override
   void on<E extends _i2.RegisterEvent>(
     _i5.EventHandler<E, _i2.RegisterState>? handler, {
     _i5.EventTransformer<E>? transformer,
-  }) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #on,
-          [handler],
-          {#transformer: transformer},
-        ),
-        returnValueForMissingStub: null,
-      );
+  }) => super.noSuchMethod(
+    Invocation.method(#on, [handler], {#transformer: transformer}),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  _i4.Future<void> close() => (super.noSuchMethod(
-        Invocation.method(
-          #close,
-          [],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+  _i4.Future<void> close() =>
+      (super.noSuchMethod(
+            Invocation.method(#close, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i2.RegisterState>? change) => super.noSuchMethod(
-        Invocation.method(
-          #onChange,
-          [change],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onChange(_i5.Change<_i2.RegisterState>? change) =>
+      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
 
   @override
-  void addError(
-    Object? error, [
-    StackTrace? stackTrace,
-  ]) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #addError,
-          [
-            error,
-            stackTrace,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void addError(Object? error, [StackTrace? stackTrace]) =>
+      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
 
   @override
-  void onError(
-    Object? error,
-    StackTrace? stackTrace,
-  ) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #onError,
-          [
-            error,
-            stackTrace,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onError(Object? error, StackTrace? stackTrace) =>
+      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
 }
 
 /// A class which mocks [AccountBloc].
@@ -188,126 +109,61 @@ class MockAccountBloc extends _i1.Mock implements _i3.AccountBloc {
   }
 
   @override
-  _i3.AccountState get state => (super.noSuchMethod(
-        Invocation.getter(#state),
-        returnValue: _FakeAccountState_1(
-          this,
-          Invocation.getter(#state),
-        ),
-      ) as _i3.AccountState);
+  _i3.AccountState get state =>
+      (super.noSuchMethod(Invocation.getter(#state), returnValue: _FakeAccountState_1(this, Invocation.getter(#state)))
+          as _i3.AccountState);
 
   @override
-  _i4.Stream<_i3.AccountState> get stream => (super.noSuchMethod(
-        Invocation.getter(#stream),
-        returnValue: _i4.Stream<_i3.AccountState>.empty(),
-      ) as _i4.Stream<_i3.AccountState>);
+  _i4.Stream<_i3.AccountState> get stream =>
+      (super.noSuchMethod(Invocation.getter(#stream), returnValue: _i4.Stream<_i3.AccountState>.empty())
+          as _i4.Stream<_i3.AccountState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(
-        Invocation.getter(#isClosed),
-        returnValue: false,
-      ) as bool);
+  bool get isClosed => (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false) as bool);
 
   @override
-  void add(_i3.AccountEvent? event) => super.noSuchMethod(
-        Invocation.method(
-          #add,
-          [event],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void add(_i3.AccountEvent? event) =>
+      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
 
   @override
-  void onEvent(_i3.AccountEvent? event) => super.noSuchMethod(
-        Invocation.method(
-          #onEvent,
-          [event],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onEvent(_i3.AccountEvent? event) =>
+      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
 
   @override
-  void emit(_i3.AccountState? state) => super.noSuchMethod(
-        Invocation.method(
-          #emit,
-          [state],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void emit(_i3.AccountState? state) =>
+      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
 
   @override
   void on<E extends _i3.AccountEvent>(
     _i5.EventHandler<E, _i3.AccountState>? handler, {
     _i5.EventTransformer<E>? transformer,
-  }) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #on,
-          [handler],
-          {#transformer: transformer},
-        ),
-        returnValueForMissingStub: null,
-      );
+  }) => super.noSuchMethod(
+    Invocation.method(#on, [handler], {#transformer: transformer}),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onTransition(
-          _i5.Transition<_i3.AccountEvent, _i3.AccountState>? transition) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #onTransition,
-          [transition],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onTransition(_i5.Transition<_i3.AccountEvent, _i3.AccountState>? transition) =>
+      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
 
   @override
-  _i4.Future<void> close() => (super.noSuchMethod(
-        Invocation.method(
-          #close,
-          [],
-        ),
-        returnValue: _i4.Future<void>.value(),
-        returnValueForMissingStub: _i4.Future<void>.value(),
-      ) as _i4.Future<void>);
+  _i4.Future<void> close() =>
+      (super.noSuchMethod(
+            Invocation.method(#close, []),
+            returnValue: _i4.Future<void>.value(),
+            returnValueForMissingStub: _i4.Future<void>.value(),
+          )
+          as _i4.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i3.AccountState>? change) => super.noSuchMethod(
-        Invocation.method(
-          #onChange,
-          [change],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onChange(_i5.Change<_i3.AccountState>? change) =>
+      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
 
   @override
-  void addError(
-    Object? error, [
-    StackTrace? stackTrace,
-  ]) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #addError,
-          [
-            error,
-            stackTrace,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void addError(Object? error, [StackTrace? stackTrace]) =>
+      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
 
   @override
-  void onError(
-    Object? error,
-    StackTrace? stackTrace,
-  ) =>
-      super.noSuchMethod(
-        Invocation.method(
-          #onError,
-          [
-            error,
-            stackTrace,
-          ],
-        ),
-        returnValueForMissingStub: null,
-      );
+  void onError(Object? error, StackTrace? stackTrace) =>
+      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
 }

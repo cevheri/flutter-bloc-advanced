@@ -11,15 +11,9 @@ class CityState extends Equatable {
   final List<City?>? cities;
   final CityStatus status;
 
-  const CityState({
-    this.cities,
-    this.status = CityStatus.initial,
-  });
+  const CityState({this.cities, this.status = CityStatus.initial});
 
-  CityState copyWith({
-    List<City?>? cities,
-    CityStatus? status,
-  }) {
+  CityState copyWith({List<City?>? cities, CityStatus? status}) {
     return CityState(status: status ?? this.status, cities: cities ?? this.cities);
   }
 

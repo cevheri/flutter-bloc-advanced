@@ -56,7 +56,10 @@ void main() {
   /// Drawer Event Tests
   group("DrawerEvent", () {
     test("supports value comparisons", () {
-      expect(const LoadMenus(language:"en", theme: AdaptiveThemeMode.light), const LoadMenus(language: "en", theme: AdaptiveThemeMode.light));
+      expect(
+        const LoadMenus(language: "en", theme: AdaptiveThemeMode.light),
+        const LoadMenus(language: "en", theme: AdaptiveThemeMode.light),
+      );
       expect(RefreshMenus(), RefreshMenus());
       expect(Logout(), Logout());
     });

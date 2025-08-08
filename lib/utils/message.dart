@@ -4,8 +4,12 @@ import 'package:get/get.dart';
 class Message {
   static const _duration = Duration(seconds: 3);
 
-  static Future getMessage(
-      {required BuildContext context, required String title, required String content, Duration duration = Message._duration}) async {
+  static Future getMessage({
+    required BuildContext context,
+    required String title,
+    required String content,
+    Duration duration = Message._duration,
+  }) async {
     Get.snackbar(
       title,
       content,
@@ -16,8 +20,12 @@ class Message {
     );
   }
 
-  static Future errorMessage(
-      {required BuildContext context, required String title, required String content, Duration duration = Message._duration}) async {
+  static Future errorMessage({
+    required BuildContext context,
+    required String title,
+    required String content,
+    Duration duration = Message._duration,
+  }) async {
     Get.snackbar(
       title,
       content,

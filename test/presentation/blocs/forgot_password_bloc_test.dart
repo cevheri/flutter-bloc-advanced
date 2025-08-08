@@ -16,13 +16,13 @@ void main() {
   //region main setup
   late AccountRepository repository;
 
-  setUpAll(() async{
+  setUpAll(() async {
     await TestUtils().setupUnitTest();
     repository = MockAccountRepository();
   });
 
   tearDown(() async {
-   await TestUtils().tearDownUnitTest();
+    await TestUtils().tearDownUnitTest();
   });
   //endregion setup
 
@@ -68,15 +68,16 @@ void main() {
     //ForgotPasswordState
     test("supports value comparisons", () {
       expect(const ForgotPasswordState(), const ForgotPasswordState());
-      const state = ForgotPasswordState(
-        status: ForgotPasswordStatus.initial,
-      );
+      const state = ForgotPasswordState(status: ForgotPasswordStatus.initial);
       expect(const ForgotPasswordState(), state);
     });
 
     //ForgotPasswordState İnitial Test
     test('initial state is ForgotPasswordState', () {
-      expect(ForgotPasswordBloc(repository: repository).state, const ForgotPasswordState(status: ForgotPasswordStatus.initial));
+      expect(
+        ForgotPasswordBloc(repository: repository).state,
+        const ForgotPasswordState(status: ForgotPasswordStatus.initial),
+      );
     });
 
     //ForgotPasswordInitialState Test
@@ -91,7 +92,10 @@ void main() {
 
     // ForgotPasswordErrorState Test
     test("ForgotPasswordErrorState", () {
-      expect(const ForgotPasswordErrorState(message: "Reset Password Error"), const ForgotPasswordErrorState(message: "Reset Password Error"));
+      expect(
+        const ForgotPasswordErrorState(message: "Reset Password Error"),
+        const ForgotPasswordErrorState(message: "Reset Password Error"),
+      );
       //expect(const ForgotPasswordErrorState(message: "Reset Password Error", ["Reset Password Error"]);
     });
 
@@ -101,12 +105,17 @@ void main() {
     });
 
     test("props", () {
-      expect(const ForgotPasswordState(status: ForgotPasswordStatus.initial, email: 'test@example.com').props,
-          [ForgotPasswordStatus.initial, "test@example.com"]);
+      expect(const ForgotPasswordState(status: ForgotPasswordStatus.initial, email: 'test@example.com').props, [
+        ForgotPasswordStatus.initial,
+        "test@example.com",
+      ]);
     });
 
     test("initial state is ForgotPasswordState", () {
-      expect(ForgotPasswordBloc(repository: repository).state, const ForgotPasswordState(status: ForgotPasswordStatus.initial));
+      expect(
+        ForgotPasswordBloc(repository: repository).state,
+        const ForgotPasswordState(status: ForgotPasswordStatus.initial),
+      );
     });
   });
   //endregion state
@@ -119,7 +128,10 @@ void main() {
       setUp: () => when(repository.resetPassword(email)).thenAnswer((_) => Future.value(HttpStatus.ok)),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
-      expect: () => [const ForgotPasswordState(status: ForgotPasswordStatus.loading), const ForgotPasswordState(status: ForgotPasswordStatus.success, email: email)],
+      expect: () => [
+        const ForgotPasswordState(status: ForgotPasswordStatus.loading),
+        const ForgotPasswordState(status: ForgotPasswordStatus.success, email: email),
+      ],
     );
 
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
@@ -127,16 +139,21 @@ void main() {
       setUp: () => when(repository.resetPassword(email)).thenAnswer((_) => Future.value(HttpStatus.badRequest)),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
-      expect: () => [const ForgotPasswordState(status: ForgotPasswordStatus.loading), const ForgotPasswordState(status: ForgotPasswordStatus.failure)],
+      expect: () => [
+        const ForgotPasswordState(status: ForgotPasswordStatus.loading),
+        const ForgotPasswordState(status: ForgotPasswordStatus.failure),
+      ],
     );
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
       'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when invalid-email then resetPassword fails',
       setUp: () => when(repository.resetPassword(email)).thenThrow(BadRequestException()),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: 'invalid-email')),
-      expect: () => [const ForgotPasswordState(status: ForgotPasswordStatus.loading), const ForgotPasswordState(status: ForgotPasswordStatus.failure)],
+      expect: () => [
+        const ForgotPasswordState(status: ForgotPasswordStatus.loading),
+        const ForgotPasswordState(status: ForgotPasswordStatus.failure),
+      ],
     );
-
   });
   //endregion bloc
 }

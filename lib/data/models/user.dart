@@ -115,19 +115,19 @@ class User extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        login,
-        firstName,
-        lastName,
-        email,
-        activated,
-        langKey,
-        createdBy,
-        createdDate,
-        lastModifiedBy,
-        lastModifiedDate,
-        authorities,
-      ];
+    id,
+    login,
+    firstName,
+    lastName,
+    email,
+    activated,
+    langKey,
+    createdBy,
+    createdDate,
+    lastModifiedBy,
+    lastModifiedDate,
+    authorities,
+  ];
 
   @override
   bool get stringify => true;

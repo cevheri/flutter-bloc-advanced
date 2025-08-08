@@ -16,8 +16,8 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
   final AccountRepository _repository;
 
   ChangePasswordBloc({required AccountRepository repository})
-      : _repository = repository,
-        super(const ChangePasswordState()) {
+    : _repository = repository,
+      super(const ChangePasswordState()) {
     on<ChangePasswordChanged>(_onSubmit);
   }
 
@@ -51,7 +51,11 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
 
       final result = await _repository.changePassword(passwordChangeDTO);
 
-      emit(state.copyWith(status: result < HttpStatus.badRequest ? ChangePasswordStatus.success : ChangePasswordStatus.failure));
+      emit(
+        state.copyWith(
+          status: result < HttpStatus.badRequest ? ChangePasswordStatus.success : ChangePasswordStatus.failure,
+        ),
+      );
 
       _log.debug("END: changePassword bloc: _onSubmit success: {}", [result.toString()]);
     } catch (e) {
