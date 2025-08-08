@@ -15,5 +15,3 @@ class DashboardMockRepository implements DashboardRepository {
     return DashboardModel.fromJsonString(json);
   }
 }
-
-

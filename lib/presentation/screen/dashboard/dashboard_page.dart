@@ -23,11 +23,7 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(height: 16),
               _KpiPlaceholder(),
               const SizedBox(height: 16),
-              _TwoColumns(
-                left: _RecentActivityList(),
-                right: _QuickActionsGrid(),
-                isWide: isWide,
-              ),
+              _TwoColumns(left: _RecentActivityList(), right: _QuickActionsGrid(), isWide: isWide),
             ],
           ),
         );
@@ -54,11 +50,7 @@ class _DashboardHeader extends StatelessWidget {
           const SizedBox(width: 12),
           Text('Dashboard', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
           const Spacer(),
-          IconButton(
-            tooltip: 'Refresh',
-            icon: const Icon(Icons.refresh),
-            onPressed: () {},
-          ),
+          IconButton(tooltip: 'Refresh', icon: const Icon(Icons.refresh), onPressed: () {}),
         ],
       ),
     );
@@ -79,19 +71,13 @@ class _SummaryCardsRow extends StatelessWidget {
     if (isWide) {
       return Row(
         children: [
-          for (final child in children) ...[
-            Expanded(child: child),
-            const SizedBox(width: 12),
-          ],
+          for (final child in children) ...[Expanded(child: child), const SizedBox(width: 12)],
         ]..removeLast(),
       );
     }
     return Column(
       children: [
-        for (final child in children) ...[
-          child,
-          const SizedBox(height: 12),
-        ],
+        for (final child in children) ...[child, const SizedBox(height: 12)],
       ],
     );
   }
@@ -134,11 +120,13 @@ class _SummaryCard extends StatelessWidget {
               ],
             ),
           ),
-          Row(children: [
-            Icon(icon, color: trendColor, size: 16),
-            const SizedBox(width: 4),
-            Text('${trend.abs()}%', style: textTheme.labelMedium?.copyWith(color: trendColor)),
-          ]),
+          Row(
+            children: [
+              Icon(icon, color: trendColor, size: 16),
+              const SizedBox(width: 4),
+              Text('${trend.abs()}%', style: textTheme.labelMedium?.copyWith(color: trendColor)),
+            ],
+          ),
         ],
       ),
     );
@@ -172,11 +160,14 @@ class _TwoColumns extends StatelessWidget {
     if (!isWide) {
       return Column(children: [left, const SizedBox(height: 16), right]);
     }
-    return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Expanded(child: left),
-      const SizedBox(width: 16),
-      Expanded(child: right),
-    ]);
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: left),
+        const SizedBox(width: 16),
+        Expanded(child: right),
+      ],
+    );
   }
 }
 
@@ -269,10 +260,7 @@ class _QuickActionTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(12),
       onTap: () {},
       child: Container(
-        decoration: BoxDecoration(
-          color: color.secondaryContainer,
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(color: color.secondaryContainer, borderRadius: BorderRadius.circular(12)),
         child: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -287,5 +275,3 @@ class _QuickActionTile extends StatelessWidget {
     );
   }
 }
-
-

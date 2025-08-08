@@ -12,11 +12,11 @@ class DashboardSummary extends Equatable {
   const DashboardSummary({required this.id, required this.label, required this.value, required this.trend});
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) => DashboardSummary(
-        id: json['id'] as String,
-        label: json['label'] as String,
-        value: json['value'] as num,
-        trend: (json['trend'] as num).toInt(),
-      );
+    id: json['id'] as String,
+    label: json['label'] as String,
+    value: json['value'] as num,
+    trend: (json['trend'] as num).toInt(),
+  );
 
   static List<DashboardSummary> fromJsonList(List<dynamic> list) => list.map((e) => DashboardSummary.fromJson(e)).toList();
 
@@ -32,15 +32,21 @@ class DashboardActivity extends Equatable {
   final DateTime time;
   final String type;
 
-  const DashboardActivity({required this.id, required this.title, required this.subtitle, required this.time, required this.type});
+  const DashboardActivity({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.time,
+    required this.type,
+  });
 
   factory DashboardActivity.fromJson(Map<String, dynamic> json) => DashboardActivity(
-        id: json['id'] as String,
-        title: json['title'] as String,
-        subtitle: json['subtitle'] as String,
-        time: DateTime.parse(json['time'] as String),
-        type: json['type'] as String,
-      );
+    id: json['id'] as String,
+    title: json['title'] as String,
+    subtitle: json['subtitle'] as String,
+    time: DateTime.parse(json['time'] as String),
+    type: json['type'] as String,
+  );
 
   static List<DashboardActivity> fromJsonList(List<dynamic> list) => list.map((e) => DashboardActivity.fromJson(e)).toList();
 
@@ -56,13 +62,11 @@ class DashboardQuickAction extends Equatable {
 
   const DashboardQuickAction({required this.id, required this.label, required this.icon});
 
-  factory DashboardQuickAction.fromJson(Map<String, dynamic> json) => DashboardQuickAction(
-        id: json['id'] as String,
-        label: json['label'] as String,
-        icon: json['icon'] as String,
-      );
+  factory DashboardQuickAction.fromJson(Map<String, dynamic> json) =>
+      DashboardQuickAction(id: json['id'] as String, label: json['label'] as String, icon: json['icon'] as String);
 
-  static List<DashboardQuickAction> fromJsonList(List<dynamic> list) => list.map((e) => DashboardQuickAction.fromJson(e)).toList();
+  static List<DashboardQuickAction> fromJsonList(List<dynamic> list) =>
+      list.map((e) => DashboardQuickAction.fromJson(e)).toList();
 
   @override
   List<Object?> get props => [id, label, icon];
@@ -77,15 +81,14 @@ class DashboardModel extends Equatable {
   const DashboardModel({required this.summary, required this.activities, required this.quickActions});
 
   factory DashboardModel.fromJson(Map<String, dynamic> json) => DashboardModel(
-        summary: DashboardSummary.fromJsonList(json['summary'] as List<dynamic>),
-        activities: DashboardActivity.fromJsonList(json['activities'] as List<dynamic>),
-        quickActions: DashboardQuickAction.fromJsonList(json['quick_actions'] as List<dynamic>),
-      );
+    summary: DashboardSummary.fromJsonList(json['summary'] as List<dynamic>),
+    activities: DashboardActivity.fromJsonList(json['activities'] as List<dynamic>),
+    quickActions: DashboardQuickAction.fromJsonList(json['quick_actions'] as List<dynamic>),
+  );
 
-  static DashboardModel fromJsonString(String jsonString) => DashboardModel.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
+  static DashboardModel fromJsonString(String jsonString) =>
+      DashboardModel.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
 
   @override
   List<Object?> get props => [summary, activities, quickActions];
 }
-
-

@@ -18,5 +18,3 @@ class DashboardState extends Equatable {
 }
 
 enum DashboardStatus { initial, loading, loaded, error }
-
-

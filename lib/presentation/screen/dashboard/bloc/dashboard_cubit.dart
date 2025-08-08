@@ -1,4 +1,4 @@
-import 'package:bloc/bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
 
 import '../../../../data/models/dashboard_model.dart';
@@ -22,5 +22,3 @@ class DashboardCubit extends Cubit<DashboardState> {
     }
   }
 }
-
-
