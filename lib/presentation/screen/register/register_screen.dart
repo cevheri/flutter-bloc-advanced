@@ -38,11 +38,48 @@ class RegisterScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return BlocBuilder<RegisterBloc, RegisterState>(
-      builder: (context, state) {
-        return ResponsiveFormBuilder(
-          formKey: _formKey,
-          children: [..._buildFormFields(context, state), _submitButton(context, state)],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
+        final form = BlocBuilder<RegisterBloc, RegisterState>(
+          builder: (context, state) {
+            return ResponsiveFormBuilder(
+              formKey: _formKey,
+              children: [
+                Text(S.of(context).register, style: Theme.of(context).textTheme.headlineSmall),
+                Text(
+                  'Create your account',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+                ..._buildFormFields(context, state),
+                _submitButton(context, state),
+              ],
+            );
+          },
+        );
+
+        final card = Card(
+          elevation: 1,
+          clipBehavior: Clip.antiAlias,
+          child: Padding(padding: const EdgeInsets.all(24), child: form),
+        );
+
+        if (!isWide) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: Center(
+              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: card),
+            ),
+          );
+        }
+
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Center(
+            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 720), child: card),
+          ),
         );
       },
     );

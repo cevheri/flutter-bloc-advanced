@@ -33,7 +33,7 @@ void main() async {
   AppRouter().setRouter(RouterType.goRouter);
 
   WidgetsFlutterBinding.ensureInitialized();
-  const initialTheme = AdaptiveThemeMode.dark;
+  const initialTheme = AdaptiveThemeMode.system;
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runApp(const App(language: defaultLanguage, initialTheme: initialTheme));
   });

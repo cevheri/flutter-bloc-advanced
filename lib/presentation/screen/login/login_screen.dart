@@ -100,10 +100,10 @@ class LoginScreen extends StatelessWidget {
       height: double.infinity,
       decoration: BoxDecoration(
         image: DecorationImage(
-          image: const AssetImage('assets/images/img.png'),
+          image: const AssetImage(LocaleConstants.logoDarkUrl),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            isDark ? Colors.black.withOpacity(0.35) : Colors.white.withOpacity(0.25),
+            isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.25),
             BlendMode.srcOver,
           ),
         ),
@@ -140,9 +140,9 @@ class LoginScreen extends StatelessWidget {
 
   Image _logo(BuildContext context) {
     if (Theme.of(context).brightness == Brightness.dark) {
-      return Image.asset(LocaleConstants.logoLightUrl, width: MediaQuery.of(context).size.width * 0.2);
+      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
     } else {
-      return Image.asset(LocaleConstants.defaultImgUrl, width: MediaQuery.of(context).size.width * 0.2);
+      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
     }
   }
 

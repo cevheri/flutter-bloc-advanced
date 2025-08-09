@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -45,11 +46,11 @@ class UserFormFields {
   /// return TextField
   static Widget firstNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
       FormBuilderTextField(
-        key: const Key('userEditorFirstNameFieldKey'),
+        key: registerFirstNameTextFieldKey,
         enabled: enabled,
         initialValue: initialValue,
         name: 'firstName',
-        decoration: InputDecoration(labelText: S.of(context).first_name),
+        decoration: InputDecoration(labelText: S.of(context).first_name, prefixIcon: const Icon(Icons.person_outline)),
         validator: FormBuilderValidators.compose([..._txtValidator(context)]),
       );
 
@@ -62,11 +63,11 @@ class UserFormFields {
   /// return TextField
   static Widget lastNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
       FormBuilderTextField(
-        key: const Key('userEditorLastNameFieldKey'),
+        key: registerLastNameTextFieldKey,
         enabled: enabled,
         initialValue: initialValue,
         name: 'lastName',
-        decoration: InputDecoration(labelText: S.of(context).last_name),
+        decoration: InputDecoration(labelText: S.of(context).last_name, prefixIcon: const Icon(Icons.badge_outlined)),
         validator: FormBuilderValidators.compose([..._txtValidator(context)]),
       );
 
@@ -78,11 +79,11 @@ class UserFormFields {
   /// [enabled] bool enable the field default is true
   /// return TextField
   static Widget emailField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
-    key: const Key('userEditorEmailFieldKey'),
+    key: registerEmailTextFieldKey,
     enabled: enabled,
     initialValue: initialValue,
     name: 'email',
-    decoration: InputDecoration(labelText: S.of(context).email),
+    decoration: InputDecoration(labelText: S.of(context).email, prefixIcon: const Icon(Icons.email_outlined)),
     validator: FormBuilderValidators.compose([
       ..._txtValidator(context),
       FormBuilderValidators.email(errorText: S.of(context).email_pattern),
