@@ -79,14 +79,8 @@ class ConfirmationDialog extends StatelessWidget {
       title: Text(title, style: theme.textTheme.titleLarge),
       content: Text(message, style: theme.textTheme.bodyMedium),
       actions: [
-        TextButton(
-          onPressed: () => context.pop(true),
-          child: Text(confirmText!, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.primary)),
-        ),
-        TextButton(
-          onPressed: () => context.pop(false),
-          child: Text(cancelText!, style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.primary)),
-        ),
+        TextButton(onPressed: () => context.pop(false), child: Text(cancelText!)),
+        FilledButton(onPressed: () => context.pop(true), child: Text(confirmText!)),
       ],
     );
     debugPrint('END: ConfirmationDialog.show');

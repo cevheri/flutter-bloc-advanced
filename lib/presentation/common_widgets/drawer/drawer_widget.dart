@@ -156,9 +156,8 @@ class ApplicationDrawer extends StatelessWidget {
       child: Center(
         child: SizedBox(
           width: double.infinity,
-          child: ElevatedButton(
+          child: FilledButton(
             key: drawerButtonLogoutKey,
-            style: ElevatedButton.styleFrom(elevation: 0),
             onPressed: () => _handleLogout(context),
             child: Text(S.of(context).logout, textAlign: TextAlign.center),
           ),

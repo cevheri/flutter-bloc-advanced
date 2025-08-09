@@ -49,24 +49,24 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  ElevatedButton _buildChangePasswordButton(BuildContext context) {
-    return ElevatedButton(
+  FilledButton _buildChangePasswordButton(BuildContext context) {
+    return FilledButton(
       key: settingsChangePasswordButtonKey,
       onPressed: () => context.go(ApplicationRoutesConstants.changePassword),
       child: Text(S.of(context).change_password, textAlign: TextAlign.center),
     );
   }
 
-  ElevatedButton _buildChangeLanguageButton(BuildContext context) {
-    return ElevatedButton(
+  FilledButton _buildChangeLanguageButton(BuildContext context) {
+    return FilledButton.tonal(
       key: settingsChangeLanguageButtonKey,
       onPressed: () => LanguageSelectionDialog.show(context),
       child: Text(S.of(context).language_select, textAlign: TextAlign.center),
     );
   }
 
-  ElevatedButton _buildLogoutButton(BuildContext context) {
-    return ElevatedButton(
+  FilledButton _buildLogoutButton(BuildContext context) {
+    return FilledButton(
       key: settingsLogoutButtonKey,
       onPressed: () => _handleLogout(context),
       child: Text(S.of(context).logout, textAlign: TextAlign.center),
