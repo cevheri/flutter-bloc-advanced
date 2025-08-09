@@ -19,14 +19,9 @@ class TopActionsWidget extends StatelessWidget {
     }
   }
 
-  void _changeLanguage(BuildContext context) async {
-    final prev = Localizations.localeOf(context);
+  Future<void> _changeLanguage(BuildContext context) async {
+    // LanguageSelectionDialog updates LanguageNotifier; no need to use context after await
     await LanguageSelectionDialog.show(context);
-    final current = Localizations.localeOf(context);
-    if (prev != current) {
-      // trigger rebuild upwards if needed; using setState not possible here, rely on navigation stack
-      (context as Element).markNeedsBuild();
-    }
   }
 
   @override
