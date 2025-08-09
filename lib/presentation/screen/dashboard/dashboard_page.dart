@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/utils/icon_utils.dart';
+import '../../../generated/l10n.dart';
 
 import 'bloc/dashboard_cubit.dart';
 import '../../../data/models/dashboard_model.dart';
@@ -54,9 +55,9 @@ class _DashboardHeader extends StatelessWidget {
         children: [
           Icon(Icons.dashboard_outlined, color: color.primary),
           const SizedBox(width: 12),
-          Text('Dashboard', style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+          Text(S.of(context).dashboard, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
           const Spacer(),
-          IconButton(tooltip: 'Refresh', icon: const Icon(Icons.refresh), onPressed: () {}),
+          IconButton(tooltip: S.of(context).refresh, icon: const Icon(Icons.refresh), onPressed: () {}),
         ],
       ),
     );
@@ -69,10 +70,11 @@ class _SummaryCardsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final s = S.of(context);
     final children = [
-      const _SummaryCard(label: 'Leads', value: '120', trend: 8),
-      const _SummaryCard(label: 'Customers', value: '54', trend: -2),
-      const _SummaryCard(label: 'Revenue', value: '₺12.500', trend: 12),
+      _SummaryCard(label: s.leads, value: '120', trend: 8),
+      _SummaryCard(label: s.customers, value: '54', trend: -2),
+      _SummaryCard(label: s.revenue, value: '12.500', trend: 12),
     ];
     if (isWide) {
       return Row(
@@ -151,7 +153,7 @@ class _KpiPlaceholder extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: color.outlineVariant),
       ),
-      child: const Center(child: Text('Chart / KPI Placeholder')),
+      child: Center(child: Text(S.of(context).chart_kpi_placeholder)),
     );
   }
 }
@@ -194,7 +196,7 @@ class _RecentActivityList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Recent Activity', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(S.of(context).recent_activity, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           ...List.generate(4, (i) => _ActivityTile(index: i)),
         ],
@@ -213,9 +215,9 @@ class _ActivityTile extends StatelessWidget {
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       leading: CircleAvatar(backgroundColor: color.secondaryContainer, child: Text('${index + 1}')),
-      title: const Text('Sample activity item'),
-      subtitle: const Text('Subtitle / Context'),
-      trailing: const Text('just now'),
+      title: Text(S.of(context).sample_activity_item),
+      subtitle: Text(S.of(context).subtitle_context),
+      trailing: Text(S.of(context).just_now),
     );
   }
 }
@@ -227,14 +229,15 @@ class _QuickActionsGrid extends StatelessWidget {
     final color = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     final state = context.watch<DashboardCubit>().state;
+    final s = S.of(context);
 
     final List<DashboardQuickAction> actions = state.status == DashboardStatus.loaded
         ? state.model!.quickActions
-        : const [
-            DashboardQuickAction(id: 'qa1', label: 'New Lead', icon: 'person_add'),
-            DashboardQuickAction(id: 'qa2', label: 'Add Task', icon: 'task'),
-            DashboardQuickAction(id: 'qa3', label: 'New Deal', icon: 'wallet'),
-            DashboardQuickAction(id: 'qa4', label: 'Send Email', icon: 'email'),
+        : [
+            DashboardQuickAction(id: 'qa1', label: s.new_lead, icon: 'person_add'),
+            DashboardQuickAction(id: 'qa2', label: s.add_task, icon: 'task'),
+            DashboardQuickAction(id: 'qa3', label: s.new_deal, icon: 'wallet'),
+            DashboardQuickAction(id: 'qa4', label: s.send_email_action, icon: 'email'),
           ];
 
     return Container(
@@ -247,7 +250,7 @@ class _QuickActionsGrid extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Quick Actions', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(S.of(context).quick_actions, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
           Wrap(spacing: 8, runSpacing: 8, children: actions.take(6).map((a) => _ActionButton(action: a)).toList()),
           if (actions.length > 6) ...[
@@ -257,7 +260,7 @@ class _QuickActionsGrid extends StatelessWidget {
               child: TextButton.icon(
                 onPressed: () => _showAllActions(context, actions),
                 icon: const Icon(Icons.more_horiz),
-                label: const Text('More'),
+                label: Text(S.of(context).more),
               ),
             ),
           ],

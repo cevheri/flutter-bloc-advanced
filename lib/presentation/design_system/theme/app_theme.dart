@@ -43,7 +43,7 @@ class AppTheme {
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         helperStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withOpacity(0.7)),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(179)),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,

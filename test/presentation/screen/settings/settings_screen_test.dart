@@ -86,7 +86,9 @@ void main() {
       expect(find.text('English'), findsOneWidget);
     });
     //TODO : fix the following skipped tests
-    testWidgets('shows logout confirmation dialog when logout button is pressed', skip:true, (WidgetTester tester) async {
+    testWidgets('shows logout confirmation dialog when logout button is pressed', skip: true, (
+      WidgetTester tester,
+    ) async {
       await testUtils.setupAuthentication();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -100,7 +102,7 @@ void main() {
       expect(find.text('No'), findsOneWidget);
     });
 
-    testWidgets('performs logout when confirmed', skip:true, (WidgetTester tester) async {
+    testWidgets('performs logout when confirmed', skip: true, (WidgetTester tester) async {
       await testUtils.setupAuthentication();
       when(mockDrawerBloc.stream).thenAnswer((_) => Stream.fromIterable([]));
       when(mockDrawerBloc.state).thenReturn(const DrawerState());

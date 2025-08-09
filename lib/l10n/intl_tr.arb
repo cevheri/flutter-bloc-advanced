@@ -78,4 +78,23 @@
   "taskName": "Görev Adı",
   "taskPrice": "Görev Fiyatı"
 
+,
+  "theme": "Tema",
+  "language": "Dil",
+  "dashboard": "Panel",
+  "refresh": "Yenile",
+  "leads": "Adaylar",
+  "customers": "Müşteriler",
+  "revenue": "Gelir",
+  "chart_kpi_placeholder": "Grafik / KPI Alanı",
+  "recent_activity": "Son Aktivite",
+  "sample_activity_item": "Örnek aktivite",
+  "subtitle_context": "Alt başlık / Bağlam",
+  "just_now": "az önce",
+  "quick_actions": "Hızlı İşlemler",
+  "new_lead": "Yeni Aday",
+  "add_task": "Görev Ekle",
+  "new_deal": "Yeni Anlaşma",
+  "send_email_action": "E-posta Gönder",
+  "more": "Daha Fazla"
 }

@@ -42,14 +42,18 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           debugPrint("HomeScreen account bloc builder: ${state.status}");
           if (state.status == AccountStatus.success) {
-            return Scaffold(
-              appBar: AppBar(title: const Text(AppConstants.appName), actions: const [TopActionsWidget()]),
-              key: _scaffoldKey,
-              body: BlocProvider(
-                create: (context) => DashboardCubit(repository: DashboardMockRepository())..load(),
-                child: const DashboardPage(),
+            return Localizations.override(
+              context: context,
+              locale: Locale(AppLocalStorageCached.language ?? 'en'),
+              child: Scaffold(
+                appBar: AppBar(title: const Text(AppConstants.appName), actions: const [TopActionsWidget()]),
+                key: _scaffoldKey,
+                body: BlocProvider(
+                  create: (context) => DashboardCubit(repository: DashboardMockRepository())..load(),
+                  child: const DashboardPage(),
+                ),
+                drawer: _buildDrawer(context),
               ),
-              drawer: _buildDrawer(context),
             );
           }
 

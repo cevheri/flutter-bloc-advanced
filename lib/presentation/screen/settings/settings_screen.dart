@@ -79,7 +79,7 @@ class SettingsScreen extends StatelessWidget {
                           // Theme
                           ListTile(
                             leading: const Icon(Icons.dark_mode_outlined),
-                            title: Text('Theme'),
+                            title: const Text('Theme'),
                             subtitle: Text(
                               'Switch between light and dark',
                               style: Theme.of(

@@ -138,13 +138,13 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Image _logo(BuildContext context) {
-    if (Theme.of(context).brightness == Brightness.dark) {
-      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
-    } else {
-      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
-    }
-  }
+  //  Image _logo(BuildContext context) {
+  //    if (Theme.of(context).brightness == Brightness.dark) {
+  //      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
+  //    } else {
+  //      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
+  //    }
+  //  }
 
   Widget _usernameField(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
