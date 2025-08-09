@@ -6,8 +6,7 @@
 import 'dart:async' as _i3;
 
 import 'package:flutter_bloc_advance/data/models/user.dart' as _i4;
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart'
-    as _i2;
+import 'package:flutter_bloc_advance/data/repository/user_repository.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -34,58 +33,34 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
 
   @override
   _i3.Future<_i4.User?> retrieve(String? id) =>
-      (super.noSuchMethod(
-            Invocation.method(#retrieve, [id]),
-            returnValue: _i3.Future<_i4.User?>.value(),
-          )
+      (super.noSuchMethod(Invocation.method(#retrieve, [id]), returnValue: _i3.Future<_i4.User?>.value())
           as _i3.Future<_i4.User?>);
 
   @override
   _i3.Future<_i4.User?> retrieveByLogin(String? login) =>
-      (super.noSuchMethod(
-            Invocation.method(#retrieveByLogin, [login]),
-            returnValue: _i3.Future<_i4.User?>.value(),
-          )
+      (super.noSuchMethod(Invocation.method(#retrieveByLogin, [login]), returnValue: _i3.Future<_i4.User?>.value())
           as _i3.Future<_i4.User?>);
 
   @override
   _i3.Future<_i4.User?> create(_i4.User? user) =>
-      (super.noSuchMethod(
-            Invocation.method(#create, [user]),
-            returnValue: _i3.Future<_i4.User?>.value(),
-          )
+      (super.noSuchMethod(Invocation.method(#create, [user]), returnValue: _i3.Future<_i4.User?>.value())
           as _i3.Future<_i4.User?>);
 
   @override
   _i3.Future<_i4.User?> update(_i4.User? user) =>
-      (super.noSuchMethod(
-            Invocation.method(#update, [user]),
-            returnValue: _i3.Future<_i4.User?>.value(),
-          )
+      (super.noSuchMethod(Invocation.method(#update, [user]), returnValue: _i3.Future<_i4.User?>.value())
           as _i3.Future<_i4.User?>);
 
   @override
-  _i3.Future<List<_i4.User>> list({
-    int? page = 0,
-    int? size = 10,
-    List<String>? sort = const ['id,desc'],
-  }) =>
+  _i3.Future<List<_i4.User>> list({int? page = 0, int? size = 10, List<String>? sort = const ['id,desc']}) =>
       (super.noSuchMethod(
-            Invocation.method(#list, [], {
-              #page: page,
-              #size: size,
-              #sort: sort,
-            }),
+            Invocation.method(#list, [], {#page: page, #size: size, #sort: sort}),
             returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
           )
           as _i3.Future<List<_i4.User>>);
 
   @override
-  _i3.Future<List<_i4.User>> listByAuthority(
-    int? page,
-    int? size,
-    String? authority,
-  ) =>
+  _i3.Future<List<_i4.User>> listByAuthority(int? page, int? size, String? authority) =>
       (super.noSuchMethod(
             Invocation.method(#listByAuthority, [page, size, authority]),
             returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
@@ -93,19 +68,9 @@ class MockUserRepository extends _i1.Mock implements _i2.UserRepository {
           as _i3.Future<List<_i4.User>>);
 
   @override
-  _i3.Future<List<_i4.User>> listByNameAndRole(
-    int? page,
-    int? size,
-    String? name,
-    String? authority,
-  ) =>
+  _i3.Future<List<_i4.User>> listByNameAndRole(int? page, int? size, String? name, String? authority) =>
       (super.noSuchMethod(
-            Invocation.method(#listByNameAndRole, [
-              page,
-              size,
-              name,
-              authority,
-            ]),
+            Invocation.method(#listByNameAndRole, [page, size, name, authority]),
             returnValue: _i3.Future<List<_i4.User>>.value(<_i4.User>[]),
           )
           as _i3.Future<List<_i4.User>>);

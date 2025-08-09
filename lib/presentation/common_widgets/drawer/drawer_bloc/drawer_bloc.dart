@@ -97,15 +97,12 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
       }
       MenuListCache.menus = menus;
       // Apply language and theme when loading is complete
-      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success, language: event.language, theme: event.theme));
+      emit(
+        state.copyWith(menus: menus, status: DrawerStateStatus.success, language: event.language, theme: event.theme),
+      );
       _log.debug("END:loadMenus LoadMenus event success: {}", []);
     } catch (e) {
-      emit(state.copyWith(
-        menus: [],
-        status: DrawerStateStatus.error,
-        language: event.language,
-        theme: event.theme,
-      ));
+      emit(state.copyWith(menus: [], status: DrawerStateStatus.error, language: event.language, theme: event.theme));
       _log.error("END:loadMenus LoadMenus event error: {}", [e.toString()]);
     }
   }

@@ -108,9 +108,7 @@ class HomeScreen extends StatelessWidget {
     final drawerBloc = context.read<DrawerBloc>();
     // Ensure menus are loaded once if empty
     if (drawerBloc.state.menus.isEmpty) {
-      final initialTheme = (AppLocalStorageCached.theme == 'light')
-          ? AdaptiveThemeMode.light
-          : AdaptiveThemeMode.dark;
+      final initialTheme = (AppLocalStorageCached.theme == 'light') ? AdaptiveThemeMode.light : AdaptiveThemeMode.dark;
       final initialLanguage = AppLocalStorageCached.language ?? 'en';
       drawerBloc.add(LoadMenus(language: initialLanguage, theme: initialTheme));
     }
