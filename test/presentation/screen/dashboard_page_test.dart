@@ -6,6 +6,8 @@ import 'package:flutter_bloc_advance/data/repository/dashboard_repository.dart';
 import 'package:flutter_bloc_advance/presentation/screen/dashboard/bloc/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/presentation/screen/dashboard/dashboard_page.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 
 import '../../test_utils.dart';
 
@@ -35,6 +37,14 @@ void main() {
         builder: (light, dark) => MaterialApp(
           theme: light,
           darkTheme: dark,
+          locale: const Locale('en'),
+          supportedLocales: S.delegate.supportedLocales,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
           home: BlocProvider<DashboardCubit>(
             create: (_) => DashboardCubit(repository: _StubDashboardRepo())..load(),
             child: const Scaffold(body: DashboardPage()),

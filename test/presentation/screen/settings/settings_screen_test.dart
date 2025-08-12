@@ -78,6 +78,9 @@ void main() {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
+      // Ensure the tile is visible in case it's out of viewport in test env
+      await tester.ensureVisible(find.byKey(settingsChangeLanguageButtonKey));
+      await tester.pump();
       await tester.tap(find.byKey(settingsChangeLanguageButtonKey));
       await tester.pumpAndSettle();
 
