@@ -77,4 +77,23 @@
   "taskSaveScreenTitle": "Task Save",
   "taskName": "Task Name",
   "taskPrice": "Task Price"
+,
+  "theme": "Theme",
+  "language": "Language",
+  "dashboard": "Dashboard",
+  "refresh": "Refresh",
+  "leads": "Leads",
+  "customers": "Customers",
+  "revenue": "Revenue",
+  "chart_kpi_placeholder": "Chart / KPI Placeholder",
+  "recent_activity": "Recent Activity",
+  "sample_activity_item": "Sample activity item",
+  "subtitle_context": "Subtitle / Context",
+  "just_now": "just now",
+  "quick_actions": "Quick Actions",
+  "new_lead": "New Lead",
+  "add_task": "Add Task",
+  "new_deal": "New Deal",
+  "send_email_action": "Send Email",
+  "more": "More"
 }

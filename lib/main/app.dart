@@ -11,6 +11,7 @@ import '../presentation/common_blocs/account/account.dart';
 import '../presentation/common_blocs/authority/authority_bloc.dart';
 import '../presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../presentation/screen/login/bloc/login.dart';
+import '../presentation/design_system/theme/app_theme.dart';
 
 /// Main application widget. This widget is the root of your application.
 ///
@@ -40,11 +41,9 @@ class App extends StatelessWidget {
     );
   }
 
-  ThemeData _buildDarkTheme() =>
-      ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey);
+  ThemeData _buildDarkTheme() => AppTheme.dark();
 
-  ThemeData _buildLightTheme() =>
-      ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey);
+  ThemeData _buildLightTheme() => AppTheme.light();
 
   MultiBlocProvider _buildMultiBlocProvider(ThemeData light, ThemeData dark) {
     return MultiBlocProvider(

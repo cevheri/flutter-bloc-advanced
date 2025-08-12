@@ -24,38 +24,127 @@ class LoginScreen extends StatelessWidget {
     return Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  AppBar _buildAppBar(BuildContext context) => AppBar(title: const Text(AppConstants.appName), leading: Container());
+  AppBar _buildAppBar(BuildContext context) =>
+      AppBar(title: const Text(AppConstants.appName), leading: const SizedBox.shrink());
 
   Widget _buildBody(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, state) {
-        return ResponsiveFormBuilder(
-          formKey: _loginFormKey,
-          children: <Widget>[
-            _logo(context),
-            _usernameField(context),
-            _passwordField(context),
-            SizedBox(
-              width: MediaQuery.of(context).size.width * 0.6,
-              child: Row(mainAxisAlignment: MainAxisAlignment.end, children: <Widget>[_submitButton(context)]),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth >= 900;
+        final formCard = _buildFormCard(context);
+        if (!isWide) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            child: Center(
+              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: formCard),
             ),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
-            Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_otpLoginButton(context)]),
-            _validationZone(),
-          ],
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Row(
+            children: [
+              Expanded(child: _buildHeroPanel(context)),
+              Expanded(
+                child: Center(
+                  child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 520), child: formCard),
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
   }
 
-  Image _logo(BuildContext context) {
-    if (Theme.of(context).brightness == Brightness.dark) {
-      return Image.asset(LocaleConstants.logoLightUrl, width: MediaQuery.of(context).size.width * 0.2);
-    } else {
-      return Image.asset(LocaleConstants.defaultImgUrl, width: MediaQuery.of(context).size.width * 0.2);
-    }
+  Widget _buildFormCard(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return Card(
+          elevation: 1,
+          clipBehavior: Clip.antiAlias,
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: ResponsiveFormBuilder(
+              formKey: _loginFormKey,
+              children: <Widget>[
+                Text(
+                  S.of(context).login, // use available localization key
+                  style: Theme.of(context).textTheme.headlineSmall,
+                ),
+                Text(
+                  AppConstants.appName,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+                _usernameField(context),
+                _passwordField(context),
+                Align(alignment: Alignment.centerRight, child: _submitButton(context)),
+                _validationZone(),
+                _orDivider(context),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_otpLoginButton(context)]),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
+
+  Widget _buildHeroPanel(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      height: double.infinity,
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: const AssetImage(LocaleConstants.logoDarkUrl),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.25),
+            BlendMode.srcOver,
+          ),
+        ),
+      ),
+      child: Align(
+        alignment: Alignment.bottomLeft,
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Text(
+            '"Simply all the tools that my team and I need."',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              shadows: [const Shadow(blurRadius: 6, color: Colors.black45)],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _orDivider(BuildContext context) {
+    final color = Theme.of(context).colorScheme.outlineVariant;
+    return Row(
+      children: [
+        Expanded(child: Divider(color: color)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8),
+          child: Text('OR', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
+        ),
+        Expanded(child: Divider(color: color)),
+      ],
+    );
+  }
+
+  //  Image _logo(BuildContext context) {
+  //    if (Theme.of(context).brightness == Brightness.dark) {
+  //      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
+  //    } else {
+  //      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
+  //    }
+  //  }
 
   Widget _usernameField(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
@@ -65,7 +154,10 @@ class LoginScreen extends StatelessWidget {
           child: FormBuilderTextField(
             key: loginTextFieldUsernameKey,
             name: 'username',
-            decoration: InputDecoration(labelText: S.of(context).login_user_name),
+            decoration: InputDecoration(
+              labelText: S.of(context).login_user_name,
+              prefixIcon: const Icon(Icons.person_outline),
+            ),
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).required_field),
               FormBuilderValidators.minLength(4, errorText: S.of(context).min_length_4),
@@ -89,7 +181,10 @@ class LoginScreen extends StatelessWidget {
                 child: FormBuilderTextField(
                   key: loginTextFieldPasswordKey,
                   name: 'password',
-                  decoration: InputDecoration(labelText: S.of(context).login_password),
+                  decoration: InputDecoration(
+                    labelText: S.of(context).login_password,
+                    prefixIcon: const Icon(Icons.lock_outline),
+                  ),
                   // when press the enter key, call submit button function
                   textInputAction: TextInputAction.done,
                   onSubmitted: (value) {

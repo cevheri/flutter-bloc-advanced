@@ -42,3 +42,47 @@ Tag: v0.8.0
 ### Notes
 - This is a minor release (no breaking changes); suitable for tagging as `v0.8.0`.
 - Full changelog is reflected under Unreleased in `CHANGELOG.md`.
+
+
+
+```
+/**
+ * Color Opacity to Alpha Conversion Guide
+ * 
+ * Why we're moving from withOpacity to withAlpha:
+ * 
+ * 1. Precision:
+ *    - withOpacity uses double values (0.0 to 1.0) which can lead to floating-point precision loss
+ *    - withAlpha uses integer values (0 to 255) providing exact precision
+ * 
+ * 2. Performance:
+ *    - withAlpha is more performant as it avoids floating-point calculations
+ *    - Direct integer operations are faster than floating-point operations
+ * 
+ * Conversion Formula:
+ * alpha = opacity * 255
+ * 
+ * Common Conversions:
+ * 0.1 opacity = 26 alpha   (0.1 * 255)
+ * 0.2 opacity = 51 alpha   (0.2 * 255)
+ * 0.3 opacity = 77 alpha   (0.3 * 255)
+ * 0.4 opacity = 102 alpha  (0.4 * 255)
+ * 0.5 opacity = 128 alpha  (0.5 * 255)
+ * 0.6 opacity = 153 alpha  (0.6 * 255)
+ * 0.7 opacity = 179 alpha  (0.7 * 255)
+ * 0.8 opacity = 204 alpha  (0.8 * 255)
+ * 0.9 opacity = 230 alpha  (0.9 * 255)
+ * 1.0 opacity = 255 alpha  (1.0 * 255)
+ * 
+ * Example Usage:
+ * // Old (Deprecated):
+ * color With Opacity(0.5)
+ * 
+ * // New:
+ * color.withAlpha(128)  // 0.5 * 255 = 128
+ * 
+ * This change is part of Flutter 3.27's improvements for better color precision
+ * and performance optimization.
+ */
+
+```

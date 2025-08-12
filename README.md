@@ -155,6 +155,11 @@ dart run build_runner build --delete-conflicting-outputs
 dart analyze --fix
 ```
 
+* format
+```shell
+dart format .
+```
+
 ---
 
 ## Use FVM

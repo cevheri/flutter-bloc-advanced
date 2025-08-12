@@ -468,6 +468,96 @@ class S {
   String get taskPrice {
     return Intl.message('Task Price', name: 'taskPrice', desc: '', args: []);
   }
+
+  /// `Theme`
+  String get theme {
+    return Intl.message('Theme', name: 'theme', desc: '', args: []);
+  }
+
+  /// `Language`
+  String get language {
+    return Intl.message('Language', name: 'language', desc: '', args: []);
+  }
+
+  /// `Dashboard`
+  String get dashboard {
+    return Intl.message('Dashboard', name: 'dashboard', desc: '', args: []);
+  }
+
+  /// `Refresh`
+  String get refresh {
+    return Intl.message('Refresh', name: 'refresh', desc: '', args: []);
+  }
+
+  /// `Leads`
+  String get leads {
+    return Intl.message('Leads', name: 'leads', desc: '', args: []);
+  }
+
+  /// `Customers`
+  String get customers {
+    return Intl.message('Customers', name: 'customers', desc: '', args: []);
+  }
+
+  /// `Revenue`
+  String get revenue {
+    return Intl.message('Revenue', name: 'revenue', desc: '', args: []);
+  }
+
+  /// `Chart / KPI Placeholder`
+  String get chart_kpi_placeholder {
+    return Intl.message('Chart / KPI Placeholder', name: 'chart_kpi_placeholder', desc: '', args: []);
+  }
+
+  /// `Recent Activity`
+  String get recent_activity {
+    return Intl.message('Recent Activity', name: 'recent_activity', desc: '', args: []);
+  }
+
+  /// `Sample activity item`
+  String get sample_activity_item {
+    return Intl.message('Sample activity item', name: 'sample_activity_item', desc: '', args: []);
+  }
+
+  /// `Subtitle / Context`
+  String get subtitle_context {
+    return Intl.message('Subtitle / Context', name: 'subtitle_context', desc: '', args: []);
+  }
+
+  /// `just now`
+  String get just_now {
+    return Intl.message('just now', name: 'just_now', desc: '', args: []);
+  }
+
+  /// `Quick Actions`
+  String get quick_actions {
+    return Intl.message('Quick Actions', name: 'quick_actions', desc: '', args: []);
+  }
+
+  /// `New Lead`
+  String get new_lead {
+    return Intl.message('New Lead', name: 'new_lead', desc: '', args: []);
+  }
+
+  /// `Add Task`
+  String get add_task {
+    return Intl.message('Add Task', name: 'add_task', desc: '', args: []);
+  }
+
+  /// `New Deal`
+  String get new_deal {
+    return Intl.message('New Deal', name: 'new_deal', desc: '', args: []);
+  }
+
+  /// `Send Email`
+  String get send_email_action {
+    return Intl.message('Send Email', name: 'send_email_action', desc: '', args: []);
+  }
+
+  /// `More`
+  String get more {
+    return Intl.message('More', name: 'more', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

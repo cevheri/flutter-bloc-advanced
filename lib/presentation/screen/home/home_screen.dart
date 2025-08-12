@@ -9,6 +9,8 @@ import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import '../../common_blocs/account/account.dart';
 import '../../common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../../common_widgets/drawer/drawer_widget.dart';
+import '../../common_widgets/top_actions_widget.dart';
+import '../../common_widgets/language_notifier.dart';
 import '../dashboard/dashboard_page.dart';
 import '../dashboard/bloc/dashboard_cubit.dart';
 import '../../../data/repository/dashboard_repository.dart';
@@ -41,14 +43,23 @@ class HomeScreen extends StatelessWidget {
         builder: (context, state) {
           debugPrint("HomeScreen account bloc builder: ${state.status}");
           if (state.status == AccountStatus.success) {
-            return Scaffold(
-              appBar: AppBar(title: const Text(AppConstants.appName)),
-              key: _scaffoldKey,
-              body: BlocProvider(
-                create: (context) => DashboardCubit(repository: DashboardMockRepository())..load(),
-                child: const DashboardPage(),
-              ),
-              drawer: _buildDrawer(context),
+            return ValueListenableBuilder<String>(
+              valueListenable: LanguageNotifier.current,
+              builder: (context, lang, _) {
+                return Localizations.override(
+                  context: context,
+                  locale: Locale(lang),
+                  child: Scaffold(
+                    appBar: AppBar(title: const Text(AppConstants.appName), actions: const [TopActionsWidget()]),
+                    key: _scaffoldKey,
+                    body: BlocProvider(
+                      create: (context) => DashboardCubit(repository: DashboardMockRepository())..load(),
+                      child: const DashboardPage(),
+                    ),
+                    drawer: _buildDrawer(context),
+                  ),
+                );
+              },
             );
           }
 
