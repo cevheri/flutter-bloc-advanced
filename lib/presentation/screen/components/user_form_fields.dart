@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
@@ -46,7 +45,8 @@ class UserFormFields {
   /// return TextField
   static Widget firstNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
       FormBuilderTextField(
-        key: registerFirstNameTextFieldKey,
+        // Keep backward compatible key expected by tests
+        key: const Key('userEditorFirstNameFieldKey'),
         enabled: enabled,
         initialValue: initialValue,
         name: 'firstName',
@@ -63,7 +63,8 @@ class UserFormFields {
   /// return TextField
   static Widget lastNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
       FormBuilderTextField(
-        key: registerLastNameTextFieldKey,
+        // Keep backward compatible key expected by tests
+        key: const Key('userEditorLastNameFieldKey'),
         enabled: enabled,
         initialValue: initialValue,
         name: 'lastName',
@@ -79,7 +80,8 @@ class UserFormFields {
   /// [enabled] bool enable the field default is true
   /// return TextField
   static Widget emailField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
-    key: registerEmailTextFieldKey,
+    // Keep backward compatible key expected by tests
+    key: const Key('userEditorEmailFieldKey'),
     enabled: enabled,
     initialValue: initialValue,
     name: 'email',
