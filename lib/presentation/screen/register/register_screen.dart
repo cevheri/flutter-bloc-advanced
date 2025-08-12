@@ -45,17 +45,17 @@ class RegisterScreen extends StatelessWidget {
           builder: (context, state) {
             return ResponsiveFormBuilder(
               formKey: _formKey,
-                children: [
-                  // Removed duplicate "Register" header to avoid duplicate text with AppBar title
-                  Text(
-                    'Create your account',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                  ),
-                  ..._buildFormFields(context, state),
-                  _submitButton(context, state),
-                ],
+              children: [
+                // Removed duplicate "Register" header to avoid duplicate text with AppBar title
+                Text(
+                  'Create your account',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
+                ..._buildFormFields(context, state),
+                _submitButton(context, state),
+              ],
             );
           },
         );
