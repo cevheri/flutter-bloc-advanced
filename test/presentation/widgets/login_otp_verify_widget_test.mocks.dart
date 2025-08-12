@@ -6,8 +6,10 @@
 import 'dart:async' as _i4;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart' as _i3;
-import 'package:flutter_bloc_advance/presentation/screen/login/bloc/login_bloc.dart' as _i2;
+import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart'
+    as _i3;
+import 'package:flutter_bloc_advance/presentation/screen/login/bloc/login_bloc.dart'
+    as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -25,11 +27,13 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeLoginState_0 extends _i1.SmartFake implements _i2.LoginState {
-  _FakeLoginState_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+  _FakeLoginState_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeAccountState_1 extends _i1.SmartFake implements _i3.AccountState {
-  _FakeAccountState_1(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+  _FakeAccountState_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [LoginBloc].
@@ -41,7 +45,10 @@ class MockLoginBloc extends _i1.Mock implements _i2.LoginBloc {
       (super.noSuchMethod(
             Invocation.getter(#state),
             returnValue: _FakeLoginState_0(this, Invocation.getter(#state)),
-            returnValueForMissingStub: _FakeLoginState_0(this, Invocation.getter(#state)),
+            returnValueForMissingStub: _FakeLoginState_0(
+              this,
+              Invocation.getter(#state),
+            ),
           )
           as _i2.LoginState);
 
@@ -56,23 +63,38 @@ class MockLoginBloc extends _i1.Mock implements _i2.LoginBloc {
 
   @override
   bool get isClosed =>
-      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false, returnValueForMissingStub: false) as bool);
+      (super.noSuchMethod(
+            Invocation.getter(#isClosed),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
 
   @override
-  void onTransition(_i5.Transition<_i2.LoginEvent, _i2.LoginState>? transition) =>
-      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
+  void onTransition(
+    _i5.Transition<_i2.LoginEvent, _i2.LoginState>? transition,
+  ) => super.noSuchMethod(
+    Invocation.method(#onTransition, [transition]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void add(_i2.LoginEvent? event) =>
-      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
+  void add(_i2.LoginEvent? event) => super.noSuchMethod(
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onEvent(_i2.LoginEvent? event) =>
-      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
+  void onEvent(_i2.LoginEvent? event) => super.noSuchMethod(
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void emit(_i2.LoginState? state) =>
-      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
+  void emit(_i2.LoginState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i2.LoginEvent>(
@@ -93,16 +115,22 @@ class MockLoginBloc extends _i1.Mock implements _i2.LoginBloc {
           as _i4.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i2.LoginState>? change) =>
-      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
+  void onChange(_i5.Change<_i2.LoginState>? change) => super.noSuchMethod(
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void addError(Object? error, [StackTrace? stackTrace]) =>
-      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(Object? error, StackTrace? stackTrace) =>
-      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }
 
 /// A class which mocks [AccountBloc].
@@ -114,7 +142,10 @@ class MockAccountBloc extends _i1.Mock implements _i3.AccountBloc {
       (super.noSuchMethod(
             Invocation.getter(#state),
             returnValue: _FakeAccountState_1(this, Invocation.getter(#state)),
-            returnValueForMissingStub: _FakeAccountState_1(this, Invocation.getter(#state)),
+            returnValueForMissingStub: _FakeAccountState_1(
+              this,
+              Invocation.getter(#state),
+            ),
           )
           as _i3.AccountState);
 
@@ -129,19 +160,30 @@ class MockAccountBloc extends _i1.Mock implements _i3.AccountBloc {
 
   @override
   bool get isClosed =>
-      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false, returnValueForMissingStub: false) as bool);
+      (super.noSuchMethod(
+            Invocation.getter(#isClosed),
+            returnValue: false,
+            returnValueForMissingStub: false,
+          )
+          as bool);
 
   @override
-  void add(_i3.AccountEvent? event) =>
-      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
+  void add(_i3.AccountEvent? event) => super.noSuchMethod(
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onEvent(_i3.AccountEvent? event) =>
-      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
+  void onEvent(_i3.AccountEvent? event) => super.noSuchMethod(
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void emit(_i3.AccountState? state) =>
-      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
+  void emit(_i3.AccountState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i3.AccountEvent>(
@@ -153,8 +195,12 @@ class MockAccountBloc extends _i1.Mock implements _i3.AccountBloc {
   );
 
   @override
-  void onTransition(_i5.Transition<_i3.AccountEvent, _i3.AccountState>? transition) =>
-      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
+  void onTransition(
+    _i5.Transition<_i3.AccountEvent, _i3.AccountState>? transition,
+  ) => super.noSuchMethod(
+    Invocation.method(#onTransition, [transition]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   _i4.Future<void> close() =>
@@ -166,14 +212,20 @@ class MockAccountBloc extends _i1.Mock implements _i3.AccountBloc {
           as _i4.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i3.AccountState>? change) =>
-      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
+  void onChange(_i5.Change<_i3.AccountState>? change) => super.noSuchMethod(
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void addError(Object? error, [StackTrace? stackTrace]) =>
-      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(Object? error, StackTrace? stackTrace) =>
-      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }

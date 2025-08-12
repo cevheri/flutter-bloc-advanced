@@ -59,7 +59,10 @@ class HttpUtils {
   ///   -H 'accept: application/json, text/plain, */*' \
   ///   -H 'content-type: application/json' \
   /// Default headers for all requests (can be overridden with [addCustomHttpHeader])
-  static final _defaultHttpHeaders = {'Accept': applicationJson, 'Content-Type': applicationJson};
+  static final _defaultHttpHeaders = {
+    'Accept': applicationJson,
+    'Content-Type': applicationJson,
+  };
 
   static final _customHttpHeaders = <String, String>{};
 
@@ -128,11 +131,18 @@ class HttpUtils {
     }
   }
 
-  static Future<http.Response> postRequest<T>(String endpoint, T body, {Map<String, String>? headers}) async {
-    debugPrint("BEGIN: POST Request Method start : ${ProfileConstants.api}$endpoint");
+  static Future<http.Response> postRequest<T>(
+    String endpoint,
+    T body, {
+    Map<String, String>? headers,
+  }) async {
+    debugPrint(
+      "BEGIN: POST Request Method start : ${ProfileConstants.api}$endpoint",
+    );
 
     /// if isMock is true, return mock data instead of making a request
-    if (!ProfileConstants.isProduction) return await mockRequest('POST', endpoint);
+    if (!ProfileConstants.isProduction)
+      return await mockRequest('POST', endpoint);
 
     final requestHeaders = await HttpUtils.headers();
     if (headers != null) {
@@ -150,7 +160,12 @@ class HttpUtils {
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
       response = await client
-          .post(url, headers: requestHeaders, body: messageBody, encoding: _encoding)
+          .post(
+            url,
+            headers: requestHeaders,
+            body: messageBody,
+            encoding: _encoding,
+          )
           .timeout(_timeout);
       //final a = response.body;
       checkUnauthorizedAccess(endpoint, response);
@@ -161,7 +176,9 @@ class HttpUtils {
       debugPrint("Timeout Exception: $toe");
       throw FetchDataException(requestTimeoutError);
     }
-    debugPrint("END: POST Request Method end : ${ProfileConstants.api}$endpoint");
+    debugPrint(
+      "END: POST Request Method end : ${ProfileConstants.api}$endpoint",
+    );
     return response;
   }
 
@@ -170,11 +187,18 @@ class HttpUtils {
     String? pathParams,
     Map<String, String>? queryParams,
   }) async {
-    debugPrint("BEGIN: GET Request Method start : ${ProfileConstants.api}$endpoint");
+    debugPrint(
+      "BEGIN: GET Request Method start : ${ProfileConstants.api}$endpoint",
+    );
 
     /// if isMock is true, return mock data instead of making a request
     if (!ProfileConstants.isProduction) {
-      return await mockRequest('GET', endpoint, pathParams: pathParams, queryParams: queryParams);
+      return await mockRequest(
+        'GET',
+        endpoint,
+        pathParams: pathParams,
+        queryParams: queryParams,
+      );
     }
     final http.Response response;
     final headers = await HttpUtils.headers();
@@ -188,7 +212,9 @@ class HttpUtils {
       final url = Uri.parse(path);
 
       if (queryParams != null) {
-        response = await client.get(url.replace(queryParameters: queryParams), headers: headers).timeout(_timeout);
+        response = await client
+            .get(url.replace(queryParameters: queryParams), headers: headers)
+            .timeout(_timeout);
       } else {
         response = await client.get(url, headers: headers).timeout(_timeout);
       }
@@ -198,7 +224,9 @@ class HttpUtils {
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
-    debugPrint("END: GET Request Method end : ${ProfileConstants.api}$endpoint");
+    debugPrint(
+      "END: GET Request Method end : ${ProfileConstants.api}$endpoint",
+    );
     return response;
   }
 
@@ -225,15 +253,23 @@ class HttpUtils {
   // }
 
   static Future<http.Response> putRequest<T>(String endpoint, T body) async {
-    debugPrint("BEGIN: PUT Request Method start : ${ProfileConstants.api}$endpoint");
-    if (!ProfileConstants.isProduction) return await mockRequest('PUT', endpoint);
+    debugPrint(
+      "BEGIN: PUT Request Method start : ${ProfileConstants.api}$endpoint",
+    );
+    if (!ProfileConstants.isProduction)
+      return await mockRequest('PUT', endpoint);
     var headers = await HttpUtils.headers();
     final String json = JsonMapper.serialize(body, _serOps);
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
       response = await client
-          .put(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
+          .put(
+            url,
+            headers: headers,
+            body: json,
+            encoding: Encoding.getByName(utf8Val),
+          )
           .timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
@@ -241,20 +277,30 @@ class HttpUtils {
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
-    debugPrint("END: PUT Request Method end : ${ProfileConstants.api}$endpoint");
+    debugPrint(
+      "END: PUT Request Method end : ${ProfileConstants.api}$endpoint",
+    );
     return response;
   }
 
   static Future<http.Response> patchRequest<T>(String endpoint, T body) async {
-    debugPrint("BEGIN: PATCH Request Method start : ${ProfileConstants.api}$endpoint");
-    if (!ProfileConstants.isProduction) return await mockRequest('PATCH', endpoint);
+    debugPrint(
+      "BEGIN: PATCH Request Method start : ${ProfileConstants.api}$endpoint",
+    );
+    if (!ProfileConstants.isProduction)
+      return await mockRequest('PATCH', endpoint);
     var headers = await HttpUtils.headers();
     final String json = JsonMapper.serialize(body, _serOps);
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
       response = await client
-          .patch(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
+          .patch(
+            url,
+            headers: headers,
+            body: json,
+            encoding: Encoding.getByName(utf8Val),
+          )
           .timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
@@ -262,7 +308,9 @@ class HttpUtils {
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
-    debugPrint("END: PATCH Request Method end : ${ProfileConstants.api}$endpoint");
+    debugPrint(
+      "END: PATCH Request Method end : ${ProfileConstants.api}$endpoint",
+    );
     return response;
   }
 
@@ -271,9 +319,16 @@ class HttpUtils {
     String? pathParams,
     Map<String, String>? queryParams,
   }) async {
-    debugPrint("BEGIN: DELETE Request Method start : ${ProfileConstants.api}$endpoint");
+    debugPrint(
+      "BEGIN: DELETE Request Method start : ${ProfileConstants.api}$endpoint",
+    );
     if (!ProfileConstants.isProduction) {
-      return await mockRequest('DELETE', endpoint, pathParams: pathParams, queryParams: queryParams);
+      return await mockRequest(
+        'DELETE',
+        endpoint,
+        pathParams: pathParams,
+        queryParams: queryParams,
+      );
     }
     var headers = await HttpUtils.headers();
     final http.Response response;
@@ -286,7 +341,9 @@ class HttpUtils {
     } on TimeoutException {
       throw FetchDataException(requestTimeoutError);
     }
-    debugPrint("END: DELETE Request Method end : ${ProfileConstants.api}$endpoint");
+    debugPrint(
+      "END: DELETE Request Method end : ${ProfileConstants.api}$endpoint",
+    );
     return response;
   }
 
@@ -335,7 +392,9 @@ class HttpUtils {
 
     String responseBody = "OK";
     int httpStatusCode = HttpStatus.ok;
-    Future<http.Response> response = Future.value(http.Response("", httpStatusCode));
+    Future<http.Response> response = Future.value(
+      http.Response("", httpStatusCode),
+    );
     switch (httpMethod) {
       case 'POST':
         httpStatusCode = HttpStatus.created;
@@ -379,9 +438,13 @@ class HttpUtils {
       debugPrint("Mock data path: $mockDataPath");
       responseBody = await rootBundle.loadString(mockDataPath);
       response = Future.value(http.Response(responseBody, httpStatusCode));
-      debugPrint("Mock data loaded from $httpMethod $endpoint : response body length: ${responseBody.length}");
+      debugPrint(
+        "Mock data loaded from $httpMethod $endpoint : response body length: ${responseBody.length}",
+      );
     } catch (e) {
-      debugPrint("Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e");
+      debugPrint(
+        "Error loading mock data httpMethod:$httpMethod, endpoint:$endpoint. error: $e",
+      );
     }
     debugPrint("END: Mock Request Method end : $httpMethod $endpoint");
     return response;

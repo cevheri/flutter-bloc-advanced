@@ -59,11 +59,17 @@ void main() {
     });
 
     test("AuthorityLoadFailureState", () {
-      expect(const AuthorityLoadFailureState(message: "test"), const AuthorityLoadFailureState(message: "test"));
+      expect(
+        const AuthorityLoadFailureState(message: "test"),
+        const AuthorityLoadFailureState(message: "test"),
+      );
     });
     test("AuthorityState copyWith", () {
       expect(const AuthorityState().copyWith(), const AuthorityState());
-      expect(const AuthorityState().copyWith(authorities: authorities), const AuthorityState(authorities: authorities));
+      expect(
+        const AuthorityState().copyWith(authorities: authorities),
+        const AuthorityState(authorities: authorities),
+      );
       expect(
         const AuthorityState().copyWith(status: AuthorityStatus.success),
         const AuthorityState(status: AuthorityStatus.success),
@@ -74,12 +80,27 @@ void main() {
     });
     test("AuthorityState props", () {
       expect(const AuthorityState().props, [AuthorityStatus.initial, []]);
-      expect(const AuthorityState(authorities: authorities).props, [AuthorityStatus.initial, authorities]);
+      expect(const AuthorityState(authorities: authorities).props, [
+        AuthorityStatus.initial,
+        authorities,
+      ]);
 
-      expect(const AuthorityInitialState().props, [AuthorityStatus.initial, []]);
-      expect(const AuthorityLoadingState().props, [AuthorityStatus.loading, []]);
-      expect(const AuthorityLoadSuccessState(authorities: authorities).props, [AuthorityStatus.success, authorities]);
-      expect(const AuthorityLoadFailureState(message: "test").props, [AuthorityStatus.failure, "test"]);
+      expect(const AuthorityInitialState().props, [
+        AuthorityStatus.initial,
+        [],
+      ]);
+      expect(const AuthorityLoadingState().props, [
+        AuthorityStatus.loading,
+        [],
+      ]);
+      expect(const AuthorityLoadSuccessState(authorities: authorities).props, [
+        AuthorityStatus.success,
+        authorities,
+      ]);
+      expect(const AuthorityLoadFailureState(message: "test").props, [
+        AuthorityStatus.failure,
+        "test",
+      ]);
     });
   });
 
@@ -112,11 +133,17 @@ void main() {
       const authorities = [Authority(name: "test")];
       final authoritiesMap = authorities.map((e) => e.name).toList();
       method() => repository.list();
-      Future<List<String?>> output = Future<List<String?>>.value(authoritiesMap);
+      Future<List<String?>> output = Future<List<String?>>.value(
+        authoritiesMap,
+      );
       const event = AuthorityLoad();
       const loadingState = AuthorityLoadingState();
-      final successState = AuthorityLoadSuccessState(authorities: authoritiesMap);
-      const failureState = AuthorityLoadFailureState(message: "Exception: Error");
+      final successState = AuthorityLoadSuccessState(
+        authorities: authoritiesMap,
+      );
+      const failureState = AuthorityLoadFailureState(
+        message: "Exception: Error",
+      );
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];

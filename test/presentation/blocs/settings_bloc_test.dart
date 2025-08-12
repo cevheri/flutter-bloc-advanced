@@ -40,22 +40,34 @@ void main() {
       expect(const SettingsLogoutSuccess().props, [SettingsStatus.success]);
     });
     test("SettingsLanguageChanged", () {
-      expect(const SettingsLanguageChanged(language: "en"), const SettingsLanguageChanged(language: "en"));
-      expect(const SettingsLanguageChanged(language: "en").props, [SettingsStatus.success, "en"]);
+      expect(
+        const SettingsLanguageChanged(language: "en"),
+        const SettingsLanguageChanged(language: "en"),
+      );
+      expect(const SettingsLanguageChanged(language: "en").props, [
+        SettingsStatus.success,
+        "en",
+      ]);
     });
     test("SettingsThemeChanged", () {
       expect(
         const SettingsThemeChanged(theme: AdaptiveThemeMode.system),
         const SettingsThemeChanged(theme: AdaptiveThemeMode.system),
       );
-      expect(const SettingsThemeChanged(theme: AdaptiveThemeMode.system).props, [
-        AdaptiveThemeMode.system,
-        SettingsStatus.success,
-      ]);
+      expect(
+        const SettingsThemeChanged(theme: AdaptiveThemeMode.system).props,
+        [AdaptiveThemeMode.system, SettingsStatus.success],
+      );
     });
     test("SettingsFailure", () {
-      expect(const SettingsFailure(message: "Error"), const SettingsFailure(message: "Error"));
-      expect(const SettingsFailure(message: "Error").props, ["Error", SettingsStatus.failure]);
+      expect(
+        const SettingsFailure(message: "Error"),
+        const SettingsFailure(message: "Error"),
+      );
+      expect(const SettingsFailure(message: "Error").props, [
+        "Error",
+        SettingsStatus.failure,
+      ]);
     });
   });
 
@@ -69,12 +81,20 @@ void main() {
       expect(Logout().props, []);
     });
     test("ChangeLanguage", () {
-      expect(const ChangeLanguage(language: "en"), const ChangeLanguage(language: "en"));
+      expect(
+        const ChangeLanguage(language: "en"),
+        const ChangeLanguage(language: "en"),
+      );
       expect(const ChangeLanguage(language: "en").props, ["en"]);
     });
     test("ChangeTheme", () {
-      expect(const ChangeTheme(theme: AdaptiveThemeMode.system), const ChangeTheme(theme: AdaptiveThemeMode.system));
-      expect(const ChangeTheme(theme: AdaptiveThemeMode.system).props, [AdaptiveThemeMode.system]);
+      expect(
+        const ChangeTheme(theme: AdaptiveThemeMode.system),
+        const ChangeTheme(theme: AdaptiveThemeMode.system),
+      );
+      expect(const ChangeTheme(theme: AdaptiveThemeMode.system).props, [
+        AdaptiveThemeMode.system,
+      ]);
     });
   });
 

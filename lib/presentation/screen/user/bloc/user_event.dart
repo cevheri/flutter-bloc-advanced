@@ -13,7 +13,12 @@ class UserSearchEvent extends UserEvent {
   final String? authorities;
   final String? name;
 
-  const UserSearchEvent({this.page = 0, this.size = 10, this.authorities, this.name});
+  const UserSearchEvent({
+    this.page = 0,
+    this.size = 10,
+    this.authorities,
+    this.name,
+  });
 }
 
 class UserEditorInit extends UserEvent {

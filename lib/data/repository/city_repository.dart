@@ -22,12 +22,28 @@ class CityRepository {
     return response;
   }
 
-  Future<List<City?>> list({int page = 0, int size = 10, List<String> sort = const ["id,desc"]}) async {
-    _log.debug("BEGIN:getCities repository start - page: {}, size: {}, sort: {}", [page, size, sort]);
-    final queryParams = {"page": page.toString(), "size": size.toString(), "sort": sort.join("&sort=")};
-    final httpResponse = await HttpUtils.getRequest("/$_resource", queryParams: queryParams);
+  Future<List<City?>> list({
+    int page = 0,
+    int size = 10,
+    List<String> sort = const ["id,desc"],
+  }) async {
+    _log.debug(
+      "BEGIN:getCities repository start - page: {}, size: {}, sort: {}",
+      [page, size, sort],
+    );
+    final queryParams = {
+      "page": page.toString(),
+      "size": size.toString(),
+      "sort": sort.join("&sort="),
+    };
+    final httpResponse = await HttpUtils.getRequest(
+      "/$_resource",
+      queryParams: queryParams,
+    );
     var response = City.fromJsonStringList(httpResponse.body);
-    _log.debug("END:getCities successful - response list size: {}", [response.length]);
+    _log.debug("END:getCities successful - response list size: {}", [
+      response.length,
+    ]);
     return response;
   }
 
@@ -37,9 +53,14 @@ class CityRepository {
       throw BadRequestException("City id null");
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.getRequest("/$_resource", pathParams: pathParams);
+    final httpResponse = await HttpUtils.getRequest(
+      "/$_resource",
+      pathParams: pathParams,
+    );
     var response = City.fromJsonString(httpResponse.body);
-    _log.debug("END:getCity successful - response.body: {}", [response.toString()]);
+    _log.debug("END:getCity successful - response.body: {}", [
+      response.toString(),
+    ]);
     return response;
   }
 
@@ -49,7 +70,12 @@ class CityRepository {
       throw BadRequestException("City id null");
     }
     final pathParams = id;
-    final httpResponse = await HttpUtils.deleteRequest("/$_resource", pathParams: pathParams);
-    _log.debug("END:deleteCity successful - response status code: {}", [httpResponse.statusCode]);
+    final httpResponse = await HttpUtils.deleteRequest(
+      "/$_resource",
+      pathParams: pathParams,
+    );
+    _log.debug("END:deleteCity successful - response status code: {}", [
+      httpResponse.statusCode,
+    ]);
   }
 }

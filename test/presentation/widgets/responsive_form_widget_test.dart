@@ -15,7 +15,10 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ResponsiveFormBuilder(formKey: formKey, children: const [Text('Test Child')]),
+            body: ResponsiveFormBuilder(
+              formKey: formKey,
+              children: const [Text('Test Child')],
+            ),
           ),
         ),
       );
@@ -73,7 +76,11 @@ void main() {
       await tester.pumpWidget(
         MaterialApp(
           home: Scaffold(
-            body: ResponsiveFormBuilder(formKey: formKey, autoValidateMode: true, children: const [Text('Test Child')]),
+            body: ResponsiveFormBuilder(
+              formKey: formKey,
+              autoValidateMode: true,
+              children: const [Text('Test Child')],
+            ),
           ),
         ),
       );

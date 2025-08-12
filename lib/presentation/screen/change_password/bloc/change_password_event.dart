@@ -18,5 +18,8 @@ class ChangePasswordChanged extends ChangePasswordEvent {
   final String currentPassword;
   final String newPassword;
 
-  const ChangePasswordChanged({required this.currentPassword, required this.newPassword});
+  const ChangePasswordChanged({
+    required this.currentPassword,
+    required this.newPassword,
+  });
 }

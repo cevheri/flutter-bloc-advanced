@@ -29,12 +29,16 @@ class ResponsiveFormBuilder extends StatelessWidget {
     return FormBuilder(
       key: formKey,
       initialValue: initialValue,
-      autovalidateMode: autoValidateMode ? AutovalidateMode.onUserInteraction : AutovalidateMode.disabled,
+      autovalidateMode: autoValidateMode
+          ? AutovalidateMode.onUserInteraction
+          : AutovalidateMode.disabled,
       onChanged: onChanged,
       child: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: Spacing.formMaxWidthLarge),
+            constraints: const BoxConstraints(
+              maxWidth: Spacing.formMaxWidthLarge,
+            ),
             child: Padding(
               padding: const EdgeInsets.all(Spacing.medium),
               child: Column(

@@ -10,8 +10,10 @@ class DashboardState extends Equatable {
 
   const DashboardState.initial() : this(status: DashboardStatus.initial);
   const DashboardState.loading() : this(status: DashboardStatus.loading);
-  const DashboardState.error(String msg) : this(status: DashboardStatus.error, message: msg);
-  const DashboardState.loaded(DashboardModel m) : this(status: DashboardStatus.loaded, model: m);
+  const DashboardState.error(String msg)
+    : this(status: DashboardStatus.error, message: msg);
+  const DashboardState.loaded(DashboardModel m)
+    : this(status: DashboardStatus.loaded, model: m);
 
   @override
   List<Object?> get props => [status, model, message];

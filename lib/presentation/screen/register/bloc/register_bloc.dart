@@ -29,20 +29,29 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     _log.trace("next state: ${transition.nextState.toString()}");
   }
 
-  FutureOr<void> _onSubmit(RegisterFormSubmitted event, Emitter<RegisterState> emit) async {
-    _log.debug("BEGIN: onSubmit RegisterFormSubmitted event: {}", [event.data.toString()]);
+  FutureOr<void> _onSubmit(
+    RegisterFormSubmitted event,
+    Emitter<RegisterState> emit,
+  ) async {
+    _log.debug("BEGIN: onSubmit RegisterFormSubmitted event: {}", [
+      event.data.toString(),
+    ]);
     emit(const RegisterLoadingState());
     try {
       var user = await _repository.register(event.data);
       if (user != null) {
         emit(RegisterCompletedState(user: user));
-        _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [user.toString()]);
+        _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [
+          user.toString(),
+        ]);
       } else {
         throw BadRequestException("Register Error: response is null");
       }
     } catch (e) {
       emit(RegisterErrorState(message: e.toString()));
-      _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [e.toString()]);
+      _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [
+        e.toString(),
+      ]);
     }
   }
 }

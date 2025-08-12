@@ -7,7 +7,8 @@ import 'dart:async' as _i3;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i4;
 import 'package:flutter_bloc_advance/configuration/local_storage.dart' as _i5;
-import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart' as _i2;
+import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart'
+    as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -25,7 +26,8 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeDrawerState_0 extends _i1.SmartFake implements _i2.DrawerState {
-  _FakeDrawerState_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+  _FakeDrawerState_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [DrawerBloc].
@@ -38,28 +40,42 @@ class MockDrawerBloc extends _i1.Mock implements _i2.DrawerBloc {
 
   @override
   _i2.DrawerState get state =>
-      (super.noSuchMethod(Invocation.getter(#state), returnValue: _FakeDrawerState_0(this, Invocation.getter(#state)))
+      (super.noSuchMethod(
+            Invocation.getter(#state),
+            returnValue: _FakeDrawerState_0(this, Invocation.getter(#state)),
+          )
           as _i2.DrawerState);
 
   @override
   _i3.Stream<_i2.DrawerState> get stream =>
-      (super.noSuchMethod(Invocation.getter(#stream), returnValue: _i3.Stream<_i2.DrawerState>.empty())
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i3.Stream<_i2.DrawerState>.empty(),
+          )
           as _i3.Stream<_i2.DrawerState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false) as bool);
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
 
   @override
-  void add(_i2.DrawerEvent? event) =>
-      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
+  void add(_i2.DrawerEvent? event) => super.noSuchMethod(
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onEvent(_i2.DrawerEvent? event) =>
-      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
+  void onEvent(_i2.DrawerEvent? event) => super.noSuchMethod(
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void emit(_i2.DrawerState? state) =>
-      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
+  void emit(_i2.DrawerState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i2.DrawerEvent>(
@@ -71,8 +87,12 @@ class MockDrawerBloc extends _i1.Mock implements _i2.DrawerBloc {
   );
 
   @override
-  void onTransition(_i4.Transition<_i2.DrawerEvent, _i2.DrawerState>? transition) =>
-      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
+  void onTransition(
+    _i4.Transition<_i2.DrawerEvent, _i2.DrawerState>? transition,
+  ) => super.noSuchMethod(
+    Invocation.method(#onTransition, [transition]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   _i3.Future<void> close() =>
@@ -84,16 +104,22 @@ class MockDrawerBloc extends _i1.Mock implements _i2.DrawerBloc {
           as _i3.Future<void>);
 
   @override
-  void onChange(_i4.Change<_i2.DrawerState>? change) =>
-      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
+  void onChange(_i4.Change<_i2.DrawerState>? change) => super.noSuchMethod(
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void addError(Object? error, [StackTrace? stackTrace]) =>
-      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(Object? error, StackTrace? stackTrace) =>
-      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }
 
 /// A class which mocks [AppLocalStorage].
@@ -105,22 +131,33 @@ class MockAppLocalStorage extends _i1.Mock implements _i5.AppLocalStorage {
   }
 
   @override
-  void setStorage(_i5.StorageType? type) =>
-      super.noSuchMethod(Invocation.method(#setStorage, [type]), returnValueForMissingStub: null);
+  void setStorage(_i5.StorageType? type) => super.noSuchMethod(
+    Invocation.method(#setStorage, [type]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   _i3.Future<bool> save(String? key, dynamic value) =>
-      (super.noSuchMethod(Invocation.method(#save, [key, value]), returnValue: _i3.Future<bool>.value(false))
+      (super.noSuchMethod(
+            Invocation.method(#save, [key, value]),
+            returnValue: _i3.Future<bool>.value(false),
+          )
           as _i3.Future<bool>);
 
   @override
   _i3.Future<dynamic> read(String? key) =>
-      (super.noSuchMethod(Invocation.method(#read, [key]), returnValue: _i3.Future<dynamic>.value())
+      (super.noSuchMethod(
+            Invocation.method(#read, [key]),
+            returnValue: _i3.Future<dynamic>.value(),
+          )
           as _i3.Future<dynamic>);
 
   @override
   _i3.Future<bool> remove(String? key) =>
-      (super.noSuchMethod(Invocation.method(#remove, [key]), returnValue: _i3.Future<bool>.value(false))
+      (super.noSuchMethod(
+            Invocation.method(#remove, [key]),
+            returnValue: _i3.Future<bool>.value(false),
+          )
           as _i3.Future<bool>);
 
   @override

@@ -31,7 +31,10 @@ class ErrorScreen extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text('Error: ${error?.message}'),
-            ElevatedButton(onPressed: () => context.pop(), child: const Text('Go back')),
+            ElevatedButton(
+              onPressed: () => context.pop(),
+              child: const Text('Go back'),
+            ),
           ],
         ),
       ),
@@ -70,7 +73,8 @@ class AppGoRouterConfig {
         _log.debug("redirect - load event : accountBloc.add(AccountLoad())");
       }
       // check : when jwtToken is null then redirect to login page
-      if (!SecurityUtils.isUserLoggedIn() && !SecurityUtils.isAllowedPath(state.uri.toString())) {
+      if (!SecurityUtils.isUserLoggedIn() &&
+          !SecurityUtils.isAllowedPath(state.uri.toString())) {
         _log.debug("END: isUserLoggedIn is false and isAllowedPath is false");
         if (state.uri.toString() != ApplicationRoutesConstants.login) {
           return ApplicationRoutesConstants.login;
@@ -91,7 +95,11 @@ class AppGoRouterConfig {
     },
   );
 
-  static MaterialApp routeBuilder(ThemeData light, ThemeData dark, String language) {
+  static MaterialApp routeBuilder(
+    ThemeData light,
+    ThemeData dark,
+    String language,
+  ) {
     return MaterialApp.router(
       theme: light,
       darkTheme: dark,

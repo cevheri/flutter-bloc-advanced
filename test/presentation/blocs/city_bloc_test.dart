@@ -38,7 +38,10 @@ void main() {
     const status = CityStatus.initial;
 
     test("supports value comparisons", () {
-      expect(const CityState(cities: cities, status: status), const CityState(cities: cities, status: status));
+      expect(
+        const CityState(cities: cities, status: status),
+        const CityState(cities: cities, status: status),
+      );
     });
 
     test("CityInitialState", () {
@@ -50,15 +53,24 @@ void main() {
     });
 
     test("CityLoadSuccessState", () {
-      expect(const CityLoadSuccessState(cities: cities), const CityLoadSuccessState(cities: cities));
+      expect(
+        const CityLoadSuccessState(cities: cities),
+        const CityLoadSuccessState(cities: cities),
+      );
     });
 
     test("CityLoadFailureState", () {
-      expect(const CityLoadFailureState(message: "test"), const CityLoadFailureState(message: "test"));
+      expect(
+        const CityLoadFailureState(message: "test"),
+        const CityLoadFailureState(message: "test"),
+      );
     });
     test("CityState copyWith", () {
       expect(const CityState().copyWith(), const CityState());
-      expect(const CityState().copyWith(cities: cities), const CityState(cities: cities));
+      expect(
+        const CityState().copyWith(cities: cities),
+        const CityState(cities: cities),
+      );
     });
     test("CityState props", () {
       expect(const CityState().props, [CityStatus.initial, []]);
@@ -73,10 +85,16 @@ void main() {
       expect(const CityLoadingState().props, [CityStatus.loading, []]);
     });
     test("CityLoadSuccessState props", () {
-      expect(const CityLoadSuccessState(cities: cities).props, [CityStatus.success, cities]);
+      expect(const CityLoadSuccessState(cities: cities).props, [
+        CityStatus.success,
+        cities,
+      ]);
     });
     test("CityLoadFailureState props", () {
-      expect(const CityLoadFailureState(message: "test").props, [CityStatus.failure, "test"]);
+      expect(const CityLoadFailureState(message: "test").props, [
+        CityStatus.failure,
+        "test",
+      ]);
     });
   });
 

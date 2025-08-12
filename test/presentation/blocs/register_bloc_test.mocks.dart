@@ -7,7 +7,8 @@ import 'dart:async' as _i4;
 
 import 'package:flutter_bloc_advance/data/models/change_password.dart' as _i5;
 import 'package:flutter_bloc_advance/data/models/user.dart' as _i2;
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart' as _i3;
+import 'package:flutter_bloc_advance/data/repository/account_repository.dart'
+    as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -25,7 +26,8 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeUser_0 extends _i1.SmartFake implements _i2.User {
-  _FakeUser_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+  _FakeUser_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [AccountRepository].
@@ -38,7 +40,10 @@ class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
 
   @override
   _i4.Future<_i2.User?> register(_i2.User? newUser) =>
-      (super.noSuchMethod(Invocation.method(#register, [newUser]), returnValue: _i4.Future<_i2.User?>.value())
+      (super.noSuchMethod(
+            Invocation.method(#register, [newUser]),
+            returnValue: _i4.Future<_i2.User?>.value(),
+          )
           as _i4.Future<_i2.User?>);
 
   @override
@@ -51,14 +56,19 @@ class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
 
   @override
   _i4.Future<int> resetPassword(String? mailAddress) =>
-      (super.noSuchMethod(Invocation.method(#resetPassword, [mailAddress]), returnValue: _i4.Future<int>.value(0))
+      (super.noSuchMethod(
+            Invocation.method(#resetPassword, [mailAddress]),
+            returnValue: _i4.Future<int>.value(0),
+          )
           as _i4.Future<int>);
 
   @override
   _i4.Future<_i2.User> getAccount() =>
       (super.noSuchMethod(
             Invocation.method(#getAccount, []),
-            returnValue: _i4.Future<_i2.User>.value(_FakeUser_0(this, Invocation.method(#getAccount, []))),
+            returnValue: _i4.Future<_i2.User>.value(
+              _FakeUser_0(this, Invocation.method(#getAccount, [])),
+            ),
           )
           as _i4.Future<_i2.User>);
 
@@ -66,12 +76,17 @@ class MockAccountRepository extends _i1.Mock implements _i3.AccountRepository {
   _i4.Future<_i2.User> update(_i2.User? user) =>
       (super.noSuchMethod(
             Invocation.method(#update, [user]),
-            returnValue: _i4.Future<_i2.User>.value(_FakeUser_0(this, Invocation.method(#update, [user]))),
+            returnValue: _i4.Future<_i2.User>.value(
+              _FakeUser_0(this, Invocation.method(#update, [user])),
+            ),
           )
           as _i4.Future<_i2.User>);
 
   @override
   _i4.Future<bool> delete(String? id) =>
-      (super.noSuchMethod(Invocation.method(#delete, [id]), returnValue: _i4.Future<bool>.value(false))
+      (super.noSuchMethod(
+            Invocation.method(#delete, [id]),
+            returnValue: _i4.Future<bool>.value(false),
+          )
           as _i4.Future<bool>);
 }

@@ -11,10 +11,19 @@ class AuthorityState extends Equatable {
   final List<String?> authorities;
   final AuthorityStatus status;
 
-  const AuthorityState({this.authorities = const [], this.status = AuthorityStatus.initial});
+  const AuthorityState({
+    this.authorities = const [],
+    this.status = AuthorityStatus.initial,
+  });
 
-  AuthorityState copyWith({List<String?>? authorities, AuthorityStatus? status}) {
-    return AuthorityState(status: status ?? this.status, authorities: authorities ?? this.authorities);
+  AuthorityState copyWith({
+    List<String?>? authorities,
+    AuthorityStatus? status,
+  }) {
+    return AuthorityState(
+      status: status ?? this.status,
+      authorities: authorities ?? this.authorities,
+    );
   }
 
   @override
@@ -33,13 +42,15 @@ class AuthorityLoadingState extends AuthorityState {
 }
 
 class AuthorityLoadSuccessState extends AuthorityState {
-  const AuthorityLoadSuccessState({required super.authorities}) : super(status: AuthorityStatus.success);
+  const AuthorityLoadSuccessState({required super.authorities})
+    : super(status: AuthorityStatus.success);
 }
 
 class AuthorityLoadFailureState extends AuthorityState {
   final String message;
 
-  const AuthorityLoadFailureState({required this.message}) : super(status: AuthorityStatus.failure);
+  const AuthorityLoadFailureState({required this.message})
+    : super(status: AuthorityStatus.failure);
 
   @override
   List<Object> get props => [status, message];

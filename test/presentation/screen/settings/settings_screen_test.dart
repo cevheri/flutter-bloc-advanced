@@ -37,7 +37,10 @@ void main() {
   });
 
   Widget buildTestableWidget() {
-    final router = GoRouter(initialLocation: ApplicationRoutesConstants.settings, routes: SettingsRoutes.routes);
+    final router = GoRouter(
+      initialLocation: ApplicationRoutesConstants.settings,
+      routes: SettingsRoutes.routes,
+    );
 
     return MaterialApp.router(
       routerConfig: router,
@@ -62,7 +65,9 @@ void main() {
       expect(find.byKey(settingsLogoutButtonKey), findsOneWidget);
     });
 
-    testWidgets('navigates to change password screen when button is pressed', (WidgetTester tester) async {
+    testWidgets('navigates to change password screen when button is pressed', (
+      WidgetTester tester,
+    ) async {
       await testUtils.setupAuthentication();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -73,7 +78,9 @@ void main() {
       expect(find.byType(SettingsScreen), findsNothing);
     });
 
-    testWidgets('shows language selection dialog when button is pressed', (WidgetTester tester) async {
+    testWidgets('shows language selection dialog when button is pressed', (
+      WidgetTester tester,
+    ) async {
       await testUtils.setupAuthentication();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -89,23 +96,27 @@ void main() {
       expect(find.text('English'), findsOneWidget);
     });
     //TODO : fix the following skipped tests
-    testWidgets('shows logout confirmation dialog when logout button is pressed', skip: true, (
+    testWidgets(
+      'shows logout confirmation dialog when logout button is pressed',
+      skip: true,
+      (WidgetTester tester) async {
+        await testUtils.setupAuthentication();
+        await tester.pumpWidget(buildTestableWidget());
+        await tester.pumpAndSettle();
+
+        await tester.tap(find.byKey(settingsLogoutButtonKey));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AlertDialog), findsOneWidget);
+        expect(find.text('Are you sure you want to logout?'), findsOneWidget);
+        expect(find.text('Yes'), findsOneWidget);
+        expect(find.text('No'), findsOneWidget);
+      },
+    );
+
+    testWidgets('performs logout when confirmed', skip: true, (
       WidgetTester tester,
     ) async {
-      await testUtils.setupAuthentication();
-      await tester.pumpWidget(buildTestableWidget());
-      await tester.pumpAndSettle();
-
-      await tester.tap(find.byKey(settingsLogoutButtonKey));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AlertDialog), findsOneWidget);
-      expect(find.text('Are you sure you want to logout?'), findsOneWidget);
-      expect(find.text('Yes'), findsOneWidget);
-      expect(find.text('No'), findsOneWidget);
-    });
-
-    testWidgets('performs logout when confirmed', skip: true, (WidgetTester tester) async {
       await testUtils.setupAuthentication();
       when(mockDrawerBloc.stream).thenAnswer((_) => Stream.fromIterable([]));
       when(mockDrawerBloc.state).thenReturn(const DrawerState());
@@ -124,7 +135,9 @@ void main() {
       verifyNever(mockDrawerBloc.add(Logout()));
     });
 
-    testWidgets('cancels logout when declined', skip: true, (WidgetTester tester) async {
+    testWidgets('cancels logout when declined', skip: true, (
+      WidgetTester tester,
+    ) async {
       await testUtils.setupAuthentication();
       when(mockDrawerBloc.stream).thenAnswer((_) => Stream.fromIterable([]));
       when(mockDrawerBloc.state).thenReturn(const DrawerState());

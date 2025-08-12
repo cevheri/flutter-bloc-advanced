@@ -27,8 +27,13 @@ class ChangePasswordScreen extends StatelessWidget {
       listener: (context, state) => _handleStateChanges(context, state),
       child: PopScope(
         canPop: !(_formKey.currentState?.isDirty ?? false),
-        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(didPop, data),
-        child: Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context)),
+        onPopInvokedWithResult: (bool didPop, Object? data) async =>
+            _handlePopScope(didPop, data),
+        child: Scaffold(
+          key: _scaffoldKey,
+          appBar: _buildAppBar(context),
+          body: _buildBody(context),
+        ),
       ),
     );
   }
@@ -98,7 +103,9 @@ class ChangePasswordScreen extends StatelessWidget {
   Widget _submitButton(BuildContext context, ChangePasswordState state) {
     return ResponsiveSubmitButton(
       key: changePasswordButtonSubmitKey,
-      onPressed: () => state.status == ChangePasswordStatus.loading ? null : _onSubmit(context, state),
+      onPressed: () => state.status == ChangePasswordStatus.loading
+          ? null
+          : _onSubmit(context, state),
       isLoading: state.status == ChangePasswordStatus.loading,
     );
   }
@@ -109,13 +116,21 @@ class ChangePasswordScreen extends StatelessWidget {
 
     if (!(_formKey.currentState?.validate() ?? false)) {
       debugPrint("validate");
-      _showSnackBar(context, S.of(context).failed, const Duration(milliseconds: 1000));
+      _showSnackBar(
+        context,
+        S.of(context).failed,
+        const Duration(milliseconds: 1000),
+      );
       return;
     }
 
     if (!(_formKey.currentState?.isDirty ?? false)) {
       debugPrint("no changes made");
-      _showSnackBar(context, S.of(context).no_changes_made, const Duration(milliseconds: 1000));
+      _showSnackBar(
+        context,
+        S.of(context).no_changes_made,
+        const Duration(milliseconds: 1000),
+      );
       return;
     }
 
@@ -123,7 +138,12 @@ class ChangePasswordScreen extends StatelessWidget {
       debugPrint("saveAndValidate");
       final currentPass = _formKey.currentState!.value['currentPassword'];
       final newPass = _formKey.currentState!.value['newPassword'];
-      context.read<ChangePasswordBloc>().add(ChangePasswordChanged(currentPassword: currentPass, newPassword: newPass));
+      context.read<ChangePasswordBloc>().add(
+        ChangePasswordChanged(
+          currentPassword: currentPass,
+          newPassword: newPass,
+        ),
+      );
     }
   }
 
@@ -149,20 +169,33 @@ class ChangePasswordScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
+  Future<void> _handlePopScope(
+    bool didPop,
+    Object? data, [
+    BuildContext? contextParam,
+  ]) async {
     final context = contextParam ?? data as BuildContext;
 
     if (!context.mounted) return;
 
-    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+    if (didPop ||
+        !(_formKey.currentState?.isDirty ?? false) ||
+        _formKey.currentState == null) {
       context.go(ApplicationRoutesConstants.home);
       return;
     }
 
-    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
+    final shouldPop =
+        await ConfirmationDialog.show(
+          context: context,
+          type: DialogType.unsavedChanges,
+        ) ??
+        false;
     if (shouldPop && context.mounted) {
       context.go(ApplicationRoutesConstants.home);
     }

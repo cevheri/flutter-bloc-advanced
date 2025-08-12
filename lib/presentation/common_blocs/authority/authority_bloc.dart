@@ -23,18 +23,25 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
   }
 
   /// Load the current authority.
-  FutureOr<void> _onLoad(AuthorityLoad event, Emitter<AuthorityState> emit) async {
+  FutureOr<void> _onLoad(
+    AuthorityLoad event,
+    Emitter<AuthorityState> emit,
+  ) async {
     _log.debug("BEGIN: getAuthorities bloc: _onLoad");
     emit(const AuthorityLoadingState());
     try {
       final authorities = await _repository.list();
       if (authorities.isEmpty) {
         emit(const AuthorityLoadFailureState(message: "No authorities found"));
-        _log.error("END: getAuthorities bloc: _onLoad error: {}", ["No authorities found"]);
+        _log.error("END: getAuthorities bloc: _onLoad error: {}", [
+          "No authorities found",
+        ]);
         return;
       }
       emit(AuthorityLoadSuccessState(authorities: authorities));
-      _log.debug("END: getAuthorities bloc: _onLoad success: {}", [authorities.toString()]);
+      _log.debug("END: getAuthorities bloc: _onLoad success: {}", [
+        authorities.toString(),
+      ]);
     } catch (e) {
       emit(AuthorityLoadFailureState(message: e.toString()));
       _log.error("END: getAuthorities bloc: _onLoad error: {}", [e.toString()]);

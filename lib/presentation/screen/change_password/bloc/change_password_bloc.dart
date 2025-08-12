@@ -11,7 +11,8 @@ import '../../../../data/repository/account_repository.dart';
 part 'change_password_event.dart';
 part 'change_password_state.dart';
 
-class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> {
+class ChangePasswordBloc
+    extends Bloc<ChangePasswordEvent, ChangePasswordState> {
   static final _log = AppLogger.getLogger("ChangePasswordBloc");
   final AccountRepository _repository;
 
@@ -22,14 +23,19 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
   }
 
   @override
-  void onTransition(Transition<ChangePasswordEvent, ChangePasswordState> transition) {
+  void onTransition(
+    Transition<ChangePasswordEvent, ChangePasswordState> transition,
+  ) {
     super.onTransition(transition);
     _log.trace("current state: ${transition.currentState.toString()}");
     _log.trace("event: ${transition.event.toString()}");
     _log.trace("next state: ${transition.nextState.toString()}");
   }
 
-  FutureOr<void> _onSubmit(ChangePasswordChanged event, Emitter<ChangePasswordState> emit) async {
+  FutureOr<void> _onSubmit(
+    ChangePasswordChanged event,
+    Emitter<ChangePasswordState> emit,
+  ) async {
     _log.debug("BEGIN: changePassword bloc: _onSubmit");
     emit(state.copyWith(status: ChangePasswordStatus.loading));
 
@@ -53,14 +59,20 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
 
       emit(
         state.copyWith(
-          status: result < HttpStatus.badRequest ? ChangePasswordStatus.success : ChangePasswordStatus.failure,
+          status: result < HttpStatus.badRequest
+              ? ChangePasswordStatus.success
+              : ChangePasswordStatus.failure,
         ),
       );
 
-      _log.debug("END: changePassword bloc: _onSubmit success: {}", [result.toString()]);
+      _log.debug("END: changePassword bloc: _onSubmit success: {}", [
+        result.toString(),
+      ]);
     } catch (e) {
       emit(state.copyWith(status: ChangePasswordStatus.failure));
-      _log.error("END: changePassword bloc: _onSubmit error: {}", [e.toString()]);
+      _log.error("END: changePassword bloc: _onSubmit error: {}", [
+        e.toString(),
+      ]);
     }
   }
 }

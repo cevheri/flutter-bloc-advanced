@@ -21,10 +21,12 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
   final LoginRepository _loginRepository;
   final MenuRepository _menuRepository;
 
-  DrawerBloc({required LoginRepository loginRepository, required MenuRepository menuRepository})
-    : _loginRepository = loginRepository,
-      _menuRepository = menuRepository,
-      super(const DrawerState()) {
+  DrawerBloc({
+    required LoginRepository loginRepository,
+    required MenuRepository menuRepository,
+  }) : _loginRepository = loginRepository,
+       _menuRepository = menuRepository,
+       super(const DrawerState()) {
     on<LoadMenus>(_loadMenus);
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
@@ -32,36 +34,67 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     on<ChangeThemeEvent>(_onChangeTheme);
   }
 
-  FutureOr<void> _onChangeTheme(ChangeThemeEvent event, Emitter<DrawerState> emit) async {
+  FutureOr<void> _onChangeTheme(
+    ChangeThemeEvent event,
+    Emitter<DrawerState> emit,
+  ) async {
     _log.debug("BEGIN: onChangeTheme ChangeThemeEvent event: {}", []);
     emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.loading));
     try {
       await AppLocalStorage().save(StorageKeys.theme.name, event.theme.name);
       // update in-memory cache immediately to avoid stale reads
       AppLocalStorageCached.theme = event.theme.name;
-      emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.success));
-      _log.debug("END:onChangeTheme ChangeThemeEvent event success: {}", [event.theme]);
+      emit(
+        state.copyWith(theme: event.theme, status: DrawerStateStatus.success),
+      );
+      _log.debug("END:onChangeTheme ChangeThemeEvent event success: {}", [
+        event.theme,
+      ]);
     } catch (e) {
       emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.error));
-      _log.error("END:onChangeTheme ChangeThemeEvent event error: {}", [e.toString()]);
+      _log.error("END:onChangeTheme ChangeThemeEvent event error: {}", [
+        e.toString(),
+      ]);
     }
   }
 
-  FutureOr<void> _onChangeLanguage(ChangeLanguageEvent event, Emitter<DrawerState> emit) async {
+  FutureOr<void> _onChangeLanguage(
+    ChangeLanguageEvent event,
+    Emitter<DrawerState> emit,
+  ) async {
     _log.debug("BEGIN: onChangeLanguage ChangeLanguageEvent event: {}", []);
-    emit(state.copyWith(language: event.language, status: DrawerStateStatus.loading));
+    emit(
+      state.copyWith(
+        language: event.language,
+        status: DrawerStateStatus.loading,
+      ),
+    );
     try {
       await AppLocalStorage().save(StorageKeys.language.name, event.language);
       // update in-memory cache immediately
       AppLocalStorageCached.language = event.language;
-      emit(state.copyWith(language: event.language, status: DrawerStateStatus.success));
+      emit(
+        state.copyWith(
+          language: event.language,
+          status: DrawerStateStatus.success,
+        ),
+      );
 
       await S.load(Locale(event.language));
 
-      _log.debug("END:onChangeLanguage ChangeLanguageEvent event success: {}", [event.language]);
+      _log.debug("END:onChangeLanguage ChangeLanguageEvent event success: {}", [
+        event.language,
+      ]);
     } catch (e) {
-      emit(state.copyWith(language: event.language, status: DrawerStateStatus.error));
-      _log.error("END:onChangeLanguage ChangeLanguageEvent event error: {}", [e.toString()]);
+      emit(
+        state.copyWith(
+          language: event.language,
+          status: DrawerStateStatus.error,
+        ),
+      );
+      _log.error("END:onChangeLanguage ChangeLanguageEvent event error: {}", [
+        e.toString(),
+      ]);
     }
   }
 
@@ -86,7 +119,12 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     emit(state.copyWith(menus: [], status: DrawerStateStatus.loading));
     try {
       if (MenuListCache.menus.isNotEmpty) {
-        emit(state.copyWith(menus: MenuListCache.menus, status: DrawerStateStatus.success));
+        emit(
+          state.copyWith(
+            menus: MenuListCache.menus,
+            status: DrawerStateStatus.success,
+          ),
+        );
         _log.info("END:loadMenus read from cache: {}", []);
         return;
       }
@@ -98,16 +136,31 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
       MenuListCache.menus = menus;
       // Apply language and theme when loading is complete
       emit(
-        state.copyWith(menus: menus, status: DrawerStateStatus.success, language: event.language, theme: event.theme),
+        state.copyWith(
+          menus: menus,
+          status: DrawerStateStatus.success,
+          language: event.language,
+          theme: event.theme,
+        ),
       );
       _log.debug("END:loadMenus LoadMenus event success: {}", []);
     } catch (e) {
-      emit(state.copyWith(menus: [], status: DrawerStateStatus.error, language: event.language, theme: event.theme));
+      emit(
+        state.copyWith(
+          menus: [],
+          status: DrawerStateStatus.error,
+          language: event.language,
+          theme: event.theme,
+        ),
+      );
       _log.error("END:loadMenus LoadMenus event error: {}", [e.toString()]);
     }
   }
 
-  FutureOr<void> _refreshMenus(RefreshMenus event, Emitter<DrawerState> emit) async {
+  FutureOr<void> _refreshMenus(
+    RefreshMenus event,
+    Emitter<DrawerState> emit,
+  ) async {
     _log.debug("BEGIN: refreshMenus RefreshMenus event: {}", []);
     emit(state.copyWith(menus: [], status: DrawerStateStatus.loading));
     try {
@@ -117,7 +170,9 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
       _log.debug("END:refreshMenus RefreshMenus event success: {}", []);
     } catch (e) {
       emit(state.copyWith(menus: [], status: DrawerStateStatus.error));
-      _log.error("END:refreshMenus RefreshMenus event error: {}", [e.toString()]);
+      _log.error("END:refreshMenus RefreshMenus event error: {}", [
+        e.toString(),
+      ]);
     }
   }
 }

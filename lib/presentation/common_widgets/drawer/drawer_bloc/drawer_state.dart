@@ -47,19 +47,23 @@ class DrawerStateLoading extends DrawerState {
 }
 
 class DrawerStateLoaded extends DrawerState {
-  const DrawerStateLoaded({required super.menus}) : super(status: DrawerStateStatus.success);
+  const DrawerStateLoaded({required super.menus})
+    : super(status: DrawerStateStatus.success);
 }
 
 class DrawerStateError extends DrawerState {
   final String message;
 
-  const DrawerStateError({required this.message}) : super(status: DrawerStateStatus.error);
+  const DrawerStateError({required this.message})
+    : super(status: DrawerStateStatus.error);
 }
 
 class DrawerLanguageChanged extends DrawerState {
-  const DrawerLanguageChanged({required super.language}) : super(status: DrawerStateStatus.success);
+  const DrawerLanguageChanged({required super.language})
+    : super(status: DrawerStateStatus.success);
 }
 
 class DrawerThemeChanged extends DrawerState {
-  const DrawerThemeChanged({required super.theme}) : super(status: DrawerStateStatus.success);
+  const DrawerThemeChanged({required super.theme})
+    : super(status: DrawerStateStatus.success);
 }

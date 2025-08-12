@@ -24,7 +24,11 @@ void main() {
   late GoRouter router;
 
   // Test user data
-  const testUser = User(firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com');
+  const testUser = User(
+    firstName: 'John',
+    lastName: 'Doe',
+    email: 'john.doe@example.com',
+  );
 
   setUp(() {
     mockRegisterBloc = MockRegisterBloc();
@@ -44,16 +48,25 @@ void main() {
             child: RegisterScreen(),
           ),
         ),
-        GoRoute(path: ApplicationRoutesConstants.home, builder: (context, state) => const SizedBox()),
+        GoRoute(
+          path: ApplicationRoutesConstants.home,
+          builder: (context, state) => const SizedBox(),
+        ),
       ],
     );
 
     // Setup default bloc behaviors
+    when(mockRegisterBloc.stream).thenAnswer(
+      (_) => Stream.fromIterable([
+        const RegisterState(status: RegisterStatus.initial),
+      ]),
+    );
     when(
-      mockRegisterBloc.stream,
-    ).thenAnswer((_) => Stream.fromIterable([const RegisterState(status: RegisterStatus.initial)]));
-    when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
-    when(mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
+      mockRegisterBloc.state,
+    ).thenReturn(const RegisterState(status: RegisterStatus.initial));
+    when(
+      mockAccountBloc.stream,
+    ).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
     when(mockAccountBloc.state).thenReturn(const AccountState());
   });
 
@@ -71,7 +84,9 @@ void main() {
   }
 
   group('RegisterScreen Initial UI Tests', () {
-    testWidgets('should display all required form fields and buttons', (tester) async {
+    testWidgets('should display all required form fields and buttons', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
@@ -81,15 +96,23 @@ void main() {
       expect(find.byIcon(Icons.arrow_back), findsOneWidget);
 
       // Verify form fields
-      expect(find.byKey(const Key('userEditorFirstNameFieldKey')), findsOneWidget);
-      expect(find.byKey(const Key('userEditorLastNameFieldKey')), findsOneWidget);
+      expect(
+        find.byKey(const Key('userEditorFirstNameFieldKey')),
+        findsOneWidget,
+      );
+      expect(
+        find.byKey(const Key('userEditorLastNameFieldKey')),
+        findsOneWidget,
+      );
       expect(find.byKey(const Key('userEditorEmailFieldKey')), findsOneWidget);
       expect(find.byKey(const Key('registerSubmitButtonKey')), findsOneWidget);
     });
   });
 
   group('Form Validation Tests', () {
-    testWidgets('should show validation errors when submitting empty form', (tester) async {
+    testWidgets('should show validation errors when submitting empty form', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
@@ -107,7 +130,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Act - Enter invalid email
-      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'invalid-email');
+      await tester.enterText(
+        find.byKey(const Key('userEditorEmailFieldKey')),
+        'invalid-email',
+      );
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pump();
 
@@ -115,9 +141,18 @@ void main() {
       expect(find.text('Required Field'), findsAtLeast(1));
 
       // Act - Enter valid email, first name and last name
-      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'valid@email.com');
-      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'John');
-      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'Doe');
+      await tester.enterText(
+        find.byKey(const Key('userEditorEmailFieldKey')),
+        'valid@email.com',
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorFirstNameFieldKey')),
+        'John',
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorLastNameFieldKey')),
+        'Doe',
+      );
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pump();
 
@@ -132,23 +167,38 @@ void main() {
       await tester.pumpAndSettle();
 
       // Fill form with valid data
-      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), testUser.firstName!);
-      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), testUser.lastName!);
-      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
+      await tester.enterText(
+        find.byKey(const Key('userEditorFirstNameFieldKey')),
+        testUser.firstName!,
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorLastNameFieldKey')),
+        testUser.lastName!,
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorEmailFieldKey')),
+        testUser.email!,
+      );
 
       // Setup success state
-      when(mockRegisterBloc.state).thenReturn(const RegisterCompletedState(user: testUser));
+      when(
+        mockRegisterBloc.state,
+      ).thenReturn(const RegisterCompletedState(user: testUser));
 
       // Submit form
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pumpAndSettle();
 
       // Verify bloc interaction
-      verify(mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser))).called(1);
+      verify(
+        mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser)),
+      ).called(1);
       // expect(find.text('Success'), findsOneWidget);
     });
 
-    testWidgets('should show loading indicator during submission', (tester) async {
+    testWidgets('should show loading indicator during submission', (
+      tester,
+    ) async {
       // Arrange
       // final blocStates = [
       //   const RegisterState(status: RegisterStatus.initial),
@@ -158,18 +208,31 @@ void main() {
       // Setup bloc with broadcast stream to allow multiple listeners
       final controller = StreamController<RegisterState>.broadcast();
       when(mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+      when(
+        mockRegisterBloc.state,
+      ).thenReturn(const RegisterState(status: RegisterStatus.initial));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
       // Fill form with valid data
-      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), testUser.firstName!);
-      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), testUser.lastName!);
-      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
+      await tester.enterText(
+        find.byKey(const Key('userEditorFirstNameFieldKey')),
+        testUser.firstName!,
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorLastNameFieldKey')),
+        testUser.lastName!,
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorEmailFieldKey')),
+        testUser.email!,
+      );
 
       // Change to loading state
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
+      when(
+        mockRegisterBloc.state,
+      ).thenReturn(const RegisterState(status: RegisterStatus.loading));
       controller.add(const RegisterState(status: RegisterStatus.loading));
 
       // Submit form
@@ -178,7 +241,9 @@ void main() {
       await tester.pump(); // For state change
 
       // Verify loading state
-      final submitButton = tester.widget<ResponsiveSubmitButton>(find.byKey(const Key('registerSubmitButtonKey')));
+      final submitButton = tester.widget<ResponsiveSubmitButton>(
+        find.byKey(const Key('registerSubmitButtonKey')),
+      );
       expect(submitButton.isLoading, true);
 
       // Clean up
@@ -191,7 +256,9 @@ void main() {
 
       // Setup error state
       const errorMessage = 'Registration failed';
-      when(mockRegisterBloc.state).thenReturn(const RegisterErrorState(message: errorMessage));
+      when(
+        mockRegisterBloc.state,
+      ).thenReturn(const RegisterErrorState(message: errorMessage));
 
       // Submit form
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
@@ -202,7 +269,9 @@ void main() {
   });
 
   group('Navigation Tests', () {
-    testWidgets('should handle back navigation with clean form', (tester) async {
+    testWidgets('should handle back navigation with clean form', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
@@ -213,18 +282,26 @@ void main() {
       expect(find.byType(AlertDialog), findsNothing);
     });
 
-    testWidgets('should show confirmation dialog when form is dirty', (tester) async {
+    testWidgets('should show confirmation dialog when form is dirty', (
+      tester,
+    ) async {
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
       // Make form dirty
-      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'John');
+      await tester.enterText(
+        find.byKey(const Key('userEditorFirstNameFieldKey')),
+        'John',
+      );
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
 
       // Verify dialog
       expect(find.text('Warning'), findsOneWidget);
-      expect(find.text('You have unsaved changes. Are you sure you want to leave?'), findsOneWidget);
+      expect(
+        find.text('You have unsaved changes. Are you sure you want to leave?'),
+        findsOneWidget,
+      );
       expect(find.text('Yes'), findsOneWidget);
       expect(find.text('No'), findsOneWidget);
     });
@@ -235,35 +312,54 @@ void main() {
       // Arrange
       final controller = StreamController<RegisterState>.broadcast();
       when(mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+      when(
+        mockRegisterBloc.state,
+      ).thenReturn(const RegisterState(status: RegisterStatus.initial));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
 
       // Fill form with valid data
-      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), testUser.firstName!);
-      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), testUser.lastName!);
-      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
+      await tester.enterText(
+        find.byKey(const Key('userEditorFirstNameFieldKey')),
+        testUser.firstName!,
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorLastNameFieldKey')),
+        testUser.lastName!,
+      );
+      await tester.enterText(
+        find.byKey(const Key('userEditorEmailFieldKey')),
+        testUser.email!,
+      );
 
       // Submit form and emit loading state
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
+      when(
+        mockRegisterBloc.state,
+      ).thenReturn(const RegisterState(status: RegisterStatus.loading));
       controller.add(const RegisterState(status: RegisterStatus.loading));
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pump();
 
       // Verify loading state
-      final loadingButton = tester.widget<ResponsiveSubmitButton>(find.byKey(const Key('registerSubmitButtonKey')));
+      final loadingButton = tester.widget<ResponsiveSubmitButton>(
+        find.byKey(const Key('registerSubmitButtonKey')),
+      );
       expect(loadingButton.isLoading, true);
 
       // Emit success state
-      when(mockRegisterBloc.state).thenReturn(const RegisterCompletedState(user: testUser));
+      when(
+        mockRegisterBloc.state,
+      ).thenReturn(const RegisterCompletedState(user: testUser));
       controller.add(const RegisterCompletedState(user: testUser));
       await tester.pump();
       await tester.pump(); // Additional pump for state update
 
       // Verify success state
       //expect(find.text('Success'), findsOneWidget);
-      verify(mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser))).called(1);
+      verify(
+        mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser)),
+      ).called(1);
       // Clean up
       await controller.close();
     });

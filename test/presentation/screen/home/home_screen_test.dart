@@ -27,147 +27,157 @@ void main() {
 
   // main application unittest end-to-end
   group("HomeScreen Test Most critical APP UnitTest ***** ", () {
-    testWidgets("Given valid AccessToken and lightTheme when open homeScreen then load AppBar successfully", (
-      tester,
-    ) async {
-      TestUtils().setupAuthentication();
+    testWidgets(
+      "Given valid AccessToken and lightTheme when open homeScreen then load AppBar successfully",
+      (tester) async {
+        TestUtils().setupAuthentication();
 
-      // Given:
-      await tester.pumpWidget(const App(language: language, initialTheme: lightTheme).buildHomeApp());
-      //When:
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-      //Then:
+        // Given:
+        await tester.pumpWidget(
+          const App(
+            language: language,
+            initialTheme: lightTheme,
+          ).buildHomeApp(),
+        );
+        //When:
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+        //Then:
 
-      // appBar test
-      debugPrint("AppBar Testing");
-      expect(find.byType(AppBar), findsOneWidget);
-      expect(find.text(AppConstants.appName), findsOneWidget);
-      expect(find.byType(DrawerButton), findsOneWidget);
-      debugPrint("AppBar Tested");
-      // tester.allWidgets.forEach((e) {
-      //   print(e.toString());
-      // });
+        // appBar test
+        debugPrint("AppBar Testing");
+        expect(find.byType(AppBar), findsOneWidget);
+        expect(find.text(AppConstants.appName), findsOneWidget);
+        expect(find.byType(DrawerButton), findsOneWidget);
+        debugPrint("AppBar Tested");
+        // tester.allWidgets.forEach((e) {
+        //   print(e.toString());
+        // });
 
-      debugPrint("Menu finder Testing");
-      // menu finder
-      final drawerButtonFinder = find.byType(DrawerButton);
-      await tester.tap(drawerButtonFinder);
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-      debugPrint("drawerButton PumpAndSettle");
+        debugPrint("Menu finder Testing");
+        // menu finder
+        final drawerButtonFinder = find.byType(DrawerButton);
+        await tester.tap(drawerButtonFinder);
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+        debugPrint("drawerButton PumpAndSettle");
 
-      debugPrint("Menu list Testing");
-      // Menu Test
-      expect(find.byType(Drawer), findsOneWidget);
-      expect(find.byKey(const Key("drawer-switch-theme")), findsOneWidget);
-      expect(find.byKey(const Key("drawer-switch-language")), findsOneWidget);
-      expect(find.text("Logout"), findsOneWidget);
-      //expect(find.text("Account"), findsOneWidget);
-      //expect(find.text("Settings"), findsOneWidget);
-      debugPrint("Menu list Tested");
+        debugPrint("Menu list Testing");
+        // Menu Test
+        expect(find.byType(Drawer), findsOneWidget);
+        expect(find.byKey(const Key("drawer-switch-theme")), findsOneWidget);
+        expect(find.byKey(const Key("drawer-switch-language")), findsOneWidget);
+        expect(find.text("Logout"), findsOneWidget);
+        //expect(find.text("Account"), findsOneWidget);
+        //expect(find.text("Settings"), findsOneWidget);
+        debugPrint("Menu list Tested");
 
-      // storage and cache test
-      // debugPrint("storage Testing");
-      // String? sLang = await AppLocalStorage().read(StorageKeys.language.name);
-      // String? username = await AppLocalStorage().read(StorageKeys.username.name);
-      // List<String>? authorities = await AppLocalStorage().read(StorageKeys.roles.name);
-      // expect(sLang, "en");
-      // expect(username, "admin");
-      // expect(authorities, ["ROLE_ADMIN", "ROLE_USER"]);
-      // debugPrint("storage tested");
+        // storage and cache test
+        // debugPrint("storage Testing");
+        // String? sLang = await AppLocalStorage().read(StorageKeys.language.name);
+        // String? username = await AppLocalStorage().read(StorageKeys.username.name);
+        // List<String>? authorities = await AppLocalStorage().read(StorageKeys.roles.name);
+        // expect(sLang, "en");
+        // expect(username, "admin");
+        // expect(authorities, ["ROLE_ADMIN", "ROLE_USER"]);
+        // debugPrint("storage tested");
 
-      // language test
-      // debugPrint("language Testing");
-      // final langFinder = find.byKey(const Key("drawer-switch-language"));
-      // debugPrint("language Testing - langFinder");
-      // await tester.tap(langFinder);
-      // debugPrint("language Testing - tap");
-      // await tester.pumpAndSettle(const Duration(seconds: 5));
-      // debugPrint("language Testing - pumpAndSettle");
-      // open menu
+        // language test
+        // debugPrint("language Testing");
+        // final langFinder = find.byKey(const Key("drawer-switch-language"));
+        // debugPrint("language Testing - langFinder");
+        // await tester.tap(langFinder);
+        // debugPrint("language Testing - tap");
+        // await tester.pumpAndSettle(const Duration(seconds: 5));
+        // debugPrint("language Testing - pumpAndSettle");
+        // open menu
 
-      // await tester.tap(drawerButtonFinder);
-      // debugPrint("language Testing - drawerButtonFinder");
-      // await tester.pumpAndSettle(const Duration(seconds: 5));
-      // debugPrint("language Testing -drawerButton PumpAndSettle");
+        // await tester.tap(drawerButtonFinder);
+        // debugPrint("language Testing - drawerButtonFinder");
+        // await tester.pumpAndSettle(const Duration(seconds: 5));
+        // debugPrint("language Testing -drawerButton PumpAndSettle");
 
-      // await tester.tap(langFinder);
-      // debugPrint("language Testing - tap");
-      // await tester.pumpAndSettle(const Duration(seconds: 5));
-      // debugPrint("language tested");
-      /////////////////////////////////////////////////////////
+        // await tester.tap(langFinder);
+        // debugPrint("language Testing - tap");
+        // await tester.pumpAndSettle(const Duration(seconds: 5));
+        // debugPrint("language tested");
+        /////////////////////////////////////////////////////////
 
-      // open menu
+        // open menu
 
-      // debugPrint("drawerButton finding");
-      // await tester.tap(drawerButtonFinder);
-      // await tester.pumpAndSettle(const Duration(seconds: 5));
-      // debugPrint("drawerButton PumpAndSettle");
+        // debugPrint("drawerButton finding");
+        // await tester.tap(drawerButtonFinder);
+        // await tester.pumpAndSettle(const Duration(seconds: 5));
+        // debugPrint("drawerButton PumpAndSettle");
 
-      //theme test
-      final themeFinder = find.byKey(const Key("drawer-switch-theme"));
-      await tester.tap(themeFinder);
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-      debugPrint("ThemeSwitchButton PumpAndSettle");
+        //theme test
+        final themeFinder = find.byKey(const Key("drawer-switch-theme"));
+        await tester.tap(themeFinder);
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+        debugPrint("ThemeSwitchButton PumpAndSettle");
 
-      // open menu
-      await tester.tap(drawerButtonFinder);
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-      debugPrint("drawerButton PumpAndSettle 5");
+        // open menu
+        await tester.tap(drawerButtonFinder);
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+        debugPrint("drawerButton PumpAndSettle 5");
 
-      // logout test alert button No
-      debugPrint("LogoutButton No Testing");
-      final logoutFinder = find.byKey(drawerButtonLogoutKey);
-      debugPrint("LogoutButton drawerButtonLogoutKey Finder");
-      await tester.tap(logoutFinder);
-      debugPrint("LogoutButton No Tap");
-      await tester.pumpAndSettle(const Duration(seconds: 5));
-      // final noButtonFinder = find.byKey(drawerButtonLogoutNoKey);
-      debugPrint("LogoutButton No Finder");
-      //await tester.tap(noButtonFinder);
-      debugPrint("LogoutButton No Tap");
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+        // logout test alert button No
+        debugPrint("LogoutButton No Testing");
+        final logoutFinder = find.byKey(drawerButtonLogoutKey);
+        debugPrint("LogoutButton drawerButtonLogoutKey Finder");
+        await tester.tap(logoutFinder);
+        debugPrint("LogoutButton No Tap");
+        await tester.pumpAndSettle(const Duration(seconds: 5));
+        // final noButtonFinder = find.byKey(drawerButtonLogoutNoKey);
+        debugPrint("LogoutButton No Finder");
+        //await tester.tap(noButtonFinder);
+        debugPrint("LogoutButton No Tap");
+        await tester.pumpAndSettle(const Duration(seconds: 5));
 
-      expect(find.byType(HomeScreen), findsOneWidget);
-      expect(find.byType(Drawer), findsOneWidget);
-      debugPrint("LogoutButton No PumpAndSettle");
+        expect(find.byType(HomeScreen), findsOneWidget);
+        expect(find.byType(Drawer), findsOneWidget);
+        debugPrint("LogoutButton No PumpAndSettle");
 
-      // logout test alert button yes
-      // await tester.tap(logoutFinder);
-      // await tester.pumpAndSettle(const Duration(seconds: 5));
-      // final yesButtonFinder = find.byKey(drawerButtonLogoutYesKey);
-      // await tester.tap(yesButtonFinder);
-      // await tester.pumpAndSettle(const Duration(seconds: 5));
+        // logout test alert button yes
+        // await tester.tap(logoutFinder);
+        // await tester.pumpAndSettle(const Duration(seconds: 5));
+        // final yesButtonFinder = find.byKey(drawerButtonLogoutYesKey);
+        // await tester.tap(yesButtonFinder);
+        // await tester.pumpAndSettle(const Duration(seconds: 5));
 
-      debugPrint("LogoutButton YES PumpAndSettle");
+        debugPrint("LogoutButton YES PumpAndSettle");
 
-      // tester.allWidgets.forEach((e) {
-      //   print(e.toString());
-      // });
+        // tester.allWidgets.forEach((e) {
+        //   print(e.toString());
+        // });
 
-      // clear storage test
-      // sLang = await AppLocalStorage().read(StorageKeys.language.name);
-      // username = await AppLocalStorage().read(StorageKeys.username.name);
-      // authorities = await AppLocalStorage().read(StorageKeys.roles.name);
-      // expect(sLang, "en");
-      // expect(username, "admin");
-      // expect(authorities, ['ROLE_ADMIN', 'ROLE_USER']);
+        // clear storage test
+        // sLang = await AppLocalStorage().read(StorageKeys.language.name);
+        // username = await AppLocalStorage().read(StorageKeys.username.name);
+        // authorities = await AppLocalStorage().read(StorageKeys.roles.name);
+        // expect(sLang, "en");
+        // expect(username, "admin");
+        // expect(authorities, ['ROLE_ADMIN', 'ROLE_USER']);
 
-      // dispose test
-      // expect(find.byType(HomeScreen), findsNothing);
-      // expect(find.byType(LoginScreen), findsOneWidget);
-    });
+        // dispose test
+        // expect(find.byType(HomeScreen), findsNothing);
+        // expect(find.byType(LoginScreen), findsOneWidget);
+      },
+    );
 
-    testWidgets("Given an invalid AccessToken when HomeScreen is opened then navigate to loginScreen", (tester) async {
-      AdaptiveTheme getWidget({AdaptiveThemeMode mode = AdaptiveThemeMode.dark}) =>
-          App(language: language, initialTheme: mode).buildHomeApp();
+    testWidgets(
+      "Given an invalid AccessToken when HomeScreen is opened then navigate to loginScreen",
+      (tester) async {
+        AdaptiveTheme getWidget({
+          AdaptiveThemeMode mode = AdaptiveThemeMode.dark,
+        }) => App(language: language, initialTheme: mode).buildHomeApp();
 
-      // Given:
-      await tester.pumpWidget(getWidget(mode: darkTheme));
-      //When:
-      await tester.pumpAndSettle();
-      //Then:
-      expect(find.byType(HomeScreen), findsNothing);
-      expect(find.byType(LoginScreen), findsOneWidget);
-    });
+        // Given:
+        await tester.pumpWidget(getWidget(mode: darkTheme));
+        //When:
+        await tester.pumpAndSettle();
+        //Then:
+        expect(find.byType(HomeScreen), findsNothing);
+        expect(find.byType(LoginScreen), findsOneWidget);
+      },
+    );
   });
 }
