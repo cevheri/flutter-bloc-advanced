@@ -1,0 +1,12 @@
+[
+  {
+    "id": "1",
+    "name": "name",
+    "plateCode": "plateCode"
+  },
+  {
+    "id": "2",
+    "name": "name2",
+    "plateCode": "plateCode2"
+  }
+]

@@ -1,0 +1,17 @@
+{
+  "summary": [
+    {"id":"leads","label":"Leads","value":120,"trend":8},
+    {"id":"customers","label":"Customers","value":54,"trend":-2},
+    {"id":"revenue","label":"Revenue","value":12500,"trend":12}
+  ],
+  "activities": [
+    {"id":"a1","title":"New lead: Mert Y.","subtitle":"Web form","time":"2025-08-07T10:21:00Z","type":"lead"},
+    {"id":"a2","title":"Deal closed: ACME","subtitle":"Deal: ₺2.500","time":"2025-08-06T15:10:00Z","type":"sale"}
+  ],
+  "quick_actions": [
+    {"id":"qa1","label":"New Lead","icon":"person_add"},
+    {"id":"qa2","label":"Add Task","icon":"task"}
+  ]
+}
+
+

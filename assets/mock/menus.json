@@ -1,0 +1,148 @@
+[
+  {
+    "id": "menu-000",
+    "name": "home",
+    "description": "home",
+    "url": "/",
+    "icon": "home",
+    "orderPriority": 0,
+    "active": true,
+    "level": 0,
+    "leaf": false,
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
+    "parent": null
+  },
+  {
+    "id": "menu-001",
+    "name": "account",
+    "description": "account",
+    "url": "/account",
+    "icon": "account",
+    "orderPriority": 10,
+    "active": true,
+    "level": 1,
+    "leaf": true,
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
+    "parent": {
+      "id": "menu-000",
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "home",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0,
+      "leaf": false
+    }
+  },
+  {
+    "id": "menu-002",
+    "name": "userManagement",
+    "description": "userManagement",
+    "url": "",
+    "icon": "account-tie",
+    "orderPriority": 11,
+    "active": true,
+    "level": 1,
+    "leaf": false,
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
+    "parent": {
+      "id": "menu-000",
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "home",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0,
+      "leaf": false
+    }
+  },
+  {
+    "id": "menu-020",
+    "name": "new_user",
+    "description": "userNew",
+    "url": "/user/new",
+    "icon": "account-multiple-plus-outline",
+    "orderPriority": 1,
+    "active": true,
+    "level": 2,
+    "leaf": true,
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
+    "parent": {
+      "id": "menu-002",
+      "name": "userManagement",
+      "description": "userManagement",
+      "url": "",
+      "icon": "account-tie",
+      "orderPriority": 11,
+      "active": true,
+      "level": 1,
+      "leaf": false
+    }
+  },
+  {
+    "id": "menu-021",
+    "name": "list_user",
+    "description": "userList",
+    "url": "/user",
+    "icon": "account-edit-outline",
+    "orderPriority": 2,
+    "active": true,
+    "level": 2,
+    "leaf": true,
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
+    "parent": {
+      "id": "menu-002",
+      "name": "userManagement",
+      "description": "userManagement",
+      "url": "",
+      "icon": "account-tie",
+      "orderPriority": 11,
+      "active": true,
+      "level": 1,
+      "leaf": false
+    }
+  },
+  {
+    "id": "menu-003",
+    "name": "settings",
+    "description": "settings",
+    "url": "/settings",
+    "icon": "cog-outline",
+    "orderPriority": 60,
+    "active": true,
+    "level": 1,
+    "leaf": true,
+    "authorities": [
+      "ROLE_USER",
+      "ROLE_ADMIN"
+    ],
+    "parent": {
+      "id": "menu-000",
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "home",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0,
+      "leaf": false
+    }
+  }
+]

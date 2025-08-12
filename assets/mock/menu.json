@@ -1,0 +1,393 @@
+[
+  {
+    "id": 1,
+    "name": "home",
+    "description": "home",
+    "url": "/",
+    "icon": "icon",
+    "orderPriority": 0,
+    "active": true,
+    "parent": null,
+    "level": 0
+  },
+  {
+    "id": 2,
+    "name": "account",
+    "description": "account",
+    "url": "/account",
+    "icon": "account",
+    "orderPriority": 4,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 3,
+    "name": "logout",
+    "description": "logout",
+    "url": "/logout",
+    "icon": "people_outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 2,
+      "name": "account",
+      "description": "account",
+      "url": "/account",
+      "icon": "account",
+      "orderPriority": 4,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 4,
+    "name": "login",
+    "description": "login",
+    "url": "/login",
+    "icon": "people_outline",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 2,
+      "name": "account",
+      "description": "account",
+      "url": "/account",
+      "icon": "account",
+      "orderPriority": 4,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 5,
+    "name": "settings",
+    "description": "settings",
+    "url": "/settings",
+    "icon": "accountSettings",
+    "orderPriority": 3,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 6,
+    "name": "language",
+    "description": "language",
+    "url": "/settings/lang",
+    "icon": "people_outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 5,
+      "name": "settings",
+      "description": "settings",
+      "url": "/settings",
+      "icon": "accountSettings",
+      "orderPriority": 3,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 7,
+    "name": "dark-light",
+    "description": "dark-light",
+    "url": "/settings/mode",
+    "icon": "people_outline",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 5,
+      "name": "settings",
+      "description": "settings",
+      "url": "/settings",
+      "icon": "accountSettings",
+      "orderPriority": 3,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 8,
+    "name": "sales-person",
+    "description": "sales-person",
+    "url": "branch",
+    "icon": "sales-update",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 9,
+    "name": "create-new-offer",
+    "description": "create-new-offer",
+    "url": "/offering/create-new-offer",
+    "icon": "people_outline",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 8,
+      "name": "sales-person",
+      "description": "sales-person",
+      "url": "branch",
+      "icon": "sales-update",
+      "orderPriority": 2,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 10,
+    "name": "list-offer",
+    "description": "list-offer",
+    "url": "/offering/list",
+    "icon": "people_outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 8,
+      "name": "sales-person",
+      "description": "sales-person",
+      "url": "branch",
+      "icon": "sales-update",
+      "orderPriority": 2,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 11,
+    "name": "admin",
+    "description": "admin",
+    "url": "branch",
+    "icon": "people_outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 12,
+    "name": "create-new-offer",
+    "description": "create-new-offer",
+    "url": "/offering/create-new-offer",
+    "icon": "people_outline",
+    "orderPriority": 3,
+    "active": true,
+    "parent": {
+      "id": 11,
+      "name": "admin",
+      "description": "admin",
+      "url": "branch",
+      "icon": "people_outline",
+      "orderPriority": 1,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 13,
+    "name": "list-offer",
+    "description": "list-offer",
+    "url": "/offering/list",
+    "icon": "people_outline",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 11,
+      "name": "admin",
+      "description": "admin",
+      "url": "branch",
+      "icon": "people_outline",
+      "orderPriority": 1,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 14,
+    "name": "dashboard",
+    "description": "dashboard",
+    "url": "branch",
+    "icon": "people_outline",
+    "orderPriority": 5,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  },
+  {
+    "id": 15,
+    "name": "daily",
+    "description": "daily",
+    "url": "/dashboard/daily",
+    "icon": "people_outline",
+    "orderPriority": 1,
+    "active": true,
+    "parent": {
+      "id": 14,
+      "name": "dashboard",
+      "description": "dashboard",
+      "url": "branch",
+      "icon": "people_outline",
+      "orderPriority": 5,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 16,
+    "name": "weekly",
+    "description": "weekly",
+    "url": "/dashboard/weekly",
+    "icon": "people_outline",
+    "orderPriority": 2,
+    "active": true,
+    "parent": {
+      "id": 14,
+      "name": "dashboard",
+      "description": "dashboard",
+      "url": "branch",
+      "icon": "people_outline",
+      "orderPriority": 5,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 17,
+    "name": "monthly",
+    "description": "monthly",
+    "url": "/dashboard/monthly",
+    "icon": "people_outline",
+    "orderPriority": 3,
+    "active": true,
+    "parent": {
+      "id": 14,
+      "name": "dashboard",
+      "description": "dashboard",
+      "url": "branch",
+      "icon": "people_outline",
+      "orderPriority": 5,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 18,
+    "name": "sales-person",
+    "description": "sales-person",
+    "url": "/dashboard/sales-person",
+    "icon": "people_outline",
+    "orderPriority": 4,
+    "active": true,
+    "parent": {
+      "id": 14,
+      "name": "dashboard",
+      "description": "dashboard",
+      "url": "branch",
+      "icon": "people_outline",
+      "orderPriority": 5,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 19,
+    "name": "customer",
+    "description": "customer",
+    "url": "/dashboard/customer",
+    "icon": "people_outline",
+    "orderPriority": 5,
+    "active": true,
+    "parent": {
+      "id": 14,
+      "name": "dashboard",
+      "description": "dashboard",
+      "url": "branch",
+      "icon": "people_outline",
+      "orderPriority": 5,
+      "active": true,
+      "level": 1
+    },
+    "level": 2
+  },
+  {
+    "id": 20,
+    "name": "reports",
+    "description": "reports",
+    "url": "branch",
+    "icon": "people_outline",
+    "orderPriority": 6,
+    "active": true,
+    "parent": {
+      "id": 1,
+      "name": "home",
+      "description": "home",
+      "url": "/",
+      "icon": "icon",
+      "orderPriority": 0,
+      "active": true,
+      "level": 0
+    },
+    "level": 1
+  }
+]

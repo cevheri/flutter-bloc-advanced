@@ -1,0 +1,16 @@
+{
+
+  "id": "user-1",
+  "login": "admin",
+  "email": "admin@sample.tech",
+  "firstName": "Admin",
+  "lastName": "User",
+  "activated": true,
+  "langKey": "en",
+  "createdBy": "system",
+  "createdDate": "2024-01-04T06:02:47.757Z",
+  "lastModifiedBy": "admin",
+  "lastModifiedDate": "2024-01-04T06:02:47.757Z",
+  "authorities": ["ROLE_ADMIN", "ROLE_USER"]
+
+}
