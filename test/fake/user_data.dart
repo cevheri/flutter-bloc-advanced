@@ -27,10 +27,7 @@ final mockUserFullPayload = User(
 const mockAuthorityPayload = Authority(name: 'ROLE_USER');
 
 /// PasswordChange fake data with full payload
-const mockPasswordChangePayload = PasswordChangeDTO(
-  currentPassword: 'password',
-  newPassword: 'new_password',
-);
+const mockPasswordChangePayload = PasswordChangeDTO(currentPassword: 'password', newPassword: 'new_password');
 
 /// JWTToken fake data
 const mockJWTTokenPayload = JWTToken(idToken: 'MOCK_TOKEN');

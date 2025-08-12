@@ -8,16 +8,10 @@ class ForgotPasswordState extends Equatable {
   final String? email;
   final ForgotPasswordStatus status;
 
-  const ForgotPasswordState({
-    this.email,
-    this.status = ForgotPasswordStatus.initial,
-  });
+  const ForgotPasswordState({this.email, this.status = ForgotPasswordStatus.initial});
 
   ForgotPasswordState copyWith({String? email, ForgotPasswordStatus? status}) {
-    return ForgotPasswordState(
-      email: email ?? this.email,
-      status: status ?? this.status,
-    );
+    return ForgotPasswordState(email: email ?? this.email, status: status ?? this.status);
   }
 
   @override
@@ -28,25 +22,21 @@ class ForgotPasswordState extends Equatable {
 }
 
 class ForgotPasswordInitialState extends ForgotPasswordState {
-  const ForgotPasswordInitialState()
-    : super(status: ForgotPasswordStatus.initial);
+  const ForgotPasswordInitialState() : super(status: ForgotPasswordStatus.initial);
 }
 
 class ForgotPasswordLoadingState extends ForgotPasswordState {
-  const ForgotPasswordLoadingState()
-    : super(status: ForgotPasswordStatus.loading);
+  const ForgotPasswordLoadingState() : super(status: ForgotPasswordStatus.loading);
 }
 
 class ForgotPasswordCompletedState extends ForgotPasswordState {
-  const ForgotPasswordCompletedState()
-    : super(status: ForgotPasswordStatus.success);
+  const ForgotPasswordCompletedState() : super(status: ForgotPasswordStatus.success);
 }
 
 class ForgotPasswordErrorState extends ForgotPasswordState {
   final String message;
 
-  const ForgotPasswordErrorState({required this.message})
-    : super(status: ForgotPasswordStatus.failure);
+  const ForgotPasswordErrorState({required this.message}) : super(status: ForgotPasswordStatus.failure);
 
   @override
   List<Object> get props => [status, message];

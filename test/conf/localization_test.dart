@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/generated/intl/messages_all.dart';
-import 'package:flutter_bloc_advance/generated/intl/messages_en.dart'
-    as message_en;
-import 'package:flutter_bloc_advance/generated/intl/messages_tr.dart'
-    as message_tr;
+import 'package:flutter_bloc_advance/generated/intl/messages_en.dart' as message_en;
+import 'package:flutter_bloc_advance/generated/intl/messages_tr.dart' as message_tr;
 
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
@@ -25,14 +23,9 @@ void main() {
       );
     });
 
-    testWidgets('current returns instance after initialization', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('current returns instance after initialization', (WidgetTester tester) async {
       await tester.pumpWidget(
-        MaterialApp(
-          localizationsDelegates: const [S.delegate],
-          supportedLocales: S.delegate.supportedLocales,
-        ),
+        MaterialApp(localizationsDelegates: const [S.delegate], supportedLocales: S.delegate.supportedLocales),
       );
       await tester.pumpAndSettle();
 

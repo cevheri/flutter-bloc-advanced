@@ -33,9 +33,7 @@ class TopActionsWidget extends StatelessWidget {
       children: [
         IconButton(
           tooltip: s.theme,
-          icon: Icon(
-            isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-          ),
+          icon: Icon(isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined),
           onPressed: () => _toggleTheme(context),
         ),
         IconButton(

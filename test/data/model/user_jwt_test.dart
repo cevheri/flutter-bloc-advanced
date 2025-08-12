@@ -27,15 +27,12 @@ void main() {
       expect(entityUpd == entity, true);
     });
 
-    test(
-      'should copy a UserJWT instance with new values (copyWith) username',
-      () {
-        const entity = mockUserJWTPayload;
-        final entityUpd = entity.copyWith(username: 'new_username');
+    test('should copy a UserJWT instance with new values (copyWith) username', () {
+      const entity = mockUserJWTPayload;
+      final entityUpd = entity.copyWith(username: 'new_username');
 
-        expect(entityUpd.username, 'new_username');
-      },
-    );
+      expect(entityUpd.username, 'new_username');
+    });
     test('should copy a UserJWT instance with new values (copyWith) pass', () {
       const entity = mockUserJWTPayload;
       final entityUpd = entity.copyWith(password: 'new_password');
@@ -82,20 +79,14 @@ void main() {
 
     test('should return true when comparing two UserJWT instances', () {
       const entity = mockUserJWTPayload;
-      final entityUpd = entity.copyWith(
-        username: 'new_username',
-        password: 'new_password',
-      );
+      final entityUpd = entity.copyWith(username: 'new_username', password: 'new_password');
 
       expect(entity == entityUpd, false);
     });
 
     test("hashCode should return hash code", () {
       const entity = mockUserJWTPayload;
-      final entityUpd = entity.copyWith(
-        username: 'new_username',
-        password: 'new_password',
-      );
+      final entityUpd = entity.copyWith(username: 'new_username', password: 'new_password');
 
       expect(entity.hashCode == entityUpd.hashCode, false);
     });

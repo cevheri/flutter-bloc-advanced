@@ -14,10 +14,7 @@ class DistrictState extends Equatable {
   const DistrictState({this.districts, this.status = DistrictStatus.initial});
 
   DistrictState copyWith({List<District>? districts, DistrictStatus? status}) {
-    return DistrictState(
-      status: status ?? this.status,
-      districts: districts ?? districts,
-    );
+    return DistrictState(status: status ?? this.status, districts: districts ?? districts);
   }
 
   @override
@@ -36,15 +33,13 @@ class DistrictLoadingState extends DistrictState {
 }
 
 class DistrictLoadSuccessState extends DistrictState {
-  const DistrictLoadSuccessState({required super.districts})
-    : super(status: DistrictStatus.success);
+  const DistrictLoadSuccessState({required super.districts}) : super(status: DistrictStatus.success);
 }
 
 class DistrictLoadFailureState extends DistrictState {
   final String message;
 
-  const DistrictLoadFailureState({required this.message})
-    : super(status: DistrictStatus.failure);
+  const DistrictLoadFailureState({required this.message}) : super(status: DistrictStatus.failure);
 
   @override
   List<Object> get props => [status, message];

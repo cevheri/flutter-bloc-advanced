@@ -114,16 +114,7 @@ class Customer extends Equatable {
   }
 
   @override
-  List<Object?> get props => [
-    id,
-    name,
-    phone,
-    email,
-    cityName,
-    districtName,
-    address,
-    active,
-  ];
+  List<Object?> get props => [id, name, phone, email, cityName, districtName, address, active];
 
   @override
   bool get stringify => true;

@@ -60,17 +60,11 @@ void main() {
     });
 
     test("DistrictLoadFailureState", () {
-      expect(
-        const DistrictLoadFailureState(message: "test"),
-        const DistrictLoadFailureState(message: "test"),
-      );
+      expect(const DistrictLoadFailureState(message: "test"), const DistrictLoadFailureState(message: "test"));
     });
     test("DistrictState copyWith", () {
       expect(const DistrictState().copyWith(), const DistrictState());
-      expect(
-        const DistrictState().copyWith(districts: districts),
-        const DistrictState(districts: districts),
-      );
+      expect(const DistrictState().copyWith(districts: districts), const DistrictState(districts: districts));
     });
     test("DistrictState props", () {
       expect(const DistrictState().props, [DistrictStatus.initial, []]);
@@ -85,16 +79,10 @@ void main() {
       expect(const DistrictLoadingState().props, [DistrictStatus.loading, []]);
     });
     test("DistrictLoadSuccessState props", () {
-      expect(const DistrictLoadSuccessState(districts: districts).props, [
-        DistrictStatus.success,
-        districts,
-      ]);
+      expect(const DistrictLoadSuccessState(districts: districts).props, [DistrictStatus.success, districts]);
     });
     test("DistrictLoadFailureState props", () {
-      expect(const DistrictLoadFailureState(message: "test").props, [
-        DistrictStatus.failure,
-        "test",
-      ]);
+      expect(const DistrictLoadFailureState(message: "test").props, [DistrictStatus.failure, "test"]);
     });
   });
 
@@ -118,10 +106,7 @@ void main() {
     });
 
     test("DistrictLoadList", () {
-      expect(
-        const DistrictLoadByCity(cityId: "test"),
-        const DistrictLoadByCity(cityId: "test"),
-      );
+      expect(const DistrictLoadByCity(cityId: "test"), const DistrictLoadByCity(cityId: "test"));
     });
     test("DistrictLoadList props", () {
       expect(const DistrictLoadByCity(cityId: "test").props, ["test"]);
@@ -145,9 +130,7 @@ void main() {
       const event = DistrictLoad();
       const loadingState = DistrictLoadingState();
       const successState = DistrictLoadSuccessState(districts: input);
-      const failureState = DistrictLoadFailureState(
-        message: "Exception: Error",
-      );
+      const failureState = DistrictLoadFailureState(message: "Exception: Error");
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
@@ -176,9 +159,7 @@ void main() {
       const event = DistrictLoadByCity(cityId: "test");
       const loadingState = DistrictLoadingState();
       const successState = DistrictLoadSuccessState(districts: input);
-      const failureState = DistrictLoadFailureState(
-        message: "Exception: Error",
-      );
+      const failureState = DistrictLoadFailureState(message: "Exception: Error");
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];

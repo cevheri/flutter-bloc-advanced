@@ -4,10 +4,6 @@ import 'package:go_router/go_router.dart';
 
 class SettingsRoutes {
   static final List<GoRoute> routes = [
-    GoRoute(
-      name: 'settings',
-      path: ApplicationRoutesConstants.settings,
-      builder: (context, state) => SettingsScreen(),
-    ),
+    GoRoute(name: 'settings', path: ApplicationRoutesConstants.settings, builder: (context, state) => SettingsScreen()),
   ];
 }

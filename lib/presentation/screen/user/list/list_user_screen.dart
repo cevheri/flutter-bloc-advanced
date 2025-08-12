@@ -23,20 +23,14 @@ class ListUserScreen extends StatelessWidget {
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
-      child: Scaffold(
-        appBar: _buildAppBar(context),
-        body: const UserListView(),
-      ),
+      child: Scaffold(appBar: _buildAppBar(context), body: const UserListView()),
     );
   }
 
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).list_user),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () => context.go('/'),
-      ),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/')),
     );
   }
 
@@ -72,17 +66,11 @@ class UserListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: LayoutBuilder(
-        builder: (context, constraints) =>
-            _buildResponsiveLayout(context, constraints),
-      ),
+      child: LayoutBuilder(builder: (context, constraints) => _buildResponsiveLayout(context, constraints)),
     );
   }
 
-  Widget _buildResponsiveLayout(
-    BuildContext context,
-    BoxConstraints constraints,
-  ) {
+  Widget _buildResponsiveLayout(BuildContext context, BoxConstraints constraints) {
     if (constraints.maxWidth > 900) {
       return UserListContent(horizontalPadding: 200, maxWidth: 1100);
     } else if (constraints.maxWidth > 700) {
@@ -100,11 +88,7 @@ class UserListContent extends StatelessWidget {
   final double maxWidth;
   final _formKey = GlobalKey<FormBuilderState>();
 
-  UserListContent({
-    super.key,
-    required this.horizontalPadding,
-    required this.maxWidth,
-  });
+  UserListContent({super.key, required this.horizontalPadding, required this.maxWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -176,16 +160,9 @@ class PaginationControls extends StatelessWidget {
                 name: 'rangeStart',
                 initialValue: "0",
                 validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(
-                    errorText: S.of(context).required_range,
-                  ),
-                  FormBuilderValidators.numeric(
-                    errorText: S.of(context).required_range,
-                  ),
-                  FormBuilderValidators.minLength(
-                    1,
-                    errorText: S.of(context).required_range,
-                  ),
+                  FormBuilderValidators.required(errorText: S.of(context).required_range),
+                  FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+                  FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
                 ]),
               ),
             ),
@@ -197,16 +174,9 @@ class PaginationControls extends StatelessWidget {
                 name: 'rangeEnd',
                 initialValue: "100",
                 validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(
-                    errorText: S.of(context).required_range,
-                  ),
-                  FormBuilderValidators.numeric(
-                    errorText: S.of(context).required_range,
-                  ),
-                  FormBuilderValidators.minLength(
-                    1,
-                    errorText: S.of(context).required_range,
-                  ),
+                  FormBuilderValidators.required(errorText: S.of(context).required_range),
+                  FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+                  FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
                 ]),
               ),
             ),
@@ -324,12 +294,7 @@ class TableColumnHeader extends StatelessWidget {
   final String title;
   final TextAlign alignment;
 
-  const TableColumnHeader({
-    super.key,
-    required this.flex,
-    required this.title,
-    this.alignment = TextAlign.left,
-  });
+  const TableColumnHeader({super.key, required this.flex, required this.title, this.alignment = TextAlign.left});
 
   @override
   Widget build(BuildContext context) {
@@ -361,11 +326,7 @@ class UserTableContent extends StatelessWidget {
             itemCount: state.userList?.length,
             shrinkWrap: true,
             physics: const ClampingScrollPhysics(),
-            itemBuilder: (context, index) => UserTableRow(
-              user: state.userList?[index],
-              index: index,
-              formKey: formKey,
-            ),
+            itemBuilder: (context, index) => UserTableRow(user: state.userList?[index], index: index, formKey: formKey),
           );
         }
         return const SizedBox.shrink();
@@ -382,12 +343,7 @@ class UserTableRow extends StatelessWidget {
   final int index;
   final GlobalKey<FormBuilderState> formKey;
 
-  const UserTableRow({
-    super.key,
-    required this.user,
-    required this.index,
-    required this.formKey,
-  });
+  const UserTableRow({super.key, required this.user, required this.index, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -416,9 +372,7 @@ class UserTableRow extends StatelessWidget {
   }
 
   String _getRoleText(BuildContext context) {
-    return user.authorities!.contains("ROLE_ADMIN")
-        ? S.of(context).admin
-        : S.of(context).guest;
+    return user.authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest;
   }
 
   BoxDecoration _buildRowDecoration(BuildContext context) {
@@ -440,12 +394,7 @@ class UserTableCell extends StatelessWidget {
   final String text;
   final TextAlign alignment;
 
-  const UserTableCell({
-    super.key,
-    required this.flex,
-    required this.text,
-    this.alignment = TextAlign.left,
-  });
+  const UserTableCell({super.key, required this.flex, required this.text, this.alignment = TextAlign.left});
 
   @override
   Widget build(BuildContext context) {
@@ -464,12 +413,7 @@ class UserActionButtons extends StatelessWidget {
   final String? username;
   final GlobalKey<FormBuilderState> formKey;
 
-  const UserActionButtons({
-    super.key,
-    this.userId,
-    this.username,
-    required this.formKey,
-  });
+  const UserActionButtons({super.key, this.userId, this.username, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -503,11 +447,7 @@ class UserActionButtons extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required double size,
-  }) {
+  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed, required double size}) {
     return SizedBox(
       width: size,
       height: size,
@@ -521,17 +461,11 @@ class UserActionButtons extends StatelessWidget {
   }
 
   void _handleEdit(BuildContext context) {
-    context.goNamed(
-      'userEdit',
-      pathParameters: {'id': userId ?? username ?? ""},
-    );
+    context.goNamed('userEdit', pathParameters: {'id': userId ?? username ?? ""});
   }
 
   void _handleView(BuildContext context) {
-    context.goNamed(
-      'userView',
-      pathParameters: {'id': userId ?? username ?? ""},
-    );
+    context.goNamed('userView', pathParameters: {'id': userId ?? username ?? ""});
   }
 
   void _showDeleteConfirmation(BuildContext context) {
@@ -541,20 +475,14 @@ class UserActionButtons extends StatelessWidget {
         title: Text(S.of(context).warning),
         content: Text(S.of(context).delete_confirmation),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(S.of(context).no),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(S.of(context).no)),
           TextButton(
             onPressed: () {
               Navigator.pop(context);
-              context.read<UserBloc>().add(
-                UserDeleteEvent(userId ?? username ?? ""),
-              );
+              context.read<UserBloc>().add(UserDeleteEvent(userId ?? username ?? ""));
               late final StreamSubscription<UserState> subscription;
               subscription = context.read<UserBloc>().stream.listen((state) {
-                if (state.status == UserStatus.deleteSuccess &&
-                    context.mounted) {
+                if (state.status == UserStatus.deleteSuccess && context.mounted) {
                   _refreshList(context);
                   subscription.cancel();
                 }

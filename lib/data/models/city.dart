@@ -17,19 +17,11 @@ class City extends Equatable {
   const City({this.id, this.name, this.plateCode});
 
   City copyWith({String? id, String? name, String? plateCode}) {
-    return City(
-      id: id ?? this.id,
-      name: name ?? this.name,
-      plateCode: plateCode ?? this.plateCode,
-    );
+    return City(id: id ?? this.id, name: name ?? this.name, plateCode: plateCode ?? this.plateCode);
   }
 
   static City? fromJson(Map<String, dynamic> json) {
-    return const City().copyWith(
-      id: json['id'],
-      name: json['name'],
-      plateCode: json['plateCode'],
-    );
+    return const City().copyWith(id: json['id'], name: json['name'], plateCode: json['plateCode']);
   }
 
   static City? fromJsonString(String json) {

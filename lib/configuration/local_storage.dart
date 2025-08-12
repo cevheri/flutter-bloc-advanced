@@ -33,13 +33,14 @@ class AppLocalStorageCached {
     roles = await AppLocalStorage().read(StorageKeys.roles.name);
     language = await AppLocalStorage().read(StorageKeys.language.name) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.name);
-    theme =
-        await AppLocalStorage().read(StorageKeys.theme.name) ??
-        AdaptiveThemeMode.light.name;
-    _log.trace(
-      "Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}",
-      [username, roles, language, jwtToken, theme],
-    );
+    theme = await AppLocalStorage().read(StorageKeys.theme.name) ?? AdaptiveThemeMode.light.name;
+    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}", [
+      username,
+      roles,
+      language,
+      jwtToken,
+      theme,
+    ]);
   }
 }
 
@@ -52,8 +53,7 @@ enum StorageKeys { jwtToken, roles, language, username, theme }
 class SharedPreferencesStrategy implements StorageStrategy {
   static final _log = AppLogger.getLogger("AppLocalStorage");
 
-  static final SharedPreferencesStrategy _instance =
-      SharedPreferencesStrategy._internal();
+  static final SharedPreferencesStrategy _instance = SharedPreferencesStrategy._internal();
 
   SharedPreferencesStrategy._internal();
 
@@ -70,8 +70,7 @@ class SharedPreferencesStrategy implements StorageStrategy {
   }
 
   /// Shared Preferences private instance
-  Future<SharedPreferences> get _prefs async =>
-      _prefsInstance ??= await SharedPreferences.getInstance();
+  Future<SharedPreferences> get _prefs async => _prefsInstance ??= await SharedPreferences.getInstance();
 
   /// Save data to local storage <br>
   /// <br>

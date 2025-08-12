@@ -11,11 +11,7 @@ class AuthoritiesDropdown extends StatelessWidget {
   final bool enabled;
   final String? initialValue;
 
-  const AuthoritiesDropdown({
-    super.key,
-    this.enabled = true,
-    this.initialValue,
-  });
+  const AuthoritiesDropdown({super.key, this.enabled = true, this.initialValue});
 
   @override
   Widget build(BuildContext context) {
@@ -30,9 +26,7 @@ class AuthoritiesDropdown extends StatelessWidget {
               enabled: enabled,
               name: 'authorities',
               decoration: InputDecoration(hintText: S.of(context).authorities),
-              items: authorities
-                  .map((e) => DropdownMenuItem(value: e, child: Text(e ?? "")))
-                  .toList(),
+              items: authorities.map((e) => DropdownMenuItem(value: e, child: Text(e ?? ""))).toList(),
               initialValue: initialValue ?? authorities.first,
             );
           }

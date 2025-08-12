@@ -35,12 +35,7 @@ abstract class RouterStrategy {
   /// ```dart
   /// await navigator.push(context, MaterialPageRoute(builder: (context) => const MyScreen()));
   /// ```
-  Future<void> push(
-    BuildContext context,
-    String routeName, {
-    Object? args,
-    Map<String, dynamic> kwargs,
-  });
+  Future<void> push(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs});
 
   /// Push the route with the given name onto the navigator that most tightly encloses the given context, and then remove all the previous routes until the predicate returns true.
   ///
@@ -54,12 +49,7 @@ abstract class RouterStrategy {
   ///
   /// await navigator.pushNamedAndRemoveUntil(context, ApplicationRoutes.login, (route) => false);
   /// ```
-  Future<void> pushRemoveUntil(
-    BuildContext context,
-    String routeName, {
-    Object? args,
-    Map<String, dynamic> kwargs,
-  });
+  Future<void> pushRemoveUntil(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs});
 
   /// Replace the current route of the navigator that most tightly encloses the given context by pushing the route named routeName and then disposing the previous route once the new route has finished animating in.
   ///
@@ -71,12 +61,7 @@ abstract class RouterStrategy {
   /// ```dart
   /// await navigator.pushReplacementNamed(context, "/myScreen", arguments: {"id": 1});
   /// ```
-  Future<void> pushReplacement(
-    BuildContext context,
-    String routeName, {
-    Object? args,
-    Map<String, dynamic> kwargs,
-  });
+  Future<void> pushReplacement(BuildContext context, String routeName, {Object? args, Map<String, dynamic> kwargs});
 }
 
 /// Flutter Navigator implementation of RouteStrategy
@@ -104,9 +89,7 @@ class NavigatorStrategy implements RouterStrategy {
     Object? args,
     Map<String, dynamic> kwargs = const {},
   }) async {
-    Navigator.of(
-      context,
-    ).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
+    Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
   }
 
   @override
@@ -137,11 +120,7 @@ class GoRouterStrategy implements RouterStrategy {
   }) async {
     if (args != null && kwargs.isNotEmpty) {
       Map<String, String> pathParameters = args as Map<String, String>;
-      go_router.GoRouter.of(context).goNamed(
-        routeName,
-        pathParameters: pathParameters,
-        queryParameters: kwargs,
-      );
+      go_router.GoRouter.of(context).goNamed(routeName, pathParameters: pathParameters, queryParameters: kwargs);
     } else if (args != null) {
       go_router.GoRouter.of(context).go(routeName, extra: args);
     } else {
@@ -158,11 +137,7 @@ class GoRouterStrategy implements RouterStrategy {
   }) async {
     if (args != null && kwargs.isNotEmpty) {
       Map<String, String> pathParameters = args as Map<String, String>;
-      go_router.GoRouter.of(context).goNamed(
-        routeName,
-        pathParameters: pathParameters,
-        queryParameters: kwargs,
-      );
+      go_router.GoRouter.of(context).goNamed(routeName, pathParameters: pathParameters, queryParameters: kwargs);
     } else if (args != null) {
       go_router.GoRouter.of(context).go(routeName, extra: args);
     } else {
@@ -179,11 +154,7 @@ class GoRouterStrategy implements RouterStrategy {
   }) async {
     if (args != null && kwargs.isNotEmpty) {
       Map<String, String> pathParameters = args as Map<String, String>;
-      go_router.GoRouter.of(context).goNamed(
-        routeName,
-        pathParameters: pathParameters,
-        queryParameters: kwargs,
-      );
+      go_router.GoRouter.of(context).goNamed(routeName, pathParameters: pathParameters, queryParameters: kwargs);
     } else if (args != null) {
       go_router.GoRouter.of(context).go(routeName, extra: args);
     } else {
@@ -227,17 +198,11 @@ class AutoRouteStrategy implements RouterStrategy {
     Map<String, dynamic> kwargs = const {},
   }) async {
     if (args != null && kwargs.isNotEmpty) {
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
     } else if (args != null) {
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false, arguments: args);
     } else {
-      Navigator.of(
-        context,
-      ).pushNamedAndRemoveUntil(routeName, (route) => false);
+      Navigator.of(context).pushNamedAndRemoveUntil(routeName, (route) => false);
     }
   }
 
@@ -276,11 +241,7 @@ class GetRouteStrategy implements RouterStrategy {
   }) async {
     final queryParams = kwargs as Map<String, String>;
     if (args != null && kwargs.isNotEmpty) {
-      get_router.Get.toNamed(
-        routeName,
-        arguments: args,
-        parameters: queryParams,
-      );
+      get_router.Get.toNamed(routeName, arguments: args, parameters: queryParams);
     } else if (args != null) {
       get_router.Get.toNamed(routeName, parameters: queryParams);
     } else {
@@ -297,18 +258,9 @@ class GetRouteStrategy implements RouterStrategy {
   }) async {
     final queryParams = kwargs as Map<String, String>;
     if (args != null && kwargs.isNotEmpty) {
-      get_router.Get.offNamedUntil(
-        routeName,
-        (route) => false,
-        arguments: args,
-        parameters: queryParams,
-      );
+      get_router.Get.offNamedUntil(routeName, (route) => false, arguments: args, parameters: queryParams);
     } else if (args != null) {
-      get_router.Get.offNamedUntil(
-        routeName,
-        (route) => false,
-        parameters: queryParams,
-      );
+      get_router.Get.offNamedUntil(routeName, (route) => false, parameters: queryParams);
     } else {
       get_router.Get.offNamedUntil(routeName, (route) => false);
     }
@@ -323,11 +275,7 @@ class GetRouteStrategy implements RouterStrategy {
   }) async {
     final queryParams = kwargs as Map<String, String>;
     if (args != null && kwargs.isNotEmpty) {
-      get_router.Get.offNamed(
-        routeName,
-        arguments: args,
-        parameters: queryParams,
-      );
+      get_router.Get.offNamed(routeName, arguments: args, parameters: queryParams);
     } else if (args != null) {
       get_router.Get.offNamed(routeName, parameters: queryParams);
     } else {
@@ -431,12 +379,7 @@ class AppRouter {
     Object? args,
     Map<String, dynamic> kwargs = const {},
   }) async {
-    await _routeStrategy.pushRemoveUntil(
-      context,
-      routeName,
-      args: args,
-      kwargs: kwargs,
-    );
+    await _routeStrategy.pushRemoveUntil(context, routeName, args: args, kwargs: kwargs);
   }
 
   /// Replace the current route of the navigator that most tightly encloses the given context by pushing the route named routeName and then disposing the previous route once the new route has finished animating in.
@@ -451,11 +394,6 @@ class AppRouter {
     Object? args,
     Map<String, dynamic> kwargs = const {},
   }) async {
-    await _routeStrategy.pushReplacement(
-      context,
-      routeName,
-      args: args,
-      kwargs: kwargs,
-    );
+    await _routeStrategy.pushReplacement(context, routeName, args: args, kwargs: kwargs);
   }
 }

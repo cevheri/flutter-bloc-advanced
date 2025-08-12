@@ -23,13 +23,7 @@ import 'login_screen_test.mocks.dart';
 
 /// Login Screen Test
 /// claas AccountsScreen extent
-@GenerateMocks([
-  LoginBloc,
-  AccountBloc,
-  ForgotPasswordBloc,
-  RegisterBloc,
-  AppLocalStorage,
-])
+@GenerateMocks([LoginBloc, AccountBloc, ForgotPasswordBloc, RegisterBloc, AppLocalStorage])
 void main() {
   late MockLoginBloc loginBloc;
   late MockAccountBloc accountBloc;
@@ -49,37 +43,21 @@ void main() {
     registerBloc = MockRegisterBloc();
     appLocalStorage = MockAppLocalStorage();
 
-    when(
-      loginBloc.stream,
-    ).thenAnswer((_) => Stream.fromIterable([const LoginInitialState()]));
+    when(loginBloc.stream).thenAnswer((_) => Stream.fromIterable([const LoginInitialState()]));
     when(loginBloc.state).thenReturn(const LoginInitialState());
 
-    when(
-      accountBloc.stream,
-    ).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
+    when(accountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
     when(accountBloc.state).thenReturn(const AccountState());
 
-    when(forgotPasswordBloc.stream).thenAnswer(
-      (_) => Stream.fromIterable([const ForgotPasswordInitialState()]),
-    );
-    when(
-      forgotPasswordBloc.state,
-    ).thenReturn(const ForgotPasswordInitialState());
+    when(forgotPasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordInitialState()]));
+    when(forgotPasswordBloc.state).thenReturn(const ForgotPasswordInitialState());
 
-    when(
-      registerBloc.stream,
-    ).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
+    when(registerBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
     when(registerBloc.state).thenReturn(const RegisterInitialState());
 
-    when(
-      appLocalStorage.read(StorageKeys.jwtToken.name),
-    ).thenAnswer((_) => Future.value(null));
-    when(
-      appLocalStorage.save(StorageKeys.jwtToken.name, any),
-    ).thenAnswer((_) => Future.value(true));
-    when(
-      appLocalStorage.save(StorageKeys.username.name, any),
-    ).thenAnswer((_) => Future.value(true));
+    when(appLocalStorage.read(StorageKeys.jwtToken.name)).thenAnswer((_) => Future.value(null));
+    when(appLocalStorage.save(StorageKeys.jwtToken.name, any)).thenAnswer((_) => Future.value(true));
+    when(appLocalStorage.save(StorageKeys.username.name, any)).thenAnswer((_) => Future.value(true));
 
     // GoRouter setup
     goRouter = GoRouter(
@@ -98,18 +76,9 @@ void main() {
             child: LoginScreen(),
           ),
         ),
-        GoRoute(
-          path: ApplicationRoutesConstants.register,
-          builder: (context, state) => const SizedBox(),
-        ),
-        GoRoute(
-          path: ApplicationRoutesConstants.forgotPassword,
-          builder: (context, state) => const SizedBox(),
-        ),
-        GoRoute(
-          path: ApplicationRoutesConstants.home,
-          builder: (context, state) => const SizedBox(),
-        ),
+        GoRoute(path: ApplicationRoutesConstants.register, builder: (context, state) => const SizedBox()),
+        GoRoute(path: ApplicationRoutesConstants.forgotPassword, builder: (context, state) => const SizedBox()),
+        GoRoute(path: ApplicationRoutesConstants.home, builder: (context, state) => const SizedBox()),
       ],
       redirect: (context, state) {
         // Disable redirect for tests
@@ -165,14 +134,10 @@ void main() {
       await tester.pumpAndSettle();
 
       // Simulate state changes
-      loginStateController.add(
-        const LoginLoadingState(username: 'test123', password: 'test123'),
-      );
+      loginStateController.add(const LoginLoadingState(username: 'test123', password: 'test123'));
       await tester.pump();
 
-      loginStateController.add(
-        const LoginLoadedState(username: 'test123', password: 'test123'),
-      );
+      loginStateController.add(const LoginLoadedState(username: 'test123', password: 'test123'));
       await tester.pumpAndSettle();
 
       // Submit form
@@ -180,11 +145,7 @@ void main() {
       //await tester.pumpAndSettle();
 
       // Assert
-      verify(
-        loginBloc.add(
-          const LoginFormSubmitted(username: 'test123', password: 'test123'),
-        ),
-      ).called(1);
+      verify(loginBloc.add(const LoginFormSubmitted(username: 'test123', password: 'test123'))).called(1);
 
       // Cleanup
       await loginStateController.close();
@@ -200,10 +161,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert
-      expect(
-        goRouter.routerDelegate.currentConfiguration.uri.path,
-        ApplicationRoutesConstants.forgotPassword,
-      );
+      expect(goRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.forgotPassword);
     });
 
     testWidgets('Register navigation test', (tester) async {
@@ -216,10 +174,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert
-      expect(
-        goRouter.routerDelegate.currentConfiguration.uri.path,
-        ApplicationRoutesConstants.register,
-      );
+      expect(goRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.register);
     });
 
     testWidgets('Login error scenario', (tester) async {
@@ -245,11 +200,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert
-      verify(
-        loginBloc.add(
-          const LoginFormSubmitted(username: 'test', password: 'test'),
-        ),
-      ).called(1);
+      verify(loginBloc.add(const LoginFormSubmitted(username: 'test', password: 'test'))).called(1);
 
       expect(find.byType(SnackBar), findsOneWidget);
     });
@@ -259,19 +210,14 @@ void main() {
       final loginStateController = StreamController<LoginState>.broadcast();
 
       when(loginBloc.stream).thenAnswer((_) => loginStateController.stream);
-      when(
-        loginBloc.state,
-      ).thenReturn(const LoginState(passwordVisible: false));
+      when(loginBloc.state).thenReturn(const LoginState(passwordVisible: false));
 
       await tester.pumpWidget(getWidget());
       await tester.pumpAndSettle();
 
       // Initial state - password should be obscured
       final initialPasswordField = find.byKey(loginTextFieldPasswordKey);
-      expect(
-        tester.widget<FormBuilderTextField>(initialPasswordField).obscureText,
-        true,
-      );
+      expect(tester.widget<FormBuilderTextField>(initialPasswordField).obscureText, true);
 
       // Act - toggle visibility
       await tester.tap(find.byKey(loginButtonPasswordVisibilityKey));
@@ -282,10 +228,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert - password should be visible
-      expect(
-        tester.widget<FormBuilderTextField>(initialPasswordField).obscureText,
-        false,
-      );
+      expect(tester.widget<FormBuilderTextField>(initialPasswordField).obscureText, false);
 
       // Cleanup
       await loginStateController.close();

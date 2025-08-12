@@ -14,28 +14,18 @@ import '../../../generated/l10n.dart';
 import 'bloc/login.dart';
 
 class LoginScreen extends StatelessWidget {
-  final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(
-    debugLabel: '__loginFormKey__',
-  );
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(
-    debugLabel: '__loginScaffoldKey__',
-  );
+  final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(debugLabel: '__loginScaffoldKey__');
 
   LoginScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      appBar: _buildAppBar(context),
-      body: _buildBody(context),
-    );
+    return Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  AppBar _buildAppBar(BuildContext context) => AppBar(
-    title: const Text(AppConstants.appName),
-    leading: const SizedBox.shrink(),
-  );
+  AppBar _buildAppBar(BuildContext context) =>
+      AppBar(title: const Text(AppConstants.appName), leading: const SizedBox.shrink());
 
   Widget _buildBody(BuildContext context) {
     return LayoutBuilder(
@@ -46,10 +36,7 @@ class LoginScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             child: Center(
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 560),
-                child: formCard,
-              ),
+              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: formCard),
             ),
           );
         }
@@ -60,10 +47,7 @@ class LoginScreen extends StatelessWidget {
               Expanded(child: _buildHeroPanel(context)),
               Expanded(
                 child: Center(
-                  child: ConstrainedBox(
-                    constraints: const BoxConstraints(maxWidth: 520),
-                    child: formCard,
-                  ),
+                  child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 520), child: formCard),
                 ),
               ),
             ],
@@ -90,30 +74,18 @@ class LoginScreen extends StatelessWidget {
                 ),
                 Text(
                   AppConstants.appName,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
                 _usernameField(context),
                 _passwordField(context),
-                Align(
-                  alignment: Alignment.centerRight,
-                  child: _submitButton(context),
-                ),
+                Align(alignment: Alignment.centerRight, child: _submitButton(context)),
                 _validationZone(),
                 _orDivider(context),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[_otpLoginButton(context)],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[_forgotPasswordLink(context)],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[_register(context)],
-                ),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_otpLoginButton(context)]),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
+                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
               ],
             ),
           ),
@@ -131,9 +103,7 @@ class LoginScreen extends StatelessWidget {
           image: const AssetImage(LocaleConstants.logoDarkUrl),
           fit: BoxFit.cover,
           colorFilter: ColorFilter.mode(
-            isDark
-                ? Colors.black.withValues(alpha: 0.35)
-                : Colors.white.withValues(alpha: 0.25),
+            isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.25),
             BlendMode.srcOver,
           ),
         ),
@@ -161,12 +131,7 @@ class LoginScreen extends StatelessWidget {
         Expanded(child: Divider(color: color)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text(
-            'OR',
-            style: Theme.of(
-              context,
-            ).textTheme.labelMedium?.copyWith(color: color),
-          ),
+          child: Text('OR', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
         ),
         Expanded(child: Divider(color: color)),
       ],
@@ -194,17 +159,9 @@ class LoginScreen extends StatelessWidget {
               prefixIcon: const Icon(Icons.person_outline),
             ),
             validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(
-                errorText: S.of(context).required_field,
-              ),
-              FormBuilderValidators.minLength(
-                4,
-                errorText: S.of(context).min_length_4,
-              ),
-              FormBuilderValidators.maxLength(
-                20,
-                errorText: S.of(context).max_length_20,
-              ),
+              FormBuilderValidators.required(errorText: S.of(context).required_field),
+              FormBuilderValidators.minLength(4, errorText: S.of(context).min_length_4),
+              FormBuilderValidators.maxLength(20, errorText: S.of(context).max_length_20),
             ]),
           ),
         );
@@ -232,43 +189,23 @@ class LoginScreen extends StatelessWidget {
                   textInputAction: TextInputAction.done,
                   onSubmitted: (value) {
                     if (_loginFormKey.currentState!.saveAndValidate()) {
-                      final username =
-                          _loginFormKey.currentState!.value['username'];
-                      final password =
-                          _loginFormKey.currentState!.value['password'];
-                      _submitEvent(
-                        context,
-                        username: username,
-                        password: password,
-                      );
+                      final username = _loginFormKey.currentState!.value['username'];
+                      final password = _loginFormKey.currentState!.value['password'];
+                      _submitEvent(context, username: username, password: password);
                     }
                   },
                   obscureText: !state.passwordVisible,
                   validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(
-                      errorText: S.of(context).required_field,
-                    ),
-                    FormBuilderValidators.minLength(
-                      4,
-                      errorText: S.of(context).password_min_length,
-                    ),
-                    FormBuilderValidators.maxLength(
-                      20,
-                      errorText: S.of(context).password_max_length,
-                    ),
+                    FormBuilderValidators.required(errorText: S.of(context).required_field),
+                    FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
+                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
                   ]),
                 ),
               ),
               IconButton(
                 key: loginButtonPasswordVisibilityKey,
-                icon: Icon(
-                  state.passwordVisible
-                      ? Icons.visibility
-                      : Icons.visibility_off,
-                ),
-                onPressed: () => context.read<LoginBloc>().add(
-                  const TogglePasswordVisibility(),
-                ),
+                icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
+                onPressed: () => context.read<LoginBloc>().add(const TogglePasswordVisibility()),
               ),
             ],
           ),
@@ -280,9 +217,7 @@ class LoginScreen extends StatelessWidget {
   _submitButton(BuildContext context) {
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
-        debugPrint(
-          "BEGIN: login submit button listener username${state.username}",
-        );
+        debugPrint("BEGIN: login submit button listener username${state.username}");
 
         if (state is LoginLoadingState) {
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
@@ -296,9 +231,7 @@ class LoginScreen extends StatelessWidget {
         } else if (state is LoginLoadedState) {
           debugPrint("BEGIN: login submit button listener LoginLoadedState");
           AppRouter().push(context, ApplicationRoutesConstants.home);
-          ScaffoldMessenger.of(
-            _scaffoldKey.currentContext!,
-          ).hideCurrentSnackBar();
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
@@ -310,9 +243,7 @@ class LoginScreen extends StatelessWidget {
           debugPrint("END: login submit button listener LoginLoadedState");
         } else if (state is LoginErrorState) {
           debugPrint("BEGIN: login submit button listener LoginErrorState");
-          ScaffoldMessenger.of(
-            _scaffoldKey.currentContext!,
-          ).hideCurrentSnackBar();
+          ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
           ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
@@ -340,24 +271,15 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  void _submitEvent(
-    BuildContext context, {
-    required String username,
-    required String password,
-  }) {
-    context.read<LoginBloc>().add(
-      LoginFormSubmitted(username: username, password: password),
-    );
+  void _submitEvent(BuildContext context, {required String username, required String password}) {
+    context.read<LoginBloc>().add(LoginFormSubmitted(username: username, password: password));
   }
 
   _forgotPasswordLink(BuildContext context) {
     return SizedBox(
       child: TextButton(
         key: loginButtonForgotPasswordKey,
-        onPressed: () => AppRouter().push(
-          context,
-          ApplicationRoutesConstants.forgotPassword,
-        ),
+        onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.forgotPassword),
         child: Text(S.of(context).password_forgot),
       ),
     );
@@ -367,8 +289,7 @@ class LoginScreen extends StatelessWidget {
     return SizedBox(
       child: TextButton(
         key: loginButtonRegisterKey,
-        onPressed: () =>
-            AppRouter().push(context, ApplicationRoutesConstants.register),
+        onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.register),
         child: Text(S.of(context).register),
       ),
     );
@@ -398,8 +319,7 @@ class LoginScreen extends StatelessWidget {
 Widget _otpLoginButton(BuildContext context) {
   return TextButton(
     key: const Key('loginButtonOtpKey'),
-    onPressed: () =>
-        AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
+    onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
     child: Text(S.of(context).login_with_email),
   );
 }
@@ -418,8 +338,7 @@ class OtpEmailScreen extends StatelessWidget {
         title: Text(S.of(context).login_with_email),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () =>
-              AppRouter().push(context, ApplicationRoutesConstants.login),
+          onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.login),
         ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
@@ -429,26 +348,14 @@ class OtpEmailScreen extends StatelessWidget {
             previous.email != current.email,
         listener: (context, state) {
           debugPrint("BEGIN: otp email screen listener state: ${state.props}");
-          if (state.status == LoginStatus.success &&
-              state.isOtpSent == true &&
-              state.email != null) {
-            debugPrint(
-              "Navigating to verify screen with email: ${state.email}",
-            );
-            AppRouter().push(
-              context,
-              '${ApplicationRoutesConstants.loginOtpVerify}/${state.email}',
-            );
+          if (state.status == LoginStatus.success && state.isOtpSent == true && state.email != null) {
+            debugPrint("Navigating to verify screen with email: ${state.email}");
+            AppRouter().push(context, '${ApplicationRoutesConstants.loginOtpVerify}/${state.email}');
           } else if (state.status == LoginStatus.failure) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(S.of(context).failed)));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).failed)));
           }
         },
-        child: ResponsiveFormBuilder(
-          formKey: _formKey,
-          children: [_emailField(context), _submitButton(context)],
-        ),
+        child: ResponsiveFormBuilder(formKey: _formKey, children: [_emailField(context), _submitButton(context)]),
       ),
     );
   }
@@ -456,10 +363,7 @@ class OtpEmailScreen extends StatelessWidget {
   Widget _emailField(BuildContext context) {
     return FormBuilderTextField(
       name: 'email',
-      decoration: InputDecoration(
-        labelText: S.of(context).email,
-        prefixIcon: const Icon(Icons.email),
-      ),
+      decoration: InputDecoration(labelText: S.of(context).email, prefixIcon: const Icon(Icons.email)),
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
         FormBuilderValidators.email(errorText: S.of(context).invalid_email),
@@ -471,9 +375,7 @@ class OtpEmailScreen extends StatelessWidget {
     return BlocBuilder<LoginBloc, LoginState>(
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
-        debugPrint(
-          "BEGIN: otp email screen submit button builder state: $state",
-        );
+        debugPrint("BEGIN: otp email screen submit button builder state: $state");
         return ResponsiveSubmitButton(
           buttonText: S.of(context).send_otp_code,
           isLoading: state.status == LoginStatus.loading,
@@ -504,8 +406,7 @@ class OtpVerifyScreen extends StatelessWidget {
         title: Text(S.of(context).verify_otp_code),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () =>
-              AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
+          onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
         ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
@@ -534,10 +435,7 @@ class OtpVerifyScreen extends StatelessWidget {
   Widget _otpField(BuildContext context) {
     return FormBuilderTextField(
       name: 'otpCode',
-      decoration: InputDecoration(
-        labelText: S.of(context).otp_code,
-        prefixIcon: const Icon(Icons.lock_clock),
-      ),
+      decoration: InputDecoration(labelText: S.of(context).otp_code, prefixIcon: const Icon(Icons.lock_clock)),
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
         FormBuilderValidators.numeric(errorText: S.of(context).only_numbers),
@@ -549,9 +447,7 @@ class OtpVerifyScreen extends StatelessWidget {
 
   Widget _submitButton(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) =>
-          previous.status != current.status &&
-          current.loginMethod == LoginMethod.otp,
+      buildWhen: (previous, current) => previous.status != current.status && current.loginMethod == LoginMethod.otp,
       builder: (context, state) {
         return ResponsiveSubmitButton(
           buttonText: S.of(context).verify_otp_code,
@@ -559,9 +455,7 @@ class OtpVerifyScreen extends StatelessWidget {
           onPressed: () {
             if (_formKey.currentState?.saveAndValidate() ?? false) {
               final otpCode = _formKey.currentState!.value['otpCode'] as String;
-              context.read<LoginBloc>().add(
-                VerifyOtpSubmitted(email: email, otpCode: otpCode),
-              );
+              context.read<LoginBloc>().add(VerifyOtpSubmitted(email: email, otpCode: otpCode));
             }
           },
         );
@@ -571,8 +465,7 @@ class OtpVerifyScreen extends StatelessWidget {
 
   Widget _resendButton(BuildContext context) {
     return TextButton(
-      onPressed: () =>
-          context.read<LoginBloc>().add(SendOtpRequested(email: email)),
+      onPressed: () => context.read<LoginBloc>().add(SendOtpRequested(email: email)),
       child: Text(S.of(context).resend_otp_code),
     );
   }

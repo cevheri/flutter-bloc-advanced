@@ -28,9 +28,7 @@ void main() {
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
 
-      final AdaptiveTheme adaptiveTheme = tester.widget(
-        find.byType(AdaptiveTheme),
-      );
+      final AdaptiveTheme adaptiveTheme = tester.widget(find.byType(AdaptiveTheme));
       expect(adaptiveTheme.initial, equals(AdaptiveThemeMode.light));
 
       // Test dark theme
@@ -42,23 +40,18 @@ void main() {
       expect(darkTheme.initial, equals(AdaptiveThemeMode.dark));
     });
 
-    testWidgets('App should handle different languages', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('App should handle different languages', (WidgetTester tester) async {
       TestUtils().setupAuthentication();
       app = const App(language: 'en', initialTheme: AdaptiveThemeMode.light);
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
 
       const expectedLocale = Locale('en');
-      final materialApp =
-          tester.widget(find.byType(MaterialApp)) as MaterialApp;
+      final materialApp = tester.widget(find.byType(MaterialApp)) as MaterialApp;
       expect(materialApp.locale, equals(expectedLocale));
     });
 
-    testWidgets('MultiBlocProvider should contain all required providers', (
-      WidgetTester tester,
-    ) async {
+    testWidgets('MultiBlocProvider should contain all required providers', (WidgetTester tester) async {
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
       expect(find.byType(MultiBlocProvider), findsOneWidget);

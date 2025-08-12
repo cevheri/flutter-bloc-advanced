@@ -14,10 +14,7 @@ class CityState extends Equatable {
   const CityState({this.cities, this.status = CityStatus.initial});
 
   CityState copyWith({List<City?>? cities, CityStatus? status}) {
-    return CityState(
-      status: status ?? this.status,
-      cities: cities ?? this.cities,
-    );
+    return CityState(status: status ?? this.status, cities: cities ?? this.cities);
   }
 
   @override
@@ -36,15 +33,13 @@ class CityLoadingState extends CityState {
 }
 
 class CityLoadSuccessState extends CityState {
-  const CityLoadSuccessState({required List<City?> cities})
-    : super(cities: cities, status: CityStatus.success);
+  const CityLoadSuccessState({required List<City?> cities}) : super(cities: cities, status: CityStatus.success);
 }
 
 class CityLoadFailureState extends CityState {
   final String message;
 
-  const CityLoadFailureState({required this.message})
-    : super(status: CityStatus.failure);
+  const CityLoadFailureState({required this.message}) : super(status: CityStatus.failure);
 
   @override
   List<Object> get props => [status, message];

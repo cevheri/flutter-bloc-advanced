@@ -9,10 +9,7 @@ class RegisterState extends Equatable {
   const RegisterState({this.data, this.status = RegisterStatus.initial});
 
   RegisterState copyWith({User? data, RegisterStatus? status}) {
-    return RegisterState(
-      data: data ?? this.data,
-      status: status ?? this.status,
-    );
+    return RegisterState(data: data ?? this.data, status: status ?? this.status);
   }
 
   @override
@@ -31,13 +28,11 @@ class RegisterLoadingState extends RegisterState {
 }
 
 class RegisterCompletedState extends RegisterState {
-  const RegisterCompletedState({required User user})
-    : super(data: user, status: RegisterStatus.success);
+  const RegisterCompletedState({required User user}) : super(data: user, status: RegisterStatus.success);
 }
 
 class RegisterErrorState extends RegisterState {
   final String message;
 
-  const RegisterErrorState({required this.message})
-    : super(status: RegisterStatus.error);
+  const RegisterErrorState({required this.message}) : super(status: RegisterStatus.error);
 }

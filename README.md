@@ -157,7 +157,7 @@ dart analyze --fix
 
 * format
 ```shell
-dart format .
+dart format . --line-length=120
 ```
 
 ---

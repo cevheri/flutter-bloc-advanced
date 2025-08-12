@@ -6,7 +6,5 @@ class LanguageNotifier {
   LanguageNotifier._();
 
   /// Current language code notifier (e.g., 'en', 'tr').
-  static final ValueNotifier<String> current = ValueNotifier<String>(
-    AppLocalStorageCached.language ?? 'en',
-  );
+  static final ValueNotifier<String> current = ValueNotifier<String>(AppLocalStorageCached.language ?? 'en');
 }

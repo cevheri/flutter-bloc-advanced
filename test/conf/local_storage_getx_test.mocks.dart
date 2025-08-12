@@ -28,19 +28,15 @@ import 'package:mockito/src/dummies.dart' as _i6;
 // ignore_for_file: subtype_of_sealed_class
 
 class _FakeMicrotask_0 extends _i1.SmartFake implements _i2.Microtask {
-  _FakeMicrotask_0(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeMicrotask_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 class _FakeGetQueue_1 extends _i1.SmartFake implements _i3.GetQueue {
-  _FakeGetQueue_1(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+  _FakeGetQueue_1(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
-class _FakeValueStorage_2<T> extends _i1.SmartFake
-    implements _i4.ValueStorage<T> {
-  _FakeValueStorage_2(Object parent, Invocation parentInvocation)
-    : super(parent, parentInvocation);
+class _FakeValueStorage_2<T> extends _i1.SmartFake implements _i4.ValueStorage<T> {
+  _FakeValueStorage_2(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
 }
 
 /// A class which mocks [GetStorage].
@@ -61,63 +57,42 @@ class MockGetStorage extends _i1.Mock implements _i2.GetStorage {
 
   @override
   _i3.GetQueue get queue =>
-      (super.noSuchMethod(
-            Invocation.getter(#queue),
-            returnValue: _FakeGetQueue_1(this, Invocation.getter(#queue)),
-          )
+      (super.noSuchMethod(Invocation.getter(#queue), returnValue: _FakeGetQueue_1(this, Invocation.getter(#queue)))
           as _i3.GetQueue);
 
   @override
-  set queue(_i3.GetQueue? _queue) => super.noSuchMethod(
-    Invocation.setter(#queue, _queue),
-    returnValueForMissingStub: null,
-  );
+  set queue(_i3.GetQueue? _queue) =>
+      super.noSuchMethod(Invocation.setter(#queue, _queue), returnValueForMissingStub: null);
 
   @override
   _i5.Future<bool> get initStorage =>
-      (super.noSuchMethod(
-            Invocation.getter(#initStorage),
-            returnValue: _i5.Future<bool>.value(false),
-          )
+      (super.noSuchMethod(Invocation.getter(#initStorage), returnValue: _i5.Future<bool>.value(false))
           as _i5.Future<bool>);
 
   @override
-  set initStorage(_i5.Future<bool>? _initStorage) => super.noSuchMethod(
-    Invocation.setter(#initStorage, _initStorage),
-    returnValueForMissingStub: null,
-  );
+  set initStorage(_i5.Future<bool>? _initStorage) =>
+      super.noSuchMethod(Invocation.setter(#initStorage, _initStorage), returnValueForMissingStub: null);
 
   @override
   Map<String, dynamic> get changes =>
-      (super.noSuchMethod(
-            Invocation.getter(#changes),
-            returnValue: <String, dynamic>{},
-          )
-          as Map<String, dynamic>);
+      (super.noSuchMethod(Invocation.getter(#changes), returnValue: <String, dynamic>{}) as Map<String, dynamic>);
 
   @override
   _i4.ValueStorage<Map<String, dynamic>> get listenable =>
       (super.noSuchMethod(
             Invocation.getter(#listenable),
-            returnValue: _FakeValueStorage_2<Map<String, dynamic>>(
-              this,
-              Invocation.getter(#listenable),
-            ),
+            returnValue: _FakeValueStorage_2<Map<String, dynamic>>(this, Invocation.getter(#listenable)),
           )
           as _i4.ValueStorage<Map<String, dynamic>>);
 
   @override
-  T? read<T>(String? key) =>
-      (super.noSuchMethod(Invocation.method(#read, [key])) as T?);
+  T? read<T>(String? key) => (super.noSuchMethod(Invocation.method(#read, [key])) as T?);
 
   @override
   T getKeys<T>() =>
       (super.noSuchMethod(
             Invocation.method(#getKeys, []),
-            returnValue: _i6.dummyValue<T>(
-              this,
-              Invocation.method(#getKeys, []),
-            ),
+            returnValue: _i6.dummyValue<T>(this, Invocation.method(#getKeys, [])),
           )
           as T);
 
@@ -125,36 +100,20 @@ class MockGetStorage extends _i1.Mock implements _i2.GetStorage {
   T getValues<T>() =>
       (super.noSuchMethod(
             Invocation.method(#getValues, []),
-            returnValue: _i6.dummyValue<T>(
-              this,
-              Invocation.method(#getValues, []),
-            ),
+            returnValue: _i6.dummyValue<T>(this, Invocation.method(#getValues, [])),
           )
           as T);
 
   @override
-  bool hasData(String? key) =>
-      (super.noSuchMethod(
-            Invocation.method(#hasData, [key]),
-            returnValue: false,
-          )
-          as bool);
+  bool hasData(String? key) => (super.noSuchMethod(Invocation.method(#hasData, [key]), returnValue: false) as bool);
 
   @override
   _i7.VoidCallback listen(_i7.VoidCallback? value) =>
-      (super.noSuchMethod(
-            Invocation.method(#listen, [value]),
-            returnValue: () {},
-          )
-          as _i7.VoidCallback);
+      (super.noSuchMethod(Invocation.method(#listen, [value]), returnValue: () {}) as _i7.VoidCallback);
 
   @override
   _i7.VoidCallback listenKey(String? key, _i8.ValueSetter<dynamic>? callback) =>
-      (super.noSuchMethod(
-            Invocation.method(#listenKey, [key, callback]),
-            returnValue: () {},
-          )
-          as _i7.VoidCallback);
+      (super.noSuchMethod(Invocation.method(#listenKey, [key, callback]), returnValue: () {}) as _i7.VoidCallback);
 
   @override
   _i5.Future<void> write(String? key, dynamic value) =>
@@ -166,10 +125,8 @@ class MockGetStorage extends _i1.Mock implements _i2.GetStorage {
           as _i5.Future<void>);
 
   @override
-  void writeInMemory(String? key, dynamic value) => super.noSuchMethod(
-    Invocation.method(#writeInMemory, [key, value]),
-    returnValueForMissingStub: null,
-  );
+  void writeInMemory(String? key, dynamic value) =>
+      super.noSuchMethod(Invocation.method(#writeInMemory, [key, value]), returnValueForMissingStub: null);
 
   @override
   _i5.Future<void> writeIfNull(String? key, dynamic value) =>

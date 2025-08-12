@@ -36,15 +36,11 @@ class UserRoutes {
     _authorityRepository = null;
   }
 
-  static UserRepository get userRepository =>
-      _userRepository ?? UserRepository();
-  static UserBloc get userBloc =>
-      _userBloc ?? UserBloc(repository: userRepository);
+  static UserRepository get userRepository => _userRepository ?? UserRepository();
+  static UserBloc get userBloc => _userBloc ?? UserBloc(repository: userRepository);
 
-  static AuthorityRepository get authorityRepository =>
-      _authorityRepository ?? AuthorityRepository();
-  static AuthorityBloc get authorityBloc =>
-      _authorityBloc ?? AuthorityBloc(repository: authorityRepository);
+  static AuthorityRepository get authorityRepository => _authorityRepository ?? AuthorityRepository();
+  static AuthorityBloc get authorityBloc => _authorityBloc ?? AuthorityBloc(repository: authorityRepository);
 
   static Widget _blocProvider(Widget child) {
     return BlocProvider.value(value: userBloc, child: child);
@@ -54,8 +50,7 @@ class UserRoutes {
     GoRoute(
       name: 'userList',
       path: '/user',
-      builder: (BuildContext context, GoRouterState state) =>
-          _blocProvider(ListUserScreen()),
+      builder: (BuildContext context, GoRouterState state) => _blocProvider(ListUserScreen()),
     ),
     GoRoute(
       name: 'userCreate',
@@ -66,22 +61,14 @@ class UserRoutes {
     GoRoute(
       name: 'userEdit',
       path: '/user/:id/edit',
-      builder: (BuildContext context, GoRouterState state) => _blocProvider(
-        UserEditorScreen(
-          id: state.pathParameters['id']!,
-          mode: EditorFormMode.edit,
-        ),
-      ),
+      builder: (BuildContext context, GoRouterState state) =>
+          _blocProvider(UserEditorScreen(id: state.pathParameters['id']!, mode: EditorFormMode.edit)),
     ),
     GoRoute(
       name: 'userView',
       path: '/user/:id/view',
-      builder: (BuildContext context, GoRouterState state) => _blocProvider(
-        UserEditorScreen(
-          id: state.pathParameters['id']!,
-          mode: EditorFormMode.view,
-        ),
-      ),
+      builder: (BuildContext context, GoRouterState state) =>
+          _blocProvider(UserEditorScreen(id: state.pathParameters['id']!, mode: EditorFormMode.view)),
     ),
   ];
 }

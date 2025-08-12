@@ -37,18 +37,11 @@ void main() {
   //region state
   /// Register State Tests
   group("RegisterState", () {
-    const user = User(
-      firstName: "test",
-      lastName: "test",
-      email: "test@test.com",
-    );
+    const user = User(firstName: "test", lastName: "test", email: "test@test.com");
     const status = RegisterStatus.initial;
 
     test("supports value comparisons", () {
-      expect(
-        const RegisterState(data: user, status: status),
-        const RegisterState(data: user, status: status),
-      );
+      expect(const RegisterState(data: user, status: status), const RegisterState(data: user, status: status));
     });
 
     test("RegisterInitialState", () {
@@ -60,29 +53,17 @@ void main() {
     });
 
     test("RegisterCompletedState", () {
-      expect(
-        const RegisterCompletedState(user: user),
-        const RegisterCompletedState(user: user),
-      );
+      expect(const RegisterCompletedState(user: user), const RegisterCompletedState(user: user));
     });
 
     test("RegisterErrorState", () {
-      expect(
-        const RegisterErrorState(message: "Register Error"),
-        const RegisterErrorState(message: "Register Error"),
-      );
+      expect(const RegisterErrorState(message: "Register Error"), const RegisterErrorState(message: "Register Error"));
     });
 
     test("RegisterState copyWith", () {
       expect(const RegisterState().copyWith(), const RegisterState());
-      expect(
-        const RegisterState().copyWith(data: user),
-        const RegisterState(data: user),
-      );
-      expect(
-        const RegisterState().copyWith(status: status),
-        const RegisterState(status: status),
-      );
+      expect(const RegisterState().copyWith(data: user), const RegisterState(data: user));
+      expect(const RegisterState().copyWith(status: status), const RegisterState(status: status));
     });
   });
   //endregion state
@@ -90,11 +71,7 @@ void main() {
   //region event
   /// Register Event Tests
   group("RegisterEvent", () {
-    const user = User(
-      firstName: "test",
-      lastName: "test",
-      email: "test@test.com",
-    );
+    const user = User(firstName: "test", lastName: "test", email: "test@test.com");
 
     test("RegisterFormSubmitted", () {
       expect(const RegisterFormSubmitted(data: user).props, [user]);
@@ -111,11 +88,7 @@ void main() {
     });
 
     group("LoginFormSubmitted", () {
-      const input = User(
-        firstName: "test",
-        lastName: "test",
-        email: "test@test.com",
-      );
+      const input = User(firstName: "test", lastName: "test", email: "test@test.com");
       method() => repository.register(input);
       Future<User?> output = Future<User?>.value(input);
 

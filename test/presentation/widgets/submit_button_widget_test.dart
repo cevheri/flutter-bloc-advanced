@@ -5,23 +5,15 @@ import 'package:flutter_bloc_advance/presentation/screen/components/submit_butto
 void main() {
   group('ResponsiveSubmitButton Widget Tests', () {
     testWidgets('should render with default props', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton())),
-      );
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton())));
 
       expect(find.byType(FilledButton), findsOneWidget);
       expect(find.text('Save'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
-    testWidgets('should show loading indicator when isLoading is true', (
-      tester,
-    ) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ResponsiveSubmitButton(isLoading: true)),
-        ),
-      );
+    testWidgets('should show loading indicator when isLoading is true', (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton(isLoading: true))));
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.text('Save'), findsOneWidget);
@@ -36,9 +28,7 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: ResponsiveSubmitButton(onPressed: () => wasPressed = true),
-          ),
+          home: Scaffold(body: ResponsiveSubmitButton(onPressed: () => wasPressed = true)),
         ),
       );
 
@@ -61,16 +51,9 @@ void main() {
     });
 
     testWidgets('should align right on web platform', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ResponsiveSubmitButton(isWebPlatform: true)),
-        ),
-      );
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton(isWebPlatform: true))));
 
-      final alignFinder = find.ancestor(
-        of: find.byType(FilledButton),
-        matching: find.byType(Align),
-      );
+      final alignFinder = find.ancestor(of: find.byType(FilledButton), matching: find.byType(Align));
 
       expect(alignFinder, findsOneWidget);
       final align = tester.widget<Align>(alignFinder);
@@ -78,17 +61,10 @@ void main() {
     });
 
     testWidgets('should not align on mobile platform', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: ResponsiveSubmitButton(isWebPlatform: false)),
-        ),
-      );
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton(isWebPlatform: false))));
 
       // FilledButton'ı içeren Align widget'ını kontrol et
-      final alignFinder = find.ancestor(
-        of: find.byType(FilledButton),
-        matching: find.byType(Align),
-      );
+      final alignFinder = find.ancestor(of: find.byType(FilledButton), matching: find.byType(Align));
 
       expect(alignFinder, findsNothing);
     });
@@ -107,9 +83,7 @@ void main() {
       expect(find.text(testText), findsOneWidget);
     });
 
-    testWidgets('should show loading indicator when isLoading is true', (
-      tester,
-    ) async {
+    testWidgets('should show loading indicator when isLoading is true', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(body: ButtonContent(text: 'Test', isLoading: true)),
@@ -119,30 +93,17 @@ void main() {
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
     });
 
-    testWidgets('should use theme colors for loading indicator', (
-      tester,
-    ) async {
+    testWidgets('should use theme colors for loading indicator', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          theme: ThemeData(
-            colorScheme: const ColorScheme.light().copyWith(
-              onPrimary: Colors.red,
-            ),
-          ),
-          home: const Scaffold(
-            body: ButtonContent(text: 'Test', isLoading: true),
-          ),
+          theme: ThemeData(colorScheme: const ColorScheme.light().copyWith(onPrimary: Colors.red)),
+          home: const Scaffold(body: ButtonContent(text: 'Test', isLoading: true)),
         ),
       );
 
-      final progressIndicator = tester.widget<CircularProgressIndicator>(
-        find.byType(CircularProgressIndicator),
-      );
+      final progressIndicator = tester.widget<CircularProgressIndicator>(find.byType(CircularProgressIndicator));
 
-      expect(
-        (progressIndicator.valueColor as AlwaysStoppedAnimation<Color>).value,
-        Colors.red,
-      );
+      expect((progressIndicator.valueColor as AlwaysStoppedAnimation<Color>).value, Colors.red);
     });
   });
 }

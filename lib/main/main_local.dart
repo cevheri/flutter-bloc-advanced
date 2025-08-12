@@ -34,9 +34,7 @@ void main() async {
 
   WidgetsFlutterBinding.ensureInitialized();
   const initialTheme = AdaptiveThemeMode.system;
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((
-    _,
-  ) {
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
     runApp(const App(language: defaultLanguage, initialTheme: initialTheme));
   });
 
@@ -44,8 +42,5 @@ void main() async {
   final defaultThemeName = initialTheme.name;
   await AppLocalStorage().save(StorageKeys.theme.name, defaultThemeName);
 
-  log.info("Started App with local environment language: {} and theme: {}", [
-    defaultLanguage,
-    defaultThemeName,
-  ]);
+  log.info("Started App with local environment language: {} and theme: {}", [defaultLanguage, defaultThemeName]);
 }

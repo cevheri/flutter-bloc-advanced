@@ -29,9 +29,7 @@ class LoginRepository {
   ///   --data-raw $'{"username":"admin","password":"admin","rememberMe":false}'
   /// ```
   Future<JWTToken?> authenticate(UserJWT userJWT) async {
-    _log.debug("BEGIN:authenticate repository start username: {}", [
-      userJWT.username,
-    ]);
+    _log.debug("BEGIN:authenticate repository start username: {}", [userJWT.username]);
     JWTToken? result;
     if (userJWT.username == null ||
         userJWT.username!.isEmpty ||
@@ -40,14 +38,9 @@ class LoginRepository {
       throw BadRequestException("Invalid username or password");
     }
 
-    final response = await HttpUtils.postRequest<UserJWT>(
-      "/authenticate",
-      userJWT,
-    );
+    final response = await HttpUtils.postRequest<UserJWT>("/authenticate", userJWT);
     result = JWTToken.fromJsonString(response.body);
-    _log.debug("END:authenticate successful - response.body: {}", [
-      result.toString(),
-    ]);
+    _log.debug("END:authenticate successful - response.body: {}", [result.toString()]);
     return result;
   }
 
@@ -63,11 +56,7 @@ class LoginRepository {
       throw BadRequestException("Invalid email");
     }
     final headers = {"Content-Type": "application/json"};
-    final response = await HttpUtils.postRequest<SendOtpRequest>(
-      "/authenticate/send-otp",
-      request,
-      headers: headers,
-    );
+    final response = await HttpUtils.postRequest<SendOtpRequest>("/authenticate/send-otp", request, headers: headers);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw BadRequestException(response.body);
     }

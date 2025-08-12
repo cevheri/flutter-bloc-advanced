@@ -6,9 +6,7 @@ abstract class AppException implements Exception {
   final String? _message;
   final String? _prefix;
 
-  AppException(String? message, String? prefix)
-    : _message = message,
-      _prefix = prefix {
+  AppException(String? message, String? prefix) : _message = message, _prefix = prefix {
     _log.error("$_prefix$_message");
   }
 
@@ -19,8 +17,7 @@ abstract class AppException implements Exception {
 }
 
 class FetchDataException extends AppException {
-  FetchDataException(String message)
-    : super(message, "Error During Communication: ");
+  FetchDataException(String message) : super(message, "Error During Communication: ");
 }
 
 final class BadRequestException extends AppException {
@@ -36,6 +33,5 @@ class InvalidInputException extends AppException {
 }
 
 class ApiBusinessException extends AppException {
-  ApiBusinessException(String message)
-    : super(message, "Api Business Exception: ");
+  ApiBusinessException(String message) : super(message, "Api Business Exception: ");
 }

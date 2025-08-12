@@ -14,10 +14,7 @@ void main() {
       expect(AppConstants.appVersion, AppConstants.appVersion);
     });
     test('appDescription should be', () {
-      expect(
-        AppConstants.appDescription,
-        'Flutter Template with BLOC and Clean Architecture',
-      );
+      expect(AppConstants.appDescription, 'Flutter Template with BLOC and Clean Architecture');
     });
     test('appAuthor should be sample.tech', () {
       expect(AppConstants.appAuthor, 'sample.tech');
@@ -52,14 +49,8 @@ void main() {
     });
 
     test('keeps selection position after formatting', () {
-      const oldValue = TextEditingValue(
-        text: 'hello',
-        selection: TextSelection.collapsed(offset: 5),
-      );
-      const newValue = TextEditingValue(
-        text: 'world',
-        selection: TextSelection.collapsed(offset: 5),
-      );
+      const oldValue = TextEditingValue(text: 'hello', selection: TextSelection.collapsed(offset: 5));
+      const newValue = TextEditingValue(text: 'world', selection: TextSelection.collapsed(offset: 5));
       final result = formatter.formatEditUpdate(oldValue, newValue);
       expect(result.selection, const TextSelection.collapsed(offset: 5));
     });

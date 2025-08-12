@@ -29,11 +29,7 @@ class DashboardPage extends StatelessWidget {
               const SizedBox(height: 16),
               const _KpiPlaceholder(),
               const SizedBox(height: 16),
-              _TwoColumns(
-                left: const _RecentActivityList(),
-                right: const _QuickActionsGrid(),
-                isWide: isWide,
-              ),
+              _TwoColumns(left: const _RecentActivityList(), right: const _QuickActionsGrid(), isWide: isWide),
             ],
           ),
         );
@@ -59,16 +55,9 @@ class _DashboardHeader extends StatelessWidget {
         children: [
           Icon(Icons.dashboard_outlined, color: color.primary),
           const SizedBox(width: 12),
-          Text(
-            S.of(context).dashboard,
-            style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-          ),
+          Text(S.of(context).dashboard, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
           const Spacer(),
-          IconButton(
-            tooltip: S.of(context).refresh,
-            icon: const Icon(Icons.refresh),
-            onPressed: () {},
-          ),
+          IconButton(tooltip: S.of(context).refresh, icon: const Icon(Icons.refresh), onPressed: () {}),
         ],
       ),
     );
@@ -90,10 +79,7 @@ class _SummaryCardsRow extends StatelessWidget {
     if (isWide) {
       return Row(
         children: [
-          for (final child in children) ...[
-            Expanded(child: child),
-            const SizedBox(width: 12),
-          ],
+          for (final child in children) ...[Expanded(child: child), const SizedBox(width: 12)],
         ]..removeLast(),
       );
     }
@@ -109,11 +95,7 @@ class _SummaryCard extends StatelessWidget {
   final String label;
   final String value;
   final int trend;
-  const _SummaryCard({
-    required this.label,
-    required this.value,
-    required this.trend,
-  });
+  const _SummaryCard({required this.label, required this.value, required this.trend});
 
   @override
   Widget build(BuildContext context) {
@@ -142,12 +124,7 @@ class _SummaryCard extends StatelessWidget {
               children: [
                 Text(label, style: textTheme.labelLarge),
                 const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
+                Text(value, style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
               ],
             ),
           ),
@@ -155,10 +132,7 @@ class _SummaryCard extends StatelessWidget {
             children: [
               Icon(icon, color: trendColor, size: 16),
               const SizedBox(width: 4),
-              Text(
-                '${trend.abs()}%',
-                style: textTheme.labelMedium?.copyWith(color: trendColor),
-              ),
+              Text('${trend.abs()}%', style: textTheme.labelMedium?.copyWith(color: trendColor)),
             ],
           ),
         ],
@@ -188,11 +162,7 @@ class _TwoColumns extends StatelessWidget {
   final Widget left;
   final Widget right;
   final bool isWide;
-  const _TwoColumns({
-    required this.left,
-    required this.right,
-    required this.isWide,
-  });
+  const _TwoColumns({required this.left, required this.right, required this.isWide});
 
   @override
   Widget build(BuildContext context) {
@@ -226,10 +196,7 @@ class _RecentActivityList extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            S.of(context).recent_activity,
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
+          Text(S.of(context).recent_activity, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
           ...List.generate(4, (i) => _ActivityTile(index: i)),
         ],
@@ -247,10 +214,7 @@ class _ActivityTile extends StatelessWidget {
     final color = Theme.of(context).colorScheme;
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      leading: CircleAvatar(
-        backgroundColor: color.secondaryContainer,
-        child: Text('${index + 1}'),
-      ),
+      leading: CircleAvatar(backgroundColor: color.secondaryContainer, child: Text('${index + 1}')),
       title: Text(S.of(context).sample_activity_item),
       subtitle: Text(S.of(context).subtitle_context),
       trailing: Text(S.of(context).just_now),
@@ -267,22 +231,13 @@ class _QuickActionsGrid extends StatelessWidget {
     final state = context.watch<DashboardCubit>().state;
     final s = S.of(context);
 
-    final List<DashboardQuickAction> actions =
-        state.status == DashboardStatus.loaded
+    final List<DashboardQuickAction> actions = state.status == DashboardStatus.loaded
         ? state.model!.quickActions
         : [
-            DashboardQuickAction(
-              id: 'qa1',
-              label: s.new_lead,
-              icon: 'person_add',
-            ),
+            DashboardQuickAction(id: 'qa1', label: s.new_lead, icon: 'person_add'),
             DashboardQuickAction(id: 'qa2', label: s.add_task, icon: 'task'),
             DashboardQuickAction(id: 'qa3', label: s.new_deal, icon: 'wallet'),
-            DashboardQuickAction(
-              id: 'qa4',
-              label: s.send_email_action,
-              icon: 'email',
-            ),
+            DashboardQuickAction(id: 'qa4', label: s.send_email_action, icon: 'email'),
           ];
 
     return Container(
@@ -295,19 +250,9 @@ class _QuickActionsGrid extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            S.of(context).quick_actions,
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
+          Text(S.of(context).quick_actions, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: actions
-                .take(6)
-                .map((a) => _ActionButton(action: a))
-                .toList(),
-          ),
+          Wrap(spacing: 8, runSpacing: 8, children: actions.take(6).map((a) => _ActionButton(action: a)).toList()),
           if (actions.length > 6) ...[
             const SizedBox(height: 8),
             Align(
@@ -324,10 +269,7 @@ class _QuickActionsGrid extends StatelessWidget {
     );
   }
 
-  void _showAllActions(
-    BuildContext context,
-    List<DashboardQuickAction> actions,
-  ) {
+  void _showAllActions(BuildContext context, List<DashboardQuickAction> actions) {
     showModalBottomSheet(
       context: context,
       showDragHandle: true,
@@ -355,9 +297,7 @@ class _QuickActionsGrid extends StatelessWidget {
   }
 
   void _onActionTap(BuildContext context, DashboardQuickAction action) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
   }
 }
 
@@ -375,8 +315,6 @@ class _ActionButton extends StatelessWidget {
   }
 
   void _onTap(BuildContext context) {
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
   }
 }

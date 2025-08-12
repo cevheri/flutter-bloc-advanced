@@ -50,16 +50,7 @@ class LoginState extends Equatable {
   bool get stringify => true;
 
   @override
-  List<Object?> get props => [
-    username,
-    password,
-    status,
-    passwordVisible,
-    email,
-    otpCode,
-    isOtpSent,
-    loginMethod,
-  ];
+  List<Object?> get props => [username, password, status, passwordVisible, email, otpCode, isOtpSent, loginMethod];
 }
 
 class LoginInitialState extends LoginState {
@@ -67,32 +58,28 @@ class LoginInitialState extends LoginState {
 }
 
 class LoginLoadingState extends LoginState {
-  const LoginLoadingState({super.username, super.password})
-    : super(status: LoginStatus.loading);
+  const LoginLoadingState({super.username, super.password}) : super(status: LoginStatus.loading);
 
   @override
   List<Object?> get props => [username, password, status];
 }
 
 class LoginLoadedState extends LoginState {
-  const LoginLoadedState({super.username, super.password})
-    : super(status: LoginStatus.success);
+  const LoginLoadedState({super.username, super.password}) : super(status: LoginStatus.success);
 
   @override
   List<Object?> get props => [username, password, status];
 }
 
 class LoginOtpSentState extends LoginState {
-  const LoginOtpSentState({super.email})
-    : super(status: LoginStatus.success, isOtpSent: true);
+  const LoginOtpSentState({super.email}) : super(status: LoginStatus.success, isOtpSent: true);
 
   @override
   List<Object?> get props => [email, status];
 }
 
 class LoginOtpVerifiedState extends LoginState {
-  const LoginOtpVerifiedState({super.email, super.otpCode})
-    : super(status: LoginStatus.success);
+  const LoginOtpVerifiedState({super.email, super.otpCode}) : super(status: LoginStatus.success);
 
   @override
   List<Object?> get props => [email, otpCode, status];
@@ -101,8 +88,7 @@ class LoginOtpVerifiedState extends LoginState {
 class LoginErrorState extends LoginState {
   final String message;
 
-  const LoginErrorState({required this.message})
-    : super(status: LoginStatus.failure);
+  const LoginErrorState({required this.message}) : super(status: LoginStatus.failure);
 
   @override
   List<Object?> get props => [message];

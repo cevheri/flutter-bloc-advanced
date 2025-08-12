@@ -12,9 +12,7 @@ class MenuRepository {
     _log.debug("BEGIN:getMenus repository start");
     final json = await rootBundle.loadString('assets/mock/menus.json');
     final result = Menu.fromJsonStringList(json);
-    _log.debug("END:getMenus successful - response.body: {}", [
-      result.toString(),
-    ]);
+    _log.debug("END:getMenus successful - response.body: {}", [result.toString()]);
     return result;
   }
 }

@@ -31,17 +31,14 @@ void main() {
 
   group('DashboardCubit', () {
     test('initial state is initial', () {
-      final cubit = DashboardCubit(
-        repository: _FakeDashboardRepositorySuccess(),
-      );
+      final cubit = DashboardCubit(repository: _FakeDashboardRepositorySuccess());
       expect(cubit.state.status, DashboardStatus.initial);
       cubit.close();
     });
 
     blocTest<DashboardCubit, DashboardState>(
       'emits [loading, loaded] with model when fetch succeeds',
-      build: () =>
-          DashboardCubit(repository: _FakeDashboardRepositorySuccess()),
+      build: () => DashboardCubit(repository: _FakeDashboardRepositorySuccess()),
       act: (cubit) => cubit.load(),
       expect: () => [
         const DashboardState.loading(),
@@ -53,16 +50,11 @@ void main() {
 
     blocTest<DashboardCubit, DashboardState>(
       'emits [loading, error] when fetch fails',
-      build: () =>
-          DashboardCubit(repository: _FakeDashboardRepositoryFailure()),
+      build: () => DashboardCubit(repository: _FakeDashboardRepositoryFailure()),
       act: (cubit) => cubit.load(),
       expect: () => [
         const DashboardState.loading(),
-        isA<DashboardState>().having(
-          (s) => s.status,
-          'status',
-          DashboardStatus.error,
-        ),
+        isA<DashboardState>().having((s) => s.status, 'status', DashboardStatus.error),
       ],
     );
   });

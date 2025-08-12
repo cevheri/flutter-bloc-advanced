@@ -23,41 +23,29 @@ class DistrictBloc extends Bloc<DistrictEvent, DistrictState> {
     on<DistrictLoadByCity>(_onLoadByCity);
   }
 
-  FutureOr<void> _onLoad(
-    DistrictLoad event,
-    Emitter<DistrictState> emit,
-  ) async {
+  FutureOr<void> _onLoad(DistrictLoad event, Emitter<DistrictState> emit) async {
     _log.debug("BEGIN: getDistrict bloc: _onLoad");
     emit(const DistrictLoadingState());
     try {
       List<District?>? district = await _repository.list();
       emit(DistrictLoadSuccessState(districts: district));
-      _log.debug("END: getDistrict bloc: _onLoad success: {}", [
-        district.toString(),
-      ]);
+      _log.debug("END: getDistrict bloc: _onLoad success: {}", [district.toString()]);
     } catch (e) {
       emit(DistrictLoadFailureState(message: e.toString()));
       _log.error("END: getDistrict bloc: _onLoad error: {}", [e.toString()]);
     }
   }
 
-  FutureOr<void> _onLoadByCity(
-    DistrictLoadByCity event,
-    Emitter<DistrictState> emit,
-  ) async {
+  FutureOr<void> _onLoadByCity(DistrictLoadByCity event, Emitter<DistrictState> emit) async {
     _log.debug("BEGIN: getDistrict bloc: _onLoadByCity");
     emit(const DistrictLoadingState());
     try {
       List<District?>? district = await _repository.listByCity(event.cityId);
       emit(DistrictLoadSuccessState(districts: district));
-      _log.debug("END: getDistrict bloc: _onLoadByCity success: {}", [
-        district.toString(),
-      ]);
+      _log.debug("END: getDistrict bloc: _onLoadByCity success: {}", [district.toString()]);
     } catch (e) {
       emit(DistrictLoadFailureState(message: e.toString()));
-      _log.error("END: getDistrict bloc: _onLoadByCity error: {}", [
-        e.toString(),
-      ]);
+      _log.error("END: getDistrict bloc: _onLoadByCity error: {}", [e.toString()]);
     }
   }
 }

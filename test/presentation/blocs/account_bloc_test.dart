@@ -109,18 +109,13 @@ void main() {
       blocTest<AccountBloc, AccountState>(
         "emits [loading, success] when AccountLoad is added and getAccount succeeds",
         build: () {
-          when(
-            repository.getAccount(),
-          ).thenAnswer((_) async => mockUserFullPayload);
+          when(repository.getAccount()).thenAnswer((_) async => mockUserFullPayload);
           return bloc;
         },
         act: (bloc) => bloc.add(const AccountFetchEvent()),
         expect: () => [
           const AccountState(status: AccountStatus.loading),
-          AccountState(
-            data: mockUserFullPayload,
-            status: AccountStatus.success,
-          ),
+          AccountState(data: mockUserFullPayload, status: AccountStatus.success),
         ],
       );
 

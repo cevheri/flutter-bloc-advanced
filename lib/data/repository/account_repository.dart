@@ -28,10 +28,7 @@ class AccountRepository {
     }
     // when user is registered, it is a normal user
     newUser = newUser.copyWith(authorities: ["ROLE_USER"]);
-    final httpResponse = await HttpUtils.postRequest<User>(
-      "/register",
-      newUser,
-    );
+    final httpResponse = await HttpUtils.postRequest<User>("/register", newUser);
     var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
     var result = User.fromJsonString(response);
     _log.debug("END:register successful");
@@ -39,9 +36,7 @@ class AccountRepository {
   }
 
   Future<int> changePassword(PasswordChangeDTO? passwordChangeDTO) async {
-    _log.debug("BEGIN:changePassword repository start : {}", [
-      passwordChangeDTO.toString(),
-    ]);
+    _log.debug("BEGIN:changePassword repository start : {}", [passwordChangeDTO.toString()]);
     if (passwordChangeDTO == null) {
       throw BadRequestException("PasswordChangeDTO null");
     }
@@ -49,9 +44,7 @@ class AccountRepository {
         passwordChangeDTO.currentPassword!.isEmpty ||
         passwordChangeDTO.newPassword == null ||
         passwordChangeDTO.newPassword!.isEmpty) {
-      throw BadRequestException(
-        "PasswordChangeDTO currentPassword or newPassword null",
-      );
+      throw BadRequestException("PasswordChangeDTO currentPassword or newPassword null");
     }
     final httpResponse = await HttpUtils.postRequest<PasswordChangeDTO>(
       "/$_resource/change-password",
@@ -89,16 +82,10 @@ class AccountRepository {
     //   -H 'sec-fetch-site: same-origin' \
     //   -H 'user-agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36' \
     //   --data-raw 'cevheribozoglan@gmail.com'
-    HttpUtils.addCustomHttpHeader(
-      'Accept',
-      'application/json, text/plain, */*',
-    );
+    HttpUtils.addCustomHttpHeader('Accept', 'application/json, text/plain, */*');
     HttpUtils.addCustomHttpHeader('Content-Type', 'text/plain');
     // final body = {"email": mailAddress};
-    final httpResponse = await HttpUtils.postRequest<String>(
-      "/$_resource/reset-password/init",
-      mailAddress,
-    );
+    final httpResponse = await HttpUtils.postRequest<String>("/$_resource/reset-password/init", mailAddress);
     _log.debug("END:resetPassword successful");
     return httpResponse.statusCode;
   }
@@ -108,9 +95,7 @@ class AccountRepository {
     final httpResponse = await HttpUtils.getRequest("/$_resource");
     var response = HttpUtils.decodeUTF8(httpResponse.body.toString());
     var result = User.fromJsonString(response)!;
-    _log.debug("END:getAccount successful - response.body: {}", [
-      result.toString(),
-    ]);
+    _log.debug("END:getAccount successful - response.body: {}", [result.toString()]);
     return result;
   }
 
@@ -136,9 +121,7 @@ class AccountRepository {
       throw BadRequestException(userIdNotNull);
     }
     var result = await HttpUtils.deleteRequest("/$_resource/$id");
-    _log.debug("END:deleteAccount successful - response.status: {}", [
-      result.statusCode,
-    ]);
+    _log.debug("END:deleteAccount successful - response.status: {}", [result.statusCode]);
     return result.statusCode == 204;
   }
 }

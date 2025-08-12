@@ -33,13 +33,11 @@ void main() {
     // Set basic state for login bloc
     when(mockLoginBloc.state).thenReturn(const LoginState());
     mockGoRouter = GoRouter(
-      initialLocation:
-          "${ApplicationRoutesConstants.loginOtpVerify}/test@example.com",
+      initialLocation: "${ApplicationRoutesConstants.loginOtpVerify}/test@example.com",
       routes: [
         GoRoute(
           path: ApplicationRoutesConstants.loginOtp,
-          builder: (context, state) =>
-              BlocProvider.value(value: mockLoginBloc, child: OtpEmailScreen()),
+          builder: (context, state) => BlocProvider.value(value: mockLoginBloc, child: OtpEmailScreen()),
         ),
         GoRoute(
           path: '${ApplicationRoutesConstants.loginOtpVerify}/:email',
@@ -50,8 +48,7 @@ void main() {
         ),
         GoRoute(
           path: ApplicationRoutesConstants.login,
-          builder: (context, state) =>
-              BlocProvider.value(value: mockLoginBloc, child: LoginScreen()),
+          builder: (context, state) => BlocProvider.value(value: mockLoginBloc, child: LoginScreen()),
         ),
         GoRoute(
           path: ApplicationRoutesConstants.home,
@@ -64,16 +61,8 @@ void main() {
     );
 
     testWidget = AdaptiveTheme(
-      light: ThemeData(
-        useMaterial3: false,
-        brightness: Brightness.light,
-        colorSchemeSeed: Colors.blueGrey,
-      ),
-      dark: ThemeData(
-        useMaterial3: false,
-        brightness: Brightness.dark,
-        primarySwatch: Colors.blueGrey,
-      ),
+      light: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
+      dark: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
       initial: AdaptiveThemeMode.light,
       builder: (light, dark) => MultiBlocProvider(
         providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],
@@ -116,10 +105,7 @@ void main() {
 
       // THEN
       expect(find.byType(ResponsiveFormBuilder), findsOneWidget);
-      expect(
-        find.text("${S.current.otp_sent_to} test@example.com"),
-        findsOneWidget,
-      );
+      expect(find.text("${S.current.otp_sent_to} test@example.com"), findsOneWidget);
 
       expect(find.byType(FormBuilderTextField), findsOneWidget);
       expect(find.text(S.current.otp_code), findsOneWidget);
@@ -137,9 +123,7 @@ void main() {
 
   // otp text field validator
   group("OtpVerifyScreen form element otp text field validator", () {
-    testWidgets('should show error message when otp code is empty', (
-      tester,
-    ) async {
+    testWidgets('should show error message when otp code is empty', (tester) async {
       // GIVEN
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
@@ -154,9 +138,7 @@ void main() {
       expect(find.text(S.current.required_field), findsOneWidget);
     });
 
-    testWidgets('should show error message when otp code is not a number', (
-      tester,
-    ) async {
+    testWidgets('should show error message when otp code is not a number', (tester) async {
       // GIVEN
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
@@ -171,48 +153,40 @@ void main() {
       expect(find.text(S.current.only_numbers), findsOneWidget);
     });
 
-    testWidgets(
-      'should show error message when otp code is less than 6 characters',
-      (tester) async {
-        // GIVEN
-        await tester.pumpWidget(testWidget);
-        await tester.pumpAndSettle();
+    testWidgets('should show error message when otp code is less than 6 characters', (tester) async {
+      // GIVEN
+      await tester.pumpWidget(testWidget);
+      await tester.pumpAndSettle();
 
-        // WHEN
-        await tester.enterText(find.byType(FormBuilderTextField), '12345');
-        final submitButtonFinder = find.byType(ResponsiveSubmitButton);
-        await tester.tap(submitButtonFinder);
-        await tester.pumpAndSettle();
+      // WHEN
+      await tester.enterText(find.byType(FormBuilderTextField), '12345');
+      final submitButtonFinder = find.byType(ResponsiveSubmitButton);
+      await tester.tap(submitButtonFinder);
+      await tester.pumpAndSettle();
 
-        // THEN
-        expect(find.text(S.current.otp_length), findsOneWidget);
-      },
-    );
+      // THEN
+      expect(find.text(S.current.otp_length), findsOneWidget);
+    });
 
-    testWidgets(
-      'should show error message when otp code is more than 6 characters',
-      (tester) async {
-        // GIVEN
-        await tester.pumpWidget(testWidget);
-        await tester.pumpAndSettle();
+    testWidgets('should show error message when otp code is more than 6 characters', (tester) async {
+      // GIVEN
+      await tester.pumpWidget(testWidget);
+      await tester.pumpAndSettle();
 
-        // WHEN
-        await tester.enterText(find.byType(FormBuilderTextField), '1234567');
-        final submitButtonFinder = find.byType(ResponsiveSubmitButton);
-        await tester.tap(submitButtonFinder);
-        await tester.pumpAndSettle();
+      // WHEN
+      await tester.enterText(find.byType(FormBuilderTextField), '1234567');
+      final submitButtonFinder = find.byType(ResponsiveSubmitButton);
+      await tester.tap(submitButtonFinder);
+      await tester.pumpAndSettle();
 
-        // THEN
-        expect(find.text(S.current.otp_length), findsOneWidget);
-      },
-    );
+      // THEN
+      expect(find.text(S.current.otp_length), findsOneWidget);
+    });
   });
 
   //submit button test
   group("OtpVerifyScreen form element submit button", () {
-    testWidgets('should call LoginOtpVerify event when otp code is valid', (
-      tester,
-    ) async {
+    testWidgets('should call LoginOtpVerify event when otp code is valid', (tester) async {
       // GIVEN
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
@@ -224,20 +198,11 @@ void main() {
       await tester.pumpAndSettle();
 
       // THEN
-      verify(
-        mockLoginBloc.add(
-          const VerifyOtpSubmitted(
-            email: "test@example.com",
-            otpCode: "123456",
-          ),
-        ),
-      ).called(1);
+      verify(mockLoginBloc.add(const VerifyOtpSubmitted(email: "test@example.com", otpCode: "123456"))).called(1);
     });
 
     // success scenario
-    testWidgets('should call LoginOtpVerify event when otp code is valid', (
-      tester,
-    ) async {
+    testWidgets('should call LoginOtpVerify event when otp code is valid', (tester) async {
       TestUtils().setupUnitTest();
       final loginStateController = StreamController<LoginState>.broadcast();
       when(mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
@@ -266,40 +231,23 @@ void main() {
       await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
       await AppLocalStorage().save(StorageKeys.username.name, "mock");
       await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
-      loginStateController.add(
-        const LoginLoadedState(
-          username: "test@example.com",
-          password: "123456",
-        ),
-      );
+      loginStateController.add(const LoginLoadedState(username: "test@example.com", password: "123456"));
       await tester.pump();
 
       // THEN
       // home screen should be navigated
-      expect(
-        mockGoRouter.routerDelegate.currentConfiguration.uri.path,
-        ApplicationRoutesConstants.home,
-      );
+      expect(mockGoRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.home);
       expect(find.byType(Scaffold), findsOneWidget);
       //expect(find.text("home"), findsOneWidget);
 
-      verify(
-        mockLoginBloc.add(
-          const VerifyOtpSubmitted(
-            email: "test@example.com",
-            otpCode: "123456",
-          ),
-        ),
-      ).called(1);
+      verify(mockLoginBloc.add(const VerifyOtpSubmitted(email: "test@example.com", otpCode: "123456"))).called(1);
 
       //finally
       loginStateController.close();
     });
 
     //fail scenario
-    testWidgets('should show error message when otp code is invalid', (
-      tester,
-    ) async {
+    testWidgets('should show error message when otp code is invalid', (tester) async {
       TestUtils().setupUnitTest();
       final loginStateController = StreamController<LoginState>.broadcast();
       when(mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
@@ -325,21 +273,12 @@ void main() {
       );
       await tester.pump();
 
-      loginStateController.add(
-        const LoginErrorState(message: "Invalid OTP Token"),
-      );
+      loginStateController.add(const LoginErrorState(message: "Invalid OTP Token"));
       await tester.pump();
 
       // THEN
       //expect(find.text("Invalid OTP Token"), findsOneWidget);
-      verify(
-        mockLoginBloc.add(
-          const VerifyOtpSubmitted(
-            email: "test@example.com",
-            otpCode: "123456",
-          ),
-        ),
-      ).called(1);
+      verify(mockLoginBloc.add(const VerifyOtpSubmitted(email: "test@example.com", otpCode: "123456"))).called(1);
 
       expect(
         mockGoRouter.routerDelegate.currentConfiguration.uri.path,
@@ -353,23 +292,18 @@ void main() {
 
   //resend button test
   group("OtpVerifyScreen form element resend button", () {
-    testWidgets(
-      'should call SendOtpRequested event when resend button is clicked',
-      (tester) async {
-        // GIVEN
-        await tester.pumpWidget(testWidget);
-        await tester.pumpAndSettle();
+    testWidgets('should call SendOtpRequested event when resend button is clicked', (tester) async {
+      // GIVEN
+      await tester.pumpWidget(testWidget);
+      await tester.pumpAndSettle();
 
-        // WHEN
-        final resendButtonFinder = find.byType(TextButton);
-        await tester.tap(resendButtonFinder);
-        await tester.pumpAndSettle();
+      // WHEN
+      final resendButtonFinder = find.byType(TextButton);
+      await tester.tap(resendButtonFinder);
+      await tester.pumpAndSettle();
 
-        // THEN
-        verify(
-          mockLoginBloc.add(const SendOtpRequested(email: "test@example.com")),
-        ).called(1);
-      },
-    );
+      // THEN
+      verify(mockLoginBloc.add(const SendOtpRequested(email: "test@example.com"))).called(1);
+    });
   });
 }
