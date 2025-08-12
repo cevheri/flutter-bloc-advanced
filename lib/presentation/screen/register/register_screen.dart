@@ -45,17 +45,17 @@ class RegisterScreen extends StatelessWidget {
           builder: (context, state) {
             return ResponsiveFormBuilder(
               formKey: _formKey,
-                children: [
-                  // Removed duplicate "Register" header to avoid duplicate text with AppBar title
-                  Text(
-                    'Create your account',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              children: [
+                // Removed duplicate "Register" header to avoid duplicate text with AppBar title
+                Text(
+                  'Create your account',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
-                  ..._buildFormFields(context, state),
-                  _submitButton(context, state),
-                ],
+                ),
+                ..._buildFormFields(context, state),
+                _submitButton(context, state),
+              ],
             );
           },
         );
@@ -70,7 +70,10 @@ class RegisterScreen extends StatelessWidget {
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             child: Center(
-              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: card),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 560),
+                child: card,
+              ),
             ),
           );
         }
@@ -78,7 +81,10 @@ class RegisterScreen extends StatelessWidget {
         return Padding(
           padding: const EdgeInsets.all(24),
           child: Center(
-            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 720), child: card),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: card,
+            ),
           ),
         );
       },
@@ -96,7 +102,9 @@ class RegisterScreen extends StatelessWidget {
   Widget _submitButton(BuildContext context, RegisterState state) {
     return ResponsiveSubmitButton(
       key: const Key('registerSubmitButtonKey'),
-      onPressed: () => state.status == RegisterStatus.loading ? null : _onSubmit(context, state),
+      onPressed: () => state.status == RegisterStatus.loading
+          ? null
+          : _onSubmit(context, state),
       isLoading: state.status == RegisterStatus.loading,
     );
   }
@@ -106,13 +114,21 @@ class RegisterScreen extends StatelessWidget {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) {
       debugPrint("validate");
-      _showSnackBar(context, S.of(context).failed, const Duration(milliseconds: 1000));
+      _showSnackBar(
+        context,
+        S.of(context).failed,
+        const Duration(milliseconds: 1000),
+      );
       return;
     }
 
     if (!(_formKey.currentState?.isDirty ?? false)) {
       debugPrint("no changes made");
-      _showSnackBar(context, S.of(context).no_changes_made, const Duration(milliseconds: 1000));
+      _showSnackBar(
+        context,
+        S.of(context).no_changes_made,
+        const Duration(milliseconds: 1000),
+      );
       return;
     }
 
@@ -147,20 +163,33 @@ class RegisterScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
+  Future<void> _handlePopScope(
+    bool didPop,
+    Object? data, [
+    BuildContext? contextParam,
+  ]) async {
     final context = contextParam ?? data as BuildContext;
 
     if (!context.mounted) return;
 
-    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+    if (didPop ||
+        !(_formKey.currentState?.isDirty ?? false) ||
+        _formKey.currentState == null) {
       context.go(ApplicationRoutesConstants.home);
       return;
     }
 
-    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
+    final shouldPop =
+        await ConfirmationDialog.show(
+          context: context,
+          type: DialogType.unsavedChanges,
+        ) ??
+        false;
     if (shouldPop && context.mounted) {
       context.go(ApplicationRoutesConstants.home);
     }

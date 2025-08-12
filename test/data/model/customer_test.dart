@@ -32,19 +32,27 @@ void main() {
       expect(entityUpd == entity, true);
     });
 
-    test('should copy a Customer instance with new values (copyWith) new values', () {
-      const entity = mockCustomerFullPayload;
-      final entityUpd = entity.copyWith(name: 'new Acme', cityName: 'izmir', districtName: 'göztepe', address: 'yazır');
+    test(
+      'should copy a Customer instance with new values (copyWith) new values',
+      () {
+        const entity = mockCustomerFullPayload;
+        final entityUpd = entity.copyWith(
+          name: 'new Acme',
+          cityName: 'izmir',
+          districtName: 'göztepe',
+          address: 'yazır',
+        );
 
-      expect(entityUpd.id, '1');
-      expect(entityUpd.name, 'new Acme');
-      expect(entityUpd.phone, '5055055050');
-      expect(entityUpd.cityName, 'izmir');
-      expect(entityUpd.email, 'john.doe@example.com');
-      expect(entityUpd.districtName, 'göztepe');
-      expect(entityUpd.address, 'yazır');
-      expect(entityUpd.active, true);
-    });
+        expect(entityUpd.id, '1');
+        expect(entityUpd.name, 'new Acme');
+        expect(entityUpd.phone, '5055055050');
+        expect(entityUpd.cityName, 'izmir');
+        expect(entityUpd.email, 'john.doe@example.com');
+        expect(entityUpd.districtName, 'göztepe');
+        expect(entityUpd.address, 'yazır');
+        expect(entityUpd.active, true);
+      },
+    );
 
     test('should deserialize from JSON', () {
       final json = mockCustomerFullPayload.toJson()!;

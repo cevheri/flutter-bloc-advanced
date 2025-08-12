@@ -82,7 +82,10 @@ void main() {
     });
 
     test('save unsupported value type throws exception', () async {
-      await expectLater(localStorage.save('testKey', DateTime.now()), completion(equals(false)));
+      await expectLater(
+        localStorage.save('testKey', DateTime.now()),
+        completion(equals(false)),
+      );
     });
 
     test('save unsupported value type returns false and logs error', () async {
@@ -111,7 +114,9 @@ void main() {
     });
 
     test('should return false when remove operation throws error', () async {
-      when(mockPrefs.remove("testKey")).thenThrow(Exception('Failed to remove'));
+      when(
+        mockPrefs.remove("testKey"),
+      ).thenThrow(Exception('Failed to remove'));
       SharedPreferences.setMockInitialValues({});
 
       final result = await localStorage.remove('testKey');
@@ -135,13 +140,23 @@ void main() {
 
     test('should handle various error scenarios', () async {
       final testCases = [
-        {'key': 'testKey1', 'error': Exception('Failed to remove'), 'description': 'general exception'},
+        {
+          'key': 'testKey1',
+          'error': Exception('Failed to remove'),
+          'description': 'general exception',
+        },
         {'key': 'testKey2', 'error': Error(), 'description': 'error instance'},
-        {'key': 'testKey3', 'error': Exception('Invalid key'), 'description': 'invalid key exception'},
+        {
+          'key': 'testKey3',
+          'error': Exception('Invalid key'),
+          'description': 'invalid key exception',
+        },
       ];
 
       for (var testCase in testCases) {
-        when(mockPrefs.remove(testCase['key'] as String)).thenThrow(testCase['error'] as Object);
+        when(
+          mockPrefs.remove(testCase['key'] as String),
+        ).thenThrow(testCase['error'] as Object);
 
         final result = await localStorage.remove(testCase['key'] as String);
 

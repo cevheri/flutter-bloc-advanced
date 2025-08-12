@@ -22,7 +22,10 @@ void main() {
     });
 
     test('should copy a City instance with new values (copyWith) new data', () {
-      final entityUpd = mockCityPayload.copyWith(name: 'ankara', plateCode: '06');
+      final entityUpd = mockCityPayload.copyWith(
+        name: 'ankara',
+        plateCode: '06',
+      );
 
       expect(entityUpd.id, "1");
       expect(entityUpd.name, 'ankara');
@@ -36,7 +39,11 @@ void main() {
     });
 
     test('should compare two City instances', () {
-      final entityUpd = mockCityPayload.copyWith(id: "1", name: 'ankara', plateCode: '06');
+      final entityUpd = mockCityPayload.copyWith(
+        id: "1",
+        name: 'ankara',
+        plateCode: '06',
+      );
 
       expect(mockCityPayload == entityUpd, false);
     });

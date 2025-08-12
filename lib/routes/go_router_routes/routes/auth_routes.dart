@@ -12,7 +12,11 @@ import 'package:go_router/go_router.dart';
 
 class AuthRoutes {
   static final List<GoRoute> routes = [
-    GoRoute(name: 'login', path: ApplicationRoutesConstants.login, builder: (context, state) => LoginScreen()),
+    GoRoute(
+      name: 'login',
+      path: ApplicationRoutesConstants.login,
+      builder: (context, state) => LoginScreen(),
+    ),
     GoRoute(
       name: 'login-otp',
       path: ApplicationRoutesConstants.loginOtp,
@@ -21,7 +25,8 @@ class AuthRoutes {
     GoRoute(
       name: 'login-otp-verify',
       path: '/login-otp-verify/:email',
-      builder: (context, state) => OtpVerifyScreen(email: state.pathParameters['email']!),
+      builder: (context, state) =>
+          OtpVerifyScreen(email: state.pathParameters['email']!),
     ),
     GoRoute(
       name: 'forgot-password',

@@ -18,9 +18,19 @@ class UserState extends Equatable {
   final List<User>? userList;
   final String? err;
 
-  const UserState({this.status = UserStatus.initial, this.data, this.userList, this.err});
+  const UserState({
+    this.status = UserStatus.initial,
+    this.data,
+    this.userList,
+    this.err,
+  });
 
-  UserState copyWith({UserStatus? status, User? data, List<User>? userList, String? err}) {
+  UserState copyWith({
+    UserStatus? status,
+    User? data,
+    List<User>? userList,
+    String? err,
+  }) {
     return UserState(
       status: status ?? this.status,
       data: data ?? this.data,

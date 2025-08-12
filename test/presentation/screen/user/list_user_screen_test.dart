@@ -40,10 +40,14 @@ void main() {
     // Set up default AuthorityBloc behavior
     when(mockAuthorityBloc.stream).thenAnswer(
       (_) => Stream.fromIterable([
-        const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
+        const AuthorityLoadSuccessState(
+          authorities: ['ROLE_ADMIN', 'ROLE_USER'],
+        ),
       ]),
     );
-    when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+    when(mockAuthorityBloc.state).thenReturn(
+      const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
+    );
   });
 
   tearDown(() async {
@@ -59,7 +63,10 @@ void main() {
       authorityRepository: mockAuthorityRepository,
     );
 
-    final router = GoRouter(initialLocation: '/user', routes: UserRoutes.routes);
+    final router = GoRouter(
+      initialLocation: '/user',
+      routes: UserRoutes.routes,
+    );
 
     return MultiBlocProvider(
       providers: [
@@ -136,7 +143,9 @@ void main() {
       await tester.pumpAndSettle();
 
       // Simulate successful search
-      userStateController.add(UserState(status: UserStatus.searchSuccess, userList: mockUsers));
+      userStateController.add(
+        UserState(status: UserStatus.searchSuccess, userList: mockUsers),
+      );
       await tester.pumpAndSettle();
 
       // ASSERT

@@ -49,7 +49,10 @@ void main() {
         await tester.pumpWidget(
           buildTestableWidget(
             child: Builder(
-              builder: (context) => TextButton(onPressed: () => router.pop(context), child: const Text('Pop')),
+              builder: (context) => TextButton(
+                onPressed: () => router.pop(context),
+                child: const Text('Pop'),
+              ),
             ),
           ),
         );
@@ -63,7 +66,8 @@ void main() {
           buildTestableWidget(
             child: Builder(
               builder: (context) => TextButton(
-                onPressed: () => router.push(context, ApplicationRoutesConstants.home),
+                onPressed: () =>
+                    router.push(context, ApplicationRoutesConstants.home),
                 child: const Text('Push'),
               ),
             ),
@@ -74,12 +78,17 @@ void main() {
         await tester.pumpAndSettle();
       });
 
-      testWidgets('pushReplacement should call strategy pushReplacement', (tester) async {
+      testWidgets('pushReplacement should call strategy pushReplacement', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestableWidget(
             child: Builder(
               builder: (context) => TextButton(
-                onPressed: () => router.pushReplacement(context, ApplicationRoutesConstants.home),
+                onPressed: () => router.pushReplacement(
+                  context,
+                  ApplicationRoutesConstants.home,
+                ),
                 child: const Text('Replace'),
               ),
             ),
@@ -92,12 +101,16 @@ void main() {
     });
 
     group('Error Handling Tests', () {
-      testWidgets(skip: true, 'should handle invalid routes gracefully', (tester) async {
+      testWidgets(skip: true, 'should handle invalid routes gracefully', (
+        tester,
+      ) async {
         await tester.pumpWidget(
           buildTestableWidget(
             child: Builder(
-              builder: (context) =>
-                  TextButton(onPressed: () => router.push(context, '/invalid-route'), child: const Text('Invalid')),
+              builder: (context) => TextButton(
+                onPressed: () => router.push(context, '/invalid-route'),
+                child: const Text('Invalid'),
+              ),
             ),
           ),
         );

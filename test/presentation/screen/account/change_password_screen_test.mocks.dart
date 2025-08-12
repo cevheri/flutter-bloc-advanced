@@ -6,8 +6,10 @@
 import 'dart:async' as _i4;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart' as _i2;
-import 'package:flutter_bloc_advance/presentation/screen/change_password/bloc/change_password_bloc.dart' as _i3;
+import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart'
+    as _i2;
+import 'package:flutter_bloc_advance/presentation/screen/change_password/bloc/change_password_bloc.dart'
+    as _i3;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint
@@ -24,12 +26,16 @@ import 'package:mockito/mockito.dart' as _i1;
 // ignore_for_file: camel_case_types
 // ignore_for_file: subtype_of_sealed_class
 
-class _FakeAuthorityState_0 extends _i1.SmartFake implements _i2.AuthorityState {
-  _FakeAuthorityState_0(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+class _FakeAuthorityState_0 extends _i1.SmartFake
+    implements _i2.AuthorityState {
+  _FakeAuthorityState_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
-class _FakeChangePasswordState_1 extends _i1.SmartFake implements _i3.ChangePasswordState {
-  _FakeChangePasswordState_1(Object parent, Invocation parentInvocation) : super(parent, parentInvocation);
+class _FakeChangePasswordState_1 extends _i1.SmartFake
+    implements _i3.ChangePasswordState {
+  _FakeChangePasswordState_1(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [AuthorityBloc].
@@ -50,23 +56,34 @@ class MockAuthorityBloc extends _i1.Mock implements _i2.AuthorityBloc {
 
   @override
   _i4.Stream<_i2.AuthorityState> get stream =>
-      (super.noSuchMethod(Invocation.getter(#stream), returnValue: _i4.Stream<_i2.AuthorityState>.empty())
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i4.Stream<_i2.AuthorityState>.empty(),
+          )
           as _i4.Stream<_i2.AuthorityState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false) as bool);
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
 
   @override
-  void add(_i2.AuthorityEvent? event) =>
-      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
+  void add(_i2.AuthorityEvent? event) => super.noSuchMethod(
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onEvent(_i2.AuthorityEvent? event) =>
-      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
+  void onEvent(_i2.AuthorityEvent? event) => super.noSuchMethod(
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void emit(_i2.AuthorityState? state) =>
-      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
+  void emit(_i2.AuthorityState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i2.AuthorityEvent>(
@@ -78,8 +95,12 @@ class MockAuthorityBloc extends _i1.Mock implements _i2.AuthorityBloc {
   );
 
   @override
-  void onTransition(_i5.Transition<_i2.AuthorityEvent, _i2.AuthorityState>? transition) =>
-      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
+  void onTransition(
+    _i5.Transition<_i2.AuthorityEvent, _i2.AuthorityState>? transition,
+  ) => super.noSuchMethod(
+    Invocation.method(#onTransition, [transition]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   _i4.Future<void> close() =>
@@ -91,22 +112,29 @@ class MockAuthorityBloc extends _i1.Mock implements _i2.AuthorityBloc {
           as _i4.Future<void>);
 
   @override
-  void onChange(_i5.Change<_i2.AuthorityState>? change) =>
-      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
+  void onChange(_i5.Change<_i2.AuthorityState>? change) => super.noSuchMethod(
+    Invocation.method(#onChange, [change]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void addError(Object? error, [StackTrace? stackTrace]) =>
-      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(Object? error, StackTrace? stackTrace) =>
-      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }
 
 /// A class which mocks [ChangePasswordBloc].
 ///
 /// See the documentation for Mockito's code generation for more information.
-class MockChangePasswordBloc extends _i1.Mock implements _i3.ChangePasswordBloc {
+class MockChangePasswordBloc extends _i1.Mock
+    implements _i3.ChangePasswordBloc {
   MockChangePasswordBloc() {
     _i1.throwOnMissingStub(this);
   }
@@ -115,33 +143,52 @@ class MockChangePasswordBloc extends _i1.Mock implements _i3.ChangePasswordBloc 
   _i3.ChangePasswordState get state =>
       (super.noSuchMethod(
             Invocation.getter(#state),
-            returnValue: _FakeChangePasswordState_1(this, Invocation.getter(#state)),
+            returnValue: _FakeChangePasswordState_1(
+              this,
+              Invocation.getter(#state),
+            ),
           )
           as _i3.ChangePasswordState);
 
   @override
   _i4.Stream<_i3.ChangePasswordState> get stream =>
-      (super.noSuchMethod(Invocation.getter(#stream), returnValue: _i4.Stream<_i3.ChangePasswordState>.empty())
+      (super.noSuchMethod(
+            Invocation.getter(#stream),
+            returnValue: _i4.Stream<_i3.ChangePasswordState>.empty(),
+          )
           as _i4.Stream<_i3.ChangePasswordState>);
 
   @override
-  bool get isClosed => (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false) as bool);
+  bool get isClosed =>
+      (super.noSuchMethod(Invocation.getter(#isClosed), returnValue: false)
+          as bool);
 
   @override
-  void onTransition(_i5.Transition<_i3.ChangePasswordEvent, _i3.ChangePasswordState>? transition) =>
-      super.noSuchMethod(Invocation.method(#onTransition, [transition]), returnValueForMissingStub: null);
+  void onTransition(
+    _i5.Transition<_i3.ChangePasswordEvent, _i3.ChangePasswordState>?
+    transition,
+  ) => super.noSuchMethod(
+    Invocation.method(#onTransition, [transition]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void add(_i3.ChangePasswordEvent? event) =>
-      super.noSuchMethod(Invocation.method(#add, [event]), returnValueForMissingStub: null);
+  void add(_i3.ChangePasswordEvent? event) => super.noSuchMethod(
+    Invocation.method(#add, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onEvent(_i3.ChangePasswordEvent? event) =>
-      super.noSuchMethod(Invocation.method(#onEvent, [event]), returnValueForMissingStub: null);
+  void onEvent(_i3.ChangePasswordEvent? event) => super.noSuchMethod(
+    Invocation.method(#onEvent, [event]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void emit(_i3.ChangePasswordState? state) =>
-      super.noSuchMethod(Invocation.method(#emit, [state]), returnValueForMissingStub: null);
+  void emit(_i3.ChangePasswordState? state) => super.noSuchMethod(
+    Invocation.method(#emit, [state]),
+    returnValueForMissingStub: null,
+  );
 
   @override
   void on<E extends _i3.ChangePasswordEvent>(
@@ -163,13 +210,20 @@ class MockChangePasswordBloc extends _i1.Mock implements _i3.ChangePasswordBloc 
 
   @override
   void onChange(_i5.Change<_i3.ChangePasswordState>? change) =>
-      super.noSuchMethod(Invocation.method(#onChange, [change]), returnValueForMissingStub: null);
+      super.noSuchMethod(
+        Invocation.method(#onChange, [change]),
+        returnValueForMissingStub: null,
+      );
 
   @override
-  void addError(Object? error, [StackTrace? stackTrace]) =>
-      super.noSuchMethod(Invocation.method(#addError, [error, stackTrace]), returnValueForMissingStub: null);
+  void addError(Object? error, [StackTrace? stackTrace]) => super.noSuchMethod(
+    Invocation.method(#addError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 
   @override
-  void onError(Object? error, StackTrace? stackTrace) =>
-      super.noSuchMethod(Invocation.method(#onError, [error, stackTrace]), returnValueForMissingStub: null);
+  void onError(Object? error, StackTrace? stackTrace) => super.noSuchMethod(
+    Invocation.method(#onError, [error, stackTrace]),
+    returnValueForMissingStub: null,
+  );
 }

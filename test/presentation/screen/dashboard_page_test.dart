@@ -46,7 +46,8 @@ void main() {
             GlobalCupertinoLocalizations.delegate,
           ],
           home: BlocProvider<DashboardCubit>(
-            create: (_) => DashboardCubit(repository: _StubDashboardRepo())..load(),
+            create: (_) =>
+                DashboardCubit(repository: _StubDashboardRepo())..load(),
             child: const Scaffold(body: DashboardPage()),
           ),
         ),

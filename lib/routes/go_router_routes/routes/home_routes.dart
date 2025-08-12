@@ -4,6 +4,10 @@ import 'package:go_router/go_router.dart';
 
 class HomeRoutes {
   static final List<GoRoute> routes = [
-    GoRoute(name: 'home', path: ApplicationRoutesConstants.home, builder: (context, state) => HomeScreen()),
+    GoRoute(
+      name: 'home',
+      path: ApplicationRoutesConstants.home,
+      builder: (context, state) => HomeScreen(),
+    ),
   ];
 }

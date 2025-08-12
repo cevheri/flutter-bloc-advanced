@@ -26,8 +26,13 @@ class ForgotPasswordScreen extends StatelessWidget {
       listener: (context, state) => _handleStateChanges(context, state),
       child: PopScope(
         canPop: !(_formKey.currentState?.isDirty ?? false),
-        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(didPop, data),
-        child: Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context)),
+        onPopInvokedWithResult: (bool didPop, Object? data) async =>
+            _handlePopScope(didPop, data),
+        child: Scaffold(
+          key: _scaffoldKey,
+          appBar: _buildAppBar(context),
+          body: _buildBody(context),
+        ),
       ),
     );
   }
@@ -36,7 +41,10 @@ class ForgotPasswordScreen extends StatelessWidget {
     return AppBar(
       key: const Key('forgotPasswordScreenAppBarKey'),
       title: Text(S.of(context).password_forgot),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => _handlePopScope(false, null, context)),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => _handlePopScope(false, null, context),
+      ),
     );
   }
 
@@ -46,7 +54,11 @@ class ForgotPasswordScreen extends StatelessWidget {
       builder: (context, state) {
         return ResponsiveFormBuilder(
           formKey: _formKey,
-          children: [_logo(context), _forgotPasswordField(context), _submitButton(context, state)],
+          children: [
+            _logo(context),
+            _forgotPasswordField(context),
+            _submitButton(context, state),
+          ],
         );
       },
     );
@@ -73,7 +85,9 @@ class ForgotPasswordScreen extends StatelessWidget {
   Widget _submitButton(BuildContext context, ForgotPasswordState state) {
     return ResponsiveSubmitButton(
       key: forgotPasswordButtonSubmitKey,
-      onPressed: () => state.status == ForgotPasswordStatus.loading ? null : _onSubmit(context, state),
+      onPressed: () => state.status == ForgotPasswordStatus.loading
+          ? null
+          : _onSubmit(context, state),
       isLoading: state.status == ForgotPasswordStatus.loading,
     );
   }
@@ -83,20 +97,30 @@ class ForgotPasswordScreen extends StatelessWidget {
     FocusScope.of(context).unfocus();
     if (!(_formKey.currentState?.validate() ?? false)) {
       debugPrint("validate");
-      _showSnackBar(context, S.of(context).failed, const Duration(milliseconds: 1000));
+      _showSnackBar(
+        context,
+        S.of(context).failed,
+        const Duration(milliseconds: 1000),
+      );
       return;
     }
 
     if (!(_formKey.currentState?.isDirty ?? false)) {
       debugPrint("no changes made");
-      _showSnackBar(context, S.of(context).no_changes_made, const Duration(milliseconds: 1000));
+      _showSnackBar(
+        context,
+        S.of(context).no_changes_made,
+        const Duration(milliseconds: 1000),
+      );
       return;
     }
 
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       debugPrint("saveAndValidate");
       final email = _formKey.currentState!.value['email'];
-      context.read<ForgotPasswordBloc>().add(ForgotPasswordEmailChanged(email: email));
+      context.read<ForgotPasswordBloc>().add(
+        ForgotPasswordEmailChanged(email: email),
+      );
     }
   }
 
@@ -120,20 +144,33 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
+  Future<void> _handlePopScope(
+    bool didPop,
+    Object? data, [
+    BuildContext? contextParam,
+  ]) async {
     final context = contextParam ?? data as BuildContext;
 
     if (!context.mounted) return;
 
-    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+    if (didPop ||
+        !(_formKey.currentState?.isDirty ?? false) ||
+        _formKey.currentState == null) {
       context.go(ApplicationRoutesConstants.home);
       return;
     }
 
-    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
+    final shouldPop =
+        await ConfirmationDialog.show(
+          context: context,
+          type: DialogType.unsavedChanges,
+        ) ??
+        false;
     if (shouldPop && context.mounted) {
       context.go(ApplicationRoutesConstants.home);
     }

@@ -49,7 +49,10 @@ void main() {
     // LoginState
     test("supports value comparisons", () {
       expect(const LoginState(), const LoginState());
-      const state = LoginState(status: LoginStatus.initial, passwordVisible: false);
+      const state = LoginState(
+        status: LoginStatus.initial,
+        passwordVisible: false,
+      );
       expect(const LoginState(), state);
     });
 
@@ -70,29 +73,61 @@ void main() {
 
     // LoginErrorState
     test("LoginErrorState", () {
-      expect(const LoginErrorState(message: "test"), const LoginErrorState(message: "test"));
+      expect(
+        const LoginErrorState(message: "test"),
+        const LoginErrorState(message: "test"),
+      );
       expect(const LoginErrorState(message: "test").props, ["test"]);
     });
 
     test("copyWith retains the same values if no arguments are provided", () {
-      const state = LoginState(status: LoginStatus.initial, passwordVisible: false);
+      const state = LoginState(
+        status: LoginStatus.initial,
+        passwordVisible: false,
+      );
       expect(state.copyWith(), state);
     });
 
     test("copyWith replaces non-null parameters", () {
-      const state = LoginState(status: LoginStatus.initial, passwordVisible: false);
-      const secondState = LoginState(status: LoginStatus.success, passwordVisible: true);
-      expect(state.copyWith(status: LoginStatus.success, passwordVisible: true), secondState);
+      const state = LoginState(
+        status: LoginStatus.initial,
+        passwordVisible: false,
+      );
+      const secondState = LoginState(
+        status: LoginStatus.success,
+        passwordVisible: true,
+      );
+      expect(
+        state.copyWith(status: LoginStatus.success, passwordVisible: true),
+        secondState,
+      );
     });
 
     test("Initial state is LoginState", () {
-      expect(LoginBloc(repository: MockLoginRepository()).state, const LoginState());
+      expect(
+        LoginBloc(repository: MockLoginRepository()).state,
+        const LoginState(),
+      );
     });
 
     test("props", () {
       expect(
-        const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test", password: "test").props,
-        ["test", "test", LoginStatus.initial, false, null, null, false, LoginMethod.password],
+        const LoginState(
+          status: LoginStatus.initial,
+          passwordVisible: false,
+          username: "test",
+          password: "test",
+        ).props,
+        [
+          "test",
+          "test",
+          LoginStatus.initial,
+          false,
+          null,
+          null,
+          false,
+          LoginMethod.password,
+        ],
       );
     });
   });
@@ -108,10 +143,16 @@ void main() {
       );
     });
     test("TogglePasswordVisibility", () {
-      expect(const TogglePasswordVisibility(), const TogglePasswordVisibility());
+      expect(
+        const TogglePasswordVisibility(),
+        const TogglePasswordVisibility(),
+      );
     });
     test("props", () {
-      expect(const LoginFormSubmitted(username: "test", password: "test").props, ["test", "test"]);
+      expect(
+        const LoginFormSubmitted(username: "test", password: "test").props,
+        ["test", "test"],
+      );
       expect(const TogglePasswordVisibility().props, []);
     });
   });
@@ -129,12 +170,25 @@ void main() {
       Future<JWTToken> output = Future<JWTToken>.value(mockJWTTokenPayload);
       repositoryMethod() => repository.authenticate(input);
 
-      final event = LoginFormSubmitted(username: input.username!, password: input.password!);
+      final event = LoginFormSubmitted(
+        username: input.username!,
+        password: input.password!,
+      );
 
-      final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
-      final successState = LoginLoadedState(username: input.username!, password: input.password!);
-      const failureState = LoginErrorState(message: "Login API Error: Operation Unauthorized");
-      const failure2State = LoginErrorState(message: "Login API Error: Invalid Request: Invalid Access Token");
+      final loadingState = LoginLoadingState(
+        username: input.username!,
+        password: input.password!,
+      );
+      final successState = LoginLoadedState(
+        username: input.username!,
+        password: input.password!,
+      );
+      const failureState = LoginErrorState(
+        message: "Login API Error: Operation Unauthorized",
+      );
+      const failure2State = LoginErrorState(
+        message: "Login API Error: Invalid Request: Invalid Access Token",
+      );
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
@@ -151,7 +205,8 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid operation input failed",
-        setUp: () => when(repositoryMethod()).thenThrow(UnauthorizedException()),
+        setUp: () =>
+            when(repositoryMethod()).thenThrow(UnauthorizedException()),
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
@@ -160,7 +215,9 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid input then failed",
-        setUp: () => when(repositoryMethod()).thenAnswer((_) async => const JWTToken(idToken: null)),
+        setUp: () => when(
+          repositoryMethod(),
+        ).thenAnswer((_) async => const JWTToken(idToken: null)),
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => states2Failure,
@@ -178,11 +235,22 @@ void main() {
 
     group('LoginFormSubmitted', () {
       const input = UserJWT("username", "password");
-      final event = LoginFormSubmitted(username: input.username!, password: input.password!);
+      final event = LoginFormSubmitted(
+        username: input.username!,
+        password: input.password!,
+      );
 
-      final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
-      final successState = LoginLoadedState(username: input.username!, password: input.password!);
-      const failureState = LoginErrorState(message: "Login API Error: Operation Unauthorized");
+      final loadingState = LoginLoadingState(
+        username: input.username!,
+        password: input.password!,
+      );
+      final successState = LoginLoadedState(
+        username: input.username!,
+        password: input.password!,
+      );
+      const failureState = LoginErrorState(
+        message: "Login API Error: Operation Unauthorized",
+      );
 
       blocTest<LoginBloc, LoginState>(
         'given valid credentials when submitted then emits [loading, success]',
@@ -191,10 +259,17 @@ void main() {
           await AppLocalStorage().save(StorageKeys.username.name, "username");
           await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
 
-          when(repository.authenticate(input)).thenAnswer((_) async => mockJWTTokenPayload);
-          when(accountRepository.getAccount()).thenAnswer((_) async => mockUserFullPayload);
+          when(
+            repository.authenticate(input),
+          ).thenAnswer((_) async => mockJWTTokenPayload);
+          when(
+            accountRepository.getAccount(),
+          ).thenAnswer((_) async => mockUserFullPayload);
         },
-        build: () => LoginBloc(repository: repository, accountRepository: accountRepository),
+        build: () => LoginBloc(
+          repository: repository,
+          accountRepository: accountRepository,
+        ),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
         verify: (_) {
@@ -205,7 +280,9 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         'given invalid credentials when submitted then emits [loading, error]',
-        setUp: () => when(repository.authenticate(input)).thenThrow(UnauthorizedException()),
+        setUp: () => when(
+          repository.authenticate(input),
+        ).thenThrow(UnauthorizedException()),
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc.add(event),
         expect: () => [loadingState, failureState],
@@ -223,18 +300,31 @@ void main() {
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => [
-          isA<LoginLoadingState>().having((state) => state.username, 'username', email),
-          isA<LoginOtpSentState>().having((state) => state.email, 'email', email),
+          isA<LoginLoadingState>().having(
+            (state) => state.username,
+            'username',
+            email,
+          ),
+          isA<LoginOtpSentState>().having(
+            (state) => state.email,
+            'email',
+            email,
+          ),
         ],
         // verify: (_) => verify(repository.sendOtp(request)).called(1),
       );
 
       blocTest<LoginBloc, LoginState>(
         'given invalid email when requested then emits [loading, error]',
-        setUp: () => when(repository.sendOtp(request)).thenThrow(Exception("Invalid email")),
+        setUp: () => when(
+          repository.sendOtp(request),
+        ).thenThrow(Exception("Invalid email")),
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc.add(event),
-        expect: () => [const LoginLoadingState(username: email), const LoginOtpSentState(email: email)],
+        expect: () => [
+          const LoginLoadingState(username: email),
+          const LoginOtpSentState(email: email),
+        ],
       );
     });
 
@@ -273,10 +363,15 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         'given invalid OTP when submitted then emits [loading, error]',
-        setUp: () => when(repository.verifyOtp(request)).thenAnswer((_) async => const JWTToken(idToken: null)),
+        setUp: () => when(
+          repository.verifyOtp(request),
+        ).thenAnswer((_) async => const JWTToken(idToken: null)),
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc.add(event),
-        expect: () => [loadingState, const LoginErrorState(message: "OTP validation error")],
+        expect: () => [
+          loadingState,
+          const LoginErrorState(message: "OTP validation error"),
+        ],
       );
     });
 
@@ -284,8 +379,15 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         'given OTP method when changed then updates login method',
         build: () => LoginBloc(repository: repository),
-        act: (bloc) => bloc.add(const ChangeLoginMethod(method: LoginMethod.otp)),
-        expect: () => [const LoginState(loginMethod: LoginMethod.otp, status: LoginStatus.initial, isOtpSent: false)],
+        act: (bloc) =>
+            bloc.add(const ChangeLoginMethod(method: LoginMethod.otp)),
+        expect: () => [
+          const LoginState(
+            loginMethod: LoginMethod.otp,
+            status: LoginStatus.initial,
+            isOtpSent: false,
+          ),
+        ],
       );
     });
 

@@ -8,17 +8,27 @@ class AppTheme {
   AppTheme._();
 
   static ThemeData light() {
-    final colorScheme = ColorScheme.fromSeed(seedColor: AppColors.seed, brightness: Brightness.light);
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.light,
+    );
     return _themeData(colorScheme);
   }
 
   static ThemeData dark() {
-    final colorScheme = ColorScheme.fromSeed(seedColor: AppColors.seed, brightness: Brightness.dark);
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.seed,
+      brightness: Brightness.dark,
+    );
     return _themeData(colorScheme);
   }
 
   static ThemeData _themeData(ColorScheme colorScheme) {
-    final base = ThemeData(colorScheme: colorScheme, useMaterial3: true, brightness: colorScheme.brightness);
+    final base = ThemeData(
+      colorScheme: colorScheme,
+      useMaterial3: true,
+      brightness: colorScheme.brightness,
+    );
     final textTheme = AppTypography.textTheme(base.textTheme);
 
     return base.copyWith(
@@ -34,16 +44,39 @@ class AppTheme {
         isDense: false,
         filled: true,
         fillColor: colorScheme.surfaceContainerHigh,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
         labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
         helperStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(179)),
+        hintStyle: TextStyle(
+          color: colorScheme.onSurfaceVariant.withAlpha(179),
+        ),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
@@ -61,13 +94,25 @@ class AppTheme {
         selectedColor: colorScheme.primary,
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
       ),
       cardTheme: CardThemeData(
         surfaceTintColor: colorScheme.surfaceTint,

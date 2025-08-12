@@ -32,7 +32,8 @@ class SettingsLogoutSuccess extends SettingsState {
 class SettingsLanguageChanged extends SettingsState {
   final String? language;
 
-  const SettingsLanguageChanged({required this.language}) : super(status: SettingsStatus.success);
+  const SettingsLanguageChanged({required this.language})
+    : super(status: SettingsStatus.success);
 
   @override
   List<Object> get props => [status, language ?? ""];
@@ -41,7 +42,8 @@ class SettingsLanguageChanged extends SettingsState {
 class SettingsThemeChanged extends SettingsState {
   final AdaptiveThemeMode theme;
 
-  const SettingsThemeChanged({required this.theme}) : super(status: SettingsStatus.success);
+  const SettingsThemeChanged({required this.theme})
+    : super(status: SettingsStatus.success);
 
   @override
   List<Object> get props => [theme, status];
@@ -50,7 +52,8 @@ class SettingsThemeChanged extends SettingsState {
 class SettingsFailure extends SettingsState {
   final String message;
 
-  const SettingsFailure({required this.message}) : super(status: SettingsStatus.failure);
+  const SettingsFailure({required this.message})
+    : super(status: SettingsStatus.failure);
 
   @override
   List<Object> get props => [message, status];

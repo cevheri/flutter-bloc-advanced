@@ -38,8 +38,18 @@ void main() {
       const users = [User(id: "1", firstName: "Test")];
 
       expect(
-        const UserState().copyWith(status: UserStatus.success, data: user, userList: users, err: "error"),
-        const UserState(status: UserStatus.success, data: user, userList: users, err: "error"),
+        const UserState().copyWith(
+          status: UserStatus.success,
+          data: user,
+          userList: users,
+          err: "error",
+        ),
+        const UserState(
+          status: UserStatus.success,
+          data: user,
+          userList: users,
+          err: "error",
+        ),
       );
     });
 
@@ -47,19 +57,31 @@ void main() {
       const user = User(id: "1", firstName: "Test");
       const users = [User(id: "1", firstName: "Test")];
 
-      expect(const UserState(status: UserStatus.loading, data: user, userList: users, err: "error").props, [
-        UserStatus.loading,
-        user,
-        users,
-        "error",
-      ]);
+      expect(
+        const UserState(
+          status: UserStatus.loading,
+          data: user,
+          userList: users,
+          err: "error",
+        ).props,
+        [UserStatus.loading, user, users, "error"],
+      );
     });
   });
 
   group('UserBloc Event Tests', () {
-    const testUser = User(id: "1", firstName: "Test", lastName: "User", email: "test@test.com");
+    const testUser = User(
+      id: "1",
+      firstName: "Test",
+      lastName: "User",
+      email: "test@test.com",
+    );
 
-    const newUser = User(firstName: "New", lastName: "User", email: "new@test.com");
+    const newUser = User(
+      firstName: "New",
+      lastName: "User",
+      email: "new@test.com",
+    );
 
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits success state when creating new user',
@@ -69,7 +91,11 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
       expect: () => [
-        isA<UserState>().having((state) => state.status, 'status', UserStatus.loading),
+        isA<UserState>().having(
+          (state) => state.status,
+          'status',
+          UserStatus.loading,
+        ),
         isA<UserState>()
             .having((state) => state.status, 'status', UserStatus.saveSuccess)
             .having((state) => state.data, 'data', testUser),
@@ -84,7 +110,11 @@ void main() {
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
       expect: () => [
-        isA<UserState>().having((state) => state.status, 'status', UserStatus.loading),
+        isA<UserState>().having(
+          (state) => state.status,
+          'status',
+          UserStatus.loading,
+        ),
         isA<UserState>()
             .having((state) => state.status, 'status', UserStatus.saveSuccess)
             .having((state) => state.data, 'data', testUser),
@@ -94,21 +124,31 @@ void main() {
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits failure state on create error',
       setUp: () {
-        when(repository.create(newUser)).thenThrow(Exception('Failed to create user'));
+        when(
+          repository.create(newUser),
+        ).thenThrow(Exception('Failed to create user'));
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
-      expect: () => [const UserState(status: UserStatus.loading), const UserState(status: UserStatus.failure)],
+      expect: () => [
+        const UserState(status: UserStatus.loading),
+        const UserState(status: UserStatus.failure),
+      ],
     );
 
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits failure state on update error',
       setUp: () {
-        when(repository.update(testUser)).thenThrow(Exception('Failed to update user'));
+        when(
+          repository.update(testUser),
+        ).thenThrow(Exception('Failed to update user'));
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
-      expect: () => [const UserState(status: UserStatus.loading), const UserState(status: UserStatus.failure)],
+      expect: () => [
+        const UserState(status: UserStatus.loading),
+        const UserState(status: UserStatus.failure),
+      ],
     );
 
     group('UserSearchEvent Tests', () {
@@ -120,10 +160,13 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits success state when search by authority is successful',
         setUp: () {
-          when(repository.listByAuthority(0, 10, "ROLE_USER")).thenAnswer((_) async => users);
+          when(
+            repository.listByAuthority(0, 10, "ROLE_USER"),
+          ).thenAnswer((_) async => users);
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
+        act: (bloc) =>
+            bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
         expect: () => [
           const UserState(status: UserStatus.loading),
           const UserState(status: UserStatus.searchSuccess, userList: users),
@@ -133,10 +176,14 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits success state when search by name and role is successful',
         setUp: () {
-          when(repository.listByNameAndRole(0, 10, "Test", "ROLE_USER")).thenAnswer((_) async => users);
+          when(
+            repository.listByNameAndRole(0, 10, "Test", "ROLE_USER"),
+          ).thenAnswer((_) async => users);
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(const UserSearchEvent(name: "Test", authorities: "ROLE_USER")),
+        act: (bloc) => bloc.add(
+          const UserSearchEvent(name: "Test", authorities: "ROLE_USER"),
+        ),
         expect: () => [
           const UserState(status: UserStatus.loading),
           const UserState(status: UserStatus.searchSuccess, userList: users),
@@ -146,13 +193,19 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits failure state when search fails',
         setUp: () {
-          when(repository.listByAuthority(0, 10, "ROLE_USER")).thenThrow(Exception('Search failed'));
+          when(
+            repository.listByAuthority(0, 10, "ROLE_USER"),
+          ).thenThrow(Exception('Search failed'));
         },
         build: () => bloc,
-        act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
+        act: (bloc) =>
+            bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Exception: Search failed"),
+          const UserState(
+            status: UserStatus.failure,
+            err: "Exception: Search failed",
+          ),
         ],
       );
     });
@@ -180,7 +233,10 @@ void main() {
         act: (bloc) => bloc.add(const UserFetchEvent("1")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Exception: Fetch failed"),
+          const UserState(
+            status: UserStatus.failure,
+            err: "Exception: Fetch failed",
+          ),
         ],
       );
     });
@@ -193,7 +249,10 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),
-        expect: () => [const UserState(status: UserStatus.loading), const UserState(status: UserStatus.deleteSuccess)],
+        expect: () => [
+          const UserState(status: UserStatus.loading),
+          const UserState(status: UserStatus.deleteSuccess),
+        ],
       );
 
       blocTest<UserBloc, UserState>(
@@ -202,7 +261,10 @@ void main() {
         act: (bloc) => bloc.add(const UserDeleteEvent("user-1")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Admin user cannot be deleted"),
+          const UserState(
+            status: UserStatus.failure,
+            err: "Admin user cannot be deleted",
+          ),
         ],
       );
 
@@ -215,7 +277,10 @@ void main() {
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Exception: Delete failed"),
+          const UserState(
+            status: UserStatus.failure,
+            err: "Exception: Delete failed",
+          ),
         ],
       );
     });

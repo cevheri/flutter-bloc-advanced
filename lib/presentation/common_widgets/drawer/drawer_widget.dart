@@ -37,8 +37,9 @@ class ApplicationDrawer extends StatelessWidget {
 
           var isEnglish = state.language == 'en';
 
-          final menuNodes = state.menus.where((e) => e.level == 1 && e.active).toList()
-            ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
+          final menuNodes =
+              state.menus.where((e) => e.level == 1 && e.active).toList()
+                ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
           return ValueListenableBuilder<String>(
             valueListenable: LanguageNotifier.current,
@@ -54,14 +55,22 @@ class ApplicationDrawer extends StatelessWidget {
                         key: const Key("drawer-switch-theme"),
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode)],
+                          children: [
+                            Icon(
+                              isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                            ),
+                          ],
                         ),
                         value: isDarkMode,
                         onChanged: (value) {
                           //debugPrint("BEGIN:ON_PRESSED.value - ${value}");
-                          final newTheme = value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
+                          final newTheme = value
+                              ? AdaptiveThemeMode.dark
+                              : AdaptiveThemeMode.light;
                           //debugPrint("BEGIN:ON_PRESSED - current newTheme : ${newTheme}");
-                          context.read<DrawerBloc>().add(ChangeThemeEvent(theme: newTheme));
+                          context.read<DrawerBloc>().add(
+                            ChangeThemeEvent(theme: newTheme),
+                          );
                           if (value) {
                             AdaptiveTheme.of(context).setDark();
                           } else {
@@ -75,12 +84,20 @@ class ApplicationDrawer extends StatelessWidget {
                         key: const Key("drawer-switch-language"),
                         title: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [Text(isEnglish ? S.of(context).english : S.of(context).turkish)],
+                          children: [
+                            Text(
+                              isEnglish
+                                  ? S.of(context).english
+                                  : S.of(context).turkish,
+                            ),
+                          ],
                         ),
                         value: isEnglish,
                         onChanged: (value) {
                           final newLang = value ? 'en' : 'tr';
-                          context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
+                          context.read<DrawerBloc>().add(
+                            ChangeLanguageEvent(language: newLang),
+                          );
                           // Stay on the same route; localization builder will rebuild
                         },
                       ),
@@ -113,7 +130,14 @@ class ApplicationDrawer extends StatelessWidget {
 
         // filter child menus
         final childMenus =
-            state.menus.where((e) => e.parent?.id == node.id && e.active && _hasAccess(e, currentUserRoles)).toList()
+            state.menus
+                .where(
+                  (e) =>
+                      e.parent?.id == node.id &&
+                      e.active &&
+                      _hasAccess(e, currentUserRoles),
+                )
+                .toList()
               ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
         if (childMenus.isEmpty) {
@@ -121,7 +145,10 @@ class ApplicationDrawer extends StatelessWidget {
           // if child menu is leaf, add click event
           return ListTile(
             leading: Icon(getIconFromString(node.icon)),
-            title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
+            title: Text(
+              S.of(context).translate_menu_title(node.name),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             onTap: () {
               // debugPrint("parent Menu: ${node.name}");
               if (node.leaf && node.url.isNotEmpty) {
@@ -134,7 +161,10 @@ class ApplicationDrawer extends StatelessWidget {
           // if menu is not leaf, use ExpansionTile for child menus
           return ExpansionTile(
             leading: Icon(getIconFromString(node.icon)),
-            title: Text(S.of(context).translate_menu_title(node.name), style: Theme.of(context).textTheme.bodyMedium),
+            title: Text(
+              S.of(context).translate_menu_title(node.name),
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
             children: childMenus.map((childMenu) {
               return ListTile(
                 leading: Icon(getIconFromString(childMenu.icon)),
@@ -173,7 +203,12 @@ class ApplicationDrawer extends StatelessWidget {
   }
 
   Future<void> _handleLogout(BuildContext context) async {
-    final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
+    final shouldLogout =
+        await ConfirmationDialog.show(
+          context: context,
+          type: DialogType.logout,
+        ) ??
+        false;
 
     if (shouldLogout && context.mounted) {
       debugPrint("BEGIN: logout");

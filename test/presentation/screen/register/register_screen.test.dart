@@ -41,10 +41,14 @@ void main() {
     Get.testMode = true;
     mockAccountBloc = MockAccountBloc();
 
-    when(mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
+    when(
+      mockRegisterBloc.stream,
+    ).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
     when(mockRegisterBloc.state).thenReturn(const RegisterInitialState());
 
-    when(mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
+    when(
+      mockAccountBloc.stream,
+    ).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
     when(mockAccountBloc.state).thenReturn(const AccountState());
   });
 
@@ -132,7 +136,10 @@ void main() {
       //Then:
       await tester.enterText(find.byType(FormBuilderTextField).first, "test");
       await tester.enterText(find.byType(FormBuilderTextField).at(1), "test");
-      await tester.enterText(find.byType(FormBuilderTextField).last, "test@test.com");
+      await tester.enterText(
+        find.byType(FormBuilderTextField).last,
+        "test@test.com",
+      );
     });
 
     //validate submit button
@@ -159,7 +166,10 @@ void main() {
       //Then:
       await tester.enterText(find.byKey(registerFirstNameTextFieldKey), "test");
       await tester.enterText(find.byKey(registerLastNameTextFieldKey), "test");
-      await tester.enterText(find.byKey(registerEmailTextFieldKey), "test@test.com");
+      await tester.enterText(
+        find.byKey(registerEmailTextFieldKey),
+        "test@test.com",
+      );
 
       //when submitButton clicked then expect an error
       await tester.tap(find.byKey(registerSubmitButtonKey));
@@ -308,7 +318,9 @@ void main() {
     expect(validResult, isNull);
   });
 
-  testWidgets('Register form validation and submission test', (WidgetTester tester) async {
+  testWidgets('Register form validation and submission test', (
+    WidgetTester tester,
+  ) async {
     //await TestUtils().setupAuthentication();
     await tester.pumpWidget(
       GetMaterialApp(
@@ -331,10 +343,19 @@ void main() {
 
     await tester.enterText(find.byKey(registerFirstNameTextFieldKey), "test");
     await tester.enterText(find.byKey(registerLastNameTextFieldKey), "test");
-    await tester.enterText(find.byKey(registerEmailTextFieldKey), "test@test.com");
+    await tester.enterText(
+      find.byKey(registerEmailTextFieldKey),
+      "test@test.com",
+    );
 
-    const User user = User(firstName: "test", lastName: "test", email: "test@test.com");
-    when(mockRegisterBloc.add(const RegisterFormSubmitted(data: user))).thenReturn(null);
+    const User user = User(
+      firstName: "test",
+      lastName: "test",
+      email: "test@test.com",
+    );
+    when(
+      mockRegisterBloc.add(const RegisterFormSubmitted(data: user)),
+    ).thenReturn(null);
     //verify(() => mockRegisterBloc.add(any())).called(1);
 
     //when submitButton clicked then expect an error
@@ -410,7 +431,11 @@ void main() {
     when(mockRegisterBloc.stream).thenAnswer(
       (_) => Stream.fromIterable([
         const RegisterCompletedState(
-          user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
+          user: User(
+            firstName: 'test',
+            lastName: 'test',
+            email: 'test@test.com',
+          ),
         ),
       ]),
     );
@@ -429,7 +454,11 @@ void main() {
     verify(
       mockRegisterBloc.add(
         const RegisterFormSubmitted(
-          data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
+          data: User(
+            firstName: 'test',
+            lastName: 'test',
+            email: 'test@test.com',
+          ),
         ),
       ),
     ).called(1);
@@ -449,8 +478,12 @@ void main() {
     await tester.enterText(lastNameFieldFinder, '');
     await tester.enterText(emailFieldFinder, 'test@test.com');
 
-    when(mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterErrorState(message: 'Error')]));
-    when(mockRegisterBloc.state).thenReturn(const RegisterErrorState(message: 'Error'));
+    when(mockRegisterBloc.stream).thenAnswer(
+      (_) => Stream.fromIterable([const RegisterErrorState(message: 'Error')]),
+    );
+    when(
+      mockRegisterBloc.state,
+    ).thenReturn(const RegisterErrorState(message: 'Error'));
     //await tester.pump();
 
     final saveButton = find.byKey(registerSubmitButtonKey);
@@ -461,7 +494,11 @@ void main() {
     verifyNever(
       mockRegisterBloc.add(
         const RegisterFormSubmitted(
-          data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
+          data: User(
+            firstName: 'test',
+            lastName: 'test',
+            email: 'test@test.com',
+          ),
         ),
       ),
     );

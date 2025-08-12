@@ -18,8 +18,13 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
     on<Logout>(_onLogout);
   }
 
-  FutureOr<void> _onChangeLanguage(ChangeLanguage event, Emitter<SettingsState> emit) async {
-    _log.debug("BEGIN: onChangeLanguage ChangeLanguage event: {}", [event.language]);
+  FutureOr<void> _onChangeLanguage(
+    ChangeLanguage event,
+    Emitter<SettingsState> emit,
+  ) async {
+    _log.debug("BEGIN: onChangeLanguage ChangeLanguage event: {}", [
+      event.language,
+    ]);
     emit(const SettingsLoading());
     try {
       if (event.language == null || event.language!.isEmpty) {
@@ -31,12 +36,19 @@ class SettingsBloc extends Bloc<SettingsEvent, SettingsState> {
       }
     } catch (e) {
       emit(const SettingsFailure(message: "Change Language Error"));
-      _log.error("END:onChangeLanguage ChangeLanguage event failure: {}", ["Change Language Error"]);
+      _log.error("END:onChangeLanguage ChangeLanguage event failure: {}", [
+        "Change Language Error",
+      ]);
     }
   }
 
-  FutureOr<void> _onChangeTheme(ChangeTheme event, Emitter<SettingsState> emit) async {
-    _log.debug("BEGIN: onChangeTheme ChangeTheme event: {}", [event.theme.name]);
+  FutureOr<void> _onChangeTheme(
+    ChangeTheme event,
+    Emitter<SettingsState> emit,
+  ) async {
+    _log.debug("BEGIN: onChangeTheme ChangeTheme event: {}", [
+      event.theme.name,
+    ]);
     emit(const SettingsLoading());
 
     // Change the theme

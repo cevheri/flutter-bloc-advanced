@@ -38,7 +38,8 @@ void main() {
       routes: [
         GoRoute(
           path: ApplicationRoutesConstants.loginOtp,
-          builder: (context, state) => BlocProvider.value(value: mockLoginBloc, child: OtpEmailScreen()),
+          builder: (context, state) =>
+              BlocProvider.value(value: mockLoginBloc, child: OtpEmailScreen()),
         ),
         GoRoute(
           path: '${ApplicationRoutesConstants.loginOtpVerify}/:email',
@@ -49,14 +50,23 @@ void main() {
         ),
         GoRoute(
           path: ApplicationRoutesConstants.login,
-          builder: (context, state) => BlocProvider.value(value: mockLoginBloc, child: LoginScreen()),
+          builder: (context, state) =>
+              BlocProvider.value(value: mockLoginBloc, child: LoginScreen()),
         ),
       ],
     );
 
     testWidget = AdaptiveTheme(
-      light: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
-      dark: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
+      light: ThemeData(
+        useMaterial3: false,
+        brightness: Brightness.light,
+        colorSchemeSeed: Colors.blueGrey,
+      ),
+      dark: ThemeData(
+        useMaterial3: false,
+        brightness: Brightness.dark,
+        primarySwatch: Colors.blueGrey,
+      ),
       initial: AdaptiveThemeMode.light,
       builder: (light, dark) => MultiBlocProvider(
         providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],
@@ -118,12 +128,16 @@ void main() {
       await tester.pumpAndSettle();
 
       // THEN
-      verify(mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com'))).called(1);
+      verify(
+        mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com')),
+      ).called(1);
     });
 
     testWidgets('should show loading state when sending OTP', (tester) async {
       // GIVEN
-      when(mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.loading));
+      when(
+        mockLoginBloc.state,
+      ).thenReturn(const LoginState(status: LoginStatus.loading));
       await tester.pumpWidget(testWidget);
       await tester.pump();
 
@@ -132,7 +146,9 @@ void main() {
       expect(find.text(S.current.send_otp_code), findsOneWidget);
     });
 
-    testWidgets('should navigate to verify screen when OTP sent successfully', (tester) async {
+    testWidgets('should navigate to verify screen when OTP sent successfully', (
+      tester,
+    ) async {
       TestUtils().setupUnitTest();
 
       // Generate stream controller for login state
@@ -145,22 +161,33 @@ void main() {
       await tester.pumpAndSettle();
 
       // enter email and submit form
-      await tester.enterText(find.byType(FormBuilderTextField), 'test@example.com');
+      await tester.enterText(
+        find.byType(FormBuilderTextField),
+        'test@example.com',
+      );
       await tester.tap(find.byType(ResponsiveSubmitButton));
       await tester.pump();
 
       // emit loading state
       loginStateController.add(
-        const LoginState(status: LoginStatus.loading, email: 'test@example.com', loginMethod: LoginMethod.otp),
+        const LoginState(
+          status: LoginStatus.loading,
+          email: 'test@example.com',
+          loginMethod: LoginMethod.otp,
+        ),
       );
       await tester.pump();
 
       // emit success state
-      loginStateController.add(const LoginOtpSentState(email: 'test@example.com'));
+      loginStateController.add(
+        const LoginOtpSentState(email: 'test@example.com'),
+      );
       await tester.pumpAndSettle();
 
       // verify
-      verify(mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com'))).called(1);
+      verify(
+        mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com')),
+      ).called(1);
       expect(
         mockGoRouter.routerDelegate.currentConfiguration.uri.path,
         '${ApplicationRoutesConstants.loginOtpVerify}/test@example.com',
@@ -184,17 +211,25 @@ void main() {
       await tester.pumpAndSettle();
 
       // THEN
-      expect(mockGoRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.login);
+      expect(
+        mockGoRouter.routerDelegate.currentConfiguration.uri.path,
+        ApplicationRoutesConstants.login,
+      );
     });
 
     testWidgets('should show error state', (tester) async {
       // GIVEN
-      when(mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.failure));
+      when(
+        mockLoginBloc.state,
+      ).thenReturn(const LoginState(status: LoginStatus.failure));
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
       // THEN
-      expect(mockGoRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.loginOtp);
+      expect(
+        mockGoRouter.routerDelegate.currentConfiguration.uri.path,
+        ApplicationRoutesConstants.loginOtp,
+      );
     });
 
     group('Localization Tests', () {
@@ -209,7 +244,9 @@ void main() {
         expect(find.text(S.current.send_otp_code), findsOneWidget);
       });
 
-      testWidgets(skip: true, 'should display texts in Turkish', (tester) async {
+      testWidgets(skip: true, 'should display texts in Turkish', (
+        tester,
+      ) async {
         // GIVEN
         AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
         SharedPreferences.setMockInitialValues({});
@@ -219,8 +256,16 @@ void main() {
         await S.load(const Locale('tr'));
 
         final turkishWidget = AdaptiveTheme(
-          light: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
-          dark: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
+          light: ThemeData(
+            useMaterial3: false,
+            brightness: Brightness.light,
+            colorSchemeSeed: Colors.blueGrey,
+          ),
+          dark: ThemeData(
+            useMaterial3: false,
+            brightness: Brightness.dark,
+            primarySwatch: Colors.blueGrey,
+          ),
           initial: AdaptiveThemeMode.light,
           builder: (light, dark) => MultiBlocProvider(
             providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],

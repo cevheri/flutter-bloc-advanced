@@ -38,10 +38,16 @@ void main() {
     authorityBloc = MockAuthorityBloc();
     changePasswordBloc = MockChangePasswordBloc();
 
-    when(changePasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ChangePasswordInitialState()]));
-    when(changePasswordBloc.state).thenReturn(const ChangePasswordInitialState());
+    when(changePasswordBloc.stream).thenAnswer(
+      (_) => Stream.fromIterable([const ChangePasswordInitialState()]),
+    );
+    when(
+      changePasswordBloc.state,
+    ).thenReturn(const ChangePasswordInitialState());
 
-    when(authorityBloc.stream).thenAnswer((_) => Stream.fromIterable([const AuthorityState()]));
+    when(
+      authorityBloc.stream,
+    ).thenAnswer((_) => Stream.fromIterable([const AuthorityState()]));
     when(authorityBloc.state).thenReturn(const AuthorityState());
   });
 
@@ -59,7 +65,9 @@ void main() {
       home: MultiBlocProvider(
         providers: [
           BlocProvider<AuthorityBloc>(create: (context) => authorityBloc),
-          BlocProvider<ChangePasswordBloc>(create: (context) => changePasswordBloc),
+          BlocProvider<ChangePasswordBloc>(
+            create: (context) => changePasswordBloc,
+          ),
         ],
         child: ChangePasswordScreen(),
       ),
@@ -100,7 +108,9 @@ void main() {
     });
 
     /// validate field name with English translation
-    testWidgets(skip: true, "Render Screen Validate Field Name Successful", (tester) async {
+    testWidgets(skip: true, "Render Screen Validate Field Name Successful", (
+      tester,
+    ) async {
       //Given
       await tester.pumpWidget(getWidget());
       //When
@@ -124,10 +134,14 @@ void main() {
 
     testWidgets("Validate loading state", (WidgetTester tester) async {
       // Given
-      when(
-        changePasswordBloc.stream,
-      ).thenAnswer((_) => Stream.fromIterable([const ChangePasswordState(status: ChangePasswordStatus.loading)]));
-      when(changePasswordBloc.state).thenReturn(const ChangePasswordState(status: ChangePasswordStatus.loading));
+      when(changePasswordBloc.stream).thenAnswer(
+        (_) => Stream.fromIterable([
+          const ChangePasswordState(status: ChangePasswordStatus.loading),
+        ]),
+      );
+      when(changePasswordBloc.state).thenReturn(
+        const ChangePasswordState(status: ChangePasswordStatus.loading),
+      );
       await tester.pumpWidget(getWidget());
       //When:
       await tester.pump();
@@ -137,10 +151,14 @@ void main() {
 
     testWidgets("Validate success state", (WidgetTester tester) async {
       // Given
-      when(
-        changePasswordBloc.stream,
-      ).thenAnswer((_) => Stream.fromIterable([const ChangePasswordState(status: ChangePasswordStatus.success)]));
-      when(changePasswordBloc.state).thenReturn(const ChangePasswordState(status: ChangePasswordStatus.success));
+      when(changePasswordBloc.stream).thenAnswer(
+        (_) => Stream.fromIterable([
+          const ChangePasswordState(status: ChangePasswordStatus.success),
+        ]),
+      );
+      when(changePasswordBloc.state).thenReturn(
+        const ChangePasswordState(status: ChangePasswordStatus.success),
+      );
       await tester.pumpWidget(getWidget());
       //When:
       await tester.pump();
@@ -150,10 +168,14 @@ void main() {
 
     testWidgets("Validate failure state", (WidgetTester tester) async {
       // Given
+      when(changePasswordBloc.stream).thenAnswer(
+        (_) => Stream.fromIterable([
+          const ChangePasswordErrorState(message: "Failed"),
+        ]),
+      );
       when(
-        changePasswordBloc.stream,
-      ).thenAnswer((_) => Stream.fromIterable([const ChangePasswordErrorState(message: "Failed")]));
-      when(changePasswordBloc.state).thenReturn(const ChangePasswordErrorState(message: "Failed"));
+        changePasswordBloc.state,
+      ).thenReturn(const ChangePasswordErrorState(message: "Failed"));
       await tester.pumpWidget(getWidget());
       //When:
       await tester.pumpAndSettle(const Duration(seconds: 3));
@@ -178,45 +200,57 @@ void main() {
   });
 
   group("ChangePasswordScreen SubmitButtonTest", () {
-    testWidgets('given valid password when submit button clicked then change password', (tester) async {
-      when(
-        changePasswordBloc.add(
-          const ChangePasswordChanged(currentPassword: "currentPassword", newPassword: "newPassword"),
-        ),
-      ).thenAnswer((_) async => const ChangePasswordCompletedState());
-      // Given
-      await tester.pumpWidget(Container());
-      await tester.pumpAndSettle();
-      await tester.pumpWidget(getWidget());
-      // When
-      await tester.pumpAndSettle();
+    testWidgets(
+      'given valid password when submit button clicked then change password',
+      (tester) async {
+        when(
+          changePasswordBloc.add(
+            const ChangePasswordChanged(
+              currentPassword: "currentPassword",
+              newPassword: "newPassword",
+            ),
+          ),
+        ).thenAnswer((_) async => const ChangePasswordCompletedState());
+        // Given
+        await tester.pumpWidget(Container());
+        await tester.pumpAndSettle();
+        await tester.pumpWidget(getWidget());
+        // When
+        await tester.pumpAndSettle();
 
-      // Then
+        // Then
 
-      final currentPasswordField = find.byKey(changePasswordTextFieldCurrentPasswordKey);
-      expect(currentPasswordField, findsOneWidget);
-      //debugPrint("currentPasswordField: $currentPasswordField");
+        final currentPasswordField = find.byKey(
+          changePasswordTextFieldCurrentPasswordKey,
+        );
+        expect(currentPasswordField, findsOneWidget);
+        //debugPrint("currentPasswordField: $currentPasswordField");
 
-      final newPasswordField = find.byKey(changePasswordTextFieldNewPasswordKey);
-      expect(newPasswordField, findsOneWidget);
-      //debugPrint("newPasswordField: $newPasswordField");
+        final newPasswordField = find.byKey(
+          changePasswordTextFieldNewPasswordKey,
+        );
+        expect(newPasswordField, findsOneWidget);
+        //debugPrint("newPasswordField: $newPasswordField");
 
-      final submitButton = find.byKey(changePasswordButtonSubmitKey);
-      expect(submitButton, findsOneWidget);
-      //debugPrint("submitButton: $submitButton");
+        final submitButton = find.byKey(changePasswordButtonSubmitKey);
+        expect(submitButton, findsOneWidget);
+        //debugPrint("submitButton: $submitButton");
 
-      await tester.enterText(currentPasswordField, 'currentPassword');
-      await tester.enterText(newPasswordField, 'newPassword');
-      await tester.pumpAndSettle();
-      expect(find.text('currentPassword'), findsOneWidget);
-      expect(find.text('newPassword'), findsOneWidget);
+        await tester.enterText(currentPasswordField, 'currentPassword');
+        await tester.enterText(newPasswordField, 'newPassword');
+        await tester.pumpAndSettle();
+        expect(find.text('currentPassword'), findsOneWidget);
+        expect(find.text('newPassword'), findsOneWidget);
 
-      await tester.tap(submitButton);
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+        await tester.tap(submitButton);
+        await tester.pumpAndSettle(const Duration(seconds: 1));
 
-      //verify(changePasswordBloc.add(any)).called(1);
-    });
-    testWidgets('given same password when submit button clicked then change password', (tester) async {
+        //verify(changePasswordBloc.add(any)).called(1);
+      },
+    );
+    testWidgets('given same password when submit button clicked then change password', (
+      tester,
+    ) async {
       // Given
       // when(changePasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ChangePasswordState(status: ChangePasswordStatus.failure)]));
       // when(changePasswordBloc.state).thenReturn(const ChangePasswordState(status: ChangePasswordStatus.failure));
@@ -225,8 +259,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // When
-      final currentPasswordField = find.byKey(changePasswordTextFieldCurrentPasswordKey);
-      final newPasswordField = find.byKey(changePasswordTextFieldNewPasswordKey);
+      final currentPasswordField = find.byKey(
+        changePasswordTextFieldCurrentPasswordKey,
+      );
+      final newPasswordField = find.byKey(
+        changePasswordTextFieldNewPasswordKey,
+      );
       final submitButton = find.byKey(changePasswordButtonSubmitKey);
 
       expect(currentPasswordField, findsOneWidget);
@@ -253,7 +291,10 @@ void main() {
       //When enter same password then bloc should emit failure state
       verify(
         changePasswordBloc.add(
-          const ChangePasswordChanged(currentPassword: 'samePassword', newPassword: 'samePassword'),
+          const ChangePasswordChanged(
+            currentPassword: 'samePassword',
+            newPassword: 'samePassword',
+          ),
         ),
       );
       // expect(changePasswordBloc.state, const ChangePasswordState(status: ChangePasswordStatus.failure));

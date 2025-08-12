@@ -47,21 +47,33 @@ void main() {
 
     // ChangePasswordInitialState prob state test
     test("ChangePasswordInitialState", () {
-      expect(const ChangePasswordInitialState(), const ChangePasswordInitialState());
+      expect(
+        const ChangePasswordInitialState(),
+        const ChangePasswordInitialState(),
+      );
     });
 
     // ChangePasswordPasswordCompletedState
     test("ChangePasswordPasswordCompletedState", () {
-      expect(const ChangePasswordCompletedState(), const ChangePasswordCompletedState());
+      expect(
+        const ChangePasswordCompletedState(),
+        const ChangePasswordCompletedState(),
+      );
     });
 
     // ChangePasswordPasswordErrorState
     test("ChangePasswordPasswordErrorState", () {
-      expect(const ChangePasswordErrorState(message: ""), const ChangePasswordErrorState(message: ""));
+      expect(
+        const ChangePasswordErrorState(message: ""),
+        const ChangePasswordErrorState(message: ""),
+      );
     });
 
     test("copyWith state", () {
-      expect(const ChangePasswordState().copyWith(), const ChangePasswordState());
+      expect(
+        const ChangePasswordState().copyWith(),
+        const ChangePasswordState(),
+      );
     });
     test("copyWith initialState", () {
       expect(
@@ -101,7 +113,10 @@ void main() {
       );
     });
     test("TogglePasswordVisibility", () {
-      expect(const TogglePasswordVisibility(), const TogglePasswordVisibility());
+      expect(
+        const TogglePasswordVisibility(),
+        const TogglePasswordVisibility(),
+      );
     });
   });
   //endregion event
@@ -121,10 +136,19 @@ void main() {
       Future<int> output = Future.value(HttpStatus.ok);
       method() => repository.changePassword(input);
 
-      final event = ChangePasswordChanged(currentPassword: input.currentPassword!, newPassword: input.newPassword!);
-      const loadingState = ChangePasswordState(status: ChangePasswordStatus.loading);
-      const successState = ChangePasswordState(status: ChangePasswordStatus.success);
-      const errorState = ChangePasswordState(status: ChangePasswordStatus.failure);
+      final event = ChangePasswordChanged(
+        currentPassword: input.currentPassword!,
+        newPassword: input.newPassword!,
+      );
+      const loadingState = ChangePasswordState(
+        status: ChangePasswordStatus.loading,
+      );
+      const successState = ChangePasswordState(
+        status: ChangePasswordStatus.success,
+      );
+      const errorState = ChangePasswordState(
+        status: ChangePasswordStatus.failure,
+      );
 
       const statesSuccess = [loadingState, successState];
       const statesError = [loadingState, errorState];

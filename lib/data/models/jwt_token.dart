@@ -34,7 +34,10 @@ class JWTToken extends Equatable {
 
   @override
   bool operator ==(Object other) =>
-      identical(this, other) || other is JWTToken && runtimeType == other.runtimeType && idToken == other.idToken;
+      identical(this, other) ||
+      other is JWTToken &&
+          runtimeType == other.runtimeType &&
+          idToken == other.idToken;
 
   @override
   int get hashCode => idToken.hashCode;

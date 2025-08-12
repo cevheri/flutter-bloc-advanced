@@ -48,11 +48,20 @@ class App extends StatelessWidget {
   MultiBlocProvider _buildMultiBlocProvider(ThemeData light, ThemeData dark) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<LoginBloc>(create: (_) => LoginBloc(repository: LoginRepository())),
-        BlocProvider<AuthorityBloc>(create: (_) => AuthorityBloc(repository: AuthorityRepository())),
-        BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
+        BlocProvider<LoginBloc>(
+          create: (_) => LoginBloc(repository: LoginRepository()),
+        ),
+        BlocProvider<AuthorityBloc>(
+          create: (_) => AuthorityBloc(repository: AuthorityRepository()),
+        ),
+        BlocProvider<AccountBloc>(
+          create: (_) => AccountBloc(repository: AccountRepository()),
+        ),
         BlocProvider<DrawerBloc>(
-          create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository()),
+          create: (_) => DrawerBloc(
+            loginRepository: LoginRepository(),
+            menuRepository: MenuRepository(),
+          ),
         ),
       ],
       child: AppGoRouterConfig.routeBuilder(light, dark, language),

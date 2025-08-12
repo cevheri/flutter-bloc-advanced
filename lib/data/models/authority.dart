@@ -26,7 +26,8 @@ class Authority extends Equatable {
   static List<String?> fromJsonList(List<dynamic> json) =>
       json.map((value) => Authority.fromJson(value)?.name).toList();
 
-  static List<String?> fromJsonStringList(String json) => fromJsonList(jsonDecode(json));
+  static List<String?> fromJsonStringList(String json) =>
+      fromJsonList(jsonDecode(json));
 
   Map<String, dynamic>? toJson() {
     return {'name': name};

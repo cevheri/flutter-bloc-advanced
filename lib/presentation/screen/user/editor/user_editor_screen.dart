@@ -17,20 +17,34 @@ class UserEditorScreen extends StatelessWidget {
   final String? username;
   final EditorFormMode mode;
 
-  const UserEditorScreen({super.key, this.id, this.username, required this.mode});
+  const UserEditorScreen({
+    super.key,
+    this.id,
+    this.username,
+    required this.mode,
+  });
 
   @override
   Widget build(BuildContext context) {
     final bloc = context.read<UserBloc>();
     final userId = id ?? username ?? '';
-    final initialEvent = userId.isNotEmpty ? UserFetchEvent(userId) : const UserEditorInit();
+    final initialEvent = userId.isNotEmpty
+        ? UserFetchEvent(userId)
+        : const UserEditorInit();
     bloc.add(initialEvent);
     return UserEditorWidget(mode: mode);
   }
 }
 
-_showMessage(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String title, String content) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content), duration: const Duration(seconds: 2)));
+_showMessage(
+  BuildContext context,
+  GlobalKey<ScaffoldState> scaffoldKey,
+  String title,
+  String content,
+) {
+  ScaffoldMessenger.of(context).showSnackBar(
+    SnackBar(content: Text(content), duration: const Duration(seconds: 2)),
+  );
 }
 
 class UserEditorWidget extends StatelessWidget {
@@ -46,20 +60,38 @@ class UserEditorWidget extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == UserStatus.loading) {
-          _showMessage(context, _scaffoldKey, S.of(context).loading, S.of(context).loading);
+          _showMessage(
+            context,
+            _scaffoldKey,
+            S.of(context).loading,
+            S.of(context).loading,
+          );
         }
 
         if (state.status == UserStatus.success) {
-          _showMessage(context, _scaffoldKey, S.of(context).success, S.of(context).success);
+          _showMessage(
+            context,
+            _scaffoldKey,
+            S.of(context).success,
+            S.of(context).success,
+          );
         }
 
         if (state.status == UserStatus.failure) {
-          _showMessage(context, _scaffoldKey, S.of(context).failed, S.of(context).failed);
+          _showMessage(
+            context,
+            _scaffoldKey,
+            S.of(context).failed,
+            S.of(context).failed,
+          );
         }
       },
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
-        return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context, state));
+        return Scaffold(
+          appBar: _buildAppBar(context),
+          body: _buildBody(context, state),
+        );
       },
     );
   }
@@ -75,7 +107,11 @@ class UserEditorWidget extends StatelessWidget {
     );
   }
 
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
+  Future<void> _handlePopScope(
+    bool didPop,
+    Object? data, [
+    BuildContext? contextParam,
+  ]) async {
     final context = contextParam ?? data as BuildContext;
 
     if (mode == EditorFormMode.view) {
@@ -86,7 +122,9 @@ class UserEditorWidget extends StatelessWidget {
 
     if (!context.mounted) return;
 
-    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+    if (didPop ||
+        !(_formKey.currentState?.isDirty ?? false) ||
+        _formKey.currentState == null) {
       context.go(ApplicationRoutesConstants.userList);
       return;
     }
@@ -104,8 +142,14 @@ class UserEditorWidget extends StatelessWidget {
         title: Text(S.of(context).warning),
         content: Text(S.of(context).unsaved_changes),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(S.of(context).yes)),
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(S.of(context).no)),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: Text(S.of(context).yes),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: Text(S.of(context).no),
+          ),
         ],
       ),
     );
@@ -115,7 +159,8 @@ class UserEditorWidget extends StatelessWidget {
     if (state.status == UserStatus.loading) {
       return const Center(child: CircularProgressIndicator());
     }
-    if ((mode == EditorFormMode.edit || mode == EditorFormMode.view) && state.data == null) {
+    if ((mode == EditorFormMode.edit || mode == EditorFormMode.view) &&
+        state.data == null) {
       //return const Center(child: CircularProgressIndicator());
       return const Center(child: Text("No data"));
     }
@@ -158,7 +203,8 @@ class UserEditorWidget extends StatelessWidget {
   Widget _submitButtonField(BuildContext context, UserState state) {
     return ResponsiveSubmitButton(
       key: const Key('userEditorSubmitButtonKey'),
-      onPressed: () => state.status == UserStatus.loading ? null : _onSubmit(context, state),
+      onPressed: () =>
+          state.status == UserStatus.loading ? null : _onSubmit(context, state),
       isLoading: state.status == UserStatus.loading,
     );
   }
@@ -189,12 +235,35 @@ class UserEditorWidget extends StatelessWidget {
   List<Widget> _buildFormFields(BuildContext context, UserState state) {
     debugPrint("checkpoint build form fields: ${state.data?.login}");
     return [
-      UserFormFields.usernameField(context, state.data?.login, enabled: mode == EditorFormMode.create),
-      UserFormFields.firstNameField(context, state.data?.firstName, enabled: mode != EditorFormMode.view),
-      UserFormFields.lastNameField(context, state.data?.lastName, enabled: mode != EditorFormMode.view),
-      UserFormFields.emailField(context, state.data?.email, enabled: mode != EditorFormMode.view),
-      UserFormFields.activatedField(context, state.data?.activated, enabled: mode != EditorFormMode.view),
-      AuthoritiesDropdown(enabled: mode != EditorFormMode.view, initialValue: state.data?.authorities?.firstOrNull),
+      UserFormFields.usernameField(
+        context,
+        state.data?.login,
+        enabled: mode == EditorFormMode.create,
+      ),
+      UserFormFields.firstNameField(
+        context,
+        state.data?.firstName,
+        enabled: mode != EditorFormMode.view,
+      ),
+      UserFormFields.lastNameField(
+        context,
+        state.data?.lastName,
+        enabled: mode != EditorFormMode.view,
+      ),
+      UserFormFields.emailField(
+        context,
+        state.data?.email,
+        enabled: mode != EditorFormMode.view,
+      ),
+      UserFormFields.activatedField(
+        context,
+        state.data?.activated,
+        enabled: mode != EditorFormMode.view,
+      ),
+      AuthoritiesDropdown(
+        enabled: mode != EditorFormMode.view,
+        initialValue: state.data?.authorities?.firstOrNull,
+      ),
     ];
   }
 

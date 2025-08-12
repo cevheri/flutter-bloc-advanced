@@ -18,21 +18,33 @@ void main() {
       expect(mockPasswordChangePayload.newPassword, 'new_password');
     });
 
-    test('should copy a ChangePassword instance with new values (copyWith)', () {
-      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
+    test(
+      'should copy a ChangePassword instance with new values (copyWith)',
+      () {
+        final entityUpd = mockPasswordChangePayload.copyWith(
+          currentPassword: 'new_password',
+          newPassword: 'password',
+        );
 
-      expect(entityUpd.currentPassword, 'new_password');
-      expect(entityUpd.newPassword, 'password');
-    });
+        expect(entityUpd.currentPassword, 'new_password');
+        expect(entityUpd.newPassword, 'password');
+      },
+    );
 
-    test('should copy a ChangePassword instance with new values (copyWith)', () {
-      final entityUpd = mockPasswordChangePayload.copyWith();
+    test(
+      'should copy a ChangePassword instance with new values (copyWith)',
+      () {
+        final entityUpd = mockPasswordChangePayload.copyWith();
 
-      expect(entityUpd == mockPasswordChangePayload, true);
-    });
+        expect(entityUpd == mockPasswordChangePayload, true);
+      },
+    );
 
     test('should compare two ChangePassword instances', () {
-      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
+      final entityUpd = mockPasswordChangePayload.copyWith(
+        currentPassword: 'new_password',
+        newPassword: 'password',
+      );
 
       expect(mockPasswordChangePayload == entityUpd, false);
     });
@@ -64,15 +76,24 @@ void main() {
     });
 
     test('should compare two ChangePassword instances props', () {
-      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
+      final entityUpd = mockPasswordChangePayload.copyWith(
+        currentPassword: 'new_password',
+        newPassword: 'password',
+      );
 
       expect(mockPasswordChangePayload.props == entityUpd.props, false);
     });
 
     test('should compare two ChangePassword instances toString', () {
-      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
+      final entityUpd = mockPasswordChangePayload.copyWith(
+        currentPassword: 'new_password',
+        newPassword: 'password',
+      );
 
-      expect(mockPasswordChangePayload.toString() == entityUpd.toString(), false);
+      expect(
+        mockPasswordChangePayload.toString() == entityUpd.toString(),
+        false,
+      );
     });
   });
 }
