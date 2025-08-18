@@ -68,6 +68,16 @@ flutter_intl:
 flutter:
   uses-material-design: true
   generate: true
+  
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+  
   assets:
     - assets/mock/
     - assets/images/
