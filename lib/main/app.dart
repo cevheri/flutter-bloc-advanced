@@ -1,6 +1,7 @@
 import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/common_widgets/web_back_button_disabler.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/app_go_router_config.dart';
 
 import '../data/repository/account_repository.dart';
@@ -55,7 +56,9 @@ class App extends StatelessWidget {
           create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository()),
         ),
       ],
-      child: AppGoRouterConfig.routeBuilder(light, dark, language),
+      child: WebBackButtonDisabler(
+        child: AppGoRouterConfig.routeBuilder(light, dark, language),
+      ),
     );
   }
 }

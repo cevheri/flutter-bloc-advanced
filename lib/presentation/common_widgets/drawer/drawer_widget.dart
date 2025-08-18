@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/presentation/common_widgets/font_test_widget.dart';
 import 'package:flutter_bloc_advance/presentation/common_widgets/language_notifier.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
@@ -43,51 +44,70 @@ class ApplicationDrawer extends StatelessWidget {
           return ValueListenableBuilder<String>(
             valueListenable: LanguageNotifier.current,
             builder: (context, lang, _) {
-              return Drawer(
-                key: Key("drawer-${state.language}-${state.theme}"),
-                child: SingleChildScrollView(
-                  child: Column(
-                    spacing: 16,
-                    children: [
-                      _buildMenuList(menuNodes, state),
-                      SwitchListTile(
-                        key: const Key("drawer-switch-theme"),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode)],
-                        ),
-                        value: isDarkMode,
-                        onChanged: (value) {
-                          //debugPrint("BEGIN:ON_PRESSED.value - ${value}");
-                          final newTheme = value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
-                          //debugPrint("BEGIN:ON_PRESSED - current newTheme : ${newTheme}");
-                          context.read<DrawerBloc>().add(ChangeThemeEvent(theme: newTheme));
-                          if (value) {
-                            AdaptiveTheme.of(context).setDark();
-                          } else {
-                            AdaptiveTheme.of(context).setLight();
-                          }
-                          Scaffold.of(context).closeDrawer();
-                          // Stay on the same route; theme change rebuilds automatically
-                        },
+              return AdaptiveTheme(
+                light: Theme.of(context),
+                dark: Theme.of(context),
+                initial: AdaptiveThemeMode.system,
+                builder: (light, dark) {
+                  return Drawer(
+                    key: Key("drawer-${state.language}-${state.theme}"),
+                    child: SingleChildScrollView(
+                      child: Column(
+                        spacing: 16,
+                        children: [
+                          _buildMenuList(menuNodes, state),
+                          SwitchListTile(
+                            key: const Key("drawer-switch-theme"),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode)],
+                            ),
+                            value: isDarkMode,
+                            onChanged: (value) {
+                              //debugPrint("BEGIN:ON_PRESSED.value - ${value}");
+                              final newTheme = value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
+                              //debugPrint("BEGIN:ON_PRESSED - current newTheme : ${newTheme}");
+                              context.read<DrawerBloc>().add(ChangeThemeEvent(theme: newTheme));
+                              if (value) {
+                                AdaptiveTheme.of(context).setDark();
+                              } else {
+                                AdaptiveTheme.of(context).setLight();
+                              }
+                              // Drawer'ı kapatma - tema değişikliği için drawer açık kalmalı
+                              // Scaffold.of(context).closeDrawer();
+                              // Stay on the same route; theme change rebuilds automatically
+                            },
+                          ),
+                          SwitchListTile(
+                            key: const Key("drawer-switch-language"),
+                            title: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [Text(isEnglish ? S.of(context).english : S.of(context).turkish)],
+                            ),
+                            value: isEnglish,
+                            onChanged: (value) {
+                              final newLang = value ? 'en' : 'tr';
+                              context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
+                              // Stay on the same route; localization builder will rebuild
+                            },
+                          ),
+                          ListTile(
+                            leading: const Icon(Icons.font_download),
+                            title: const Text('Font Test - Poppins'),
+                            onTap: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (context) => const FontTestWidget(),
+                                ),
+                              );
+                            },
+                          ),
+                          _buildLogoutButton(context),
+                        ],
                       ),
-                      SwitchListTile(
-                        key: const Key("drawer-switch-language"),
-                        title: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [Text(isEnglish ? S.of(context).english : S.of(context).turkish)],
-                        ),
-                        value: isEnglish,
-                        onChanged: (value) {
-                          final newLang = value ? 'en' : 'tr';
-                          context.read<DrawerBloc>().add(ChangeLanguageEvent(language: newLang));
-                          // Stay on the same route; localization builder will rebuild
-                        },
-                      ),
-                      _buildLogoutButton(context),
-                    ],
-                  ),
-                ),
+                    ),
+                  );
+                },
               );
             },
           );

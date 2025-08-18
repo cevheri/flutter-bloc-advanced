@@ -18,7 +18,12 @@ class AppTheme {
   }
 
   static ThemeData _themeData(ColorScheme colorScheme) {
-    final base = ThemeData(colorScheme: colorScheme, useMaterial3: true, brightness: colorScheme.brightness);
+    final base = ThemeData(
+      colorScheme: colorScheme, 
+      useMaterial3: true, 
+      brightness: colorScheme.brightness,
+      fontFamily: 'Poppins', // Poppins fontunu varsayılan font olarak ayarla
+    );
     final textTheme = AppTypography.textTheme(base.textTheme);
 
     return base.copyWith(
@@ -29,6 +34,7 @@ class AppTheme {
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
         centerTitle: false,
+        titleTextStyle: textTheme.titleLarge?.copyWith(fontFamily: 'Poppins'),
       ),
       inputDecorationTheme: InputDecorationTheme(
         isDense: false,
@@ -41,33 +47,46 @@ class AppTheme {
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        helperStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(179)),
+        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontFamily: 'Poppins'),
+        helperStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontFamily: 'Poppins'),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(179), fontFamily: 'Poppins'),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: colorScheme.inverseSurface,
-        contentTextStyle: TextStyle(color: colorScheme.onInverseSurface),
+        contentTextStyle: TextStyle(color: colorScheme.onInverseSurface, fontFamily: 'Poppins'),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: colorScheme.surfaceTint,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        titleTextStyle: textTheme.titleLarge?.copyWith(fontFamily: 'Poppins'),
+        contentTextStyle: textTheme.bodyMedium?.copyWith(fontFamily: 'Poppins'),
       ),
       listTileTheme: ListTileThemeData(
         iconColor: colorScheme.onSurfaceVariant,
         textColor: colorScheme.onSurface,
         selectedColor: colorScheme.primary,
+        titleTextStyle: textTheme.bodyLarge?.copyWith(fontFamily: 'Poppins'),
+        subtitleTextStyle: textTheme.bodyMedium?.copyWith(fontFamily: 'Poppins'),
       ),
       filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        style: FilledButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: textTheme.labelLarge?.copyWith(fontFamily: 'Poppins'),
+        ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
-        style: OutlinedButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        style: OutlinedButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: textTheme.labelLarge?.copyWith(fontFamily: 'Poppins'),
+        ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+        style: TextButton.styleFrom(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: textTheme.labelLarge?.copyWith(fontFamily: 'Poppins'),
+        ),
       ),
       cardTheme: CardThemeData(
         surfaceTintColor: colorScheme.surfaceTint,

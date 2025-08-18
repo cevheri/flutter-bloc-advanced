@@ -21,55 +21,110 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context));
+    return Scaffold(
+      key: _scaffoldKey, 
+      appBar: _buildAppBar(context), 
+      body: _buildBody(context)
+    );
   }
 
   AppBar _buildAppBar(BuildContext context) =>
-      AppBar(title: const Text(AppConstants.appName), leading: const SizedBox.shrink());
+      AppBar(
+        title: const Text(AppConstants.appName), 
+        leading: const SizedBox.shrink(),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+      );
 
   Widget _buildBody(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 900;
-        final formCard = _buildFormCard(context);
-        if (!isWide) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: Center(
-              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: formCard),
-            ),
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Row(
-            children: [
-              Expanded(child: _buildHeroPanel(context)),
-              Expanded(
-                child: Center(
-                  child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 520), child: formCard),
-                ),
-              ),
-            ],
+    return Container(
+      decoration: BoxDecoration(
+        image: DecorationImage(
+          image: const AssetImage(LocaleConstants.logoDarkUrl),
+          fit: BoxFit.cover,
+          colorFilter: ColorFilter.mode(
+            Colors.black.withValues(alpha: 0.3),
+            BlendMode.srcOver,
           ),
-        );
-      },
+        ),
+      ),
+      child: Center(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isWide = constraints.maxWidth >= 900;
+            final formCard = _buildFormCard(context);
+            
+            if (!isWide) {
+              // Mobil cihazlar için
+              return Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 560), 
+                  child: formCard
+                ),
+              );
+            } else {
+              // Geniş ekranlar için - login formu ortada, quote altta
+              return Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    // Üstte boş alan
+                    const Expanded(flex: 1, child: SizedBox()),
+                    // Ortada login formu
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 520), 
+                      child: formCard
+                    ),
+                    // Altta quote
+                    const Expanded(flex: 1, child: SizedBox()),
+                    // Quote metni
+                    Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Text(
+                          '"Simply all the tools that my team and I need."',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            shadows: [const Shadow(blurRadius: 6, color: Colors.black45)],
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            }
+          },
+        ),
+      ),
     );
   }
 
   Widget _buildFormCard(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
       builder: (context, state) {
-        return Card(
-          elevation: 1,
-          clipBehavior: Clip.antiAlias,
+        return Container(
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.1),
+                blurRadius: 10,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: Padding(
             padding: const EdgeInsets.all(24),
             child: ResponsiveFormBuilder(
               formKey: _loginFormKey,
               children: <Widget>[
                 Text(
-                  S.of(context).login, // use available localization key
+                  S.of(context).login,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
                 Text(
@@ -94,36 +149,6 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroPanel(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      height: double.infinity,
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage(LocaleConstants.logoDarkUrl),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            isDark ? Colors.black.withValues(alpha: 0.35) : Colors.white.withValues(alpha: 0.25),
-            BlendMode.srcOver,
-          ),
-        ),
-      ),
-      child: Align(
-        alignment: Alignment.bottomLeft,
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Text(
-            '"Simply all the tools that my team and I need."',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.onSurface,
-              shadows: [const Shadow(blurRadius: 6, color: Colors.black45)],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
   Widget _orDivider(BuildContext context) {
     final color = Theme.of(context).colorScheme.outlineVariant;
     return Row(
@@ -137,14 +162,6 @@ class LoginScreen extends StatelessWidget {
       ],
     );
   }
-
-  //  Image _logo(BuildContext context) {
-  //    if (Theme.of(context).brightness == Brightness.dark) {
-  //      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
-  //    } else {
-  //      return Image.asset(LocaleConstants.logoDarkUrl, width: MediaQuery.of(context).size.width * 0.2);
-  //    }
-  //  }
 
   Widget _usernameField(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(

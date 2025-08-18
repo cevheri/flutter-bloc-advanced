@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
+import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
@@ -23,14 +24,34 @@ class ListUserScreen extends StatelessWidget {
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
-      child: Scaffold(appBar: _buildAppBar(context), body: const UserListView()),
+      child: Scaffold(
+        appBar: _buildAppBar(context), 
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).colorScheme.surface,
+                Theme.of(context).colorScheme.surfaceContainerLow,
+              ],
+            ),
+          ),
+          child: const UserListView(),
+        ),
+      ),
     );
   }
 
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).list_user),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/')),
+      leading: IconButton(
+        icon: const Icon(Icons.arrow_back), 
+        onPressed: () => context.go('/')
+      ),
+      elevation: 0,
+      backgroundColor: Colors.transparent,
     );
   }
 
@@ -93,9 +114,9 @@ class UserListContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(30, 0, 30, 10),
+      padding: const EdgeInsets.fromLTRB(30, 20, 30, 30),
       child: Column(
-        spacing: 16,
+        spacing: 24,
         mainAxisSize: MainAxisSize.max,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -119,16 +140,37 @@ class UserSearchSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 30, 10),
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: FormBuilder(
         key: formKey,
         child: IntrinsicHeight(
           child: Row(
-            spacing: Spacing.small,
+            spacing: 16,
             mainAxisSize: MainAxisSize.max,
             children: [
-              SizedBox(width: 75, child: Text(S.of(context).filter)),
+              SizedBox(
+                width: 80, 
+                child: Text(
+                  S.of(context).filter,
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
               const Flexible(flex: 2, child: AuthoritiesDropdown()),
               const SizedBox(width: 200, child: PaginationControls()),
               const Flexible(child: SearchNameField()),
@@ -167,7 +209,7 @@ class PaginationControls extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            const Text("/"),
+            Text("/", style: Theme.of(context).textTheme.bodyMedium),
             const SizedBox(width: 10),
             Flexible(
               child: FormBuilderTextField(
@@ -196,7 +238,15 @@ class SearchNameField extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: 'name',
-      decoration: InputDecoration(hintText: S.of(context).name),
+      decoration: InputDecoration(
+        hintText: S.of(context).name,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        filled: true,
+        fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
+      ),
       initialValue: "",
     );
   }
@@ -212,29 +262,36 @@ class SearchActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Row(
       children: [
-        ElevatedButton(
+        FilledButton.icon(
           key: const Key("listUserSubmitButtonKey"),
-          style: _buttonStyle(),
           onPressed: () => _handleSearch(context),
-          child: Text(S.of(context).list),
+          icon: const Icon(Icons.search, size: 18),
+          label: Text(S.of(context).list),
+          style: FilledButton.styleFrom(
+            backgroundColor: colorScheme.primary,
+            foregroundColor: colorScheme.onPrimary,
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
-        const SizedBox(width: 10),
-        ElevatedButton(
+        const SizedBox(width: 12),
+        OutlinedButton.icon(
           key: const Key("listUserCreateButtonKey"),
-          style: _buttonStyle(),
-          onPressed: () => context.goNamed('userCreate'),
-          child: Text(S.of(context).new_user),
+          onPressed: () => context.goNamed('userCreate', extra: {'fromRoute': ApplicationRoutesConstants.userList}),
+          icon: const Icon(Icons.add, size: 18),
+          label: Text(S.of(context).new_user),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: colorScheme.primary,
+            side: BorderSide(color: colorScheme.primary),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
         ),
       ],
-    );
-  }
-
-  ButtonStyle _buttonStyle() {
-    return ElevatedButton.styleFrom(
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
     );
   }
 
@@ -260,28 +317,54 @@ class UserTableHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            TableColumnHeader(flex: 5, title: S.of(context).role),
-            const SizedBox(width: 5),
-            TableColumnHeader(flex: 3, title: S.of(context).login),
-            const SizedBox(width: 5),
-            TableColumnHeader(flex: 4, title: S.of(context).first_name),
-            const SizedBox(width: 5),
-            TableColumnHeader(flex: 4, title: S.of(context).last_name),
-            const SizedBox(width: 5),
-            TableColumnHeader(flex: 4, title: S.of(context).email),
-            const SizedBox(width: 5),
-            TableColumnHeader(flex: 3, title: S.of(context).active),
-            const SizedBox(width: 5),
-            const TableColumnHeader(flex: 3, title: "Actions"),
-          ],
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+    
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: colorScheme.surface,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
         ),
-        const Divider(height: 2, color: Colors.grey, thickness: 1.5),
-      ],
+        border: Border.all(color: colorScheme.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: colorScheme.shadow.withValues(alpha: 0.1),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              TableColumnHeader(flex: 5, title: S.of(context).role),
+              const SizedBox(width: 8),
+              TableColumnHeader(flex: 3, title: S.of(context).login),
+              const SizedBox(width: 8),
+              TableColumnHeader(flex: 4, title: S.of(context).first_name),
+              const SizedBox(width: 8),
+              TableColumnHeader(flex: 4, title: S.of(context).last_name),
+              const SizedBox(width: 8),
+              TableColumnHeader(flex: 4, title: S.of(context).email),
+              const SizedBox(width: 8),
+              TableColumnHeader(flex: 3, title: S.of(context).active),
+              const SizedBox(width: 8),
+              const TableColumnHeader(flex: 3, title: "Actions"),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Divider(
+            height: 1,
+            color: colorScheme.outlineVariant,
+            thickness: 1,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -298,12 +381,17 @@ class TableColumnHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    
     return Expanded(
       flex: flex,
       child: Text(
         title,
         textAlign: alignment,
-        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        style: textTheme.titleMedium?.copyWith(
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
       ),
     );
   }
@@ -322,11 +410,33 @@ class UserTableContent extends StatelessWidget {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         if (state.status == UserStatus.searchSuccess) {
-          return ListView.builder(
-            itemCount: state.userList?.length,
-            shrinkWrap: true,
-            physics: const ClampingScrollPhysics(),
-            itemBuilder: (context, index) => UserTableRow(user: state.userList?[index], index: index, formKey: formKey),
+          return Container(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.surface,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(16),
+                bottomRight: Radius.circular(16),
+              ),
+              border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+              boxShadow: [
+                BoxShadow(
+                  color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: ListView.builder(
+              itemCount: state.userList?.length,
+              shrinkWrap: true,
+              physics: const ClampingScrollPhysics(),
+              itemBuilder: (context, index) => UserTableRow(
+                user: state.userList?[index], 
+                index: index, 
+                formKey: formKey,
+                isLast: index == (state.userList?.length ?? 0) - 1,
+              ),
+            ),
           );
         }
         return const SizedBox.shrink();
@@ -342,31 +452,61 @@ class UserTableRow extends StatelessWidget {
   final dynamic user;
   final int index;
   final GlobalKey<FormBuilderState> formKey;
+  final bool isLast;
 
-  const UserTableRow({super.key, required this.user, required this.index, required this.formKey});
+  const UserTableRow({
+    super.key, 
+    required this.user, 
+    required this.index, 
+    required this.formKey,
+    required this.isLast,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Container(
-      height: 50,
-      decoration: _buildRowDecoration(context),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          UserTableCell(flex: 5, text: _getRoleText(context)),
-          const SizedBox(width: 5),
-          UserTableCell(flex: 3, text: user.login.toString()),
-          const SizedBox(width: 5),
-          UserTableCell(flex: 4, text: user.firstName.toString()),
-          const SizedBox(width: 5),
-          UserTableCell(flex: 4, text: user.lastName.toString()),
-          const SizedBox(width: 5),
-          UserTableCell(flex: 4, text: user.email.toString()),
-          const SizedBox(width: 5),
-          UserTableCell(flex: 3, text: user.activated! ? "active" : "passive"),
-          const SizedBox(width: 5),
-          UserActionButtons(userId: user.login!, formKey: formKey),
-        ],
+      height: 60,
+      decoration: BoxDecoration(
+        color: _buildRowColor(context),
+        borderRadius: isLast ? const BorderRadius.only(
+          bottomLeft: Radius.circular(16),
+          bottomRight: Radius.circular(16),
+        ) : null,
+        border: isLast ? null : Border(
+          bottom: BorderSide(
+            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
+            width: 0.5,
+          ),
+        ),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            UserTableCell(flex: 5, text: _getRoleText(context)),
+            const SizedBox(width: 8),
+            UserTableCell(flex: 3, text: user.login.toString()),
+            const SizedBox(width: 8),
+            UserTableCell(flex: 4, text: user.firstName.toString()),
+            const SizedBox(width: 8),
+            UserTableCell(flex: 4, text: user.lastName.toString()),
+            const SizedBox(width: 8),
+            UserTableCell(flex: 4, text: user.email.toString()),
+            const SizedBox(width: 8),
+            UserTableCell(
+              flex: 3, 
+              text: user.activated! ? "Active" : "Inactive",
+              textColor: user.activated! 
+                ? Colors.green 
+                : Colors.red,
+            ),
+            const SizedBox(width: 8),
+            UserActionButtons(userId: user.login!, formKey: formKey),
+          ],
+        ),
       ),
     );
   }
@@ -375,14 +515,14 @@ class UserTableRow extends StatelessWidget {
     return user.authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest;
   }
 
-  BoxDecoration _buildRowDecoration(BuildContext context) {
-    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+  Color _buildRowColor(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final isEvenRow = index % 2 == 0;
 
-    if (isDarkMode) {
-      return BoxDecoration(color: isEvenRow ? Colors.black26 : null);
+    if (isEvenRow) {
+      return colorScheme.surfaceContainerLowest;
     }
-    return BoxDecoration(color: isEvenRow ? Colors.blueGrey[50] : null);
+    return colorScheme.surface;
   }
 }
 
@@ -393,14 +533,30 @@ class UserTableCell extends StatelessWidget {
   final int flex;
   final String text;
   final TextAlign alignment;
+  final Color? textColor;
 
-  const UserTableCell({super.key, required this.flex, required this.text, this.alignment = TextAlign.left});
+  const UserTableCell({
+    super.key, 
+    required this.flex, 
+    required this.text, 
+    this.alignment = TextAlign.left,
+    this.textColor,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    
     return Expanded(
       flex: flex,
-      child: Text(text, textAlign: alignment),
+      child: Text(
+        text, 
+        textAlign: alignment,
+        style: textTheme.bodyMedium?.copyWith(
+          color: textColor ?? Theme.of(context).colorScheme.onSurface,
+          fontWeight: textColor != null ? FontWeight.w600 : FontWeight.normal,
+        ),
+      ),
     );
   }
 }
@@ -417,6 +573,8 @@ class UserActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return Expanded(
       flex: 3,
       child: LayoutBuilder(
@@ -429,16 +587,19 @@ class UserActionButtons extends StatelessWidget {
                 icon: Icons.edit,
                 onPressed: () => _handleEdit(context),
                 size: constraints.maxWidth / 4,
+                color: colorScheme.primary,
               ),
               _buildActionButton(
                 icon: Icons.visibility,
                 onPressed: () => _handleView(context),
                 size: constraints.maxWidth / 4,
+                color: colorScheme.secondary,
               ),
               _buildActionButton(
                 icon: Icons.delete,
                 onPressed: () => _showDeleteConfirmation(context),
                 size: constraints.maxWidth / 4,
+                color: colorScheme.error,
               ),
             ],
           );
@@ -447,14 +608,23 @@ class UserActionButtons extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton({required IconData icon, required VoidCallback onPressed, required double size}) {
-    return SizedBox(
+  Widget _buildActionButton({
+    required IconData icon, 
+    required VoidCallback onPressed, 
+    required double size,
+    required Color color,
+  }) {
+    return Container(
       width: size,
       height: size,
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(8),
+      ),
       child: IconButton(
         padding: EdgeInsets.zero,
         constraints: BoxConstraints(maxWidth: size, maxHeight: size),
-        icon: Icon(icon, size: 16),
+        icon: Icon(icon, size: 16, color: color),
         onPressed: onPressed,
       ),
     );
@@ -469,14 +639,28 @@ class UserActionButtons extends StatelessWidget {
   }
 
   void _showDeleteConfirmation(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text(S.of(context).warning),
+        backgroundColor: colorScheme.surface,
+        surfaceTintColor: colorScheme.surfaceTint,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Row(
+          children: [
+            Icon(Icons.warning, color: colorScheme.error),
+            const SizedBox(width: 8),
+            Text(S.of(context).warning),
+          ],
+        ),
         content: Text(S.of(context).delete_confirmation),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(S.of(context).no)),
           TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(S.of(context).no),
+          ),
+          FilledButton(
             onPressed: () {
               Navigator.pop(context);
               context.read<UserBloc>().add(UserDeleteEvent(userId ?? username ?? ""));
@@ -488,6 +672,10 @@ class UserActionButtons extends StatelessWidget {
                 }
               });
             },
+            style: FilledButton.styleFrom(
+              backgroundColor: colorScheme.error,
+              foregroundColor: colorScheme.onError,
+            ),
             child: Text(S.of(context).yes),
           ),
         ],
@@ -496,7 +684,6 @@ class UserActionButtons extends StatelessWidget {
   }
 
   void _refreshList(BuildContext context) {
-    //if (formKey.currentState?.saveAndValidate() ?? false) {
     context.read<UserBloc>().add(
       UserSearchEvent(
         page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
@@ -505,6 +692,5 @@ class UserActionButtons extends StatelessWidget {
         name: formKey.currentState!.fields['name']?.value,
       ),
     );
-    // }
   }
 }
