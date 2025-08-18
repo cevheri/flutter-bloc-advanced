@@ -19,8 +19,8 @@ class AppTheme {
 
   static ThemeData _themeData(ColorScheme colorScheme) {
     final base = ThemeData(
-      colorScheme: colorScheme, 
-      useMaterial3: true, 
+      colorScheme: colorScheme,
+      useMaterial3: true,
       brightness: colorScheme.brightness,
       fontFamily: 'Poppins', // Poppins fontunu varsayılan font olarak ayarla
     );

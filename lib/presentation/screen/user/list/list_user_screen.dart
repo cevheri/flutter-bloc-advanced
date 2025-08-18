@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
+
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
@@ -25,16 +25,13 @@ class ListUserScreen extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
       child: Scaffold(
-        appBar: _buildAppBar(context), 
+        appBar: _buildAppBar(context),
         body: Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [
-                Theme.of(context).colorScheme.surface,
-                Theme.of(context).colorScheme.surfaceContainerLow,
-              ],
+              colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.surfaceContainerLow],
             ),
           ),
           child: const UserListView(),
@@ -46,10 +43,7 @@ class ListUserScreen extends StatelessWidget {
   _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).list_user),
-      leading: IconButton(
-        icon: const Icon(Icons.arrow_back), 
-        onPressed: () => context.go('/')
-      ),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/')),
       elevation: 0,
       backgroundColor: Colors.transparent,
     );
@@ -142,7 +136,7 @@ class UserSearchSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -150,11 +144,7 @@ class UserSearchSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: FormBuilder(
@@ -165,11 +155,8 @@ class UserSearchSection extends StatelessWidget {
             mainAxisSize: MainAxisSize.max,
             children: [
               SizedBox(
-                width: 80, 
-                child: Text(
-                  S.of(context).filter,
-                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-                ),
+                width: 80,
+                child: Text(S.of(context).filter, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
               ),
               const Flexible(flex: 2, child: AuthoritiesDropdown()),
               const SizedBox(width: 200, child: PaginationControls()),
@@ -240,10 +227,7 @@ class SearchNameField extends StatelessWidget {
       name: 'name',
       decoration: InputDecoration(
         hintText: S.of(context).name,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         filled: true,
         fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
       ),
@@ -263,7 +247,7 @@ class SearchActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Row(
       children: [
         FilledButton.icon(
@@ -318,23 +302,15 @@ class UserTableHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: const BorderRadius.only(
-          topLeft: Radius.circular(16),
-          topRight: Radius.circular(16),
-        ),
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
         border: Border.all(color: colorScheme.outlineVariant),
         boxShadow: [
-          BoxShadow(
-            color: colorScheme.shadow.withValues(alpha: 0.1),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
+          BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
         ],
       ),
       child: Column(
@@ -358,11 +334,7 @@ class UserTableHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Divider(
-            height: 1,
-            color: colorScheme.outlineVariant,
-            thickness: 1,
-          ),
+          Divider(height: 1, color: colorScheme.outlineVariant, thickness: 1),
         ],
       ),
     );
@@ -382,7 +354,7 @@ class TableColumnHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Expanded(
       flex: flex,
       child: Text(
@@ -413,10 +385,7 @@ class UserTableContent extends StatelessWidget {
           return Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(16),
-                bottomRight: Radius.circular(16),
-              ),
+              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
               border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
               boxShadow: [
                 BoxShadow(
@@ -431,8 +400,8 @@ class UserTableContent extends StatelessWidget {
               shrinkWrap: true,
               physics: const ClampingScrollPhysics(),
               itemBuilder: (context, index) => UserTableRow(
-                user: state.userList?[index], 
-                index: index, 
+                user: state.userList?[index],
+                index: index,
                 formKey: formKey,
                 isLast: index == (state.userList?.length ?? 0) - 1,
               ),
@@ -454,32 +423,22 @@ class UserTableRow extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
   final bool isLast;
 
-  const UserTableRow({
-    super.key, 
-    required this.user, 
-    required this.index, 
-    required this.formKey,
-    required this.isLast,
-  });
+  const UserTableRow({super.key, required this.user, required this.index, required this.formKey, required this.isLast});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Container(
       height: 60,
       decoration: BoxDecoration(
         color: _buildRowColor(context),
-        borderRadius: isLast ? const BorderRadius.only(
-          bottomLeft: Radius.circular(16),
-          bottomRight: Radius.circular(16),
-        ) : null,
-        border: isLast ? null : Border(
-          bottom: BorderSide(
-            color: colorScheme.outlineVariant.withValues(alpha: 0.3),
-            width: 0.5,
-          ),
-        ),
+        borderRadius: isLast
+            ? const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16))
+            : null,
+        border: isLast
+            ? null
+            : Border(bottom: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3), width: 0.5)),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
@@ -497,11 +456,9 @@ class UserTableRow extends StatelessWidget {
             UserTableCell(flex: 4, text: user.email.toString()),
             const SizedBox(width: 8),
             UserTableCell(
-              flex: 3, 
+              flex: 3,
               text: user.activated! ? "Active" : "Inactive",
-              textColor: user.activated! 
-                ? Colors.green 
-                : Colors.red,
+              textColor: user.activated! ? Colors.green : Colors.red,
             ),
             const SizedBox(width: 8),
             UserActionButtons(userId: user.login!, formKey: formKey),
@@ -536,9 +493,9 @@ class UserTableCell extends StatelessWidget {
   final Color? textColor;
 
   const UserTableCell({
-    super.key, 
-    required this.flex, 
-    required this.text, 
+    super.key,
+    required this.flex,
+    required this.text,
     this.alignment = TextAlign.left,
     this.textColor,
   });
@@ -546,11 +503,11 @@ class UserTableCell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    
+
     return Expanded(
       flex: flex,
       child: Text(
-        text, 
+        text,
         textAlign: alignment,
         style: textTheme.bodyMedium?.copyWith(
           color: textColor ?? Theme.of(context).colorScheme.onSurface,
@@ -574,7 +531,7 @@ class UserActionButtons extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     return Expanded(
       flex: 3,
       child: LayoutBuilder(
@@ -609,18 +566,15 @@ class UserActionButtons extends StatelessWidget {
   }
 
   Widget _buildActionButton({
-    required IconData icon, 
-    required VoidCallback onPressed, 
+    required IconData icon,
+    required VoidCallback onPressed,
     required double size,
     required Color color,
   }) {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-      ),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
       child: IconButton(
         padding: EdgeInsets.zero,
         constraints: BoxConstraints(maxWidth: size, maxHeight: size),
@@ -640,7 +594,7 @@ class UserActionButtons extends StatelessWidget {
 
   void _showDeleteConfirmation(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -656,10 +610,7 @@ class UserActionButtons extends StatelessWidget {
         ),
         content: Text(S.of(context).delete_confirmation),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text(S.of(context).no),
-          ),
+          TextButton(onPressed: () => Navigator.pop(context), child: Text(S.of(context).no)),
           FilledButton(
             onPressed: () {
               Navigator.pop(context);
@@ -672,10 +623,7 @@ class UserActionButtons extends StatelessWidget {
                 }
               });
             },
-            style: FilledButton.styleFrom(
-              backgroundColor: colorScheme.error,
-              foregroundColor: colorScheme.onError,
-            ),
+            style: FilledButton.styleFrom(backgroundColor: colorScheme.error, foregroundColor: colorScheme.onError),
             child: Text(S.of(context).yes),
           ),
         ],

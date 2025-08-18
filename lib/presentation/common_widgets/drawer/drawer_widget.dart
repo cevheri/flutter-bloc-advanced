@@ -95,11 +95,9 @@ class ApplicationDrawer extends StatelessWidget {
                             leading: const Icon(Icons.font_download),
                             title: const Text('Font Test - Poppins'),
                             onTap: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (context) => const FontTestWidget(),
-                                ),
-                              );
+                              Navigator.of(
+                                context,
+                              ).push(MaterialPageRoute(builder: (context) => const FontTestWidget()));
                             },
                           ),
                           _buildLogoutButton(context),

@@ -56,9 +56,7 @@ class App extends StatelessWidget {
           create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository()),
         ),
       ],
-      child: WebBackButtonDisabler(
-        child: AppGoRouterConfig.routeBuilder(light, dark, language),
-      ),
+      child: WebBackButtonDisabler(child: AppGoRouterConfig.routeBuilder(light, dark, language)),
     );
   }
 }

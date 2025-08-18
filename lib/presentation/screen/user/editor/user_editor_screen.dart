@@ -103,10 +103,10 @@ class UserEditorWidget extends StatelessWidget {
   void _navigateBack(BuildContext context) {
     // GoRouter'ın extra parametresini kontrol et
     final extra = GoRouterState.of(context).extra;
-    
+
     if (extra != null && extra is Map<String, dynamic>) {
       final fromRoute = extra['fromRoute'] as String?;
-      
+
       if (fromRoute == ApplicationRoutesConstants.userList) {
         // User list'ten geldiyse user list'e dön
         context.go(ApplicationRoutesConstants.userList);

@@ -21,20 +21,15 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey, 
-      appBar: _buildAppBar(context), 
-      body: _buildBody(context)
-    );
+    return Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  AppBar _buildAppBar(BuildContext context) =>
-      AppBar(
-        title: const Text(AppConstants.appName), 
-        leading: const SizedBox.shrink(),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      );
+  AppBar _buildAppBar(BuildContext context) => AppBar(
+    title: const Text(AppConstants.appName),
+    leading: const SizedBox.shrink(),
+    backgroundColor: Colors.transparent,
+    elevation: 0,
+  );
 
   Widget _buildBody(BuildContext context) {
     return Container(
@@ -42,10 +37,7 @@ class LoginScreen extends StatelessWidget {
         image: DecorationImage(
           image: const AssetImage(LocaleConstants.logoDarkUrl),
           fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(
-            Colors.black.withValues(alpha: 0.3),
-            BlendMode.srcOver,
-          ),
+          colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.3), BlendMode.srcOver),
         ),
       ),
       child: Center(
@@ -53,15 +45,12 @@ class LoginScreen extends StatelessWidget {
           builder: (context, constraints) {
             final isWide = constraints.maxWidth >= 900;
             final formCard = _buildFormCard(context);
-            
+
             if (!isWide) {
               // Mobil cihazlar için
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 560), 
-                  child: formCard
-                ),
+                child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: formCard),
               );
             } else {
               // Geniş ekranlar için - login formu ortada, quote altta
@@ -72,10 +61,7 @@ class LoginScreen extends StatelessWidget {
                     // Üstte boş alan
                     const Expanded(flex: 1, child: SizedBox()),
                     // Ortada login formu
-                    ConstrainedBox(
-                      constraints: const BoxConstraints(maxWidth: 520), 
-                      child: formCard
-                    ),
+                    ConstrainedBox(constraints: const BoxConstraints(maxWidth: 520), child: formCard),
                     // Altta quote
                     const Expanded(flex: 1, child: SizedBox()),
                     // Quote metni
@@ -111,11 +97,7 @@ class LoginScreen extends StatelessWidget {
             color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(12),
             boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.1),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
+              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4)),
             ],
           ),
           child: Padding(
@@ -123,10 +105,7 @@ class LoginScreen extends StatelessWidget {
             child: ResponsiveFormBuilder(
               formKey: _loginFormKey,
               children: <Widget>[
-                Text(
-                  S.of(context).login,
-                  style: Theme.of(context).textTheme.headlineSmall,
-                ),
+                Text(S.of(context).login, style: Theme.of(context).textTheme.headlineSmall),
                 Text(
                   AppConstants.appName,
                   style: Theme.of(
