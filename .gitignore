@@ -56,3 +56,6 @@ app.*.map.json
 
 # FVM Version Cache
 .fvm/
+
+# Oracle JDK (large files)
+Oracle_JDK-24/
