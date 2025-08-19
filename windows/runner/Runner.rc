@@ -93,7 +93,7 @@ BEGIN
             VALUE "FileDescription", "flutter_bloc_advance" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "flutter_bloc_advance" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2024 com.cevheri.flutter. All rights reserved." "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025 flutter_bloc_advance authors" "\0"
             VALUE "OriginalFilename", "flutter_bloc_advance.exe" "\0"
             VALUE "ProductName", "flutter_bloc_advance" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
