@@ -7,34 +7,25 @@ class DrawerState extends Equatable {
   final bool isLogout;
   final DrawerStateStatus status;
   final String? language;
-  final AdaptiveThemeMode? theme;
 
   const DrawerState({
     this.menus = const [],
     this.isLogout = false,
     this.status = DrawerStateStatus.initial,
     this.language,
-    this.theme,
   });
 
-  DrawerState copyWith({
-    List<Menu>? menus,
-    bool? isLogout,
-    DrawerStateStatus? status,
-    String? language,
-    AdaptiveThemeMode? theme,
-  }) {
+  DrawerState copyWith({List<Menu>? menus, bool? isLogout, DrawerStateStatus? status, String? language}) {
     return DrawerState(
       menus: menus ?? this.menus,
       isLogout: isLogout ?? this.isLogout,
       status: status ?? this.status,
       language: language ?? this.language,
-      theme: theme ?? this.theme,
     );
   }
 
   @override
-  List<Object?> get props => [status, menus, isLogout, language, theme];
+  List<Object?> get props => [status, menus, isLogout, language];
 }
 
 //TODO add default language and theme
@@ -58,8 +49,4 @@ class DrawerStateError extends DrawerState {
 
 class DrawerLanguageChanged extends DrawerState {
   const DrawerLanguageChanged({required super.language}) : super(status: DrawerStateStatus.success);
-}
-
-class DrawerThemeChanged extends DrawerState {
-  const DrawerThemeChanged({required super.theme}) : super(status: DrawerStateStatus.success);
 }

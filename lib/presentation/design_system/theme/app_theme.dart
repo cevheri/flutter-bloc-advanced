@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 
-import '../tokens/app_colors.dart';
 import '../tokens/app_typography.dart';
+import 'app_theme_palette.dart';
+import 'theme_colors.dart';
 
 /// Application theme builder that centralizes Material 3 configuration.
 class AppTheme {
   AppTheme._();
 
-  static ThemeData light() {
-    final colorScheme = ColorScheme.fromSeed(seedColor: AppColors.seed, brightness: Brightness.light);
+  static ThemeData light([AppThemePalette palette = AppThemePalette.classic]) {
+    final colorScheme = ThemeColors.getColorScheme(palette, Brightness.light);
     return _themeData(colorScheme);
   }
 
-  static ThemeData dark() {
-    final colorScheme = ColorScheme.fromSeed(seedColor: AppColors.seed, brightness: Brightness.dark);
+  static ThemeData dark([AppThemePalette palette = AppThemePalette.classic]) {
+    final colorScheme = ThemeColors.getColorScheme(palette, Brightness.dark);
     return _themeData(colorScheme);
   }
 

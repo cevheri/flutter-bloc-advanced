@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
-import 'package:flutter_bloc_advance/configuration/constants.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
@@ -14,8 +13,9 @@ import '../../../generated/l10n.dart';
 import 'bloc/forgot_password_bloc.dart';
 
 class ForgotPasswordScreen extends StatelessWidget {
-  ForgotPasswordScreen({super.key});
+  ForgotPasswordScreen({super.key, this.returnToSettings = false});
 
+  final bool returnToSettings;
   final _formKey = GlobalKey<FormBuilderState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -46,14 +46,23 @@ class ForgotPasswordScreen extends StatelessWidget {
       builder: (context, state) {
         return ResponsiveFormBuilder(
           formKey: _formKey,
-          children: [_logo(context), _forgotPasswordField(context), _submitButton(context, state)],
+          children: [
+            // Alt başlık eklendi (AppBar'da zaten başlık var)
+            Text(
+              'Enter your email to reset your password',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 12),
+            Divider(color: Theme.of(context).colorScheme.outlineVariant),
+            const SizedBox(height: 8),
+            _forgotPasswordField(context),
+            _submitButton(context, state),
+          ],
         );
       },
     );
-  }
-
-  _logo(BuildContext context) {
-    return Image.asset(LocaleConstants.defaultImgUrl, width: 200, height: 200);
   }
 
   FormBuilderTextField _forgotPasswordField(BuildContext context) {
@@ -61,7 +70,21 @@ class ForgotPasswordScreen extends StatelessWidget {
     return FormBuilderTextField(
       key: forgotPasswordTextFieldEmailKey,
       name: "email",
-      decoration: InputDecoration(labelText: t.email),
+      decoration: InputDecoration(
+        labelText: t.email,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+        ),
+      ),
       maxLines: 1,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: t.required_field),
@@ -129,13 +152,23 @@ class ForgotPasswordScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      context.go(ApplicationRoutesConstants.home);
+      // Eğer settings'den geldiyse settings'e, değilse home'a dön
+      if (returnToSettings) {
+        context.go(ApplicationRoutesConstants.settings);
+      } else {
+        context.go(ApplicationRoutesConstants.home);
+      }
       return;
     }
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      context.go(ApplicationRoutesConstants.home);
+      // Eğer settings'den geldiyse settings'e, değilse home'a dön
+      if (returnToSettings) {
+        context.go(ApplicationRoutesConstants.settings);
+      } else {
+        context.go(ApplicationRoutesConstants.home);
+      }
     }
   }
 }

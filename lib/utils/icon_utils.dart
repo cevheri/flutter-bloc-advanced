@@ -8,8 +8,12 @@ IconData getIconFromString(String iconName) {
       return Icons.home;
     case 'account-tie':
       return Icons.account_circle;
+    case 'account':
+      return Icons.account_circle;
     case 'account-edit-outline':
       return Icons.edit;
+    case 'account-multiple-plus-outline':
+      return Icons.add;
     case 'cog-outline':
       return Icons.settings;
     case 'logout':

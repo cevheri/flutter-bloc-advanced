@@ -1,11 +1,10 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-
+import 'package:flutter_bloc_advance/presentation/common_blocs/theme/theme_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/common_widgets/language_notifier.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
@@ -28,34 +27,26 @@ class ApplicationDrawer extends StatelessWidget {
         }
       },
       child: BlocBuilder<DrawerBloc, DrawerState>(
-        builder: (context, state) {
-          final isDarkMode = state.theme == AdaptiveThemeMode.dark;
+        builder: (context, drawerState) {
+          return BlocBuilder<ThemeBloc, ThemeState>(
+            builder: (context, themeState) {
+              final isDarkMode = themeState.isDarkMode;
 
-          // debugPrint("BUILDER - state lang : ${state.language}");
-          //
-          //
-          // debugPrint("BUILDER - state theme : ${state.theme}");
+              var isEnglish = drawerState.language == 'en';
 
-          var isEnglish = state.language == 'en';
+              final menuNodes = drawerState.menus.where((e) => e.level == 1 && e.active).toList()
+                ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
-          final menuNodes = state.menus.where((e) => e.level == 1 && e.active).toList()
-            ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
-
-          return ValueListenableBuilder<String>(
-            valueListenable: LanguageNotifier.current,
-            builder: (context, lang, _) {
-              return AdaptiveTheme(
-                light: Theme.of(context),
-                dark: Theme.of(context),
-                initial: AdaptiveThemeMode.system,
-                builder: (light, dark) {
+              return ValueListenableBuilder<String>(
+                valueListenable: LanguageNotifier.current,
+                builder: (context, lang, _) {
                   return Drawer(
-                    key: Key("drawer-${state.language}-${state.theme}"),
+                    key: Key("drawer-${drawerState.language}-$isDarkMode"),
                     child: SingleChildScrollView(
                       child: Column(
                         spacing: 16,
                         children: [
-                          _buildMenuList(menuNodes, state),
+                          _buildMenuList(menuNodes, drawerState),
                           SwitchListTile(
                             key: const Key("drawer-switch-theme"),
                             title: Row(
@@ -64,19 +55,17 @@ class ApplicationDrawer extends StatelessWidget {
                             ),
                             value: isDarkMode,
                             onChanged: (value) {
-                              //debugPrint("BEGIN:ON_PRESSED.value - ${value}");
-                              final newTheme = value ? AdaptiveThemeMode.dark : AdaptiveThemeMode.light;
-                              //debugPrint("BEGIN:ON_PRESSED - current newTheme : ${newTheme}");
-                              context.read<DrawerBloc>().add(ChangeThemeEvent(theme: newTheme));
-                              if (value) {
-                                AdaptiveTheme.of(context).setDark();
-                              } else {
-                                AdaptiveTheme.of(context).setLight();
-                              }
+                              debugPrint("Theme switch clicked! Value: $value, Current isDarkMode: $isDarkMode");
+                              // Tema değişikliği ThemeBloc ile yönetiliyor
+                              context.read<ThemeBloc>().add(const ToggleBrightness());
+                              debugPrint("ToggleBrightness event sent to ThemeBloc");
                               // Drawer'ı kapatma - tema değişikliği için drawer açık kalmalı
                               // Scaffold.of(context).closeDrawer();
                               // Stay on the same route; theme change rebuilds automatically
                             },
+                            activeColor: Theme.of(context).colorScheme.primary,
+                            inactiveThumbColor: Theme.of(context).colorScheme.outline,
+                            inactiveTrackColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
                           ),
                           SwitchListTile(
                             key: const Key("drawer-switch-language"),

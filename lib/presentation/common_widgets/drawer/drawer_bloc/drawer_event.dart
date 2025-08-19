@@ -11,12 +11,11 @@ class Logout extends DrawerEvent {}
 
 class LoadMenus extends DrawerEvent {
   final String language;
-  final AdaptiveThemeMode theme;
 
-  const LoadMenus({required this.language, required this.theme});
+  const LoadMenus({required this.language});
 
   @override
-  List<Object> get props => [language, theme];
+  List<Object> get props => [language];
 }
 
 class RefreshMenus extends DrawerEvent {}
@@ -28,13 +27,4 @@ class ChangeLanguageEvent extends DrawerEvent {
 
   @override
   List<Object> get props => [language];
-}
-
-class ChangeThemeEvent extends DrawerEvent {
-  final AdaptiveThemeMode theme;
-
-  const ChangeThemeEvent({required this.theme});
-
-  @override
-  List<Object> get props => [theme];
 }

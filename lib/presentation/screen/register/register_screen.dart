@@ -13,8 +13,9 @@ import '../../../generated/l10n.dart';
 import 'bloc/register_bloc.dart';
 
 class RegisterScreen extends StatelessWidget {
-  RegisterScreen({super.key});
+  RegisterScreen({super.key, this.returnToSettings = false});
 
+  final bool returnToSettings;
   final _formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -38,48 +39,24 @@ class RegisterScreen extends StatelessWidget {
   }
 
   Widget _buildBody(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 900;
-        final form = BlocBuilder<RegisterBloc, RegisterState>(
-          builder: (context, state) {
-            return ResponsiveFormBuilder(
-              formKey: _formKey,
-              children: [
-                // Removed duplicate "Register" header to avoid duplicate text with AppBar title
-                Text(
-                  'Create your account',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                ),
-                ..._buildFormFields(context, state),
-                _submitButton(context, state),
-              ],
-            );
-          },
-        );
-
-        final card = Card(
-          elevation: 1,
-          clipBehavior: Clip.antiAlias,
-          child: Padding(padding: const EdgeInsets.all(24), child: form),
-        );
-
-        if (!isWide) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            child: Center(
-              child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: card),
+    return BlocBuilder<RegisterBloc, RegisterState>(
+      builder: (context, state) {
+        return ResponsiveFormBuilder(
+          formKey: _formKey,
+          children: [
+            // Alt başlık eklendi (AppBar'da zaten başlık var)
+            Text(
+              'Create your account',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
-          );
-        }
-
-        return Padding(
-          padding: const EdgeInsets.all(24),
-          child: Center(
-            child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 720), child: card),
-          ),
+            const SizedBox(height: 12),
+            Divider(color: Theme.of(context).colorScheme.outlineVariant),
+            const SizedBox(height: 8),
+            ..._buildFormFields(context, state),
+            _submitButton(context, state),
+          ],
         );
       },
     );
@@ -156,13 +133,23 @@ class RegisterScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      context.go(ApplicationRoutesConstants.home);
+      // Eğer settings'den geldiyse settings'e, değilse home'a dön
+      if (returnToSettings) {
+        context.go(ApplicationRoutesConstants.settings);
+      } else {
+        context.go(ApplicationRoutesConstants.home);
+      }
       return;
     }
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      context.go(ApplicationRoutesConstants.home);
+      // Eğer settings'den geldiyse settings'e, değilse home'a dön
+      if (returnToSettings) {
+        context.go(ApplicationRoutesConstants.settings);
+      } else {
+        context.go(ApplicationRoutesConstants.home);
+      }
     }
   }
 }

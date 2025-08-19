@@ -3,7 +3,6 @@
 // It uses shared preferences and get storage to store data locally.
 // It also contains the implementation of the cache for the application.
 
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:get_storage/get_storage.dart';
@@ -26,6 +25,7 @@ class AppLocalStorageCached {
   static late String? language;
   static late String? username;
   static late String? theme;
+  static late String? brightness;
 
   static Future<void> loadCache() async {
     _log.trace("Loading cache");
@@ -33,19 +33,21 @@ class AppLocalStorageCached {
     roles = await AppLocalStorage().read(StorageKeys.roles.name);
     language = await AppLocalStorage().read(StorageKeys.language.name) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.name);
-    theme = await AppLocalStorage().read(StorageKeys.theme.name) ?? AdaptiveThemeMode.light.name;
-    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}", [
+    theme = await AppLocalStorage().read(StorageKeys.theme.name) ?? "classic";
+    brightness = await AppLocalStorage().read(StorageKeys.brightness.name) ?? "light";
+    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}, brightness:{}", [
       username,
       roles,
       language,
       jwtToken,
       theme,
+      brightness,
     ]);
   }
 }
 
 /// LocalStorage predefined keys
-enum StorageKeys { jwtToken, roles, language, username, theme }
+enum StorageKeys { jwtToken, roles, language, username, theme, brightness }
 
 /// Application Local Storage
 ///

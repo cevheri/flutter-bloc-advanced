@@ -91,10 +91,11 @@ class AppGoRouterConfig {
     },
   );
 
-  static MaterialApp routeBuilder(ThemeData light, ThemeData dark, String language) {
+  static MaterialApp routeBuilder(ThemeData theme, ThemeData darkTheme, String language, ThemeMode themeMode) {
     return MaterialApp.router(
-      theme: light,
-      darkTheme: dark,
+      theme: theme,
+      darkTheme: darkTheme,
+      themeMode: themeMode,
       debugShowCheckedModeBanner: true,
       debugShowMaterialGrid: false,
       localizationsDelegates: const [

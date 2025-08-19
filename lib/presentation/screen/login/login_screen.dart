@@ -153,6 +153,18 @@ class LoginScreen extends StatelessWidget {
             decoration: InputDecoration(
               labelText: S.of(context).login_user_name,
               prefixIcon: const Icon(Icons.person_outline),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(8),
+                borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+              ),
             ),
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).required_field),
@@ -180,6 +192,18 @@ class LoginScreen extends StatelessWidget {
                   decoration: InputDecoration(
                     labelText: S.of(context).login_password,
                     prefixIcon: const Icon(Icons.lock_outline),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(8),
+                      borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                    ),
                   ),
                   // when press the enter key, call submit button function
                   textInputAction: TextInputAction.done,
@@ -351,7 +375,23 @@ class OtpEmailScreen extends StatelessWidget {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).failed)));
           }
         },
-        child: ResponsiveFormBuilder(formKey: _formKey, children: [_emailField(context), _submitButton(context)]),
+        child: ResponsiveFormBuilder(
+          formKey: _formKey,
+          children: [
+            // Alt başlık eklendi (AppBar'da zaten başlık var)
+            Text(
+              'Enter your email to receive OTP code',
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            ),
+            const SizedBox(height: 12),
+            Divider(color: Theme.of(context).colorScheme.outlineVariant),
+            const SizedBox(height: 8),
+            _emailField(context),
+            _submitButton(context),
+          ],
+        ),
       ),
     );
   }
@@ -359,7 +399,22 @@ class OtpEmailScreen extends StatelessWidget {
   Widget _emailField(BuildContext context) {
     return FormBuilderTextField(
       name: 'email',
-      decoration: InputDecoration(labelText: S.of(context).email, prefixIcon: const Icon(Icons.email)),
+      decoration: InputDecoration(
+        labelText: S.of(context).email,
+        prefixIcon: const Icon(Icons.email),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+        ),
+      ),
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
         FormBuilderValidators.email(errorText: S.of(context).invalid_email),
@@ -431,7 +486,22 @@ class OtpVerifyScreen extends StatelessWidget {
   Widget _otpField(BuildContext context) {
     return FormBuilderTextField(
       name: 'otpCode',
-      decoration: InputDecoration(labelText: S.of(context).otp_code, prefixIcon: const Icon(Icons.lock_clock)),
+      decoration: InputDecoration(
+        labelText: S.of(context).otp_code,
+        prefixIcon: const Icon(Icons.lock_clock),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(8),
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+        ),
+      ),
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
         FormBuilderValidators.numeric(errorText: S.of(context).only_numbers),

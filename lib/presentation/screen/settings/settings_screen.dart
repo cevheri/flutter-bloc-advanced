@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
-import 'package:flutter_bloc_advance/presentation/screen/components/language_selection_dialog.dart';
+import 'package:flutter_bloc_advance/presentation/screen/components/theme_selection_dialog.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -72,39 +71,22 @@ class SettingsScreen extends StatelessWidget {
                                 context,
                               ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
-                            onTap: () => context.go(ApplicationRoutesConstants.account),
+                            onTap: () => context.go('${ApplicationRoutesConstants.account}?returnToSettings=true'),
                             trailing: const Icon(Icons.chevron_right_rounded),
                           ),
 
                           // Theme
                           ListTile(
-                            leading: const Icon(Icons.dark_mode_outlined),
+                            leading: const Icon(Icons.palette_outlined),
                             title: const Text('Theme'),
                             subtitle: Text(
-                              'Switch between light and dark',
+                              'Choose your preferred theme style',
                               style: Theme.of(
                                 context,
                               ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  tooltip: 'Light',
-                                  icon: const Icon(Icons.light_mode_outlined),
-                                  onPressed: () => Theme.of(context).brightness == Brightness.light
-                                      ? null
-                                      : AdaptiveTheme.of(context).setLight(),
-                                ),
-                                IconButton(
-                                  tooltip: 'Dark',
-                                  icon: const Icon(Icons.dark_mode_outlined),
-                                  onPressed: () => Theme.of(context).brightness == Brightness.dark
-                                      ? null
-                                      : AdaptiveTheme.of(context).setDark(),
-                                ),
-                              ],
-                            ),
+                            onTap: () => ThemeSelectionDialog.show(context),
+                            trailing: const Icon(Icons.chevron_right_rounded),
                           ),
 
                           // Change password
@@ -118,7 +100,8 @@ class SettingsScreen extends StatelessWidget {
                                 context,
                               ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
-                            onTap: () => context.go(ApplicationRoutesConstants.changePassword),
+                            onTap: () =>
+                                context.go('${ApplicationRoutesConstants.changePassword}?returnToSettings=true'),
                             trailing: const Icon(Icons.chevron_right_rounded),
                           ),
 
@@ -134,21 +117,6 @@ class SettingsScreen extends StatelessWidget {
                               ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                             ),
                             onTap: () => _handleLogout(context),
-                          ),
-
-                          // Change language
-                          ListTile(
-                            key: settingsChangeLanguageButtonKey,
-                            leading: const Icon(Icons.language_outlined),
-                            title: Text(S.of(context).language_select),
-                            subtitle: Text(
-                              'Switch application language',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            ),
-                            onTap: () => LanguageSelectionDialog.show(context),
-                            trailing: const Icon(Icons.chevron_right_rounded),
                           ),
                         ],
                       ),
