@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -29,22 +28,6 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
     on<ChangeLanguageEvent>(_onChangeLanguage);
-    on<ChangeThemeEvent>(_onChangeTheme);
-  }
-
-  FutureOr<void> _onChangeTheme(ChangeThemeEvent event, Emitter<DrawerState> emit) async {
-    _log.debug("BEGIN: onChangeTheme ChangeThemeEvent event: {}", []);
-    emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.loading));
-    try {
-      await AppLocalStorage().save(StorageKeys.theme.name, event.theme.name);
-      // update in-memory cache immediately to avoid stale reads
-      AppLocalStorageCached.theme = event.theme.name;
-      emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.success));
-      _log.debug("END:onChangeTheme ChangeThemeEvent event success: {}", [event.theme]);
-    } catch (e) {
-      emit(state.copyWith(theme: event.theme, status: DrawerStateStatus.error));
-      _log.error("END:onChangeTheme ChangeThemeEvent event error: {}", [e.toString()]);
-    }
   }
 
   FutureOr<void> _onChangeLanguage(ChangeLanguageEvent event, Emitter<DrawerState> emit) async {
@@ -96,13 +79,11 @@ class DrawerBloc extends Bloc<DrawerEvent, DrawerState> {
         return;
       }
       MenuListCache.menus = menus;
-      // Apply language and theme when loading is complete
-      emit(
-        state.copyWith(menus: menus, status: DrawerStateStatus.success, language: event.language, theme: event.theme),
-      );
+      // Apply language when loading is complete
+      emit(state.copyWith(menus: menus, status: DrawerStateStatus.success, language: event.language));
       _log.debug("END:loadMenus LoadMenus event success: {}", []);
     } catch (e) {
-      emit(state.copyWith(menus: [], status: DrawerStateStatus.error, language: event.language, theme: event.theme));
+      emit(state.copyWith(menus: [], status: DrawerStateStatus.error, language: event.language));
       _log.error("END:loadMenus LoadMenus event error: {}", [e.toString()]);
     }
   }

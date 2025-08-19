@@ -79,6 +79,7 @@ class UserEditorWidget extends StatelessWidget {
     final context = contextParam ?? data as BuildContext;
 
     if (mode == EditorFormMode.view) {
+      // View modunda user list'e dön
       context.go(ApplicationRoutesConstants.userList);
       context.read<UserBloc>().add(const UserViewCompleteEvent());
       return;
@@ -87,13 +88,35 @@ class UserEditorWidget extends StatelessWidget {
     if (!context.mounted) return;
 
     if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      context.go(ApplicationRoutesConstants.userList);
+      // Nereden geldiğine göre yönlendirme yap
+      _navigateBack(context);
       return;
     }
 
     final shouldPop = await _buildShowDialog(context) ?? false;
     if (shouldPop && context.mounted) {
-      context.go(ApplicationRoutesConstants.userList);
+      // Nereden geldiğine göre yönlendirme yap
+      _navigateBack(context);
+    }
+  }
+
+  void _navigateBack(BuildContext context) {
+    // GoRouter'ın extra parametresini kontrol et
+    final extra = GoRouterState.of(context).extra;
+
+    if (extra != null && extra is Map<String, dynamic>) {
+      final fromRoute = extra['fromRoute'] as String?;
+
+      if (fromRoute == ApplicationRoutesConstants.userList) {
+        // User list'ten geldiyse user list'e dön
+        context.go(ApplicationRoutesConstants.userList);
+      } else {
+        // Diğer durumlarda ana sayfaya dön
+        context.go(ApplicationRoutesConstants.home);
+      }
+    } else {
+      // Extra parametre yoksa ana sayfaya dön
+      context.go(ApplicationRoutesConstants.home);
     }
   }
 

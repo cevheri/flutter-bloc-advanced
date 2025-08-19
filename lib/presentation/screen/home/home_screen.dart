@@ -1,4 +1,3 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
@@ -102,7 +101,9 @@ class HomeScreen extends StatelessWidget {
               image: DecorationImage(
                 image: const AssetImage(LocaleConstants.defaultImgUrl),
                 colorFilter: ColorFilter.mode(
-                  AdaptiveTheme.of(context).mode.isDark ? Colors.black.withAlpha(128) : Colors.white.withAlpha(128),
+                  Theme.of(context).brightness == Brightness.dark
+                      ? Colors.black.withAlpha(128)
+                      : Colors.white.withAlpha(128),
                   BlendMode.dstIn,
                 ),
               ),
@@ -119,9 +120,8 @@ class HomeScreen extends StatelessWidget {
     final drawerBloc = context.read<DrawerBloc>();
     // Ensure menus are loaded once if empty
     if (drawerBloc.state.menus.isEmpty) {
-      final initialTheme = (AppLocalStorageCached.theme == 'light') ? AdaptiveThemeMode.light : AdaptiveThemeMode.dark;
       final initialLanguage = AppLocalStorageCached.language ?? 'en';
-      drawerBloc.add(LoadMenus(language: initialLanguage, theme: initialTheme));
+      drawerBloc.add(LoadMenus(language: initialLanguage));
     }
     return const ApplicationDrawer();
   }

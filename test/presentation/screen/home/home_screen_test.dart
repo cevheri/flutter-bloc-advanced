@@ -1,4 +1,3 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
@@ -20,8 +19,6 @@ void main() {
   });
 
   const language = "en";
-  const darkTheme = AdaptiveThemeMode.dark;
-  const lightTheme = AdaptiveThemeMode.light;
 
   //endregion setup
 
@@ -33,7 +30,7 @@ void main() {
       TestUtils().setupAuthentication();
 
       // Given:
-      await tester.pumpWidget(const App(language: language, initialTheme: lightTheme).buildHomeApp());
+      await tester.pumpWidget(const App(language: language).buildHomeApp());
       //When:
       await tester.pumpAndSettle(const Duration(seconds: 5));
       //Then:
@@ -158,11 +155,10 @@ void main() {
     });
 
     testWidgets("Given an invalid AccessToken when HomeScreen is opened then navigate to loginScreen", (tester) async {
-      AdaptiveTheme getWidget({AdaptiveThemeMode mode = AdaptiveThemeMode.dark}) =>
-          App(language: language, initialTheme: mode).buildHomeApp();
+      Widget getWidget() => const App(language: "en").buildHomeApp();
 
       // Given:
-      await tester.pumpWidget(getWidget(mode: darkTheme));
+      await tester.pumpWidget(getWidget());
       //When:
       await tester.pumpAndSettle();
       //Then:

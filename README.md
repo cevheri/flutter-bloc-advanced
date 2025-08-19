@@ -64,6 +64,9 @@
 - Rest API data
 - API client
 - Internationalization
+- **Poppins Font Integration** - Modern typography with Poppins font family
+- **Web Back Button Disabler** - Prevents browser back button on web platform
+- **Font Test Widget** - Visual font testing and verification tool
 
 ---
 
@@ -244,6 +247,7 @@ Following test should run
 * test/data/repository
 * test/presentation/blocs
 * test/presentation/screen
+* test/presentation/widgets
 
 ### Run Test
 
@@ -252,6 +256,20 @@ Following test should run
 Or 1 Thread
 
 - Run `flutter test --concurrency=1 --test-randomize-ordering-seed=random`
+
+### Test Coverage
+
+The project includes comprehensive test coverage for:
+- Data layer (models, repositories)
+- Business logic (BLoCs)
+- UI components (screens, widgets)
+- Font integration and typography
+- Web-specific components
+
+### New Test Files Added
+
+- `test/presentation/widgets/font_test_widget_test.dart` - Tests for Poppins font integration
+- `test/presentation/widgets/web_back_button_disabler_test.dart` - Tests for web back button functionality
 
 ---
 

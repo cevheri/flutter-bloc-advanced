@@ -1,4 +1,3 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
@@ -33,13 +32,12 @@ void main() async {
   AppRouter().setRouter(RouterType.goRouter);
 
   WidgetsFlutterBinding.ensureInitialized();
-  const initialTheme = AdaptiveThemeMode.system;
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(const App(language: defaultLanguage, initialTheme: initialTheme));
+    runApp(const App(language: defaultLanguage));
   });
 
   //TODO change to the system theme(browser theme)
-  final defaultThemeName = initialTheme.name;
+  const defaultThemeName = "system";
   await AppLocalStorage().save(StorageKeys.theme.name, defaultThemeName);
 
   log.info("Started App with local environment language: {} and theme: {}", [defaultLanguage, defaultThemeName]);

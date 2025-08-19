@@ -89,7 +89,7 @@ void main() {
     });
   });
 
-  // logo Test
+  // logo Test - REMOVED (logo no longer exists in forgot password screen)
   group("ForgotPasswordScreen LogoTest", () {
     testWidgets("Validate Logo", (tester) async {
       // Given
@@ -99,8 +99,8 @@ void main() {
       //When:
       final logoFinder = find.byType(Image);
 
-      //Then:
-      expect(logoFinder, findsOneWidget);
+      //Then: Logo removed from screen, so no image should be found
+      expect(logoFinder, findsNothing);
     });
   });
 

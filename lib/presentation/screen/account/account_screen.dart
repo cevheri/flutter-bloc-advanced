@@ -14,8 +14,9 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
 class AccountScreen extends StatelessWidget {
-  AccountScreen({super.key});
+  AccountScreen({super.key, this.returnToSettings = false});
 
+  final bool returnToSettings;
   final _formKey = GlobalKey<FormBuilderState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
 
@@ -142,13 +143,23 @@ class AccountScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      context.go(ApplicationRoutesConstants.home);
+      // Eğer settings'den geldiyse settings'e, değilse home'a dön
+      if (returnToSettings) {
+        context.go(ApplicationRoutesConstants.settings);
+      } else {
+        context.go(ApplicationRoutesConstants.home);
+      }
       return;
     }
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      context.go(ApplicationRoutesConstants.home);
+      // Eğer settings'den geldiyse settings'e, değilse home'a dön
+      if (returnToSettings) {
+        context.go(ApplicationRoutesConstants.settings);
+      } else {
+        context.go(ApplicationRoutesConstants.home);
+      }
     }
   }
 }

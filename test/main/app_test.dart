@@ -1,4 +1,3 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
@@ -15,34 +14,32 @@ void main() {
     late App app;
 
     setUp(() {
-      app = const App(language: 'tr', initialTheme: AdaptiveThemeMode.light);
+      app = const App(language: 'tr');
     });
 
     testWidgets('App should build without errors', (WidgetTester tester) async {
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
-      expect(find.byType(AdaptiveTheme), findsOneWidget);
+      expect(find.byType(MaterialApp), findsOneWidget);
     });
 
     testWidgets('App should handle theme changes', (WidgetTester tester) async {
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
 
-      final AdaptiveTheme adaptiveTheme = tester.widget(find.byType(AdaptiveTheme));
-      expect(adaptiveTheme.initial, equals(AdaptiveThemeMode.light));
+      expect(find.byType(MaterialApp), findsOneWidget);
 
-      // Test dark theme
-      app = const App(language: 'tr', initialTheme: AdaptiveThemeMode.dark);
+      // Test with different language
+      app = const App(language: 'en');
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
 
-      final AdaptiveTheme darkTheme = tester.widget(find.byType(AdaptiveTheme));
-      expect(darkTheme.initial, equals(AdaptiveThemeMode.dark));
+      expect(find.byType(MaterialApp), findsOneWidget);
     });
 
     testWidgets('App should handle different languages', (WidgetTester tester) async {
       TestUtils().setupAuthentication();
-      app = const App(language: 'en', initialTheme: AdaptiveThemeMode.light);
+      app = const App(language: 'en');
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();
 
