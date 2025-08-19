@@ -5,7 +5,7 @@ import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/data/models/menu.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_widgets/font_test_widget.dart';
+
 import 'package:flutter_bloc_advance/presentation/common_widgets/language_notifier.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
@@ -91,15 +91,7 @@ class ApplicationDrawer extends StatelessWidget {
                               // Stay on the same route; localization builder will rebuild
                             },
                           ),
-                          ListTile(
-                            leading: const Icon(Icons.font_download),
-                            title: const Text('Font Test - Poppins'),
-                            onTap: () {
-                              Navigator.of(
-                                context,
-                              ).push(MaterialPageRoute(builder: (context) => const FontTestWidget()));
-                            },
-                          ),
+
                           _buildLogoutButton(context),
                         ],
                       ),
