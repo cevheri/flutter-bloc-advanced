@@ -143,9 +143,6 @@ class UserSearchSection extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
-        ],
       ),
       child: FormBuilder(
         key: formKey,
@@ -250,14 +247,14 @@ class SearchActionButtons extends StatelessWidget {
 
     return Row(
       children: [
-        FilledButton.icon(
+        OutlinedButton.icon(
           key: const Key("listUserSubmitButtonKey"),
           onPressed: () => _handleSearch(context),
           icon: const Icon(Icons.search, size: 18),
           label: Text(S.of(context).list),
-          style: FilledButton.styleFrom(
-            backgroundColor: colorScheme.primary,
-            foregroundColor: colorScheme.onPrimary,
+          style: FilledButton.styleFrom( 
+            foregroundColor: colorScheme.primary,
+            side: BorderSide(color: colorScheme.primary),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           ),
@@ -304,14 +301,12 @@ class UserTableHeader extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: colorScheme.surface,
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
         border: Border.all(color: colorScheme.outlineVariant),
-        boxShadow: [
-          BoxShadow(color: colorScheme.shadow.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 2)),
-        ],
+
       ),
       child: Column(
         children: [
@@ -333,8 +328,7 @@ class UserTableHeader extends StatelessWidget {
               const TableColumnHeader(flex: 3, title: "Actions"),
             ],
           ),
-          const SizedBox(height: 16),
-          Divider(height: 1, color: colorScheme.outlineVariant, thickness: 1),
+          //Divider(height: 1, color: colorScheme.outlineVariant, thickness: 1),
         ],
       ),
     );
@@ -387,13 +381,6 @@ class UserTableContent extends StatelessWidget {
               color: Theme.of(context).colorScheme.surface,
               borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
               border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-              boxShadow: [
-                BoxShadow(
-                  color: Theme.of(context).colorScheme.shadow.withValues(alpha: 0.1),
-                  blurRadius: 8,
-                  offset: const Offset(0, 2),
-                ),
-              ],
             ),
             child: ListView.builder(
               itemCount: state.userList?.length,

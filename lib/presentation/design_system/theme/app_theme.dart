@@ -29,13 +29,21 @@ class AppTheme {
 
     return base.copyWith(
       textTheme: textTheme,
+      iconTheme: IconThemeData(color: colorScheme.onSurface),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          foregroundColor: colorScheme.onSurface,
+        ),
+      ),
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
         backgroundColor: colorScheme.surface,
         foregroundColor: colorScheme.onSurface,
+        iconTheme: IconThemeData(color: colorScheme.onSurface),
+        actionsIconTheme: IconThemeData(color: colorScheme.onSurface),
         centerTitle: false,
-        titleTextStyle: textTheme.titleLarge?.copyWith(fontFamily: 'Poppins'),
+        titleTextStyle: textTheme.titleLarge?.copyWith(fontFamily: 'Poppins', color: colorScheme.onSurface),
       ),
       inputDecorationTheme: InputDecorationTheme(
         isDense: false,
@@ -65,7 +73,7 @@ class AppTheme {
         contentTextStyle: textTheme.bodyMedium?.copyWith(fontFamily: 'Poppins'),
       ),
       listTileTheme: ListTileThemeData(
-        iconColor: colorScheme.onSurfaceVariant,
+        iconColor: colorScheme.onSurface,
         textColor: colorScheme.onSurface,
         selectedColor: colorScheme.primary,
         titleTextStyle: textTheme.bodyLarge?.copyWith(fontFamily: 'Poppins'),

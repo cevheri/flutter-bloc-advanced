@@ -48,7 +48,7 @@ class SettingsScreen extends StatelessWidget {
                     child: SingleChildScrollView(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: 8,
+                        spacing: 16,
                         children: [
                           Text(S.of(context).settings, style: Theme.of(context).textTheme.titleLarge),
                           Text(
@@ -59,11 +59,10 @@ class SettingsScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 12),
                           Divider(color: Theme.of(context).colorScheme.outlineVariant),
-                          const SizedBox(height: 8),
 
                           // Account
                           ListTile(
-                            leading: const Icon(Icons.person_outline),
+                            leading: const Icon(Icons.person),
                             title: Text(S.of(context).account),
                             subtitle: Text(
                               'View or edit your profile information',
@@ -77,7 +76,7 @@ class SettingsScreen extends StatelessWidget {
 
                           // Theme
                           ListTile(
-                            leading: const Icon(Icons.palette_outlined),
+                            leading: const Icon(Icons.light_mode),
                             title: const Text('Theme'),
                             subtitle: Text(
                               'Choose your preferred theme style',
@@ -92,7 +91,7 @@ class SettingsScreen extends StatelessWidget {
                           // Change password
                           ListTile(
                             key: settingsChangePasswordButtonKey,
-                            leading: const Icon(Icons.lock_reset_outlined),
+                            leading: const Icon(Icons.lock),
                             title: Text(S.of(context).change_password),
                             subtitle: Text(
                               'Update your password securely',
@@ -108,7 +107,7 @@ class SettingsScreen extends StatelessWidget {
                           // Logout (moved up to keep visible in test viewport)
                           ListTile(
                             key: settingsLogoutButtonKey,
-                            leading: const Icon(Icons.logout_rounded),
+                            leading: const Icon(Icons.logout),
                             title: Text(S.of(context).logout),
                             subtitle: Text(
                               'Sign out from this device',

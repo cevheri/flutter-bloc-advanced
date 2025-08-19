@@ -152,7 +152,7 @@ class LoginScreen extends StatelessWidget {
             name: 'username',
             decoration: InputDecoration(
               labelText: S.of(context).login_user_name,
-              prefixIcon: const Icon(Icons.person_outline),
+              prefixIcon: const Icon(Icons.person),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(8),
                 borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
@@ -191,7 +191,7 @@ class LoginScreen extends StatelessWidget {
                   name: 'password',
                   decoration: InputDecoration(
                     labelText: S.of(context).login_password,
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    prefixIcon: const Icon(Icons.lock),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(8),
                       borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 1),
