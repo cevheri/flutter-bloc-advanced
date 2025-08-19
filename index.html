@@ -31,6 +31,99 @@
 
   <title>flutter_bloc_advance</title>
   <link rel="manifest" href="manifest.json">
+  
+  <!-- Browser geri butonunu tamamen devre dışı bırak -->
+  <script>
+    (function() {
+      // Başlangıç URL'sini kaydet
+      let currentUrl = window.location.href;
+      let isDisabled = false;
+      
+      // Popstate event'ini yakala ve engelle
+      window.addEventListener('popstate', function(event) {
+        console.log('Browser back button pressed - preventing navigation');
+        
+        // Event'i tamamen durdur
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
+        // URL'yi geri yükle
+        if (window.location.href !== currentUrl) {
+          window.history.pushState(null, '', currentUrl);
+        }
+        
+        // Geri butonunu devre dışı bırak
+        isDisabled = true;
+        
+        return false;
+      }, true); // Capture phase'de yakala
+      
+      // Beforeunload event'ini de yakala
+      window.addEventListener('beforeunload', function(event) {
+        if (isDisabled) {
+          event.preventDefault();
+          event.returnValue = '';
+          return '';
+        }
+      });
+      
+      // History API'yi override et
+      const originalPushState = window.history.pushState;
+      const originalReplaceState = window.history.replaceState;
+      const originalGo = window.history.go;
+      const originalBack = window.history.back;
+      const originalForward = window.history.forward;
+      
+      // PushState override
+      window.history.pushState = function(state, title, url) {
+        currentUrl = url || window.location.href;
+        return originalPushState.call(this, state, title, url);
+      };
+      
+      // ReplaceState override
+      window.history.replaceState = function(state, title, url) {
+        currentUrl = url || window.location.href;
+        return originalReplaceState.call(this, state, title, url);
+      };
+      
+      // Go override
+      window.history.go = function(delta) {
+        if (delta < 0) { // Geri gitme
+          console.log('History.go() back prevented');
+          return;
+        }
+        return originalGo.call(this, delta);
+      };
+      
+      // Back override
+      window.history.back = function() {
+        console.log('History.back() prevented');
+        return;
+      };
+      
+      // Forward override
+      window.history.forward = function() {
+        console.log('History.forward() prevented');
+        return;
+      };
+      
+      // Başlangıç URL'sini kaydet
+      window.history.pushState(null, '', currentUrl);
+      
+      // Keyboard event'lerini de yakala
+      document.addEventListener('keydown', function(event) {
+        if (event.key === 'Backspace' && event.altKey) {
+          event.preventDefault();
+          event.stopPropagation();
+          console.log('Alt+Backspace prevented');
+          return false;
+        }
+      }, true);
+      
+      console.log('Browser back button completely disabled for Flutter app');
+    })();
+  </script>
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
