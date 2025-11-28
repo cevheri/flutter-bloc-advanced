@@ -172,8 +172,8 @@ dart format . --line-length=120
 [FVM Documentation](https://fvm.app/documentation/getting-started/installation)
 
 ```shell
-fvm install 3.27.1
-fvm use 3.27.1
+fvm install 3.32.8
+fvm use 3.32.8
 ```
 update environment!!!
 
