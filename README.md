@@ -1,23 +1,12 @@
-# Advanced Flutter BLOC Template
+# Advanced Flutter BLoC Template
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced)
 
 ---
-* This project is an open-source template built with Flutter and BLOC architecture.
-* It comes with a range of features and lets you quickly get started by adding your own
-  screens, models, and BLOCs. 
-* The template is designed to help you build scalable and maintainable applications with ease.
-* It includes public and private routes, user management, roles and permissions, dark and light
-  themes, mock data or API data, API client, internationalization, access control with Flutter and
-  Firebase, and CI/CD with GitHub Actions.
-* The template is suitable for building applications for Android, iOS, and the web.
-* It is easy to customize and extend the template to meet your specific requirements.
-* The template is well-documented and easy to use.
-* It is a great starting point for building your next Flutter project.
-* The template has separate environments for development and production.
-* It can work API and Mock data.
+
+A production-ready Flutter template built on BLoC architecture. Provides a solid foundation with authentication, role-based access control, user management, theming, internationalization, and multi-environment support (mock/API). Designed for scalable, maintainable applications targeting Android, iOS, Web, macOS, Linux, and Windows.
 
 ---
 
@@ -25,320 +14,274 @@
 
 ---
 
-* BLoC Pattern(Data, Models, Repository, Presentation), Environments, Configuration, Themes, IOS,
-* Android/IOS and Web
+## Tech Stack
+
+| Category | Technology |
+|---|---|
+| **Flutter** | 3.41.4 (Dart 3.11.1) |
+| **State Management** | flutter_bloc 9.1.1 |
+| **Routing** | go_router 17.1.0 |
+| **HTTP** | http 1.6.0 |
+| **Theming** | adaptive_theme 3.7.2 |
+| **Forms** | flutter_form_builder 10.3.0+2 |
+| **Localization** | intl 0.20.2 + intl_utils |
+| **Testing** | flutter_test, bloc_test 10.0.0, mockito 5.6.3 |
+
+## Features
+
+### Authentication
+- Login (username/password)
+- Register
+- Forgot Password
+- One Time Password (OTP) - Send and Verify
+
+### User Management
+- Create, Update, Delete, List users
+- Account view and update
+- Change password
+
+### Access Control
+- Role-based routing (Admin / User)
+- Public and private routes
+- Protected admin pages
+
+### UI/UX
+- Dark and light themes with adaptive_theme
+- Poppins font family
+- Responsive layout support
+- Internationalization (English, Turkish)
+- Dashboard with summary, activities, quick actions
+
+### Architecture
+- **BLoC Pattern** - Separation of data, business logic, and presentation
+- **Repository Pattern** - Abstracted data access layer
+- **Manual JSON Serialization** - No code generation required for models
+- **Multi-environment** - Local (mock data) and Production (real API)
+- **Multi-platform** - Android, iOS, Web, macOS, Linux, Windows
 
 ---
 
-## Out-of-the-box Features
+## Project Structure
 
-- Public and Private Routes
-- 
-- Home Page
-    - Private Pages
-        - Admin Pages
-        - User Pages
-    - Public Pages
-        - Guest Pages
-        - Access the public pages
-- Authenticate
-    - Login
-    - Register
-    - Forgot Password
-    - Update Profile
-    - Change Password
-- One Time Password (OTP)
-    - Send OTP
-    - Verify OTP
-- User Management
-  - User Create
-  - User Update
-  - User Delete
-  - User List
-- Account 
-    - Get Account
-    - Update Account
-- Role-based Access Control
-    - Admin Role
-    - User Role
-- Dark and Light Themes
-- Mock data
-- Rest API data
-- API client
-- Internationalization
-- **Poppins Font Integration** - Modern typography with Poppins font family
-- **Web Back Button Disabler** - Prevents browser back button on web platform
-- **Font Test Widget** - Visual font testing and verification tool
-
----
-
-## Development Environment
-
-When you run the main_local.dart file, the app will use the development configuration settings. All requests will be made to the mock API.
-    
-```text
-ProfileConstants.isProduction = false;
 ```
+lib/
+  configuration/       # App config, environment, storage, logging
+  data/
+    models/            # Data models with manual fromJson/toJson
+    repository/        # Repository implementations
+  generated/           # Localization generated files
+  l10n/                # Localization ARB files
+  main/                # Entry points (main_local.dart, main_prod.dart)
+  presentation/
+    common_blocs/      # Shared BLoCs (account, authority)
+    common_widgets/    # Reusable widgets (drawer, etc.)
+    design_system/     # Design tokens and components
+    screen/            # Feature screens with their BLoCs
+  routes/              # Navigation (go_router, navigator, get)
+  utils/               # Utility functions
 
-```shell
-flutter run --target lib/main/main_local.dart
-```
-
-### Login
-Login with username/password: admin/admin
-
-
-When you run the app in the development environment, the app will use the development configuration
-settings.
-API runs on the mock data automatically.
-
-```text
-ProfileConstants.isProduction = false;
-```
-
-Mock data folder
-
-```text
-assets/mock/...
-```
-
-### User Roles
-
-- Admin Account
-  This is an **admin account** that has access to all the pages.
-    - username: admin
-    - password: admin
-- User Account
-  This is a **user account** that has access to the user's own pages.(Account, password, theme,
-  language, etc.) (User can't access the admin pages)
-    - username: user
-    - password: user
-
-## Production Environment
-
-When you run the app in the production environment, the app will use the production configuration
-settings.
-API run on the real data automatically with your API URL.
-
-```text
-ProfileConstants.isProduction = true;
-```
-
-API URL
-
-Production API URLs like these:
-
-```text
-https://mock-api.sample.tech/api/v1
-
-https://python-mock-api.sample.tech/api/v1
-
-https://java-mock-api.sample.tech/api/v1
-```
-
----
-
-## Installation
-
-```bash
-git clone https://github.com/cevheri/flutter-bloc-advanced.git
-```
-
----
-
-## Requirements
-
-* for serialize and deserialize json to object
-
-```shell
-dart run build_runner build --delete-conflicting-outputs
-```
-
-* dart analyze
-
-```shell
-dart analyze
-```
-
-* fix dart analyze
-```shell
-dart fix --apply
-```
-
-* format
-```shell
-dart format . --line-length=120
-```
-
----
-
-## Use FVM
-
-[FVM Documentation](https://fvm.app/documentation/getting-started/installation)
-
-```shell
-fvm install 3.41.4
-fvm use 3.41.4
-```
-update environment!!!
-
-### For MacOS
-```shell
-brew tap leoafarias/fvm
-brew install fvm
-```
-
-### For Windows
-```shell
-choco install fvm
-```
-
-### For Linux
-```shell
-brew tap leoafarias/fvm
-brew install fvm
-```
-
-## Install Dependencies
-
-```bash
-flutter pub get
+test/
+  conf/                # Test configuration
+  data/model/          # Model unit tests
+  data/repository/     # Repository unit tests
+  presentation/blocs/  # BLoC unit tests
+  presentation/screen/ # Screen widget tests
+  presentation/widgets/# Widget unit tests
 ```
 
 ---
 
 ## Getting Started
 
-- Run `flutter run --target lib/main/main_local.dart` for dev environment
-- Run `flutter run --target lib/main/main_prod.dart` for prod environment
+### Prerequisites
 
-flutter run dev environment
+- Flutter 3.41.4 (recommended via [FVM](https://fvm.app/documentation/getting-started/installation))
+- Dart 3.11.1
+- Android SDK (for Android builds)
+- Xcode (for iOS/macOS builds)
 
-- Run `flutter run -d chrome --target lib/main/main_local.dart` for web dev environment
-- Run `flutter run -d chrome --target lib/main/main_prod.dart` for web prod environment
+### Install FVM
 
-## Usage for local environment with mock data
+```shell
+# macOS / Linux
+brew tap leoafarias/fvm
+brew install fvm
 
-* Run `flutter run -d chrome --web-port 3000 --target lib/main/main_local.dart` for web dev
-  environment
-* Open `http://localhost:3000` in your browser
-* Login with `admin` and `admin` for admin role
-* Login with `user` and `user` for user role
+# Windows
+choco install fvm
+```
+
+### Setup
+
+```shell
+git clone https://github.com/cevheri/flutter-bloc-advanced.git
+cd flutter-bloc-advanced
+
+fvm install 3.41.4
+fvm use 3.41.4
+fvm flutter pub get
+```
 
 ---
 
-## How to Build
+## Running the App
 
-- Run `flutter build apk --target lib/main/main_prod.dart` for android
-- Run `flutter build ios --target lib/main/main_prod.dart` for ios
-- Run `flutter build web --target lib/main/main_prod.dart` for web
+### Local Environment (Mock Data)
+
+All requests use mock data from `assets/mock/`. No backend required.
+
+```shell
+# Mobile
+fvm flutter run --target lib/main/main_local.dart
+
+# Web
+fvm flutter run -d chrome --target lib/main/main_local.dart
+
+# Web with specific port
+fvm flutter run -d chrome --web-port 3000 --target lib/main/main_local.dart
+```
+
+**Login credentials:**
+
+| Role | Username | Password | Access |
+|------|----------|----------|--------|
+| Admin | admin | admin | All pages |
+| User | user | user | Own profile, settings |
+
+### Production Environment (Real API)
+
+Connects to configured API endpoint.
+
+```shell
+# Mobile
+fvm flutter run --target lib/main/main_prod.dart
+
+# Web
+fvm flutter run -d chrome --target lib/main/main_prod.dart
+```
 
 ---
 
-## How to Run
+## Building
 
-- Run `flutter pub get`
-- Run `flutter run --target lib/main/main_dev.dart` for dev environment
-- Run `flutter run -d chrome --target lib/main/main_dev.dart` for web
-- Run `flutter run -d ios --target lib/main/main_dev.dart` for ios
-- Run `flutter run -d android --target lib/main/main_dev.dart` for android
-- Run `flutter run -d web --target lib/main/main_dev.dart` for web
+```shell
+# Android APK
+fvm flutter build apk --target lib/main/main_prod.dart
 
-## How to Test
+# iOS
+fvm flutter build ios --target lib/main/main_prod.dart
 
-### Description
+# Web
+fvm flutter build web --target lib/main/main_prod.dart
+```
 
-Following test should run
+---
 
-* test/data/model
-* test/data/repository
-* test/presentation/blocs
-* test/presentation/screen
-* test/presentation/widgets
+## Testing
 
-### Run Test
+```shell
+# Run all tests
+fvm flutter test
 
-- Run `flutter test`
-
-Or 1 Thread
-
-- Run `flutter test --concurrency=1 --test-randomize-ordering-seed=random`
+# Run with single thread (useful for debugging)
+fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random
+```
 
 ### Test Coverage
 
-The project includes comprehensive test coverage for:
-- Data layer (models, repositories)
-- Business logic (BLoCs)
-- UI components (screens, widgets)
-- Font integration and typography
-- Web-specific components
-
-### New Test Files Added
-
-- `test/presentation/widgets/font_test_widget_test.dart` - Tests for Poppins font integration
-- `test/presentation/widgets/web_back_button_disabler_test.dart` - Tests for web back button functionality
+| Layer | What is Tested |
+|-------|---------------|
+| **Models** | fromJson, toJson, equality, edge cases |
+| **Repositories** | API calls, error handling, mock responses |
+| **BLoCs** | State transitions, event handling, error states |
+| **Screens** | Widget rendering, user interactions, navigation |
+| **Widgets** | Reusable component behavior |
 
 ---
 
-## Code Quality Analysis with SonarQube
+## Code Quality
 
-GitHub Actions already implemented with SonarQube
+### Analyze
 
-* You can create a secret for your repository ```SONAR_TOKEN```
+```shell
+fvm dart analyze
+```
+
+### Fix
+
+```shell
+fvm dart fix --apply
+```
+
+### Format
+
+```shell
+fvm dart format . --line-length=120
+```
+
+### SonarQube
+
+GitHub Actions integration is configured. Add `SONAR_TOKEN` secret to your repository.
 
 ---
 
-## Usage
+## Android Configuration
 
-To add new screens, models, and BLOCs, follow these steps:
+| Component | Version |
+|---|---|
+| Gradle | 8.14 |
+| Android Gradle Plugin | 8.11.1 |
+| Kotlin | 2.2.20 |
+| Java Compatibility | 17 |
+| NDK | Dynamic (flutter.ndkVersion) |
+| Build Config | Kotlin DSL (.gradle.kts) |
 
-1. Add New Screens
-   Add your new screens to the lib/screens directory.
-2. Add New Models
-   Add your new model classes to the lib/models directory.
-3. Add New BLOCs
-   Add your new BLOC classes to the lib/bloc directory and perform necessary operations.
-4. API Integration
-   Integrate with APIs using the services provided in the lib/api directory.
+---
 
-## CI/CD with Github Actions
+## CI/CD
 
-- [Flutter CI/CD with Github Actions](.github/workflows/build_and_test.yml)
+GitHub Actions workflows:
 
-## Firebase 
+- **build_and_test.yml** - Build and test pipeline
+- **build-web.yml** - Web build pipeline
+- **sonar_scanner.yml** - SonarQube code quality analysis
 
-Not Implemented Yet!!!
+---
 
-### How to Setup Firebase
+## Adding New Features
 
-- [Flutter Firebase Setup]()
-- [Flutter Firebase Setup with Github Actions]()
-- [Flutter Firebase Setup with Github Actions and Firebase Hosting]()
+1. **Model** - Add to `lib/data/models/` with manual `fromJson`/`toJson` methods
+2. **Repository** - Add to `lib/data/repository/` implementing data access
+3. **BLoC** - Add to `lib/presentation/screen/<feature>/bloc/` with events, states, and bloc
+4. **Screen** - Add to `lib/presentation/screen/<feature>/`
+5. **Route** - Register in `lib/routes/go_router_routes/`
+6. **Mock Data** - Add JSON file to `assets/mock/` for local testing
+7. **Tests** - Add corresponding tests under `test/`
 
-### How to Deploy Firebase
+---
 
-- [Flutter Firebase Deploy]()
-- [Flutter Firebase Deploy with Github Actions]()
-- [Flutter Firebase Deploy with Github Actions and Firebase Hosting]()
+## Contributing
 
-## How to Contribute
+1. Fork the repository
+2. Clone your forked repository
+3. Create your feature branch
+4. Commit your changes
+5. Push to the branch
+6. Create a Pull Request
 
-- Fork the repository
-- Clone your forked repository
-- Create your feature branch
-- Commit your changes
-- Push to the branch
-- Create a new Pull Request
+---
 
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+---
+
 ## References
 
 - [Understanding Flutter BLoC: A Comprehensive Guide](https://cevheri.medium.com/understanding-flutter-bloc-a-comprehensive-guide-7100dabe3975)
-- https://flutter.dev/
-- https://bloclibrary.dev/
-- https://pub.dev/packages/flutter_bloc
-- https://pub.dev/packages/get
-- [How to deploy your docker image to cloud for free?](https://cevheri.medium.com/how-to-deploy-your-docker-image-to-cloud-for-free-6bd1c61d01ef)
+- [Flutter Documentation](https://flutter.dev/)
+- [BLoC Library](https://bloclibrary.dev/)
+- [flutter_bloc on pub.dev](https://pub.dev/packages/flutter_bloc)
+- [go_router on pub.dev](https://pub.dev/packages/go_router)
+- [Upgrade Guide - Flutter 3.41.4](docs/upgrade_flutter_3.41.4.md)
