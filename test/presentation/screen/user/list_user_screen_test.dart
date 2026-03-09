@@ -108,8 +108,7 @@ void main() {
 
       // ASSERT - desktop view: search fields + buttons
       expect(find.byType(FormBuilderTextField), findsNWidgets(3));
-      // 1 OutlinedButton (search) + 1 FilledButton (add user)
-      expect(find.byType(OutlinedButton), findsOneWidget);
+      expect(find.byKey(const Key('listUserSubmitButtonKey')), findsOneWidget);
       expect(find.byType(FilledButton), findsOneWidget);
       expect(find.text(S.current.list), findsOneWidget);
 

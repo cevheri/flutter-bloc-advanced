@@ -236,6 +236,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
               enabled: !readOnly,
               initialValue: state.data?.authorities?.firstOrNull,
               hintText: S.of(context).authorities,
+              isRequired: true,
             ),
           ),
         ],

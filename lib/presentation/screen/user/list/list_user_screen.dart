@@ -12,13 +12,38 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 
+UserSearchEvent _buildSearchEventFromForm(FormBuilderState? formState) {
+  final pageText = formState?.fields['rangeStart']?.value?.toString() ?? '0';
+  final sizeText = formState?.fields['rangeEnd']?.value?.toString() ?? '100';
+  final authorityText = formState?.fields['authorities']?.value?.toString();
+  final nameText = formState?.fields['name']?.value?.toString();
+
+  String? normalize(String? value) {
+    if (value == null) return null;
+    final trimmed = value.trim();
+    return trimmed.isEmpty ? null : trimmed;
+  }
+
+  return UserSearchEvent(
+    page: int.tryParse(pageText) ?? 0,
+    size: int.tryParse(sizeText) ?? 100,
+    authorities: normalize(authorityText),
+    name: normalize(nameText),
+  );
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Root
 // ─────────────────────────────────────────────────────────────────────────────
 
-class ListUserScreen extends StatelessWidget {
-  ListUserScreen({super.key});
+class ListUserScreen extends StatefulWidget {
+  const ListUserScreen({super.key});
 
+  @override
+  State<ListUserScreen> createState() => _ListUserScreenState();
+}
+
+class _ListUserScreenState extends State<ListUserScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -26,13 +51,12 @@ class ListUserScreen extends StatelessWidget {
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
-      child: const UserListView(),
+      child: UserListView(formKey: _formKey),
     );
   }
 
   void _handleUserStateChanges(BuildContext context, UserState state) {
     switch (state.status) {
-      case UserStatus.searchSuccess:
       case UserStatus.deleteSuccess:
       case UserStatus.saveSuccess:
       case UserStatus.viewSuccess:
@@ -44,8 +68,9 @@ class ListUserScreen extends StatelessWidget {
   }
 
   void _refreshUserList(BuildContext context) {
-    if (_formKey.currentState?.saveAndValidate() ?? false) {
-      context.read<UserBloc>().add(const UserSearchEvent());
+    final formState = _formKey.currentState;
+    if (formState == null || formState.saveAndValidate()) {
+      context.read<UserBloc>().add(_buildSearchEventFromForm(formState));
     }
   }
 }
@@ -55,7 +80,9 @@ class ListUserScreen extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class UserListView extends StatelessWidget {
-  const UserListView({super.key});
+  final GlobalKey<FormBuilderState> formKey;
+
+  const UserListView({super.key, required this.formKey});
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +90,7 @@ class UserListView extends StatelessWidget {
       child: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth > 700) {
-            return UserListContent(horizontalPadding: 24, maxWidth: 1200);
+            return UserListContent(formKey: formKey, horizontalPadding: 24, maxWidth: 1200);
           }
           return const UserMobileListView();
         },
@@ -77,11 +104,11 @@ class UserListView extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class UserListContent extends StatelessWidget {
+  final GlobalKey<FormBuilderState> formKey;
   final double horizontalPadding;
   final double maxWidth;
-  final _formKey = GlobalKey<FormBuilderState>();
 
-  UserListContent({super.key, required this.horizontalPadding, required this.maxWidth});
+  const UserListContent({super.key, required this.formKey, required this.horizontalPadding, required this.maxWidth});
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +129,10 @@ class UserListContent extends StatelessWidget {
                   children: [
                     Text(S.of(context).list_user, style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
-                    Text(S.of(context).list_user, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                    Text(
+                      'Browse and manage users in a table view.',
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                    ),
                   ],
                 ),
               ),
@@ -118,13 +148,11 @@ class UserListContent extends StatelessWidget {
 
           const SizedBox(height: 20),
 
-          // ── Toolbar (filters) ────────────────────────────────────────
-          UserSearchSection(formKey: _formKey),
+          UserSearchSection(formKey: formKey),
 
           const SizedBox(height: 16),
 
-          // ── Data table ───────────────────────────────────────────────
-          _DataTableContainer(formKey: _formKey),
+          _DataTableContainer(formKey: formKey),
         ],
       ),
     );
@@ -144,20 +172,46 @@ class UserSearchSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilder(
       key: formKey,
-      child: Row(
-        children: [
-          // Search by name
-          const SizedBox(width: 250, child: SearchNameField()),
-          const SizedBox(width: 8),
-          // Role filter
-          const SizedBox(width: 200, child: AuthoritiesDropdown()),
-          const SizedBox(width: 8),
-          // Pagination
-          const SizedBox(width: 160, child: PaginationControls()),
-          const SizedBox(width: 8),
-          // Search action
-          SearchActionButtons(formKey: formKey),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final isNarrow = constraints.maxWidth < 980;
+
+          if (isNarrow) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 40, child: SearchNameField()),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    const SizedBox(width: 200, height: 40, child: AuthoritiesDropdown(hintText: 'Role filter')),
+                    const SizedBox(width: 8),
+                    const SizedBox(width: 170, height: 40, child: PaginationControls()),
+                    const Spacer(),
+                    SearchActionButtons(formKey: formKey),
+                    const SizedBox(width: 8),
+                    _ColumnsButton(),
+                  ],
+                ),
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const Expanded(child: SizedBox(height: 40, child: SearchNameField())),
+              const SizedBox(width: 8),
+              const SizedBox(width: 200, height: 40, child: AuthoritiesDropdown(hintText: 'Role filter')),
+              const SizedBox(width: 8),
+              const SizedBox(width: 170, height: 40, child: PaginationControls()),
+              const SizedBox(width: 8),
+              SearchActionButtons(formKey: formKey),
+              const SizedBox(width: 8),
+              const _ColumnsButton(),
+            ],
+          );
+        },
       ),
     );
   }
@@ -170,10 +224,11 @@ class PaginationControls extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Flexible(
+        Expanded(
           child: FormBuilderTextField(
             name: 'rangeStart',
             initialValue: "0",
+            textAlign: TextAlign.center,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).required_range),
               FormBuilderValidators.numeric(errorText: S.of(context).required_range),
@@ -181,7 +236,7 @@ class PaginationControls extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
+          padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             "/",
             style: Theme.of(
@@ -189,10 +244,11 @@ class PaginationControls extends StatelessWidget {
             ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
-        Flexible(
+        Expanded(
           child: FormBuilderTextField(
             name: 'rangeEnd',
             initialValue: "100",
+            textAlign: TextAlign.center,
             validator: FormBuilderValidators.compose([
               FormBuilderValidators.required(errorText: S.of(context).required_range),
               FormBuilderValidators.numeric(errorText: S.of(context).required_range),
@@ -212,7 +268,7 @@ class SearchNameField extends StatelessWidget {
     return FormBuilderTextField(
       name: 'name',
       decoration: InputDecoration(
-        hintText: S.of(context).name,
+        hintText: 'Filter users...',
         prefixIcon: Icon(Icons.search, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
         prefixIconConstraints: const BoxConstraints(minWidth: 36),
       ),
@@ -233,20 +289,28 @@ class SearchActionButtons extends StatelessWidget {
       onPressed: () => _handleSearch(context),
       icon: const Icon(Icons.search, size: 16),
       label: Text(S.of(context).list),
+      style: OutlinedButton.styleFrom(minimumSize: const Size(86, 40), maximumSize: const Size(120, 40)),
     );
   }
 
   void _handleSearch(BuildContext context) {
     if (formKey.currentState!.saveAndValidate()) {
-      context.read<UserBloc>().add(
-        UserSearchEvent(
-          page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
-          size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-          authorities: formKey.currentState!.fields['authorities']?.value,
-          name: formKey.currentState!.fields['name']?.value,
-        ),
-      );
+      context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
     }
+  }
+}
+
+class _ColumnsButton extends StatelessWidget {
+  const _ColumnsButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: () {},
+      icon: const Icon(Icons.view_column_outlined, size: 16),
+      label: const Text('Columns'),
+      style: OutlinedButton.styleFrom(minimumSize: const Size(104, 40), maximumSize: const Size(130, 40)),
+    );
   }
 }
 
@@ -266,14 +330,39 @@ class _DataTableContainer extends StatelessWidget {
     return Container(
       clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: cs.outline),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: cs.outlineVariant),
       ),
-      child: Column(
-        children: [
-          const _TableHeader(),
-          _TableBody(formKey: formKey),
-        ],
+      child: BlocBuilder<UserBloc, UserState>(
+        builder: (context, state) {
+          final rowCount = state.userList?.length ?? 0;
+          return Column(
+            children: [
+              const _TableHeader(),
+              _TableBody(formKey: formKey),
+              Container(
+                height: 52,
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: cs.outlineVariant)),
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '$rowCount row(s) listed.',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                      ),
+                    ),
+                    OutlinedButton(onPressed: null, child: const Text('Previous')),
+                    const SizedBox(width: 8),
+                    OutlinedButton(onPressed: null, child: const Text('Next')),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }
@@ -293,18 +382,19 @@ class _TableHeader extends StatelessWidget {
     return Container(
       height: 40,
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: cs.outline)),
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
       ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
+          const SizedBox(width: 28, child: Checkbox(value: false, onChanged: null)),
+          _HeadCell(flex: 2, text: S.of(context).active, style: style),
           _HeadCell(flex: 3, text: S.of(context).role, style: style),
           _HeadCell(flex: 3, text: S.of(context).login, style: style),
           _HeadCell(flex: 3, text: S.of(context).first_name, style: style),
           _HeadCell(flex: 3, text: S.of(context).last_name, style: style),
           _HeadCell(flex: 4, text: S.of(context).email, style: style),
-          _HeadCell(flex: 2, text: S.of(context).active, style: style),
-          _HeadCell(flex: 2, text: "Actions", style: style, alignment: TextAlign.right),
+          _HeadCell(flex: 4, text: "Actions", style: style, alignment: TextAlign.right),
         ],
       ),
     );
@@ -389,11 +479,16 @@ class _TableRowState extends State<_TableRow> {
         duration: const Duration(milliseconds: 100),
         decoration: BoxDecoration(
           color: _hovered ? cs.onSurface.withAlpha(13) : Colors.transparent,
-          border: widget.isLast ? null : Border(bottom: BorderSide(color: cs.outline)),
+          border: widget.isLast ? null : Border(bottom: BorderSide(color: cs.outlineVariant)),
         ),
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
           children: [
+            const SizedBox(width: 28, child: Checkbox(value: false, onChanged: null)),
+            _BodyCell(
+              flex: 2,
+              child: _StatusBadge(label: isActive ? "Active" : "Inactive", color: statusColor),
+            ),
             _BodyCell(
               flex: 3,
               child: Text(
@@ -406,11 +501,7 @@ class _TableRowState extends State<_TableRow> {
             _BodyCell(flex: 3, child: Text(user.lastName.toString(), style: cellStyle)),
             _BodyCell(flex: 4, child: Text(user.email.toString(), style: cellStyle)),
             _BodyCell(
-              flex: 2,
-              child: _StatusBadge(label: isActive ? "Active" : "Inactive", color: statusColor),
-            ),
-            _BodyCell(
-              flex: 2,
+              flex: 4,
               alignment: CrossAxisAlignment.end,
               child: _RowActions(userId: user.login!, formKey: widget.formKey),
             ),
@@ -480,13 +571,18 @@ class _RowActions extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
 
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _GhostIconButton(icon: Icons.edit_outlined, onPressed: () => _edit(context), color: cs.onSurfaceVariant),
-        _GhostIconButton(icon: Icons.visibility_outlined, onPressed: () => _view(context), color: cs.onSurfaceVariant),
-        _GhostIconButton(icon: Icons.delete_outline, onPressed: () => _delete(context), color: cs.error),
-      ],
+    return SizedBox(
+      width: 120,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          _GhostIconButton(icon: Icons.edit, onPressed: () => _edit(context), color: cs.onSurface),
+          const SizedBox(width: 4),
+          _GhostIconButton(icon: Icons.visibility, onPressed: () => _view(context), color: cs.onSurface),
+          const SizedBox(width: 4),
+          _GhostIconButton(icon: Icons.delete, onPressed: () => _delete(context), color: cs.error),
+        ],
+      ),
     );
   }
 
@@ -523,14 +619,7 @@ class _RowActions extends StatelessWidget {
   }
 
   void _refresh(BuildContext context) {
-    context.read<UserBloc>().add(
-      UserSearchEvent(
-        page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
-        size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-        authorities: formKey.currentState!.fields['authorities']?.value,
-        name: formKey.currentState!.fields['name']?.value,
-      ),
-    );
+    context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
   }
 }
 
@@ -545,14 +634,18 @@ class _GhostIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: 32,
-      height: 32,
+      width: 34,
+      height: 34,
       child: IconButton(
         onPressed: onPressed,
-        icon: Icon(icon, size: 16, color: color),
+        icon: Icon(icon, size: 20, color: color),
         padding: EdgeInsets.zero,
-        splashRadius: 16,
-        style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+        splashRadius: 17,
+        style: IconButton.styleFrom(
+          foregroundColor: color,
+          minimumSize: const Size(34, 34),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
       ),
     );
   }
