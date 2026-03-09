@@ -1,18 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/menu.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
 
 /// Test the menu model
 void main() {
-  // Initialize Test
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   group('Menu Model Tests', () {
     test('should create a Menu instance (Constructor)', () {
       const entity = mockMenuPayload;

@@ -1,16 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/customer.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/customer_data.dart';
 
 void main() {
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   group("Customer model", () {
     test("should create a Customer instance (Constructor)", () {
       const entity = mockCustomerFullPayload;

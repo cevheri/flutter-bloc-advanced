@@ -1,47 +1,22 @@
 import 'dart:convert';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
 /// ApplicationUser model that represents the user entity in this application.
 ///
 /// this is an immutable class that extends [Equatable] so that it can be compared
-@jsonSerializable
 class User extends Equatable {
-  @JsonProperty(name: 'id')
   final String? id;
-
-  @JsonProperty(name: 'login')
   final String? login;
-
-  @JsonProperty(name: 'firstName')
   final String? firstName;
-
-  @JsonProperty(name: 'lastName')
   final String? lastName;
-
-  @JsonProperty(name: 'email')
   final String? email;
-
-  @JsonProperty(name: 'activated')
   final bool? activated;
-
-  @JsonProperty(name: 'langKey')
   final String? langKey;
-
-  @JsonProperty(name: 'createdBy')
   final String? createdBy;
-
-  @JsonProperty(name: 'createdDate')
   final DateTime? createdDate;
-
-  @JsonProperty(name: 'lastModifiedBy')
   final String? lastModifiedBy;
-
-  @JsonProperty(name: 'lastModifiedDate')
   final DateTime? lastModifiedDate;
-
-  @JsonProperty(name: 'authorities')
   final List<String>? authorities;
 
   //Constructor
@@ -92,26 +67,44 @@ class User extends Equatable {
   }
 
   static User? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.deserialize<User>(json);
-    if (result == null) {
-      return null;
-    }
-    return result;
+    return User(
+      id: json['id']?.toString(),
+      login: json['login'],
+      firstName: json['firstName'],
+      lastName: json['lastName'],
+      email: json['email'],
+      activated: json['activated'],
+      langKey: json['langKey'],
+      createdBy: json['createdBy'],
+      createdDate: json['createdDate'] != null ? DateTime.tryParse(json['createdDate']) : null,
+      lastModifiedBy: json['lastModifiedBy'],
+      lastModifiedDate: json['lastModifiedDate'] != null ? DateTime.tryParse(json['lastModifiedDate']) : null,
+      authorities: json['authorities'] != null ? List<String>.from(json['authorities']) : null,
+    );
   }
 
-  static User? fromJsonString(String json) {
-    var result = JsonMapper.deserialize<User>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
-  }
+  static User? fromJsonString(String json) => fromJson(jsonDecode(json));
 
   static List<User> fromJsonList(List<dynamic> jsonList) => jsonList.map((json) => fromJson(json)!).toList();
 
   static List<User> fromJsonStringList(String jsonString) => fromJsonList(jsonDecode(jsonString));
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  Map<String, dynamic>? toJson() {
+    final Map<String, dynamic> json = {};
+    if (id != null) json['id'] = id;
+    if (login != null) json['login'] = login;
+    if (firstName != null) json['firstName'] = firstName;
+    if (lastName != null) json['lastName'] = lastName;
+    if (email != null) json['email'] = email;
+    if (activated != null) json['activated'] = activated;
+    if (langKey != null) json['langKey'] = langKey;
+    if (createdBy != null) json['createdBy'] = createdBy;
+    if (createdDate != null) json['createdDate'] = createdDate!.toIso8601String();
+    if (lastModifiedBy != null) json['lastModifiedBy'] = lastModifiedBy;
+    if (lastModifiedDate != null) json['lastModifiedDate'] = lastModifiedDate!.toIso8601String();
+    if (authorities != null) json['authorities'] = authorities;
+    return json;
+  }
 
   @override
   List<Object?> get props => [

@@ -1,17 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/authority.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
 
 /// Test the Authority model
 void main() {
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   group("Authority Model", () {
     test('should create a Authority instance (Constructor)', () {
       expect(mockAuthorityPayload.name, 'ROLE_USER');

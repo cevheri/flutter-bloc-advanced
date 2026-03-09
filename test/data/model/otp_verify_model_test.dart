@@ -1,5 +1,4 @@
 import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -31,7 +30,7 @@ void main() {
     });
 
     test('should create VerifyOtpRequest from JSON correctly', () {
-      initializeJsonMapper();
+
       // given
       final json = {'email': 'test@example.com', 'otp': '123456'};
 

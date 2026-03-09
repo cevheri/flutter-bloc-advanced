@@ -1,17 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/change_password.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
 
 /// Test the Change Password model
 void main() {
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   group("Change Password Model", () {
     test('should create a ChangePassword instance (Constructor)', () {
       expect(mockPasswordChangePayload.currentPassword, 'password');

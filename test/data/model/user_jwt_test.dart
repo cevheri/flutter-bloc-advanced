@@ -1,16 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/user_jwt.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
 
 void main() {
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   // model test, constructor, copyWith, toJson, fromJson, props, toString, equals, hashcode
   group("UserJWT Model", () {
     test('should create a UserJWT instance (Constructor)', () {

@@ -1,35 +1,18 @@
 import 'dart:convert';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
 /// ApplicationCustomer model that represents the customer entity in this application.
 ///
 /// this is an immutable class that extends [Equatable] so that it can be compared
-@jsonSerializable
 class Customer extends Equatable {
-  @JsonProperty(name: 'id')
   final String? id;
-
-  @JsonProperty(name: 'name')
   final String? name;
-
-  @JsonProperty(name: 'phone')
   final String? phone;
-
-  @JsonProperty(name: 'email')
   final String? email;
-
-  @JsonProperty(name: 'cityName')
   final String? cityName;
-
-  @JsonProperty(name: 'districtName')
   final String? districtName;
-
-  @JsonProperty(name: 'address')
   final String? address;
-
-  @JsonProperty(name: 'active')
   final bool? active;
 
   const Customer({

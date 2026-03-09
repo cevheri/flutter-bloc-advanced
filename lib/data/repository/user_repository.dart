@@ -1,4 +1,3 @@
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter_bloc_advance/configuration/app_logger.dart';
 import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 
@@ -98,7 +97,7 @@ class UserRepository {
       queryParams: queryParams,
     );
     // var r = response.body;
-    var result = JsonMapper.deserialize<List<User>>(response.body)!;
+    var result = User.fromJsonStringList(response.body);
     _log.debug("END:findUserByAuthority successful - response list size: {}", [result.length]);
     return result;
   }
@@ -113,7 +112,7 @@ class UserRepository {
     ]);
     final queryParams = {"page": page.toString(), "size": size.toString(), "name": name, "authority": authority};
     final response = await HttpUtils.getRequest("/admin/$_resource/filter", queryParams: queryParams);
-    var result = JsonMapper.deserialize<List<User>>(response.body)!;
+    var result = User.fromJsonStringList(response.body);
     _log.debug("END:findUserByName successful - response list size: {}", [result.length]);
     return result;
   }

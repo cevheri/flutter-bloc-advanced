@@ -18,6 +18,8 @@ import 'package:go_router/go_router.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../test_utils.dart';
 @GenerateNiceMocks([MockSpec<LoginBloc>(), MockSpec<AccountBloc>()])
@@ -29,6 +31,8 @@ void main() {
   late GoRouter mockGoRouter;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
     mockLoginBloc = MockLoginBloc();
 
     // Set basic state for login bloc
@@ -209,45 +213,6 @@ void main() {
         expect(find.text(S.current.send_otp_code), findsOneWidget);
       });
 
-      testWidgets(skip: true, 'should display texts in Turkish', (tester) async {
-        // GIVEN
-        AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-        SharedPreferences.setMockInitialValues({});
-        await AppLocalStorage().save(StorageKeys.language.name, "tr");
-
-        // Before loading the app, load the Turkish locale
-        await S.load(const Locale('tr'));
-
-        final turkishWidget = AdaptiveTheme(
-          light: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
-          dark: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
-          initial: AdaptiveThemeMode.light,
-          builder: (light, dark) => MultiBlocProvider(
-            providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],
-            child: MaterialApp(
-              theme: light,
-              darkTheme: dark,
-              localizationsDelegates: const [
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: S.delegate.supportedLocales,
-              locale: const Locale('tr'),
-              home: OtpEmailScreen(),
-            ),
-          ),
-        );
-
-        await tester.pumpWidget(turkishWidget);
-        await tester.pumpAndSettle();
-
-        // THEN
-        expect(find.text('E-posta ile Giriş'), findsOneWidget);
-        expect(find.text('E-posta'), findsOneWidget);
-        expect(find.text('OTP Kodu Gönder'), findsOneWidget);
-      });
     });
   });
 }

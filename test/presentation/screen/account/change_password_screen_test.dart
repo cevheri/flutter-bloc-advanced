@@ -99,17 +99,6 @@ void main() {
       _log.debug("end Validate Field Type");
     });
 
-    /// validate field name with English translation
-    testWidgets(skip: true, "Render Screen Validate Field Name Successful", (tester) async {
-      //Given
-      await tester.pumpWidget(getWidget());
-      //When
-      await tester.pumpAndSettle();
-      //Then:
-      expect(find.text("Current Password"), findsOneWidget);
-      expect(find.text("New Password"), findsOneWidget);
-      expect(find.text("Change Password"), findsOneWidget);
-    });
   });
 
   group("ChangePasswordScreen Bloc Test", () {

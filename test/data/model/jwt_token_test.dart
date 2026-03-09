@@ -1,17 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/jwt_token.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
 
 ///Test the JWTToken model
 void main() {
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   group("JWTToken model", () {
     test('should create a JWTToken instance (Constructor)', () {
       const entity = mockJWTTokenPayload;

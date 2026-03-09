@@ -45,19 +45,6 @@ void main() {
     });
 
     group('Navigation Tests', () {
-      testWidgets(skip: true, 'pop should call strategy pop', (tester) async {
-        await tester.pumpWidget(
-          buildTestableWidget(
-            child: Builder(
-              builder: (context) => TextButton(onPressed: () => router.pop(context), child: const Text('Pop')),
-            ),
-          ),
-        );
-
-        await tester.tap(find.text('Pop'));
-        await tester.pumpAndSettle();
-      });
-
       testWidgets('push should call strategy push', (tester) async {
         await tester.pumpWidget(
           buildTestableWidget(
@@ -91,20 +78,5 @@ void main() {
       });
     });
 
-    group('Error Handling Tests', () {
-      testWidgets(skip: true, 'should handle invalid routes gracefully', (tester) async {
-        await tester.pumpWidget(
-          buildTestableWidget(
-            child: Builder(
-              builder: (context) =>
-                  TextButton(onPressed: () => router.push(context, '/invalid-route'), child: const Text('Invalid')),
-            ),
-          ),
-        );
-
-        await tester.tap(find.text('Invalid'));
-        expect(tester.takeException(), isA<Exception>());
-      });
-    });
   });
 }

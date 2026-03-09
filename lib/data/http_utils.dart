@@ -1,9 +1,8 @@
 import 'dart:async';
-import 'dart:convert' show Encoding, utf8;
+import 'dart:convert' show Encoding, jsonEncode, utf8;
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/configuration/allowed_paths.dart';
@@ -35,12 +34,6 @@ class HttpUtils {
   static const requestTimeoutError = 'TimeoutException';
   static const _timeout = Duration(seconds: timeoutValue);
   static final _encoding = Encoding.getByName(utf8Val);
-  static const _serOps = SerializationOptions(
-    indent: '',
-    ignoreDefaultMembers: true,
-    ignoreNullMembers: true,
-    ignoreUnknownTypes: true,
-  );
 
   static http.Client? _httpClient;
 
@@ -141,7 +134,7 @@ class HttpUtils {
 
     String messageBody = "";
     if (requestHeaders['Content-Type'] == applicationJson) {
-      messageBody = JsonMapper.serialize(body, _serOps);
+      messageBody = body is Map ? jsonEncode(body) : jsonEncode((body as dynamic).toJson());
     } else {
       messageBody = body as String;
     }
@@ -228,12 +221,12 @@ class HttpUtils {
     debugPrint("BEGIN: PUT Request Method start : ${ProfileConstants.api}$endpoint");
     if (!ProfileConstants.isProduction) return await mockRequest('PUT', endpoint);
     var headers = await HttpUtils.headers();
-    final String json = JsonMapper.serialize(body, _serOps);
+    final String jsonBody = body is Map ? jsonEncode(body) : jsonEncode((body as dynamic).toJson());
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
       response = await client
-          .put(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
+          .put(url, headers: headers, body: jsonBody, encoding: Encoding.getByName(utf8Val))
           .timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {
@@ -249,12 +242,12 @@ class HttpUtils {
     debugPrint("BEGIN: PATCH Request Method start : ${ProfileConstants.api}$endpoint");
     if (!ProfileConstants.isProduction) return await mockRequest('PATCH', endpoint);
     var headers = await HttpUtils.headers();
-    final String json = JsonMapper.serialize(body, _serOps);
+    final String jsonBody = body is Map ? jsonEncode(body) : jsonEncode((body as dynamic).toJson());
     final http.Response response;
     try {
       final url = Uri.parse('${ProfileConstants.api}$endpoint');
       response = await client
-          .patch(url, headers: headers, body: json, encoding: Encoding.getByName(utf8Val))
+          .patch(url, headers: headers, body: jsonBody, encoding: Encoding.getByName(utf8Val))
           .timeout(_timeout);
       checkUnauthorizedAccess(endpoint, response);
     } on SocketException {

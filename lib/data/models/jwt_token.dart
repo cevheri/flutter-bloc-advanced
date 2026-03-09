@@ -1,11 +1,8 @@
 import 'dart:convert';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
-@jsonSerializable
 class JWTToken extends Equatable {
-  @JsonProperty(name: 'id_token')
   final String? idToken;
 
   const JWTToken({this.idToken});
@@ -15,22 +12,16 @@ class JWTToken extends Equatable {
   }
 
   static JWTToken? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.fromMap<JWTToken>(json);
-    if (result == null) {
-      return null;
-    }
-    return result;
+    return JWTToken(idToken: json['id_token']);
   }
 
-  static JWTToken? fromJsonString(String json) {
-    var result = JsonMapper.deserialize<JWTToken>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
-  }
+  static JWTToken? fromJsonString(String json) => fromJson(jsonDecode(json));
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  Map<String, dynamic>? toJson() {
+    final Map<String, dynamic> json = {};
+    if (idToken != null) json['id_token'] = idToken;
+    return json;
+  }
 
   @override
   bool operator ==(Object other) =>

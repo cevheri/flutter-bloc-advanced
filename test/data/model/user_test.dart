@@ -1,17 +1,12 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
 
 /// Test the User model
 void main() {
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   group('User Model', () {
     test('should create a User instance (Constructor)', () {
       final entity = mockUserFullPayload;

@@ -1,6 +1,3 @@
-import 'package:dart_json_mapper/dart_json_mapper.dart';
-
-@JsonSerializable()
 class SendOtpRequest {
   final String email;
 
@@ -11,7 +8,7 @@ class SendOtpRequest {
   static SendOtpRequest? fromJson(Map<String, dynamic> json) {
     try {
       if (!json.containsKey('email')) return null;
-      return JsonMapper.fromMap<SendOtpRequest>(json);
+      return SendOtpRequest(email: json['email']);
     } catch (e) {
       return null;
     }

@@ -1,17 +1,10 @@
 import 'dart:convert';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
-@jsonSerializable
 class District extends Equatable {
-  @JsonProperty(name: 'id')
   final String? id;
-
-  @JsonProperty(name: 'name')
   final String? name;
-
-  @JsonProperty(name: 'code')
   final String? code;
 
   const District({this.id, this.name, this.code});

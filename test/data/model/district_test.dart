@@ -1,16 +1,11 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/data/models/district.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/city_data.dart';
 
 void main() {
-  setUp(() {
-    initializeJsonMapper();
-  });
-
   group("District Model", () {
     test('should create a City instance (Constructor)', () {
       const entity = mockDistrictPayload;

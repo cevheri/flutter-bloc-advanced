@@ -92,7 +92,7 @@ void main() {
 
       // ASSERT
       expect(find.byType(FormBuilderTextField), findsNWidgets(3));
-      expect(find.byType(ElevatedButton), findsNWidgets(2));
+      expect(find.byType(OutlinedButton), findsNWidgets(2));
       expect(find.text(S.current.list), findsOneWidget);
       expect(find.text(S.current.list_user), findsOneWidget);
 
@@ -142,7 +142,7 @@ void main() {
       // ASSERT
       expect(find.text('admin@example.com'), findsOneWidget);
       expect(find.text('User'), findsOneWidget);
-      expect(find.text('active'), findsOneWidget);
+      expect(find.text('Active'), findsNWidgets(2)); // header + data row
 
       //expect(find.byWidgetPredicate((widget) => widget is Text && widget.data == 'Admin' && widget.textAlign == TextAlign.left), findsOneWidget);
 

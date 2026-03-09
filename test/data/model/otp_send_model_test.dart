@@ -1,5 +1,4 @@
 import 'package:flutter_bloc_advance/data/models/send_otp_request.dart';
-import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -28,7 +27,7 @@ void main() {
     });
 
     test('should create SendOtpRequest from JSON correctly', () {
-      initializeJsonMapper();
+
       // given
       final json = {'email': 'test@example.com'};
 
@@ -41,7 +40,7 @@ void main() {
     });
 
     test('should return null when fromJson is called with invalid JSON', () {
-      initializeJsonMapper();
+
       // given
       final invalidJson = {'invalid_key': 'test@example.com'};
 

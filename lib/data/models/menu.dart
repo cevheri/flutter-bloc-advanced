@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
 /// menu object
@@ -15,39 +14,17 @@ import 'package:equatable/equatable.dart';
 /// ApplicationUser model that represents the user entity in this application.
 ///
 /// this is an immutable class that extends [Equatable] so that it can be compared
-@jsonSerializable
 class Menu extends Equatable {
-  @JsonProperty(name: 'id')
   final String id;
-
-  @JsonProperty(name: 'name')
   final String name;
-
-  @JsonProperty(name: 'description')
   final String description;
-
-  @JsonProperty(name: 'url')
   final String url;
-
-  @JsonProperty(name: 'icon')
   final String icon;
-
-  @JsonProperty(name: 'orderPriority')
   final int orderPriority;
-
-  @JsonProperty(name: 'active')
   final bool active;
-
-  @JsonProperty(name: 'parent')
   final Menu? parent;
-
-  @JsonProperty(name: 'level')
   final int level;
-
-  @JsonProperty(name: 'leaf')
   final bool? leaf;
-
-  @JsonProperty(name: 'authorities')
   final List<String>? authorities;
 
   const Menu({
@@ -93,11 +70,19 @@ class Menu extends Equatable {
   }
 
   static Menu? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.fromMap<Menu>(json);
-    if (result == null) {
-      return null;
-    }
-    return result;
+    return Menu(
+      id: json['id']?.toString() ?? '',
+      name: json['name'] ?? '',
+      description: json['description'] ?? '',
+      url: json['url'] ?? '',
+      icon: json['icon'] ?? '',
+      orderPriority: json['orderPriority'] ?? 0,
+      active: json['active'] ?? false,
+      parent: json['parent'] != null ? Menu.fromJson(json['parent']) : null,
+      level: json['level'] ?? 0,
+      leaf: json['leaf'],
+      authorities: json['authorities'] != null ? List<String>.from(json['authorities']) : null,
+    );
   }
 
   static List<Menu> fromJsonList(List<dynamic> json) {
@@ -111,13 +96,7 @@ class Menu extends Equatable {
     return result;
   }
 
-  static Menu? fromJsonString(String json) {
-    var result = JsonMapper.deserialize<Menu>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
-  }
+  static Menu? fromJsonString(String json) => fromJson(jsonDecode(json));
 
   static List<Menu> fromJsonStringList(String json) {
     List<Menu> result = [];
@@ -131,7 +110,21 @@ class Menu extends Equatable {
     return result;
   }
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  Map<String, dynamic>? toJson() {
+    final Map<String, dynamic> json = {};
+    if (id.isNotEmpty) json['id'] = id;
+    if (name.isNotEmpty) json['name'] = name;
+    if (description.isNotEmpty) json['description'] = description;
+    if (url.isNotEmpty) json['url'] = url;
+    if (icon.isNotEmpty) json['icon'] = icon;
+    if (orderPriority != 0) json['orderPriority'] = orderPriority;
+    json['active'] = active;
+    if (parent != null) json['parent'] = parent!.toJson();
+    if (level != 0) json['level'] = level;
+    if (leaf != null) json['leaf'] = leaf;
+    if (authorities != null && authorities!.isNotEmpty) json['authorities'] = authorities;
+    return json;
+  }
 
   @override
   List<Object?> get props => [

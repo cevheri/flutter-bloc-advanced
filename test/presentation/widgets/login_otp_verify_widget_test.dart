@@ -17,6 +17,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../test_utils.dart';
 @GenerateNiceMocks([MockSpec<LoginBloc>(), MockSpec<AccountBloc>()])
@@ -28,6 +31,8 @@ void main() {
   late GoRouter mockGoRouter;
 
   setUp(() {
+    SharedPreferences.setMockInitialValues({});
+    SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
     mockLoginBloc = MockLoginBloc();
 
     // Set basic state for login bloc

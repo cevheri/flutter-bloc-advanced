@@ -1,14 +1,9 @@
 import 'dart:convert';
 
-import 'package:dart_json_mapper/dart_json_mapper.dart';
 import 'package:equatable/equatable.dart';
 
-@jsonSerializable
 class PasswordChangeDTO extends Equatable {
-  @JsonProperty(name: 'currentPassword')
   final String? currentPassword;
-
-  @JsonProperty(name: 'newPassword')
   final String? newPassword;
 
   const PasswordChangeDTO({this.currentPassword, this.newPassword});
@@ -21,22 +16,20 @@ class PasswordChangeDTO extends Equatable {
   }
 
   static PasswordChangeDTO? fromJson(Map<String, dynamic> json) {
-    var result = JsonMapper.fromMap<PasswordChangeDTO>(json);
-    if (result == null) {
-      return null;
-    }
-    return result;
+    return PasswordChangeDTO(
+      currentPassword: json['currentPassword'],
+      newPassword: json['newPassword'],
+    );
   }
 
-  static PasswordChangeDTO? fromJsonString(String json) {
-    var result = JsonMapper.deserialize<PasswordChangeDTO>(jsonDecode(json));
-    if (result == null) {
-      return null;
-    }
-    return result;
-  }
+  static PasswordChangeDTO? fromJsonString(String json) => fromJson(jsonDecode(json));
 
-  Map<String, dynamic>? toJson() => JsonMapper.toMap(this);
+  Map<String, dynamic>? toJson() {
+    final Map<String, dynamic> json = {};
+    if (currentPassword != null) json['currentPassword'] = currentPassword;
+    if (newPassword != null) json['newPassword'] = newPassword;
+    return json;
+  }
 
   @override
   List<Object?> get props => [currentPassword, newPassword];
