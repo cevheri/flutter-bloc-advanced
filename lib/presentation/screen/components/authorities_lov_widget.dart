@@ -98,15 +98,36 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
       Offset.zero & overlay.size,
     );
 
+    final cs = Theme.of(context).colorScheme;
+    final currentValue = field.value ?? '';
+
     final selected = await showMenu<String?>(
       context: context,
       position: position,
+      elevation: 6,
+      color: cs.surface,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: cs.outlineVariant),
+      ),
       items: authorities.map((role) {
         final value = role ?? '';
         final label = value.isEmpty ? (widget.hintText ?? S.of(context).authorities) : value;
         return PopupMenuItem<String?>(
           value: value,
-          child: Text(label, overflow: TextOverflow.ellipsis),
+          child: Row(
+            children: [
+              SizedBox(
+                width: 18,
+                child: value == currentValue
+                    ? Icon(Icons.check_rounded, size: 16, color: cs.primary)
+                    : const SizedBox.shrink(),
+              ),
+              const SizedBox(width: 8),
+              Expanded(child: Text(label, overflow: TextOverflow.ellipsis)),
+            ],
+          ),
         );
       }).toList(),
     );
