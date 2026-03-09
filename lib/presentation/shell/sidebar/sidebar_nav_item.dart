@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../design_system/tokens/app_radius.dart';
-import '../../design_system/tokens/app_spacing.dart';
-import '../../design_system/tokens/app_durations.dart';
 
-/// A single navigation item in the sidebar.
+/// shadcn SidebarMenuButton — h-8, p-2, gap-2, rounded-md, text-sm.
+///
+/// Active & hover share the same accent background (bg-sidebar-accent).
+/// No left border indicator — just a subtle background shift.
 class SidebarNavItem extends StatelessWidget {
   final IconData icon;
   final String label;
@@ -22,54 +23,47 @@ class SidebarNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
-    final activeColor = colorScheme.primary;
-    final inactiveColor = colorScheme.onSurfaceVariant;
-    final activeBg = colorScheme.primaryContainer;
+    // shadcn: active & hover use sidebar-accent bg + sidebar-accent-foreground
+    final fgColor = isActive ? cs.onSurface : cs.onSurfaceVariant;
 
     return Semantics(
       label: label,
       button: true,
       child: Material(
-        color: Colors.transparent,
+        color: isActive ? cs.onSurface.withAlpha(20) : Colors.transparent,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppRadius.md),
-          child: AnimatedContainer(
-            duration: AppDurations.fast,
-            curve: AppDurations.easeInOut,
-            padding: EdgeInsets.symmetric(
-              horizontal: isCollapsed ? AppSpacing.md : AppSpacing.lg,
-              vertical: AppSpacing.md,
-            ),
-            decoration: BoxDecoration(
-              color: isActive ? activeBg : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: isActive ? Border(left: BorderSide(color: activeColor, width: 2)) : null,
-            ),
-            child: Row(
-              children: [
-                Icon(icon, size: 20, color: isActive ? activeColor : inactiveColor),
-                if (!isCollapsed) ...[
-                  const SizedBox(width: AppSpacing.md),
-                  Expanded(
-                    child: AnimatedOpacity(
-                      duration: AppDurations.fast,
-                      opacity: isCollapsed ? 0 : 1,
+          hoverColor: cs.onSurface.withAlpha(20),
+          splashColor: cs.onSurface.withAlpha(30),
+          child: SizedBox(
+            height: 32, // h-8
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: isCollapsed ? 0 : 8), // p-2
+              child: Row(
+                mainAxisAlignment: isCollapsed ? MainAxisAlignment.center : MainAxisAlignment.start,
+                children: [
+                  Icon(icon, size: 16, color: fgColor), // size-4
+                  if (!isCollapsed) ...[
+                    const SizedBox(width: 8), // gap-2
+                    Expanded(
                       child: Text(
                         label,
-                        style: textTheme.bodyMedium?.copyWith(
-                          color: isActive ? activeColor : inactiveColor,
-                          fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                        style: tt.bodyMedium?.copyWith(
+                          color: fgColor,
+                          fontWeight: isActive ? FontWeight.w500 : FontWeight.normal, // font-medium when active
                         ),
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
-                  ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         ),

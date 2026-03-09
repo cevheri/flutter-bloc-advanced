@@ -4,8 +4,6 @@ import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
-import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
-import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/user_form_fields.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
@@ -25,20 +23,15 @@ class UserEditorScreen extends StatelessWidget {
     final userId = id ?? username ?? '';
     final initialEvent = userId.isNotEmpty ? UserFetchEvent(userId) : const UserEditorInit();
     bloc.add(initialEvent);
-    return UserEditorWidget(mode: mode);
+    return _UserEditorView(mode: mode);
   }
 }
 
-void _showMessage(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String title, String content) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content), duration: const Duration(seconds: 2)));
-}
-
-class UserEditorWidget extends StatelessWidget {
+class _UserEditorView extends StatelessWidget {
   final EditorFormMode mode;
   final _formKey = GlobalKey<FormBuilderState>();
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  UserEditorWidget({super.key, required this.mode});
+  _UserEditorView({required this.mode});
 
   @override
   Widget build(BuildContext context) {
@@ -46,84 +39,27 @@ class UserEditorWidget extends StatelessWidget {
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
         if (state.status == UserStatus.loading) {
-          _showMessage(context, _scaffoldKey, S.of(context).loading, S.of(context).loading);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(S.of(context).loading), duration: const Duration(seconds: 2)));
         }
-
         if (state.status == UserStatus.success) {
-          _showMessage(context, _scaffoldKey, S.of(context).success, S.of(context).success);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
         }
-
         if (state.status == UserStatus.failure) {
-          _showMessage(context, _scaffoldKey, S.of(context).failed, S.of(context).failed);
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
         }
       },
       buildWhen: (previous, current) => previous.status != current.status,
-      builder: (context, state) {
-        return _buildBody(context, state);
-      },
+      builder: (context, state) => _buildPage(context, state),
     );
   }
 
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
-    final context = contextParam ?? data as BuildContext;
-
-    if (mode == EditorFormMode.view) {
-      // View modunda user list'e dön
-      context.go(ApplicationRoutesConstants.userList);
-      context.read<UserBloc>().add(const UserViewCompleteEvent());
-      return;
-    }
-
-    if (!context.mounted) return;
-
-    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      // Nereden geldiğine göre yönlendirme yap
-      _navigateBack(context);
-      return;
-    }
-
-    final shouldPop = await _buildShowDialog(context) ?? false;
-    if (shouldPop && context.mounted) {
-      // Nereden geldiğine göre yönlendirme yap
-      _navigateBack(context);
-    }
-  }
-
-  void _navigateBack(BuildContext context) {
-    // GoRouter'ın extra parametresini kontrol et
-    final extra = GoRouterState.of(context).extra;
-
-    if (extra != null && extra is Map<String, dynamic>) {
-      final fromRoute = extra['fromRoute'] as String?;
-
-      if (fromRoute == ApplicationRoutesConstants.userList) {
-        // User list'ten geldiyse user list'e dön
-        context.go(ApplicationRoutesConstants.userList);
-      } else {
-        // Diğer durumlarda ana sayfaya dön
-        context.go(ApplicationRoutesConstants.home);
-      }
-    } else {
-      // Extra parametre yoksa ana sayfaya dön
-      context.go(ApplicationRoutesConstants.home);
-    }
-  }
-
-  Future<bool?> _buildShowDialog(BuildContext context) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(S.of(context).warning),
-        content: Text(S.of(context).unsaved_changes),
-        actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(true), child: Text(S.of(context).yes)),
-          TextButton(onPressed: () => Navigator.of(context).pop(false), child: Text(S.of(context).no)),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildBody(BuildContext context, UserState state) {
+  Widget _buildPage(BuildContext context, UserState state) {
     if (state.status == UserStatus.loading) {
       return const Center(child: CircularProgressIndicator());
     }
@@ -131,61 +67,192 @@ class UserEditorWidget extends StatelessWidget {
       return const Center(child: Text("No data"));
     }
 
-    final initialValue = {
-      'login': state.data?.login ?? '',
-      'firstName': state.data?.firstName ?? '',
-      'lastName': state.data?.lastName ?? '',
-      'email': state.data?.email ?? '',
-      'activated': state.data?.activated ?? true,
-      'authorities': state.data?.authorities?.firstOrNull ?? '',
-    };
-    return ResponsiveFormBuilder(
-      formKey: _formKey,
-      initialValue: initialValue,
-      children: [
-        Row(
-          children: [
-            IconButton(
-              key: const Key('userEditorAppBarBackButtonKey'),
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () async => _handlePopScope(false, null, context),
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return SingleChildScrollView(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 640),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // ── Page header ──────────────────────────────────────
+                Row(
+                  children: [
+                    IconButton(
+                      key: const Key('userEditorAppBarBackButtonKey'),
+                      icon: const Icon(Icons.arrow_back, size: 18),
+                      onPressed: () async => _handleBack(context),
+                      style: IconButton.styleFrom(
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(_getTitle(context), style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+                        const SizedBox(height: 2),
+                        Text(_getSubtitle(context), style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 24),
+
+                // ── Card form ────────────────────────────────────────
+                Container(
+                  decoration: BoxDecoration(
+                    color: cs.surface,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: cs.outlineVariant),
+                  ),
+                  child: FormBuilder(
+                    key: _formKey,
+                    initialValue: {
+                      'login': state.data?.login ?? '',
+                      'firstName': state.data?.firstName ?? '',
+                      'lastName': state.data?.lastName ?? '',
+                      'email': state.data?.email ?? '',
+                      'activated': state.data?.activated ?? true,
+                      'authorities': state.data?.authorities?.firstOrNull ?? '',
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // CardContent — form fields with gap-6 (24px)
+                        Padding(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: _buildFields(context, state),
+                          ),
+                        ),
+
+                        // CardFooter — actions
+                        Container(
+                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                          decoration: BoxDecoration(
+                            border: Border(top: BorderSide(color: cs.outlineVariant)),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              // Cancel / back
+                              OutlinedButton(
+                                key: mode == EditorFormMode.view ? const Key('userEditorFormBackButtonKey') : null,
+                                onPressed: () => _handleBack(context),
+                                child: Text(mode == EditorFormMode.view ? S.of(context).back : 'Cancel'),
+                              ),
+                              if (mode != EditorFormMode.view) ...[
+                                const SizedBox(width: 8),
+                                FilledButton(
+                                  key: const Key('userEditorSubmitButtonKey'),
+                                  onPressed: state.status == UserStatus.loading
+                                      ? null
+                                      : () => _onSubmit(context, state),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (state.status == UserStatus.loading) ...[
+                                        SizedBox(
+                                          width: 14,
+                                          height: 14,
+                                          child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
+                                        ),
+                                        const SizedBox(width: 8),
+                                      ],
+                                      const Text('Save'),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(_getTitle(context), style: Theme.of(context).textTheme.titleLarge),
-          ],
+          ),
         ),
-        ..._buildFormFields(context, state),
-        if (mode == EditorFormMode.view) _backButtonField(context),
-        if (mode != EditorFormMode.view) _submitButtonField(context, state),
-      ],
+      ),
     );
   }
 
-  Widget _backButtonField(BuildContext context) {
-    return ResponsiveSubmitButton(
-      key: const Key('userEditorFormBackButtonKey'),
-      buttonText: S.of(context).back,
-      onPressed: () {
+  List<Widget> _buildFields(BuildContext context, UserState state) {
+    return [
+      UserFormFields.usernameField(context, state.data?.login, enabled: mode == EditorFormMode.create),
+      const SizedBox(height: 20),
+      UserFormFields.firstNameField(context, state.data?.firstName, enabled: mode != EditorFormMode.view),
+      const SizedBox(height: 20),
+      UserFormFields.lastNameField(context, state.data?.lastName, enabled: mode != EditorFormMode.view),
+      const SizedBox(height: 20),
+      UserFormFields.emailField(context, state.data?.email, enabled: mode != EditorFormMode.view),
+      const SizedBox(height: 20),
+      UserFormFields.activatedField(context, state.data?.activated, enabled: mode != EditorFormMode.view),
+      const SizedBox(height: 20),
+      AuthoritiesDropdown(enabled: mode != EditorFormMode.view, initialValue: state.data?.authorities?.firstOrNull),
+    ];
+  }
+
+  Future<void> _handleBack(BuildContext context) async {
+    if (mode == EditorFormMode.view) {
+      context.go(ApplicationRoutesConstants.userList);
+      context.read<UserBloc>().add(const UserViewCompleteEvent());
+      return;
+    }
+
+    if (!context.mounted) return;
+
+    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+      _navigateBack(context);
+      return;
+    }
+
+    final shouldPop =
+        await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            title: Text(S.of(ctx).warning),
+            content: Text(S.of(ctx).unsaved_changes),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(S.of(ctx).yes)),
+              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(S.of(ctx).no)),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (shouldPop && context.mounted) {
+      _navigateBack(context);
+    }
+  }
+
+  void _navigateBack(BuildContext context) {
+    final extra = GoRouterState.of(context).extra;
+    if (extra != null && extra is Map<String, dynamic>) {
+      final fromRoute = extra['fromRoute'] as String?;
+      if (fromRoute == ApplicationRoutesConstants.userList) {
         context.go(ApplicationRoutesConstants.userList);
-        context.read<UserBloc>().add(const UserViewCompleteEvent());
-      },
-    );
-  }
-
-  //TODO loading state
-  Widget _submitButtonField(BuildContext context, UserState state) {
-    return ResponsiveSubmitButton(
-      key: const Key('userEditorSubmitButtonKey'),
-      onPressed: () => state.status == UserStatus.loading ? null : _onSubmit(context, state),
-      isLoading: state.status == UserStatus.loading,
-    );
+      } else {
+        context.go(ApplicationRoutesConstants.home);
+      }
+    } else {
+      context.go(ApplicationRoutesConstants.home);
+    }
   }
 
   void _onSubmit(BuildContext context, UserState state) {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
       final id = context.read<UserBloc>().state.data?.id;
-      debugPrint("checkpoint form data: $formData");
 
       final user = const User().copyWith(
         id: id,
@@ -204,18 +271,6 @@ class UserEditorWidget extends StatelessWidget {
     }
   }
 
-  List<Widget> _buildFormFields(BuildContext context, UserState state) {
-    debugPrint("checkpoint build form fields: ${state.data?.login}");
-    return [
-      UserFormFields.usernameField(context, state.data?.login, enabled: mode == EditorFormMode.create),
-      UserFormFields.firstNameField(context, state.data?.firstName, enabled: mode != EditorFormMode.view),
-      UserFormFields.lastNameField(context, state.data?.lastName, enabled: mode != EditorFormMode.view),
-      UserFormFields.emailField(context, state.data?.email, enabled: mode != EditorFormMode.view),
-      UserFormFields.activatedField(context, state.data?.activated, enabled: mode != EditorFormMode.view),
-      AuthoritiesDropdown(enabled: mode != EditorFormMode.view, initialValue: state.data?.authorities?.firstOrNull),
-    ];
-  }
-
   String _getTitle(BuildContext context) {
     switch (mode) {
       case EditorFormMode.create:
@@ -224,6 +279,17 @@ class UserEditorWidget extends StatelessWidget {
         return S.of(context).edit_user;
       case EditorFormMode.view:
         return S.of(context).view_user;
+    }
+  }
+
+  String _getSubtitle(BuildContext context) {
+    switch (mode) {
+      case EditorFormMode.create:
+        return 'Fill in the details to create a new user.';
+      case EditorFormMode.edit:
+        return 'Update user information below.';
+      case EditorFormMode.view:
+        return 'View user details.';
     }
   }
 }

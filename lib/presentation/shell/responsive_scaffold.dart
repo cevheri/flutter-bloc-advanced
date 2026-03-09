@@ -34,13 +34,21 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _desktopLayout(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     return Scaffold(
       body: FocusTraversalGroup(
         policy: OrderedTraversalPolicy(),
         child: Row(
           children: [
-            FocusTraversalOrder(order: const NumericFocusOrder(1), child: const SidebarWidget()),
-            const VerticalDivider(width: 1, thickness: 0.5),
+            FocusTraversalOrder(
+              order: const NumericFocusOrder(1),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border(right: BorderSide(color: cs.outlineVariant, width: 1)),
+                ),
+                child: const SidebarWidget(),
+              ),
+            ),
             Expanded(
               child: Column(
                 children: [
@@ -59,6 +67,8 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _tabletLayout(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
     // Auto-collapse sidebar on tablet
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final sidebarBloc = context.read<SidebarBloc>();
@@ -70,8 +80,12 @@ class ResponsiveScaffold extends StatelessWidget {
     return Scaffold(
       body: Row(
         children: [
-          const SidebarWidget(),
-          const VerticalDivider(width: 1, thickness: 0.5),
+          Container(
+            decoration: BoxDecoration(
+              border: Border(right: BorderSide(color: cs.outlineVariant, width: 1)),
+            ),
+            child: const SidebarWidget(),
+          ),
           Expanded(
             child: Column(
               children: [

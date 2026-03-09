@@ -7,10 +7,9 @@ import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import '../../design_system/components/app_avatar.dart';
 import '../../design_system/components/app_button.dart' show AppComponentSize;
-import '../../design_system/tokens/app_spacing.dart';
 import 'breadcrumb_widget.dart';
 
-/// The top bar shown across all authenticated pages.
+/// Top bar — h-12, border-b, px-4, flex items-center.
 class TopBarWidget extends StatelessWidget {
   final String? title;
   final VoidCallback? onMenuTap;
@@ -19,21 +18,26 @@ class TopBarWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
-      height: 56,
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
+      height: 48, // h-12
+      padding: const EdgeInsets.symmetric(horizontal: 16), // px-4
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        border: Border(bottom: BorderSide(color: colorScheme.outlineVariant, width: 0.5)),
+        color: cs.surface,
+        border: Border(bottom: BorderSide(color: cs.outlineVariant, width: 1)),
       ),
       child: Row(
         children: [
-          if (onMenuTap != null) IconButton(icon: const Icon(Icons.menu), onPressed: onMenuTap),
+          if (onMenuTap != null)
+            IconButton(
+              icon: const Icon(Icons.menu, size: 16),
+              onPressed: onMenuTap,
+              visualDensity: VisualDensity.compact,
+            ),
           if (title != null) ...[
-            const SizedBox(width: AppSpacing.sm),
-            Text(title!, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(width: 8),
+            Text(title!, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
           ] else
             const Expanded(child: BreadcrumbWidget()),
           if (title != null) const Spacer(),
@@ -44,36 +48,60 @@ class TopBarWidget extends StatelessWidget {
   }
 
   Widget _buildUserMenu(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return BlocBuilder<AccountBloc, AccountState>(
       builder: (context, state) {
         final name = state.data?.firstName ?? '';
         final initials = _getInitials(state.data?.firstName, state.data?.lastName);
 
         return PopupMenuButton<String>(
-          offset: const Offset(0, 48),
+          offset: const Offset(0, 40),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               AppAvatar(initials: initials, size: AppComponentSize.sm),
-              const SizedBox(width: AppSpacing.sm),
-              Text(name, style: Theme.of(context).textTheme.bodyMedium),
-              const Icon(Icons.arrow_drop_down, size: 20),
+              const SizedBox(width: 8),
+              Text(name, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              Icon(Icons.chevron_right, size: 14, color: cs.onSurfaceVariant),
             ],
           ),
           onSelected: (value) => _onMenuSelected(context, value),
           itemBuilder: (context) => [
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'account',
-              child: ListTile(leading: Icon(Icons.person), title: Text('Account')),
+              height: 32,
+              child: Row(
+                children: [
+                  Icon(Icons.person_outlined, size: 14, color: cs.onSurfaceVariant),
+                  const SizedBox(width: 8),
+                  Text('Account', style: tt.bodySmall),
+                ],
+              ),
             ),
-            const PopupMenuItem(
+            PopupMenuItem(
               value: 'settings',
-              child: ListTile(leading: Icon(Icons.settings), title: Text('Settings')),
+              height: 32,
+              child: Row(
+                children: [
+                  Icon(Icons.settings_outlined, size: 14, color: cs.onSurfaceVariant),
+                  const SizedBox(width: 8),
+                  Text('Settings', style: tt.bodySmall),
+                ],
+              ),
             ),
-            const PopupMenuDivider(),
-            const PopupMenuItem(
+            const PopupMenuDivider(height: 1),
+            PopupMenuItem(
               value: 'logout',
-              child: ListTile(leading: Icon(Icons.logout), title: Text('Logout')),
+              height: 32,
+              child: Row(
+                children: [
+                  Icon(Icons.logout, size: 14, color: cs.onSurfaceVariant),
+                  const SizedBox(width: 8),
+                  Text('Logout', style: tt.bodySmall),
+                ],
+              ),
             ),
           ],
         );

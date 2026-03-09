@@ -12,11 +12,13 @@ import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/utils/icon_utils.dart';
 import '../../design_system/tokens/app_breakpoints.dart';
 import '../../design_system/tokens/app_durations.dart';
-import '../../design_system/tokens/app_spacing.dart';
+import '../../design_system/tokens/app_radius.dart';
 import 'sidebar_nav_item.dart';
 import 'sidebar_sub_menu.dart';
 
-/// The full sidebar widget with logo, nav items, and footer controls.
+/// shadcn Sidebar — bg-sidebar, w-256, flex-col.
+///
+/// Structure: SidebarHeader (p-2) → SidebarContent (flex-1, scroll) → SidebarSeparator → SidebarFooter (p-2).
 class SidebarWidget extends StatelessWidget {
   const SidebarWidget({super.key});
 
@@ -37,11 +39,25 @@ class SidebarWidget extends StatelessWidget {
                 color: Theme.of(context).colorScheme.surface,
                 child: Column(
                   children: [
-                    _buildHeader(context, isCollapsed),
-                    const Divider(height: 1),
-                    Expanded(child: _buildNavItems(context, drawerState, sidebarState)),
-                    const Divider(height: 1),
-                    _buildFooter(context, isCollapsed),
+                    _SidebarHeader(isCollapsed: isCollapsed),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 8,
+                      endIndent: 8,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                    Expanded(
+                      child: _SidebarContent(drawerState: drawerState, sidebarState: sidebarState),
+                    ),
+                    Divider(
+                      height: 1,
+                      thickness: 1,
+                      indent: 8,
+                      endIndent: 8,
+                      color: Theme.of(context).colorScheme.outlineVariant,
+                    ),
+                    _SidebarFooter(isCollapsed: isCollapsed),
                   ],
                 ),
               ),
@@ -51,44 +67,64 @@ class SidebarWidget extends StatelessWidget {
       },
     );
   }
+}
 
-  Widget _buildHeader(BuildContext context, bool isCollapsed) {
-    final colorScheme = Theme.of(context).colorScheme;
+/// shadcn SidebarHeader — p-2, flex-col, gap-2.
+class _SidebarHeader extends StatelessWidget {
+  final bool isCollapsed;
+  const _SidebarHeader({required this.isCollapsed});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: isCollapsed ? AppSpacing.md : AppSpacing.lg, vertical: AppSpacing.lg),
-      child: Row(
-        children: [
-          Container(
-            width: 32,
-            height: 32,
-            decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(6)),
-            child: Icon(Icons.dashboard, color: colorScheme.onPrimary, size: 18),
-          ),
-          if (!isCollapsed) ...[
-            const SizedBox(width: AppSpacing.md),
-            Expanded(
-              child: Text(
-                'BLoC Advance',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700, color: colorScheme.onSurface),
-                overflow: TextOverflow.ellipsis,
-              ),
+      padding: const EdgeInsets.all(8), // p-2
+      child: SizedBox(
+        height: 32, // consistent with nav item height
+        child: Row(
+          children: [
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(color: cs.primary, borderRadius: BorderRadius.circular(AppRadius.sm)),
+              child: Icon(Icons.grid_view_rounded, color: cs.onPrimary, size: 14),
             ),
+            if (!isCollapsed) ...[
+              const SizedBox(width: 8), // gap-2
+              Expanded(
+                child: Text(
+                  'BLoC Advance',
+                  style: tt.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: cs.onSurface),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }
+}
 
-  Widget _buildNavItems(BuildContext context, DrawerState drawerState, SidebarState sidebarState) {
+/// shadcn SidebarContent — flex-1, overflow-auto, gap-0.
+class _SidebarContent extends StatelessWidget {
+  final DrawerState drawerState;
+  final SidebarState sidebarState;
+  const _SidebarContent({required this.drawerState, required this.sidebarState});
+
+  @override
+  Widget build(BuildContext context) {
     final currentUserRoles = AppLocalStorageCached.roles;
     final menuNodes = drawerState.menus.where((e) => e.level == 1 && e.active).toList()
       ..sort((a, b) => a.orderPriority.compareTo(b.orderPriority));
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm, horizontal: AppSpacing.sm),
+      // shadcn SidebarGroup: p-2
+      padding: const EdgeInsets.all(8),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: menuNodes.map((node) {
           if (!_hasAccess(node, currentUserRoles)) return const SizedBox.shrink();
 
@@ -141,16 +177,29 @@ class SidebarWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildFooter(BuildContext context, bool isCollapsed) {
+  bool _hasAccess(Menu menu, List<String>? userRoles) {
+    if (userRoles == null) return false;
+    final menuAuthorities = menu.authorities ?? [];
+    return menuAuthorities.any((authority) => userRoles.contains(authority));
+  }
+}
+
+/// shadcn SidebarFooter — p-2, flex-col, gap-2.
+class _SidebarFooter extends StatelessWidget {
+  final bool isCollapsed;
+  const _SidebarFooter({required this.isCollapsed});
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.all(8), // p-2
       child: Column(
         children: [
           // Theme toggle
           BlocBuilder<ThemeBloc, ThemeState>(
             builder: (context, themeState) {
               return SidebarNavItem(
-                icon: themeState.isDarkMode ? Icons.dark_mode : Icons.light_mode,
+                icon: themeState.isDarkMode ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
                 label: themeState.isDarkMode ? 'Dark' : 'Light',
                 isCollapsed: isCollapsed,
                 onTap: () => context.read<ThemeBloc>().add(const ToggleBrightness()),
@@ -182,11 +231,5 @@ class SidebarWidget extends StatelessWidget {
       BlocProvider.of<DrawerBloc>(context).add(Logout());
       AppRouter().push(context, ApplicationRoutesConstants.login);
     }
-  }
-
-  bool _hasAccess(Menu menu, List<String>? userRoles) {
-    if (userRoles == null) return false;
-    final menuAuthorities = menu.authorities ?? [];
-    return menuAuthorities.any((authority) => userRoles.contains(authority));
   }
 }

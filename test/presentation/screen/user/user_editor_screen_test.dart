@@ -276,8 +276,14 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      // Try to submit empty form
+      // Scroll to and tap submit button
+      await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      // Scroll back to see validation errors
+      await tester.ensureVisible(find.byKey(const Key('userEditorLoginFieldKey')));
       await tester.pumpAndSettle();
 
       // ASSERT

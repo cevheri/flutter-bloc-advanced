@@ -6,7 +6,7 @@ import 'app_theme_palette.dart';
 import 'semantic_colors.dart';
 import 'theme_colors.dart';
 
-/// Application theme builder that centralizes Material 3 configuration.
+/// Application theme builder — shadcn/ui aligned Material 3 configuration.
 class AppTheme {
   AppTheme._();
 
@@ -27,7 +27,7 @@ class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       extensions: [semanticColors],
-      iconTheme: IconThemeData(color: colorScheme.onSurface),
+      iconTheme: IconThemeData(color: colorScheme.onSurface, size: 18),
       iconButtonTheme: IconButtonThemeData(style: IconButton.styleFrom(foregroundColor: colorScheme.onSurface)),
       appBarTheme: AppBarTheme(
         elevation: 0,
@@ -39,21 +39,22 @@ class AppTheme {
         centerTitle: false,
         titleTextStyle: textTheme.titleLarge?.copyWith(color: colorScheme.onSurface),
       ),
+      // shadcn input: h-9, rounded-md, border, bg-transparent, px-3 py-1
       inputDecorationTheme: InputDecorationTheme(
         isDense: false,
         filled: false,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: colorScheme.outline, width: 1.0),
+          borderSide: BorderSide(color: colorScheme.outline),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: colorScheme.outline, width: 1.0),
+          borderSide: BorderSide(color: colorScheme.outline),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: colorScheme.outline.withAlpha(128), width: 1.0),
+          borderSide: BorderSide(color: colorScheme.outline.withAlpha(77)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -61,24 +62,26 @@ class AppTheme {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: colorScheme.error, width: 1),
+          borderSide: BorderSide(color: colorScheme.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
           borderSide: BorderSide(color: colorScheme.error, width: 2),
         ),
-        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        helperStyle: TextStyle(color: colorScheme.onSurfaceVariant),
-        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(179)),
+        labelStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 14),
+        helperStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontSize: 12),
+        hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(153), fontSize: 14),
+        errorStyle: TextStyle(color: colorScheme.error, fontSize: 12),
       ),
       snackBarTheme: SnackBarThemeData(
         behavior: SnackBarBehavior.floating,
         backgroundColor: colorScheme.inverseSurface,
         contentTextStyle: TextStyle(color: colorScheme.onInverseSurface),
       ),
+      // shadcn dialog: rounded-xl
       dialogTheme: DialogThemeData(
         backgroundColor: colorScheme.surface,
-        surfaceTintColor: colorScheme.surfaceTint,
+        surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
         titleTextStyle: textTheme.titleLarge,
         contentTextStyle: textTheme.bodyMedium,
@@ -90,32 +93,46 @@ class AppTheme {
         titleTextStyle: textTheme.bodyLarge,
         subtitleTextStyle: textTheme.bodyMedium,
       ),
+      // shadcn button default: h-9, rounded-md, text-sm, font-medium
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           elevation: 0,
+          minimumSize: const Size(0, 36),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(fontSize: 14),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
+          minimumSize: const Size(0, 36),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(fontSize: 14),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
+          minimumSize: const Size(0, 36),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
-          textStyle: textTheme.labelLarge,
+          textStyle: textTheme.labelLarge?.copyWith(fontSize: 14),
         ),
       ),
+      // shadcn card: rounded-xl, border, shadow-sm
       cardTheme: CardThemeData(
-        surfaceTintColor: colorScheme.surfaceTint,
+        surfaceTintColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppRadius.lg),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           side: BorderSide(color: colorScheme.outlineVariant),
         ),
+      ),
+      dividerTheme: DividerThemeData(color: colorScheme.outlineVariant, thickness: 1, space: 0),
+      popupMenuTheme: PopupMenuThemeData(
+        elevation: 4,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
+        surfaceTintColor: Colors.transparent,
       ),
     );
   }

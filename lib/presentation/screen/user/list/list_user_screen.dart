@@ -12,9 +12,10 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 
-/// Main screen widget for displaying user list functionality.
-/// Handles authorities loading and user state changes.
-/// Contains the main layout structure and search functionality.
+// ─────────────────────────────────────────────────────────────────────────────
+// Root
+// ─────────────────────────────────────────────────────────────────────────────
+
 class ListUserScreen extends StatelessWidget {
   ListUserScreen({super.key});
 
@@ -30,7 +31,6 @@ class ListUserScreen extends StatelessWidget {
   }
 
   void _handleUserStateChanges(BuildContext context, UserState state) {
-    debugPrint("check: ${state.status}");
     switch (state.status) {
       case UserStatus.searchSuccess:
       case UserStatus.deleteSuccess:
@@ -44,39 +44,38 @@ class ListUserScreen extends StatelessWidget {
   }
 
   void _refreshUserList(BuildContext context) {
-    debugPrint("checkpoint: refresh user list 1");
     if (_formKey.currentState?.saveAndValidate() ?? false) {
-      debugPrint("checkpoint: refresh user list 2");
       context.read<UserBloc>().add(const UserSearchEvent());
     }
   }
 }
 
-/// Responsible for creating responsive layout for the user list.
-/// Adjusts the layout based on screen width constraints.
-/// Shows error message if screen size is too small.
+// ─────────────────────────────────────────────────────────────────────────────
+// Responsive Layout
+// ─────────────────────────────────────────────────────────────────────────────
+
 class UserListView extends StatelessWidget {
   const UserListView({super.key});
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: LayoutBuilder(builder: (context, constraints) => _buildResponsiveLayout(context, constraints)),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth > 700) {
+            return UserListContent(horizontalPadding: 24, maxWidth: 1200);
+          }
+          return const UserMobileListView();
+        },
+      ),
     );
-  }
-
-  Widget _buildResponsiveLayout(BuildContext context, BoxConstraints constraints) {
-    if (constraints.maxWidth > 700) {
-      return UserListContent(horizontalPadding: 30, maxWidth: 1200);
-    }
-    // Mobile: card-based list view
-    return const UserMobileListView();
   }
 }
 
-/// Contains the main content structure for the user list.
-/// Manages the layout of search section, table header and content.
-/// Handles padding and spacing of main components.
+// ─────────────────────────────────────────────────────────────────────────────
+// Desktop Content — shadcn data-table layout
+// ─────────────────────────────────────────────────────────────────────────────
+
 class UserListContent extends StatelessWidget {
   final double horizontalPadding;
   final double maxWidth;
@@ -86,26 +85,56 @@ class UserListContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return Padding(
-      padding: const EdgeInsets.fromLTRB(30, 20, 30, 30),
+      padding: const EdgeInsets.all(24),
       child: Column(
-        spacing: 24,
-        mainAxisSize: MainAxisSize.max,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // ── Page header ──────────────────────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(S.of(context).list_user, style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 4),
+                    Text(S.of(context).list_user, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                  ],
+                ),
+              ),
+              FilledButton.icon(
+                key: const Key("listUserCreateButtonKey"),
+                onPressed: () =>
+                    context.goNamed('userCreate', extra: {'fromRoute': ApplicationRoutesConstants.userList}),
+                icon: const Icon(Icons.add, size: 16),
+                label: Text(S.of(context).new_user),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 20),
+
+          // ── Toolbar (filters) ────────────────────────────────────────
           UserSearchSection(formKey: _formKey),
-          const UserTableHeader(),
-          UserTableContent(formKey: _formKey),
+
+          const SizedBox(height: 16),
+
+          // ── Data table ───────────────────────────────────────────────
+          _DataTableContainer(formKey: _formKey),
         ],
       ),
     );
   }
 }
 
-/// Search section widget that contains filtering options.
-/// Includes authorities dropdown, pagination controls, and name search.
-/// Manages form state for search parameters.
+// ─────────────────────────────────────────────────────────────────────────────
+// Toolbar / Search
+// ─────────────────────────────────────────────────────────────────────────────
+
 class UserSearchSection extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
@@ -113,87 +142,68 @@ class UserSearchSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: colorScheme.outlineVariant),
-      ),
-      child: FormBuilder(
-        key: formKey,
-        child: IntrinsicHeight(
-          child: Row(
-            spacing: 16,
-            mainAxisSize: MainAxisSize.max,
-            children: [
-              SizedBox(
-                width: 80,
-                child: Text(S.of(context).filter, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-              ),
-              const Flexible(flex: 2, child: AuthoritiesDropdown()),
-              const SizedBox(width: 200, child: PaginationControls()),
-              const Flexible(child: SearchNameField()),
-              SearchActionButtons(formKey: formKey),
-            ],
-          ),
-        ),
+    return FormBuilder(
+      key: formKey,
+      child: Row(
+        children: [
+          // Search by name
+          const SizedBox(width: 250, child: SearchNameField()),
+          const SizedBox(width: 8),
+          // Role filter
+          const SizedBox(width: 200, child: AuthoritiesDropdown()),
+          const SizedBox(width: 8),
+          // Pagination
+          const SizedBox(width: 160, child: PaginationControls()),
+          const SizedBox(width: 8),
+          // Search action
+          SearchActionButtons(formKey: formKey),
+        ],
       ),
     );
   }
 }
 
-/// Handles pagination input controls.
-/// Contains start and end range text fields.
-/// Includes validation for numeric inputs.
 class PaginationControls extends StatelessWidget {
   const PaginationControls({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: SizedBox(
-        width: 200,
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(
-              child: FormBuilderTextField(
-                name: 'rangeStart',
-                initialValue: "0",
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(errorText: S.of(context).required_range),
-                  FormBuilderValidators.numeric(errorText: S.of(context).required_range),
-                  FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
-                ]),
-              ),
-            ),
-            const SizedBox(width: 10),
-            Text("/", style: Theme.of(context).textTheme.bodyMedium),
-            const SizedBox(width: 10),
-            Flexible(
-              child: FormBuilderTextField(
-                name: 'rangeEnd',
-                initialValue: "100",
-                validator: FormBuilderValidators.compose([
-                  FormBuilderValidators.required(errorText: S.of(context).required_range),
-                  FormBuilderValidators.numeric(errorText: S.of(context).required_range),
-                  FormBuilderValidators.minLength(1, errorText: S.of(context).required_range),
-                ]),
-              ),
-            ),
-          ],
+    return Row(
+      children: [
+        Flexible(
+          child: FormBuilderTextField(
+            name: 'rangeStart',
+            initialValue: "0",
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(errorText: S.of(context).required_range),
+              FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+            ]),
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: Text(
+            "/",
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+          ),
+        ),
+        Flexible(
+          child: FormBuilderTextField(
+            name: 'rangeEnd',
+            initialValue: "100",
+            validator: FormBuilderValidators.compose([
+              FormBuilderValidators.required(errorText: S.of(context).required_range),
+              FormBuilderValidators.numeric(errorText: S.of(context).required_range),
+            ]),
+          ),
+        ),
+      ],
     );
   }
 }
 
-/// Text field widget for user name search functionality.
-/// Provides filtering by user name.
 class SearchNameField extends StatelessWidget {
   const SearchNameField({super.key});
 
@@ -201,15 +211,16 @@ class SearchNameField extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: 'name',
-      decoration: InputDecoration(hintText: S.of(context).name),
+      decoration: InputDecoration(
+        hintText: S.of(context).name,
+        prefixIcon: Icon(Icons.search, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
+        prefixIconConstraints: const BoxConstraints(minWidth: 36),
+      ),
       initialValue: "",
     );
   }
 }
 
-/// Contains search and create user action buttons.
-/// Handles search submission and navigation to create user screen.
-/// Manages form validation before search.
 class SearchActionButtons extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
@@ -217,36 +228,11 @@ class SearchActionButtons extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return Row(
-      children: [
-        OutlinedButton.icon(
-          key: const Key("listUserSubmitButtonKey"),
-          onPressed: () => _handleSearch(context),
-          icon: const Icon(Icons.search, size: 18),
-          label: Text(S.of(context).list),
-          style: FilledButton.styleFrom(
-            foregroundColor: colorScheme.primary,
-            side: BorderSide(color: colorScheme.primary),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          ),
-        ),
-        const SizedBox(width: 12),
-        OutlinedButton.icon(
-          key: const Key("listUserCreateButtonKey"),
-          onPressed: () => context.goNamed('userCreate', extra: {'fromRoute': ApplicationRoutesConstants.userList}),
-          icon: const Icon(Icons.add, size: 18),
-          label: Text(S.of(context).new_user),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: colorScheme.primary,
-            side: BorderSide(color: colorScheme.primary),
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-          ),
-        ),
-      ],
+    return OutlinedButton.icon(
+      key: const Key("listUserSubmitButtonKey"),
+      onPressed: () => _handleSearch(context),
+      icon: const Icon(Icons.search, size: 16),
+      label: Text(S.of(context).list),
     );
   }
 
@@ -264,105 +250,103 @@ class SearchActionButtons extends StatelessWidget {
   }
 }
 
-/// Displays the header row of the user table.
-/// Shows column titles for user properties.
-/// Manages layout and styling of header columns.
-class UserTableHeader extends StatelessWidget {
-  const UserTableHeader({super.key});
+// ─────────────────────────────────────────────────────────────────────────────
+// Data Table — shadcn table pattern: rounded-md border, overflow-hidden
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _DataTableContainer extends StatelessWidget {
+  final GlobalKey<FormBuilderState> formKey;
+
+  const _DataTableContainer({required this.formKey});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
 
     return Container(
-      padding: const EdgeInsets.all(10),
+      clipBehavior: Clip.antiAlias,
       decoration: BoxDecoration(
-        color: colorScheme.surfaceContainerHighest,
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
-        border: Border.all(color: colorScheme.outlineVariant),
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: cs.outline),
       ),
       child: Column(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              TableColumnHeader(flex: 5, title: S.of(context).role),
-              const SizedBox(width: 8),
-              TableColumnHeader(flex: 3, title: S.of(context).login),
-              const SizedBox(width: 8),
-              TableColumnHeader(flex: 4, title: S.of(context).first_name),
-              const SizedBox(width: 8),
-              TableColumnHeader(flex: 4, title: S.of(context).last_name),
-              const SizedBox(width: 8),
-              TableColumnHeader(flex: 4, title: S.of(context).email),
-              const SizedBox(width: 8),
-              TableColumnHeader(flex: 3, title: S.of(context).active),
-              const SizedBox(width: 8),
-              const TableColumnHeader(flex: 3, title: "Actions"),
-            ],
-          ),
-          //Divider(height: 1, color: colorScheme.outlineVariant, thickness: 1),
+          const _TableHeader(),
+          _TableBody(formKey: formKey),
         ],
       ),
     );
   }
 }
 
-/// Reusable widget for table column headers.
-/// Manages individual column header styling and layout.
-/// Handles text alignment and flex sizing.
-class TableColumnHeader extends StatelessWidget {
-  final int flex;
-  final String title;
-  final TextAlign alignment;
-
-  const TableColumnHeader({super.key, required this.flex, required this.title, this.alignment = TextAlign.left});
+/// shadcn TableHead: h-10, px-2, font-medium, text-foreground, border-b
+class _TableHeader extends StatelessWidget {
+  const _TableHeader();
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
+    final cs = Theme.of(context).colorScheme;
+    final style = Theme.of(
+      context,
+    ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w500, color: cs.onSurfaceVariant);
 
-    return Expanded(
-      flex: flex,
-      child: Text(
-        title,
-        textAlign: alignment,
-        style: textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+    return Container(
+      height: 40,
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: cs.outline)),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          _HeadCell(flex: 3, text: S.of(context).role, style: style),
+          _HeadCell(flex: 3, text: S.of(context).login, style: style),
+          _HeadCell(flex: 3, text: S.of(context).first_name, style: style),
+          _HeadCell(flex: 3, text: S.of(context).last_name, style: style),
+          _HeadCell(flex: 4, text: S.of(context).email, style: style),
+          _HeadCell(flex: 2, text: S.of(context).active, style: style),
+          _HeadCell(flex: 2, text: "Actions", style: style, alignment: TextAlign.right),
+        ],
       ),
     );
   }
 }
 
-/// Displays the main content of the user table.
-/// Renders user list data from UserBloc state.
-/// Creates UserTableRow widgets for each user.
-class UserTableContent extends StatelessWidget {
+class _HeadCell extends StatelessWidget {
+  final int flex;
+  final String text;
+  final TextStyle? style;
+  final TextAlign alignment;
+
+  const _HeadCell({required this.flex, required this.text, this.style, this.alignment = TextAlign.left});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Text(text, textAlign: alignment, style: style, overflow: TextOverflow.ellipsis),
+      ),
+    );
+  }
+}
+
+/// shadcn TableBody: rows with border-b, text-sm
+class _TableBody extends StatelessWidget {
   final GlobalKey<FormBuilderState> formKey;
 
-  const UserTableContent({super.key, required this.formKey});
+  const _TableBody({required this.formKey});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
-        if (state.status == UserStatus.searchSuccess) {
-          return Container(
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8), bottomRight: Radius.circular(8)),
-              border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
-            ),
-            child: ListView.builder(
-              itemCount: state.userList?.length,
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              itemBuilder: (context, index) => UserTableRow(
-                user: state.userList?[index],
-                index: index,
-                formKey: formKey,
-                isLast: index == (state.userList?.length ?? 0) - 1,
-              ),
-            ),
+        if (state.status == UserStatus.searchSuccess && state.userList != null && state.userList!.isNotEmpty) {
+          return Column(
+            children: [
+              for (int i = 0; i < state.userList!.length; i++)
+                _TableRow(user: state.userList![i], isLast: i == state.userList!.length - 1, formKey: formKey),
+            ],
           );
         }
         return const SizedBox.shrink();
@@ -371,80 +355,233 @@ class UserTableContent extends StatelessWidget {
   }
 }
 
-/// Individual row widget for displaying user data.
-/// Handles row styling (alternating colors).
-/// Displays user properties and action buttons.
-class UserTableRow extends StatelessWidget {
+/// shadcn TableRow: border-b, hover:bg-muted/50, transition-colors
+class _TableRow extends StatefulWidget {
   final dynamic user;
-  final int index;
-  final GlobalKey<FormBuilderState> formKey;
   final bool isLast;
+  final GlobalKey<FormBuilderState> formKey;
 
-  const UserTableRow({super.key, required this.user, required this.index, required this.formKey, required this.isLast});
+  const _TableRow({required this.user, required this.isLast, required this.formKey});
+
+  @override
+  State<_TableRow> createState() => _TableRowState();
+}
+
+class _TableRowState extends State<_TableRow> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final cellStyle = tt.bodySmall?.copyWith(color: cs.onSurface);
+    final user = widget.user;
 
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: _buildRowColor(context),
-        borderRadius: isLast
-            ? const BorderRadius.only(bottomLeft: Radius.circular(8), bottomRight: Radius.circular(8))
-            : null,
-        border: isLast
-            ? null
-            : Border(bottom: BorderSide(color: colorScheme.outlineVariant.withValues(alpha: 0.3), width: 0.5)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+    final isActive = user.activated == true;
+    final statusColor = isActive
+        ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
+        : cs.error;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        decoration: BoxDecoration(
+          color: _hovered ? cs.onSurface.withAlpha(13) : Colors.transparent,
+          border: widget.isLast ? null : Border(bottom: BorderSide(color: cs.outline)),
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            UserTableCell(flex: 5, text: _getRoleText(context)),
-            const SizedBox(width: 8),
-            UserTableCell(flex: 3, text: user.login.toString()),
-            const SizedBox(width: 8),
-            UserTableCell(flex: 4, text: user.firstName.toString()),
-            const SizedBox(width: 8),
-            UserTableCell(flex: 4, text: user.lastName.toString()),
-            const SizedBox(width: 8),
-            UserTableCell(flex: 4, text: user.email.toString()),
-            const SizedBox(width: 8),
-            UserTableCell(
+            _BodyCell(
               flex: 3,
-              text: user.activated! ? "Active" : "Inactive",
-              textColor: user.activated!
-                  ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
-                  : Theme.of(context).colorScheme.error,
+              child: Text(
+                user.authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest,
+                style: cellStyle,
+              ),
             ),
-            const SizedBox(width: 8),
-            UserActionButtons(userId: user.login!, formKey: formKey),
+            _BodyCell(flex: 3, child: Text(user.login.toString(), style: cellStyle)),
+            _BodyCell(flex: 3, child: Text(user.firstName.toString(), style: cellStyle)),
+            _BodyCell(flex: 3, child: Text(user.lastName.toString(), style: cellStyle)),
+            _BodyCell(flex: 4, child: Text(user.email.toString(), style: cellStyle)),
+            _BodyCell(
+              flex: 2,
+              child: _StatusBadge(label: isActive ? "Active" : "Inactive", color: statusColor),
+            ),
+            _BodyCell(
+              flex: 2,
+              alignment: CrossAxisAlignment.end,
+              child: _RowActions(userId: user.login!, formKey: widget.formKey),
+            ),
           ],
         ),
       ),
     );
   }
+}
 
-  String _getRoleText(BuildContext context) {
-    return user.authorities!.contains("ROLE_ADMIN") ? S.of(context).admin : S.of(context).guest;
-  }
+class _BodyCell extends StatelessWidget {
+  final int flex;
+  final Widget child;
+  final CrossAxisAlignment alignment;
 
-  Color _buildRowColor(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final isEvenRow = index % 2 == 0;
+  const _BodyCell({required this.flex, required this.child, this.alignment = CrossAxisAlignment.start});
 
-    if (isEvenRow) {
-      return colorScheme.surfaceContainerLowest;
-    }
-    return colorScheme.surface;
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: flex,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: Align(
+          alignment: alignment == CrossAxisAlignment.end ? Alignment.centerRight : Alignment.centerLeft,
+          child: child,
+        ),
+      ),
+    );
   }
 }
 
-/// Reusable cell widget for table data.
-/// Manages individual cell content display.
-/// Handles text alignment and flex sizing.
+/// shadcn badge: rounded-full, text-xs, font-medium
+class _StatusBadge extends StatelessWidget {
+  final String label;
+  final Color color;
+
+  const _StatusBadge({required this.label, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withAlpha(25),
+        borderRadius: BorderRadius.circular(100),
+        border: Border.all(color: color.withAlpha(51), width: 0.5),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w500, fontSize: 11),
+      ),
+    );
+  }
+}
+
+/// Row actions — shadcn ghost icon buttons (no colored bg)
+class _RowActions extends StatelessWidget {
+  final String userId;
+  final GlobalKey<FormBuilderState> formKey;
+
+  const _RowActions({required this.userId, required this.formKey});
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _GhostIconButton(icon: Icons.edit_outlined, onPressed: () => _edit(context), color: cs.onSurfaceVariant),
+        _GhostIconButton(icon: Icons.visibility_outlined, onPressed: () => _view(context), color: cs.onSurfaceVariant),
+        _GhostIconButton(icon: Icons.delete_outline, onPressed: () => _delete(context), color: cs.error),
+      ],
+    );
+  }
+
+  void _edit(BuildContext context) => context.goNamed('userEdit', pathParameters: {'id': userId});
+  void _view(BuildContext context) => context.goNamed('userView', pathParameters: {'id': userId});
+
+  void _delete(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(S.of(ctx).warning),
+        content: Text(S.of(ctx).delete_confirmation),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(S.of(ctx).no)),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<UserBloc>().add(UserDeleteEvent(userId));
+              late final StreamSubscription<UserState> sub;
+              sub = context.read<UserBloc>().stream.listen((state) {
+                if (state.status == UserStatus.deleteSuccess && context.mounted) {
+                  _refresh(context);
+                  sub.cancel();
+                }
+              });
+            },
+            style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
+            child: Text(S.of(ctx).yes),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _refresh(BuildContext context) {
+    context.read<UserBloc>().add(
+      UserSearchEvent(
+        page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
+        size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
+        authorities: formKey.currentState!.fields['authorities']?.value,
+        name: formKey.currentState!.fields['name']?.value,
+      ),
+    );
+  }
+}
+
+/// shadcn ghost button: no bg, hover:bg-accent, h-8 w-8 p-0
+class _GhostIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onPressed;
+  final Color color;
+
+  const _GhostIconButton({required this.icon, required this.onPressed, required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 32,
+      height: 32,
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 16, color: color),
+        padding: EdgeInsets.zero,
+        splashRadius: 16,
+        style: IconButton.styleFrom(shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6))),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kept for backwards-compat — UserActionButtons (used in old code / tests)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class UserActionButtons extends StatelessWidget {
+  final String? userId;
+  final String? username;
+  final GlobalKey<FormBuilderState> formKey;
+
+  const UserActionButtons({super.key, this.userId, this.username, required this.formKey});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      flex: 3,
+      child: _RowActions(userId: userId ?? username ?? '', formKey: formKey),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Kept for backwards-compat — table cells used by old code
+// ─────────────────────────────────────────────────────────────────────────────
+
 class UserTableCell extends StatelessWidget {
   final int flex;
   final String text;
@@ -461,14 +598,12 @@ class UserTableCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-
     return Expanded(
       flex: flex,
       child: Text(
         text,
         textAlign: alignment,
-        style: textTheme.bodyMedium?.copyWith(
+        style: Theme.of(context).textTheme.bodySmall?.copyWith(
           color: textColor ?? Theme.of(context).colorScheme.onSurface,
           fontWeight: textColor != null ? FontWeight.w600 : FontWeight.normal,
         ),
@@ -477,137 +612,69 @@ class UserTableCell extends StatelessWidget {
   }
 }
 
-/// Contains action buttons for each user row.
-/// Handles edit, view, and delete operations.
-/// Manages confirmation dialogs and navigation.
-class UserActionButtons extends StatelessWidget {
-  final String? userId;
-  final String? username;
-  final GlobalKey<FormBuilderState> formKey;
+class TableColumnHeader extends StatelessWidget {
+  final int flex;
+  final String title;
+  final TextAlign alignment;
 
-  const UserActionButtons({super.key, this.userId, this.username, required this.formKey});
+  const TableColumnHeader({super.key, required this.flex, required this.title, this.alignment = TextAlign.left});
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
     return Expanded(
-      flex: 3,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _buildActionButton(
-                icon: Icons.edit,
-                onPressed: () => _handleEdit(context),
-                size: constraints.maxWidth / 4,
-                color: colorScheme.primary,
-              ),
-              _buildActionButton(
-                icon: Icons.visibility,
-                onPressed: () => _handleView(context),
-                size: constraints.maxWidth / 4,
-                color: colorScheme.secondary,
-              ),
-              _buildActionButton(
-                icon: Icons.delete,
-                onPressed: () => _showDeleteConfirmation(context),
-                size: constraints.maxWidth / 4,
-                color: colorScheme.error,
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required IconData icon,
-    required VoidCallback onPressed,
-    required double size,
-    required Color color,
-  }) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
-      child: IconButton(
-        padding: EdgeInsets.zero,
-        constraints: BoxConstraints(maxWidth: size, maxHeight: size),
-        icon: Icon(icon, size: 18, color: color),
-        onPressed: onPressed,
-      ),
-    );
-  }
-
-  void _handleEdit(BuildContext context) {
-    context.goNamed('userEdit', pathParameters: {'id': userId ?? username ?? ""});
-  }
-
-  void _handleView(BuildContext context) {
-    context.goNamed('userView', pathParameters: {'id': userId ?? username ?? ""});
-  }
-
-  void _showDeleteConfirmation(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: colorScheme.surface,
-        surfaceTintColor: colorScheme.surfaceTint,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Row(
-          children: [
-            Icon(Icons.warning, color: colorScheme.error),
-            const SizedBox(width: 8),
-            Text(S.of(context).warning),
-          ],
+      flex: flex,
+      child: Text(
+        title,
+        textAlign: alignment,
+        style: Theme.of(context).textTheme.labelMedium?.copyWith(
+          fontWeight: FontWeight.w500,
+          color: Theme.of(context).colorScheme.onSurfaceVariant,
         ),
-        content: Text(S.of(context).delete_confirmation),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: Text(S.of(context).no)),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(context);
-              context.read<UserBloc>().add(UserDeleteEvent(userId ?? username ?? ""));
-              late final StreamSubscription<UserState> subscription;
-              subscription = context.read<UserBloc>().stream.listen((state) {
-                if (state.status == UserStatus.deleteSuccess && context.mounted) {
-                  _refreshList(context);
-                  subscription.cancel();
-                }
-              });
-            },
-            style: FilledButton.styleFrom(backgroundColor: colorScheme.error, foregroundColor: colorScheme.onError),
-            child: Text(S.of(context).yes),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _refreshList(BuildContext context) {
-    context.read<UserBloc>().add(
-      UserSearchEvent(
-        page: int.parse(formKey.currentState!.fields['rangeStart']?.value),
-        size: int.parse(formKey.currentState!.fields['rangeEnd']?.value),
-        authorities: formKey.currentState!.fields['authorities']?.value,
-        name: formKey.currentState!.fields['name']?.value,
       ),
     );
   }
 }
 
-/// Mobile card-based user list view.
+class UserTableHeader extends StatelessWidget {
+  const UserTableHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) => const _TableHeader();
+}
+
+class UserTableContent extends StatelessWidget {
+  final GlobalKey<FormBuilderState> formKey;
+
+  const UserTableContent({super.key, required this.formKey});
+
+  @override
+  Widget build(BuildContext context) => _TableBody(formKey: formKey);
+}
+
+class UserTableRow extends StatelessWidget {
+  final dynamic user;
+  final int index;
+  final GlobalKey<FormBuilderState> formKey;
+  final bool isLast;
+
+  const UserTableRow({super.key, required this.user, required this.index, required this.formKey, required this.isLast});
+
+  @override
+  Widget build(BuildContext context) => _TableRow(user: user, isLast: isLast, formKey: formKey);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Mobile — card-based list
+// ─────────────────────────────────────────────────────────────────────────────
+
 class UserMobileListView extends StatelessWidget {
   const UserMobileListView({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
         if (state.status == UserStatus.searchSuccess && state.userList != null) {
@@ -617,17 +684,18 @@ class UserMobileListView extends StatelessWidget {
             itemBuilder: (context, index) {
               final user = state.userList![index];
               return Card(
-                margin: const EdgeInsets.only(bottom: 12),
+                margin: const EdgeInsets.only(bottom: 8),
                 child: ListTile(
                   leading: CircleAvatar(
-                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    radius: 18,
+                    backgroundColor: cs.primaryContainer,
                     child: Text(
                       (user.firstName?.isNotEmpty == true ? user.firstName![0] : '?').toUpperCase(),
-                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                      style: tt.labelMedium?.copyWith(color: cs.onPrimaryContainer, fontWeight: FontWeight.w600),
                     ),
                   ),
-                  title: Text('${user.firstName ?? ''} ${user.lastName ?? ''}'),
-                  subtitle: Text(user.email ?? ''),
+                  title: Text('${user.firstName ?? ''} ${user.lastName ?? ''}', style: tt.bodyMedium),
+                  subtitle: Text(user.email ?? '', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
                   trailing: PopupMenuButton<String>(
                     onSelected: (value) {
                       switch (value) {
@@ -653,13 +721,9 @@ class UserMobileListView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
-                Icons.people_outline,
-                size: 64,
-                color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(128),
-              ),
-              const SizedBox(height: 16),
-              Text(S.of(context).list_user, style: Theme.of(context).textTheme.titleMedium),
+              Icon(Icons.people_outline, size: 48, color: cs.onSurfaceVariant.withAlpha(102)),
+              const SizedBox(height: 12),
+              Text(S.of(context).list_user, style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
             ],
           ),
         );

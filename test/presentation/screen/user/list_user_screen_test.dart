@@ -106,9 +106,11 @@ void main() {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
-      // ASSERT - desktop view: search section + table header
+      // ASSERT - desktop view: search fields + buttons
       expect(find.byType(FormBuilderTextField), findsNWidgets(3));
-      expect(find.byType(OutlinedButton), findsNWidgets(2));
+      // 1 OutlinedButton (search) + 1 FilledButton (add user)
+      expect(find.byType(OutlinedButton), findsOneWidget);
+      expect(find.byType(FilledButton), findsOneWidget);
       expect(find.text(S.current.list), findsOneWidget);
 
       // Check table headers
@@ -161,7 +163,7 @@ void main() {
       // ASSERT
       expect(find.text('admin@example.com'), findsOneWidget);
       expect(find.text('User'), findsOneWidget);
-      expect(find.text('Active'), findsNWidgets(2)); // header + data
+      expect(find.text('Active'), findsNWidgets(2)); // header + data badge
 
       // Clean up
       await userStateController.close();
