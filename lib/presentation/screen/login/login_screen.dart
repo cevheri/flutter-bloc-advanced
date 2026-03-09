@@ -1,283 +1,588 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
-import 'package:flutter_bloc_advance/configuration/constants.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/routes/app_router.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
-import 'package:flutter_bloc_advance/utils/app_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../../generated/l10n.dart';
 import 'bloc/login.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
+
+  @override
+  State<LoginScreen> createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(debugLabel: '__loginScaffoldKey__');
+  bool? _darkOverride;
+  late AnimationController _animController;
 
-  LoginScreen({super.key});
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
+    _animController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context));
-  }
+    final systemDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
+    final isDark = _darkOverride ?? systemDark;
+    final theme = isDark ? AppTheme.dark() : AppTheme.light();
 
-  AppBar _buildAppBar(BuildContext context) => AppBar(
-    title: const Text(AppConstants.appName),
-    leading: const SizedBox.shrink(),
-    backgroundColor: Colors.transparent,
-    elevation: 0,
-  );
-
-  Widget _buildBody(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        image: DecorationImage(
-          image: const AssetImage(LocaleConstants.logoDarkUrl),
-          fit: BoxFit.cover,
-          colorFilter: ColorFilter.mode(Colors.black.withValues(alpha: 0.3), BlendMode.srcOver),
-        ),
-      ),
-      child: Center(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            final isWide = constraints.maxWidth >= 900;
-            final formCard = _buildFormCard(context);
-
-            if (!isWide) {
-              return Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-                child: ConstrainedBox(constraints: const BoxConstraints(maxWidth: 560), child: formCard),
-              );
-            } else {
-              return Padding(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  children: [
-                    const Expanded(flex: 1, child: SizedBox()),
-                    ConstrainedBox(constraints: const BoxConstraints(maxWidth: 520), child: formCard),
-                    const Expanded(flex: 1, child: SizedBox()),
-                    Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Text(
-                          '"Simply all the tools that my team and I need."',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            shadows: [const Shadow(blurRadius: 6, color: Colors.black45)],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
-          },
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFormCard(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, state) {
-        return Container(
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.surface.withValues(alpha: 0.85),
-            borderRadius: BorderRadius.circular(8),
-            boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 10, offset: const Offset(0, 4)),
-            ],
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: ResponsiveFormBuilder(
-              formKey: _loginFormKey,
-              children: <Widget>[
-                Text(S.of(context).login, style: Theme.of(context).textTheme.headlineSmall),
-                Text(
-                  AppConstants.appName,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-                ),
-                _usernameField(context),
-                _passwordField(context),
-                Align(alignment: Alignment.centerRight, child: _submitButton(context)),
-                _validationZone(),
-                _orDivider(context),
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_otpLoginButton(context)]),
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_forgotPasswordLink(context)]),
-                Row(mainAxisAlignment: MainAxisAlignment.center, children: <Widget>[_register(context)]),
-              ],
+    return Theme(
+      data: theme,
+      child: Scaffold(
+        key: _scaffoldKey,
+        body: BlocListener<LoginBloc, LoginState>(
+          listener: _onLoginStateChange,
+          child: SafeArea(
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final isDesktop = constraints.maxWidth >= 1024;
+                return isDesktop ? _desktopLayout(context, isDark) : _mobileLayout(context, isDark);
+              },
             ),
           ),
-        );
-      },
+        ),
+      ),
     );
   }
 
-  Widget _orDivider(BuildContext context) {
-    final color = Theme.of(context).colorScheme.outlineVariant;
+  // ─── Layouts ─────────────────────────────────────────────
+
+  Widget _desktopLayout(BuildContext context, bool isDark) {
     return Row(
       children: [
-        Expanded(child: Divider(color: color)),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 8),
-          child: Text('OR', style: Theme.of(context).textTheme.labelMedium?.copyWith(color: color)),
-        ),
-        Expanded(child: Divider(color: color)),
+        Expanded(flex: 55, child: _brandPanel(context, isDark)),
+        Expanded(flex: 45, child: _formPanel(context, isDark)),
       ],
     );
   }
 
-  Widget _usernameField(BuildContext context) {
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, state) {
-        return SizedBox(
-          width: MediaQuery.of(context).size.width * 0.6,
-          child: FormBuilderTextField(
-            key: loginTextFieldUsernameKey,
-            name: 'username',
-            decoration: InputDecoration(labelText: S.of(context).login_user_name, prefixIcon: const Icon(Icons.person)),
-            validator: FormBuilderValidators.compose([
-              FormBuilderValidators.required(errorText: S.of(context).required_field),
-              FormBuilderValidators.minLength(4, errorText: S.of(context).min_length_4),
-              FormBuilderValidators.maxLength(20, errorText: S.of(context).max_length_20),
-            ]),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _passwordField(BuildContext context) {
-    final fieldWidth = MediaQuery.of(context).size.width * 0.6;
-    return BlocBuilder<LoginBloc, LoginState>(
-      builder: (context, state) {
-        return SizedBox(
-          width: fieldWidth,
-          child: Row(
-            children: [
-              Expanded(
-                child: FormBuilderTextField(
-                  key: loginTextFieldPasswordKey,
-                  name: 'password',
-                  decoration: InputDecoration(
-                    labelText: S.of(context).login_password,
-                    prefixIcon: const Icon(Icons.lock),
-                  ),
-                  textInputAction: TextInputAction.done,
-                  onSubmitted: (value) {
-                    if (_loginFormKey.currentState!.saveAndValidate()) {
-                      final username = _loginFormKey.currentState!.value['username'];
-                      final password = _loginFormKey.currentState!.value['password'];
-                      _submitEvent(context, username: username, password: password);
-                    }
-                  },
-                  obscureText: !state.passwordVisible,
-                  validator: FormBuilderValidators.compose([
-                    FormBuilderValidators.required(errorText: S.of(context).required_field),
-                    FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
-                    FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
-                  ]),
+  Widget _mobileLayout(BuildContext context, bool isDark) {
+    final cs = Theme.of(context).colorScheme;
+    return Stack(
+      children: [
+        Container(color: cs.surface),
+        SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(24, 56, 24, 40),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: FadeTransition(
+                opacity: _animController,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _brandIcon(isDark),
+                    const SizedBox(height: 32),
+                    _formHeading(context),
+                    const SizedBox(height: 32),
+                    _formBody(context, isDark),
+                  ],
                 ),
               ),
-              IconButton(
-                key: loginButtonPasswordVisibilityKey,
-                icon: Icon(state.passwordVisible ? Icons.visibility : Icons.visibility_off),
-                onPressed: () => context.read<LoginBloc>().add(const TogglePasswordVisibility()),
-              ),
-            ],
+            ),
           ),
-        );
-      },
+        ),
+        Positioned(top: 12, right: 12, child: _themeToggle(isDark)),
+      ],
     );
   }
 
-  BlocListener<LoginBloc, LoginState> _submitButton(BuildContext context) {
-    return BlocListener<LoginBloc, LoginState>(
-      listener: (context, state) {
-        debugPrint("BEGIN: login submit button listener username${state.username}");
+  // ─── Brand Panel (left side - always dark) ───────────────
 
-        if (state is LoginLoadingState) {
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
-            SnackBar(
-              behavior: SnackBarBehavior.floating,
-              content: Text(S.of(context).loading),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              width: MediaQuery.of(context).size.width * 0.8,
+  Widget _brandPanel(BuildContext context, bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [const Color(0xFF020617), const Color(0xFF0C1222), const Color(0xFF020617)]
+              : [const Color(0xFF0f172a), const Color(0xFF1B2B4B), const Color(0xFF0f172a)],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Gradient orbs for depth
+          Positioned(top: -120, left: -80, child: _gradientOrb(420, const Color(0xFF6366F1), isDark ? 0.25 : 0.3)),
+          Positioned(bottom: -180, right: -120, child: _gradientOrb(480, const Color(0xFF8B5CF6), isDark ? 0.2 : 0.25)),
+          Positioned(top: 180, right: -60, child: _gradientOrb(280, const Color(0xFF06B6D4), isDark ? 0.15 : 0.18)),
+          Positioned(bottom: 100, left: -40, child: _gradientOrb(200, const Color(0xFF3B82F6), isDark ? 0.12 : 0.15)),
+          // Content
+          Padding(
+            padding: const EdgeInsets.all(48),
+            child: FadeTransition(
+              opacity: _animController,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _brandBadges(),
+                  const SizedBox(height: 40),
+                  _heroText(),
+                  const SizedBox(height: 16),
+                  _heroSubtext(),
+                  const SizedBox(height: 20),
+                  _statsRow(),
+                  const SizedBox(height: 40),
+                  _featureCards(),
+                ],
+              ),
             ),
-          );
-        } else if (state is LoginLoadedState) {
-          debugPrint("BEGIN: login submit button listener LoginLoadedState");
-          AppRouter().push(context, ApplicationRoutesConstants.home);
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
-            SnackBar(
-              behavior: SnackBarBehavior.floating,
-              content: Text(S.of(context).success),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              width: MediaQuery.of(context).size.width * 0.8,
-            ),
-          );
-          debugPrint("END: login submit button listener LoginLoadedState");
-        } else if (state is LoginErrorState) {
-          debugPrint("BEGIN: login submit button listener LoginErrorState");
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
-          ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
-            SnackBar(
-              behavior: SnackBarBehavior.floating,
-              content: Text(S.of(context).failed),
-              backgroundColor: Theme.of(context).colorScheme.primary,
-              width: MediaQuery.of(context).size.width * 0.8,
-            ),
-          );
-          debugPrint("END: login submit button listener LoginErrorState");
-        }
-      },
-      child: SizedBox(
-        child: FilledButton(
-          key: loginButtonSubmitKey,
-          child: Text(S.of(context).login_button),
-          onPressed: () {
-            if (_loginFormKey.currentState!.saveAndValidate()) {
-              final username = _loginFormKey.currentState!.value['username'];
-              final password = _loginFormKey.currentState!.value['password'];
-              _submitEvent(context, username: username, password: password);
-            }
-          },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _gradientOrb(double size, Color color, double opacity) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [
+            color.withValues(alpha: opacity),
+            Colors.transparent,
+          ],
         ),
       ),
     );
   }
 
-  void _submitEvent(BuildContext context, {required String username, required String password}) {
-    context.read<LoginBloc>().add(LoginFormSubmitted(username: username, password: password));
+  Widget _brandBadges() {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 8,
+      children: [
+        _glassPill('Advanced Flutter BLoC Template', const Color(0xFFA5B4FC)),
+        _glassPill('Flutter 3.41.4', const Color(0xFF94A3B8)),
+      ],
+    );
   }
 
-  SizedBox _forgotPasswordLink(BuildContext context) {
-    return SizedBox(
-      child: TextButton(
-        key: loginButtonForgotPasswordKey,
-        onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.forgotPassword),
-        child: Text(S.of(context).password_forgot),
+  Widget _glassPill(String text, Color textColor) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: textColor, letterSpacing: -0.2),
       ),
     );
   }
 
-  SizedBox _register(BuildContext context) {
-    return SizedBox(
-      child: TextButton(
-        key: loginButtonRegisterKey,
-        onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.register),
-        child: Text(S.of(context).register),
+  Widget _heroText() {
+    return const Text(
+      'Scale from prototype\nto production.',
+      style: TextStyle(
+        fontSize: 44,
+        fontWeight: FontWeight.w700,
+        color: Colors.white,
+        height: 1.1,
+        letterSpacing: -1.5,
       ),
+    );
+  }
+
+  Widget _heroSubtext() {
+    return Text(
+      'Authentication, role-based access, user management,\ntheming, and multi-environment support in one robust starter.',
+      style: TextStyle(fontSize: 15, color: Colors.white.withValues(alpha: 0.55), height: 1.65),
+    );
+  }
+
+  Widget _statsRow() {
+    return Row(
+      children: [
+        _statItem('7+', 'Platforms'),
+        _statDot(),
+        _statItem('5', 'Core Layers'),
+        _statDot(),
+        _statItem('100%', 'BLoC Ready'),
+      ],
+    );
+  }
+
+  Widget _statItem(String value, String label) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white),
+        ),
+        const SizedBox(width: 6),
+        Text(label, style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.45))),
+      ],
+    );
+  }
+
+  Widget _statDot() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Container(
+        width: 4,
+        height: 4,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: Colors.white.withValues(alpha: 0.25)),
+      ),
+    );
+  }
+
+  Widget _featureCards() {
+    return Column(
+      children: [
+        _glassFeatureCard(
+          Icons.shield_outlined,
+          'Authentication & Access Control',
+          'Password and OTP login flows with role-based routing guards.',
+        ),
+        const SizedBox(height: 10),
+        _glassFeatureCard(
+          Icons.layers_outlined,
+          'Clean Architecture',
+          'BLoC + Repository pattern with clear separation of concerns.',
+        ),
+        const SizedBox(height: 10),
+        _glassFeatureCard(
+          Icons.swap_horiz_outlined,
+          'Mock to Real API',
+          'Develop locally with mock data and switch to production endpoints.',
+        ),
+      ],
+    );
+  }
+
+  Widget _glassFeatureCard(IconData icon, String title, String subtitle) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(14),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.05),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: const Color(0xFF6366F1).withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, size: 20, color: const Color(0xFFA5B4FC)),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Colors.white),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: TextStyle(fontSize: 13, color: Colors.white.withValues(alpha: 0.45), height: 1.4),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  // ─── Form Panel (right side) ─────────────────────────────
+
+  Widget _formPanel(BuildContext context, bool isDark) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      color: cs.surface,
+      child: Stack(
+        children: [
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 48, vertical: 40),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: FadeTransition(
+                  opacity: _animController,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _brandIcon(isDark),
+                      const SizedBox(height: 36),
+                      _formHeading(context),
+                      const SizedBox(height: 32),
+                      _formBody(context, isDark),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+          Positioned(top: 16, right: 16, child: _themeToggle(isDark)),
+        ],
+      ),
+    );
+  }
+
+  Widget _brandIcon(bool isDark) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: isDark ? cs.surfaceContainerHighest : cs.primaryContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Icon(Icons.bolt_rounded, size: 24, color: cs.onSurface),
+    );
+  }
+
+  Widget _formHeading(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Welcome back',
+          style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.8, color: cs.onSurface),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          'Enter your credentials to access your account',
+          style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+        ),
+      ],
+    );
+  }
+
+  Widget _formBody(BuildContext context, bool isDark) {
+    return FormBuilder(
+      key: _loginFormKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _fieldLabel(context, S.of(context).login_user_name),
+          const SizedBox(height: 8),
+          _usernameField(context),
+          const SizedBox(height: 20),
+          Row(
+            children: [
+              Expanded(child: _fieldLabel(context, S.of(context).login_password)),
+              _forgotPasswordLink(context),
+            ],
+          ),
+          const SizedBox(height: 8),
+          _passwordField(context),
+          const SizedBox(height: 8),
+          _validationZone(),
+          const SizedBox(height: 24),
+          SizedBox(width: double.infinity, child: _submitButton(context)),
+          const SizedBox(height: 16),
+          _dividerWithOr(context),
+          const SizedBox(height: 16),
+          SizedBox(width: double.infinity, child: _otpLoginButton(context)),
+          const SizedBox(height: 28),
+          _registerLink(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _dividerWithOr(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      children: [
+        Expanded(child: Divider(color: cs.outlineVariant)),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Text('or', style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
+        ),
+        Expanded(child: Divider(color: cs.outlineVariant)),
+      ],
+    );
+  }
+
+  Widget _registerLink(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text("Don't have an account? ", style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant)),
+          TextButton(
+            key: loginButtonRegisterKey,
+            onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.register),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 4),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text(
+              S.of(context).register,
+              style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: cs.onSurface),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _themeToggle(bool isDark) {
+    final cs = Theme.of(context).colorScheme;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (_darkOverride != null)
+          TextButton(
+            onPressed: () => setState(() => _darkOverride = null),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              minimumSize: Size.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            ),
+            child: Text('Auto', style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
+          ),
+        const SizedBox(width: 4),
+        Container(
+          decoration: BoxDecoration(
+            color: cs.surfaceContainerHighest,
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: cs.outlineVariant),
+          ),
+          child: IconButton(
+            tooltip: isDark ? 'Switch to light' : 'Switch to dark',
+            onPressed: () => setState(() => _darkOverride = !isDark),
+            icon: Icon(
+              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+              size: 18,
+              color: cs.onSurfaceVariant,
+            ),
+            iconSize: 18,
+            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+            padding: EdgeInsets.zero,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ─── Form Fields ─────────────────────────────────────────
+
+  Widget _fieldLabel(BuildContext context, String text) {
+    return Text(text, style: Theme.of(context).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w500));
+  }
+
+  Widget _usernameField(BuildContext context) {
+    return FormBuilderTextField(
+      key: loginTextFieldUsernameKey,
+      name: 'username',
+      decoration: const InputDecoration(hintText: 'm@example.com'),
+      validator: FormBuilderValidators.compose([
+        FormBuilderValidators.required(errorText: S.of(context).required_field),
+        FormBuilderValidators.minLength(4, errorText: S.of(context).min_length_4),
+        FormBuilderValidators.maxLength(20, errorText: S.of(context).max_length_20),
+      ]),
+    );
+  }
+
+  Widget _passwordField(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) {
+        return FormBuilderTextField(
+          key: loginTextFieldPasswordKey,
+          name: 'password',
+          decoration: InputDecoration(
+            hintText: '••••••••',
+            suffixIcon: IconButton(
+              key: loginButtonPasswordVisibilityKey,
+              icon: Icon(state.passwordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 18),
+              onPressed: () => context.read<LoginBloc>().add(const TogglePasswordVisibility()),
+            ),
+          ),
+          textInputAction: TextInputAction.done,
+          onSubmitted: (_) => _trySubmit(context),
+          obscureText: !state.passwordVisible,
+          validator: FormBuilderValidators.compose([
+            FormBuilderValidators.required(errorText: S.of(context).required_field),
+            FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
+            FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
+          ]),
+        );
+      },
+    );
+  }
+
+  Widget _submitButton(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      buildWhen: (previous, current) => previous.status != current.status,
+      builder: (context, state) {
+        final isLoading = state is LoginLoadingState;
+        return FilledButton(
+          key: loginButtonSubmitKey,
+          onPressed: isLoading ? null : () => _trySubmit(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
+                  )
+                : Text(S.of(context).login_button),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _forgotPasswordLink(BuildContext context) {
+    return TextButton(
+      key: loginButtonForgotPasswordKey,
+      onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.forgotPassword),
+      style: TextButton.styleFrom(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        minimumSize: Size.zero,
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      ),
+      child: Text(S.of(context).password_forgot, style: const TextStyle(fontSize: 13)),
     );
   }
 
@@ -285,14 +590,13 @@ class LoginScreen extends StatelessWidget {
     return BlocBuilder<LoginBloc, LoginState>(
       buildWhen: (previous, current) => current is LoginErrorState,
       builder: (context, state) {
-        final font = Theme.of(context).textTheme.bodyLarge!.fontSize;
         final color = Theme.of(context).colorScheme.error;
         return Visibility(
           visible: state is LoginErrorState,
           child: Center(
             child: Text(
               S.of(context).failed,
-              style: TextStyle(fontSize: font, color: color),
+              style: TextStyle(fontSize: 14, color: color),
               textAlign: TextAlign.center,
             ),
           ),
@@ -300,13 +604,57 @@ class LoginScreen extends StatelessWidget {
       },
     );
   }
+
+  // ─── Actions ─────────────────────────────────────────────
+
+  void _trySubmit(BuildContext context) {
+    if (_loginFormKey.currentState?.saveAndValidate() ?? false) {
+      final username = _loginFormKey.currentState!.value['username'] as String;
+      final password = _loginFormKey.currentState!.value['password'] as String;
+      context.read<LoginBloc>().add(LoginFormSubmitted(username: username, password: password));
+    }
+  }
+
+  void _onLoginStateChange(BuildContext context, LoginState state) {
+    if (state is LoginLoadingState) {
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(S.of(context).loading),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          width: MediaQuery.of(context).size.width * 0.8,
+        ),
+      );
+    } else if (state is LoginLoadedState) {
+      AppRouter().push(context, ApplicationRoutesConstants.home);
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(S.of(context).success),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          width: MediaQuery.of(context).size.width * 0.8,
+        ),
+      );
+    } else if (state is LoginErrorState) {
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
+      ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
+        SnackBar(
+          behavior: SnackBarBehavior.floating,
+          content: Text(S.of(context).failed),
+          backgroundColor: Theme.of(context).colorScheme.error,
+          width: MediaQuery.of(context).size.width * 0.8,
+        ),
+      );
+    }
+  }
 }
 
 Widget _otpLoginButton(BuildContext context) {
-  return TextButton(
+  return OutlinedButton(
     key: const Key('loginButtonOtpKey'),
     onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
-    child: Text(S.of(context).login_with_email),
+    child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(S.of(context).login_with_email)),
   );
 }
 
