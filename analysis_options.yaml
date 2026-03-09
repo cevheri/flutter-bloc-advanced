@@ -43,6 +43,7 @@ analyzer:
     - "**/*.router.dart"
     - "**/*.theme.dart"
     - "**/*.theme.g.dart"
+    - "lib/generated/**"
 
 # Dart formatter configuration
 # Requires a recent Dart SDK that supports reading formatter options from analysis_options.yaml

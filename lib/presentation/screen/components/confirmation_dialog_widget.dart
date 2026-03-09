@@ -26,7 +26,7 @@ class ConfirmationDialog extends StatelessWidget {
   });
 
   /// Shows a confirmation dialog with the given parameters.
-  /// Returns a Future<bool?> indicating the user's choice.
+  /// Returns a `Future<bool?>` indicating the user's choice.
   static Future<bool?> show({
     required BuildContext context,
     required DialogType type,

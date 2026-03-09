@@ -175,7 +175,7 @@ class UserFormFields {
   /// This field is a dropDown field that is used to display the authorities.
   ///
   /// [context] BuildContext current context
-  /// [initialValue] List<String>? initial value of the field
+  /// [initialValue] `List<String>?` initial value of the field
   /// [enabled] bool enable the field default is true
   static Widget authoritiesField(BuildContext context, List<String?>? initialValue, {bool enabled = true}) =>
       FormBuilderDropdown<String>(
