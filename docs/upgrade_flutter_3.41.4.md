@@ -8,12 +8,11 @@
 
 ## Overview
 
-This upgrade includes two major changes:
+This upgrade includes three major changes:
 
 1. **Removal of `dart_json_mapper`** - Replaced with manual JSON serialization
 2. **Full package upgrade** - All dependencies upgraded to latest compatible versions
-
-Total: **42 files changed, 280 insertions, 2,784 deletions**
+3. **Android/Gradle modernization** - Migrated to Kotlin DSL, upgraded Gradle, AGP, Kotlin and Java versions
 
 ---
 
@@ -184,7 +183,38 @@ SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty()
 
 ---
 
-## 5. Build Configuration
+## 5. Android & Gradle Modernization
+
+### Groovy -> Kotlin DSL Migration
+
+All Android Gradle files migrated from Groovy (`.gradle`) to Kotlin DSL (`.gradle.kts`):
+
+| Old File (deleted) | New File |
+|---|---|
+| `android/settings.gradle` | `android/settings.gradle.kts` |
+| `android/build.gradle` | `android/build.gradle.kts` |
+| `android/app/build.gradle` | `android/app/build.gradle.kts` |
+
+### Version Upgrades
+
+| Component | Old | New |
+|---|---|---|
+| **Dart SDK** | `^3.8.1` | `^3.11.1` |
+| **Gradle** | 8.12 | **8.14** |
+| **Android Gradle Plugin (AGP)** | 8.7.3 | **8.11.1** |
+| **Kotlin** | 2.1.0 | **2.2.20** |
+| **Java (compile target)** | 11 | **17** |
+| **NDK** | `"27.0.12077973"` (hardcoded) | `flutter.ndkVersion` (dynamic) |
+
+### gradle.properties
+
+- JVM args updated: `-Xmx4G` -> `-Xmx8G`, added `-XX:ReservedCodeCacheSize=512m`
+- `MaxMetaspaceSize` increased: `2G` -> `4G`
+- Removed deprecated `android.enableJetifier=true`
+
+---
+
+## 6. Build Configuration
 
 ### build.yaml
 
@@ -211,3 +241,8 @@ All dependency versions are pinned to exact versions (no `^` prefix) for reprodu
 - [x] Remove all skipped tests
 - [x] Verify all 562 tests pass
 - [x] Verify app runs in browser with mock data
+- [x] Migrate Android Gradle files from Groovy to Kotlin DSL
+- [x] Upgrade Gradle 8.12 -> 8.14, AGP 8.7.3 -> 8.11.1, Kotlin 2.1.0 -> 2.2.20
+- [x] Upgrade Java compatibility 11 -> 17
+- [x] Update Dart SDK constraint to ^3.11.1
+- [x] Use dynamic `flutter.ndkVersion` instead of hardcoded NDK version
