@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 /// Enum for different theme palettes
 enum AppThemePalette {
-  classic('Classic', 'Modern blue-grey theme'),
-  nature('Nature', 'Fresh teal and ocean tones'),
-  sunset('Sunset', 'Warm orange and purple tones');
+  classic('Classic', 'Neutral zinc — clean and minimal'),
+  nature('Nature', 'Sage green — calm and organic'),
+  sunset('Sunset', 'Warm stone — rich and inviting');
 
   const AppThemePalette(this.title, this.description);
   final String title;
@@ -14,11 +14,11 @@ enum AppThemePalette {
   Color get seedColor {
     switch (this) {
       case AppThemePalette.classic:
-        return const Color(0xFF546E7A); // Blue Grey
+        return const Color(0xFF18181B); // Zinc 900
       case AppThemePalette.nature:
-        return const Color(0xFF00838F); // Teal
+        return const Color(0xFF1A1D1A); // Sage 900
       case AppThemePalette.sunset:
-        return const Color(0xFFFF7043); // Deep Orange
+        return const Color(0xFF1C1917); // Stone 900
     }
   }
 
@@ -38,11 +38,11 @@ enum AppThemePalette {
   Color get previewColor {
     switch (this) {
       case AppThemePalette.classic:
-        return const Color(0xFF78909C);
+        return const Color(0xFF71717A); // Zinc 500
       case AppThemePalette.nature:
-        return const Color(0xFF26A69A);
+        return const Color(0xFF5F7A64); // Sage green
       case AppThemePalette.sunset:
-        return const Color(0xFFFF8A65);
+        return const Color(0xFFC2410C); // Orange 700
     }
   }
 }

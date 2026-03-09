@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../tokens/app_radius.dart';
 import '../tokens/app_sizes.dart';
 import '../tokens/app_spacing.dart';
 
@@ -139,26 +140,26 @@ class AppButton extends StatelessWidget {
   ButtonStyle _filledStyle(ColorScheme cs) => FilledButton.styleFrom(
     minimumSize: Size(0, _height),
     padding: _padding,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
   );
 
   ButtonStyle _outlinedStyle(ColorScheme cs) => OutlinedButton.styleFrom(
     minimumSize: Size(0, _height),
     padding: _padding,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
   );
 
   ButtonStyle _textStyle(ColorScheme cs) => TextButton.styleFrom(
     minimumSize: Size(0, _height),
     padding: _padding,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
   );
 
   ButtonStyle _ghostStyle(ColorScheme cs) => TextButton.styleFrom(
     minimumSize: Size(0, _height),
     padding: _padding,
     foregroundColor: cs.onSurface,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
   );
 
   ButtonStyle _destructiveStyle(ColorScheme cs) => FilledButton.styleFrom(
@@ -166,12 +167,12 @@ class AppButton extends StatelessWidget {
     padding: _padding,
     backgroundColor: cs.error,
     foregroundColor: cs.onError,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
   );
 
   ButtonStyle _iconButtonStyle(ColorScheme cs) => IconButton.styleFrom(
     minimumSize: Size(_height, _height),
     padding: EdgeInsets.zero,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.md)),
   );
 }

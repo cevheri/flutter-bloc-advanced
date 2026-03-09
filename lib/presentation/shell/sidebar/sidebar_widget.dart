@@ -58,7 +58,12 @@ class SidebarWidget extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: isCollapsed ? AppSpacing.md : AppSpacing.lg, vertical: AppSpacing.lg),
       child: Row(
         children: [
-          Icon(Icons.dashboard, color: colorScheme.primary, size: 28),
+          Container(
+            width: 32,
+            height: 32,
+            decoration: BoxDecoration(color: colorScheme.primary, borderRadius: BorderRadius.circular(6)),
+            child: Icon(Icons.dashboard, color: colorScheme.onPrimary, size: 18),
+          ),
           if (!isCollapsed) ...[
             const SizedBox(width: AppSpacing.md),
             Expanded(

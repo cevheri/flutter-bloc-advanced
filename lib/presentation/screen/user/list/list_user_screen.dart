@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/theme/semantic_colors.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
@@ -24,16 +25,7 @@ class ListUserScreen extends StatelessWidget {
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.surfaceContainerLow],
-          ),
-        ),
-        child: const UserListView(),
-      ),
+      child: const UserListView(),
     );
   }
 
@@ -128,7 +120,7 @@ class UserSearchSection extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(8),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: FormBuilder(
@@ -209,12 +201,7 @@ class SearchNameField extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilderTextField(
       name: 'name',
-      decoration: InputDecoration(
-        hintText: S.of(context).name,
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        filled: true,
-        fillColor: Theme.of(context).colorScheme.surfaceContainerHigh,
-      ),
+      decoration: InputDecoration(hintText: S.of(context).name),
       initialValue: "",
     );
   }
@@ -243,7 +230,7 @@ class SearchActionButtons extends StatelessWidget {
             foregroundColor: colorScheme.primary,
             side: BorderSide(color: colorScheme.primary),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
         ),
         const SizedBox(width: 12),
@@ -256,7 +243,7 @@ class SearchActionButtons extends StatelessWidget {
             foregroundColor: colorScheme.primary,
             side: BorderSide(color: colorScheme.primary),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
           ),
         ),
       ],
@@ -290,8 +277,8 @@ class UserTableHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: colorScheme.surface,
-        borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
+        color: colorScheme.surfaceContainerHighest,
+        borderRadius: const BorderRadius.only(topLeft: Radius.circular(8), topRight: Radius.circular(8)),
         border: Border.all(color: colorScheme.outlineVariant),
       ),
       child: Column(
@@ -340,10 +327,7 @@ class TableColumnHeader extends StatelessWidget {
       child: Text(
         title,
         textAlign: alignment,
-        style: textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w600,
-          color: Theme.of(context).colorScheme.onSurface,
-        ),
+        style: textTheme.labelLarge?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
       ),
     );
   }
@@ -365,7 +349,7 @@ class UserTableContent extends StatelessWidget {
           return Container(
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16)),
+              borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(8), bottomRight: Radius.circular(8)),
               border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
             ),
             child: ListView.builder(
@@ -407,7 +391,7 @@ class UserTableRow extends StatelessWidget {
       decoration: BoxDecoration(
         color: _buildRowColor(context),
         borderRadius: isLast
-            ? const BorderRadius.only(bottomLeft: Radius.circular(16), bottomRight: Radius.circular(16))
+            ? const BorderRadius.only(bottomLeft: Radius.circular(8), bottomRight: Radius.circular(8))
             : null,
         border: isLast
             ? null
@@ -431,7 +415,9 @@ class UserTableRow extends StatelessWidget {
             UserTableCell(
               flex: 3,
               text: user.activated! ? "Active" : "Inactive",
-              textColor: user.activated! ? Colors.green : Colors.red,
+              textColor: user.activated!
+                  ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
+                  : Theme.of(context).colorScheme.error,
             ),
             const SizedBox(width: 8),
             UserActionButtons(userId: user.login!, formKey: formKey),
@@ -547,11 +533,11 @@ class UserActionButtons extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      decoration: BoxDecoration(color: color.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(8)),
+      decoration: BoxDecoration(color: color.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(6)),
       child: IconButton(
         padding: EdgeInsets.zero,
         constraints: BoxConstraints(maxWidth: size, maxHeight: size),
-        icon: Icon(icon, size: 16, color: color),
+        icon: Icon(icon, size: 18, color: color),
         onPressed: onPressed,
       ),
     );
@@ -573,7 +559,7 @@ class UserActionButtons extends StatelessWidget {
       builder: (context) => AlertDialog(
         backgroundColor: colorScheme.surface,
         surfaceTintColor: colorScheme.surfaceTint,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Row(
           children: [
             Icon(Icons.warning, color: colorScheme.error),

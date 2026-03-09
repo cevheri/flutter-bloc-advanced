@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../../design_system/tokens/app_spacing.dart';
 
 /// Auto-generates breadcrumb trail from the current route path.
@@ -7,7 +8,7 @@ class BreadcrumbWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final uri = ModalRoute.of(context)?.settings.name ?? '/';
+    final uri = GoRouterState.of(context).uri.toString();
     final segments = uri.split('/').where((s) => s.isNotEmpty).toList();
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;

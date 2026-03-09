@@ -85,7 +85,7 @@ class _AppCardState extends State<AppCard> {
       case AppCardVariant.elevated:
         return BoxDecoration(
           color: cs.surface,
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
           boxShadow: [
             BoxShadow(
               color: cs.shadow.withAlpha(_isHovered ? 35 : 20),
@@ -97,8 +97,8 @@ class _AppCardState extends State<AppCard> {
       case AppCardVariant.outlined:
         return BoxDecoration(
           color: cs.surface,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: _isHovered ? cs.outline : cs.outlineVariant),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: _isHovered ? cs.onSurfaceVariant : cs.outlineVariant),
           boxShadow: _isHovered
               ? [BoxShadow(color: cs.shadow.withAlpha(10), blurRadius: 4, offset: const Offset(0, 1))]
               : null,
@@ -106,7 +106,7 @@ class _AppCardState extends State<AppCard> {
       case AppCardVariant.filled:
         return BoxDecoration(
           color: _isHovered ? cs.surfaceContainerLow.withAlpha(230) : cs.surfaceContainerLow,
-          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
         );
     }
   }

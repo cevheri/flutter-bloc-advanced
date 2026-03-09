@@ -35,34 +35,34 @@ class SemanticColors extends ThemeExtension<SemanticColors> {
 
   /// Light theme semantic colors (shared across all palettes).
   static const light = SemanticColors(
-    success: Color(0xFF2E7D32),
+    success: Color(0xFF16A34A), // Green 600
     onSuccess: Color(0xFFFFFFFF),
-    successContainer: Color(0xFFC8E6C9),
-    onSuccessContainer: Color(0xFF1B5E20),
-    warning: Color(0xFFF9A825),
+    successContainer: Color(0xFFDCFCE7), // Green 100
+    onSuccessContainer: Color(0xFF14532D), // Green 900
+    warning: Color(0xFFEAB308), // Yellow 500
     onWarning: Color(0xFF000000),
-    warningContainer: Color(0xFFFFF8E1),
-    onWarningContainer: Color(0xFFE65100),
-    info: Color(0xFF1565C0),
+    warningContainer: Color(0xFFFEF9C3), // Yellow 100
+    onWarningContainer: Color(0xFF713F12), // Yellow 900
+    info: Color(0xFF2563EB), // Blue 600
     onInfo: Color(0xFFFFFFFF),
-    infoContainer: Color(0xFFBBDEFB),
-    onInfoContainer: Color(0xFF0D47A1),
+    infoContainer: Color(0xFFDBEAFE), // Blue 100
+    onInfoContainer: Color(0xFF1E3A8A), // Blue 900
   );
 
   /// Dark theme semantic colors (shared across all palettes).
   static const dark = SemanticColors(
-    success: Color(0xFF81C784),
-    onSuccess: Color(0xFF1B5E20),
-    successContainer: Color(0xFF2E7D32),
-    onSuccessContainer: Color(0xFFC8E6C9),
-    warning: Color(0xFFFFD54F),
+    success: Color(0xFF4ADE80), // Green 400
+    onSuccess: Color(0xFF052E16), // Green 950
+    successContainer: Color(0xFF166534), // Green 800
+    onSuccessContainer: Color(0xFFBBF7D0), // Green 200
+    warning: Color(0xFFFACC15), // Yellow 400
     onWarning: Color(0xFF000000),
-    warningContainer: Color(0xFF795548),
-    onWarningContainer: Color(0xFFFFF8E1),
-    info: Color(0xFF64B5F6),
-    onInfo: Color(0xFF0D47A1),
-    infoContainer: Color(0xFF1565C0),
-    onInfoContainer: Color(0xFFBBDEFB),
+    warningContainer: Color(0xFF854D0E), // Yellow 800
+    onWarningContainer: Color(0xFFFEF08A), // Yellow 200
+    info: Color(0xFF60A5FA), // Blue 400
+    onInfo: Color(0xFF172554), // Blue 950
+    infoContainer: Color(0xFF1E40AF), // Blue 800
+    onInfoContainer: Color(0xFFBFDBFE), // Blue 200
   );
 
   @override

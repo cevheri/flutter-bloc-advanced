@@ -59,19 +59,8 @@ class UserEditorWidget extends StatelessWidget {
       },
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
-        return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context, state));
+        return _buildBody(context, state);
       },
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(_getTitle(context)),
-      leading: IconButton(
-        key: const Key('userEditorAppBarBackButtonKey'),
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () async => _handlePopScope(false, null, context),
-      ),
     );
   }
 
@@ -139,13 +128,9 @@ class UserEditorWidget extends StatelessWidget {
       return const Center(child: CircularProgressIndicator());
     }
     if ((mode == EditorFormMode.edit || mode == EditorFormMode.view) && state.data == null) {
-      //return const Center(child: CircularProgressIndicator());
       return const Center(child: Text("No data"));
     }
 
-    debugPrint("checkpoint data: ${state.data?.login}");
-    debugPrint("checkpoint status: ${state.status}");
-    // Get initial values for FormBuilder
     final initialValue = {
       'login': state.data?.login ?? '',
       'firstName': state.data?.firstName ?? '',
@@ -154,11 +139,21 @@ class UserEditorWidget extends StatelessWidget {
       'activated': state.data?.activated ?? true,
       'authorities': state.data?.authorities?.firstOrNull ?? '',
     };
-    debugPrint("checkpoint initial value: $initialValue");
     return ResponsiveFormBuilder(
       formKey: _formKey,
       initialValue: initialValue,
       children: [
+        Row(
+          children: [
+            IconButton(
+              key: const Key('userEditorAppBarBackButtonKey'),
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () async => _handlePopScope(false, null, context),
+            ),
+            const SizedBox(width: 8),
+            Text(_getTitle(context), style: Theme.of(context).textTheme.titleLarge),
+          ],
+        ),
         ..._buildFormFields(context, state),
         if (mode == EditorFormMode.view) _backButtonField(context),
         if (mode != EditorFormMode.view) _submitButtonField(context, state),

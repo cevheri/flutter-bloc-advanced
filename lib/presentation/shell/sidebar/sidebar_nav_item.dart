@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../design_system/tokens/app_radius.dart';
 import '../../design_system/tokens/app_spacing.dart';
 import '../../design_system/tokens/app_durations.dart';
 
@@ -26,7 +27,7 @@ class SidebarNavItem extends StatelessWidget {
 
     final activeColor = colorScheme.primary;
     final inactiveColor = colorScheme.onSurfaceVariant;
-    final activeBg = colorScheme.primaryContainer.withAlpha(77);
+    final activeBg = colorScheme.primaryContainer;
 
     return Semantics(
       label: label,
@@ -35,7 +36,7 @@ class SidebarNavItem extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSpacing.sm),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           child: AnimatedContainer(
             duration: AppDurations.fast,
             curve: AppDurations.easeInOut,
@@ -45,7 +46,8 @@ class SidebarNavItem extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: isActive ? activeBg : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppSpacing.sm),
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              border: isActive ? Border(left: BorderSide(color: activeColor, width: 2)) : null,
             ),
             child: Row(
               children: [

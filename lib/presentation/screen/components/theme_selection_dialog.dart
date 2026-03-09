@@ -106,7 +106,7 @@ class ThemeSelectionDialog extends StatelessWidget {
         onTap: () {
           _applyTheme(context, palette);
         },
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(8),
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Column(

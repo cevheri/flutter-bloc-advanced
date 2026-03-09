@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../theme/semantic_colors.dart';
 import '../tokens/app_spacing.dart';
 
 /// Badge variants.
@@ -15,7 +16,7 @@ class AppBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final (bg, fg) = _colors(colorScheme);
+    final (bg, fg) = _colors(context, colorScheme);
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
@@ -38,7 +39,8 @@ class AppBadge extends StatelessWidget {
     );
   }
 
-  (Color bg, Color fg) _colors(ColorScheme cs) {
+  (Color bg, Color fg) _colors(BuildContext context, ColorScheme cs) {
+    final sc = context.semanticColors;
     switch (variant) {
       case AppBadgeVariant.filled:
         return (cs.primary, cs.onPrimary);
@@ -49,9 +51,9 @@ class AppBadge extends StatelessWidget {
       case AppBadgeVariant.outline:
         return (Colors.transparent, cs.onSurface);
       case AppBadgeVariant.success:
-        return (const Color(0xFF2E7D32), Colors.white);
+        return (sc.success, sc.onSuccess);
       case AppBadgeVariant.warning:
-        return (const Color(0xFFF9A825), Colors.black);
+        return (sc.warning, sc.onWarning);
     }
   }
 }
