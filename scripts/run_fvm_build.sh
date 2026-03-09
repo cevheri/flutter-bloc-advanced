@@ -1,6 +1,6 @@
 #!/bin/bash
 
-fvm use 3.27.1
+fvm use 3.41.4
 
 echo "Running flutter clean"
 fvm flutter clean

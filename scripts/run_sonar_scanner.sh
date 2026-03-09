@@ -2,7 +2,7 @@
 
 #dart pub global activate fvm
 #export PATH="$PATH":"$HOME/.pub-cache/bin"
-fvm use 3.27.1
+fvm use 3.41.4
 
 fvm flutter clean
 fvm flutter pub get
