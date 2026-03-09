@@ -24,7 +24,7 @@ class UserFormFields {
         name: 'login',
         enabled: enabled,
         initialValue: initialValue,
-        decoration: InputDecoration(labelText: S.of(context).login),
+        decoration: InputDecoration(hintText: S.of(context).login),
         validator: FormBuilderValidators.compose([..._txtValidator(context)]),
       );
 
@@ -34,7 +34,7 @@ class UserFormFields {
         enabled: enabled,
         initialValue: initialValue,
         name: 'firstName',
-        decoration: InputDecoration(labelText: S.of(context).first_name),
+        decoration: InputDecoration(hintText: S.of(context).first_name),
         validator: FormBuilderValidators.compose([..._txtValidator(context)]),
       );
 
@@ -44,7 +44,7 @@ class UserFormFields {
         enabled: enabled,
         initialValue: initialValue,
         name: 'lastName',
-        decoration: InputDecoration(labelText: S.of(context).last_name),
+        decoration: InputDecoration(hintText: S.of(context).last_name),
         validator: FormBuilderValidators.compose([..._txtValidator(context)]),
       );
 
@@ -53,19 +53,24 @@ class UserFormFields {
     enabled: enabled,
     initialValue: initialValue,
     name: 'email',
-    decoration: InputDecoration(labelText: S.of(context).email),
+    decoration: InputDecoration(hintText: S.of(context).email),
     validator: FormBuilderValidators.compose([
       ..._txtValidator(context),
       FormBuilderValidators.email(errorText: S.of(context).email_pattern),
     ]),
   );
 
-  static Widget activatedField(BuildContext context, bool? initialValue, {bool enabled = true}) => FormBuilderSwitch(
+  static Widget activatedField(
+    BuildContext context,
+    bool? initialValue, {
+    bool enabled = true,
+    bool showTitle = true,
+  }) => FormBuilderSwitch(
     key: const Key('userEditorActivatedFieldKey'),
     enabled: enabled,
     initialValue: initialValue,
     name: 'activated',
-    title: Text(S.of(context).active),
+    title: showTitle ? Text(S.of(context).active) : const SizedBox.shrink(),
   );
 
   static Widget authoritiesField(BuildContext context, List<String?>? initialValue, {bool enabled = true}) =>

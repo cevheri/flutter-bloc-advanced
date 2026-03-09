@@ -322,7 +322,7 @@ void main() {
         if (invocation.positionalArguments[0] is UserEditorInit) {
           userStateController.add(const UserState());
         } else if (invocation.positionalArguments[0] is UserSubmitEvent) {
-          userStateController.add(const UserState(status: UserStatus.success));
+          userStateController.add(const UserState(status: UserStatus.saveSuccess));
         }
       });
 
@@ -337,6 +337,8 @@ void main() {
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'new@example.com');
 
       // Submit form
+      await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
 

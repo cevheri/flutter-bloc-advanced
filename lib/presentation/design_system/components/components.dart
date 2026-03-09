@@ -8,6 +8,7 @@ export 'app_card.dart';
 export 'app_divider.dart';
 export 'app_empty_state.dart';
 export 'app_error_state.dart';
+export 'app_form.dart';
 export 'app_input.dart';
 export 'app_loading_overlay.dart';
 export 'app_responsive_builder.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/components.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/authorities_lov_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/user_form_fields.dart';
@@ -10,7 +11,7 @@ import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
-class UserEditorScreen extends StatelessWidget {
+class UserEditorScreen extends StatefulWidget {
   final String? id;
   final String? username;
   final EditorFormMode mode;
@@ -18,35 +19,51 @@ class UserEditorScreen extends StatelessWidget {
   const UserEditorScreen({super.key, this.id, this.username, required this.mode});
 
   @override
-  Widget build(BuildContext context) {
+  State<UserEditorScreen> createState() => _UserEditorScreenState();
+}
+
+class _UserEditorScreenState extends State<UserEditorScreen> {
+  @override
+  void initState() {
+    super.initState();
     final bloc = context.read<UserBloc>();
-    final userId = id ?? username ?? '';
+    final userId = widget.id ?? widget.username ?? '';
     final initialEvent = userId.isNotEmpty ? UserFetchEvent(userId) : const UserEditorInit();
     bloc.add(initialEvent);
-    return _UserEditorView(mode: mode);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _UserEditorView(mode: widget.mode);
   }
 }
 
-class _UserEditorView extends StatelessWidget {
+class _UserEditorView extends StatefulWidget {
   final EditorFormMode mode;
+
+  const _UserEditorView({required this.mode});
+
+  @override
+  State<_UserEditorView> createState() => _UserEditorViewState();
+}
+
+class _UserEditorViewState extends State<_UserEditorView> {
   final _formKey = GlobalKey<FormBuilderState>();
 
-  _UserEditorView({required this.mode});
+  bool _isInitialLoading(UserState state) {
+    return state.status == UserStatus.loading && widget.mode != EditorFormMode.create && state.data == null;
+  }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) {
-        if (state.status == UserStatus.loading) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(S.of(context).loading), duration: const Duration(seconds: 2)));
-        }
-        if (state.status == UserStatus.success) {
+        if (state.status == UserStatus.saveSuccess) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
+          context.go(ApplicationRoutesConstants.userList);
         }
         if (state.status == UserStatus.failure) {
           ScaffoldMessenger.of(
@@ -60,15 +77,16 @@ class _UserEditorView extends StatelessWidget {
   }
 
   Widget _buildPage(BuildContext context, UserState state) {
-    if (state.status == UserStatus.loading) {
+    if (_isInitialLoading(state)) {
       return const Center(child: CircularProgressIndicator());
     }
-    if ((mode == EditorFormMode.edit || mode == EditorFormMode.view) && state.data == null) {
+    if ((widget.mode == EditorFormMode.edit || widget.mode == EditorFormMode.view) && state.data == null) {
       return const Center(child: Text("No data"));
     }
 
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
+    final isSubmitting = state.status == UserStatus.loading && !_isInitialLoading(state);
 
     return SingleChildScrollView(
       child: Center(
@@ -104,12 +122,44 @@ class _UserEditorView extends StatelessWidget {
 
                 const SizedBox(height: 24),
 
-                // ── Card form ────────────────────────────────────────
-                Container(
-                  decoration: BoxDecoration(
-                    color: cs.surface,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: cs.outlineVariant),
+                AppFormCard(
+                  header: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('User Information', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Manage identity, contact, and access settings.',
+                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                      ),
+                    ],
+                  ),
+                  footer: AppFormActions(
+                    secondaryAction: OutlinedButton(
+                      key: widget.mode == EditorFormMode.view ? const Key('userEditorFormBackButtonKey') : null,
+                      onPressed: () => _handleBack(context),
+                      child: Text(widget.mode == EditorFormMode.view ? S.of(context).back : 'Cancel'),
+                    ),
+                    primaryAction: widget.mode == EditorFormMode.view
+                        ? null
+                        : FilledButton(
+                            key: const Key('userEditorSubmitButtonKey'),
+                            onPressed: isSubmitting ? null : () => _onSubmit(context, state),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (isSubmitting) ...[
+                                  SizedBox(
+                                    width: 14,
+                                    height: 14,
+                                    child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
+                                  ),
+                                  const SizedBox(width: 8),
+                                ],
+                                const Text('Save'),
+                              ],
+                            ),
+                          ),
                   ),
                   child: FormBuilder(
                     key: _formKey,
@@ -121,61 +171,7 @@ class _UserEditorView extends StatelessWidget {
                       'activated': state.data?.activated ?? true,
                       'authorities': state.data?.authorities?.firstOrNull ?? '',
                     },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // CardContent — form fields with gap-6 (24px)
-                        Padding(
-                          padding: const EdgeInsets.all(24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: _buildFields(context, state),
-                          ),
-                        ),
-
-                        // CardFooter — actions
-                        Container(
-                          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-                          decoration: BoxDecoration(
-                            border: Border(top: BorderSide(color: cs.outlineVariant)),
-                          ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              // Cancel / back
-                              OutlinedButton(
-                                key: mode == EditorFormMode.view ? const Key('userEditorFormBackButtonKey') : null,
-                                onPressed: () => _handleBack(context),
-                                child: Text(mode == EditorFormMode.view ? S.of(context).back : 'Cancel'),
-                              ),
-                              if (mode != EditorFormMode.view) ...[
-                                const SizedBox(width: 8),
-                                FilledButton(
-                                  key: const Key('userEditorSubmitButtonKey'),
-                                  onPressed: state.status == UserStatus.loading
-                                      ? null
-                                      : () => _onSubmit(context, state),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (state.status == UserStatus.loading) ...[
-                                        SizedBox(
-                                          width: 14,
-                                          height: 14,
-                                          child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
-                                        ),
-                                        const SizedBox(width: 8),
-                                      ],
-                                      const Text('Save'),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: _buildFields(context, state)),
                   ),
                 ),
               ],
@@ -187,23 +183,68 @@ class _UserEditorView extends StatelessWidget {
   }
 
   List<Widget> _buildFields(BuildContext context, UserState state) {
+    final readOnly = widget.mode == EditorFormMode.view;
     return [
-      UserFormFields.usernameField(context, state.data?.login, enabled: mode == EditorFormMode.create),
-      const SizedBox(height: 20),
-      UserFormFields.firstNameField(context, state.data?.firstName, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 20),
-      UserFormFields.lastNameField(context, state.data?.lastName, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 20),
-      UserFormFields.emailField(context, state.data?.email, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 20),
-      UserFormFields.activatedField(context, state.data?.activated, enabled: mode != EditorFormMode.view),
-      const SizedBox(height: 20),
-      AuthoritiesDropdown(enabled: mode != EditorFormMode.view, initialValue: state.data?.authorities?.firstOrNull),
+      AppFormSection(
+        title: 'Identity',
+        description: 'Basic account identity details.',
+        children: [
+          AppFormField(
+            label: S.of(context).login,
+            child: UserFormFields.usernameField(
+              context,
+              state.data?.login,
+              enabled: widget.mode == EditorFormMode.create,
+            ),
+          ),
+          const SizedBox(height: 20),
+          AppFormField(
+            label: S.of(context).first_name,
+            child: UserFormFields.firstNameField(context, state.data?.firstName, enabled: !readOnly),
+          ),
+          const SizedBox(height: 20),
+          AppFormField(
+            label: S.of(context).last_name,
+            child: UserFormFields.lastNameField(context, state.data?.lastName, enabled: !readOnly),
+          ),
+        ],
+      ),
+      const SizedBox(height: 28),
+      AppFormSection(
+        title: 'Contact',
+        description: 'Primary contact information.',
+        children: [
+          AppFormField(
+            label: S.of(context).email,
+            child: UserFormFields.emailField(context, state.data?.email, enabled: !readOnly),
+          ),
+        ],
+      ),
+      const SizedBox(height: 28),
+      AppFormSection(
+        title: 'Access',
+        description: 'Account status and role permissions.',
+        children: [
+          AppFormField(
+            label: S.of(context).active,
+            child: UserFormFields.activatedField(context, state.data?.activated, enabled: !readOnly, showTitle: false),
+          ),
+          const SizedBox(height: 20),
+          AppFormField(
+            label: S.of(context).authorities,
+            child: AuthoritiesDropdown(
+              enabled: !readOnly,
+              initialValue: state.data?.authorities?.firstOrNull,
+              hintText: S.of(context).authorities,
+            ),
+          ),
+        ],
+      ),
     ];
   }
 
   Future<void> _handleBack(BuildContext context) async {
-    if (mode == EditorFormMode.view) {
+    if (widget.mode == EditorFormMode.view) {
       context.go(ApplicationRoutesConstants.userList);
       context.read<UserBloc>().add(const UserViewCompleteEvent());
       return;
@@ -266,13 +307,11 @@ class _UserEditorView extends StatelessWidget {
       );
 
       context.read<UserBloc>().add(UserSubmitEvent(user));
-      context.read<UserBloc>().add(const UserSaveCompleteEvent());
-      context.go(ApplicationRoutesConstants.userList);
     }
   }
 
   String _getTitle(BuildContext context) {
-    switch (mode) {
+    switch (widget.mode) {
       case EditorFormMode.create:
         return S.of(context).create_user;
       case EditorFormMode.edit:
@@ -283,7 +322,7 @@ class _UserEditorView extends StatelessWidget {
   }
 
   String _getSubtitle(BuildContext context) {
-    switch (mode) {
+    switch (widget.mode) {
       case EditorFormMode.create:
         return 'Fill in the details to create a new user.';
       case EditorFormMode.edit:
