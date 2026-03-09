@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../tokens/app_typography.dart';
 import 'app_theme_palette.dart';
+import 'semantic_colors.dart';
 import 'theme_colors.dart';
 
 /// Application theme builder that centralizes Material 3 configuration.
@@ -10,25 +11,25 @@ class AppTheme {
 
   static ThemeData light([AppThemePalette palette = AppThemePalette.classic]) {
     final colorScheme = ThemeColors.getColorScheme(palette, Brightness.light);
-    return _themeData(colorScheme);
+    return _themeData(colorScheme, SemanticColors.light);
   }
 
   static ThemeData dark([AppThemePalette palette = AppThemePalette.classic]) {
     final colorScheme = ThemeColors.getColorScheme(palette, Brightness.dark);
-    return _themeData(colorScheme);
+    return _themeData(colorScheme, SemanticColors.dark);
   }
 
-  static ThemeData _themeData(ColorScheme colorScheme) {
+  static ThemeData _themeData(ColorScheme colorScheme, SemanticColors semanticColors) {
     final base = ThemeData(
       colorScheme: colorScheme,
       useMaterial3: true,
       brightness: colorScheme.brightness,
-      fontFamily: 'Poppins', // Poppins fontunu varsayılan font olarak ayarla
     );
     final textTheme = AppTypography.textTheme(base.textTheme);
 
     return base.copyWith(
       textTheme: textTheme,
+      extensions: [semanticColors],
       iconTheme: IconThemeData(color: colorScheme.onSurface),
       iconButtonTheme: IconButtonThemeData(style: IconButton.styleFrom(foregroundColor: colorScheme.onSurface)),
       appBarTheme: AppBarTheme(
@@ -46,12 +47,30 @@ class AppTheme {
         filled: true,
         fillColor: colorScheme.surfaceContainerHigh,
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        disabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
-        focusedErrorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outline, width: 0.5),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outline, width: 0.5),
+        ),
+        disabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.outline.withAlpha(128), width: 0.5),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.primary, width: 2),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide(color: colorScheme.error, width: 2),
+        ),
         labelStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontFamily: 'Poppins'),
         helperStyle: TextStyle(color: colorScheme.onSurfaceVariant, fontFamily: 'Poppins'),
         hintStyle: TextStyle(color: colorScheme.onSurfaceVariant.withAlpha(179), fontFamily: 'Poppins'),

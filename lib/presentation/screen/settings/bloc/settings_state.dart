@@ -39,7 +39,7 @@ class SettingsLanguageChanged extends SettingsState {
 }
 
 class SettingsThemeChanged extends SettingsState {
-  final AdaptiveThemeMode theme;
+  final ThemeMode theme;
 
   const SettingsThemeChanged({required this.theme}) : super(status: SettingsStatus.success);
 

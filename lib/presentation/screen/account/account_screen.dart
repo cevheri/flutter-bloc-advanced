@@ -5,6 +5,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_avatar.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_button.dart' show AppComponentSize;
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_card.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
@@ -18,7 +22,6 @@ class AccountScreen extends StatelessWidget {
 
   final bool returnToSettings;
   final _formKey = GlobalKey<FormBuilderState>();
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
   Widget build(BuildContext context) {
@@ -28,18 +31,7 @@ class AccountScreen extends StatelessWidget {
       child: PopScope(
         canPop: !(_formKey.currentState?.isDirty ?? false),
         onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(didPop, data),
-        child: Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context)),
-      ),
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).account),
-      leading: IconButton(
-        key: const Key('accountScreenAppBarBackButtonKey'),
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () async => _handlePopScope(false, null, context),
+        child: _buildBody(context),
       ),
     );
   }
@@ -48,20 +40,79 @@ class AccountScreen extends StatelessWidget {
     return BlocBuilder<AccountBloc, AccountState>(
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
-        // final initialValues = {
-        //   'login': state.data?.login,
-        //   'firstName': state.data?.firstName,
-        //   'lastName': state.data?.lastName,
-        //   'email': state.data?.email
-        // };
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Back button + title
+                  Row(
+                    children: [
+                      IconButton(
+                        key: const Key('accountScreenAppBarBackButtonKey'),
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () async => _handlePopScope(false, null, context),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        S.of(context).account,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
 
-        return ResponsiveFormBuilder(
-          formKey: _formKey,
-          // initialValue: initialValues,
-          children: [..._buildFormFields(context, state), _submitButton(context, state)],
+                  // Avatar section
+                  Center(
+                    child: Column(
+                      children: [
+                        AppAvatar(
+                          initials: _getInitials(state.data?.firstName, state.data?.lastName),
+                          size: AppComponentSize.lg,
+                        ),
+                        const SizedBox(height: AppSpacing.md),
+                        if (state.data?.firstName != null)
+                          Text(
+                            '${state.data?.firstName ?? ''} ${state.data?.lastName ?? ''}',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                          ),
+                        if (state.data?.email != null)
+                          Text(
+                            state.data?.email ?? '',
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+
+                  // Form section
+                  AppCard(
+                    variant: AppCardVariant.outlined,
+                    padding: const EdgeInsets.all(AppSpacing.xl),
+                    child: ResponsiveFormBuilder(
+                      formKey: _formKey,
+                      children: [..._buildFormFields(context, state), _submitButton(context, state)],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         );
       },
     );
+  }
+
+  String _getInitials(String? first, String? last) {
+    final f = first?.isNotEmpty == true ? first![0].toUpperCase() : '';
+    final l = last?.isNotEmpty == true ? last![0].toUpperCase() : '';
+    return '$f$l';
   }
 
   List<Widget> _buildFormFields(BuildContext context, AccountState state) {
@@ -70,7 +121,6 @@ class AccountScreen extends StatelessWidget {
       UserFormFields.firstNameField(context, state.data?.firstName),
       UserFormFields.lastNameField(context, state.data?.lastName),
       UserFormFields.emailField(context, state.data?.email),
-      //UserFormFields.activatedField(context, state.data?.activated),
     ];
   }
 
@@ -125,7 +175,6 @@ class AccountScreen extends StatelessWidget {
         break;
       case AccountStatus.success:
         _showSnackBar(context, S.of(context).success, duration);
-        //_formKey.currentState?.reset();
         break;
       case AccountStatus.failure:
         _showSnackBar(context, S.of(context).failed, duration);
@@ -143,7 +192,6 @@ class AccountScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      // Eğer settings'den geldiyse settings'e, değilse home'a dön
       if (returnToSettings) {
         context.go(ApplicationRoutesConstants.settings);
       } else {
@@ -154,7 +202,6 @@ class AccountScreen extends StatelessWidget {
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      // Eğer settings'den geldiyse settings'e, değilse home'a dön
       if (returnToSettings) {
         context.go(ApplicationRoutesConstants.settings);
       } else {

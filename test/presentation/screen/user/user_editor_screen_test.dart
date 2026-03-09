@@ -62,7 +62,12 @@ void main() {
 
     final router = GoRouter(
       initialLocation: id != null ? '/user/$id/${mode.name}' : '/user/new',
-      routes: UserRoutes.routes,
+      routes: [
+        ShellRoute(
+          builder: (context, state, child) => Scaffold(body: child),
+          routes: UserRoutes.routes,
+        ),
+      ],
     );
 
     return MultiBlocProvider(
@@ -290,6 +295,9 @@ void main() {
     });
 
     testWidgets('Create Mode - Should submit valid form', (tester) async {
+      // Use wider viewport to accommodate user list layout after navigation
+      await tester.binding.setSurfaceSize(const Size(1200, 800));
+
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
       when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
@@ -302,15 +310,6 @@ void main() {
       when(
         mockAuthorityBloc.stream,
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
-
-      // const newUser = User(
-      //   login: 'newuser',
-      //   firstName: 'New',
-      //   lastName: 'User',
-      //   email: 'new@example.com',
-      //   activated: true,
-      //   authorities: ['ROLE_USER'],
-      // );
 
       // Mock UserBloc event handling
       when(mockUserBloc.add(any)).thenAnswer((invocation) {
@@ -340,6 +339,9 @@ void main() {
 
       // Clean up
       await userStateController.close();
+
+      // Reset surface size
+      await tester.binding.setSurfaceSize(null);
     });
 
     testWidgets('Should handle cancel button tap', (tester) async {

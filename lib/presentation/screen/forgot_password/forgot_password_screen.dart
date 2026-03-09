@@ -47,7 +47,6 @@ class ForgotPasswordScreen extends StatelessWidget {
         return ResponsiveFormBuilder(
           formKey: _formKey,
           children: [
-            // Alt başlık eklendi (AppBar'da zaten başlık var)
             Text(
               'Enter your email to reset your password',
               style: Theme.of(
@@ -70,21 +69,7 @@ class ForgotPasswordScreen extends StatelessWidget {
     return FormBuilderTextField(
       key: forgotPasswordTextFieldEmailKey,
       name: "email",
-      decoration: InputDecoration(
-        labelText: t.email,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-        ),
-      ),
+      decoration: InputDecoration(labelText: t.email),
       maxLines: 1,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: t.required_field),
@@ -152,7 +137,6 @@ class ForgotPasswordScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      // Eğer settings'den geldiyse settings'e, değilse home'a dön
       if (returnToSettings) {
         context.go(ApplicationRoutesConstants.settings);
       } else {
@@ -163,7 +147,6 @@ class ForgotPasswordScreen extends StatelessWidget {
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      // Eğer settings'den geldiyse settings'e, değilse home'a dön
       if (returnToSettings) {
         context.go(ApplicationRoutesConstants.settings);
       } else {

@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/tokens/app_spacing.dart';
 
 class ResponsiveSubmitButton extends StatelessWidget {
   final String buttonText;
@@ -40,7 +40,7 @@ class ButtonContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final buttonForegroundColor = Theme.of(context).colorScheme.onPrimary;
     return Row(
-      spacing: Spacing.small,
+      spacing: AppSpacing.sm,
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [

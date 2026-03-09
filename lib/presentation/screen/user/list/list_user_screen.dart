@@ -24,28 +24,16 @@ class ListUserScreen extends StatelessWidget {
     return BlocListener<UserBloc, UserState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: _handleUserStateChanges,
-      child: Scaffold(
-        appBar: _buildAppBar(context),
-        body: Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.surfaceContainerLow],
-            ),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [Theme.of(context).colorScheme.surface, Theme.of(context).colorScheme.surfaceContainerLow],
           ),
-          child: const UserListView(),
         ),
+        child: const UserListView(),
       ),
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).list_user),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/')),
-      elevation: 0,
-      backgroundColor: Colors.transparent,
     );
   }
 
@@ -86,12 +74,11 @@ class UserListView extends StatelessWidget {
   }
 
   Widget _buildResponsiveLayout(BuildContext context, BoxConstraints constraints) {
-    if (constraints.maxWidth > 900) {
-      return UserListContent(horizontalPadding: 200, maxWidth: 1100);
-    } else if (constraints.maxWidth > 700) {
-      return UserListContent(horizontalPadding: 200, maxWidth: 1200);
+    if (constraints.maxWidth > 700) {
+      return UserListContent(horizontalPadding: 30, maxWidth: 1200);
     }
-    return Center(child: Text(S.of(context).screen_size_error));
+    // Mobile: card-based list view
+    return const UserMobileListView();
   }
 }
 
@@ -625,6 +612,72 @@ class UserActionButtons extends StatelessWidget {
         authorities: formKey.currentState!.fields['authorities']?.value,
         name: formKey.currentState!.fields['name']?.value,
       ),
+    );
+  }
+}
+
+/// Mobile card-based user list view.
+class UserMobileListView extends StatelessWidget {
+  const UserMobileListView({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        if (state.status == UserStatus.searchSuccess && state.userList != null) {
+          return ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: state.userList!.length,
+            itemBuilder: (context, index) {
+              final user = state.userList![index];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 12),
+                child: ListTile(
+                  leading: CircleAvatar(
+                    backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                    child: Text(
+                      (user.firstName?.isNotEmpty == true ? user.firstName![0] : '?').toUpperCase(),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onPrimaryContainer),
+                    ),
+                  ),
+                  title: Text('${user.firstName ?? ''} ${user.lastName ?? ''}'),
+                  subtitle: Text(user.email ?? ''),
+                  trailing: PopupMenuButton<String>(
+                    onSelected: (value) {
+                      switch (value) {
+                        case 'edit':
+                          context.goNamed('userEdit', pathParameters: {'id': user.login ?? ''});
+                          break;
+                        case 'view':
+                          context.goNamed('userView', pathParameters: {'id': user.login ?? ''});
+                          break;
+                      }
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem(value: 'edit', child: Text(S.of(context).edit_user)),
+                      PopupMenuItem(value: 'view', child: Text(S.of(context).view_user)),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        }
+        return Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.people_outline,
+                size: 64,
+                color: Theme.of(context).colorScheme.onSurfaceVariant.withAlpha(128),
+              ),
+              const SizedBox(height: 16),
+              Text(S.of(context).list_user, style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+        );
+      },
     );
   }
 }

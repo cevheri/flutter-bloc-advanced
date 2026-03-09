@@ -16,29 +16,23 @@ dependencies:
   flutter_bloc: 9.1.1
   http: 1.6.0
   go_router: 17.1.0
-  adaptive_theme: 3.7.2
   equatable: 2.0.8
-  auto_route: 11.1.0
-  get: 4.7.3
   intl: 0.20.2
   pdf: 3.11.3
   printing: 5.14.2
-  expansion_tile_card: 3.0.0
-  device_preview: 1.3.1
-  getwidget: 7.0.0
   flutter_form_builder: 10.3.0+2
   form_builder_validators: 11.3.0
   intl_utils: 2.8.14
   http_certificate_pinning: 3.0.1
   bloc_concurrency: 0.3.0
-  modbus_client_tcp: 1.2.3
-  custom_navigation_bar: 0.8.2
   flutter_inappwebview: 6.1.5
-  animated_toggle_switch: 0.8.7
   glob: 2.1.3
   shared_preferences: 2.5.4
   logger: 2.6.2
   get_storage: 2.1.1
+  fl_chart: ^0.70.0
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
 
 dev_dependencies:
   flutter_test:
@@ -50,6 +44,7 @@ dev_dependencies:
   bloc_test: 10.0.0
   mockito: 5.6.3
   shared_preferences_platform_interface: 2.4.1
+  device_preview: 1.3.1
 
 flutter_secure_storage:
   enabled: true

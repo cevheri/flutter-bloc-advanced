@@ -25,21 +25,7 @@ class AuthoritiesDropdown extends StatelessWidget {
             return FormBuilderDropdown(
               enabled: enabled,
               name: 'authorities',
-              decoration: InputDecoration(
-                hintText: S.of(context).authorities,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-                ),
-              ),
+              decoration: InputDecoration(hintText: S.of(context).authorities),
               items: authorities.map((e) => DropdownMenuItem(value: e, child: Text(e ?? ""))).toList(),
               initialValue: initialValue ?? authorities.first,
             );

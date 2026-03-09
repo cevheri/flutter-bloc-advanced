@@ -1,5 +1,5 @@
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/presentation/screen/settings/bloc/settings.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -44,14 +44,8 @@ void main() {
       expect(const SettingsLanguageChanged(language: "en").props, [SettingsStatus.success, "en"]);
     });
     test("SettingsThemeChanged", () {
-      expect(
-        const SettingsThemeChanged(theme: AdaptiveThemeMode.system),
-        const SettingsThemeChanged(theme: AdaptiveThemeMode.system),
-      );
-      expect(const SettingsThemeChanged(theme: AdaptiveThemeMode.system).props, [
-        AdaptiveThemeMode.system,
-        SettingsStatus.success,
-      ]);
+      expect(const SettingsThemeChanged(theme: ThemeMode.system), const SettingsThemeChanged(theme: ThemeMode.system));
+      expect(const SettingsThemeChanged(theme: ThemeMode.system).props, [ThemeMode.system, SettingsStatus.success]);
     });
     test("SettingsFailure", () {
       expect(const SettingsFailure(message: "Error"), const SettingsFailure(message: "Error"));
@@ -73,8 +67,8 @@ void main() {
       expect(const ChangeLanguage(language: "en").props, ["en"]);
     });
     test("ChangeTheme", () {
-      expect(const ChangeTheme(theme: AdaptiveThemeMode.system), const ChangeTheme(theme: AdaptiveThemeMode.system));
-      expect(const ChangeTheme(theme: AdaptiveThemeMode.system).props, [AdaptiveThemeMode.system]);
+      expect(const ChangeTheme(theme: ThemeMode.system), const ChangeTheme(theme: ThemeMode.system));
+      expect(const ChangeTheme(theme: ThemeMode.system).props, [ThemeMode.system]);
     });
   });
 
@@ -115,7 +109,7 @@ void main() {
     });
 
     group("ChangeTheme", () {
-      const theme = AdaptiveThemeMode.system;
+      const theme = ThemeMode.system;
       const event = ChangeTheme(theme: theme);
       const loadingState = SettingsLoading();
       const successState = SettingsThemeChanged(theme: theme);

@@ -9,7 +9,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/routes/account_routes.dart';
+import 'package:flutter_bloc_advance/presentation/screen/account/account_screen.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -62,7 +62,16 @@ void main() {
 
   // Helper method to build the widget under test
   Widget buildTestableWidget() {
-    final router = GoRouter(routes: AccountRoutes.routes, initialLocation: '/account');
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/account',
+          builder: (context, state) =>
+              Scaffold(body: AccountScreen(returnToSettings: state.uri.queryParameters['returnToSettings'] == 'true')),
+        ),
+      ],
+      initialLocation: '/account',
+    );
 
     return MultiBlocProvider(
       providers: [
@@ -83,7 +92,7 @@ void main() {
   }
 
   group('AccountScreen Basic UI Tests', () {
-    testWidgets('Should render AppBar correctly', (tester) async {
+    testWidgets('Should render back button and title correctly', (tester) async {
       // ARRANGE
       when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
@@ -91,8 +100,8 @@ void main() {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
-      // ASSERT
-      expect(find.byType(AppBar), findsOneWidget);
+      // ASSERT - AccountScreen now uses a Row with IconButton + Text instead of AppBar
+      expect(find.byIcon(Icons.arrow_back), findsOneWidget);
       expect(find.text(S.current.account), findsOneWidget);
       expect(find.byKey(const Key('accountScreenAppBarBackButtonKey')), findsOneWidget);
     });

@@ -9,7 +9,6 @@ import 'package:flutter_bloc_advance/presentation/screen/change_password/change_
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -52,8 +51,8 @@ void main() {
     GlobalCupertinoLocalizations.delegate,
   ];
 
-  GetMaterialApp getWidget() {
-    return GetMaterialApp(
+  MaterialApp getWidget() {
+    return MaterialApp(
       localizationsDelegates: locales,
       supportedLocales: S.delegate.supportedLocales,
       home: MultiBlocProvider(

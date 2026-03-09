@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
 import 'package:flutter_bloc_advance/configuration/constants.dart';
-import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/submit_button_widget.dart';
@@ -65,8 +65,8 @@ class ChangePasswordScreen extends StatelessWidget {
   Image _logo(BuildContext context) {
     return Image.asset(
       LocaleConstants.defaultImgUrl,
-      width: Spacing.widthPercentage50(context),
-      height: Spacing.heightPercentage30(context),
+      width: AppSpacing.widthPercent(context, 0.5),
+      height: AppSpacing.heightPercent(context, 0.3),
     );
   }
 
@@ -74,21 +74,7 @@ class ChangePasswordScreen extends StatelessWidget {
     return FormBuilderTextField(
       key: changePasswordTextFieldCurrentPasswordKey,
       name: 'currentPassword',
-      decoration: InputDecoration(
-        labelText: S.of(context).current_password,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-        ),
-      ),
+      decoration: InputDecoration(labelText: S.of(context).current_password),
       obscureText: true,
       maxLines: 1,
       validator: FormBuilderValidators.compose([
@@ -101,21 +87,7 @@ class ChangePasswordScreen extends StatelessWidget {
     return FormBuilderTextField(
       key: changePasswordTextFieldNewPasswordKey,
       name: 'newPassword',
-      decoration: InputDecoration(
-        labelText: S.of(context).new_password,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.outline, width: 0.5),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-        ),
-      ),
+      decoration: InputDecoration(labelText: S.of(context).new_password),
       obscureText: true,
       maxLines: 1,
       validator: FormBuilderValidators.compose([
@@ -187,7 +159,6 @@ class ChangePasswordScreen extends StatelessWidget {
     if (!context.mounted) return;
 
     if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      // Eğer settings'den geldiyse settings'e, değilse home'a dön
       if (returnToSettings) {
         context.go(ApplicationRoutesConstants.settings);
       } else {
@@ -198,7 +169,6 @@ class ChangePasswordScreen extends StatelessWidget {
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      // Eğer settings'den geldiyse settings'e, değilse home'a dön
       if (returnToSettings) {
         context.go(ApplicationRoutesConstants.settings);
       } else {
