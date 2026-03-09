@@ -98,7 +98,6 @@ void main() {
       expect(find.byType(FormBuilderTextField), findsNWidgets(2));
       _log.debug("end Validate Field Type");
     });
-
   });
 
   group("ChangePasswordScreen Bloc Test", () {

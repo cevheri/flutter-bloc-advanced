@@ -29,7 +29,7 @@ class UserEditorScreen extends StatelessWidget {
   }
 }
 
-_showMessage(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String title, String content) {
+void _showMessage(BuildContext context, GlobalKey<ScaffoldState> scaffoldKey, String title, String content) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(content), duration: const Duration(seconds: 2)));
 }
 

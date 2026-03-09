@@ -20,7 +20,7 @@ class SettingsScreen extends StatelessWidget {
     return Scaffold(appBar: _buildAppBar(context), body: _buildBody(context));
   }
 
-  _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).settings),
       leading: IconButton(
@@ -30,7 +30,7 @@ class SettingsScreen extends StatelessWidget {
     );
   }
 
-  _buildBody(BuildContext context) {
+  FormBuilder _buildBody(BuildContext context) {
     return FormBuilder(
       key: _settingsFormKey,
       child: LayoutBuilder(

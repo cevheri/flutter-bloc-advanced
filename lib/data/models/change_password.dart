@@ -16,10 +16,7 @@ class PasswordChangeDTO extends Equatable {
   }
 
   static PasswordChangeDTO? fromJson(Map<String, dynamic> json) {
-    return PasswordChangeDTO(
-      currentPassword: json['currentPassword'],
-      newPassword: json['newPassword'],
-    );
+    return PasswordChangeDTO(currentPassword: json['currentPassword'], newPassword: json['newPassword']);
   }
 
   static PasswordChangeDTO? fromJsonString(String json) => fromJson(jsonDecode(json));

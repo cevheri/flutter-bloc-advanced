@@ -7,11 +7,11 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 /// This class contains the user form fields that are used in the user form.
 /// The user form fields are used to display the user form fields in the user form.
 class UserFormFields {
-  static _requiredValidator(BuildContext context) {
+  static FormFieldValidator<dynamic> _requiredValidator(BuildContext context) {
     return FormBuilderValidators.required(errorText: S.of(context).required_field);
   }
 
-  static _txtValidator(BuildContext context) {
+  static List<dynamic> _txtValidator(BuildContext context) {
     return [
       _requiredValidator(context),
       FormBuilderValidators.minLength(2, errorText: S.of(context).min_length_2),

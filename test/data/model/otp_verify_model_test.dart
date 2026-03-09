@@ -30,7 +30,6 @@ void main() {
     });
 
     test('should create VerifyOtpRequest from JSON correctly', () {
-
       // given
       final json = {'email': 'test@example.com', 'otp': '123456'};
 

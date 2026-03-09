@@ -234,7 +234,7 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  _submitButton(BuildContext context) {
+  BlocListener<LoginBloc, LoginState> _submitButton(BuildContext context) {
     return BlocListener<LoginBloc, LoginState>(
       listener: (context, state) {
         debugPrint("BEGIN: login submit button listener username${state.username}");
@@ -295,7 +295,7 @@ class LoginScreen extends StatelessWidget {
     context.read<LoginBloc>().add(LoginFormSubmitted(username: username, password: password));
   }
 
-  _forgotPasswordLink(BuildContext context) {
+  SizedBox _forgotPasswordLink(BuildContext context) {
     return SizedBox(
       child: TextButton(
         key: loginButtonForgotPasswordKey,
@@ -305,7 +305,7 @@ class LoginScreen extends StatelessWidget {
     );
   }
 
-  _register(BuildContext context) {
+  SizedBox _register(BuildContext context) {
     return SizedBox(
       child: TextButton(
         key: loginButtonRegisterKey,

@@ -48,6 +48,7 @@ class TopActionsWidget extends StatelessWidget {
         ),
       );
     }
+
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -60,7 +61,7 @@ class TopActionsWidget extends StatelessWidget {
         buildIconButton(
           tooltip: s.language,
           icon: Icons.account_balance,
-          size: 22,  
+          size: 22,
           onPressed: () => _changeLanguage(context),
         ),
         const SizedBox(width: 10),
@@ -69,7 +70,7 @@ class TopActionsWidget extends StatelessWidget {
           icon: Icons.person,
           onPressed: () => context.go(ApplicationRoutesConstants.account),
         ),
-        const SizedBox(width:50),
+        const SizedBox(width: 50),
       ],
     );
   }

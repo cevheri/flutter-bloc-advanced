@@ -40,7 +40,7 @@ class ListUserScreen extends StatelessWidget {
     );
   }
 
-  _buildAppBar(BuildContext context) {
+  AppBar _buildAppBar(BuildContext context) {
     return AppBar(
       title: Text(S.of(context).list_user),
       leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => context.go('/')),
@@ -252,7 +252,7 @@ class SearchActionButtons extends StatelessWidget {
           onPressed: () => _handleSearch(context),
           icon: const Icon(Icons.search, size: 18),
           label: Text(S.of(context).list),
-          style: FilledButton.styleFrom( 
+          style: FilledButton.styleFrom(
             foregroundColor: colorScheme.primary,
             side: BorderSide(color: colorScheme.primary),
             padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
@@ -306,7 +306,6 @@ class UserTableHeader extends StatelessWidget {
         color: colorScheme.surface,
         borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), topRight: Radius.circular(16)),
         border: Border.all(color: colorScheme.outlineVariant),
-
       ),
       child: Column(
         children: [

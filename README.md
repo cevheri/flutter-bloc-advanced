@@ -150,14 +150,19 @@ git clone https://github.com/cevheri/flutter-bloc-advanced.git
 
 * for serialize and deserialize json to object
 
-```
+```shell
 dart run build_runner build --delete-conflicting-outputs
 ```
 
-* fix dart analyze
+* dart analyze
 
+```shell
+dart analyze
 ```
-dart analyze --fix
+
+* fix dart analyze
+```shell
+dart fix --apply
 ```
 
 * format

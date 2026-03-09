@@ -33,7 +33,7 @@ class ProfileConstants {
     return _config == _Config.testConstants;
   }
 
-  static get api {
+  static dynamic get api {
     return _config![_Config.api];
   }
 }

@@ -27,7 +27,6 @@ void main() {
     });
 
     test('should create SendOtpRequest from JSON correctly', () {
-
       // given
       final json = {'email': 'test@example.com'};
 
@@ -40,7 +39,6 @@ void main() {
     });
 
     test('should return null when fromJson is called with invalid JSON', () {
-
       // given
       final invalidJson = {'invalid_key': 'test@example.com'};
 

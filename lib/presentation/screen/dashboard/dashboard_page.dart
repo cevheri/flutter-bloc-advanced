@@ -277,7 +277,7 @@ class _QuickActionsGrid extends StatelessWidget {
         return SafeArea(
           child: ListView.separated(
             itemCount: actions.length,
-            separatorBuilder: (_, __) => const Divider(height: 1),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (_, i) {
               final a = actions[i];
               return ListTile(

@@ -212,7 +212,6 @@ void main() {
         expect(find.text(S.current.email), findsOneWidget);
         expect(find.text(S.current.send_otp_code), findsOneWidget);
       });
-
     });
   });
 }

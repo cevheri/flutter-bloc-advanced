@@ -70,6 +70,5 @@ void main() {
 
       expect(find.byType(SettingsScreen), findsNothing);
     });
-
   });
 }

@@ -63,7 +63,7 @@ class ApplicationDrawer extends StatelessWidget {
                               // Scaffold.of(context).closeDrawer();
                               // Stay on the same route; theme change rebuilds automatically
                             },
-                            activeColor: Theme.of(context).colorScheme.primary,
+                            activeThumbColor: Theme.of(context).colorScheme.primary,
                             inactiveThumbColor: Theme.of(context).colorScheme.outline,
                             inactiveTrackColor: Theme.of(context).colorScheme.outline.withValues(alpha: 0.5),
                           ),

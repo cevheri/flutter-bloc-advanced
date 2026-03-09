@@ -77,6 +77,5 @@ void main() {
         await tester.pumpAndSettle();
       });
     });
-
   });
 }

@@ -30,11 +30,7 @@ class AppTheme {
     return base.copyWith(
       textTheme: textTheme,
       iconTheme: IconThemeData(color: colorScheme.onSurface),
-      iconButtonTheme: IconButtonThemeData(
-        style: IconButton.styleFrom(
-          foregroundColor: colorScheme.onSurface,
-        ),
-      ),
+      iconButtonTheme: IconButtonThemeData(style: IconButton.styleFrom(foregroundColor: colorScheme.onSurface)),
       appBarTheme: AppBarTheme(
         elevation: 0,
         scrolledUnderElevation: 0,
