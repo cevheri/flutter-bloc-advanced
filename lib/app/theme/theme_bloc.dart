@@ -43,6 +43,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   }
 
   Future<void> _onChangeThemePalette(ChangeThemePalette event, Emitter<ThemeState> emit) async {
+    emit(state.copyWith(palette: event.palette));
     try {
       String paletteName;
       switch (event.palette) {
@@ -57,19 +58,14 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
           break;
       }
       await AppLocalStorage().save(StorageKeys.theme.name, paletteName);
-      emit(state.copyWith(palette: event.palette));
-    } catch (_) {
-      emit(state.copyWith(palette: event.palette));
-    }
+    } catch (_) {}
   }
 
   Future<void> _onToggleBrightness(ToggleBrightness event, Emitter<ThemeState> emit) async {
+    final newIsDarkMode = !state.isDarkMode;
+    emit(state.copyWith(isDarkMode: newIsDarkMode));
     try {
-      final newIsDarkMode = !state.isDarkMode;
       await AppLocalStorage().save(StorageKeys.brightness.name, newIsDarkMode ? 'dark' : 'light');
-      emit(state.copyWith(isDarkMode: newIsDarkMode));
-    } catch (_) {
-      emit(state.copyWith(isDarkMode: !state.isDarkMode));
-    }
+    } catch (_) {}
   }
 }

@@ -49,15 +49,12 @@ class _AppViewState extends State<_AppView> {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, themeState) {
-        final currentTheme = themeState.isDarkMode
-            ? AppTheme.dark(themeState.palette)
-            : AppTheme.light(themeState.palette);
-
         return WebBackButtonDisabler(
           child: MaterialApp.router(
-            theme: currentTheme,
+            theme: AppTheme.light(themeState.palette),
             darkTheme: AppTheme.dark(themeState.palette),
             themeMode: themeState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeAnimationDuration: Duration.zero,
             debugShowCheckedModeBanner: true,
             localizationsDelegates: const [
               S.delegate,
