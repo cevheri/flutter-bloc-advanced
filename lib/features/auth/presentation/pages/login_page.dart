@@ -521,7 +521,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           key: loginTextFieldPasswordKey,
           name: 'password',
           decoration: InputDecoration(
-            hintText: '••••••••',
+            hintText: '********',
             suffixIcon: IconButton(
               key: loginButtonPasswordVisibilityKey,
               icon: Icon(state.passwordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 18),
