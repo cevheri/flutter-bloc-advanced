@@ -1,104 +1,84 @@
 # Advanced Flutter BLoC Template
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Flutter](https://img.shields.io/badge/Flutter-3.41.4-02569B?logo=flutter)
+![Dart](https://img.shields.io/badge/Dart-3.11.1-0175C2?logo=dart)
+![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows-2E7D32)
+![Open Source](https://img.shields.io/badge/Open%20Source-Community%20Template-black)
 
-[Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced)
+A production-ready, community-friendly Flutter starter built with BLoC, repository pattern, responsive UI, role-based access control, internationalization, and multi-environment support. It is designed to help you move from prototype to maintainable product faster across mobile, web, and desktop.
 
----
+**Useful links:** [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced) · [Upgrade Guide](docs/upgrade_flutter_3.41.4.md) · [Report an Issue](https://github.com/cevheri/flutter-bloc-advanced/issues) · [Contributing](#contributing)
 
-A production-ready Flutter template built on BLoC architecture. Provides a solid foundation with authentication, role-based access control, user management, theming, internationalization, and multi-environment support (mock/API). Designed for scalable, maintainable applications targeting Android, iOS, Web, macOS, Linux, and Windows.
+## Why This Template?
 
----
+- Production-oriented structure with clear separation between presentation, business logic, and data access.
+- Ready-to-use authentication, role-based routing, user management, localization, theming, and dashboard flows.
+- Local mock mode for rapid development and production mode for real API integration.
+- Works as an open-source base project for teams, side projects, internal products, and community contributions.
 
-![img.png](assets/README_header.png)
+## Screenshots
 
----
+The screenshots below are included to help contributors and adopters understand the current UX quickly before cloning or running the project.
 
-## Tech Stack
+### Web Experience
 
-| Category | Technology |
-|---|---|
-| **Flutter** | 3.41.4 (Dart 3.11.1) |
-| **State Management** | flutter_bloc 9.1.1 |
-| **Routing** | go_router 17.1.0 |
-| **HTTP** | http 1.6.0 |
-| **Theming** | adaptive_theme 3.7.2 |
-| **Forms** | flutter_form_builder 10.3.0+2 |
-| **Localization** | intl 0.20.2 + intl_utils |
-| **Testing** | flutter_test, bloc_test 10.0.0, mockito 5.6.3 |
+| Dark Login | Light Login |
+| --- | --- |
+| ![Web login screen in dark theme](docs/screenshots/web-login-dark.png) | ![Web login screen in light theme](docs/screenshots/web-login-light.png) |
 
-## Features
+![Web user management list screen](docs/screenshots/web-list-user.png)
+
+### Mobile Experience
+
+| Login | Edit User |
+| --- | --- |
+| ![Mobile login screen](docs/screenshots/mobile-login.png) | ![Mobile edit user screen](docs/screenshots/mobile-edit-user.png) |
+
+## What You Get Out of the Box
 
 ### Authentication
-- Login (username/password)
-- Register
-- Forgot Password
-- One Time Password (OTP) - Send and Verify
+
+- Login with username and password
+- Registration flow
+- Forgot password flow
+- OTP send and verify flow
 
 ### User Management
-- Create, Update, Delete, List users
-- Account view and update
-- Change password
+
+- Create, update, delete, and list users
+- Account profile view and update
+- Change password screen
 
 ### Access Control
-- Role-based routing (Admin / User)
-- Public and private routes
-- Protected admin pages
 
-### UI/UX
-- Dark and light themes with adaptive_theme
-- Poppins font family
+- Role-based routing for Admin and User roles
+- Public and private route separation
+- Protected admin-only pages
+
+### UI and Developer Experience
+
+- Dark and light themes
 - Responsive layout support
-- Internationalization (English, Turkish)
-- Dashboard with summary, activities, quick actions
+- English and Turkish localization
+- Design system foundation with reusable components
+- Multi-platform support for Android, iOS, Web, macOS, Linux, and Windows
 
 ### Architecture
-- **BLoC Pattern** - Separation of data, business logic, and presentation
-- **Repository Pattern** - Abstracted data access layer
-- **Manual JSON Serialization** - No code generation required for models
-- **Multi-environment** - Local (mock data) and Production (real API)
-- **Multi-platform** - Android, iOS, Web, macOS, Linux, Windows
 
----
+- BLoC for state management
+- Repository pattern for data access
+- Manual JSON serialization for models
+- Environment-driven configuration for local and production modes
 
-## Project Structure
-
-```
-lib/
-  configuration/       # App config, environment, storage, logging
-  data/
-    models/            # Data models with manual fromJson/toJson
-    repository/        # Repository implementations
-  generated/           # Localization generated files
-  l10n/                # Localization ARB files
-  main/                # Entry points (main_local.dart, main_prod.dart)
-  presentation/
-    common_blocs/      # Shared BLoCs (account, authority)
-    common_widgets/    # Reusable widgets (drawer, etc.)
-    design_system/     # Design tokens and components
-    screen/            # Feature screens with their BLoCs
-  routes/              # Navigation (go_router, navigator, get)
-  utils/               # Utility functions
-
-test/
-  conf/                # Test configuration
-  data/model/          # Model unit tests
-  data/repository/     # Repository unit tests
-  presentation/blocs/  # BLoC unit tests
-  presentation/screen/ # Screen widget tests
-  presentation/widgets/# Widget unit tests
-```
-
----
-
-## Getting Started
+## Quick Start
 
 ### Prerequisites
 
-- Flutter 3.41.4 (recommended via [FVM](https://fvm.app/documentation/getting-started/installation))
-- Dart 3.11.1
-- Android SDK (for Android builds)
-- Xcode (for iOS/macOS builds)
+- Flutter `3.41.4` and Dart `3.11.1`
+- [FVM](https://fvm.app/documentation/getting-started/installation) recommended for version consistency
+- Android SDK for Android builds
+- Xcode for iOS and macOS builds
 
 ### Install FVM
 
@@ -122,13 +102,9 @@ fvm use 3.41.4
 fvm flutter pub get
 ```
 
----
+### Run Locally With Mock Data
 
-## Running the App
-
-### Local Environment (Mock Data)
-
-All requests use mock data from `assets/mock/`. No backend required.
+All local requests use `assets/mock/`, so you can explore the app without standing up a backend first.
 
 ```shell
 # Mobile
@@ -137,20 +113,18 @@ fvm flutter run --target lib/main/main_local.dart
 # Web
 fvm flutter run -d chrome --target lib/main/main_local.dart
 
-# Web with specific port
+# Web with a specific port
 fvm flutter run -d chrome --web-port 3000 --target lib/main/main_local.dart
 ```
 
-**Login credentials:**
+### Demo Credentials
 
 | Role | Username | Password | Access |
-|------|----------|----------|--------|
-| Admin | admin | admin | All pages |
-| User | user | user | Own profile, settings |
+| --- | --- | --- | --- |
+| Admin | `admin` | `admin` | All pages |
+| User | `user` | `user` | Own profile and settings |
 
-### Production Environment (Real API)
-
-Connects to configured API endpoint.
+### Run Against the Real API
 
 ```shell
 # Mobile
@@ -160,9 +134,53 @@ fvm flutter run --target lib/main/main_prod.dart
 fvm flutter run -d chrome --target lib/main/main_prod.dart
 ```
 
----
+The production environment is configured in `lib/configuration/environment.dart`.
 
-## Building
+## Tech Stack
+
+| Category | Technology |
+| --- | --- |
+| Flutter | 3.41.4 |
+| Dart | 3.11.1 |
+| State Management | flutter_bloc 9.1.1 |
+| Routing | go_router 17.1.0 |
+| HTTP | http 1.6.0 |
+| Forms | flutter_form_builder 10.3.0+2 |
+| Localization | intl 0.20.2, intl_utils 2.8.14 |
+| Storage | shared_preferences, get_storage |
+| Testing | flutter_test, bloc_test, mockito |
+
+## Project Structure
+
+```text
+lib/
+  configuration/       # App config, environment, storage, logging
+  data/
+    models/            # Data models with manual fromJson/toJson
+    repository/        # Repository implementations
+  generated/           # Localization generated files
+  l10n/                # Localization ARB files
+  main/                # Entry points (main_local.dart, main_prod.dart)
+  presentation/
+    common_blocs/      # Shared BLoCs (account, authority, theme, drawer)
+    common_widgets/    # Reusable widgets
+    design_system/     # Design tokens and components
+    screen/            # Feature screens and their BLoCs
+  routes/              # go_router configuration
+  utils/               # Utility helpers
+
+test/
+  conf/                # Test configuration
+  data/model/          # Model unit tests
+  data/repository/     # Repository unit tests
+  presentation/blocs/  # BLoC unit tests
+  presentation/screen/ # Screen widget tests
+  presentation/widgets/# Widget unit tests
+```
+
+## Build, Test, and Quality
+
+### Build
 
 ```shell
 # Android APK
@@ -175,113 +193,87 @@ fvm flutter build ios --target lib/main/main_prod.dart
 fvm flutter build web --target lib/main/main_prod.dart
 ```
 
----
-
-## Testing
+### Test
 
 ```shell
 # Run all tests
 fvm flutter test
 
-# Run with single thread (useful for debugging)
+# Useful for debugging order-dependent issues
 fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random
 ```
 
-### Test Coverage
-
-| Layer | What is Tested |
-|-------|---------------|
-| **Models** | fromJson, toJson, equality, edge cases |
-| **Repositories** | API calls, error handling, mock responses |
-| **BLoCs** | State transitions, event handling, error states |
-| **Screens** | Widget rendering, user interactions, navigation |
-| **Widgets** | Reusable component behavior |
-
----
-
-## Code Quality
-
-### Analyze
+### Analyze and Format
 
 ```shell
 fvm dart analyze
-```
-
-### Fix
-
-```shell
 fvm dart fix --apply
-```
-
-### Format
-
-```shell
 fvm dart format . --line-length=120
 ```
 
-### SonarQube
+### Test Coverage Focus
 
-GitHub Actions integration is configured. Add `SONAR_TOKEN` secret to your repository.
+| Layer | What is Tested |
+| --- | --- |
+| Models | `fromJson`, `toJson`, equality, edge cases |
+| Repositories | API calls, error handling, mock responses |
+| BLoCs | State transitions, event handling, error states |
+| Screens | Widget rendering, user interactions, navigation |
+| Widgets | Reusable component behavior |
 
----
+## CI/CD
 
-## Android Configuration
+GitHub Actions workflows included in this repository:
+
+- `build_and_test.yml` for build and test automation
+- `build-web.yml` for web builds
+- `sonar_scanner.yml` for SonarQube analysis
+
+To enable SonarQube, add the `SONAR_TOKEN` secret to your repository or organization.
+
+## Android Tooling
 
 | Component | Version |
-|---|---|
+| --- | --- |
 | Gradle | 8.14 |
 | Android Gradle Plugin | 8.11.1 |
 | Kotlin | 2.2.20 |
 | Java Compatibility | 17 |
-| NDK | Dynamic (flutter.ndkVersion) |
-| Build Config | Kotlin DSL (.gradle.kts) |
+| NDK | Dynamic (`flutter.ndkVersion`) |
+| Build Config | Kotlin DSL (`.gradle.kts`) |
 
----
+## Adding a New Feature
 
-## CI/CD
-
-GitHub Actions workflows:
-
-- **build_and_test.yml** - Build and test pipeline
-- **build-web.yml** - Web build pipeline
-- **sonar_scanner.yml** - SonarQube code quality analysis
-
----
-
-## Adding New Features
-
-1. **Model** - Add to `lib/data/models/` with manual `fromJson`/`toJson` methods
-2. **Repository** - Add to `lib/data/repository/` implementing data access
-3. **BLoC** - Add to `lib/presentation/screen/<feature>/bloc/` with events, states, and bloc
-4. **Screen** - Add to `lib/presentation/screen/<feature>/`
-5. **Route** - Register in `lib/routes/go_router_routes/`
-6. **Mock Data** - Add JSON file to `assets/mock/` for local testing
-7. **Tests** - Add corresponding tests under `test/`
-
----
+1. Add a model to `lib/data/models/`.
+2. Add a repository to `lib/data/repository/`.
+3. Add mock JSON under `assets/mock/` for local development.
+4. Create the screen and BLoC under `lib/presentation/screen/<feature>/`.
+5. Register the route under `lib/routes/go_router_routes/`.
+6. Add localization keys to `lib/l10n/`.
+7. Add tests under `test/` mirroring the `lib/` structure.
 
 ## Contributing
 
-1. Fork the repository
-2. Clone your forked repository
-3. Create your feature branch
-4. Commit your changes
-5. Push to the branch
-6. Create a Pull Request
+Community contributions are welcome. If you want to improve the template, add features, polish documentation, or refine the UI, feel free to open an issue or submit a pull request.
 
----
+1. Fork the repository.
+2. Create a feature branch from your fork.
+3. Make your changes with tests or documentation updates when relevant.
+4. Run `fvm dart analyze` and `fvm flutter test`.
+5. Open a pull request with a clear summary of the change.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
+If you are unsure where to start, documentation improvements, screenshot refreshes, and test coverage enhancements are all valuable contributions.
 
 ## References
-- [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/cevheri/flutter-bloc-advanced)
+
+- [Ask DeepWiki](https://deepwiki.com/cevheri/flutter-bloc-advanced)
 - [Understanding Flutter BLoC: A Comprehensive Guide](https://cevheri.medium.com/understanding-flutter-bloc-a-comprehensive-guide-7100dabe3975)
 - [Flutter Documentation](https://flutter.dev/)
 - [BLoC Library](https://bloclibrary.dev/)
 - [flutter_bloc on pub.dev](https://pub.dev/packages/flutter_bloc)
 - [go_router on pub.dev](https://pub.dev/packages/go_router)
 - [Upgrade Guide - Flutter 3.41.4](docs/upgrade_flutter_3.41.4.md)
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
