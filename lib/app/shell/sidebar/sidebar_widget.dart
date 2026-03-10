@@ -143,6 +143,7 @@ class _SidebarContent extends StatelessWidget {
               onTap: () {
                 if ((node.leaf ?? false) && node.url.isNotEmpty) {
                   context.read<SidebarBloc>().add(SetActiveRoute(node.url));
+                  _closeMobileDrawer(context);
                   AppRouter().push(context, node.url);
                 }
               },
@@ -166,6 +167,7 @@ class _SidebarContent extends StatelessWidget {
                 onTap: () {
                   if ((child.leaf ?? false) && child.url.isNotEmpty) {
                     context.read<SidebarBloc>().add(SetActiveRoute(child.url));
+                    _closeMobileDrawer(context);
                     AppRouter().push(context, child.url);
                   }
                 },
@@ -175,6 +177,13 @@ class _SidebarContent extends StatelessWidget {
         }).toList(),
       ),
     );
+  }
+
+  void _closeMobileDrawer(BuildContext context) {
+    final scaffold = Scaffold.maybeOf(context);
+    if (scaffold?.isDrawerOpen == true) {
+      scaffold?.closeDrawer();
+    }
   }
 
   bool _hasAccess(Menu menu, List<String>? userRoles) {

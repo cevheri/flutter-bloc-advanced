@@ -96,10 +96,10 @@ class ResponsiveScaffold extends StatelessWidget {
   }
 
   Widget _mobileLayout(BuildContext context) {
-    return Builder(
-      builder: (scaffoldContext) {
-        return Scaffold(
-          body: Column(
+    return Scaffold(
+      body: Builder(
+        builder: (scaffoldContext) {
+          return Column(
             children: [
               TopBarWidget(
                 title: _routeToTitle(activeRoute),
@@ -107,11 +107,11 @@ class ResponsiveScaffold extends StatelessWidget {
               ),
               Expanded(child: child),
             ],
-          ),
-          drawer: const Drawer(child: SidebarWidget()),
-          bottomNavigationBar: BottomNavWidget(activeRoute: activeRoute),
-        );
-      },
+          );
+        },
+      ),
+      drawer: const Drawer(child: SidebarWidget()),
+      bottomNavigationBar: BottomNavWidget(activeRoute: activeRoute),
     );
   }
 
