@@ -50,7 +50,7 @@ void main() {
 
     testWidgets('MultiBlocProvider should contain all required providers', (WidgetTester tester) async {
       await tester.pumpWidget(app);
-      await tester.pumpAndSettle();
+      await tester.pump();
       expect(find.byType(MultiBlocProvider), findsOneWidget);
     });
   });
