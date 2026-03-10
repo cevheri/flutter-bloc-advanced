@@ -12,12 +12,7 @@ class BreadcrumbItem {
 
 /// Resolves a URI path into a list of [BreadcrumbItem]s for breadcrumb navigation.
 class BreadcrumbRouteResolver {
-  static const _featureRoots = {
-    'user': '/user',
-    'account': '/account',
-    'settings': '/settings',
-    'catalog': '/catalog',
-  };
+  static const _featureRoots = {'user': '/user', 'account': '/account', 'settings': '/settings', 'catalog': '/catalog'};
 
   static const _actionSuffixes = {'view', 'edit', 'new'};
 
@@ -42,10 +37,7 @@ class BreadcrumbRouteResolver {
     final items = <BreadcrumbItem>[];
 
     // First segment is the feature root, clickable since there are deeper segments
-    items.add(BreadcrumbItem(
-      label: _format(featureRoot),
-      route: _featureRoots[featureRoot] ?? '/$featureRoot',
-    ));
+    items.add(BreadcrumbItem(label: _format(featureRoot), route: _featureRoots[featureRoot] ?? '/$featureRoot'));
 
     final lastSegment = segments.last;
     final isActionLast = _actionSuffixes.contains(lastSegment);
@@ -64,10 +56,7 @@ class BreadcrumbRouteResolver {
         items.add(BreadcrumbItem(label: _format(id)));
       } else {
         // ID links to view page, action is the current page: User > {name} > Edit
-        items.add(BreadcrumbItem(
-          label: _format(id),
-          route: '/$featureRoot/$id/view',
-        ));
+        items.add(BreadcrumbItem(label: _format(id), route: '/$featureRoot/$id/view'));
         items.add(BreadcrumbItem(label: _format(lastSegment)));
       }
       return items;

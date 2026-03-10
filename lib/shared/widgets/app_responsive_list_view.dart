@@ -108,10 +108,7 @@ class AppResponsiveListView<T> extends StatelessWidget {
                   ),
               ],
             ),
-            if (desktopSearchWidget != null) ...[
-              const SizedBox(height: 20),
-              desktopSearchWidget!,
-            ],
+            if (desktopSearchWidget != null) ...[const SizedBox(height: 20), desktopSearchWidget!],
             const SizedBox(height: 16),
             AppDataTable<T>(
               columns: columns,
@@ -135,7 +132,9 @@ class AppResponsiveListView<T> extends StatelessWidget {
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
           child: Row(
             children: [
-              Expanded(child: Text(title, style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600))),
+              Expanded(
+                child: Text(title, style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+              ),
               if (onCreateNew != null)
                 FilledButton.icon(
                   key: createNewKey,
@@ -147,10 +146,7 @@ class AppResponsiveListView<T> extends StatelessWidget {
           ),
         ),
         if (mobileSearchWidget != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: mobileSearchWidget!,
-          ),
+          Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 8), child: mobileSearchWidget!),
         Expanded(
           child: AppMobileCardList<T>(
             items: items,

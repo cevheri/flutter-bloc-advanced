@@ -6,11 +6,8 @@ class AccountFeatureRoutes {
   static final List<GoRoute> routes = [
     GoRoute(
       path: '/account',
-      pageBuilder: (context, state) => appTransitionPage(
-        state: state,
-        type: AppPageTransitionType.slideRight,
-        child: const AccountPage(),
-      ),
+      pageBuilder: (context, state) =>
+          appTransitionPage(state: state, type: AppPageTransitionType.slideRight, child: const AccountPage()),
     ),
   ];
 }

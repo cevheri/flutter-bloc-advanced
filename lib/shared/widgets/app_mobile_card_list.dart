@@ -51,10 +51,7 @@ class AppMobileCardList<T> extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Text(
-              '${items!.length} row(s) listed.',
-              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-            ),
+            child: Text('${items!.length} row(s) listed.', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
           ),
         ],
       );

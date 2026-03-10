@@ -66,8 +66,7 @@ void main() {
       routes: [
         GoRoute(
           path: '/account',
-          builder: (context, state) =>
-              Scaffold(body: AccountScreen()),
+          builder: (context, state) => Scaffold(body: AccountScreen()),
         ),
       ],
       initialLocation: '/account',

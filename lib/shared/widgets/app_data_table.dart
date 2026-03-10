@@ -79,14 +79,15 @@ class _AppTableHeader<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
-      fontWeight: FontWeight.w500,
-      color: cs.onSurfaceVariant,
-    );
+    final style = Theme.of(
+      context,
+    ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w500, color: cs.onSurfaceVariant);
 
     return Container(
       height: 40,
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: cs.outlineVariant))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
@@ -106,12 +107,7 @@ class _AppTableHeader<T> extends StatelessWidget {
 }
 
 class _AppTableRow<T> extends StatefulWidget {
-  const _AppTableRow({
-    required this.columns,
-    required this.item,
-    required this.isLast,
-    required this.showCheckbox,
-  });
+  const _AppTableRow({required this.columns, required this.item, required this.isLast, required this.showCheckbox});
 
   final List<AppTableColumn<T>> columns;
   final T item;
@@ -174,7 +170,9 @@ class _AppTableFooter extends StatelessWidget {
     return Container(
       height: 52,
       padding: const EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(border: Border(top: BorderSide(color: cs.outlineVariant))),
+      decoration: BoxDecoration(
+        border: Border(top: BorderSide(color: cs.outlineVariant)),
+      ),
       child: Row(
         children: [
           Expanded(

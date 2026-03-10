@@ -89,10 +89,7 @@ class UserListView extends StatelessWidget {
           subtitle: 'Browse and manage users in a table view.',
           items: items,
           isLoading: isLoading,
-          onCreateNew: () => context.goNamed(
-            'userCreate',
-            extra: {'fromRoute': ApplicationRoutesConstants.userList},
-          ),
+          onCreateNew: () => context.goNamed('userCreate', extra: {'fromRoute': ApplicationRoutesConstants.userList}),
           createNewKey: const Key('listUserCreateButtonKey'),
           createLabel: S.of(context).new_user,
           emptyIcon: Icons.people_outline,
@@ -241,9 +238,9 @@ class PaginationControls extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             '/',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
         Expanded(
@@ -339,10 +336,7 @@ class _MobileSearchBar extends StatelessWidget {
               onPressed: () => _handleSearch(context),
               icon: const Icon(Icons.search, size: 16),
               label: Text(S.of(context).list),
-              style: OutlinedButton.styleFrom(
-                minimumSize: const Size(86, 40),
-                maximumSize: const Size(120, 40),
-              ),
+              style: OutlinedButton.styleFrom(minimumSize: const Size(86, 40), maximumSize: const Size(120, 40)),
             ),
           ),
         ],
@@ -466,10 +460,7 @@ class _MobileUserCard extends StatelessWidget {
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: cs.secondaryContainer,
-                    borderRadius: BorderRadius.circular(100),
-                  ),
+                  decoration: BoxDecoration(color: cs.secondaryContainer, borderRadius: BorderRadius.circular(100)),
                   child: Text(
                     isAdmin ? S.of(context).admin : S.of(context).guest,
                     style: tt.labelSmall?.copyWith(

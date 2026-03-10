@@ -65,11 +65,7 @@ class _HomeIconState extends State<_HomeIcon> {
         onExit: (_) => setState(() => _hovered = false),
         child: GestureDetector(
           onTap: () => context.go('/'),
-          child: Icon(
-            Icons.home_outlined,
-            size: 14,
-            color: _hovered ? cs.onSurface : cs.onSurfaceVariant,
-          ),
+          child: Icon(Icons.home_outlined, size: 14, color: _hovered ? cs.onSurface : cs.onSurfaceVariant),
         ),
       ),
     );
