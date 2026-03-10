@@ -1,12 +1,13 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/shared/design_system/components/app_status_badge.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/semantic_colors.dart';
-import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/widgets/app_data_table.dart';
+import 'package:flutter_bloc_advance/shared/widgets/app_responsive_list_view.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -78,69 +79,91 @@ class UserListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (AppBreakpoints.isMobile(constraints.maxWidth)) {
-          return UserMobileListView(formKey: formKey);
-        }
-        return SingleChildScrollView(
-          child: UserListContent(formKey: formKey, horizontalPadding: 24, maxWidth: 1200),
+    return BlocBuilder<UserBloc, UserState>(
+      builder: (context, state) {
+        final items = state.status == UserStatus.searchSuccess ? state.userList : null;
+        final isLoading = state.status == UserStatus.loading;
+
+        return AppResponsiveListView<UserEntity>(
+          title: S.of(context).list_user,
+          subtitle: 'Browse and manage users in a table view.',
+          items: items,
+          isLoading: isLoading,
+          onCreateNew: () => context.goNamed(
+            'userCreate',
+            extra: {'fromRoute': ApplicationRoutesConstants.userList},
+          ),
+          createNewKey: const Key('listUserCreateButtonKey'),
+          createLabel: S.of(context).new_user,
+          emptyIcon: Icons.people_outline,
+          emptyText: S.of(context).list_user,
+          showCheckbox: true,
+          columns: _buildColumns(context),
+          desktopSearchWidget: UserSearchSection(formKey: formKey),
+          mobileSearchWidget: _MobileSearchBar(formKey: formKey),
+          mobileCardBuilder: (context, user) => _MobileUserCard(user: user),
         );
       },
     );
   }
-}
 
-class UserListContent extends StatelessWidget {
-  const UserListContent({super.key, required this.formKey, required this.horizontalPadding, required this.maxWidth});
-
-  final GlobalKey<FormBuilderState> formKey;
-  final double horizontalPadding;
-  final double maxWidth;
-
-  @override
-  Widget build(BuildContext context) {
+  List<AppTableColumn<UserEntity>> _buildColumns(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
+    final cellStyle = Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurface);
 
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(S.of(context).list_user, style: tt.headlineSmall?.copyWith(fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Browse and manage users in a table view.',
-                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                    ),
-                  ],
-                ),
-              ),
-              FilledButton.icon(
-                key: const Key('listUserCreateButtonKey'),
-                onPressed: () =>
-                    context.goNamed('userCreate', extra: {'fromRoute': ApplicationRoutesConstants.userList}),
-                icon: const Icon(Icons.add, size: 16),
-                label: Text(S.of(context).new_user),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          UserSearchSection(formKey: formKey),
-          const SizedBox(height: 16),
-          _DataTableContainer(formKey: formKey),
-        ],
+    return [
+      AppTableColumn<UserEntity>(
+        label: S.of(context).active,
+        flex: 2,
+        builder: (ctx, user) {
+          final isActive = user.activated == true;
+          final color = isActive
+              ? (Theme.of(ctx).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
+              : Theme.of(ctx).colorScheme.error;
+          return AppStatusBadge(label: isActive ? 'Active' : 'Inactive', color: color);
+        },
       ),
-    );
+      AppTableColumn<UserEntity>(
+        label: S.of(context).role,
+        flex: 3,
+        builder: (ctx, user) => Text(
+          user.authorities?.contains('ROLE_ADMIN') == true ? S.of(ctx).admin : S.of(ctx).guest,
+          style: cellStyle,
+        ),
+      ),
+      AppTableColumn<UserEntity>(
+        label: S.of(context).login,
+        flex: 3,
+        builder: (_, user) => Text(user.login.toString(), style: cellStyle),
+      ),
+      AppTableColumn<UserEntity>(
+        label: S.of(context).first_name,
+        flex: 3,
+        builder: (_, user) => Text(user.firstName.toString(), style: cellStyle),
+      ),
+      AppTableColumn<UserEntity>(
+        label: S.of(context).last_name,
+        flex: 3,
+        builder: (_, user) => Text(user.lastName.toString(), style: cellStyle),
+      ),
+      AppTableColumn<UserEntity>(
+        label: S.of(context).email,
+        flex: 4,
+        builder: (_, user) => Text(user.email.toString(), style: cellStyle),
+      ),
+      AppTableColumn<UserEntity>(
+        label: 'Actions',
+        flex: 4,
+        alignment: TextAlign.right,
+        builder: (_, user) => _DesktopRowActions(userId: user.login ?? ''),
+      ),
+    ];
   }
 }
+
+// ---------------------------------------------------------------------------
+// Desktop search section
+// ---------------------------------------------------------------------------
 
 class UserSearchSection extends StatelessWidget {
   const UserSearchSection({super.key, required this.formKey});
@@ -218,9 +241,9 @@ class PaginationControls extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             '/',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
         Expanded(
@@ -293,531 +316,37 @@ class _ColumnsButton extends StatelessWidget {
   }
 }
 
-class _DataTableContainer extends StatelessWidget {
-  const _DataTableContainer({required this.formKey});
+// ---------------------------------------------------------------------------
+// Mobile search bar
+// ---------------------------------------------------------------------------
+
+class _MobileSearchBar extends StatelessWidget {
+  const _MobileSearchBar({required this.formKey});
 
   final GlobalKey<FormBuilderState> formKey;
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return Container(
-      clipBehavior: Clip.antiAlias,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: cs.outlineVariant),
-      ),
-      child: BlocBuilder<UserBloc, UserState>(
-        builder: (context, state) {
-          final rowCount = state.userList?.length ?? 0;
-          return Column(
-            children: [
-              const _TableHeader(),
-              _TableBody(formKey: formKey),
-              Container(
-                height: 52,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(
-                  border: Border(top: BorderSide(color: cs.outlineVariant)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        '$rowCount row(s) listed.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                      ),
-                    ),
-                    OutlinedButton(onPressed: null, child: const Text('Previous')),
-                    const SizedBox(width: 8),
-                    OutlinedButton(onPressed: null, child: const Text('Next')),
-                  ],
-                ),
-              ),
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
-
-class _TableHeader extends StatelessWidget {
-  const _TableHeader();
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final style = Theme.of(
-      context,
-    ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w500, color: cs.onSurfaceVariant);
-
-    return Container(
-      height: 40,
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+    return FormBuilder(
+      key: formKey,
       child: Row(
         children: [
-          const SizedBox(width: 28, child: Checkbox(value: false, onChanged: null)),
-          _HeadCell(flex: 2, text: S.of(context).active, style: style),
-          _HeadCell(flex: 3, text: S.of(context).role, style: style),
-          _HeadCell(flex: 3, text: S.of(context).login, style: style),
-          _HeadCell(flex: 3, text: S.of(context).first_name, style: style),
-          _HeadCell(flex: 3, text: S.of(context).last_name, style: style),
-          _HeadCell(flex: 4, text: S.of(context).email, style: style),
-          _HeadCell(flex: 4, text: 'Actions', style: style, alignment: TextAlign.right),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeadCell extends StatelessWidget {
-  const _HeadCell({required this.flex, required this.text, this.style, this.alignment = TextAlign.left});
-
-  final int flex;
-  final String text;
-  final TextStyle? style;
-  final TextAlign alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Text(text, textAlign: alignment, style: style, overflow: TextOverflow.ellipsis),
-      ),
-    );
-  }
-}
-
-class _TableBody extends StatelessWidget {
-  const _TableBody({required this.formKey});
-
-  final GlobalKey<FormBuilderState> formKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        if (state.status == UserStatus.searchSuccess && state.userList != null && state.userList!.isNotEmpty) {
-          return Column(
-            children: [
-              for (int i = 0; i < state.userList!.length; i++)
-                _TableRow(user: state.userList![i], isLast: i == state.userList!.length - 1, formKey: formKey),
-            ],
-          );
-        }
-        return const SizedBox.shrink();
-      },
-    );
-  }
-}
-
-class _TableRow extends StatefulWidget {
-  const _TableRow({required this.user, required this.isLast, required this.formKey});
-
-  final dynamic user;
-  final bool isLast;
-  final GlobalKey<FormBuilderState> formKey;
-
-  @override
-  State<_TableRow> createState() => _TableRowState();
-}
-
-class _TableRowState extends State<_TableRow> {
-  bool _hovered = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-    final cellStyle = tt.bodySmall?.copyWith(color: cs.onSurface);
-    final user = widget.user;
-
-    final isActive = user.activated == true;
-    final statusColor = isActive
-        ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
-        : cs.error;
-
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 100),
-        decoration: BoxDecoration(
-          color: _hovered ? cs.onSurface.withAlpha(13) : Colors.transparent,
-          border: widget.isLast ? null : Border(bottom: BorderSide(color: cs.outlineVariant)),
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: Row(
-          children: [
-            const SizedBox(width: 28, child: Checkbox(value: false, onChanged: null)),
-            _BodyCell(
-              flex: 2,
-              child: _StatusBadge(label: isActive ? 'Active' : 'Inactive', color: statusColor),
-            ),
-            _BodyCell(
-              flex: 3,
-              child: Text(
-                user.authorities!.contains('ROLE_ADMIN') ? S.of(context).admin : S.of(context).guest,
-                style: cellStyle,
+          const Expanded(child: SizedBox(height: 40, child: SearchNameField())),
+          const SizedBox(width: 8),
+          SizedBox(
+            height: 40,
+            child: OutlinedButton.icon(
+              onPressed: () => _handleSearch(context),
+              icon: const Icon(Icons.search, size: 16),
+              label: Text(S.of(context).list),
+              style: OutlinedButton.styleFrom(
+                minimumSize: const Size(86, 40),
+                maximumSize: const Size(120, 40),
               ),
             ),
-            _BodyCell(flex: 3, child: Text(user.login.toString(), style: cellStyle)),
-            _BodyCell(flex: 3, child: Text(user.firstName.toString(), style: cellStyle)),
-            _BodyCell(flex: 3, child: Text(user.lastName.toString(), style: cellStyle)),
-            _BodyCell(flex: 4, child: Text(user.email.toString(), style: cellStyle)),
-            _BodyCell(
-              flex: 4,
-              alignment: CrossAxisAlignment.end,
-              child: _RowActions(userId: user.login!, formKey: widget.formKey),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BodyCell extends StatelessWidget {
-  const _BodyCell({required this.flex, required this.child, this.alignment = CrossAxisAlignment.start});
-
-  final int flex;
-  final Widget child;
-  final CrossAxisAlignment alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: Align(
-          alignment: alignment == CrossAxisAlignment.end ? Alignment.centerRight : Alignment.centerLeft,
-          child: child,
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusBadge extends StatelessWidget {
-  const _StatusBadge({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(
-        color: color.withAlpha(25),
-        borderRadius: BorderRadius.circular(100),
-        border: Border.all(color: color.withAlpha(51), width: 0.5),
-      ),
-      child: Text(
-        label,
-        style: Theme.of(
-          context,
-        ).textTheme.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w500, fontSize: 11),
-      ),
-    );
-  }
-}
-
-class _RowActions extends StatelessWidget {
-  const _RowActions({required this.userId, required this.formKey});
-
-  final String userId;
-  final GlobalKey<FormBuilderState> formKey;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-
-    return SizedBox(
-      width: 120,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          _GhostIconButton(icon: Icons.edit, onPressed: () => _edit(context), color: cs.onSurface),
-          const SizedBox(width: 4),
-          _GhostIconButton(icon: Icons.visibility, onPressed: () => _view(context), color: cs.onSurface),
-          const SizedBox(width: 4),
-          _GhostIconButton(icon: Icons.delete, onPressed: () => _delete(context), color: cs.error),
-        ],
-      ),
-    );
-  }
-
-  void _edit(BuildContext context) => context.goNamed('userEdit', pathParameters: {'id': userId});
-  void _view(BuildContext context) => context.goNamed('userView', pathParameters: {'id': userId});
-
-  void _delete(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        title: Text(S.of(ctx).warning),
-        content: Text(S.of(ctx).delete_confirmation),
-        actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(S.of(ctx).no)),
-          FilledButton(
-            onPressed: () {
-              Navigator.pop(ctx);
-              context.read<UserBloc>().add(UserDeleteEvent(userId));
-              late final StreamSubscription<UserState> sub;
-              sub = context.read<UserBloc>().stream.listen((state) {
-                if (state.status == UserStatus.deleteSuccess && context.mounted) {
-                  _refresh(context);
-                  sub.cancel();
-                }
-              });
-            },
-            style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
-            child: Text(S.of(ctx).yes),
           ),
         ],
       ),
-    );
-  }
-
-  void _refresh(BuildContext context) {
-    context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
-  }
-}
-
-class _GhostIconButton extends StatelessWidget {
-  const _GhostIconButton({required this.icon, required this.onPressed, required this.color});
-
-  final IconData icon;
-  final VoidCallback onPressed;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 34,
-      height: 34,
-      child: IconButton(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 20, color: color),
-        padding: EdgeInsets.zero,
-        splashRadius: 17,
-        style: IconButton.styleFrom(
-          foregroundColor: color,
-          minimumSize: const Size(34, 34),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-        ),
-      ),
-    );
-  }
-}
-
-class UserActionButtons extends StatelessWidget {
-  const UserActionButtons({super.key, this.userId, this.username, required this.formKey});
-
-  final String? userId;
-  final String? username;
-  final GlobalKey<FormBuilderState> formKey;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: 3,
-      child: _RowActions(userId: userId ?? username ?? '', formKey: formKey),
-    );
-  }
-}
-
-class UserTableCell extends StatelessWidget {
-  const UserTableCell({
-    super.key,
-    required this.flex,
-    required this.text,
-    this.alignment = TextAlign.left,
-    this.textColor,
-  });
-
-  final int flex;
-  final String text;
-  final TextAlign alignment;
-  final Color? textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        text,
-        textAlign: alignment,
-        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-          color: textColor ?? Theme.of(context).colorScheme.onSurface,
-          fontWeight: textColor != null ? FontWeight.w600 : FontWeight.normal,
-        ),
-      ),
-    );
-  }
-}
-
-class TableColumnHeader extends StatelessWidget {
-  const TableColumnHeader({super.key, required this.flex, required this.title, this.alignment = TextAlign.left});
-
-  final int flex;
-  final String title;
-  final TextAlign alignment;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      flex: flex,
-      child: Text(
-        title,
-        textAlign: alignment,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          fontWeight: FontWeight.w500,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
-      ),
-    );
-  }
-}
-
-class UserTableHeader extends StatelessWidget {
-  const UserTableHeader({super.key});
-
-  @override
-  Widget build(BuildContext context) => const _TableHeader();
-}
-
-class UserTableContent extends StatelessWidget {
-  const UserTableContent({super.key, required this.formKey});
-
-  final GlobalKey<FormBuilderState> formKey;
-
-  @override
-  Widget build(BuildContext context) => _TableBody(formKey: formKey);
-}
-
-class UserTableRow extends StatelessWidget {
-  const UserTableRow({super.key, required this.user, required this.index, required this.formKey, required this.isLast});
-
-  final dynamic user;
-  final int index;
-  final GlobalKey<FormBuilderState> formKey;
-  final bool isLast;
-
-  @override
-  Widget build(BuildContext context) => _TableRow(user: user, isLast: isLast, formKey: formKey);
-}
-
-class _MobileUserList extends StatelessWidget {
-  const _MobileUserList({required this.formKey});
-
-  final GlobalKey<FormBuilderState> formKey;
-
-  @override
-  Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
-    final tt = Theme.of(context).textTheme;
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  S.of(context).list_user,
-                  style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600),
-                ),
-              ),
-              FilledButton.icon(
-                key: const Key('listUserCreateButtonKey'),
-                onPressed: () => context.goNamed(
-                  'userCreate',
-                  extra: {'fromRoute': ApplicationRoutesConstants.userList},
-                ),
-                icon: const Icon(Icons.add, size: 16),
-                label: Text(S.of(context).new_user),
-              ),
-            ],
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: FormBuilder(
-            key: formKey,
-            child: Row(
-              children: [
-                const Expanded(child: SizedBox(height: 40, child: SearchNameField())),
-                const SizedBox(width: 8),
-                SizedBox(
-                  height: 40,
-                  child: OutlinedButton.icon(
-                    onPressed: () => _handleSearch(context),
-                    icon: const Icon(Icons.search, size: 16),
-                    label: Text(S.of(context).list),
-                    style: OutlinedButton.styleFrom(
-                      minimumSize: const Size(86, 40),
-                      maximumSize: const Size(120, 40),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-        Expanded(
-          child: BlocBuilder<UserBloc, UserState>(
-            builder: (context, state) {
-              if (state.status == UserStatus.loading) {
-                return const Center(child: CircularProgressIndicator());
-              }
-              if (state.status == UserStatus.searchSuccess && state.userList != null && state.userList!.isNotEmpty) {
-                return Column(
-                  children: [
-                    Expanded(
-                      child: ListView.separated(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: state.userList!.length,
-                        separatorBuilder: (_, _) => const SizedBox(height: 8),
-                        itemBuilder: (context, index) {
-                          return _MobileUserCard(user: state.userList![index], formKey: formKey);
-                        },
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        '${state.userList!.length} row(s) listed.',
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                      ),
-                    ),
-                  ],
-                );
-              }
-              return Center(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.people_outline, size: 48, color: cs.onSurfaceVariant.withAlpha(102)),
-                    const SizedBox(height: 12),
-                    Text(S.of(context).list_user, style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-                  ],
-                ),
-              );
-            },
-          ),
-        ),
-      ],
     );
   }
 
@@ -828,11 +357,14 @@ class _MobileUserList extends StatelessWidget {
   }
 }
 
-class _MobileUserCard extends StatelessWidget {
-  const _MobileUserCard({required this.user, required this.formKey});
+// ---------------------------------------------------------------------------
+// Mobile user card
+// ---------------------------------------------------------------------------
 
-  final dynamic user;
-  final GlobalKey<FormBuilderState> formKey;
+class _MobileUserCard extends StatelessWidget {
+  const _MobileUserCard({required this.user});
+
+  final UserEntity user;
 
   @override
   Widget build(BuildContext context) {
@@ -874,14 +406,14 @@ class _MobileUserCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        fullName.isNotEmpty ? fullName : user.login?.toString() ?? '',
+                        fullName.isNotEmpty ? fullName : user.login ?? '',
                         style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500),
                         overflow: TextOverflow.ellipsis,
                       ),
                       if (user.email != null) ...[
                         const SizedBox(height: 2),
                         Text(
-                          user.email.toString(),
+                          user.email!,
                           style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -930,7 +462,7 @@ class _MobileUserCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                _StatusBadge(label: isActive ? 'Active' : 'Inactive', color: statusColor),
+                AppStatusBadge(label: isActive ? 'Active' : 'Inactive', color: statusColor),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -966,7 +498,7 @@ class _MobileUserCard extends StatelessWidget {
   }
 
   void _onAction(BuildContext context, String action) {
-    final login = user.login?.toString() ?? '';
+    final login = user.login ?? '';
     switch (action) {
       case 'view':
         context.goNamed('userView', pathParameters: {'id': login});
@@ -990,13 +522,6 @@ class _MobileUserCard extends StatelessWidget {
             onPressed: () {
               Navigator.pop(ctx);
               context.read<UserBloc>().add(UserDeleteEvent(userId));
-              late final StreamSubscription<UserState> sub;
-              sub = context.read<UserBloc>().stream.listen((state) {
-                if (state.status == UserStatus.deleteSuccess && context.mounted) {
-                  context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
-                  sub.cancel();
-                }
-              });
             },
             style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
             child: Text(S.of(ctx).yes),
@@ -1007,14 +532,90 @@ class _MobileUserCard extends StatelessWidget {
   }
 }
 
-class UserMobileListView extends StatelessWidget {
-  const UserMobileListView({super.key, required this.formKey});
+// ---------------------------------------------------------------------------
+// Desktop row actions
+// ---------------------------------------------------------------------------
 
-  final GlobalKey<FormBuilderState> formKey;
+class _DesktopRowActions extends StatelessWidget {
+  const _DesktopRowActions({required this.userId});
+
+  final String userId;
 
   @override
-  Widget build(BuildContext context) => _MobileUserList(formKey: formKey);
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return SizedBox(
+      width: 120,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          _GhostIconButton(icon: Icons.edit, onPressed: () => _edit(context), color: cs.onSurface),
+          const SizedBox(width: 4),
+          _GhostIconButton(icon: Icons.visibility, onPressed: () => _view(context), color: cs.onSurface),
+          const SizedBox(width: 4),
+          _GhostIconButton(icon: Icons.delete, onPressed: () => _delete(context), color: cs.error),
+        ],
+      ),
+    );
+  }
+
+  void _edit(BuildContext context) => context.goNamed('userEdit', pathParameters: {'id': userId});
+  void _view(BuildContext context) => context.goNamed('userView', pathParameters: {'id': userId});
+
+  void _delete(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(S.of(ctx).warning),
+        content: Text(S.of(ctx).delete_confirmation),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(S.of(ctx).no)),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<UserBloc>().add(UserDeleteEvent(userId));
+            },
+            style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
+            child: Text(S.of(ctx).yes),
+          ),
+        ],
+      ),
+    );
+  }
 }
+
+class _GhostIconButton extends StatelessWidget {
+  const _GhostIconButton({required this.icon, required this.onPressed, required this.color});
+
+  final IconData icon;
+  final VoidCallback onPressed;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 34,
+      height: 34,
+      child: IconButton(
+        onPressed: onPressed,
+        icon: Icon(icon, size: 20, color: color),
+        padding: EdgeInsets.zero,
+        splashRadius: 17,
+        style: IconButton.styleFrom(
+          foregroundColor: color,
+          minimumSize: const Size(34, 34),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Entry point
+// ---------------------------------------------------------------------------
 
 class UserListPage extends StatelessWidget {
   const UserListPage({super.key});

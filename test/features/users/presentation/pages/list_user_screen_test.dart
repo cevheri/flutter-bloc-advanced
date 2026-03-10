@@ -237,13 +237,12 @@ void main() {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
       expect(find.byType(SingleChildScrollView), findsOneWidget);
-      expect(find.byType(UserMobileListView), findsNothing);
 
-      // Test small screen - shows mobile card-based list
+      // Test small screen - shows mobile card-based list (no SingleChildScrollView)
       tester.view.physicalSize = const Size(600, 800);
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
-      expect(find.byType(UserMobileListView), findsOneWidget);
+      expect(find.byType(SingleChildScrollView), findsNothing);
 
       // Clean up
       await userStateController.close();

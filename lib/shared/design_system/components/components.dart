@@ -14,5 +14,6 @@ export 'app_loading_overlay.dart';
 export 'app_responsive_builder.dart';
 export 'app_sheet.dart';
 export 'app_skeleton.dart';
+export 'app_status_badge.dart';
 export 'app_page_transition.dart';
 export 'app_toast.dart';
