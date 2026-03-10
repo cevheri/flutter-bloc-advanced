@@ -1,8 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
@@ -24,7 +23,7 @@ void main() {
   late GoRouter router;
 
   // Test user data
-  const testUser = User(firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com');
+  const testUser = UserEntity(firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com');
 
   setUp(() {
     mockRegisterBloc = MockRegisterBloc();

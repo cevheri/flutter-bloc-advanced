@@ -11,6 +11,7 @@ import 'package:flutter_bloc_advance/features/users/presentation/widgets/authori
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,9 +56,17 @@ void main() {
     final router = GoRouter(
       initialLocation: id != null ? '/user/$id/${mode.name}' : '/user/new',
       routes: [
-        ShellRoute(
-          builder: (context, state, child) => Scaffold(body: child),
-          routes: UsersFeatureRoutes.routes,
+        GoRoute(
+          path: '/user/new',
+          builder: (context, state) => const Scaffold(body: UserEditorPage(mode: EditorFormMode.create)),
+        ),
+        GoRoute(
+          path: '/user/:id/edit',
+          builder: (context, state) => Scaffold(body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.edit)),
+        ),
+        GoRoute(
+          path: '/user/:id/view',
+          builder: (context, state) => Scaffold(body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.view)),
         ),
       ],
     );

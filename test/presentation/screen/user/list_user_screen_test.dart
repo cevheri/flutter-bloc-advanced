@@ -52,17 +52,28 @@ void main() {
   });
 
   Widget buildTestableWidget() {
-    final routes = UsersFeatureRoutes.routes.map((route) {
-      return GoRoute(
-        name: route.name,
-        path: route.path,
-        pageBuilder: (context, state) {
-          final original = route.pageBuilder!(context, state);
-          final child = (original as CustomTransitionPage).child;
-          return MaterialPage(child: Scaffold(body: child));
-        },
-      );
-    }).toList();
+    final routes = [
+      GoRoute(
+        name: 'userList',
+        path: '/user',
+        builder: (context, state) => const Scaffold(body: UserListPage()),
+      ),
+      GoRoute(
+        name: 'userCreate',
+        path: '/user/new',
+        builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
+      ),
+      GoRoute(
+        name: 'userEdit',
+        path: '/user/:id/edit',
+        builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
+      ),
+      GoRoute(
+        name: 'userView',
+        path: '/user/:id/view',
+        builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
+      ),
+    ];
 
     final router = GoRouter(initialLocation: '/user', routes: routes);
 

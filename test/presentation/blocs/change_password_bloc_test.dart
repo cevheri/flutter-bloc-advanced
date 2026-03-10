@@ -10,7 +10,7 @@ import 'package:mockito/mockito.dart';
 
 import '../../fake/user_data.dart';
 import '../../test_utils.dart';
-import 'account_bloc_test.mocks.dart';
+import 'change_password_bloc_test.mocks.dart';
 
 /// BLoc Test for UserBloc
 ///

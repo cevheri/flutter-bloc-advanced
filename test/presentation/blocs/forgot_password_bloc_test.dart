@@ -146,7 +146,7 @@ void main() {
     );
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
       'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when invalid-email then resetPassword fails',
-      setUp: () => when(repository.resetPassword(email)).thenThrow(BadRequestException()),
+      setUp: () => when(repository.resetPassword('invalid-email')).thenThrow(BadRequestException()),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: 'invalid-email')),
       expect: () => [
