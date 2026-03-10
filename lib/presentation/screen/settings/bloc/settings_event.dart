@@ -19,7 +19,7 @@ class ChangeLanguage extends SettingsEvent {
 }
 
 class ChangeTheme extends SettingsEvent {
-  final AdaptiveThemeMode theme;
+  final ThemeMode theme;
 
   const ChangeTheme({required this.theme});
 

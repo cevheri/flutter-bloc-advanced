@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/configuration/padding_spacing.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/tokens/app_spacing.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 class ResponsiveFormBuilder extends StatelessWidget {
@@ -34,11 +34,11 @@ class ResponsiveFormBuilder extends StatelessWidget {
       child: SingleChildScrollView(
         child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: Spacing.formMaxWidthLarge),
+            constraints: const BoxConstraints(maxWidth: AppSpacing.formMaxWidthLg),
             child: Padding(
-              padding: const EdgeInsets.all(Spacing.medium),
+              padding: const EdgeInsets.all(AppSpacing.lg),
               child: Column(
-                spacing: Spacing.medium,
+                spacing: AppSpacing.lg,
                 mainAxisAlignment: mainAxisAlignment,
                 crossAxisAlignment: crossAxisAlignment,
                 children: children,

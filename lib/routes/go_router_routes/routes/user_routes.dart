@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
 import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_page_transition.dart';
 import 'package:flutter_bloc_advance/presentation/screen/components/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/editor/user_editor_screen.dart';
 import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
@@ -50,25 +51,35 @@ class UserRoutes {
     GoRoute(
       name: 'userList',
       path: '/user',
-      builder: (BuildContext context, GoRouterState state) => _blocProvider(ListUserScreen()),
+      pageBuilder: (context, state) =>
+          appTransitionPage(state: state, type: AppPageTransitionType.fade, child: _blocProvider(ListUserScreen())),
     ),
     GoRoute(
       name: 'userCreate',
       path: '/user/new',
-      builder: (BuildContext context, GoRouterState state) =>
-          _blocProvider(const UserEditorScreen(mode: EditorFormMode.create)),
+      pageBuilder: (context, state) => appTransitionPage(
+        state: state,
+        type: AppPageTransitionType.slideRight,
+        child: _blocProvider(const UserEditorScreen(mode: EditorFormMode.create)),
+      ),
     ),
     GoRoute(
       name: 'userEdit',
       path: '/user/:id/edit',
-      builder: (BuildContext context, GoRouterState state) =>
-          _blocProvider(UserEditorScreen(id: state.pathParameters['id']!, mode: EditorFormMode.edit)),
+      pageBuilder: (context, state) => appTransitionPage(
+        state: state,
+        type: AppPageTransitionType.slideRight,
+        child: _blocProvider(UserEditorScreen(id: state.pathParameters['id']!, mode: EditorFormMode.edit)),
+      ),
     ),
     GoRoute(
       name: 'userView',
       path: '/user/:id/view',
-      builder: (BuildContext context, GoRouterState state) =>
-          _blocProvider(UserEditorScreen(id: state.pathParameters['id']!, mode: EditorFormMode.view)),
+      pageBuilder: (context, state) => appTransitionPage(
+        state: state,
+        type: AppPageTransitionType.slideRight,
+        child: _blocProvider(UserEditorScreen(id: state.pathParameters['id']!, mode: EditorFormMode.view)),
+      ),
     ),
   ];
 }

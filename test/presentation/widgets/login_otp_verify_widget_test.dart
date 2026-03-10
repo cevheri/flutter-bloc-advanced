@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:adaptive_theme/adaptive_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/configuration/local_storage.dart';
@@ -65,25 +64,21 @@ void main() {
       ],
     );
 
-    testWidget = AdaptiveTheme(
-      light: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
-      dark: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
-      initial: AdaptiveThemeMode.light,
-      builder: (light, dark) => MultiBlocProvider(
-        providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],
-        child: MaterialApp.router(
-          theme: light,
-          darkTheme: dark,
-          localizationsDelegates: const [
-            S.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: S.delegate.supportedLocales,
-          locale: const Locale('en'),
-          routerConfig: mockGoRouter,
-        ),
+    testWidget = MultiBlocProvider(
+      providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],
+      child: MaterialApp.router(
+        theme: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
+        darkTheme: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
+        themeMode: ThemeMode.light,
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        locale: const Locale('en'),
+        routerConfig: mockGoRouter,
       ),
     );
   });

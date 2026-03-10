@@ -1,320 +1,510 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/data/models/dashboard_model.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_card.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_error_state.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_responsive_builder.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/components/app_skeleton.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/theme/semantic_colors.dart';
+import 'package:flutter_bloc_advance/presentation/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/utils/icon_utils.dart';
+
 import '../../../generated/l10n.dart';
-
 import 'bloc/dashboard_cubit.dart';
-import '../../../data/models/dashboard_model.dart';
 
-/// DashboardPage body widget
-///
-/// This widget will be used as the body of `HomeScreen` in local/dev runs.
-/// It does not contain an AppBar or Drawer; those are provided by `HomeScreen`.
+/// DashboardPage body widget - displays KPIs, charts, activity, and quick actions.
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final isWide = constraints.maxWidth >= 900;
-        return SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const _DashboardHeader(),
-              const SizedBox(height: 16),
-              _SummaryCardsRow(isWide: isWide),
-              const SizedBox(height: 16),
-              const _KpiPlaceholder(),
-              const SizedBox(height: 16),
-              _TwoColumns(left: const _RecentActivityList(), right: const _QuickActionsGrid(), isWide: isWide),
-            ],
-          ),
-        );
+    return BlocBuilder<DashboardCubit, DashboardState>(
+      builder: (context, state) {
+        switch (state.status) {
+          case DashboardStatus.initial:
+          case DashboardStatus.loading:
+            return const _DashboardSkeleton();
+          case DashboardStatus.error:
+            return AppErrorState(
+              title: S.of(context).failed,
+              description: state.message,
+              onRetry: () => context.read<DashboardCubit>().load(),
+            );
+          case DashboardStatus.loaded:
+            return _DashboardContent(model: state.model!);
+        }
       },
     );
   }
 }
 
-class _DashboardHeader extends StatelessWidget {
-  const _DashboardHeader();
+/// Main dashboard content when data is loaded.
+class _DashboardContent extends StatelessWidget {
+  final DashboardModel model;
+  const _DashboardContent({required this.model});
+
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: color.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.outlineVariant),
-      ),
-      child: Row(
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Icon(Icons.dashboard_outlined, color: color.primary),
-          const SizedBox(width: 12),
-          Text(S.of(context).dashboard, style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
-          const Spacer(),
-          IconButton(tooltip: S.of(context).refresh, icon: const Icon(Icons.refresh), onPressed: () {}),
+          _DashboardHeader(onRefresh: () => context.read<DashboardCubit>().load()),
+          const SizedBox(height: AppSpacing.xl),
+          _SummaryCards(summaries: model.summary),
+          const SizedBox(height: AppSpacing.xl),
+          _ChartSection(summaries: model.summary),
+          const SizedBox(height: AppSpacing.xl),
+          AppResponsiveBuilder(
+            mobile: (_, _) => Column(
+              children: [
+                _RecentActivitySection(activities: model.activities),
+                const SizedBox(height: AppSpacing.xl),
+                _QuickActionsSection(actions: model.quickActions),
+              ],
+            ),
+            tablet: (_, _) => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: _RecentActivitySection(activities: model.activities)),
+                const SizedBox(width: AppSpacing.xl),
+                Expanded(child: _QuickActionsSection(actions: model.quickActions)),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 }
 
-class _SummaryCardsRow extends StatelessWidget {
-  final bool isWide;
-  const _SummaryCardsRow({required this.isWide});
+/// Header with title and refresh button.
+class _DashboardHeader extends StatelessWidget {
+  final VoidCallback onRefresh;
+  const _DashboardHeader({required this.onRefresh});
 
   @override
   Widget build(BuildContext context) {
-    final s = S.of(context);
-    final children = [
-      _SummaryCard(label: s.leads, value: '120', trend: 8),
-      _SummaryCard(label: s.customers, value: '54', trend: -2),
-      _SummaryCard(label: s.revenue, value: '12.500', trend: 12),
-    ];
-    if (isWide) {
-      return Row(
-        children: [
-          for (final child in children) ...[Expanded(child: child), const SizedBox(width: 12)],
-        ]..removeLast(),
-      );
-    }
-    return Column(
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    return Row(
       children: [
-        for (final child in children) ...[child, const SizedBox(height: 12)],
+        Icon(Icons.dashboard_outlined, color: colorScheme.primary, size: 28),
+        const SizedBox(width: AppSpacing.md),
+        Text(S.of(context).dashboard, style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+        const Spacer(),
+        IconButton(tooltip: S.of(context).refresh, icon: const Icon(Icons.refresh), onPressed: onRefresh),
       ],
     );
   }
 }
 
-class _SummaryCard extends StatelessWidget {
-  final String label;
-  final String value;
-  final int trend;
-  const _SummaryCard({required this.label, required this.value, required this.trend});
+/// Summary stat cards displayed in an adaptive grid.
+class _SummaryCards extends StatelessWidget {
+  final List<DashboardSummary> summaries;
+  const _SummaryCards({required this.summaries});
 
   @override
   Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
+    return AppAdaptiveGrid(
+      mobileColumns: 1,
+      tabletColumns: 2,
+      desktopColumns: summaries.length.clamp(1, 4),
+      spacing: AppSpacing.lg,
+      runSpacing: AppSpacing.lg,
+      children: summaries.map((s) => _StatCard(summary: s)).toList(),
+    );
+  }
+}
+
+/// Individual stat card showing label, value, and trend.
+class _StatCard extends StatelessWidget {
+  final DashboardSummary summary;
+  const _StatCard({required this.summary});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final isUp = trend >= 0;
-    final icon = isUp ? Icons.trending_up : Icons.trending_down;
-    final trendColor = isUp ? Colors.green : Colors.red;
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: color.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.outlineVariant),
+    final semantic = context.semanticColors;
+    final isUp = summary.trend >= 0;
+    final trendColor = isUp ? semantic.success : colorScheme.error;
+    final trendIcon = isUp ? Icons.trending_up : Icons.trending_down;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: colorScheme.primary.withAlpha(25),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(_iconForLabel(summary.label), color: colorScheme.primary, size: 20),
+              ),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
+                decoration: BoxDecoration(color: trendColor.withAlpha(20), borderRadius: BorderRadius.circular(20)),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(trendIcon, color: trendColor, size: 14),
+                    const SizedBox(width: 2),
+                    Text(
+                      '${summary.trend.abs()}%',
+                      style: textTheme.labelSmall?.copyWith(color: trendColor, fontWeight: FontWeight.w600),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          Text(_formatValue(summary.value), style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
+          const SizedBox(height: AppSpacing.xs),
+          Text(summary.label, style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+        ],
       ),
+    );
+  }
+
+  IconData _iconForLabel(String label) {
+    final lower = label.toLowerCase();
+    if (lower.contains('lead')) return Icons.people_outline;
+    if (lower.contains('customer')) return Icons.business;
+    if (lower.contains('revenue')) return Icons.attach_money;
+    return Icons.analytics_outlined;
+  }
+
+  String _formatValue(num value) {
+    if (value >= 1000) {
+      final formatted = (value / 1000).toStringAsFixed(1);
+      return '${formatted}K';
+    }
+    return value.toString();
+  }
+}
+
+/// Chart section with a bar chart of summary values.
+class _ChartSection extends StatelessWidget {
+  final List<DashboardSummary> summaries;
+  const _ChartSection({required this.summaries});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            S.of(context).chart_kpi_placeholder,
+            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          SizedBox(
+            height: 200,
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: _maxY,
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${summaries[groupIndex].label}\n${summaries[groupIndex].value}',
+                        textTheme.bodySmall!.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w600),
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        final idx = value.toInt();
+                        if (idx >= 0 && idx < summaries.length) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: AppSpacing.sm),
+                            child: Text(
+                              summaries[idx].label,
+                              style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                borderData: FlBorderData(show: false),
+                gridData: const FlGridData(show: false),
+                barGroups: summaries.asMap().entries.map((e) {
+                  return BarChartGroupData(
+                    x: e.key,
+                    barRods: [
+                      BarChartRodData(
+                        toY: e.value.value.toDouble(),
+                        color: _barColor(e.key, colorScheme),
+                        width: 32,
+                        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  double get _maxY {
+    if (summaries.isEmpty) return 100;
+    final max = summaries.map((s) => s.value.toDouble()).reduce((a, b) => a > b ? a : b);
+    return max * 1.2;
+  }
+
+  Color _barColor(int index, ColorScheme cs) {
+    final colors = [cs.primary, cs.secondary, cs.tertiary];
+    return colors[index % colors.length];
+  }
+}
+
+/// Recent activity list.
+class _RecentActivitySection extends StatelessWidget {
+  final List<DashboardActivity> activities;
+  const _RecentActivitySection({required this.activities});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.history, size: 20, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppSpacing.sm),
+              Text(S.of(context).recent_activity, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          if (activities.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              child: Center(
+                child: Text(
+                  S.of(context).subtitle_context,
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+              ),
+            )
+          else
+            ...activities.map((a) => _ActivityItem(activity: a)),
+        ],
+      ),
+    );
+  }
+}
+
+class _ActivityItem extends StatelessWidget {
+  final DashboardActivity activity;
+  const _ActivityItem({required this.activity});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         children: [
-          CircleAvatar(
-            backgroundColor: color.primary.withValues(alpha: 0.12),
-            child: Icon(icon, color: color.primary),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: _typeColor(colorScheme).withAlpha(25),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(_typeIcon, color: _typeColor(colorScheme), size: 18),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: textTheme.labelLarge),
-                const SizedBox(height: 4),
-                Text(value, style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+                Text(activity.title, style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+                Text(activity.subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
               ],
             ),
           ),
+          Text(_formatTime(activity.time), style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+        ],
+      ),
+    );
+  }
+
+  IconData get _typeIcon {
+    switch (activity.type) {
+      case 'lead':
+        return Icons.person_add_outlined;
+      case 'sale':
+        return Icons.handshake_outlined;
+      default:
+        return Icons.circle_outlined;
+    }
+  }
+
+  Color _typeColor(ColorScheme cs) {
+    switch (activity.type) {
+      case 'lead':
+        return cs.primary;
+      case 'sale':
+        return cs.tertiary;
+      default:
+        return cs.secondary;
+    }
+  }
+
+  String _formatTime(DateTime time) {
+    final diff = DateTime.now().difference(time);
+    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+    if (diff.inHours < 24) return '${diff.inHours}h ago';
+    if (diff.inDays < 7) return '${diff.inDays}d ago';
+    return '${time.day}/${time.month}';
+  }
+}
+
+/// Quick actions grid.
+class _QuickActionsSection extends StatelessWidget {
+  final List<DashboardQuickAction> actions;
+  const _QuickActionsSection({required this.actions});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Row(
             children: [
-              Icon(icon, color: trendColor, size: 16),
-              const SizedBox(width: 4),
-              Text('${trend.abs()}%', style: textTheme.labelMedium?.copyWith(color: trendColor)),
+              Icon(Icons.bolt, size: 20, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppSpacing.sm),
+              Text(S.of(context).quick_actions, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
             ],
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _KpiPlaceholder extends StatelessWidget {
-  const _KpiPlaceholder();
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
-    return Container(
-      height: 140,
-      decoration: BoxDecoration(
-        color: color.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.outlineVariant),
-      ),
-      child: Center(child: Text(S.of(context).chart_kpi_placeholder)),
-    );
-  }
-}
-
-class _TwoColumns extends StatelessWidget {
-  final Widget left;
-  final Widget right;
-  final bool isWide;
-  const _TwoColumns({required this.left, required this.right, required this.isWide});
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isWide) {
-      return Column(children: [left, const SizedBox(height: 16), right]);
-    }
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: left),
-        const SizedBox(width: 16),
-        Expanded(child: right),
-      ],
-    );
-  }
-}
-
-class _RecentActivityList extends StatelessWidget {
-  const _RecentActivityList();
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(S.of(context).recent_activity, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 8),
-          ...List.generate(4, (i) => _ActivityTile(index: i)),
-        ],
-      ),
-    );
-  }
-}
-
-class _ActivityTile extends StatelessWidget {
-  final int index;
-  const _ActivityTile({required this.index});
-
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
-    return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      leading: CircleAvatar(backgroundColor: color.secondaryContainer, child: Text('${index + 1}')),
-      title: Text(S.of(context).sample_activity_item),
-      subtitle: Text(S.of(context).subtitle_context),
-      trailing: Text(S.of(context).just_now),
-    );
-  }
-}
-
-class _QuickActionsGrid extends StatelessWidget {
-  const _QuickActionsGrid();
-  @override
-  Widget build(BuildContext context) {
-    final color = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-    final state = context.watch<DashboardCubit>().state;
-    final s = S.of(context);
-
-    final List<DashboardQuickAction> actions = state.status == DashboardStatus.loaded
-        ? state.model!.quickActions
-        : [
-            DashboardQuickAction(id: 'qa1', label: s.new_lead, icon: 'person_add'),
-            DashboardQuickAction(id: 'qa2', label: s.add_task, icon: 'task'),
-            DashboardQuickAction(id: 'qa3', label: s.new_deal, icon: 'wallet'),
-            DashboardQuickAction(id: 'qa4', label: s.send_email_action, icon: 'email'),
-          ];
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.outlineVariant),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(S.of(context).quick_actions, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-          const SizedBox(height: 12),
-          Wrap(spacing: 8, runSpacing: 8, children: actions.take(6).map((a) => _ActionButton(action: a)).toList()),
-          if (actions.length > 6) ...[
-            const SizedBox(height: 8),
-            Align(
-              alignment: Alignment.centerRight,
-              child: TextButton.icon(
-                onPressed: () => _showAllActions(context, actions),
-                icon: const Icon(Icons.more_horiz),
-                label: Text(S.of(context).more),
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  void _showAllActions(BuildContext context, List<DashboardQuickAction> actions) {
-    showModalBottomSheet(
-      context: context,
-      showDragHandle: true,
-      builder: (ctx) {
-        return SafeArea(
-          child: ListView.separated(
-            itemCount: actions.length,
-            separatorBuilder: (_, _) => const Divider(height: 1),
-            itemBuilder: (_, i) {
-              final a = actions[i];
-              return ListTile(
-                leading: Icon(getIconFromString(a.icon)),
-                title: Text(a.label),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(ctx).pop();
-                  _onActionTap(context, a);
-                },
-              );
-            },
+          const SizedBox(height: AppSpacing.lg),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: actions.map((a) => _QuickActionChip(action: a)).toList(),
           ),
-        );
-      },
+        ],
+      ),
     );
-  }
-
-  void _onActionTap(BuildContext context, DashboardQuickAction action) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
   }
 }
 
-class _ActionButton extends StatelessWidget {
+class _QuickActionChip extends StatelessWidget {
   final DashboardQuickAction action;
-  const _ActionButton({required this.action});
+  const _QuickActionChip({required this.action});
 
   @override
   Widget build(BuildContext context) {
     return FilledButton.tonalIcon(
-      onPressed: () => _onTap(context),
-      icon: Icon(getIconFromString(action.icon)),
+      onPressed: () {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
+      },
+      icon: Icon(getIconFromString(action.icon), size: 18),
       label: Text(action.label),
     );
   }
+}
 
-  void _onTap(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
+/// Skeleton loading state for the dashboard.
+class _DashboardSkeleton extends StatelessWidget {
+  const _DashboardSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Header skeleton
+          Row(
+            children: [
+              const AppSkeleton(width: 28, height: 28, shape: AppSkeletonShape.circle),
+              const SizedBox(width: AppSpacing.md),
+              const AppSkeleton.text(width: 160, height: 24),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          // Stat cards skeleton
+          AppAdaptiveGrid(
+            mobileColumns: 1,
+            tabletColumns: 2,
+            desktopColumns: 3,
+            spacing: AppSpacing.lg,
+            runSpacing: AppSpacing.lg,
+            children: List.generate(3, (_) => const AppSkeleton.card(height: 140)),
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          // Chart skeleton
+          const AppSkeleton.card(height: 260),
+          const SizedBox(height: AppSpacing.xl),
+          // Bottom sections skeleton
+          AppResponsiveBuilder(
+            mobile: (_, _) => Column(
+              children: [
+                const AppSkeleton.card(height: 200),
+                const SizedBox(height: AppSpacing.xl),
+                const AppSkeleton.card(height: 160),
+              ],
+            ),
+            tablet: (_, _) => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Expanded(child: AppSkeleton.card(height: 200)),
+                const SizedBox(width: AppSpacing.xl),
+                const Expanded(child: AppSkeleton.card(height: 160)),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

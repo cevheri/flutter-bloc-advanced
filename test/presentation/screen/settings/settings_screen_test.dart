@@ -1,33 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
-import 'package:flutter_bloc_advance/configuration/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
 import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/routes/settings_routes.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 
 import '../../../test_utils.dart';
-import 'settings_screen_test.mocks.dart';
 
-@GenerateMocks([DrawerBloc, AppLocalStorage])
 void main() {
-  late DrawerBloc mockDrawerBloc;
   late TestUtils testUtils;
 
   setUp(() async {
     testUtils = TestUtils();
     await testUtils.setupUnitTest();
-
-    mockDrawerBloc = MockDrawerBloc();
-
-    when(mockDrawerBloc.stream).thenAnswer((_) => Stream.fromIterable([]));
-    when(mockDrawerBloc.state).thenReturn(const DrawerState());
   });
 
   tearDown(() async {
@@ -35,7 +22,19 @@ void main() {
   });
 
   Widget buildTestableWidget() {
-    final router = GoRouter(initialLocation: ApplicationRoutesConstants.settings, routes: SettingsRoutes.routes);
+    final router = GoRouter(
+      initialLocation: ApplicationRoutesConstants.settings,
+      routes: [
+        GoRoute(
+          path: ApplicationRoutesConstants.settings,
+          builder: (context, state) => const Scaffold(body: SettingsScreen()),
+        ),
+        GoRoute(
+          path: ApplicationRoutesConstants.changePassword,
+          builder: (context, state) => const Scaffold(body: Placeholder()),
+        ),
+      ],
+    );
 
     return MaterialApp.router(
       routerConfig: router,
@@ -56,7 +55,6 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(settingsChangePasswordButtonKey), findsOneWidget);
-      // Language selection removed from settings (moved to drawer)
       expect(find.byKey(settingsLogoutButtonKey), findsOneWidget);
     });
 

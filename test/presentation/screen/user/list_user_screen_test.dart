@@ -59,7 +59,19 @@ void main() {
       authorityRepository: mockAuthorityRepository,
     );
 
-    final router = GoRouter(initialLocation: '/user', routes: UserRoutes.routes);
+    final routes = UserRoutes.routes.map((route) {
+      return GoRoute(
+        name: route.name,
+        path: route.path,
+        pageBuilder: (context, state) {
+          final original = route.pageBuilder!(context, state);
+          final child = (original as CustomTransitionPage).child;
+          return MaterialPage(child: Scaffold(body: child));
+        },
+      );
+    }).toList();
+
+    final router = GoRouter(initialLocation: '/user', routes: routes);
 
     return MultiBlocProvider(
       providers: [
@@ -82,6 +94,10 @@ void main() {
   group('ListUserScreen Tests', () {
     testWidgets('renders ListUserScreen correctly', (tester) async {
       // ARRANGE
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       final userStateController = StreamController<UserState>.broadcast();
       when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
       when(mockUserBloc.state).thenReturn(const UserState());
@@ -90,11 +106,11 @@ void main() {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
-      // ASSERT
+      // ASSERT - desktop view: search fields + buttons
       expect(find.byType(FormBuilderTextField), findsNWidgets(3));
-      expect(find.byType(OutlinedButton), findsNWidgets(2));
+      expect(find.byKey(const Key('listUserSubmitButtonKey')), findsOneWidget);
+      expect(find.byType(FilledButton), findsOneWidget);
       expect(find.text(S.current.list), findsOneWidget);
-      expect(find.text(S.current.list_user), findsOneWidget);
 
       // Check table headers
       expect(find.text(S.current.role), findsOneWidget);
@@ -110,6 +126,10 @@ void main() {
 
     testWidgets('displays user list when search is successful', (tester) async {
       // ARRANGE
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       final userStateController = StreamController<UserState>.broadcast();
       when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
       when(mockUserBloc.state).thenReturn(const UserState());
@@ -142,9 +162,7 @@ void main() {
       // ASSERT
       expect(find.text('admin@example.com'), findsOneWidget);
       expect(find.text('User'), findsOneWidget);
-      expect(find.text('Active'), findsNWidgets(2)); // header + data row
-
-      //expect(find.byWidgetPredicate((widget) => widget is Text && widget.data == 'Admin' && widget.textAlign == TextAlign.left), findsOneWidget);
+      expect(find.text('Active'), findsNWidgets(2)); // header + data badge
 
       // Clean up
       await userStateController.close();
@@ -152,6 +170,10 @@ void main() {
 
     testWidgets('handles search button tap', (tester) async {
       // ARRANGE
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       final userStateController = StreamController<UserState>.broadcast();
       when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
       when(mockUserBloc.state).thenReturn(const UserState());
@@ -177,6 +199,10 @@ void main() {
 
     testWidgets('handles create button tap', (tester) async {
       // ARRANGE
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
       final userStateController = StreamController<UserState>.broadcast();
       when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
       when(mockUserBloc.state).thenReturn(const UserState());
@@ -211,13 +237,13 @@ void main() {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
       expect(find.byType(SingleChildScrollView), findsOneWidget);
-      expect(find.text(S.current.screen_size_error), findsNothing);
+      expect(find.byType(UserMobileListView), findsNothing);
 
-      // Test small screen
+      // Test small screen - shows mobile card-based list
       tester.view.physicalSize = const Size(600, 800);
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
-      expect(find.text(S.current.screen_size_error), findsOneWidget);
+      expect(find.byType(UserMobileListView), findsOneWidget);
 
       // Clean up
       await userStateController.close();

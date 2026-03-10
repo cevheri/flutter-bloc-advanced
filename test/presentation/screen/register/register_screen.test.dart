@@ -11,7 +11,6 @@ import 'package:flutter_bloc_advance/presentation/screen/register/register_scree
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -38,7 +37,6 @@ void main() {
 
   setUp(() {
     mockRegisterBloc = MockRegisterBloc();
-    Get.testMode = true;
     mockAccountBloc = MockAccountBloc();
 
     when(mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
@@ -52,8 +50,8 @@ void main() {
   //   BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
   //   BlocProvider<RegisterBloc>(create: (_) => RegisterBloc(repository: AccountRepository())),
   // ];
-  // GetMaterialApp getWidget() {
-  //   return GetMaterialApp(
+  // MaterialApp getWidget() {
+  //   return MaterialApp(
   //     home: MultiBlocProvider(
   //       providers: blocs,
   //       child: RegisterScreen(),
@@ -74,8 +72,8 @@ void main() {
     GlobalCupertinoLocalizations.delegate,
   ];
 
-  GetMaterialApp getWidget() {
-    return GetMaterialApp(
+  MaterialApp getWidget() {
+    return MaterialApp(
       localizationsDelegates: locales,
       supportedLocales: S.delegate.supportedLocales,
       home: MultiBlocProvider(
@@ -311,7 +309,7 @@ void main() {
   testWidgets('Register form validation and submission test', (WidgetTester tester) async {
     //await TestUtils().setupAuthentication();
     await tester.pumpWidget(
-      GetMaterialApp(
+      MaterialApp(
         home: MultiBlocProvider(
           providers: [
             BlocProvider<RegisterBloc>.value(value: mockRegisterBloc),

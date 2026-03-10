@@ -8,7 +8,7 @@ import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
 import 'package:flutter_bloc_advance/data/repository/login_repository.dart';
 import 'package:flutter_bloc_advance/presentation/screen/login/bloc/login.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get_connect/http/src/exceptions/exceptions.dart';
+import 'package:flutter_bloc_advance/data/app_api_exception.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
 
@@ -133,7 +133,7 @@ void main() {
 
       final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
       final successState = LoginLoadedState(username: input.username!, password: input.password!);
-      const failureState = LoginErrorState(message: "Login API Error: Operation Unauthorized");
+      const failureState = LoginErrorState(message: "Login API Error: Unauthorized: null");
       const failure2State = LoginErrorState(message: "Login API Error: Invalid Request: Invalid Access Token");
 
       final statesSuccess = [loadingState, successState];
@@ -142,7 +142,10 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, success] when login is successful",
-        setUp: () => when(repositoryMethod()).thenAnswer((_) async => output),
+        setUp: () {
+          reset(repository);
+          when(repositoryMethod()).thenAnswer((_) async => output);
+        },
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
@@ -151,7 +154,10 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid operation input failed",
-        setUp: () => when(repositoryMethod()).thenThrow(UnauthorizedException()),
+        setUp: () {
+          reset(repository);
+          when(repositoryMethod()).thenThrow(UnauthorizedException());
+        },
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
@@ -160,7 +166,10 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid input then failed",
-        setUp: () => when(repositoryMethod()).thenAnswer((_) async => const JWTToken(idToken: null)),
+        setUp: () {
+          reset(repository);
+          when(repositoryMethod()).thenAnswer((_) async => const JWTToken(idToken: null));
+        },
         build: () => LoginBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => states2Failure,
@@ -182,7 +191,7 @@ void main() {
 
       final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
       final successState = LoginLoadedState(username: input.username!, password: input.password!);
-      const failureState = LoginErrorState(message: "Login API Error: Operation Unauthorized");
+      const failureState = LoginErrorState(message: "Login API Error: Unauthorized: null");
 
       blocTest<LoginBloc, LoginState>(
         'given valid credentials when submitted then emits [loading, success]',

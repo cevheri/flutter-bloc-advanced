@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'app_theme_palette.dart';
 
-/// Theme colors for different palettes
+/// Theme colors for different palettes — shadcn/ui inspired neutral aesthetics.
 class ThemeColors {
   ThemeColors._();
 
@@ -17,203 +17,203 @@ class ThemeColors {
     }
   }
 
-  /// Classic theme - Blue Grey palette
+  /// Classic "Zinc" — neutral grey, near-black primary
   static ColorScheme _getClassicColorScheme(Brightness brightness) {
     if (brightness == Brightness.light) {
       return const ColorScheme.light(
-        primary: Color(0xFF546E7A), // Blue Grey 600
+        primary: Color(0xFF18181B), // Zinc 900
         onPrimary: Color(0xFFFFFFFF),
-        primaryContainer: Color(0xFFCFD8DC), // Blue Grey 100
-        onPrimaryContainer: Color(0xFF263238), // Blue Grey 900
-        secondary: Color(0xFF78909C), // Blue Grey 400
+        primaryContainer: Color(0xFFF4F4F5), // Zinc 100
+        onPrimaryContainer: Color(0xFF18181B), // Zinc 900
+        secondary: Color(0xFF71717A), // Zinc 500
         onSecondary: Color(0xFFFFFFFF),
-        secondaryContainer: Color(0xFFECEFF1), // Blue Grey 50
-        onSecondaryContainer: Color(0xFF37474F), // Blue Grey 800
-        tertiary: Color(0xFF90A4AE), // Blue Grey 300
-        onTertiary: Color(0xFF263238), // Blue Grey 900
-        tertiaryContainer: Color(0xFFF5F5F5), // Grey 100
-        onTertiaryContainer: Color(0xFF37474F), // Blue Grey 800
-        error: Color(0xFFB3261E), // Material 3 error
+        secondaryContainer: Color(0xFFF4F4F5), // Zinc 100
+        onSecondaryContainer: Color(0xFF27272A), // Zinc 800
+        tertiary: Color(0xFFA1A1AA), // Zinc 400
+        onTertiary: Color(0xFF18181B), // Zinc 900
+        tertiaryContainer: Color(0xFFF4F4F5), // Zinc 100
+        onTertiaryContainer: Color(0xFF27272A), // Zinc 800
+        error: Color(0xFFDC2626), // Red 600
         onError: Color(0xFFFFFFFF),
-        errorContainer: Color(0xFFF9DEDC), // Material 3 error container
-        onErrorContainer: Color(0xFF410E0B), // Material 3 on error container
-        surface: Color(0xFFFFFBFE), // Material 3 surface
-        onSurface: Color(0xFF1C1B1F), // Material 3 on surface
-        surfaceContainerHighest: Color(0xFFE7E0EC), // Material 3 surface container highest
-        onSurfaceVariant: Color(0xFF49454F), // Material 3 on surface variant
-        outline: Color(0xFF79747E), // Material 3 outline
-        outlineVariant: Color(0xFFCAC4D0), // Material 3 outline variant
-        shadow: Color(0xFF000000), // Material 3 shadow
-        scrim: Color(0xFF000000), // Material 3 scrim
-        inverseSurface: Color(0xFF313033), // Material 3 inverse surface
-        onInverseSurface: Color(0xFFF4EFF4), // Material 3 on inverse surface
-        inversePrimary: Color(0xFFB0BEC5), // Blue Grey 200
-        surfaceTint: Color(0xFF546E7A), // Blue Grey 600
+        errorContainer: Color(0xFFFEE2E2), // Red 100
+        onErrorContainer: Color(0xFF991B1B), // Red 800
+        surface: Color(0xFFFFFFFF),
+        onSurface: Color(0xFF09090B), // Zinc 950
+        surfaceContainerHighest: Color(0xFFF4F4F5), // Zinc 100
+        onSurfaceVariant: Color(0xFF71717A), // Zinc 500
+        outline: Color(0xFFE4E4E7), // Zinc 200
+        outlineVariant: Color(0xFFF4F4F5), // Zinc 100
+        shadow: Color(0xFF000000),
+        scrim: Color(0xFF000000),
+        inverseSurface: Color(0xFF18181B), // Zinc 900
+        onInverseSurface: Color(0xFFFAFAFA), // Zinc 50
+        inversePrimary: Color(0xFFD4D4D8), // Zinc 300
+        surfaceTint: Color(0xFF18181B), // Zinc 900
       );
     } else {
       return const ColorScheme.dark(
-        primary: Color(0xFFB0BEC5), // Blue Grey 200
-        onPrimary: Color(0xFF263238), // Blue Grey 900
-        primaryContainer: Color(0xFF37474F), // Blue Grey 800
-        onPrimaryContainer: Color(0xFFCFD8DC), // Blue Grey 100
-        secondary: Color(0xFF90A4AE), // Blue Grey 300
-        onSecondary: Color(0xFF263238), // Blue Grey 900
-        secondaryContainer: Color(0xFF455A64), // Blue Grey 700
-        onSecondaryContainer: Color(0xFFECEFF1), // Blue Grey 50
-        tertiary: Color(0xFF78909C), // Blue Grey 400
-        onTertiary: Color(0xFF263238), // Blue Grey 900
-        tertiaryContainer: Color(0xFF37474F), // Blue Grey 800
-        onTertiaryContainer: Color(0xFFF5F5F5), // Grey 100
-        error: Color(0xFFF2B8B5), // Material 3 error dark
-        onError: Color(0xFF601410), // Material 3 on error dark
-        errorContainer: Color(0xFF8C1D18), // Material 3 error container dark
-        onErrorContainer: Color(0xFFF9DEDC), // Material 3 on error container dark
-        surface: Color(0xFF1C1B1F), // Material 3 surface dark
-        onSurface: Color(0xFFE6E1E5), // Material 3 on surface dark
-        surfaceContainerHighest: Color(0xFF49454F), // Material 3 surface container highest dark
-        onSurfaceVariant: Color(0xFFCAC4D0), // Material 3 on surface variant dark
-        outline: Color(0xFF938F99), // Material 3 outline dark
-        outlineVariant: Color(0xFF49454F), // Material 3 outline variant dark
-        shadow: Color(0xFF000000), // Material 3 shadow dark
-        scrim: Color(0xFF000000), // Material 3 scrim dark
-        inverseSurface: Color(0xFFE6E1E5), // Material 3 inverse surface dark
-        onInverseSurface: Color(0xFF313033), // Material 3 on inverse surface dark
-        inversePrimary: Color(0xFF546E7A), // Blue Grey 600
-        surfaceTint: Color(0xFFB0BEC5), // Blue Grey 200
+        primary: Color(0xFFFAFAFA), // Zinc 50
+        onPrimary: Color(0xFF09090B), // Zinc 950
+        primaryContainer: Color(0xFF27272A), // Zinc 800
+        onPrimaryContainer: Color(0xFFFAFAFA), // Zinc 50
+        secondary: Color(0xFFA1A1AA), // Zinc 400
+        onSecondary: Color(0xFF09090B), // Zinc 950
+        secondaryContainer: Color(0xFF27272A), // Zinc 800
+        onSecondaryContainer: Color(0xFFF4F4F5), // Zinc 100
+        tertiary: Color(0xFF71717A), // Zinc 500
+        onTertiary: Color(0xFFFAFAFA), // Zinc 50
+        tertiaryContainer: Color(0xFF27272A), // Zinc 800
+        onTertiaryContainer: Color(0xFFF4F4F5), // Zinc 100
+        error: Color(0xFFF87171), // Red 400
+        onError: Color(0xFF09090B), // Zinc 950
+        errorContainer: Color(0xFF7F1D1D), // Red 900
+        onErrorContainer: Color(0xFFFECACA), // Red 200
+        surface: Color(0xFF09090B), // Zinc 950
+        onSurface: Color(0xFFFAFAFA), // Zinc 50
+        surfaceContainerHighest: Color(0xFF27272A), // Zinc 800
+        onSurfaceVariant: Color(0xFFA1A1AA), // Zinc 400
+        outline: Color(0xFF27272A), // Zinc 800
+        outlineVariant: Color(0xFF18181B), // Zinc 900
+        shadow: Color(0xFF000000),
+        scrim: Color(0xFF000000),
+        inverseSurface: Color(0xFFFAFAFA), // Zinc 50
+        onInverseSurface: Color(0xFF09090B), // Zinc 950
+        inversePrimary: Color(0xFF52525B), // Zinc 600
+        surfaceTint: Color(0xFFFAFAFA), // Zinc 50
       );
     }
   }
 
-  /// Nature theme - Teal palette
+  /// Nature "Sage" — green-tinted neutral
   static ColorScheme _getNatureColorScheme(Brightness brightness) {
     if (brightness == Brightness.light) {
       return const ColorScheme.light(
-        primary: Color(0xFF00838F), // Teal 600
+        primary: Color(0xFF1A1D1A), // Sage 900
         onPrimary: Color(0xFFFFFFFF),
-        primaryContainer: Color(0xFFB2EBF2), // Teal 100
-        onPrimaryContainer: Color(0xFF004D52), // Teal 900
-        secondary: Color(0xFF26A69A), // Teal 400
+        primaryContainer: Color(0xFFF0F4F0), // Sage 100
+        onPrimaryContainer: Color(0xFF1A1D1A), // Sage 900
+        secondary: Color(0xFF5F7A64), // Sage green accent
         onSecondary: Color(0xFFFFFFFF),
-        secondaryContainer: Color(0xFFE0F2F1), // Teal 50
-        onSecondaryContainer: Color(0xFF004D52), // Teal 900
-        tertiary: Color(0xFF4DB6AC), // Teal 300
-        onTertiary: Color(0xFF004D52), // Teal 900
-        tertiaryContainer: Color(0xFFF0F9F8), // Very light teal tint
-        onTertiaryContainer: Color(0xFF004D52), // Teal 900
-        error: Color(0xFFB3261E), // Material 3 error
+        secondaryContainer: Color(0xFFE8F0E8), // Sage 50
+        onSecondaryContainer: Color(0xFF1A1D1A), // Sage 900
+        tertiary: Color(0xFF8BA68F), // Sage 400
+        onTertiary: Color(0xFF1A1D1A), // Sage 900
+        tertiaryContainer: Color(0xFFF0F4F0), // Sage 100
+        onTertiaryContainer: Color(0xFF2A302B), // Sage 800
+        error: Color(0xFFDC2626), // Red 600
         onError: Color(0xFFFFFFFF),
-        errorContainer: Color(0xFFF9DEDC), // Material 3 error container
-        onErrorContainer: Color(0xFF410E0B), // Material 3 on error container
-        surface: Color(0xFFFAFDFD), // Very light teal tint
-        onSurface: Color(0xFF1C1B1F), // Material 3 on surface
-        surfaceContainerHighest: Color(0xFFE0F2F1), // Teal 50
-        onSurfaceVariant: Color(0xFF004D52), // Teal 900
-        outline: Color(0xFF00838F), // Teal 600
-        outlineVariant: Color(0xFFB2EBF2), // Teal 100
-        shadow: Color(0xFF000000), // Material 3 shadow
-        scrim: Color(0xFF000000), // Material 3 scrim
-        inverseSurface: Color(0xFF313033), // Material 3 inverse surface
-        onInverseSurface: Color(0xFFF4EFF4), // Material 3 on inverse surface
-        inversePrimary: Color(0xFF80DEEA), // Teal 200
-        surfaceTint: Color(0xFF00838F), // Teal 600
+        errorContainer: Color(0xFFFEE2E2), // Red 100
+        onErrorContainer: Color(0xFF991B1B), // Red 800
+        surface: Color(0xFFFCFDFC),
+        onSurface: Color(0xFF0D0F0D), // Sage 950
+        surfaceContainerHighest: Color(0xFFF0F4F0), // Sage 100
+        onSurfaceVariant: Color(0xFF6B7C6E), // Sage 500
+        outline: Color(0xFFDAE2DB), // Sage 200
+        outlineVariant: Color(0xFFF0F4F0), // Sage 100
+        shadow: Color(0xFF000000),
+        scrim: Color(0xFF000000),
+        inverseSurface: Color(0xFF1A1D1A), // Sage 900
+        onInverseSurface: Color(0xFFF5F8F5), // Sage 50
+        inversePrimary: Color(0xFFB8CBB9), // Sage 300
+        surfaceTint: Color(0xFF1A1D1A), // Sage 900
       );
     } else {
       return const ColorScheme.dark(
-        primary: Color(0xFF80DEEA), // Teal 200
-        onPrimary: Color(0xFF004D52), // Teal 900
-        primaryContainer: Color(0xFF00695C), // Teal 800
-        onPrimaryContainer: Color(0xFFB2EBF2), // Teal 100
-        secondary: Color(0xFF4DB6AC), // Teal 300
-        onSecondary: Color(0xFF004D52), // Teal 900
-        secondaryContainer: Color(0xFF00796B), // Teal 700
-        onSecondaryContainer: Color(0xFFE0F2F1), // Teal 50
-        tertiary: Color(0xFF26A69A), // Teal 400
-        onTertiary: Color(0xFF004D52), // Teal 900
-        tertiaryContainer: Color(0xFF00695C), // Teal 800
-        onTertiaryContainer: Color(0xFFF0F9F8), // Very light teal tint
-        error: Color(0xFFF2B8B5), // Material 3 error dark
-        onError: Color(0xFF601410), // Material 3 on error dark
-        errorContainer: Color(0xFF8C1D18), // Material 3 error container dark
-        onErrorContainer: Color(0xFFF9DEDC), // Material 3 on error container dark
-        surface: Color(0xFF0A1414), // Very dark teal tint
-        onSurface: Color(0xFFE6E1E5), // Material 3 on surface dark
-        surfaceContainerHighest: Color(0xFF00695C), // Teal 800
-        onSurfaceVariant: Color(0xFFB2EBF2), // Teal 100
-        outline: Color(0xFF26A69A), // Teal 400
-        outlineVariant: Color(0xFF00695C), // Teal 800
-        shadow: Color(0xFF000000), // Material 3 shadow dark
-        scrim: Color(0xFF000000), // Material 3 scrim dark
-        inverseSurface: Color(0xFFE6E1E5), // Material 3 inverse surface dark
-        onInverseSurface: Color(0xFF313033), // Material 3 on inverse surface dark
-        inversePrimary: Color(0xFF00838F), // Teal 600
-        surfaceTint: Color(0xFF80DEEA), // Teal 200
+        primary: Color(0xFFF5F8F5), // Sage 50
+        onPrimary: Color(0xFF0D0F0D), // Sage 950
+        primaryContainer: Color(0xFF2A302B), // Sage 800
+        onPrimaryContainer: Color(0xFFF5F8F5), // Sage 50
+        secondary: Color(0xFF8BA68F), // Sage green accent
+        onSecondary: Color(0xFF0D0F0D), // Sage 950
+        secondaryContainer: Color(0xFF2A302B), // Sage 800
+        onSecondaryContainer: Color(0xFFF0F4F0), // Sage 100
+        tertiary: Color(0xFF6B7C6E), // Sage 500
+        onTertiary: Color(0xFFF5F8F5), // Sage 50
+        tertiaryContainer: Color(0xFF2A302B), // Sage 800
+        onTertiaryContainer: Color(0xFFF0F4F0), // Sage 100
+        error: Color(0xFFF87171), // Red 400
+        onError: Color(0xFF0D0F0D), // Sage 950
+        errorContainer: Color(0xFF7F1D1D), // Red 900
+        onErrorContainer: Color(0xFFFECACA), // Red 200
+        surface: Color(0xFF0D0F0D), // Sage 950
+        onSurface: Color(0xFFF5F8F5), // Sage 50
+        surfaceContainerHighest: Color(0xFF2A302B), // Sage 800
+        onSurfaceVariant: Color(0xFF8BA68F), // Sage 400
+        outline: Color(0xFF2A302B), // Sage 800
+        outlineVariant: Color(0xFF1A1D1A), // Sage 900
+        shadow: Color(0xFF000000),
+        scrim: Color(0xFF000000),
+        inverseSurface: Color(0xFFF5F8F5), // Sage 50
+        onInverseSurface: Color(0xFF0D0F0D), // Sage 950
+        inversePrimary: Color(0xFF5F7A64), // Sage 600
+        surfaceTint: Color(0xFFF5F8F5), // Sage 50
       );
     }
   }
 
-  /// Sunset theme - Orange/Deep Orange palette
+  /// Sunset "Stone" — warm-tinted neutral with orange accent
   static ColorScheme _getSunsetColorScheme(Brightness brightness) {
     if (brightness == Brightness.light) {
       return const ColorScheme.light(
-        primary: Color(0xFFFF7043), // Deep Orange 400
+        primary: Color(0xFF1C1917), // Stone 900
         onPrimary: Color(0xFFFFFFFF),
-        primaryContainer: Color(0xFFFFCCBC), // Deep Orange 100
-        onPrimaryContainer: Color(0xFFBF360C), // Deep Orange 900
-        secondary: Color(0xFFFF8A65), // Deep Orange 300
+        primaryContainer: Color(0xFFF5F5F4), // Stone 100
+        onPrimaryContainer: Color(0xFF1C1917), // Stone 900
+        secondary: Color(0xFFC2410C), // Orange 700 warm accent
         onSecondary: Color(0xFFFFFFFF),
-        secondaryContainer: Color(0xFFFFF3E0), // Orange 50
-        onSecondaryContainer: Color(0xFFE65100), // Orange 900
-        tertiary: Color(0xFFFFAB91), // Deep Orange 200
-        onTertiary: Color(0xFFBF360C), // Deep Orange 900
-        tertiaryContainer: Color(0xFFFFF8E1), // Amber 50
-        onTertiaryContainer: Color(0xFFE65100), // Orange 900
-        error: Color(0xFFB3261E), // Material 3 error
+        secondaryContainer: Color(0xFFFFF7ED), // Orange 50
+        onSecondaryContainer: Color(0xFF7C2D12), // Orange 900
+        tertiary: Color(0xFFA8A29E), // Stone 400
+        onTertiary: Color(0xFF1C1917), // Stone 900
+        tertiaryContainer: Color(0xFFF5F5F4), // Stone 100
+        onTertiaryContainer: Color(0xFF292524), // Stone 800
+        error: Color(0xFFDC2626), // Red 600
         onError: Color(0xFFFFFFFF),
-        errorContainer: Color(0xFFF9DEDC), // Material 3 error container
-        onErrorContainer: Color(0xFF410E0B), // Material 3 on error container
-        surface: Color(0xFFFFFBFE), // Material 3 surface with warm tint
-        onSurface: Color(0xFF1C1B1F), // Material 3 on surface
-        surfaceContainerHighest: Color(0xFFFFF3E0), // Orange 50
-        onSurfaceVariant: Color(0xFFE65100), // Orange 900
-        outline: Color(0xFFFF7043), // Deep Orange 400
-        outlineVariant: Color(0xFFFFCCBC), // Deep Orange 100
-        shadow: Color(0xFF000000), // Material 3 shadow
-        scrim: Color(0xFF000000), // Material 3 scrim
-        inverseSurface: Color(0xFF313033), // Material 3 inverse surface
-        onInverseSurface: Color(0xFFF4EFF4), // Material 3 on inverse surface
-        inversePrimary: Color(0xFFFFAB91), // Deep Orange 200
-        surfaceTint: Color(0xFFFF7043), // Deep Orange 400
+        errorContainer: Color(0xFFFEE2E2), // Red 100
+        onErrorContainer: Color(0xFF991B1B), // Red 800
+        surface: Color(0xFFFAFAF9), // Stone 50
+        onSurface: Color(0xFF0C0A09), // Stone 950
+        surfaceContainerHighest: Color(0xFFF5F5F4), // Stone 100
+        onSurfaceVariant: Color(0xFF78716C), // Stone 500
+        outline: Color(0xFFE7E5E4), // Stone 200
+        outlineVariant: Color(0xFFF5F5F4), // Stone 100
+        shadow: Color(0xFF000000),
+        scrim: Color(0xFF000000),
+        inverseSurface: Color(0xFF1C1917), // Stone 900
+        onInverseSurface: Color(0xFFFAFAF9), // Stone 50
+        inversePrimary: Color(0xFFD6D3D1), // Stone 300
+        surfaceTint: Color(0xFF1C1917), // Stone 900
       );
     } else {
       return const ColorScheme.dark(
-        primary: Color(0xFFFFAB91), // Deep Orange 200
-        onPrimary: Color(0xFFBF360C), // Deep Orange 900
-        primaryContainer: Color(0xFFE64A19), // Deep Orange 800
-        onPrimaryContainer: Color(0xFFFFCCBC), // Deep Orange 100
-        secondary: Color(0xFFFF8A65), // Deep Orange 300
-        onSecondary: Color(0xFFBF360C), // Deep Orange 900
-        secondaryContainer: Color(0xFFD84315), // Deep Orange 700
-        onSecondaryContainer: Color(0xFFFFF3E0), // Orange 50
-        tertiary: Color(0xFFFF7043), // Deep Orange 400
-        onTertiary: Color(0xFFBF360C), // Deep Orange 900
-        tertiaryContainer: Color(0xFFE64A19), // Deep Orange 800
-        onTertiaryContainer: Color(0xFFFFF8E1), // Amber 50
-        error: Color(0xFFF2B8B5), // Material 3 error dark
-        onError: Color(0xFF601410), // Material 3 on error dark
-        errorContainer: Color(0xFF8C1D18), // Material 3 error container dark
-        onErrorContainer: Color(0xFFF9DEDC), // Material 3 on error container dark
-        surface: Color(0xFF1C1B1F), // Material 3 surface dark
-        onSurface: Color(0xFFE6E1E5), // Material 3 on surface dark
-        surfaceContainerHighest: Color(0xFFE65100), // Orange 900
-        onSurfaceVariant: Color(0xFFFFCCBC), // Deep Orange 100
-        outline: Color(0xFFFF8A65), // Deep Orange 300
-        outlineVariant: Color(0xFFE64A19), // Deep Orange 800
-        shadow: Color(0xFF000000), // Material 3 shadow dark
-        scrim: Color(0xFF000000), // Material 3 scrim dark
-        inverseSurface: Color(0xFFE6E1E5), // Material 3 inverse surface dark
-        onInverseSurface: Color(0xFF313033), // Material 3 on inverse surface dark
-        inversePrimary: Color(0xFFFF7043), // Deep Orange 400
-        surfaceTint: Color(0xFFFFAB91), // Deep Orange 200
+        primary: Color(0xFFFAFAF9), // Stone 50
+        onPrimary: Color(0xFF0C0A09), // Stone 950
+        primaryContainer: Color(0xFF292524), // Stone 800
+        onPrimaryContainer: Color(0xFFFAFAF9), // Stone 50
+        secondary: Color(0xFFFB923C), // Orange 400 warm accent
+        onSecondary: Color(0xFF0C0A09), // Stone 950
+        secondaryContainer: Color(0xFF292524), // Stone 800
+        onSecondaryContainer: Color(0xFFFED7AA), // Orange 200
+        tertiary: Color(0xFF78716C), // Stone 500
+        onTertiary: Color(0xFFFAFAF9), // Stone 50
+        tertiaryContainer: Color(0xFF292524), // Stone 800
+        onTertiaryContainer: Color(0xFFF5F5F4), // Stone 100
+        error: Color(0xFFF87171), // Red 400
+        onError: Color(0xFF0C0A09), // Stone 950
+        errorContainer: Color(0xFF7F1D1D), // Red 900
+        onErrorContainer: Color(0xFFFECACA), // Red 200
+        surface: Color(0xFF0C0A09), // Stone 950
+        onSurface: Color(0xFFFAFAF9), // Stone 50
+        surfaceContainerHighest: Color(0xFF292524), // Stone 800
+        onSurfaceVariant: Color(0xFFA8A29E), // Stone 400
+        outline: Color(0xFF292524), // Stone 800
+        outlineVariant: Color(0xFF1C1917), // Stone 900
+        shadow: Color(0xFF000000),
+        scrim: Color(0xFF000000),
+        inverseSurface: Color(0xFFFAFAF9), // Stone 50
+        onInverseSurface: Color(0xFF0C0A09), // Stone 950
+        inversePrimary: Color(0xFF57534E), // Stone 600
+        surfaceTint: Color(0xFFFAFAF9), // Stone 50
       );
     }
   }

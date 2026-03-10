@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/presentation/common_blocs/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/presentation/common_widgets/web_back_button_disabler.dart';
 import 'package:flutter_bloc_advance/routes/go_router_routes/app_go_router_config.dart';
 
@@ -14,13 +15,7 @@ import '../presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart';
 import '../presentation/screen/login/bloc/login.dart';
 import '../presentation/design_system/theme/app_theme.dart';
 
-/// Main application widget. This widget is the root of your application.
-///
-/// It is configured to provide a [ThemeData] based on the current
-/// ThemeBloc state and to provide a [MaterialApp] with the
-/// theme management through ThemeBloc.
-///
-
+/// Main application widget. Root of the widget tree.
 class App extends StatelessWidget {
   final String language;
 
@@ -45,6 +40,7 @@ class App extends StatelessWidget {
         BlocProvider<DrawerBloc>(
           create: (_) => DrawerBloc(loginRepository: LoginRepository(), menuRepository: MenuRepository()),
         ),
+        BlocProvider<SidebarBloc>(create: (_) => SidebarBloc()),
       ],
       child: _buildAdaptiveThemeWrapper(),
     );
@@ -54,7 +50,6 @@ class App extends StatelessWidget {
     return BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, themeState) {
         debugPrint("Main App: ThemeBloc state - isDarkMode: ${themeState.isDarkMode}, palette: ${themeState.palette}");
-        // Use ThemeBloc's isDarkMode instead of system brightness
         final brightness = themeState.isDarkMode ? Brightness.dark : Brightness.light;
         final currentTheme = brightness == Brightness.light
             ? AppTheme.light(themeState.palette)
