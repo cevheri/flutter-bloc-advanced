@@ -30,7 +30,7 @@ dependencies:
   shared_preferences: 2.5.4
   logger: 2.6.2
   get_storage: 2.1.1
-  fl_chart: ^0.70.0
+  fl_chart: ^1.1.1
   shimmer: ^3.0.0
   cached_network_image: ^3.4.1
 
