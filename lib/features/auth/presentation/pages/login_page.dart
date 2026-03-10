@@ -6,9 +6,9 @@ import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
-import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:go_router/go_router.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../application/login_bloc.dart';
@@ -442,7 +442,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           Text("Don't have an account? ", style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant)),
           TextButton(
             key: loginButtonRegisterKey,
-            onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.register),
+            onPressed: () => context.push(ApplicationRoutesConstants.register),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 4),
               minimumSize: Size.zero,
@@ -567,7 +567,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget _forgotPasswordLink(BuildContext context) {
     return TextButton(
       key: loginButtonForgotPasswordKey,
-      onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.forgotPassword),
+      onPressed: () => context.push(ApplicationRoutesConstants.forgotPassword),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         minimumSize: Size.zero,
@@ -615,7 +615,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         ),
       );
     } else if (state is LoginLoadedState) {
-      AppRouter().push(context, ApplicationRoutesConstants.home);
+      context.go(ApplicationRoutesConstants.home);
       ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
       ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
@@ -642,7 +642,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 Widget _otpLoginButton(BuildContext context) {
   return OutlinedButton(
     key: const Key('loginButtonOtpKey'),
-    onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
+    onPressed: () => context.push(ApplicationRoutesConstants.loginOtp),
     child: Padding(padding: const EdgeInsets.symmetric(vertical: 12), child: Text(S.of(context).login_with_email)),
   );
 }
@@ -661,7 +661,7 @@ class OtpEmailScreen extends StatelessWidget {
         title: Text(S.of(context).login_with_email),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.login),
+          onPressed: () => _popOrFallback(context, ApplicationRoutesConstants.login),
         ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
@@ -671,7 +671,7 @@ class OtpEmailScreen extends StatelessWidget {
             previous.email != current.email,
         listener: (context, state) {
           if (state.status == LoginStatus.success && state.isOtpSent == true && state.email != null) {
-            AppRouter().push(context, '${ApplicationRoutesConstants.loginOtpVerify}/${state.email}');
+            context.go('${ApplicationRoutesConstants.loginOtpVerify}/${state.email}');
           } else if (state.status == LoginStatus.failure) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).failed)));
           }
@@ -741,13 +741,13 @@ class OtpVerifyScreen extends StatelessWidget {
         title: Text(S.of(context).verify_otp_code),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () => AppRouter().push(context, ApplicationRoutesConstants.loginOtp),
+          onPressed: () => _popOrFallback(context, ApplicationRoutesConstants.loginOtp),
         ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
           if (state is LoginLoadedState) {
-            AppRouter().push(context, ApplicationRoutesConstants.home);
+            context.go(ApplicationRoutesConstants.home);
           }
         },
         child: ResponsiveFormBuilder(
@@ -799,5 +799,13 @@ class OtpVerifyScreen extends StatelessWidget {
       onPressed: () => context.read<LoginBloc>().add(SendOtpRequested(email: email)),
       child: Text(S.of(context).resend_otp_code),
     );
+  }
+}
+
+void _popOrFallback(BuildContext context, String fallbackRoute) {
+  if (GoRouter.of(context).canPop()) {
+    context.pop();
+  } else {
+    context.go(fallbackRoute);
   }
 }

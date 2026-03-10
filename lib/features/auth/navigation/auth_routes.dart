@@ -28,7 +28,7 @@ class AuthFeatureRoutes {
       path: ApplicationRoutesConstants.forgotPassword,
       builder: (context, state) => BlocProvider(
         create: (_) => ForgotPasswordBloc(repository: context.read<IAccountRepository>()),
-        child: ForgotPasswordScreen(returnToSettings: state.uri.queryParameters['returnToSettings'] == 'true'),
+        child: ForgotPasswordScreen(),
       ),
     ),
     GoRoute(
@@ -36,7 +36,7 @@ class AuthFeatureRoutes {
       path: ApplicationRoutesConstants.changePassword,
       builder: (context, state) => BlocProvider(
         create: (_) => ChangePasswordBloc(repository: context.read<IAccountRepository>()),
-        child: ChangePasswordScreen(returnToSettings: state.uri.queryParameters['returnToSettings'] == 'true'),
+        child: ChangePasswordScreen(),
       ),
     ),
     GoRoute(
@@ -44,7 +44,7 @@ class AuthFeatureRoutes {
       path: ApplicationRoutesConstants.register,
       builder: (context, state) => BlocProvider(
         create: (_) => RegisterBloc(repository: context.read<IAccountRepository>()),
-        child: RegisterScreen(returnToSettings: state.uri.queryParameters['returnToSettings'] == 'true'),
+        child: RegisterScreen(),
       ),
     ),
   ];

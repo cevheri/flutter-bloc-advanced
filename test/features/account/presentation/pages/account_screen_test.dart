@@ -67,7 +67,7 @@ void main() {
         GoRoute(
           path: '/account',
           builder: (context, state) =>
-              Scaffold(body: AccountScreen(returnToSettings: state.uri.queryParameters['returnToSettings'] == 'true')),
+              Scaffold(body: AccountScreen()),
         ),
       ],
       initialLocation: '/account',

@@ -9,7 +9,7 @@ class AccountFeatureRoutes {
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,
-        child: AccountPage(returnToSettings: state.uri.queryParameters['returnToSettings'] == 'true'),
+        child: const AccountPage(),
       ),
     ),
   ];

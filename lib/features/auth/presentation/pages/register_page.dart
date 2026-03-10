@@ -13,9 +13,8 @@ import 'package:go_router/go_router.dart';
 import '../../../../generated/l10n.dart';
 
 class RegisterScreen extends StatelessWidget {
-  RegisterScreen({super.key, this.returnToSettings = false});
+  RegisterScreen({super.key});
 
-  final bool returnToSettings;
   final _formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -122,26 +121,27 @@ class RegisterScreen extends StatelessWidget {
   }
 
   Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
-    final context = contextParam ?? data as BuildContext;
+    if (didPop) return;
 
+    final context = contextParam ?? data as BuildContext;
     if (!context.mounted) return;
 
-    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      if (returnToSettings) {
-        context.go(ApplicationRoutesConstants.settings);
-      } else {
-        context.go(ApplicationRoutesConstants.home);
-      }
+    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+      _navigateBack(context);
       return;
     }
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      if (returnToSettings) {
-        context.go(ApplicationRoutesConstants.settings);
-      } else {
-        context.go(ApplicationRoutesConstants.home);
-      }
+      _navigateBack(context);
+    }
+  }
+
+  void _navigateBack(BuildContext context) {
+    if (GoRouter.of(context).canPop()) {
+      context.pop();
+    } else {
+      context.go(ApplicationRoutesConstants.login);
     }
   }
 }

@@ -18,9 +18,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
 class AccountScreen extends StatelessWidget {
-  AccountScreen({super.key, this.returnToSettings = false});
+  AccountScreen({super.key});
 
-  final bool returnToSettings;
   final _formKey = GlobalKey<FormBuilderState>();
 
   @override
@@ -179,37 +178,36 @@ class AccountScreen extends StatelessWidget {
   }
 
   Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
-    final context = contextParam ?? data as BuildContext;
+    if (didPop) return;
 
+    final context = contextParam ?? data as BuildContext;
     if (!context.mounted) return;
 
-    if (didPop || !(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      if (returnToSettings) {
-        context.go(ApplicationRoutesConstants.settings);
-      } else {
-        context.go(ApplicationRoutesConstants.home);
-      }
+    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
+      _navigateBack(context);
       return;
     }
 
     final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
     if (shouldPop && context.mounted) {
-      if (returnToSettings) {
-        context.go(ApplicationRoutesConstants.settings);
-      } else {
-        context.go(ApplicationRoutesConstants.home);
-      }
+      _navigateBack(context);
+    }
+  }
+
+  void _navigateBack(BuildContext context) {
+    if (GoRouter.of(context).canPop()) {
+      context.pop();
+    } else {
+      context.go(ApplicationRoutesConstants.home);
     }
   }
 }
 
 class AccountPage extends StatelessWidget {
-  const AccountPage({super.key, this.returnToSettings = false});
-
-  final bool returnToSettings;
+  const AccountPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return AccountScreen(returnToSettings: returnToSettings);
+    return AccountScreen();
   }
 }
