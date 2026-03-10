@@ -2,7 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
-import 'package:flutter_bloc_advance/app/shell/drawer/drawer_bloc.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_list_cache.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -10,7 +10,7 @@ import 'package:mocktail/mocktail.dart';
 import '../../mocks/mock_classes.dart';
 import '../../test_utils.dart';
 
-/// BLoc Test for DrawerBloc
+/// BLoc Test for MenuBloc
 ///
 /// Tests: <p>
 /// 1. State test <p>
@@ -33,25 +33,25 @@ void main() {
   //endregion setup
 
   //region state
-  /// Drawer State Tests
-  group("DrawerState", () {
+  /// Menu State Tests
+  group("MenuState", () {
     const menus = [Menu(id: "test", name: "test")];
     const isLogout = false;
 
     test("supports value comparisons", () {
-      expect(const DrawerState(menus: menus, isLogout: isLogout), const DrawerState(menus: menus, isLogout: isLogout));
+      expect(const MenuState(menus: menus, isLogout: isLogout), const MenuState(menus: menus, isLogout: isLogout));
     });
 
-    test("DrawerState copyWith", () {
-      expect(const DrawerState().copyWith(), const DrawerState());
-      expect(const DrawerState().copyWith(menus: menus), const DrawerState(menus: menus));
+    test("MenuState copyWith", () {
+      expect(const MenuState().copyWith(), const MenuState());
+      expect(const MenuState().copyWith(menus: menus), const MenuState(menus: menus));
     });
   });
   //endregion state
 
   //region event
-  /// Drawer Event Tests
-  group("DrawerEvent", () {
+  /// Menu Event Tests
+  group("MenuEvent", () {
     test("supports value comparisons", () {
       expect(const LoadMenus(language: "en"), const LoadMenus(language: "en"));
       expect(RefreshMenus(), RefreshMenus());
@@ -66,8 +66,8 @@ void main() {
   //endregion event
 
   //region bloc
-  /// Drawer Bloc Tests
-  group("Drawer Bloc", () {
+  /// Menu Bloc Tests
+  group("Menu Bloc", () {
     group("LoadMenu", () {
       tearDown(() {
         MenuListCache.menus = [];
@@ -75,27 +75,27 @@ void main() {
       const input = [Menu(id: "test", name: "test")];
       final output = Future.value(input);
       const event = LoadMenus(language: "en");
-      const loadingState = DrawerState(menus: [], status: DrawerStateStatus.loading);
-      const successState = DrawerState(menus: input, status: DrawerStateStatus.success, language: 'en');
-      const failureState = DrawerState(menus: [], status: DrawerStateStatus.error, language: 'en');
-      blocTest<DrawerBloc, DrawerState>(
+      const loadingState = MenuState(menus: [], status: MenuStateStatus.loading);
+      const successState = MenuState(menus: input, status: MenuStateStatus.success, language: 'en');
+      const failureState = MenuState(menus: [], status: MenuStateStatus.error, language: 'en');
+      blocTest<MenuBloc, MenuState>(
         "emits [loading, success] when LoadMenus is added",
         setUp: () {
           when(() => menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
-        build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
       );
 
-      blocTest<DrawerBloc, DrawerState>(
+      blocTest<MenuBloc, MenuState>(
         "emits [loading, failure] when LoadMenus is added",
         setUp: () {
           when(() => menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
-        build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
       );
@@ -105,27 +105,27 @@ void main() {
       const input = [Menu(id: "test", name: "test")];
       final output = Future.value(input);
       final event = RefreshMenus();
-      const loadingState = DrawerState(menus: [], status: DrawerStateStatus.loading);
-      const successState = DrawerState(menus: input, status: DrawerStateStatus.success);
-      const failureState = DrawerState(menus: [], status: DrawerStateStatus.error);
-      blocTest<DrawerBloc, DrawerState>(
+      const loadingState = MenuState(menus: [], status: MenuStateStatus.loading);
+      const successState = MenuState(menus: input, status: MenuStateStatus.success);
+      const failureState = MenuState(menus: [], status: MenuStateStatus.error);
+      blocTest<MenuBloc, MenuState>(
         "emits [loading, success] when RefreshMenus is added",
         setUp: () {
           when(() => menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
-        build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
       );
 
-      blocTest<DrawerBloc, DrawerState>(
+      blocTest<MenuBloc, MenuState>(
         "emits [loading, failure] when RefreshMenus is added",
         setUp: () {
           when(() => menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
-        build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
       );
@@ -133,27 +133,27 @@ void main() {
 
     group("Logout", () {
       final event = Logout();
-      const loadingState = DrawerState(status: DrawerStateStatus.loading);
-      const successState = DrawerState(status: DrawerStateStatus.success, isLogout: true);
-      const failureState = DrawerState(status: DrawerStateStatus.error);
-      blocTest<DrawerBloc, DrawerState>(
+      const loadingState = MenuState(status: MenuStateStatus.loading);
+      const successState = MenuState(status: MenuStateStatus.success, isLogout: true);
+      const failureState = MenuState(status: MenuStateStatus.error);
+      blocTest<MenuBloc, MenuState>(
         "emits [success] when Logout is added",
         setUp: () {
           when(() => loginRepository.logout()).thenAnswer((_) => Future.value());
           MenuListCache.menus = [];
         },
-        build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
       );
 
-      blocTest<DrawerBloc, DrawerState>(
+      blocTest<MenuBloc, MenuState>(
         "emits [success] when Logout is added",
         setUp: () {
           when(() => loginRepository.logout()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
-        build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
       );

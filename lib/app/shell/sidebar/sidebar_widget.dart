@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/app/shell/drawer/drawer_bloc.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
@@ -26,7 +26,7 @@ class SidebarWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SidebarBloc, SidebarState>(
       builder: (context, sidebarState) {
-        return BlocBuilder<DrawerBloc, DrawerState>(
+        return BlocBuilder<MenuBloc, MenuState>(
           builder: (context, drawerState) {
             final isCollapsed = sidebarState.isCollapsed;
             final width = isCollapsed ? AppBreakpoints.sidebarCollapsed : AppBreakpoints.sidebarExpanded;
@@ -110,7 +110,7 @@ class _SidebarHeader extends StatelessWidget {
 
 /// shadcn SidebarContent — flex-1, overflow-auto, gap-0.
 class _SidebarContent extends StatelessWidget {
-  final DrawerState drawerState;
+  final MenuState drawerState;
   final SidebarState sidebarState;
   const _SidebarContent({required this.drawerState, required this.sidebarState});
 
@@ -228,7 +228,7 @@ class _SidebarFooter extends StatelessWidget {
   Future<void> _handleLogout(BuildContext context) async {
     final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
     if (shouldLogout && context.mounted) {
-      BlocProvider.of<DrawerBloc>(context).add(Logout());
+      BlocProvider.of<MenuBloc>(context).add(Logout());
       AppRouter().push(context, ApplicationRoutesConstants.login);
     }
   }

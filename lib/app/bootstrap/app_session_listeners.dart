@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/app/shell/drawer/drawer_bloc.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 
@@ -21,7 +21,7 @@ class AppSessionListeners extends StatelessWidget {
             }
           },
         ),
-        BlocListener<DrawerBloc, DrawerState>(
+        BlocListener<MenuBloc, MenuState>(
           listenWhen: (previous, current) => previous.isLogout != current.isLogout,
           listener: (context, state) {
             if (state.isLogout) {

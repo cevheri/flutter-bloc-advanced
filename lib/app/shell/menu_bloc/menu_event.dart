@@ -1,17 +1,17 @@
-part of 'drawer_bloc.dart';
+part of 'menu_bloc.dart';
 
-abstract class DrawerEvent extends Equatable {
-  const DrawerEvent();
+abstract class MenuEvent extends Equatable {
+  const MenuEvent();
 
   @override
   List<Object> get props => [];
 }
 
-class Logout extends DrawerEvent {
+class Logout extends MenuEvent {
   const Logout();
 }
 
-class LoadMenus extends DrawerEvent {
+class LoadMenus extends MenuEvent {
   const LoadMenus({required this.language});
 
   final String language;
@@ -20,11 +20,11 @@ class LoadMenus extends DrawerEvent {
   List<Object> get props => [language];
 }
 
-class RefreshMenus extends DrawerEvent {
+class RefreshMenus extends MenuEvent {
   const RefreshMenus();
 }
 
-class ChangeLanguageEvent extends DrawerEvent {
+class ChangeLanguageEvent extends MenuEvent {
   const ChangeLanguageEvent({required this.language});
 
   final String language;

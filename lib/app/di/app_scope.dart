@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
-import 'package:flutter_bloc_advance/app/shell/drawer/drawer_bloc.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
@@ -58,8 +58,8 @@ class AppScope extends StatelessWidget {
             ),
           ),
           BlocProvider<ThemeBloc>(create: (_) => ThemeBloc()..add(const LoadTheme())),
-          BlocProvider<DrawerBloc>(
-            create: (context) => DrawerBloc(
+          BlocProvider<MenuBloc>(
+            create: (context) => MenuBloc(
               loginRepository: context.read<IAuthRepository>(),
               menuRepository: context.read<MenuRepository>(),
             ),
