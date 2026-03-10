@@ -9,11 +9,16 @@ echo "Running pub get"
 fvm flutter pub get
 
 echo "Running build_runner"
-fvm dart run build_runner build --delete-conflicting-outputs
 fvm dart run intl_utils:generate
 
+echo dart fix --apply
+fvm dart fix --apply
+
+echo dart format . --line-length=120
+fvm dart format . --line-length=120
+
 echo "Running flutter analyze"
-fvm flutter analyze
+fvm dart analyze
 if [ $? -ne 0 ]; then
   echo "Flutter analyze found issues. Exiting."
   exit 1

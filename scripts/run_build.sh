@@ -7,11 +7,10 @@ echo "Running pub get"
 flutter pub get
 
 echo "Running build_runner"
-dart run build_runner build --delete-conflicting-outputs
 dart run intl_utils:generate
 
 echo "Running flutter analyze"
-flutter analyze
+dart analyze
 if [ $? -ne 0 ]; then
   echo "Flutter analyze found issues. Exiting."
   exit 1

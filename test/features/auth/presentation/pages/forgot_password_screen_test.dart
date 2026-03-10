@@ -71,8 +71,8 @@ void main() {
       await tester.pumpAndSettle();
       //Then:
       expect(find.byType(AppBar), findsOneWidget);
-      // appBar title"
-      expect(find.text('Forgot Password'), findsOneWidget);
+      // appBar title
+      expect(find.descendant(of: find.byType(AppBar), matching: find.text('Forgot Password')), findsOneWidget);
     });
   });
   //email text
@@ -116,7 +116,7 @@ void main() {
       await tester.pumpAndSettle();
 
       //Then:
-      expect(find.text('Forgot Password'), findsOneWidget);
+      expect(find.text('Forgot Password'), findsNWidgets(2));
     });
 
     // ForgotPasswordLoadingState

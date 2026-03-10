@@ -7,7 +7,6 @@ fvm use 3.41.4
 fvm flutter clean
 fvm flutter pub get
 
-fvm dart run build_runner build --delete-conflicting-outputs
 fvm dart run intl_utils:generate
 
 # when flutter analyze issue found then exit
