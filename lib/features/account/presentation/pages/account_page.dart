@@ -8,7 +8,7 @@ import 'package:flutter_bloc_advance/shared/design_system/components/app_avatar.
 import 'package:flutter_bloc_advance/shared/design_system/components/app_button.dart' show AppComponentSize;
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
-import 'package:flutter_bloc_advance/features/users/presentation/widgets/user_form_fields.dart';
+import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';

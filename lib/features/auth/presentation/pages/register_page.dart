@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/presentation/widgets/user_form_fields.dart';
+import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
