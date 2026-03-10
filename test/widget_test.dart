@@ -1,11 +1,11 @@
 // import 'package:adaptive_theme/adaptive_theme.dart';
 // import 'package:flutter/material.dart';
-// import 'package:flutter_bloc_advance/configuration/app_logger.dart';
-// import 'package:flutter_bloc_advance/configuration/environment.dart';
-// import 'package:flutter_bloc_advance/configuration/local_storage.dart';
+// import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+// import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+// import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 // import 'package:flutter_bloc_advance/main/app.dart';
 // import 'package:flutter_bloc_advance/main/main_local.mapper.g.dart';
-// import 'package:flutter_bloc_advance/routes/app_router.dart';
+// import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

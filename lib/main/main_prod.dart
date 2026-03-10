@@ -1,38 +1,15 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_bloc_advance/configuration/app_logger.dart';
-import 'package:flutter_bloc_advance/configuration/environment.dart';
-import 'package:flutter_bloc_advance/configuration/local_storage.dart';
-import 'package:flutter_bloc_advance/routes/app_router.dart';
-
-import 'app.dart';
+import 'package:flutter_bloc_advance/app/bootstrap/app_bootstrap.dart';
+import 'package:flutter_bloc_advance/app/bootstrap/app_bootstrap_config.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 
 /// main entry point of PRODUCTION
 void main() async {
-  // first configure the logger
-  AppLogger.configure(isProduction: false);
-  final log = AppLogger.getLogger("main_prod.dart");
-
-  ProfileConstants.setEnvironment(Environment.prod);
-
-  log.info("Starting App with env: {}", [Environment.prod.name]);
-
-  WidgetsFlutterBinding.ensureInitialized();
-
-  const defaultLanguage = "en";
-  AppLocalStorage().setStorage(StorageType.sharedPreferences);
-  await AppLocalStorage().save(StorageKeys.language.name, defaultLanguage);
-
-  AppRouter().setRouter(RouterType.goRouter);
-
-  WidgetsFlutterBinding.ensureInitialized();
-  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]).then((_) {
-    runApp(const App(language: defaultLanguage));
-  });
-
-  //TODO change to the system theme(browser theme)
-  const defaultThemeName = "dark";
-  await AppLocalStorage().save(StorageKeys.theme.name, defaultThemeName);
-
-  log.info("Started App with local environment language: {} and theme: {}", [defaultLanguage, defaultThemeName]);
+  await AppBootstrap.run(
+    const AppBootstrapConfig(
+      environment: Environment.prod,
+      defaultLanguage: 'en',
+      defaultPalette: 'classic',
+      defaultBrightness: 'dark',
+    ),
+  );
 }

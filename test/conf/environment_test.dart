@@ -1,5 +1,5 @@
-import 'package:flutter_bloc_advance/configuration/allowed_paths.dart';
-import 'package:flutter_bloc_advance/configuration/environment.dart';
+import 'package:flutter_bloc_advance/core/security/allowed_paths.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

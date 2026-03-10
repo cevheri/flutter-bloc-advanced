@@ -1,7 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/data/models/authority.dart';
-import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
+import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
+import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';

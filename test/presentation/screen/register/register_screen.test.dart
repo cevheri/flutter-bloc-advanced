@@ -2,12 +2,12 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
+import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
-import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register.dart';
-import 'package:flutter_bloc_advance/presentation/screen/register/register_screen.dart';
+import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -1,4 +1,4 @@
-import 'package:flutter_bloc_advance/data/models/send_otp_request.dart';
+import 'package:flutter_bloc_advance/features/auth/data/models/send_otp_request.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/routes/app_router.dart';
-import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 

@@ -6,8 +6,8 @@
 import 'dart:async' as _i4;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account_bloc.dart' as _i3;
-import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register_bloc.dart' as _i2;
+import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart' as _i3;
+import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint

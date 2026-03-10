@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/data/models/dashboard_model.dart';
-import 'package:flutter_bloc_advance/data/repository/dashboard_repository.dart';
-import 'package:flutter_bloc_advance/presentation/design_system/theme/app_theme.dart';
-import 'package:flutter_bloc_advance/presentation/screen/dashboard/bloc/dashboard_cubit.dart';
-import 'package:flutter_bloc_advance/presentation/screen/dashboard/dashboard_page.dart';
+import 'package:flutter_bloc_advance/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:flutter_bloc_advance/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
+import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
+import 'package:flutter_bloc_advance/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 
 import '../../test_utils.dart';
 
-class _StubDashboardRepo implements DashboardRepository {
+class _StubDashboardRepo implements IDashboardRepository {
   @override
-  Future<DashboardModel> fetch() async {
-    const json =
-        '{"summary":[{"id":"leads","label":"Leads","value":120,"trend":8}],'
-        '"activities":[],'
-        '"quick_actions":[{"id":"qa1","label":"New Lead","icon":"person_add"}]}';
-    return DashboardModel.fromJsonString(json);
+  Future<DashboardEntity> fetch() async {
+    return const DashboardEntity(
+      summary: [DashboardSummaryEntity(id: 'leads', label: 'Leads', value: 120, trend: 8)],
+      activities: [],
+      quickActions: [DashboardQuickActionEntity(id: 'qa1', label: 'New Lead', icon: 'person_add')],
+    );
   }
 }
 

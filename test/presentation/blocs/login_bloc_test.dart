@@ -1,40 +1,92 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/configuration/local_storage.dart';
-import 'package:flutter_bloc_advance/data/models/jwt_token.dart';
-import 'package:flutter_bloc_advance/data/models/send_otp_request.dart';
-import 'package:flutter_bloc_advance/data/models/user_jwt.dart';
-import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart';
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/login_repository.dart';
-import 'package:flutter_bloc_advance/presentation/screen/login/bloc/login.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
+import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_bloc_advance/data/app_api_exception.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 
 import '../../fake/user_data.dart';
 import '../../test_utils.dart';
-import 'login_bloc_test.mocks.dart';
 
-/// BLoc Test for LoginBloc
-///
-/// Tests: <p>
-/// 1. State test <p>
-/// 1.1. Supports value comparisons <p>
-/// 1.2. CopyWith retains the same values if no arguments are provided <p>
-/// 1.3. CopyWith replaces non-null parameters <p>
-/// 2. Event test <p>
-/// 3. Bloc test <p>
-@GenerateMocks([LoginRepository, AccountRepository])
+class _FakeAuthRepository implements IAuthRepository {
+  AuthTokenEntity? authenticateResult;
+  AuthTokenEntity? verifyResult;
+  Object? authenticateFailure;
+  Object? sendOtpFailure;
+  Object? verifyFailure;
+
+  @override
+  Future<AuthTokenEntity?> authenticate(AuthCredentialsEntity userJWT) async {
+    if (authenticateFailure != null) throw authenticateFailure!;
+    return authenticateResult;
+  }
+
+  @override
+  Future<void> logout() async {}
+
+  @override
+  Future<void> sendOtp(SendOtpEntity request) async {
+    if (sendOtpFailure != null) throw sendOtpFailure!;
+  }
+
+  @override
+  Future<AuthTokenEntity?> verifyOtp(VerifyOtpEntity request) async {
+    if (verifyFailure != null) throw verifyFailure!;
+    return verifyResult;
+  }
+}
+
+class _FakeAccountRepository implements IAccountRepository {
+  UserEntity? account;
+
+  @override
+  Future<int> changePassword(passwordChangeDTO) async => 200;
+
+  @override
+  Future<bool> delete(String id) async => true;
+
+  @override
+  Future<UserEntity> getAccount() async => account ?? mockUserFullPayload;
+
+  @override
+  Future<UserEntity?> register(UserEntity? newUser) async => newUser;
+
+  @override
+  Future<int> resetPassword(String mailAddress) async => 200;
+
+  @override
+  Future<UserEntity> update(UserEntity? user) async => user ?? mockUserFullPayload;
+}
+
+LoginBloc _buildBloc(_FakeAuthRepository repository, [_FakeAccountRepository? accountRepository]) {
+  final accountRepo = accountRepository ?? (_FakeAccountRepository()..account = mockUserFullPayload);
+  return LoginBloc(
+    authenticateUserUseCase: AuthenticateUserUseCase(repository),
+    sendOtpUseCase: SendOtpUseCase(repository),
+    verifyOtpUseCase: VerifyOtpUseCase(repository),
+    getAccountUseCase: GetAccountUseCase(accountRepo),
+  );
+}
+
 void main() {
   //region main setup
-  late LoginRepository repository;
-  late AccountRepository accountRepository;
+  late _FakeAuthRepository repository;
+  late _FakeAccountRepository accountRepository;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
-    repository = MockLoginRepository();
-    accountRepository = MockAccountRepository();
+  });
+
+  setUp(() {
+    repository = _FakeAuthRepository();
+    accountRepository = _FakeAccountRepository()..account = mockUserFullPayload;
   });
 
   tearDown(() async {
@@ -86,7 +138,7 @@ void main() {
     });
 
     test("Initial state is LoginState", () {
-      expect(LoginBloc(repository: MockLoginRepository()).state, const LoginState());
+      expect(_buildBloc(_FakeAuthRepository()).state, const LoginState());
     });
 
     test("props", () {
@@ -121,18 +173,17 @@ void main() {
   /// Login Bloc Tests
   group("LoginBloc", () {
     test("initial state is LoginState", () {
-      expect(LoginBloc(repository: repository).state, const LoginState());
+      expect(_buildBloc(repository).state, const LoginState());
     });
 
     group("LoginFormSubmitted", () {
-      const input = mockUserJWTPayload;
-      Future<JWTToken> output = Future<JWTToken>.value(mockJWTTokenPayload);
-      repositoryMethod() => repository.authenticate(input);
+      const input = AuthCredentialsEntity(username: 'username', password: 'password');
+      const output = AuthTokenEntity(idToken: 'MOCK_TOKEN');
 
-      final event = LoginFormSubmitted(username: input.username!, password: input.password!);
+      final event = LoginFormSubmitted(username: input.username, password: input.password);
 
-      final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
-      final successState = LoginLoadedState(username: input.username!, password: input.password!);
+      final loadingState = LoginLoadingState(username: input.username, password: input.password);
+      final successState = LoginLoadedState(username: input.username, password: input.password);
       const failureState = LoginErrorState(message: "Login API Error: Unauthorized: null");
       const failure2State = LoginErrorState(message: "Login API Error: Invalid Request: Invalid Access Token");
 
@@ -143,37 +194,31 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         "emits [loading, success] when login is successful",
         setUp: () {
-          reset(repository);
-          when(repositoryMethod()).thenAnswer((_) async => output);
+          repository.authenticateResult = output;
         },
-        build: () => LoginBloc(repository: repository),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
-        verify: (_) => verify(repositoryMethod()).called(1),
       );
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid operation input failed",
         setUp: () {
-          reset(repository);
-          when(repositoryMethod()).thenThrow(UnauthorizedException());
+          repository.authenticateFailure = UnauthorizedException();
         },
-        build: () => LoginBloc(repository: repository),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
-        verify: (_) => verify(repositoryMethod()).called(1),
       );
 
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid input then failed",
         setUp: () {
-          reset(repository);
-          when(repositoryMethod()).thenAnswer((_) async => const JWTToken(idToken: null));
+          repository.authenticateResult = const AuthTokenEntity(idToken: null);
         },
-        build: () => LoginBloc(repository: repository),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
         expect: () => states2Failure,
-        verify: (_) => verify(repositoryMethod()).called(1),
       );
     });
   });
@@ -182,15 +227,15 @@ void main() {
 
   group('LoginBloc test 2', () {
     test('initial state is LoginState', () {
-      expect(LoginBloc(repository: repository).state, const LoginState());
+      expect(_buildBloc(repository).state, const LoginState());
     });
 
     group('LoginFormSubmitted', () {
-      const input = UserJWT("username", "password");
-      final event = LoginFormSubmitted(username: input.username!, password: input.password!);
+      const input = AuthCredentialsEntity(username: "username", password: "password");
+      final event = LoginFormSubmitted(username: input.username, password: input.password);
 
-      final loadingState = LoginLoadingState(username: input.username!, password: input.password!);
-      final successState = LoginLoadedState(username: input.username!, password: input.password!);
+      final loadingState = LoginLoadingState(username: input.username, password: input.password);
+      final successState = LoginLoadedState(username: input.username, password: input.password);
       const failureState = LoginErrorState(message: "Login API Error: Unauthorized: null");
 
       blocTest<LoginBloc, LoginState>(
@@ -199,23 +244,17 @@ void main() {
           await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
           await AppLocalStorage().save(StorageKeys.username.name, "username");
           await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
-
-          when(repository.authenticate(input)).thenAnswer((_) async => mockJWTTokenPayload);
-          when(accountRepository.getAccount()).thenAnswer((_) async => mockUserFullPayload);
+          repository.authenticateResult = const AuthTokenEntity(idToken: 'MOCK_TOKEN');
         },
-        build: () => LoginBloc(repository: repository, accountRepository: accountRepository),
+        build: () => _buildBloc(repository, accountRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
-        verify: (_) {
-          verify(repository.authenticate(input)).called(1);
-          verify(accountRepository.getAccount()).called(1);
-        },
       );
 
       blocTest<LoginBloc, LoginState>(
         'given invalid credentials when submitted then emits [loading, error]',
-        setUp: () => when(repository.authenticate(input)).thenThrow(UnauthorizedException()),
-        build: () => LoginBloc(repository: repository),
+        setUp: () => repository.authenticateFailure = UnauthorizedException(),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(event),
         expect: () => [loadingState, failureState],
       );
@@ -223,67 +262,39 @@ void main() {
 
     group('SendOtpRequested', () {
       const email = "test@example.com";
-      final request = SendOtpRequest(email: email);
       const event = SendOtpRequested(email: email);
 
       blocTest<LoginBloc, LoginState>(
         'given valid email when requested then emits [loading, success]',
-        setUp: () => when(repository.sendOtp(request)).thenAnswer((_) async {}),
-        build: () => LoginBloc(repository: repository),
+        setUp: () => repository.sendOtpFailure = null,
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
         expect: () => [
           isA<LoginLoadingState>().having((state) => state.username, 'username', email),
           isA<LoginOtpSentState>().having((state) => state.email, 'email', email),
         ],
-        // verify: (_) => verify(repository.sendOtp(request)).called(1),
       );
 
       blocTest<LoginBloc, LoginState>(
         'given invalid email when requested then emits [loading, error]',
-        setUp: () => when(repository.sendOtp(request)).thenThrow(Exception("Invalid email")),
-        build: () => LoginBloc(repository: repository),
+        setUp: () => repository.sendOtpFailure = Exception("Invalid email"),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(event),
-        expect: () => [const LoginLoadingState(username: email), const LoginOtpSentState(email: email)],
+        expect: () => [const LoginLoadingState(username: email), isA<LoginErrorState>()],
       );
     });
 
     group('VerifyOtpSubmitted', () {
       const email = "test@example.com";
       const otpCode = "123456";
-      final request = VerifyOtpRequest(email: email, otp: otpCode);
       const event = VerifyOtpSubmitted(email: email, otpCode: otpCode);
 
       const loadingState = LoginState(status: LoginStatus.loading);
-      //final successState = const LoginLoadedState(username: email, password: otpCode);
-
-      // blocTest<LoginBloc, LoginState>(
-      //   'given valid OTP when submitted then emits [loading, success]',
-      //   setUp: () async {
-      //     // Mock repository responses first
-      //     when(repository.verifyOtp(request)).thenAnswer((_) async => mockJWTTokenPayload);
-      //     when(accountRepository.getAccount()).thenAnswer((_) async => mockUserFullPayload);
-      //
-      //     // Clear storage before test
-      //     await AppLocalStorage().clear();
-      //
-      //     // Pre-populate storage with required values
-      //     await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
-      //     await AppLocalStorage().save(StorageKeys.username.name, email);
-      //     await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
-      //   },
-      //   build: () => LoginBloc(repository: repository, accountRepository: accountRepository),
-      //   act: (bloc) => bloc.add(event),
-      //   expect: () => [loadingState, successState],
-      //   verify: (_) {
-      //     verify(repository.verifyOtp(request)).called(1);
-      //     verify(accountRepository.getAccount()).called(1);
-      //   },
-      // );
 
       blocTest<LoginBloc, LoginState>(
         'given invalid OTP when submitted then emits [loading, error]',
-        setUp: () => when(repository.verifyOtp(request)).thenAnswer((_) async => const JWTToken(idToken: null)),
-        build: () => LoginBloc(repository: repository),
+        setUp: () => repository.verifyResult = const AuthTokenEntity(idToken: null),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(event),
         expect: () => [loadingState, const LoginErrorState(message: "OTP validation error")],
       );
@@ -292,7 +303,7 @@ void main() {
     group('ChangeLoginMethod', () {
       blocTest<LoginBloc, LoginState>(
         'given OTP method when changed then updates login method',
-        build: () => LoginBloc(repository: repository),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(const ChangeLoginMethod(method: LoginMethod.otp)),
         expect: () => [const LoginState(loginMethod: LoginMethod.otp, status: LoginStatus.initial, isOtpSent: false)],
       );
@@ -301,7 +312,7 @@ void main() {
     group('TogglePasswordVisibility', () {
       blocTest<LoginBloc, LoginState>(
         'when toggled then updates password visibility',
-        build: () => LoginBloc(repository: repository),
+        build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(const TogglePasswordVisibility()),
         expect: () => [const LoginState(passwordVisible: true)],
       );

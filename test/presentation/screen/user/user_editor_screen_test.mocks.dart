@@ -6,12 +6,12 @@
 import 'dart:async' as _i4;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i5;
-import 'package:flutter_bloc_advance/data/models/authority.dart' as _i9;
-import 'package:flutter_bloc_advance/data/models/user.dart' as _i7;
-import 'package:flutter_bloc_advance/data/repository/authority_repository.dart' as _i8;
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart' as _i6;
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart' as _i3;
-import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user_bloc.dart' as _i2;
+import 'package:flutter_bloc_advance/features/users/data/models/authority.dart' as _i9;
+import 'package:flutter_bloc_advance/features/users/data/models/user.dart' as _i7;
+import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart' as _i8;
+import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart' as _i6;
+import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart' as _i3;
+import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint

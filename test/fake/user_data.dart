@@ -1,9 +1,9 @@
-import 'package:flutter_bloc_advance/data/models/authority.dart';
-import 'package:flutter_bloc_advance/data/models/change_password.dart';
-import 'package:flutter_bloc_advance/data/models/jwt_token.dart';
-import 'package:flutter_bloc_advance/data/models/menu.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/models/user_jwt.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
+import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
+import 'package:flutter_bloc_advance/features/auth/data/models/jwt_token.dart';
+import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
+import 'package:flutter_bloc_advance/features/auth/data/models/user_jwt.dart';
 
 final DateTime createdDate = DateTime(2024, 1, 1);
 

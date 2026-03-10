@@ -1,7 +1,8 @@
-import 'package:flutter_bloc_advance/data/app_api_exception.dart';
-import 'package:flutter_bloc_advance/data/models/change_password.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
+import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
@@ -24,7 +25,7 @@ void main() {
       final result = await AccountRepository().register(entity);
 
       //check assets/mock/POST_register.json
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
       expect(result?.id, "user-2");
       expect(result?.login, "user");
       expect(result?.email, "user@sample.tech");
@@ -44,7 +45,7 @@ void main() {
       final result = await AccountRepository().register(entity);
 
       //check assets/mock/POST_register.json
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
       expect(result?.id, "user-2");
       expect(result?.login, "user");
       expect(result?.email, "user@sample.tech");
@@ -77,7 +78,7 @@ void main() {
     test("Given valid user without token when register then return user successfully", () async {
       final entity = mockUserFullPayload;
       final result = await AccountRepository().register(entity);
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
     });
   });
 
@@ -126,7 +127,7 @@ void main() {
     test("Given valid user when getAccount then return user successfully", () async {
       await TestUtils().setupAuthentication();
       final result = await AccountRepository().getAccount();
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
     });
     //fail: without AccessToken
     test("Given valid user when getAccount without AccessToken then return user successfully", () async {
@@ -146,7 +147,7 @@ void main() {
       await TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
       final result = await AccountRepository().update(entity);
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
     });
     //fail: without AccessToken
     test("Given valid user when saveAccount without AccessToken then return user successfully", () async {
@@ -178,7 +179,7 @@ void main() {
       await TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
       final result = await AccountRepository().update(entity);
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
     });
     //fail: without AccessToken
     test("Given valid user when updateAccount without AccessToken then return user successfully", () async {

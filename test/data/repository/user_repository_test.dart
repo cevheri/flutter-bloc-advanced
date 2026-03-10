@@ -1,6 +1,7 @@
-import 'package:flutter_bloc_advance/data/app_api_exception.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
+import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';
@@ -19,7 +20,7 @@ void main() {
     test("Given valid user when getUsers then return user list successfully", () async {
       TestUtils().setupAuthentication();
       final result = await UserRepository().list();
-      expect(result, isA<List<User>>());
+      expect(result, isA<List<UserEntity>>());
       expect(result.length, 4);
     });
 
@@ -33,7 +34,7 @@ void main() {
       TestUtils().setupAuthentication();
       final result = await UserRepository().retrieve("user-1");
 
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");
@@ -64,7 +65,7 @@ void main() {
       TestUtils().setupAuthentication();
       final result = await UserRepository().retrieveByLogin("username");
 
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");
@@ -96,7 +97,7 @@ void main() {
       final entity = mockUserFullPayload;
       final result = await UserRepository().create(entity);
 
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");
@@ -136,7 +137,7 @@ void main() {
       TestUtils().setupAuthentication();
       final result = await UserRepository().list(page: 0, size: 10);
 
-      expect(result, isA<List<User>>());
+      expect(result, isA<List<UserEntity>>());
       expect(result.length, 4);
     });
 
@@ -150,7 +151,7 @@ void main() {
       TestUtils().setupAuthentication();
       final result = await UserRepository().listByAuthority(0, 10, "ROLE_ADMIN");
 
-      expect(result, isA<List<User>>());
+      expect(result, isA<List<UserEntity>>());
       expect(result.length, 4);
     });
 
@@ -170,7 +171,7 @@ void main() {
       TestUtils().setupAuthentication();
       final result = await UserRepository().listByNameAndRole(0, 10, "admin", "ROLE_ADMIN");
 
-      expect(result, isA<List<User>>());
+      expect(result, isA<List<UserEntity>>());
       expect(result.length, 4);
     });
 
@@ -191,7 +192,7 @@ void main() {
       final entity = mockUserFullPayload;
       final result = await UserRepository().update(entity);
 
-      expect(result, isA<User>());
+      expect(result, isA<UserEntity>());
       expect(result?.id, "user-1");
       expect(result?.login, "admin");
       expect(result?.firstName, "Admin");

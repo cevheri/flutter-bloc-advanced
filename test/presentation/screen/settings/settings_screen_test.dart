@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
+import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/screen/settings/settings_screen.dart';
-import 'package:flutter_bloc_advance/routes/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';

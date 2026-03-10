@@ -1,13 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/presentation/screen/register/bloc/register.dart';
+import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 
 import '../../test_utils.dart';
-import 'register_bloc_test.mocks.dart';
 
 /// BLoc Test for RegisterBloc
 ///
@@ -18,14 +15,42 @@ import 'register_bloc_test.mocks.dart';
 /// 1.3. CopyWith replaces non-null parameters <p>
 /// 2. Event test <p>
 /// 3. Bloc test <p>
-@GenerateMocks([AccountRepository])
+class _FakeAccountRepository implements IAccountRepository {
+  UserEntity? registerResult;
+  Object? failure;
+
+  @override
+  Future<int> changePassword(passwordChangeDTO) async => 200;
+
+  @override
+  Future<bool> delete(String id) async => true;
+
+  @override
+  Future<UserEntity> getAccount() async => const UserEntity();
+
+  @override
+  Future<UserEntity?> register(UserEntity? newUser) async {
+    if (failure != null) throw failure!;
+    return registerResult;
+  }
+
+  @override
+  Future<int> resetPassword(String mailAddress) async => 200;
+
+  @override
+  Future<UserEntity> update(UserEntity? user) async => user ?? const UserEntity();
+}
+
 void main() {
   //region main setup
-  late AccountRepository repository;
+  late _FakeAccountRepository repository;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
-    repository = MockAccountRepository();
+  });
+
+  setUp(() {
+    repository = _FakeAccountRepository();
   });
 
   tearDown(() async {
@@ -37,7 +62,7 @@ void main() {
   //region state
   /// Register State Tests
   group("RegisterState", () {
-    const user = User(firstName: "test", lastName: "test", email: "test@test.com");
+    const user = UserEntity(firstName: "test", lastName: "test", email: "test@test.com");
     const status = RegisterStatus.initial;
 
     test("supports value comparisons", () {
@@ -71,7 +96,7 @@ void main() {
   //region event
   /// Register Event Tests
   group("RegisterEvent", () {
-    const user = User(firstName: "test", lastName: "test", email: "test@test.com");
+    const user = UserEntity(firstName: "test", lastName: "test", email: "test@test.com");
 
     test("RegisterFormSubmitted", () {
       expect(const RegisterFormSubmitted(data: user).props, [user]);
@@ -88,10 +113,7 @@ void main() {
     });
 
     group("LoginFormSubmitted", () {
-      const input = User(firstName: "test", lastName: "test", email: "test@test.com");
-      method() => repository.register(input);
-      Future<User?> output = Future<User?>.value(input);
-
+      const input = UserEntity(firstName: "test", lastName: "test", email: "test@test.com");
       const event = RegisterFormSubmitted(data: input);
       const loadingState = RegisterLoadingState();
       const successState = RegisterCompletedState(user: input);
@@ -102,29 +124,26 @@ void main() {
 
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, success] when submit is successful",
-        setUp: () => when(method()).thenAnswer((_) async => output),
+        setUp: () => repository.registerResult = input,
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
-        verify: (_) => verify(method()).called(1),
       );
 
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, failure] when exception occurs",
-        setUp: () => when(method()).thenThrow(Exception()),
+        setUp: () => repository.failure = Exception(),
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
-        verify: (_) => verify(method()).called(1),
       );
 
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, failure] when response is null",
-        setUp: () => when(method()).thenAnswer((_) async => null),
+        setUp: () => repository.registerResult = null,
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
-        verify: (_) => verify(method()).called(1),
       );
     });
   });

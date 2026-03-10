@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter_bloc_advance/data/models/user_jwt.dart';
+import 'package:flutter_bloc_advance/features/auth/data/models/user_jwt.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../fake/user_data.dart';

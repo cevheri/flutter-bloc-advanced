@@ -1,4 +1,4 @@
-import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

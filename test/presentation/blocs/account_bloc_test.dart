@@ -1,14 +1,11 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/account/account.dart';
+import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
+import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 
 import '../../fake/user_data.dart';
 import '../../test_utils.dart';
-import 'account_bloc_test.mocks.dart';
 
 /// BLoc Test for AccountBloc
 ///
@@ -20,7 +17,38 @@ import 'account_bloc_test.mocks.dart';
 /// 2. Event test <p>
 /// 3. Bloc test <p>
 
-@GenerateMocks([AccountRepository])
+class _FakeAccountRepository implements IAccountRepository {
+  UserEntity? account;
+  Object? failure;
+
+  @override
+  Future<int> changePassword(passwordChangeDTO) async => 200;
+
+  @override
+  Future<bool> delete(String id) async => true;
+
+  @override
+  Future<UserEntity> getAccount() async {
+    if (failure != null) throw failure!;
+    return account!;
+  }
+
+  @override
+  Future<UserEntity?> register(UserEntity? newUser) async {
+    if (failure != null) throw failure!;
+    return account ?? newUser;
+  }
+
+  @override
+  Future<int> resetPassword(String mailAddress) async => 200;
+
+  @override
+  Future<UserEntity> update(UserEntity? user) async {
+    if (failure != null) throw failure!;
+    return user ?? account!;
+  }
+}
+
 void main() {
   //region main setup
   setUpAll(() async {
@@ -45,7 +73,7 @@ void main() {
 
     test("copyWith replaces non-null parameters", () {
       const state = AccountState(data: null, status: AccountStatus.initial);
-      final user = User(
+      final user = UserEntity(
         id: "1",
         login: "test_login",
         firstName: "John",
@@ -89,11 +117,11 @@ void main() {
   //region bloc
   /// Account Bloc Tests
   group("AccountBloc", () {
-    late AccountRepository repository;
+    late _FakeAccountRepository repository;
     late AccountBloc bloc;
 
     setUp(() {
-      repository = MockAccountRepository();
+      repository = _FakeAccountRepository();
       bloc = AccountBloc(repository: repository);
     });
 
@@ -109,7 +137,7 @@ void main() {
       blocTest<AccountBloc, AccountState>(
         "emits [loading, success] when AccountLoad is added and getAccount succeeds",
         build: () {
-          when(repository.getAccount()).thenAnswer((_) async => mockUserFullPayload);
+          repository.account = mockUserFullPayload;
           return bloc;
         },
         act: (bloc) => bloc.add(const AccountFetchEvent()),
@@ -122,7 +150,7 @@ void main() {
       blocTest<AccountBloc, AccountState>(
         "emits [loading, failure] when AccountLoad is added and getAccount fails",
         build: () {
-          when(repository.getAccount()).thenThrow(Exception("error"));
+          repository.failure = Exception("error");
           return bloc;
         },
         act: (bloc) => bloc.add(const AccountFetchEvent()),

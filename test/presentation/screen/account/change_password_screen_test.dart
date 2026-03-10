@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/configuration/app_key_constants.dart';
-import 'package:flutter_bloc_advance/configuration/app_logger.dart';
+import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/screen/change_password/bloc/change_password_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/screen/change_password/change_password_screen.dart';
+import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/change_password_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';

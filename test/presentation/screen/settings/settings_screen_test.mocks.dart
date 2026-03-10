@@ -6,8 +6,8 @@
 import 'dart:async' as _i3;
 
 import 'package:flutter_bloc/flutter_bloc.dart' as _i4;
-import 'package:flutter_bloc_advance/configuration/local_storage.dart' as _i5;
-import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer_bloc.dart' as _i2;
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart' as _i5;
+import 'package:flutter_bloc_advance/app/shell/drawer/drawer_bloc.dart' as _i2;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
-import 'package:flutter_bloc_advance/presentation/screen/login/login_screen.dart';
-import 'package:flutter_bloc_advance/presentation/shell/responsive_scaffold.dart';
-import 'package:flutter_bloc_advance/presentation/shell/sidebar/sidebar_widget.dart';
-import 'package:flutter_bloc_advance/presentation/shell/top_bar/top_bar_widget.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
+import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_widget.dart';
+import 'package:flutter_bloc_advance/app/shell/top_bar/top_bar_widget.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../test_utils.dart';

@@ -5,13 +5,13 @@
 // ignore_for_file: no_leading_underscores_for_library_prefixes
 import 'dart:async' as _i3;
 
-import 'package:flutter_bloc_advance/data/models/jwt_token.dart' as _i4;
-import 'package:flutter_bloc_advance/data/models/menu.dart' as _i9;
-import 'package:flutter_bloc_advance/data/models/send_otp_request.dart' as _i6;
-import 'package:flutter_bloc_advance/data/models/user_jwt.dart' as _i5;
-import 'package:flutter_bloc_advance/data/models/verify_otp_request.dart' as _i7;
-import 'package:flutter_bloc_advance/data/repository/login_repository.dart' as _i2;
-import 'package:flutter_bloc_advance/data/repository/menu_repository.dart' as _i8;
+import 'package:flutter_bloc_advance/features/auth/data/models/jwt_token.dart' as _i4;
+import 'package:flutter_bloc_advance/app/shell/models/menu.dart' as _i9;
+import 'package:flutter_bloc_advance/features/auth/data/models/send_otp_request.dart' as _i6;
+import 'package:flutter_bloc_advance/features/auth/data/models/user_jwt.dart' as _i5;
+import 'package:flutter_bloc_advance/features/auth/data/models/verify_otp_request.dart' as _i7;
+import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart' as _i2;
+import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart' as _i8;
 import 'package:mockito/mockito.dart' as _i1;
 
 // ignore_for_file: type=lint

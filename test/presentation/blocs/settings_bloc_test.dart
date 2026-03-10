@@ -1,6 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/presentation/screen/settings/bloc/settings.dart';
+import 'package:flutter_bloc_advance/features/settings/application/settings_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../test_utils.dart';

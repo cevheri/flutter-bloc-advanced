@@ -1,9 +1,9 @@
 import 'dart:io';
 
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/data/app_api_exception.dart';
-import 'package:flutter_bloc_advance/data/repository/account_repository.dart';
-import 'package:flutter_bloc_advance/presentation/screen/change_password/bloc/change_password_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';

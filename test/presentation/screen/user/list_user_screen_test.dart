@@ -2,14 +2,14 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/repository/authority_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
+import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
+import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/presentation/common_blocs/authority/authority_bloc.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/list/list_user_screen.dart';
-import 'package:flutter_bloc_advance/routes/go_router_routes/routes/user_routes.dart';
+import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
+import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -48,18 +48,11 @@ void main() {
 
   tearDown(() async {
     await testUtils.tearDownUnitTest();
-    UserRoutes.dispose();
+    // UsersFeatureRoutes has no dispose — cleanup handled by test framework
   });
 
   Widget buildTestableWidget() {
-    UserRoutes.init(
-      userBloc: mockUserBloc,
-      userRepository: mockUserRepository,
-      authorityBloc: mockAuthorityBloc,
-      authorityRepository: mockAuthorityRepository,
-    );
-
-    final routes = UserRoutes.routes.map((route) {
+    final routes = UsersFeatureRoutes.routes.map((route) {
       return GoRoute(
         name: route.name,
         path: route.path,

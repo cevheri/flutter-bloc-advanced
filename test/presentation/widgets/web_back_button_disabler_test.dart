@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_bloc_advance/presentation/common_widgets/web_back_button_disabler.dart';
+import 'package:flutter_bloc_advance/shared/widgets/web_back_button_disabler.dart';
 
 void main() {
   group('WebBackButtonDisabler Tests', () {

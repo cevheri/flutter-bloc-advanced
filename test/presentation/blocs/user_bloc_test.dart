@@ -1,25 +1,74 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/data/models/user.dart';
-import 'package:flutter_bloc_advance/data/repository/user_repository.dart';
-import 'package:flutter_bloc_advance/presentation/screen/user/bloc/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 
 import '../../test_utils.dart';
-import 'user_bloc_test.mocks.dart';
 
-@GenerateMocks([UserRepository])
+class _FakeUserRepository implements IUserRepository {
+  UserEntity? retrieveResult;
+  List<UserEntity> listResult = const [];
+  Object? failure;
+
+  @override
+  Future<UserEntity?> create(UserEntity user) async {
+    if (failure != null) throw failure!;
+    return retrieveResult ?? user;
+  }
+
+  @override
+  Future<void> delete(String id) async {
+    if (failure != null) throw failure!;
+  }
+
+  @override
+  Future<List<UserEntity>> list({int page = 0, int size = 10, List<String> sort = const ['id,desc']}) async {
+    if (failure != null) throw failure!;
+    return listResult;
+  }
+
+  @override
+  Future<List<UserEntity>> listByAuthority(int page, int size, String authority) async {
+    if (failure != null) throw failure!;
+    return listResult;
+  }
+
+  @override
+  Future<List<UserEntity>> listByNameAndRole(int page, int size, String name, String authority) async {
+    if (failure != null) throw failure!;
+    return listResult;
+  }
+
+  @override
+  Future<UserEntity?> retrieve(String id) async {
+    if (failure != null) throw failure!;
+    return retrieveResult;
+  }
+
+  @override
+  Future<UserEntity?> retrieveByLogin(String login) async {
+    if (failure != null) throw failure!;
+    return retrieveResult;
+  }
+
+  @override
+  Future<UserEntity?> update(UserEntity user) async {
+    if (failure != null) throw failure!;
+    return retrieveResult ?? user;
+  }
+}
+
 void main() {
-  late MockUserRepository repository;
+  late _FakeUserRepository repository;
   late UserBloc bloc;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
-    repository = MockUserRepository();
   });
 
   setUp(() {
+    repository = _FakeUserRepository();
     bloc = UserBloc(repository: repository);
   });
 
@@ -34,8 +83,8 @@ void main() {
     });
 
     test('UserState copyWith test', () {
-      const user = User(id: "1", firstName: "Test");
-      const users = [User(id: "1", firstName: "Test")];
+      const user = UserEntity(id: "1", firstName: "Test");
+      const users = [UserEntity(id: "1", firstName: "Test")];
 
       expect(
         const UserState().copyWith(status: UserStatus.success, data: user, userList: users, err: "error"),
@@ -44,8 +93,8 @@ void main() {
     });
 
     test('UserState props test', () {
-      const user = User(id: "1", firstName: "Test");
-      const users = [User(id: "1", firstName: "Test")];
+      const user = UserEntity(id: "1", firstName: "Test");
+      const users = [UserEntity(id: "1", firstName: "Test")];
 
       expect(const UserState(status: UserStatus.loading, data: user, userList: users, err: "error").props, [
         UserStatus.loading,
@@ -57,14 +106,14 @@ void main() {
   });
 
   group('UserBloc Event Tests', () {
-    const testUser = User(id: "1", firstName: "Test", lastName: "User", email: "test@test.com");
+    const testUser = UserEntity(id: "1", firstName: "Test", lastName: "User", email: "test@test.com");
 
-    const newUser = User(firstName: "New", lastName: "User", email: "new@test.com");
+    const newUser = UserEntity(firstName: "New", lastName: "User", email: "new@test.com");
 
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits success state when creating new user',
       setUp: () {
-        when(repository.create(newUser)).thenAnswer((_) async => testUser);
+        repository.retrieveResult = testUser;
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
@@ -79,7 +128,7 @@ void main() {
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits success state when updating existing user',
       setUp: () {
-        when(repository.update(testUser)).thenAnswer((_) async => testUser);
+        repository.retrieveResult = testUser;
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
@@ -94,7 +143,7 @@ void main() {
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits failure state on create error',
       setUp: () {
-        when(repository.create(newUser)).thenThrow(Exception('Failed to create user'));
+        repository.failure = Exception('Failed to create user');
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
@@ -104,7 +153,7 @@ void main() {
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits failure state on update error',
       setUp: () {
-        when(repository.update(testUser)).thenThrow(Exception('Failed to update user'));
+        repository.failure = Exception('Failed to update user');
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
@@ -113,14 +162,14 @@ void main() {
 
     group('UserSearchEvent Tests', () {
       const users = [
-        User(id: "1", firstName: "Test", lastName: "User"),
-        User(id: "2", firstName: "Test2", lastName: "User2"),
+        UserEntity(id: "1", firstName: "Test", lastName: "User"),
+        UserEntity(id: "2", firstName: "Test2", lastName: "User2"),
       ];
 
       blocTest<UserBloc, UserState>(
         'emits success state when search by authority is successful',
         setUp: () {
-          when(repository.listByAuthority(0, 10, "ROLE_USER")).thenAnswer((_) async => users);
+          repository.listResult = users;
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
@@ -133,7 +182,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits success state when search by name and role is successful',
         setUp: () {
-          when(repository.listByNameAndRole(0, 10, "Test", "ROLE_USER")).thenAnswer((_) async => users);
+          repository.listResult = users;
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(name: "Test", authorities: "ROLE_USER")),
@@ -146,7 +195,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits failure state when search fails',
         setUp: () {
-          when(repository.listByAuthority(0, 10, "ROLE_USER")).thenThrow(Exception('Search failed'));
+          repository.failure = Exception('Search failed');
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
@@ -161,7 +210,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits success state when fetch is successful',
         setUp: () {
-          when(repository.retrieve("1")).thenAnswer((_) async => testUser);
+          repository.retrieveResult = testUser;
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserFetchEvent("1")),
@@ -174,7 +223,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits failure state when fetch fails',
         setUp: () {
-          when(repository.retrieve("1")).thenThrow(Exception('Fetch failed'));
+          repository.failure = Exception('Fetch failed');
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserFetchEvent("1")),
@@ -188,9 +237,6 @@ void main() {
     group('UserDeleteEvent Tests', () {
       blocTest<UserBloc, UserState>(
         'emits success state when delete is successful',
-        setUp: () {
-          when(repository.delete("2")).thenAnswer((_) async {});
-        },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),
         expect: () => [const UserState(status: UserStatus.loading), const UserState(status: UserStatus.deleteSuccess)],
@@ -209,7 +255,7 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits failure state when delete fails',
         setUp: () {
-          when(repository.delete("2")).thenThrow(Exception('Delete failed'));
+          repository.failure = Exception('Delete failed');
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),

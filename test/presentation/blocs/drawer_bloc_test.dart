@@ -1,9 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/data/models/menu.dart';
-import 'package:flutter_bloc_advance/data/repository/login_repository.dart';
-import 'package:flutter_bloc_advance/data/repository/menu_repository.dart';
-import 'package:flutter_bloc_advance/presentation/common_widgets/drawer/drawer_bloc/drawer.dart';
-import 'package:flutter_bloc_advance/utils/menu_list_cache.dart';
+import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
+import 'package:flutter_bloc_advance/app/shell/drawer/drawer_bloc.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_list_cache.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/annotations.dart';
 import 'package:mockito/mockito.dart';
