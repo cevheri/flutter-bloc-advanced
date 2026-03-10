@@ -71,6 +71,8 @@ The screenshots below are included to help contributors and adopters understand 
 - Manual JSON serialization for models
 - Environment-driven configuration for local and production modes
 
+![High-level architecture diagram](docs/high-level-architecture.svg)
+
 ## Quick Start
 
 ### Prerequisites
