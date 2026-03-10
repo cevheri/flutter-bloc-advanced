@@ -67,7 +67,10 @@ The screenshots below are included to help contributors and adopters understand 
 ### Architecture
 
 - BLoC for state management
+- Feature-First Clean Architecture structure
+- Use Cases for business logic
 - Repository pattern for data access
+- Feature-based routing (clean boundaries)
 - Manual JSON serialization for models
 - Environment-driven configuration for local and production modes
 
@@ -156,28 +159,21 @@ The production environment is configured in `lib/configuration/environment.dart`
 
 ```text
 lib/
-  configuration/       # App config, environment, storage, logging
-  data/
-    models/            # Data models with manual fromJson/toJson
-    repository/        # Repository implementations
+  app/                 # Application-wide configuration and routing
+  features/            # Feature-based clean architecture modules
+    <feature>/
+      application/     # BLoCs and Use Cases
+      data/            # Models and Repository implementations
+      navigation/      # Feature-specific routes
+      presentation/    # Feature screens and widgets
+  shared/              # Shared logic, models, and UI components
+    design_system/     # Design tokens and components
+    widgets/           # Shared reusable widgets
   generated/           # Localization generated files
   l10n/                # Localization ARB files
   main/                # Entry points (main_local.dart, main_prod.dart)
-  presentation/
-    common_blocs/      # Shared BLoCs (account, authority, theme, drawer)
-    common_widgets/    # Reusable widgets
-    design_system/     # Design tokens and components
-    screen/            # Feature screens and their BLoCs
-  routes/              # go_router configuration
-  utils/               # Utility helpers
 
-test/
-  conf/                # Test configuration
-  data/model/          # Model unit tests
-  data/repository/     # Repository unit tests
-  presentation/blocs/  # BLoC unit tests
-  presentation/screen/ # Screen widget tests
-  presentation/widgets/# Widget unit tests
+test/                  # Mirrors lib/ structure for unit and widget tests
 ```
 
 ## Build, Test, and Quality
@@ -246,13 +242,15 @@ To enable SonarQube, add the `SONAR_TOKEN` secret to your repository or organiza
 
 ## Adding a New Feature
 
-1. Add a model to `lib/data/models/`.
-2. Add a repository to `lib/data/repository/`.
-3. Add mock JSON under `assets/mock/` for local development.
-4. Create the screen and BLoC under `lib/presentation/screen/<feature>/`.
-5. Register the route under `lib/routes/go_router_routes/`.
-6. Add localization keys to `lib/l10n/`.
-7. Add tests under `test/` mirroring the `lib/` structure.
+1. Create a new feature folder under `lib/features/`.
+2. Define the domain model and repository interface in `lib/features/<feature>/domain/` (optional, can go directly to `data/`).
+3. Implement models and repository in `lib/features/<feature>/data/`.
+4. Add use cases in `lib/features/<feature>/application/usecases/`.
+5. Create BLoC(s) in `lib/features/<feature>/application/`.
+6. Implement the UI in `lib/features/<feature>/presentation/pages/`.
+7. Define feature routes in `lib/features/<feature>/navigation/`.
+8. Register the feature routes in `lib/app/router/app_router.dart`.
+9. Add tests in `test/features/<feature>/` mirroring the feature structure.
 
 ## Contributing
 
