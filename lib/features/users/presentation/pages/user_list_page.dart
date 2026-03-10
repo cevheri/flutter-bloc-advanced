@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/semantic_colors.dart';
+import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -77,15 +78,15 @@ class UserListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          if (constraints.maxWidth > 700) {
-            return UserListContent(formKey: formKey, horizontalPadding: 24, maxWidth: 1200);
-          }
-          return const UserMobileListView();
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (AppBreakpoints.isMobile(constraints.maxWidth)) {
+          return UserMobileListView(formKey: formKey);
+        }
+        return SingleChildScrollView(
+          child: UserListContent(formKey: formKey, horizontalPadding: 24, maxWidth: 1200),
+        );
+      },
     );
   }
 }
@@ -716,69 +717,303 @@ class UserTableRow extends StatelessWidget {
   Widget build(BuildContext context) => _TableRow(user: user, isLast: isLast, formKey: formKey);
 }
 
-class UserMobileListView extends StatelessWidget {
-  const UserMobileListView({super.key});
+class _MobileUserList extends StatelessWidget {
+  const _MobileUserList({required this.formKey});
+
+  final GlobalKey<FormBuilderState> formKey;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
 
-    return BlocBuilder<UserBloc, UserState>(
-      builder: (context, state) {
-        if (state.status == UserStatus.searchSuccess && state.userList != null) {
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: state.userList!.length,
-            itemBuilder: (context, index) {
-              final user = state.userList![index];
-              return Card(
-                margin: const EdgeInsets.only(bottom: 8),
-                child: ListTile(
-                  leading: CircleAvatar(
-                    radius: 18,
-                    backgroundColor: cs.primaryContainer,
-                    child: Text(
-                      (user.firstName?.isNotEmpty == true ? user.firstName![0] : '?').toUpperCase(),
-                      style: tt.labelMedium?.copyWith(color: cs.onPrimaryContainer, fontWeight: FontWeight.w600),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  S.of(context).list_user,
+                  style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
+              FilledButton.icon(
+                key: const Key('listUserCreateButtonKey'),
+                onPressed: () => context.goNamed(
+                  'userCreate',
+                  extra: {'fromRoute': ApplicationRoutesConstants.userList},
+                ),
+                icon: const Icon(Icons.add, size: 16),
+                label: Text(S.of(context).new_user),
+              ),
+            ],
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+          child: FormBuilder(
+            key: formKey,
+            child: Row(
+              children: [
+                const Expanded(child: SizedBox(height: 40, child: SearchNameField())),
+                const SizedBox(width: 8),
+                SizedBox(
+                  height: 40,
+                  child: OutlinedButton.icon(
+                    onPressed: () => _handleSearch(context),
+                    icon: const Icon(Icons.search, size: 16),
+                    label: Text(S.of(context).list),
+                    style: OutlinedButton.styleFrom(
+                      minimumSize: const Size(86, 40),
+                      maximumSize: const Size(120, 40),
                     ),
                   ),
-                  title: Text('${user.firstName ?? ''} ${user.lastName ?? ''}', style: tt.bodyMedium),
-                  subtitle: Text(user.email ?? '', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-                  trailing: PopupMenuButton<String>(
-                    onSelected: (value) {
-                      switch (value) {
-                        case 'edit':
-                          context.goNamed('userEdit', pathParameters: {'id': user.login ?? ''});
-                          break;
-                        case 'view':
-                          context.goNamed('userView', pathParameters: {'id': user.login ?? ''});
-                          break;
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      PopupMenuItem(value: 'edit', child: Text(S.of(context).edit_user)),
-                      PopupMenuItem(value: 'view', child: Text(S.of(context).view_user)),
-                    ],
-                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+        Expanded(
+          child: BlocBuilder<UserBloc, UserState>(
+            builder: (context, state) {
+              if (state.status == UserStatus.loading) {
+                return const Center(child: CircularProgressIndicator());
+              }
+              if (state.status == UserStatus.searchSuccess && state.userList != null && state.userList!.isNotEmpty) {
+                return Column(
+                  children: [
+                    Expanded(
+                      child: ListView.separated(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        itemCount: state.userList!.length,
+                        separatorBuilder: (_, _) => const SizedBox(height: 8),
+                        itemBuilder: (context, index) {
+                          return _MobileUserCard(user: state.userList![index], formKey: formKey);
+                        },
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.all(12),
+                      child: Text(
+                        '${state.userList!.length} row(s) listed.',
+                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.people_outline, size: 48, color: cs.onSurfaceVariant.withAlpha(102)),
+                    const SizedBox(height: 12),
+                    Text(S.of(context).list_user, style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+                  ],
                 ),
               );
             },
-          );
-        }
-        return Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(Icons.people_outline, size: 48, color: cs.onSurfaceVariant.withAlpha(102)),
-              const SizedBox(height: 12),
-              Text(S.of(context).list_user, style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
-            ],
           ),
-        );
-      },
+        ),
+      ],
     );
   }
+
+  void _handleSearch(BuildContext context) {
+    if (formKey.currentState?.saveAndValidate() ?? false) {
+      context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
+    }
+  }
+}
+
+class _MobileUserCard extends StatelessWidget {
+  const _MobileUserCard({required this.user, required this.formKey});
+
+  final dynamic user;
+  final GlobalKey<FormBuilderState> formKey;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+    final isActive = user.activated == true;
+    final isAdmin = user.authorities?.contains('ROLE_ADMIN') == true;
+    final statusColor = isActive
+        ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
+        : cs.error;
+
+    final initial = (user.firstName?.isNotEmpty == true ? user.firstName![0] : '?').toUpperCase();
+    final fullName = '${user.firstName ?? ''} ${user.lastName ?? ''}'.trim();
+
+    return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(10),
+        side: BorderSide(color: cs.outlineVariant),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                CircleAvatar(
+                  radius: 20,
+                  backgroundColor: cs.primaryContainer,
+                  child: Text(
+                    initial,
+                    style: tt.titleSmall?.copyWith(color: cs.onPrimaryContainer, fontWeight: FontWeight.w600),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        fullName.isNotEmpty ? fullName : user.login?.toString() ?? '',
+                        style: tt.titleSmall?.copyWith(fontWeight: FontWeight.w500),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      if (user.email != null) ...[
+                        const SizedBox(height: 2),
+                        Text(
+                          user.email.toString(),
+                          style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+                PopupMenuButton<String>(
+                  onSelected: (value) => _onAction(context, value),
+                  icon: Icon(Icons.more_vert, size: 22, color: cs.onSurfaceVariant),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'view',
+                      child: Row(
+                        children: [
+                          Icon(Icons.visibility, size: 18, color: cs.onSurface),
+                          const SizedBox(width: 8),
+                          Text(S.of(context).view_user),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Row(
+                        children: [
+                          Icon(Icons.edit, size: 18, color: cs.onSurface),
+                          const SizedBox(width: 8),
+                          Text(S.of(context).edit_user),
+                        ],
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: 'delete',
+                      child: Row(
+                        children: [
+                          Icon(Icons.delete, size: 18, color: cs.error),
+                          const SizedBox(width: 8),
+                          Text(S.of(context).delete_user, style: TextStyle(color: cs.error)),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Row(
+              children: [
+                _StatusBadge(label: isActive ? 'Active' : 'Inactive', color: statusColor),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: cs.secondaryContainer,
+                    borderRadius: BorderRadius.circular(100),
+                  ),
+                  child: Text(
+                    isAdmin ? S.of(context).admin : S.of(context).guest,
+                    style: tt.labelSmall?.copyWith(
+                      color: cs.onSecondaryContainer,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 11,
+                    ),
+                  ),
+                ),
+                if (user.login != null) ...[
+                  const SizedBox(width: 8),
+                  Flexible(
+                    child: Text(
+                      '@${user.login}',
+                      style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _onAction(BuildContext context, String action) {
+    final login = user.login?.toString() ?? '';
+    switch (action) {
+      case 'view':
+        context.goNamed('userView', pathParameters: {'id': login});
+      case 'edit':
+        context.goNamed('userEdit', pathParameters: {'id': login});
+      case 'delete':
+        _showDeleteConfirmation(context, login);
+    }
+  }
+
+  void _showDeleteConfirmation(BuildContext context, String userId) {
+    final cs = Theme.of(context).colorScheme;
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(S.of(ctx).warning),
+        content: Text(S.of(ctx).delete_confirmation),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx), child: Text(S.of(ctx).no)),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(ctx);
+              context.read<UserBloc>().add(UserDeleteEvent(userId));
+              late final StreamSubscription<UserState> sub;
+              sub = context.read<UserBloc>().stream.listen((state) {
+                if (state.status == UserStatus.deleteSuccess && context.mounted) {
+                  context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
+                  sub.cancel();
+                }
+              });
+            },
+            style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
+            child: Text(S.of(ctx).yes),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class UserMobileListView extends StatelessWidget {
+  const UserMobileListView({super.key, required this.formKey});
+
+  final GlobalKey<FormBuilderState> formKey;
+
+  @override
+  Widget build(BuildContext context) => _MobileUserList(formKey: formKey);
 }
 
 class UserListPage extends StatelessWidget {
