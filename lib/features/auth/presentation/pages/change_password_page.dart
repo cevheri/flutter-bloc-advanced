@@ -14,11 +14,19 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../generated/l10n.dart';
 
-class ChangePasswordScreen extends StatelessWidget {
-  ChangePasswordScreen({super.key});
+class ChangePasswordScreen extends StatefulWidget {
+  const ChangePasswordScreen({super.key});
 
+  @override
+  State<ChangePasswordScreen> createState() => _ChangePasswordScreenState();
+}
+
+class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
   final _scaffoldKey = GlobalKey<ScaffoldState>();
+
+  bool _showCurrentPassword = false;
+  bool _showNewPassword = false;
 
   @override
   Widget build(BuildContext context) {
@@ -51,21 +59,41 @@ class ChangePasswordScreen extends StatelessWidget {
         return ResponsiveFormBuilder(
           formKey: _formKey,
           children: [
-            _logo(context),
-            _currentPasswordField(context),
-            _newPasswordField(context),
-            _submitButton(context, state),
+            const SizedBox(height: AppSpacing.lg),
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.md),
+                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.lg,
+                  children: [
+                    Text(
+                      S.of(context).change_password,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Ensure your account is using a long, random password to stay secure.',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    ),
+                    const Divider(),
+                    _currentPasswordField(context),
+                    _newPasswordField(context),
+                    const SizedBox(height: AppSpacing.sm),
+                    _submitButton(context, state),
+                  ],
+                ),
+              ),
+            ),
           ],
         );
       },
-    );
-  }
-
-  Image _logo(BuildContext context) {
-    return Image.asset(
-      LocaleConstants.defaultImgUrl,
-      width: AppSpacing.widthPercent(context, 0.5),
-      height: AppSpacing.heightPercent(context, 0.3),
     );
   }
 
@@ -73,8 +101,15 @@ class ChangePasswordScreen extends StatelessWidget {
     return FormBuilderTextField(
       key: changePasswordTextFieldCurrentPasswordKey,
       name: 'currentPassword',
-      decoration: InputDecoration(labelText: S.of(context).current_password),
-      obscureText: true,
+      decoration: InputDecoration(
+        labelText: S.of(context).current_password,
+        prefixIcon: const Icon(Icons.lock_outline),
+        suffixIcon: IconButton(
+          icon: Icon(_showCurrentPassword ? Icons.visibility_off : Icons.visibility),
+          onPressed: () => setState(() => _showCurrentPassword = !_showCurrentPassword),
+        ),
+      ),
+      obscureText: !_showCurrentPassword,
       maxLines: 1,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
@@ -86,8 +121,15 @@ class ChangePasswordScreen extends StatelessWidget {
     return FormBuilderTextField(
       key: changePasswordTextFieldNewPasswordKey,
       name: 'newPassword',
-      decoration: InputDecoration(labelText: S.of(context).new_password),
-      obscureText: true,
+      decoration: InputDecoration(
+        labelText: S.of(context).new_password,
+        prefixIcon: const Icon(Icons.lock_reset),
+        suffixIcon: IconButton(
+          icon: Icon(_showNewPassword ? Icons.visibility_off : Icons.visibility),
+          onPressed: () => setState(() => _showNewPassword = !_showNewPassword),
+        ),
+      ),
+      obscureText: !_showNewPassword,
       maxLines: 1,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
@@ -96,10 +138,14 @@ class ChangePasswordScreen extends StatelessWidget {
   }
 
   Widget _submitButton(BuildContext context, ChangePasswordState state) {
-    return ResponsiveSubmitButton(
-      key: changePasswordButtonSubmitKey,
-      onPressed: () => state.status == ChangePasswordStatus.loading ? null : _onSubmit(context, state),
-      isLoading: state.status == ChangePasswordStatus.loading,
+    return SizedBox(
+      width: double.infinity,
+      child: ResponsiveSubmitButton(
+        key: changePasswordButtonSubmitKey,
+        buttonText: S.of(context).save,
+        onPressed: () => state.status == ChangePasswordStatus.loading ? null : _onSubmit(context, state),
+        isLoading: state.status == ChangePasswordStatus.loading,
+      ),
     );
   }
 

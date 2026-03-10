@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/auth/application/forgot_password_bloc.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
@@ -46,17 +47,37 @@ class ForgotPasswordScreen extends StatelessWidget {
         return ResponsiveFormBuilder(
           formKey: _formKey,
           children: [
-            Text(
-              'Enter your email to reset your password',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            const SizedBox(height: AppSpacing.lg),
+            Card(
+              elevation: 2,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(AppSpacing.md),
+                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5)),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(AppSpacing.xl),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  spacing: AppSpacing.lg,
+                  children: [
+                    Text(
+                      S.of(context).password_forgot,
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      'Enter your email address and we\'ll send you a link to reset your password.',
+                      style: Theme.of(
+                        context,
+                      ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    ),
+                    const Divider(),
+                    _forgotPasswordField(context),
+                    const SizedBox(height: AppSpacing.sm),
+                    _submitButton(context, state),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 12),
-            Divider(color: Theme.of(context).colorScheme.outlineVariant),
-            const SizedBox(height: 8),
-            _forgotPasswordField(context),
-            _submitButton(context, state),
           ],
         );
       },
@@ -68,7 +89,11 @@ class ForgotPasswordScreen extends StatelessWidget {
     return FormBuilderTextField(
       key: forgotPasswordTextFieldEmailKey,
       name: 'email',
-      decoration: InputDecoration(labelText: t.email),
+      decoration: InputDecoration(
+        labelText: t.email,
+        prefixIcon: const Icon(Icons.email_outlined),
+        hintText: 'name@example.com',
+      ),
       maxLines: 1,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: t.required_field),
@@ -78,10 +103,14 @@ class ForgotPasswordScreen extends StatelessWidget {
   }
 
   Widget _submitButton(BuildContext context, ForgotPasswordState state) {
-    return ResponsiveSubmitButton(
-      key: forgotPasswordButtonSubmitKey,
-      onPressed: () => state.status == ForgotPasswordStatus.loading ? null : _onSubmit(context, state),
-      isLoading: state.status == ForgotPasswordStatus.loading,
+    return SizedBox(
+      width: double.infinity,
+      child: ResponsiveSubmitButton(
+        key: forgotPasswordButtonSubmitKey,
+        buttonText: S.of(context).email_send,
+        onPressed: () => state.status == ForgotPasswordStatus.loading ? null : _onSubmit(context, state),
+        isLoading: state.status == ForgotPasswordStatus.loading,
+      ),
     );
   }
 
