@@ -7,15 +7,13 @@ import 'package:flutter_bloc_advance/features/auth/application/forgot_password_b
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../../mocks/mock_classes.dart';
 import '../../../test_utils.dart';
-import 'forgot_password_screen_test.mocks.dart';
 
 ///Forgot Password Screen Test
 ///class ForgotPasswordScreen extends
-@GenerateMocks([ForgotPasswordBloc, AccountBloc])
 void main() {
   late MockForgotPasswordBloc forgotPasswordBloc;
   late MockAccountBloc accountBloc;
@@ -23,6 +21,7 @@ void main() {
   //region setup
   setUpAll(() async {
     await TestUtils().setupUnitTest();
+    registerAllFallbackValues();
   });
   tearDown(() async {
     await TestUtils().tearDownUnitTest();
@@ -33,12 +32,12 @@ void main() {
     accountBloc = MockAccountBloc();
 
     when(
-      forgotPasswordBloc.stream,
+      () => forgotPasswordBloc.stream,
     ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordState(status: ForgotPasswordStatus.initial)]));
-    when(forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.initial));
+    when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.initial));
 
-    when(accountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
-    when(accountBloc.state).thenReturn(const AccountState());
+    when(() => accountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
+    when(() => accountBloc.state).thenReturn(const AccountState());
   });
 
   final Iterable<LocalizationsDelegate<dynamic>> locales = [
@@ -107,8 +106,10 @@ void main() {
     // ForgotPasswordInitialState
     testWidgets("Validate initial state", (WidgetTester tester) async {
       // Given
-      when(forgotPasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordInitialState()]));
-      when(forgotPasswordBloc.state).thenReturn(const ForgotPasswordInitialState());
+      when(
+        () => forgotPasswordBloc.stream,
+      ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordInitialState()]));
+      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordInitialState());
       await tester.pumpWidget(getWidget());
 
       //When:
@@ -122,9 +123,9 @@ void main() {
     testWidgets("Validate loading state", (WidgetTester tester) async {
       // Given
       when(
-        forgotPasswordBloc.stream,
+        () => forgotPasswordBloc.stream,
       ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordState(status: ForgotPasswordStatus.loading)]));
-      when(forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.loading));
+      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.loading));
       await tester.pumpWidget(getWidget());
 
       //When:
@@ -139,9 +140,9 @@ void main() {
     testWidgets("Validate success state", (WidgetTester tester) async {
       // Given
       when(
-        forgotPasswordBloc.stream,
+        () => forgotPasswordBloc.stream,
       ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordState(status: ForgotPasswordStatus.success)]));
-      when(forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.success));
+      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.success));
       await tester.pumpWidget(getWidget());
 
       //When:
@@ -150,16 +151,16 @@ void main() {
       //Then:
       //expect(find.text("Success"), findsOneWidget);
       //expect(find.byType(ForgotPasswordScreen), findsNothing);
-      verifyNever(forgotPasswordBloc.add(any));
+      verifyNever(() => forgotPasswordBloc.add(any()));
     });
 
     // ForgotPasswordFailureState
     testWidgets("Validate failure state", (WidgetTester tester) async {
       // Given
       when(
-        forgotPasswordBloc.stream,
+        () => forgotPasswordBloc.stream,
       ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordErrorState(message: "Failed")]));
-      when(forgotPasswordBloc.state).thenReturn(const ForgotPasswordErrorState(message: "Failed"));
+      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordErrorState(message: "Failed"));
       await tester.pumpWidget(getWidget());
 
       //When:
@@ -190,10 +191,6 @@ void main() {
 
     // Send Email  Button Test Success
     testWidgets("Validate send email button Successful", (WidgetTester tester) async {
-      when(
-        forgotPasswordBloc.add(const ForgotPasswordEmailChanged(email: "test@test.com")),
-      ).thenAnswer((_) => const ForgotPasswordCompletedState());
-
       // Given:
       await tester.pumpWidget(getWidget());
       //When:
@@ -206,18 +203,13 @@ void main() {
       debugPrint("emailFinder: $emailFinder");
       await tester.enterText(emailFinder, "test@test.com");
 
-      // // when call ForgotPasswordEmailChanged then return success
-      // when(forgotPasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordCompletedState()]));
-      // when(forgotPasswordBloc.state).thenReturn(const ForgotPasswordCompletedState());
-
       final submitButtonFinder = find.byKey(forgotPasswordButtonSubmitKey);
       debugPrint("submitButtonFinder: $submitButtonFinder");
       await tester.tap(submitButtonFinder);
       await tester.pumpAndSettle(const Duration(seconds: 1));
 
       //Then:
-      verify(forgotPasswordBloc.add(any)).called(1);
-      // expect(find.byType(ForgotPasswordScreen), findsNothing); screen should pop after success
+      verify(() => forgotPasswordBloc.add(any())).called(1);
     });
 
     // Send Email  Button Test Success
@@ -239,7 +231,7 @@ void main() {
 
       //Then:
       expect(find.byType(ForgotPasswordScreen), findsOneWidget);
-      verifyNever(forgotPasswordBloc.add(any));
+      verifyNever(() => forgotPasswordBloc.add(any()));
     });
 
     // Send Email  Button Test Success
@@ -258,7 +250,7 @@ void main() {
 
       //Then:
       expect(find.byType(ForgotPasswordScreen), findsOneWidget);
-      verifyNever(forgotPasswordBloc.add(any));
+      verifyNever(() => forgotPasswordBloc.add(any()));
     });
   });
 }

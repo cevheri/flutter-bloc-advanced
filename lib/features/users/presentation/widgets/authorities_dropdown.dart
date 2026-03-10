@@ -39,7 +39,9 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
         }
 
         final authorities = ['', ...state.authorities];
-        final normalizedInitialValue = authorities.contains(widget.initialValue) ? widget.initialValue : authorities.first;
+        final normalizedInitialValue = authorities.contains(widget.initialValue)
+            ? widget.initialValue
+            : authorities.first;
 
         return FormBuilderField<String>(
           key: const Key('userEditorAuthoritiesFieldKey'),

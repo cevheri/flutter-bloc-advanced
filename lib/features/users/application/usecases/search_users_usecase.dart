@@ -2,12 +2,7 @@ import 'package:flutter_bloc_advance/features/users/domain/repositories/user_rep
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
 class SearchUsersParams {
-  const SearchUsersParams({
-    this.page = 0,
-    this.size = 10,
-    this.authorities,
-    this.name,
-  });
+  const SearchUsersParams({this.page = 0, this.size = 10, this.authorities, this.name});
 
   final int page;
   final int size;
@@ -21,8 +16,7 @@ class SearchUsersUseCase {
   final IUserRepository _repository;
 
   Future<List<UserEntity>> call(SearchUsersParams params) {
-    if ((params.name == null || params.name!.isEmpty) &&
-        (params.authorities == null || params.authorities!.isEmpty)) {
+    if ((params.name == null || params.name!.isEmpty) && (params.authorities == null || params.authorities!.isEmpty)) {
       return _repository.list(page: params.page, size: params.size);
     }
 

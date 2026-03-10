@@ -101,12 +101,7 @@ class UserBloc extends Bloc<UserEvent, UserState> {
     emit(state.copyWith(status: UserStatus.loading));
     try {
       final entities = await _searchUsersUseCase(
-        SearchUsersParams(
-          page: event.page,
-          size: event.size,
-          name: event.name,
-          authorities: event.authorities,
-        ),
+        SearchUsersParams(page: event.page, size: event.size, name: event.name, authorities: event.authorities),
       );
       emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
       _log.debug('END:onSearch UserSearch event success - content count: {}', [entities.length]);

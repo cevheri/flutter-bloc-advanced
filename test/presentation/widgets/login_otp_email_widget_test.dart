@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
@@ -14,20 +13,22 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
+import '../../mocks/mock_classes.dart';
 import '../../test_utils.dart';
-@GenerateNiceMocks([MockSpec<LoginBloc>(), MockSpec<AccountBloc>()])
-import 'login_otp_email_widget_test.mocks.dart';
 
 void main() {
   late MockLoginBloc mockLoginBloc;
   late Widget testWidget;
   late GoRouter mockGoRouter;
+
+  setUpAll(() {
+    registerAllFallbackValues();
+  });
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -35,7 +36,7 @@ void main() {
     mockLoginBloc = MockLoginBloc();
 
     // Set basic state for login bloc
-    when(mockLoginBloc.state).thenReturn(const LoginState());
+    when(() => mockLoginBloc.state).thenReturn(const LoginState());
     mockGoRouter = GoRouter(
       initialLocation: ApplicationRoutesConstants.loginOtp,
       routes: [
@@ -78,11 +79,9 @@ void main() {
 
   group('OtpEmailScreen Widget Tests', () {
     testWidgets('should render initial UI elements correctly', (tester) async {
-      // GIVEN
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // THEN
       expect(find.text(S.current.login_with_email), findsOneWidget);
       expect(find.byType(FormBuilderTextField), findsOneWidget);
       expect(find.byType(IconButton), findsOneWidget);
@@ -90,7 +89,6 @@ void main() {
     });
 
     testWidgets('should validate email field correctly', (tester) async {
-      // GIVEN
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
@@ -100,7 +98,6 @@ void main() {
       await tester.tap(find.byType(ResponsiveSubmitButton));
       await tester.pumpAndSettle();
 
-      // THEN
       expect(find.text(S.current.required_field), findsOneWidget);
 
       // WHEN - Submit with invalid email
@@ -108,7 +105,6 @@ void main() {
       await tester.tap(find.byType(ResponsiveSubmitButton));
       await tester.pumpAndSettle();
 
-      // THEN
       expect(find.text(S.current.invalid_email), findsOneWidget);
 
       // WHEN - Submit with valid email
@@ -116,17 +112,14 @@ void main() {
       await tester.tap(find.byType(ResponsiveSubmitButton));
       await tester.pumpAndSettle();
 
-      // THEN
-      verify(mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com'))).called(1);
+      verify(() => mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com'))).called(1);
     });
 
     testWidgets('should show loading state when sending OTP', (tester) async {
-      // GIVEN
-      when(mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.loading));
+      when(() => mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.loading));
       await tester.pumpWidget(testWidget);
       await tester.pump();
 
-      // THEN
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.text(S.current.send_otp_code), findsOneWidget);
     });
@@ -134,38 +127,31 @@ void main() {
     testWidgets('should navigate to verify screen when OTP sent successfully', (tester) async {
       TestUtils().setupUnitTest();
 
-      // Generate stream controller for login state
       final loginStateController = StreamController<LoginState>.broadcast();
-      when(mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
-      when(mockLoginBloc.state).thenReturn(const LoginState());
+      when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
+      when(() => mockLoginBloc.state).thenReturn(const LoginState());
 
-      // generate test widget
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // enter email and submit form
       await tester.enterText(find.byType(FormBuilderTextField), 'test@example.com');
       await tester.tap(find.byType(ResponsiveSubmitButton));
       await tester.pump();
 
-      // emit loading state
       loginStateController.add(
         const LoginState(status: LoginStatus.loading, email: 'test@example.com', loginMethod: LoginMethod.otp),
       );
       await tester.pump();
 
-      // emit success state
       loginStateController.add(const LoginOtpSentState(email: 'test@example.com'));
       await tester.pumpAndSettle();
 
-      // verify
-      verify(mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com'))).called(1);
+      verify(() => mockLoginBloc.add(const SendOtpRequested(email: 'test@example.com'))).called(1);
       expect(
         mockGoRouter.routerDelegate.currentConfiguration.uri.path,
         '${ApplicationRoutesConstants.loginOtpVerify}/test@example.com',
       );
 
-      // clean up
       await loginStateController.close();
     });
 
@@ -174,35 +160,28 @@ void main() {
       SharedPreferences.setMockInitialValues({});
       await AppLocalStorage().save(StorageKeys.language.name, "en");
 
-      // GIVEN
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // WHEN
       await tester.tap(find.byType(IconButton));
       await tester.pumpAndSettle();
 
-      // THEN
       expect(mockGoRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.login);
     });
 
     testWidgets('should show error state', (tester) async {
-      // GIVEN
-      when(mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.failure));
+      when(() => mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.failure));
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 
-      // THEN
       expect(mockGoRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.loginOtp);
     });
 
     group('Localization Tests', () {
       testWidgets('should display texts in English', (tester) async {
-        // GIVEN
         await tester.pumpWidget(testWidget);
         await tester.pumpAndSettle();
 
-        // THEN
         expect(find.text(S.current.login_with_email), findsOneWidget);
         expect(find.text(S.current.email), findsOneWidget);
         expect(find.text(S.current.send_otp_code), findsOneWidget);

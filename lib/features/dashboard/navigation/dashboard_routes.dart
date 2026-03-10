@@ -8,11 +8,8 @@ class DashboardFeatureRoutes {
     GoRoute(
       name: 'home',
       path: ApplicationRoutesConstants.home,
-      pageBuilder: (context, state) => appTransitionPage(
-        state: state,
-        type: AppPageTransitionType.fade,
-        child: const DashboardHomePage(),
-      ),
+      pageBuilder: (context, state) =>
+          appTransitionPage(state: state, type: AppPageTransitionType.fade, child: const DashboardHomePage()),
     ),
   ];
 }

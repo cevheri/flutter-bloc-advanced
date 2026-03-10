@@ -5,12 +5,11 @@ import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
 import '../../fake/user_data.dart';
+import '../../mocks/mock_classes.dart';
 import '../../test_utils.dart';
-import 'change_password_bloc_test.mocks.dart';
 
 /// BLoc Test for UserBloc
 ///
@@ -22,7 +21,6 @@ import 'change_password_bloc_test.mocks.dart';
 /// 2. Event test <p>
 /// 3. Bloc test <p>
 
-@GenerateMocks([AccountRepository])
 void main() {
   //region main setup
   late AccountRepository repository;
@@ -131,29 +129,29 @@ void main() {
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading, success] when ChangePasswordChanged is added",
-        setUp: () => when(method()).thenAnswer((_) => Future.value(output)),
+        setUp: () => when(method).thenAnswer((_) => Future.value(output)),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
-        verify: (_) => verify(method()).called(1),
+        verify: (_) => verify(method).called(1),
       );
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading, error] when ChangePasswordChanged is added",
-        setUp: () => when(method()).thenThrow(BadRequestException()),
+        setUp: () => when(method).thenThrow(BadRequestException()),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesError,
-        verify: (_) => verify(method()).called(1),
+        verify: (_) => verify(method).called(1),
       );
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading error400] when repository return 400",
-        setUp: () => when(method()).thenAnswer((_) => Future.value(400)),
+        setUp: () => when(method).thenAnswer((_) => Future.value(400)),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesError,
-        verify: (_) => verify(method()).called(1),
+        verify: (_) => verify(method).called(1),
       );
     });
   });

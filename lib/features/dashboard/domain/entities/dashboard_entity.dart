@@ -1,12 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class DashboardSummaryEntity extends Equatable {
-  const DashboardSummaryEntity({
-    required this.id,
-    required this.label,
-    required this.value,
-    required this.trend,
-  });
+  const DashboardSummaryEntity({required this.id, required this.label, required this.value, required this.trend});
 
   final String id;
   final String label;
@@ -37,11 +32,7 @@ class DashboardActivityEntity extends Equatable {
 }
 
 class DashboardQuickActionEntity extends Equatable {
-  const DashboardQuickActionEntity({
-    required this.id,
-    required this.label,
-    required this.icon,
-  });
+  const DashboardQuickActionEntity({required this.id, required this.label, required this.icon});
 
   final String id;
   final String label;
@@ -52,11 +43,7 @@ class DashboardQuickActionEntity extends Equatable {
 }
 
 class DashboardEntity extends Equatable {
-  const DashboardEntity({
-    required this.summary,
-    required this.activities,
-    required this.quickActions,
-  });
+  const DashboardEntity({required this.summary, required this.activities, required this.quickActions});
 
   final List<DashboardSummaryEntity> summary;
   final List<DashboardActivityEntity> activities;

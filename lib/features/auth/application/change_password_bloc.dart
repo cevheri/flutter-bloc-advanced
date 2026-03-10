@@ -15,11 +15,9 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
   static final _log = AppLogger.getLogger("ChangePasswordBloc");
   final ChangePasswordUseCase _changePasswordUseCase;
 
-  ChangePasswordBloc({
-    ChangePasswordUseCase? changePasswordUseCase,
-    IAccountRepository? repository,
-  }) : _changePasswordUseCase = changePasswordUseCase ??
-            ChangePasswordUseCase(repository ?? (throw ArgumentError('repository is required'))),
+  ChangePasswordBloc({ChangePasswordUseCase? changePasswordUseCase, IAccountRepository? repository})
+    : _changePasswordUseCase =
+          changePasswordUseCase ?? ChangePasswordUseCase(repository ?? (throw ArgumentError('repository is required'))),
       super(const ChangePasswordState()) {
     on<ChangePasswordChanged>(_onSubmit);
   }

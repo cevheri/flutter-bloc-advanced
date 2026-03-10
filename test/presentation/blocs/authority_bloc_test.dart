@@ -3,11 +3,10 @@ import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../mocks/mock_classes.dart';
 import '../../test_utils.dart';
-import 'authority_bloc_test.mocks.dart';
 
 /// BLoc Test for AuthorityBloc
 ///
@@ -15,7 +14,6 @@ import 'authority_bloc_test.mocks.dart';
 /// 1. State test <p>
 /// 2. Event test <p>
 /// 3. Bloc test <p>
-@GenerateMocks([AuthorityRepository])
 void main() {
   //region setup
   late AuthorityRepository repository;
@@ -123,7 +121,7 @@ void main() {
 
       blocTest<AuthorityBloc, AuthorityState>(
         "emits [loading, success] when load is successful",
-        setUp: () => when(method()).thenAnswer((_) => output),
+        setUp: () => when(method).thenAnswer((_) => output),
         build: () => AuthorityBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
@@ -131,7 +129,7 @@ void main() {
 
       blocTest<AuthorityBloc, AuthorityState>(
         "emits [loading, failure] when load is unsuccessful",
-        setUp: () => when(method()).thenThrow(Exception("Error")),
+        setUp: () => when(method).thenThrow(Exception("Error")),
         build: () => AuthorityBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,

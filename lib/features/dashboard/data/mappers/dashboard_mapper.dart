@@ -7,14 +7,7 @@ class DashboardMapper {
   static DashboardEntity toEntity(DashboardModel model) {
     return DashboardEntity(
       summary: model.summary
-          .map(
-            (item) => DashboardSummaryEntity(
-              id: item.id,
-              label: item.label,
-              value: item.value,
-              trend: item.trend,
-            ),
-          )
+          .map((item) => DashboardSummaryEntity(id: item.id, label: item.label, value: item.value, trend: item.trend))
           .toList(growable: false),
       activities: model.activities
           .map(
@@ -28,13 +21,7 @@ class DashboardMapper {
           )
           .toList(growable: false),
       quickActions: model.quickActions
-          .map(
-            (item) => DashboardQuickActionEntity(
-              id: item.id,
-              label: item.label,
-              icon: item.icon,
-            ),
-          )
+          .map((item) => DashboardQuickActionEntity(id: item.id, label: item.label, icon: item.icon))
           .toList(growable: false),
     );
   }

@@ -39,9 +39,8 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (_) => DashboardCubit(
-        loadDashboardUseCase: LoadDashboardUseCase(context.read<IDashboardRepository>()),
-      )..load(),
+      create: (_) =>
+          DashboardCubit(loadDashboardUseCase: LoadDashboardUseCase(context.read<IDashboardRepository>()))..load(),
       child: BlocBuilder<AccountBloc, AccountState>(
         buildWhen: (previous, current) => previous.status != current.status,
         builder: (context, accountState) {

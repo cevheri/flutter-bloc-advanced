@@ -1,10 +1,7 @@
 import 'package:equatable/equatable.dart';
 
 class AuthCredentialsEntity extends Equatable {
-  const AuthCredentialsEntity({
-    required this.username,
-    required this.password,
-  });
+  const AuthCredentialsEntity({required this.username, required this.password});
 
   final String username;
   final String password;
@@ -34,10 +31,7 @@ class SendOtpEntity extends Equatable {
 }
 
 class VerifyOtpEntity extends Equatable {
-  const VerifyOtpEntity({
-    required this.email,
-    required this.otp,
-  });
+  const VerifyOtpEntity({required this.email, required this.otp});
 
   final String email;
   final String otp;

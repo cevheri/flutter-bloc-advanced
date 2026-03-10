@@ -12,12 +12,10 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
-import 'register_screen_go_router_test.mocks.dart';
+import '../../../mocks/mock_classes.dart';
 
-@GenerateMocks([RegisterBloc, AccountBloc])
 void main() {
   late MockRegisterBloc mockRegisterBloc;
   late MockAccountBloc mockAccountBloc;
@@ -25,6 +23,10 @@ void main() {
 
   // Test user data
   const testUser = UserEntity(firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com');
+
+  setUpAll(() {
+    registerAllFallbackValues();
+  });
 
   setUp(() {
     mockRegisterBloc = MockRegisterBloc();
@@ -50,11 +52,11 @@ void main() {
 
     // Setup default bloc behaviors
     when(
-      mockRegisterBloc.stream,
+      () => mockRegisterBloc.stream,
     ).thenAnswer((_) => Stream.fromIterable([const RegisterState(status: RegisterStatus.initial)]));
-    when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
-    when(mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
-    when(mockAccountBloc.state).thenReturn(const AccountState());
+    when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+    when(() => mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
+    when(() => mockAccountBloc.state).thenReturn(const AccountState());
   });
 
   Widget createWidgetUnderTest() {
@@ -137,28 +139,21 @@ void main() {
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
 
       // Setup success state
-      when(mockRegisterBloc.state).thenReturn(const RegisterCompletedState(user: testUser));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterCompletedState(user: testUser));
 
       // Submit form
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pumpAndSettle();
 
       // Verify bloc interaction
-      verify(mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser))).called(1);
-      // expect(find.text('Success'), findsOneWidget);
+      verify(() => mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser))).called(1);
     });
 
     testWidgets('should show loading indicator during submission', (tester) async {
-      // Arrange
-      // final blocStates = [
-      //   const RegisterState(status: RegisterStatus.initial),
-      //   const RegisterState(status: RegisterStatus.loading),
-      // ];
-
       // Setup bloc with broadcast stream to allow multiple listeners
       final controller = StreamController<RegisterState>.broadcast();
-      when(mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+      when(() => mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
@@ -169,7 +164,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
 
       // Change to loading state
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
       controller.add(const RegisterState(status: RegisterStatus.loading));
 
       // Submit form
@@ -191,7 +186,7 @@ void main() {
 
       // Setup error state
       const errorMessage = 'Registration failed';
-      when(mockRegisterBloc.state).thenReturn(const RegisterErrorState(message: errorMessage));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterErrorState(message: errorMessage));
 
       // Submit form
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
@@ -234,8 +229,8 @@ void main() {
     testWidgets('should handle complete registration flow', (tester) async {
       // Arrange
       final controller = StreamController<RegisterState>.broadcast();
-      when(mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+      when(() => mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
@@ -246,7 +241,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
 
       // Submit form and emit loading state
-      when(mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
       controller.add(const RegisterState(status: RegisterStatus.loading));
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pump();
@@ -256,14 +251,13 @@ void main() {
       expect(loadingButton.isLoading, true);
 
       // Emit success state
-      when(mockRegisterBloc.state).thenReturn(const RegisterCompletedState(user: testUser));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterCompletedState(user: testUser));
       controller.add(const RegisterCompletedState(user: testUser));
       await tester.pump();
       await tester.pump(); // Additional pump for state update
 
       // Verify success state
-      //expect(find.text('Success'), findsOneWidget);
-      verify(mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser))).called(1);
+      verify(() => mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser))).called(1);
       // Clean up
       await controller.close();
     });

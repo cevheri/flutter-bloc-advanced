@@ -13,11 +13,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class App extends StatelessWidget {
-  const App({
-    super.key,
-    required this.language,
-    this.dependencies = const AppDependencies(),
-  });
+  const App({super.key, required this.language, this.dependencies = const AppDependencies()});
 
   final String language;
   final AppDependencies dependencies;
@@ -26,9 +22,7 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return AppScope(
       dependencies: dependencies,
-      child: AppSessionListeners(
-        child: _AppView(language: language),
-      ),
+      child: AppSessionListeners(child: _AppView(language: language)),
     );
   }
 }

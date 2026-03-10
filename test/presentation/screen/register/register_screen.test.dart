@@ -11,15 +11,13 @@ import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_p
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../../mocks/mock_classes.dart';
 import '../../../test_utils.dart';
-import 'register_screen.test.mocks.dart';
 
 ///Register User Screen Test
 ///class RegisterScreen extends StatelessWidget
-@GenerateMocks([RegisterBloc, AccountBloc])
 void main() {
   //region setup
 
@@ -28,8 +26,7 @@ void main() {
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
-
-    //registerFallbackValue(const RegisterFormSubmitted(createUser: User()));
+    registerAllFallbackValues();
   });
   tearDown(() async {
     await TestUtils().tearDownUnitTest();
@@ -39,31 +36,12 @@ void main() {
     mockRegisterBloc = MockRegisterBloc();
     mockAccountBloc = MockAccountBloc();
 
-    when(mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
-    when(mockRegisterBloc.state).thenReturn(const RegisterInitialState());
+    when(() => mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
+    when(() => mockRegisterBloc.state).thenReturn(const RegisterInitialState());
 
-    when(mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
-    when(mockAccountBloc.state).thenReturn(const AccountState());
+    when(() => mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
+    when(() => mockAccountBloc.state).thenReturn(const AccountState());
   });
-
-  // final blocs = [
-  //   BlocProvider<AccountBloc>(create: (_) => AccountBloc(repository: AccountRepository())),
-  //   BlocProvider<RegisterBloc>(create: (_) => RegisterBloc(repository: AccountRepository())),
-  // ];
-  // MaterialApp getWidget() {
-  //   return MaterialApp(
-  //     home: MultiBlocProvider(
-  //       providers: blocs,
-  //       child: RegisterScreen(),
-  //     ),
-  //     localizationsDelegates: const [
-  //       S.delegate,
-  //       GlobalMaterialLocalizations.delegate,
-  //       GlobalWidgetsLocalizations.delegate,
-  //       GlobalCupertinoLocalizations.delegate,
-  //     ],
-  //   );
-  // }
 
   final Iterable<LocalizationsDelegate<dynamic>> locales = [
     S.delegate,
@@ -167,12 +145,6 @@ void main() {
     });
 
     //validate app-bar back button
-    /// Tests the back button functionality in the app bar
-    ///
-    /// Verifies that:
-    /// - Back button icon is clickable
-    /// - When clicked, navigates to login route ("/login")
-    /// - Navigation occurs successfully
     testWidgets("Validate AppBar Back Button", (tester) async {
       TestUtils().setupAuthentication();
       // Given
@@ -185,40 +157,6 @@ void main() {
       //TODO check with go_router expect(Get.currentRoute, "/");
     });
   });
-
-  // testWidgets('should rebuild when state changes from loading to initial', (WidgetTester tester) async {
-  //   // Arrange
-  //   final previousState = RegisterState();
-  //   final currentState = RegisterInitialState();
-
-  //   await tester.pumpWidget(
-  //     MaterialApp(
-  //       home: BlocProvider<RegisterBloc>.value(
-  //         value: mockRegisterBloc,
-  //         child: BlocBuilder<RegisterBloc, RegisterState>(
-  //           buildWhen: (previous, current) =>
-  //             previous is RegisterState && current is RegisterInitialState,
-  //           builder: (context, state) => const SizedBox(),
-  //         ),
-  //       ),
-  //     ),
-  //   );
-
-  //   // Act & Assert
-  //   final bool shouldRebuild = tester
-  //       .widget<BlocBuilder<RegisterBloc, RegisterState>>(
-  //         find.byType(BlocBuilder<RegisterBloc, RegisterState>)
-  //       )
-  //       .buildWhen!(previousState, currentState);
-
-  //   expect(shouldRebuild, true);
-  // });
-
-  // testWidget("RegisterCompletedState", (tester) async {
-  //   TestUtils().setupAuthentication();
-  //   await tester.pumpWidget(getWidget());
-  //   await tester.pumpAndSettle();
-  // });
 
   //email validation test
   testWidgets('Email validation test', (WidgetTester tester) async {
@@ -307,7 +245,6 @@ void main() {
   });
 
   testWidgets('Register form validation and submission test', (WidgetTester tester) async {
-    //await TestUtils().setupAuthentication();
     await tester.pumpWidget(
       MaterialApp(
         home: MultiBlocProvider(
@@ -331,40 +268,9 @@ void main() {
     await tester.enterText(find.byKey(registerLastNameTextFieldKey), "test");
     await tester.enterText(find.byKey(registerEmailTextFieldKey), "test@test.com");
 
-    const User user = User(firstName: "test", lastName: "test", email: "test@test.com");
-    when(mockRegisterBloc.add(const RegisterFormSubmitted(data: user))).thenReturn(null);
-    //verify(() => mockRegisterBloc.add(any())).called(1);
-
     //when submitButton clicked then expect an error
     await tester.tap(find.byKey(registerSubmitButtonKey));
     await tester.pumpAndSettle();
-
-    //TODO check with go_router expect(Get.currentRoute, "/");
-
-    // final saveButton = find.byKey(registerSubmitButtonKey);
-    // await tester.tap(saveButton);
-    // await tester.pump();
-
-    //expect(find.text('required_field'), findsNWidgets(3));
-
-    //
-    // await tester.tap(saveButton);
-    // await tester.pump();
-    //
-    // when(() => mockRegisterBloc.add(any())).thenReturn(null);
-    // verify(() => mockRegisterBloc.add(any())).called(1);
-
-    // when(() => mockRegisterBloc.state).thenReturn(RegisterInitialState());
-    // await tester.pump();
-    // expect(find.text('Loading'), findsOneWidget);
-
-    //when(() => mockRegisterBloc.state).thenReturn(RegisterCompletedState());
-    //await tester.pump();
-    //expect(find.text('Success'), findsOneWidget);
-
-    // when(() => mockRegisterBloc.state).thenReturn(RegisterErrorState(message: 'Error'));
-    // await tester.pump();
-    // expect(find.text('Error'), findsOneWidget);
   });
 
   // loading state test
@@ -381,7 +287,7 @@ void main() {
     await tester.enterText(lastNameFieldFinder, 'test');
     await tester.enterText(emailFieldFinder, 'test@test.com');
 
-    when(mockRegisterBloc.state).thenReturn(const RegisterLoadingState());
+    when(() => mockRegisterBloc.state).thenReturn(const RegisterLoadingState());
     await tester.pump();
 
     final saveButton = find.byKey(registerSubmitButtonKey);
@@ -405,27 +311,25 @@ void main() {
     await tester.enterText(lastNameFieldFinder, 'test');
     await tester.enterText(emailFieldFinder, 'test@test.com');
 
-    when(mockRegisterBloc.stream).thenAnswer(
+    when(() => mockRegisterBloc.stream).thenAnswer(
       (_) => Stream.fromIterable([
         const RegisterCompletedState(
           user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
         ),
       ]),
     );
-    when(mockRegisterBloc.state).thenReturn(
+    when(() => mockRegisterBloc.state).thenReturn(
       const RegisterCompletedState(
         user: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
       ),
     );
-    //await tester.pump();
 
     final saveButton = find.byKey(registerSubmitButtonKey);
     await tester.tap(saveButton);
     await tester.pumpAndSettle(const Duration(milliseconds: 3000));
 
-    //expect(find.byType(RegisterScreen), findsNothing);
     verify(
-      mockRegisterBloc.add(
+      () => mockRegisterBloc.add(
         const RegisterFormSubmitted(
           data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
         ),
@@ -447,9 +351,10 @@ void main() {
     await tester.enterText(lastNameFieldFinder, '');
     await tester.enterText(emailFieldFinder, 'test@test.com');
 
-    when(mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterErrorState(message: 'Error')]));
-    when(mockRegisterBloc.state).thenReturn(const RegisterErrorState(message: 'Error'));
-    //await tester.pump();
+    when(
+      () => mockRegisterBloc.stream,
+    ).thenAnswer((_) => Stream.fromIterable([const RegisterErrorState(message: 'Error')]));
+    when(() => mockRegisterBloc.state).thenReturn(const RegisterErrorState(message: 'Error'));
 
     final saveButton = find.byKey(registerSubmitButtonKey);
     await tester.tap(saveButton);
@@ -457,7 +362,7 @@ void main() {
 
     expect(find.byType(RegisterScreen), findsOneWidget);
     verifyNever(
-      mockRegisterBloc.add(
+      () => mockRegisterBloc.add(
         const RegisterFormSubmitted(
           data: User(firstName: 'test', lastName: 'test', email: 'test@test.com'),
         ),

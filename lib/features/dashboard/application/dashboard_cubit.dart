@@ -10,11 +10,9 @@ part 'dashboard_state.dart';
 class DashboardCubit extends Cubit<DashboardState> {
   final LoadDashboardUseCase _loadDashboardUseCase;
 
-  DashboardCubit({
-    LoadDashboardUseCase? loadDashboardUseCase,
-    IDashboardRepository? repository,
-  }) : _loadDashboardUseCase = loadDashboardUseCase ?? LoadDashboardUseCase(repository!),
-       super(const DashboardState.initial());
+  DashboardCubit({LoadDashboardUseCase? loadDashboardUseCase, IDashboardRepository? repository})
+    : _loadDashboardUseCase = loadDashboardUseCase ?? LoadDashboardUseCase(repository!),
+      super(const DashboardState.initial());
 
   Future<void> load() async {
     emit(const DashboardState.loading());

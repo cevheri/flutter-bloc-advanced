@@ -15,11 +15,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   static final _log = AppLogger.getLogger("RegisterBloc");
   final RegisterAccountUseCase _registerAccountUseCase;
 
-  RegisterBloc({
-    RegisterAccountUseCase? registerAccountUseCase,
-    IAccountRepository? repository,
-  }) : _registerAccountUseCase = registerAccountUseCase ??
-            RegisterAccountUseCase(repository ?? (throw ArgumentError('repository is required'))),
+  RegisterBloc({RegisterAccountUseCase? registerAccountUseCase, IAccountRepository? repository})
+    : _registerAccountUseCase =
+          registerAccountUseCase ??
+          RegisterAccountUseCase(repository ?? (throw ArgumentError('repository is required'))),
       super(const RegisterInitialState()) {
     on<RegisterFormSubmitted>(_onSubmit);
   }

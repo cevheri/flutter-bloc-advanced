@@ -16,32 +16,35 @@ class UserFormFields {
     ];
   }
 
-  static Widget usernameField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
-    key: const Key('userEditorLoginFieldKey'),
-    name: 'login',
-    enabled: enabled,
-    initialValue: initialValue,
-    decoration: InputDecoration(hintText: S.of(context).login),
-    validator: FormBuilderValidators.compose([..._txtValidator(context)]),
-  );
+  static Widget usernameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
+      FormBuilderTextField(
+        key: const Key('userEditorLoginFieldKey'),
+        name: 'login',
+        enabled: enabled,
+        initialValue: initialValue,
+        decoration: InputDecoration(hintText: S.of(context).login),
+        validator: FormBuilderValidators.compose([..._txtValidator(context)]),
+      );
 
-  static Widget firstNameField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
-    key: const Key('userEditorFirstNameFieldKey'),
-    enabled: enabled,
-    initialValue: initialValue,
-    name: 'firstName',
-    decoration: InputDecoration(hintText: S.of(context).first_name),
-    validator: FormBuilderValidators.compose([..._txtValidator(context)]),
-  );
+  static Widget firstNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
+      FormBuilderTextField(
+        key: const Key('userEditorFirstNameFieldKey'),
+        enabled: enabled,
+        initialValue: initialValue,
+        name: 'firstName',
+        decoration: InputDecoration(hintText: S.of(context).first_name),
+        validator: FormBuilderValidators.compose([..._txtValidator(context)]),
+      );
 
-  static Widget lastNameField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
-    key: const Key('userEditorLastNameFieldKey'),
-    enabled: enabled,
-    initialValue: initialValue,
-    name: 'lastName',
-    decoration: InputDecoration(hintText: S.of(context).last_name),
-    validator: FormBuilderValidators.compose([..._txtValidator(context)]),
-  );
+  static Widget lastNameField(BuildContext context, String? initialValue, {bool enabled = true}) =>
+      FormBuilderTextField(
+        key: const Key('userEditorLastNameFieldKey'),
+        enabled: enabled,
+        initialValue: initialValue,
+        name: 'lastName',
+        decoration: InputDecoration(hintText: S.of(context).last_name),
+        validator: FormBuilderValidators.compose([..._txtValidator(context)]),
+      );
 
   static Widget emailField(BuildContext context, String? initialValue, {bool enabled = true}) => FormBuilderTextField(
     key: const Key('userEditorEmailFieldKey'),

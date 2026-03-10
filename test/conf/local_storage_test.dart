@@ -1,14 +1,12 @@
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../mocks/mock_classes.dart';
 import '../test_utils.dart';
-import 'local_storage_test.mocks.dart';
 
-@GenerateMocks([SharedPreferences])
 void main() {
   group('AppLocalStorage', () {
     late AppLocalStorage localStorage;
@@ -111,13 +109,13 @@ void main() {
     });
 
     test('should return false when remove operation throws error', () async {
-      when(mockPrefs.remove("testKey")).thenThrow(Exception('Failed to remove'));
+      when(() => mockPrefs.remove("testKey")).thenThrow(Exception('Failed to remove'));
       SharedPreferences.setMockInitialValues({});
 
       final result = await localStorage.remove('testKey');
 
       expect(result, false);
-      verify(mockPrefs.remove('testKey')).called(1);
+      verify(() => mockPrefs.remove('testKey')).called(1);
     });
   });
 
@@ -141,12 +139,12 @@ void main() {
       ];
 
       for (var testCase in testCases) {
-        when(mockPrefs.remove(testCase['key'] as String)).thenThrow(testCase['error'] as Object);
+        when(() => mockPrefs.remove(testCase['key'] as String)).thenThrow(testCase['error'] as Object);
 
         final result = await localStorage.remove(testCase['key'] as String);
 
         expect(result, false, reason: 'Failed for ${testCase['description']}');
-        verify(mockPrefs.remove(testCase['key'] as String)).called(1);
+        verify(() => mockPrefs.remove(testCase['key'] as String)).called(1);
       }
     });
 

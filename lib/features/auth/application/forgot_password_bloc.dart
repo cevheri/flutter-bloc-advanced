@@ -15,11 +15,9 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   static final _log = AppLogger.getLogger("ForgotPasswordBloc");
   final ResetPasswordUseCase _resetPasswordUseCase;
 
-  ForgotPasswordBloc({
-    ResetPasswordUseCase? resetPasswordUseCase,
-    IAccountRepository? repository,
-  }) : _resetPasswordUseCase = resetPasswordUseCase ??
-            ResetPasswordUseCase(repository ?? (throw ArgumentError('repository is required'))),
+  ForgotPasswordBloc({ResetPasswordUseCase? resetPasswordUseCase, IAccountRepository? repository})
+    : _resetPasswordUseCase =
+          resetPasswordUseCase ?? ResetPasswordUseCase(repository ?? (throw ArgumentError('repository is required'))),
       super(const ForgotPasswordState(status: ForgotPasswordStatus.initial)) {
     on<ForgotPasswordEmailChanged>(_onSubmit);
   }

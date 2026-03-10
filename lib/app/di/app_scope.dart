@@ -21,11 +21,7 @@ import 'package:flutter_bloc_advance/features/account/application/account_bloc.d
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 
 class AppScope extends StatelessWidget {
-  const AppScope({
-    super.key,
-    required this.dependencies,
-    required this.child,
-  });
+  const AppScope({super.key, required this.dependencies, required this.child});
 
   final AppDependencies dependencies;
   final Widget child;

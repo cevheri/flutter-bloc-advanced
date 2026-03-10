@@ -217,7 +217,9 @@ class PaginationControls extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 4),
           child: Text(
             '/',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
           ),
         ),
         Expanded(
@@ -315,7 +317,9 @@ class _DataTableContainer extends StatelessWidget {
               Container(
                 height: 52,
                 padding: const EdgeInsets.symmetric(horizontal: 16),
-                decoration: BoxDecoration(border: Border(top: BorderSide(color: cs.outlineVariant))),
+                decoration: BoxDecoration(
+                  border: Border(top: BorderSide(color: cs.outlineVariant)),
+                ),
                 child: Row(
                   children: [
                     Expanded(
@@ -350,7 +354,9 @@ class _TableHeader extends StatelessWidget {
 
     return Container(
       height: 40,
-      decoration: BoxDecoration(border: Border(bottom: BorderSide(color: cs.outlineVariant))),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+      ),
       padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Row(
         children: [
@@ -433,7 +439,9 @@ class _TableRowState extends State<_TableRow> {
     final user = widget.user;
 
     final isActive = user.activated == true;
-    final statusColor = isActive ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A)) : cs.error;
+    final statusColor = isActive
+        ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
+        : cs.error;
 
     return MouseRegion(
       onEnter: (_) => setState(() => _hovered = true),
@@ -514,7 +522,9 @@ class _StatusBadge extends StatelessWidget {
       ),
       child: Text(
         label,
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w500, fontSize: 11),
+        style: Theme.of(
+          context,
+        ).textTheme.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w500, fontSize: 11),
       ),
     );
   }

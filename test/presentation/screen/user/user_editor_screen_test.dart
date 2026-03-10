@@ -16,19 +16,21 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../../mocks/mock_classes.dart';
 import '../../../test_utils.dart';
-import 'user_editor_screen_test.mocks.dart';
 
-@GenerateMocks([UserBloc, UserRepository, AuthorityBloc, AuthorityRepository])
 void main() {
   late MockUserRepository mockUserRepository;
   late MockAuthorityBloc mockAuthorityBloc;
   late MockAuthorityRepository mockAuthorityRepository;
   late MockUserBloc mockUserBloc;
   late TestUtils testUtils;
+
+  setUpAll(() {
+    registerAllFallbackValues();
+  });
 
   setUp(() async {
     testUtils = TestUtils();
@@ -39,17 +41,18 @@ void main() {
     mockAuthorityBloc = MockAuthorityBloc();
     mockAuthorityRepository = MockAuthorityRepository();
 
-    when(mockAuthorityBloc.stream).thenAnswer(
+    when(() => mockAuthorityBloc.stream).thenAnswer(
       (_) => Stream.fromIterable([
         const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
       ]),
     );
-    when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+    when(
+      () => mockAuthorityBloc.state,
+    ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
   });
 
   tearDown(() async {
     await testUtils.tearDownUnitTest();
-    // UsersFeatureRoutes has no dispose — cleanup handled by test framework
   });
 
   Widget buildTestableWidget({required EditorFormMode mode, String? id}) {
@@ -62,11 +65,15 @@ void main() {
         ),
         GoRoute(
           path: '/user/:id/edit',
-          builder: (context, state) => Scaffold(body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.edit)),
+          builder: (context, state) => Scaffold(
+            body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.edit),
+          ),
         ),
         GoRoute(
           path: '/user/:id/view',
-          builder: (context, state) => Scaffold(body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.view)),
+          builder: (context, state) => Scaffold(
+            body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.view),
+          ),
         ),
       ],
     );
@@ -92,21 +99,18 @@ void main() {
   group('UserEditorScreen Tests', () {
     testWidgets('Create Mode - Should render empty form', (tester) async {
       // ARRANGE
-      // Set up UserBloc
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
-      // Set up AuthorityBloc
       when(
-        mockAuthorityBloc.state,
+        () => mockAuthorityBloc.state,
       ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
       when(
-        mockAuthorityBloc.stream,
+        () => mockAuthorityBloc.stream,
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
-      // Mock UserBloc event handling
-      when(mockUserBloc.add(any)).thenAnswer((invocation) {
+      when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
           userStateController.add(const UserState());
         }
@@ -114,11 +118,7 @@ void main() {
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
-
-      // Wait for initial build
       await tester.pump();
-
-      // Wait for async operations
       await tester.pumpAndSettle();
 
       // ASSERT
@@ -129,10 +129,8 @@ void main() {
       expect(find.byKey(const Key('userEditorActivatedFieldKey')), findsOneWidget);
       expect(find.byType(AuthoritiesDropdown), findsOneWidget);
 
-      // Verify bloc interactions
-      verify(mockUserBloc.add(any)).called(1);
+      verify(() => mockUserBloc.add(any())).called(1);
 
-      // Clean up
       await userStateController.close();
     });
 
@@ -149,22 +147,15 @@ void main() {
         authorities: ['ROLE_USER'],
       );
 
-      // Mock repository call first
-      when(mockUserRepository.retrieve(userId)).thenAnswer((_) async => mockUser);
+      when(() => mockUserRepository.retrieve(userId)).thenAnswer((_) async => mockUser);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
-      // Set up UserBloc state and event handling
-      when(mockUserBloc.state).thenReturn(const UserState());
-
-      // Create a StreamController for UserBloc states
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
 
-      // Mock UserBloc event handling with proper event type
-      when(mockUserBloc.add(any)).thenAnswer((invocation) async {
+      when(() => mockUserBloc.add(any())).thenAnswer((invocation) async {
         if (invocation.positionalArguments[0] is UserFetchEvent) {
-          // Emit loading state first
           userStateController.add(const UserState(status: UserStatus.loading));
-          // Then emit success state with data
           await Future.delayed(const Duration(milliseconds: 100));
           userStateController.add(const UserState(status: UserStatus.fetchSuccess, data: mockUser));
         }
@@ -172,11 +163,7 @@ void main() {
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.edit, id: userId));
-
-      // Wait for initial build
       await tester.pump();
-
-      // Wait for async operations and state changes
       await tester.pumpAndSettle(const Duration(seconds: 1));
 
       // ASSERT
@@ -185,10 +172,8 @@ void main() {
       expect(find.text('User'), findsOneWidget);
       expect(find.text('test@example.com'), findsOneWidget);
 
-      // Verify repository and bloc interactions
-      verify(mockUserBloc.add(any)).called(1);
+      verify(() => mockUserBloc.add(any())).called(1);
 
-      // Clean up
       await userStateController.close();
     });
 
@@ -205,21 +190,18 @@ void main() {
         authorities: ['ROLE_USER'],
       );
 
-      // Set up UserBloc
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState(data: mockUser));
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState(data: mockUser));
 
-      // Set up AuthorityBloc
       when(
-        mockAuthorityBloc.state,
+        () => mockAuthorityBloc.state,
       ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
       when(
-        mockAuthorityBloc.stream,
+        () => mockAuthorityBloc.stream,
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
-      // Mock UserBloc event handling
-      when(mockUserBloc.add(any)).thenAnswer((invocation) {
+      when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserFetchEvent) {
           userStateController.add(const UserState(data: mockUser));
         }
@@ -227,11 +209,7 @@ void main() {
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.view, id: userId));
-
-      // Wait for initial build
       await tester.pump();
-
-      // Wait for async operations
       await tester.pumpAndSettle();
 
       // ASSERT
@@ -240,33 +218,28 @@ void main() {
       );
       expect(loginField.enabled, false);
 
-      // Verify data is displayed
       expect(find.text('testuser'), findsOneWidget);
       expect(find.text('Test'), findsOneWidget);
       expect(find.text('User'), findsOneWidget);
       expect(find.text('test@example.com'), findsOneWidget);
 
-      // Clean up
       await userStateController.close();
     });
 
     testWidgets('Create Mode - Should validate form before submit', (tester) async {
       // ARRANGE
-      // Set up UserBloc
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
-      // Set up AuthorityBloc
       when(
-        mockAuthorityBloc.state,
+        () => mockAuthorityBloc.state,
       ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
       when(
-        mockAuthorityBloc.stream,
+        () => mockAuthorityBloc.stream,
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
-      // Mock UserBloc event handling
-      when(mockUserBloc.add(any)).thenAnswer((invocation) {
+      when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
           userStateController.add(const UserState());
         }
@@ -277,49 +250,41 @@ void main() {
       await tester.pump();
       await tester.pumpAndSettle();
 
-      // Scroll to and tap submit button
       await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
 
-      // Scroll back to see validation errors
       await tester.ensureVisible(find.byKey(const Key('userEditorLoginFieldKey')));
       await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text(S.current.required_field), findsWidgets);
 
-      // Alternatif olarak, belirli form alanlarının validasyon durumunu kontrol et
       final loginField = tester.widget<FormBuilderTextField>(find.byKey(const Key('userEditorLoginFieldKey')));
       expect(loginField.validator, isNotNull);
 
-      // Verify bloc interactions
-      verify(mockUserBloc.add(any)).called(1);
+      verify(() => mockUserBloc.add(any())).called(1);
 
-      // Clean up
       await userStateController.close();
     });
 
     testWidgets('Create Mode - Should submit valid form', (tester) async {
-      // Use wider viewport to accommodate user list layout after navigation
       await tester.binding.setSurfaceSize(const Size(1200, 800));
 
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
-      // Set up AuthorityBloc
       when(
-        mockAuthorityBloc.state,
+        () => mockAuthorityBloc.state,
       ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
       when(
-        mockAuthorityBloc.stream,
+        () => mockAuthorityBloc.stream,
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
-      // Mock UserBloc event handling
-      when(mockUserBloc.add(any)).thenAnswer((invocation) {
+      when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
           userStateController.add(const UserState());
         } else if (invocation.positionalArguments[0] is UserSubmitEvent) {
@@ -331,44 +296,37 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
       await tester.pumpAndSettle();
 
-      // Fill form
       await tester.enterText(find.byKey(const Key('userEditorLoginFieldKey')), 'newuser');
       await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'New');
       await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'User');
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'new@example.com');
 
-      // Submit form
       await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
 
       // ASSERT
-      verify(mockUserBloc.add(any)).called(greaterThan(0));
+      verify(() => mockUserBloc.add(any())).called(greaterThan(0));
 
-      // Clean up
       await userStateController.close();
-
-      // Reset surface size
       await tester.binding.setSurfaceSize(null);
     });
 
     testWidgets('Should handle cancel button tap', (tester) async {
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
-      // Set up AuthorityBloc
       when(
-        mockAuthorityBloc.state,
+        () => mockAuthorityBloc.state,
       ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
       when(
-        mockAuthorityBloc.stream,
+        () => mockAuthorityBloc.stream,
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
-      // Mock UserBloc event handling
-      when(mockUserBloc.add(any)).thenAnswer((invocation) {
+      when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
           userStateController.add(const UserState());
         }
@@ -378,26 +336,20 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
       await tester.pumpAndSettle();
 
-      // Fill some data to make form dirty
       await tester.enterText(find.byKey(const Key('userEditorLoginFieldKey')), 'testuser');
 
-      // Tap back button
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
 
       // ASSERT
-      // Dialog should appear
       expect(find.text(S.current.warning), findsOneWidget);
       expect(find.text(S.current.unsaved_changes), findsOneWidget);
 
-      // Tap "No" to stay on the form
       await tester.tap(find.text(S.current.no));
       await tester.pumpAndSettle();
 
-      // Form should still be visible
       expect(find.byKey(const Key('userEditorLoginFieldKey')), findsOneWidget);
 
-      // Clean up
       await userStateController.close();
     });
   });

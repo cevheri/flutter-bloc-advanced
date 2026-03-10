@@ -14,19 +14,21 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../../mocks/mock_classes.dart';
 import '../../../test_utils.dart';
-import 'list_user_screen_test.mocks.dart';
 
-@GenerateMocks([UserBloc, UserRepository, AuthorityBloc, AuthorityRepository])
 void main() {
   late MockUserRepository mockUserRepository;
   late MockAuthorityBloc mockAuthorityBloc;
   late MockAuthorityRepository mockAuthorityRepository;
   late MockUserBloc mockUserBloc;
   late TestUtils testUtils;
+
+  setUpAll(() {
+    registerAllFallbackValues();
+  });
 
   setUp(() async {
     testUtils = TestUtils();
@@ -38,17 +40,18 @@ void main() {
     mockAuthorityRepository = MockAuthorityRepository();
 
     // Set up default AuthorityBloc behavior
-    when(mockAuthorityBloc.stream).thenAnswer(
+    when(() => mockAuthorityBloc.stream).thenAnswer(
       (_) => Stream.fromIterable([
         const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
       ]),
     );
-    when(mockAuthorityBloc.state).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+    when(
+      () => mockAuthorityBloc.state,
+    ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
   });
 
   tearDown(() async {
     await testUtils.tearDownUnitTest();
-    // UsersFeatureRoutes has no dispose — cleanup handled by test framework
   });
 
   Widget buildTestableWidget() {
@@ -103,8 +106,8 @@ void main() {
       addTearDown(tester.view.reset);
 
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -135,8 +138,8 @@ void main() {
       addTearDown(tester.view.reset);
 
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
       final mockUsers = [
         User(
@@ -179,8 +182,8 @@ void main() {
       addTearDown(tester.view.reset);
 
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -195,7 +198,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // ASSERT
-      verify(mockUserBloc.add(any)).called(greaterThan(0));
+      verify(() => mockUserBloc.add(any())).called(greaterThan(0));
 
       // Clean up
       await userStateController.close();
@@ -208,8 +211,8 @@ void main() {
       addTearDown(tester.view.reset);
 
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -230,8 +233,8 @@ void main() {
     testWidgets('handles screen size responsiveness', (tester) async {
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
-      when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+      when(() => mockUserBloc.state).thenReturn(const UserState());
 
       // Test large screen
       tester.view.physicalSize = const Size(1200, 800);

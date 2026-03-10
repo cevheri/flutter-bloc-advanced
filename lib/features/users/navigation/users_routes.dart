@@ -50,10 +50,7 @@ class UsersFeatureRoutes {
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,
-        child: _withUserBloc(
-          context,
-          UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.edit),
-        ),
+        child: _withUserBloc(context, UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.edit)),
       ),
     ),
     GoRoute(
@@ -62,10 +59,7 @@ class UsersFeatureRoutes {
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,
-        child: _withUserBloc(
-          context,
-          UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.view),
-        ),
+        child: _withUserBloc(context, UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.view)),
       ),
     ),
   ];

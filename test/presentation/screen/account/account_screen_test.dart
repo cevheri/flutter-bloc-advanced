@@ -14,13 +14,11 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../../mocks/mock_classes.dart';
 import '../../../test_utils.dart';
-import 'account_screen_test.mocks.dart';
 
-@GenerateMocks([AccountBloc, AccountRepository, UserBloc, UserRepository])
 void main() {
   late MockAccountBloc mockAccountBloc;
   late MockUserBloc mockUserBloc;
@@ -38,6 +36,10 @@ void main() {
     activated: true,
   );
 
+  setUpAll(() {
+    registerAllFallbackValues();
+  });
+
   setUp(() async {
     testUtils = TestUtils();
     await testUtils.setupUnitTest();
@@ -50,8 +52,8 @@ void main() {
     userStateController = StreamController<UserState>.broadcast();
 
     // Setup stream responses
-    when(mockAccountBloc.stream).thenAnswer((_) => accountStateController.stream);
-    when(mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
+    when(() => mockAccountBloc.stream).thenAnswer((_) => accountStateController.stream);
+    when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
   });
 
   tearDown(() async {
@@ -94,7 +96,7 @@ void main() {
   group('AccountScreen Basic UI Tests', () {
     testWidgets('Should render back button and title correctly', (tester) async {
       // ARRANGE
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -107,7 +109,7 @@ void main() {
     });
 
     testWidgets('Should render form fields correctly', (tester) async {
-      when(mockAccountBloc.state).thenReturn(const AccountState(data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -123,7 +125,7 @@ void main() {
   group('AccountScreen State Tests', () {
     testWidgets('Should display loading indicator when in loading state', (tester) async {
       // ARRANGE
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.loading));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.loading));
 
       // Make sure the stream also emits the loading state
       accountStateController.add(const AccountState(status: AccountStatus.loading));
@@ -132,55 +134,34 @@ void main() {
       await tester.pumpWidget(buildTestableWidget());
       await tester.pump();
 
-      // ASSERT - try finding CircularProgressIndicator in different ways
-      // expect(
-      //   find.byWidgetPredicate((widget) =>
-      //     widget is CircularProgressIndicator ||
-      //     (widget is Center && widget.child is CircularProgressIndicator) ||
-      //     (widget is Material && widget.child is Center && (widget.child as Center).child is CircularProgressIndicator)
-      //   ),
-      //   findsOneWidget,
-      //   reason: 'Should find a CircularProgressIndicator wrapped in Center or Material',
-      // );
+      // ASSERT
     });
 
     // Add a test to verify state transitions
     testWidgets('Should handle loading to success state transition', (tester) async {
       // ARRANGE
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.loading));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.loading));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
-      await tester.pump(); // İlk frame'i oluştur
-
-      // ASSERT - Loading durumunu kontrol et
-      //expect(find.byType(CircularProgressIndicator), findsOneWidget);
+      await tester.pump();
 
       // Success durumuna geçiş
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       accountStateController.add(const AccountState(status: AccountStatus.success, data: mockUser));
 
-      await tester.pumpAndSettle(); // Animasyonların tamamlanmasını bekle
+      await tester.pumpAndSettle();
 
       // Success durumunu kontrol et
       expect(find.byType(FormBuilder), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
-
-    // testWidgets('Should display no data message when data is null', (tester) async {
-    //   when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success));
-    //
-    //   await tester.pumpWidget(buildTestableWidget());
-    //   await tester.pumpAndSettle();
-    //
-    //   expect(find.text(S.current.no_data), findsOneWidget);
-    // });
   });
 
   group('AccountScreen Form Operations', () {
     testWidgets('Should show warning when save button is pressed without changes', (tester) async {
-      when(mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -192,7 +173,7 @@ void main() {
     });
 
     testWidgets('Should not submit when form validation fails', (tester) async {
-      when(mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -201,21 +182,19 @@ void main() {
       await tester.tap(find.text(S.current.save));
       await tester.pumpAndSettle();
 
-      verifyNever(mockUserBloc.add(any));
+      verifyNever(() => mockUserBloc.add(any()));
     });
   });
 
   group('AccountScreen Navigation Tests', () {
     testWidgets('Should exit directly when back button is pressed without changes', (tester) async {
-      when(mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(data: mockUser, status: AccountStatus.success));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
       await tester.tap(find.byIcon(Icons.arrow_back));
       await tester.pumpAndSettle();
-
-      //expect(find.text(S.current.warning), findsNothing);
     });
   });
 
@@ -224,7 +203,7 @@ void main() {
       tester,
     ) async {
       // ARRANGE
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -238,12 +217,12 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify AccountSubmitEvent was called with correct data
-      verify(mockAccountBloc.add(any)).called(2);
+      verify(() => mockAccountBloc.add(any())).called(2);
     });
 
     testWidgets('Given form submission When server returns error Then should display failure message', (tester) async {
       // ARRANGE - Set up initial successful state
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -274,7 +253,7 @@ void main() {
     // Alternative approach using ScaffoldMessenger
     testWidgets('Given form submission When server returns error Then should show error in SnackBar', (tester) async {
       // ARRANGE - Initialize widget with success state
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -310,7 +289,7 @@ void main() {
 
   group('AccountScreen Navigation Tests', () {
     testWidgets('Should show confirmation dialog when back button is pressed with changes', (tester) async {
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
@@ -327,7 +306,7 @@ void main() {
   group('AccountScreen State Management Tests', () {
     testWidgets('Should show snackbar messages for different states', (tester) async {
       // ARRANGE - Set up initial state
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pump();
@@ -376,7 +355,7 @@ void main() {
 
     testWidgets('Should show snackbar messages for different states2', (tester) async {
       // ARRANGE - Set up initial state
-      when(mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
 
       await tester.pumpWidget(buildTestableWidget());
       await tester.pump();
@@ -408,16 +387,6 @@ void main() {
       await tester.pump(); // Start SnackBar animation
       await tester.pump(const Duration(milliseconds: 750)); // Animation midpoint
 
-      // Verify success state
-      // expect(
-      //   find.descendant(
-      //     of: find.byType(ScaffoldMessenger),
-      //     matching: find.text(S.current.success)
-      //   ),
-      //   findsOneWidget,
-      //   reason: 'Should show success message in SnackBar'
-      // );
-
       var snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       var snackBarText = (snackBar.content as Text).data;
       expect(snackBarText, equals(S.current.loading));
@@ -431,9 +400,6 @@ void main() {
       snackBar = tester.widget<SnackBar>(find.byType(SnackBar));
       snackBarText = (snackBar.content as Text).data;
       expect(snackBarText, equals(S.current.loading));
-
-      // Verify failure state
-      //expect(find.descendant(of: find.byType(ScaffoldMessenger), matching: find.text(S.current.failed)), findsOneWidget,reason: 'Should show failure message in SnackBar');
     });
   });
 }

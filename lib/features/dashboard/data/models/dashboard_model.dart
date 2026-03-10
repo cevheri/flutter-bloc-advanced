@@ -15,7 +15,6 @@ class DashboardSummary extends DashboardSummaryEntity {
 
   static List<DashboardSummary> fromJsonList(List<dynamic> list) =>
       list.map((e) => DashboardSummary.fromJson(e)).toList();
-
 }
 
 /// Dashboard recent activity item model
@@ -38,7 +37,6 @@ class DashboardActivity extends DashboardActivityEntity {
 
   static List<DashboardActivity> fromJsonList(List<dynamic> list) =>
       list.map((e) => DashboardActivity.fromJson(e)).toList();
-
 }
 
 /// Dashboard quick action item model
@@ -50,7 +48,6 @@ class DashboardQuickAction extends DashboardQuickActionEntity {
 
   static List<DashboardQuickAction> fromJsonList(List<dynamic> list) =>
       list.map((e) => DashboardQuickAction.fromJson(e)).toList();
-
 }
 
 /// Dashboard root model
@@ -65,5 +62,4 @@ class DashboardModel extends DashboardEntity {
 
   static DashboardModel fromJsonString(String jsonString) =>
       DashboardModel.fromJson(jsonDecode(jsonString) as Map<String, dynamic>);
-
 }

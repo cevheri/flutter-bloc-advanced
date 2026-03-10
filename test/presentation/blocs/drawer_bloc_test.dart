@@ -5,11 +5,10 @@ import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart
 import 'package:flutter_bloc_advance/app/shell/drawer/drawer_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_list_cache.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../../mocks/mock_classes.dart';
 import '../../test_utils.dart';
-import 'drawer_bloc_test.mocks.dart';
 
 /// BLoc Test for DrawerBloc
 ///
@@ -17,7 +16,6 @@ import 'drawer_bloc_test.mocks.dart';
 /// 1. State test <p>
 /// 2. Event test <p>
 /// 3. Bloc test <p>
-@GenerateMocks([LoginRepository, MenuRepository])
 void main() {
   //region setup
   late LoginRepository loginRepository;
@@ -83,7 +81,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, success] when LoadMenus is added",
         setUp: () {
-          when(menuRepository.list()).thenAnswer((_) => output);
+          when(() => menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -94,7 +92,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, failure] when LoadMenus is added",
         setUp: () {
-          when(menuRepository.list()).thenThrow(Exception("Error"));
+          when(() => menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -113,7 +111,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, success] when RefreshMenus is added",
         setUp: () {
-          when(menuRepository.list()).thenAnswer((_) => output);
+          when(() => menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -124,7 +122,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [loading, failure] when RefreshMenus is added",
         setUp: () {
-          when(menuRepository.list()).thenThrow(Exception("Error"));
+          when(() => menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -141,7 +139,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [success] when Logout is added",
         setUp: () {
-          when(loginRepository.logout()).thenAnswer((_) => Future.value());
+          when(() => loginRepository.logout()).thenAnswer((_) => Future.value());
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -152,7 +150,7 @@ void main() {
       blocTest<DrawerBloc, DrawerState>(
         "emits [success] when Logout is added",
         setUp: () {
-          when(loginRepository.logout()).thenThrow(Exception("Error"));
+          when(() => loginRepository.logout()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
         build: () => DrawerBloc(loginRepository: loginRepository, menuRepository: menuRepository),

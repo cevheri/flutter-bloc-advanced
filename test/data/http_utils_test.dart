@@ -6,13 +6,11 @@ import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/http_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
+import 'package:mocktail/mocktail.dart';
 
+import '../mocks/mock_classes.dart';
 import '../test_utils.dart';
-import 'http_utils_test.mocks.dart';
 
-@GenerateMocks([http.Client])
 void main() {
   late MockClient mockClient;
 
@@ -97,11 +95,11 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.post(
+          () => mockClient.post(
             Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+            encoding: any(named: 'encoding'),
           ),
         ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
@@ -114,11 +112,11 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.post(
+          () => mockClient.post(
             Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+            encoding: any(named: 'encoding'),
           ),
         ).thenThrow(const SocketException('No Internet Connection'));
 
@@ -140,11 +138,11 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.post(
+          () => mockClient.post(
             Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+            encoding: any(named: 'encoding'),
           ),
         ).thenThrow(TimeoutException('Timeout Exception'));
 
@@ -168,7 +166,7 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
         final response = await HttpUtils.getRequest('/test');
@@ -181,7 +179,7 @@ void main() {
         HttpUtils.setHttpClient(mockClient);
 
         when(
-          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenThrow(const SocketException('No Internet Connection'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<FetchDataException>()));
@@ -204,7 +202,7 @@ void main() {
         HttpUtils.setHttpClient(mockClient);
 
         when(
-          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenThrow(UnauthorizedException('Unauthorized'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<UnauthorizedException>()));
@@ -221,7 +219,7 @@ void main() {
         HttpUtils.setHttpClient(mockClient);
 
         when(
-          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenThrow(const SocketException('No Internet Connection'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<FetchDataException>()));
@@ -245,7 +243,7 @@ void main() {
         await TestUtils().setupAuthentication();
 
         when(
-          mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.get(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenThrow(TimeoutException('Timeout'));
 
         await expectLater(HttpUtils.getRequest('/test'), throwsA(isA<FetchDataException>()));
@@ -269,11 +267,11 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.put(
+          () => mockClient.put(
             Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+            encoding: any(named: 'encoding'),
           ),
         ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
@@ -286,11 +284,11 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.put(
+          () => mockClient.put(
             Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+            encoding: any(named: 'encoding'),
           ),
         ).thenThrow(const SocketException('No Internet connection'));
 
@@ -315,11 +313,11 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.put(
+          () => mockClient.put(
             Uri.parse('https://dhw-api.onrender.com/api/test'),
-            headers: anyNamed('headers'),
-            body: anyNamed('body'),
-            encoding: anyNamed('encoding'),
+            headers: any(named: 'headers'),
+            body: any(named: 'body'),
+            encoding: any(named: 'encoding'),
           ),
         ).thenThrow(TimeoutException('Timeout'));
 
@@ -345,11 +343,11 @@ void main() {
           ProfileConstants.setEnvironment(Environment.prod);
           HttpUtils.setHttpClient(mockClient);
           when(
-            mockClient.patch(
+            () => mockClient.patch(
               Uri.parse('https://dhw-api.onrender.com/api/test'),
-              headers: anyNamed('headers'),
-              body: anyNamed('body'),
-              encoding: anyNamed('encoding'),
+              headers: any(named: 'headers'),
+              body: any(named: 'body'),
+              encoding: any(named: 'encoding'),
             ),
           ).thenAnswer((_) async => http.Response('{"success": true}', 200));
 
@@ -362,11 +360,11 @@ void main() {
           ProfileConstants.setEnvironment(Environment.prod);
           HttpUtils.setHttpClient(mockClient);
           when(
-            mockClient.patch(
+            () => mockClient.patch(
               Uri.parse('https://dhw-api.onrender.com/api/test'),
-              headers: anyNamed('headers'),
-              body: anyNamed('body'),
-              encoding: anyNamed('encoding'),
+              headers: any(named: 'headers'),
+              body: any(named: 'body'),
+              encoding: any(named: 'encoding'),
             ),
           ).thenThrow(const SocketException('No Internet connection'));
 
@@ -391,11 +389,11 @@ void main() {
           ProfileConstants.setEnvironment(Environment.prod);
           HttpUtils.setHttpClient(mockClient);
           when(
-            mockClient.patch(
+            () => mockClient.patch(
               Uri.parse('https://dhw-api.onrender.com/api/test'),
-              headers: anyNamed('headers'),
-              body: anyNamed('body'),
-              encoding: anyNamed('encoding'),
+              headers: any(named: 'headers'),
+              body: any(named: 'body'),
+              encoding: any(named: 'encoding'),
             ),
           ).thenThrow(TimeoutException('Timeout'));
 
@@ -421,7 +419,7 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenAnswer((_) async => http.Response('{"success": true}', 204));
 
         final response = await HttpUtils.deleteRequest('/test');
@@ -433,7 +431,7 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenAnswer((_) async => http.Response('{"error": "Unauthorized"}', 401));
 
         await expectLater(HttpUtils.deleteRequest('/test'), throwsA(isA<UnauthorizedException>()));
@@ -449,7 +447,7 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenThrow(const SocketException('No Internet connection'));
 
         expect(HttpUtils.deleteRequest('/test'), throwsA(isA<FetchDataException>()));
@@ -470,7 +468,7 @@ void main() {
         ProfileConstants.setEnvironment(Environment.prod);
         HttpUtils.setHttpClient(mockClient);
         when(
-          mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: anyNamed('headers')),
+          () => mockClient.delete(Uri.parse('https://dhw-api.onrender.com/api/test'), headers: any(named: 'headers')),
         ).thenThrow(TimeoutException('TimeoutException'));
 
         expect(HttpUtils.deleteRequest('/test'), throwsA(isA<FetchDataException>()));

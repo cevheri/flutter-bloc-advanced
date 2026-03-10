@@ -332,12 +332,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
 }
 
 class UserEditorPage extends StatelessWidget {
-  const UserEditorPage({
-    super.key,
-    this.id,
-    this.username,
-    required this.mode,
-  });
+  const UserEditorPage({super.key, this.id, this.username, required this.mode});
 
   final String? id;
   final String? username;

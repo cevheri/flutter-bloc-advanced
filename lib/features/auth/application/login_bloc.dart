@@ -26,11 +26,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     required SendOtpUseCase sendOtpUseCase,
     required VerifyOtpUseCase verifyOtpUseCase,
     required GetAccountUseCase getAccountUseCase,
-  })  : _authenticateUserUseCase = authenticateUserUseCase,
-        _sendOtpUseCase = sendOtpUseCase,
-        _verifyOtpUseCase = verifyOtpUseCase,
-        _getAccountUseCase = getAccountUseCase,
-        super(const LoginState()) {
+  }) : _authenticateUserUseCase = authenticateUserUseCase,
+       _sendOtpUseCase = sendOtpUseCase,
+       _verifyOtpUseCase = verifyOtpUseCase,
+       _getAccountUseCase = getAccountUseCase,
+       super(const LoginState()) {
     on<LoginFormSubmitted>(_onSubmit);
     on<TogglePasswordVisibility>((event, emit) => emit(state.copyWith(passwordVisible: !state.passwordVisible)));
     on<ChangeLoginMethod>(_onChangeLoginMethod);
