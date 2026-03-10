@@ -268,7 +268,9 @@ If you are unsure where to start, documentation improvements, screenshot refresh
 
 ## References
 
-- [Ask DeepWiki](https://deepwiki.com/cevheri/flutter-bloc-advanced)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/cevheri/flutter-bloc-advanced)
+
+
 - [Understanding Flutter BLoC: A Comprehensive Guide](https://cevheri.medium.com/understanding-flutter-bloc-a-comprehensive-guide-7100dabe3975)
 - [Flutter Documentation](https://flutter.dev/)
 - [BLoC Library](https://bloclibrary.dev/)
