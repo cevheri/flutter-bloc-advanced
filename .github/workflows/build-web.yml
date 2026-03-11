@@ -26,6 +26,17 @@ jobs:
       - name: Build release project
         run: flutter build web --base-href /flutter-bloc-advanced/ --target lib/main/main_local.dart
 
+      - name: Ensure .nojekyll exists in build output
+        run: touch build/web/.nojekyll
+
+      - name: Verify web assets
+        run: |
+          ls -la build/web/robots.txt
+          ls -la build/web/sitemap.xml
+          ls -la build/web/404.html
+          ls -la build/web/browserconfig.xml
+          ls -la build/web/.nojekyll
+
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v4
         with:

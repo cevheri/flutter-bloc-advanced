@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /flutter-bloc-advanced/
+Disallow: /flutter-bloc-advanced/assets/
+Disallow: /flutter-bloc-advanced/canvaskit/
+
+Sitemap: https://cevheri.github.io/flutter-bloc-advanced/sitemap.xml
