@@ -1,0 +1,68 @@
+# Flutter BLoC Advance Template
+
+> A production-ready, open-source Flutter starter template using BLoC pattern for state management with Feature-First Clean Architecture. Supports Android, iOS, Web, macOS, Linux, and Windows. Built with Flutter 3.41.4, Dart 3.11.1, flutter_bloc 9.1.1, and go_router 17.1.0.
+
+This project provides a complete foundation for building enterprise-grade Flutter applications. It includes authentication (login, register, forgot password, OTP verification), user management (CRUD operations), role-based access control (Admin/User roles), a responsive design system, dark/light theming, English/Turkish localization, and multi-environment support (local mock data and production API).
+
+## Architecture
+
+The project follows Feature-First Clean Boundaries architecture with strict dependency rules:
+
+- `app/` — Composition root: DI, router, shell (sidebar, top bar, bottom nav, command palette), theme, session bootstrap
+- `core/` — Cross-cutting primitives: errors, logging, security utilities
+- `infrastructure/` — External adapters: HTTP client, environment config, local storage
+- `shared/` — Business-free reusable UI: design system (14 components, theme tokens), shared widgets, utilities
+- `features/` — 6 self-contained business modules: account, auth, catalog, dashboard, settings, users
+
+Each feature contains: `application/` (BLoC + use cases), `data/` (models, mappers, repositories), `domain/` (entities, repository interfaces), `navigation/` (route definitions), `presentation/` (pages, widgets).
+
+Dependency flow: `app` → `features` → `shared` → `core`. Features cannot import from other features' internals. BLoCs depend on use cases, not repositories directly.
+
+## Tech Stack
+
+- **State Management:** flutter_bloc 9.1.1 with Equatable for state equality
+- **Routing:** go_router 17.1.0 with feature-based route composition
+- **HTTP:** http 1.6.0 with certificate pinning
+- **Forms:** flutter_form_builder 10.3.0+2 with form_builder_validators
+- **Localization:** intl 0.20.2 with ARB files and intl_utils code generation
+- **Storage:** shared_preferences, get_storage
+- **Charts:** fl_chart for dashboard visualizations
+- **Testing:** flutter_test, bloc_test, mocktail (472+ tests)
+- **CI/CD:** GitHub Actions (build, test, web deploy, SonarQube)
+
+## Quick Start
+
+Clone and run with mock data (no backend required):
+```
+git clone https://github.com/cevheri/flutter-bloc-advanced.git
+cd flutter-bloc-advanced
+fvm install 3.41.4 && fvm use 3.41.4 && fvm flutter pub get
+fvm flutter run --target lib/main/main_local.dart
+```
+
+Demo credentials: admin/admin (full access), user/user (limited access).
+
+## Documentation
+
+- [README](https://github.com/cevheri/flutter-bloc-advanced/blob/main/README.md): Full project overview, quick start, tech stack, and contributing guide
+- [Architecture Design Document](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/feature-first-clean-boundaries.md): Dependency rules, feature structure, routing and state management rules
+- [Architecture Migration Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/architecture-migration_en.md): Detailed migration from layered to feature-first architecture
+- [Flutter Upgrade Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/upgrade_flutter_3.41.4.md): Flutter 3.41.4 upgrade notes
+- [DeepWiki](https://deepwiki.com/cevheri/flutter-bloc-advanced): AI-powered project wiki
+
+## Source Code
+
+- [GitHub Repository](https://github.com/cevheri/flutter-bloc-advanced): Full source code
+- [lib/app/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/app): Application foundation (DI, router, shell, theme)
+- [lib/features/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/features): Feature modules (account, auth, catalog, dashboard, settings, users)
+- [lib/shared/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/shared): Design system, shared widgets, and utilities
+- [lib/core/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/core): Error handling, logging, security
+- [lib/infrastructure/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/infrastructure): HTTP, environment config, storage
+- [test/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/test): Test suite mirroring lib/ structure
+
+## Optional
+
+- [CLAUDE.md](https://github.com/cevheri/flutter-bloc-advanced/blob/main/CLAUDE.md): AI coding assistant instructions for this project
+- [Release Notes](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/RELEASE_NOTES.md): Version history and changelog
+- [UI Design Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/flutter-modern-ui-design-guide.md): Modern UI design guidelines
+- [License (MIT)](https://github.com/cevheri/flutter-bloc-advanced/blob/main/LICENSE): Open source license

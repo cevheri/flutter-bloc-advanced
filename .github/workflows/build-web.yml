@@ -29,6 +29,9 @@ jobs:
       - name: Ensure .nojekyll exists in build output
         run: touch build/web/.nojekyll
 
+      - name: Ensure .well-known directory exists in build output
+        run: cp -r web/.well-known build/web/.well-known 2>/dev/null || true
+
       - name: Verify web assets
         run: |
           ls -la build/web/robots.txt
@@ -36,6 +39,9 @@ jobs:
           ls -la build/web/404.html
           ls -la build/web/browserconfig.xml
           ls -la build/web/.nojekyll
+          ls -la build/web/llms.txt
+          ls -la build/web/llms-full.txt
+          ls -la build/web/humans.txt
 
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v4

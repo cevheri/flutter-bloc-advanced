@@ -1,0 +1,4 @@
+Contact: https://github.com/cevheri/flutter-bloc-advanced/issues
+Preferred-Languages: en, tr
+Canonical: https://cevheri.github.io/flutter-bloc-advanced/.well-known/security.txt
+Policy: https://github.com/cevheri/flutter-bloc-advanced/security/policy

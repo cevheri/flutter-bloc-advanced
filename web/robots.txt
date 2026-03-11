@@ -3,4 +3,32 @@ Allow: /flutter-bloc-advanced/
 Disallow: /flutter-bloc-advanced/assets/
 Disallow: /flutter-bloc-advanced/canvaskit/
 
+# AI Crawlers - Allow all for open-source discoverability
+User-agent: GPTBot
+Allow: /flutter-bloc-advanced/
+
+User-agent: ChatGPT-User
+Allow: /flutter-bloc-advanced/
+
+User-agent: ClaudeBot
+Allow: /flutter-bloc-advanced/
+
+User-agent: Claude-Web
+Allow: /flutter-bloc-advanced/
+
+User-agent: Claude-SearchBot
+Allow: /flutter-bloc-advanced/
+
+User-agent: PerplexityBot
+Allow: /flutter-bloc-advanced/
+
+User-agent: Google-Extended
+Allow: /flutter-bloc-advanced/
+
+User-agent: Bytespider
+Allow: /flutter-bloc-advanced/
+
+User-agent: CCBot
+Allow: /flutter-bloc-advanced/
+
 Sitemap: https://cevheri.github.io/flutter-bloc-advanced/sitemap.xml
