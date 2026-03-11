@@ -42,6 +42,8 @@ jobs:
           ls -la build/web/llms.txt
           ls -la build/web/llms-full.txt
           ls -la build/web/humans.txt
+          ls -la build/web/google66b8a92043c08f67.html
+          ls -la build/web/BingSiteAuth.xml
 
       - name: Upload production-ready build files
         uses: actions/upload-artifact@v4
