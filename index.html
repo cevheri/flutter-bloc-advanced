@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <!--
     If you are serving your web app in a path other than the root, change the
@@ -18,48 +18,101 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="flutter_bloc_advance">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
-  <!-- iOS meta tags & icons -->
+  <!-- SEO -->
+  <meta name="description" content="Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.">
+  <meta name="keywords" content="flutter, bloc, template, dart, web application, clean architecture, responsive, authentication">
+  <meta name="author" content="cevheri">
+  <meta name="robots" content="index, follow">
+  <meta name="generator" content="Flutter">
+  <link rel="canonical" href="https://cevheri.github.io/flutter-bloc-advanced/">
+
+  <!-- Theme color -->
+  <meta name="theme-color" content="#18181B" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://cevheri.github.io/flutter-bloc-advanced/">
+  <meta property="og:title" content="Flutter BLoC Advance Template">
+  <meta property="og:description" content="Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.">
+  <meta property="og:image" content="https://cevheri.github.io/flutter-bloc-advanced/icons/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:site_name" content="Flutter BLoC Advance">
+  <meta property="og:locale" content="en_US">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Flutter BLoC Advance Template">
+  <meta name="twitter:description" content="Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.">
+  <meta name="twitter:image" content="https://cevheri.github.io/flutter-bloc-advanced/icons/og-image.png">
+
+  <!-- iOS / Mobile -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="flutter_bloc_advance">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="BLoC Advance">
+  <meta name="mobile-web-app-capable" content="yes">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+  <!-- Microsoft -->
+  <meta name="msapplication-TileColor" content="#18181B">
+  <meta name="msapplication-config" content="browserconfig.xml">
 
-  <title>flutter_bloc_advance</title>
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/Icon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="icons/Icon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-180.png">
+
+  <!-- Resource hints -->
+  <link rel="preconnect" href="https://dhw-api.onrender.com" crossorigin>
+  <link rel="dns-prefetch" href="https://dhw-api.onrender.com">
+
+  <title>Flutter BLoC Advance Template</title>
   <link rel="manifest" href="manifest.json">
-  
-  <!-- Browser geri butonunu tamamen devre dışı bırak -->
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "Flutter BLoC Advance Template",
+    "description": "Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.",
+    "url": "https://cevheri.github.io/flutter-bloc-advanced/",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Web, Android, iOS, macOS, Linux, Windows",
+    "author": {
+      "@type": "Person",
+      "name": "cevheri",
+      "url": "https://github.com/cevheri"
+    }
+  }
+  </script>
+
+  <!-- Disable browser back button for Flutter SPA -->
   <script>
     (function() {
-      // Başlangıç URL'sini kaydet
+      // Store initial URL
       let currentUrl = window.location.href;
       let isDisabled = false;
-      
-      // Popstate event'ini yakala ve engelle
+
+      // Capture and prevent popstate events
       window.addEventListener('popstate', function(event) {
-        console.log('Browser back button pressed - preventing navigation');
-        
-        // Event'i tamamen durdur
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
-        
-        // URL'yi geri yükle
+
+        // Restore URL
         if (window.location.href !== currentUrl) {
           window.history.pushState(null, '', currentUrl);
         }
-        
-        // Geri butonunu devre dışı bırak
+
         isDisabled = true;
-        
         return false;
-      }, true); // Capture phase'de yakala
-      
-      // Beforeunload event'ini de yakala
+      }, true);
+
+      // Capture beforeunload event
       window.addEventListener('beforeunload', function(event) {
         if (isDisabled) {
           event.preventDefault();
@@ -67,65 +120,91 @@
           return '';
         }
       });
-      
-      // History API'yi override et
+
+      // Override History API
       const originalPushState = window.history.pushState;
       const originalReplaceState = window.history.replaceState;
       const originalGo = window.history.go;
-      const originalBack = window.history.back;
-      const originalForward = window.history.forward;
-      
-      // PushState override
+
       window.history.pushState = function(state, title, url) {
         currentUrl = url || window.location.href;
         return originalPushState.call(this, state, title, url);
       };
-      
-      // ReplaceState override
+
       window.history.replaceState = function(state, title, url) {
         currentUrl = url || window.location.href;
         return originalReplaceState.call(this, state, title, url);
       };
-      
-      // Go override
+
       window.history.go = function(delta) {
-        if (delta < 0) { // Geri gitme
-          console.log('History.go() back prevented');
-          return;
-        }
+        if (delta < 0) return;
         return originalGo.call(this, delta);
       };
-      
-      // Back override
-      window.history.back = function() {
-        console.log('History.back() prevented');
-        return;
-      };
-      
-      // Forward override
-      window.history.forward = function() {
-        console.log('History.forward() prevented');
-        return;
-      };
-      
-      // Başlangıç URL'sini kaydet
+
+      window.history.back = function() { return; };
+      window.history.forward = function() { return; };
+
+      // Store initial URL
       window.history.pushState(null, '', currentUrl);
-      
-      // Keyboard event'lerini de yakala
+
+      // Capture keyboard shortcuts (Alt+Backspace)
       document.addEventListener('keydown', function(event) {
         if (event.key === 'Backspace' && event.altKey) {
           event.preventDefault();
           event.stopPropagation();
-          console.log('Alt+Backspace prevented');
           return false;
         }
       }, true);
-      
-      console.log('Browser back button completely disabled for Flutter app');
     })();
   </script>
+
+  <!-- Loading spinner styles -->
+  <style>
+    #loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #09090B;
+    }
+    #loading .spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #27272A;
+      border-top-color: #A1A1AA;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    @media (prefers-color-scheme: light) {
+      #loading { background-color: #FFFFFF; }
+      #loading .spinner {
+        border-color: #E4E4E7;
+        border-top-color: #52525B;
+      }
+    }
+  </style>
 </head>
 <body>
+  <!-- Loading splash screen, removed when Flutter renders first frame -->
+  <div id="loading" aria-label="Loading application">
+    <div class="spinner"></div>
+  </div>
+
+  <noscript>
+    <div style="display:flex;justify-content:center;align-items:center;height:100vh;font-family:system-ui,sans-serif;">
+      <p>This application requires JavaScript to run. Please enable JavaScript in your browser settings.</p>
+    </div>
+  </noscript>
+
+  <script>
+    window.addEventListener('flutter-first-frame', function() {
+      var loader = document.getElementById('loading');
+      if (loader) loader.remove();
+    });
+  </script>
   <script src="flutter_bootstrap.js" async></script>
 </body>
 </html>

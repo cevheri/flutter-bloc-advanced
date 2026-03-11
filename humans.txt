@@ -1,0 +1,10 @@
+/* TEAM */
+Developer: cevheri
+Site: https://github.com/cevheri
+Location: Turkey
+
+/* SITE */
+Standards: HTML5, CSS3, JavaScript
+Software: Flutter 3.41.4, Dart 3.11.1
+Components: flutter_bloc, go_router, equatable
+Architecture: Feature-First Clean Boundaries
