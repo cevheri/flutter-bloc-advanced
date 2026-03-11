@@ -13,6 +13,7 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 
 import '../../application/login_bloc.dart';
 import '../../../../generated/l10n.dart';
+import '../widgets/community_section_widget.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -126,20 +127,26 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             padding: const EdgeInsets.all(48),
             child: FadeTransition(
               opacity: _animController,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _brandBadges(),
-                  const SizedBox(height: 40),
-                  _heroText(),
-                  const SizedBox(height: 16),
-                  _heroSubtext(),
-                  const SizedBox(height: 20),
-                  _statsRow(),
-                  const SizedBox(height: 40),
-                  _featureCards(),
-                ],
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _brandBadges(),
+                      const SizedBox(height: 40),
+                      _heroText(),
+                      const SizedBox(height: 16),
+                      _heroSubtext(),
+                      const SizedBox(height: 20),
+                      _statsRow(),
+                      const SizedBox(height: 40),
+                      _featureCards(),
+                      const SizedBox(height: 10),
+                      const CommunitySectionWidget(isDesktop: true),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
@@ -413,6 +420,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           SizedBox(width: double.infinity, child: _otpLoginButton(context)),
           const SizedBox(height: 28),
           _registerLink(context),
+          const SizedBox(height: 4),
+          const CommunitySectionWidget(isDesktop: false),
         ],
       ),
     );

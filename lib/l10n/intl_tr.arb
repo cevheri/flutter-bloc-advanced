@@ -96,5 +96,13 @@
   "add_task": "Görev Ekle",
   "new_deal": "Yeni Anlaşma",
   "send_email_action": "E-posta Gönder",
+  "community_title": "Topluluğa Katılın",
+  "community_subtitle": "Bu proje açık kaynaktır. Katkılarınız onu daha iyi yapar!",
+  "community_star": "Yıldız & Fork",
+  "community_issue": "Sorun Bildir",
+  "community_discussions": "Tartışmalar",
+  "community_contribute": "Katkıda Bulun",
+  "community_translate": "Çeviriye Yardım Et",
+  "community_sponsor": "Sponsor Ol",
   "more": "Daha Fazla"
 }

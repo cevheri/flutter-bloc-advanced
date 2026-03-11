@@ -27,3 +27,11 @@ const Key settingsLogoutButtonKey = Key("settingsLogoutButtonKey");
 const Key changePasswordButtonSubmitKey = Key("changePasswordButtonSubmitKey");
 const Key changePasswordTextFieldCurrentPasswordKey = Key("changePasswordTextFieldCurrentPasswordKey");
 const Key changePasswordTextFieldNewPasswordKey = Key("changePasswordTextFieldNewPasswordKey");
+
+// community section
+const Key communityStarKey = Key("communityStarKey");
+const Key communityIssueKey = Key("communityIssueKey");
+const Key communityDiscussionsKey = Key("communityDiscussionsKey");
+const Key communityContributeKey = Key("communityContributeKey");
+const Key communityTranslateKey = Key("communityTranslateKey");
+const Key communitySponsorKey = Key("communitySponsorKey");

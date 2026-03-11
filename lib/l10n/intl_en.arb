@@ -95,5 +95,13 @@
   "add_task": "Add Task",
   "new_deal": "New Deal",
   "send_email_action": "Send Email",
+  "community_title": "Join the Community",
+  "community_subtitle": "This project is open source. Your contributions make it better!",
+  "community_star": "Star & Fork",
+  "community_issue": "Open an Issue",
+  "community_discussions": "Discussions",
+  "community_contribute": "Contribute",
+  "community_translate": "Translate",
+  "community_sponsor": "Sponsor",
   "more": "More"
 }

@@ -554,6 +554,51 @@ class S {
     return Intl.message('Send Email', name: 'send_email_action', desc: '', args: []);
   }
 
+  /// `Join the Community`
+  String get community_title {
+    return Intl.message('Join the Community', name: 'community_title', desc: '', args: []);
+  }
+
+  /// `This project is open source. Your contributions make it better!`
+  String get community_subtitle {
+    return Intl.message(
+      'This project is open source. Your contributions make it better!',
+      name: 'community_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Star & Fork`
+  String get community_star {
+    return Intl.message('Star & Fork', name: 'community_star', desc: '', args: []);
+  }
+
+  /// `Open an Issue`
+  String get community_issue {
+    return Intl.message('Open an Issue', name: 'community_issue', desc: '', args: []);
+  }
+
+  /// `Discussions`
+  String get community_discussions {
+    return Intl.message('Discussions', name: 'community_discussions', desc: '', args: []);
+  }
+
+  /// `Contribute`
+  String get community_contribute {
+    return Intl.message('Contribute', name: 'community_contribute', desc: '', args: []);
+  }
+
+  /// `Translate`
+  String get community_translate {
+    return Intl.message('Translate', name: 'community_translate', desc: '', args: []);
+  }
+
+  /// `Sponsor`
+  String get community_sponsor {
+    return Intl.message('Sponsor', name: 'community_sponsor', desc: '', args: []);
+  }
+
   /// `More`
   String get more {
     return Intl.message('More', name: 'more', desc: '', args: []);
