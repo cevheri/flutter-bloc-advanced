@@ -388,7 +388,7 @@ class S {
   }
 
   /// `{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  new_user{New}  list_user{List} other{Other}}`
-  String translate_menu_title(Object translate) {
+  String translate_menu_title(String translate) {
     return Intl.select(
       translate,
       {
