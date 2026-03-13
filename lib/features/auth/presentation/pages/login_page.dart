@@ -3,7 +3,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
-import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
@@ -25,7 +24,6 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(debugLabel: '__loginScaffoldKey__');
-  bool? _darkOverride;
   late AnimationController _animController;
 
   @override
@@ -43,23 +41,18 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    final systemDark = MediaQuery.platformBrightnessOf(context) == Brightness.dark;
-    final isDark = _darkOverride ?? systemDark;
-    final theme = isDark ? AppTheme.dark() : AppTheme.light();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Theme(
-      data: theme,
-      child: Scaffold(
-        key: _scaffoldKey,
-        body: BlocListener<LoginBloc, LoginState>(
-          listener: _onLoginStateChange,
-          child: SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final isDesktop = constraints.maxWidth >= 1024;
-                return isDesktop ? _desktopLayout(context, isDark) : _mobileLayout(context, isDark);
-              },
-            ),
+    return Scaffold(
+      key: _scaffoldKey,
+      body: BlocListener<LoginBloc, LoginState>(
+        listener: _onLoginStateChange,
+        child: SafeArea(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isDesktop = constraints.maxWidth >= 1024;
+              return isDesktop ? _desktopLayout(context, isDark) : _mobileLayout(context, isDark);
+            },
           ),
         ),
       ),
@@ -101,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             ),
           ),
         ),
-        Positioned(top: 12, right: 12, child: _themeToggle(isDark)),
+        Positioned(top: 12, right: 12, child: _themeBadge(isDark)),
       ],
     );
   }
@@ -353,7 +346,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
               ),
             ),
           ),
-          Positioned(top: 16, right: 16, child: _themeToggle(isDark)),
+          Positioned(top: 16, right: 16, child: _themeBadge(isDark)),
         ],
       ),
     );
@@ -467,42 +460,17 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _themeToggle(bool isDark) {
+  Widget _themeBadge(bool isDark) {
     final cs = Theme.of(context).colorScheme;
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (_darkOverride != null)
-          TextButton(
-            onPressed: () => setState(() => _darkOverride = null),
-            style: TextButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              minimumSize: Size.zero,
-              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            ),
-            child: Text('Auto', style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
-          ),
-        const SizedBox(width: 4),
-        Container(
-          decoration: BoxDecoration(
-            color: cs.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: cs.outlineVariant),
-          ),
-          child: IconButton(
-            tooltip: isDark ? 'Switch to light' : 'Switch to dark',
-            onPressed: () => setState(() => _darkOverride = !isDark),
-            icon: Icon(
-              isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
-              size: 18,
-              color: cs.onSurfaceVariant,
-            ),
-            iconSize: 18,
-            constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-            padding: EdgeInsets.zero,
-          ),
-        ),
-      ],
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Icon(isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined, size: 18, color: cs.onSurfaceVariant),
     );
   }
 

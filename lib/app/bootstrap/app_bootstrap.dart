@@ -17,9 +17,15 @@ class AppBootstrap {
 
     ProfileConstants.setEnvironment(config.environment);
 
-    await AppLocalStorage().save(StorageKeys.language.name, config.defaultLanguage);
-    await AppLocalStorage().save(StorageKeys.theme.name, config.defaultPalette);
-    await AppLocalStorage().save(StorageKeys.brightness.name, config.defaultBrightness);
+    final existingLang = await AppLocalStorage().read(StorageKeys.language.name);
+    if (existingLang == null) {
+      await AppLocalStorage().save(StorageKeys.language.name, config.defaultLanguage);
+    }
+    final existingPalette = await AppLocalStorage().read(StorageKeys.theme.name);
+    if (existingPalette == null) {
+      await AppLocalStorage().save(StorageKeys.theme.name, config.defaultPalette);
+    }
+    // Don't save default brightness — let ThemeBloc use ThemeMode.system when no preference exists
     await AppLocalStorageCached.loadCache();
 
     AppRouter().setRouter(RouterType.goRouter);

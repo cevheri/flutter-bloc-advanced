@@ -1,12 +1,12 @@
 part of 'theme_bloc.dart';
 
 class ThemeState {
-  const ThemeState({this.palette = AppThemePalette.classic, this.isDarkMode = false});
+  const ThemeState({this.palette = AppThemePalette.classic, this.themeMode = ThemeMode.system});
 
   final AppThemePalette palette;
-  final bool isDarkMode;
+  final ThemeMode themeMode;
 
-  ThemeState copyWith({AppThemePalette? palette, bool? isDarkMode}) {
-    return ThemeState(palette: palette ?? this.palette, isDarkMode: isDarkMode ?? this.isDarkMode);
+  ThemeState copyWith({AppThemePalette? palette, ThemeMode? themeMode}) {
+    return ThemeState(palette: palette ?? this.palette, themeMode: themeMode ?? this.themeMode);
   }
 }

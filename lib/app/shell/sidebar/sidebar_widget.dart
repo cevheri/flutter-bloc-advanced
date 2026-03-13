@@ -211,8 +211,10 @@ class _SidebarFooter extends StatelessWidget {
           BlocBuilder<ThemeBloc, ThemeState>(
             builder: (context, themeState) {
               return SidebarNavItem(
-                icon: themeState.isDarkMode ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-                label: themeState.isDarkMode ? 'Dark' : 'Light',
+                icon: Theme.of(context).brightness == Brightness.dark
+                    ? Icons.dark_mode_outlined
+                    : Icons.light_mode_outlined,
+                label: Theme.of(context).brightness == Brightness.dark ? 'Dark' : 'Light',
                 isCollapsed: isCollapsed,
                 onTap: () => context.read<ThemeBloc>().add(const ToggleBrightness()),
               );

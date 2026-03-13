@@ -53,7 +53,7 @@ class _AppViewState extends State<_AppView> {
           child: MaterialApp.router(
             theme: AppTheme.light(themeState.palette),
             darkTheme: AppTheme.dark(themeState.palette),
-            themeMode: themeState.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+            themeMode: themeState.themeMode,
             themeAnimationDuration: Duration.zero,
             debugShowCheckedModeBanner: true,
             localizationsDelegates: const [

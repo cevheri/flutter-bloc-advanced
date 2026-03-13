@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme_palette.dart';
@@ -15,7 +16,14 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   Future<void> _onLoadTheme(LoadTheme event, Emitter<ThemeState> emit) async {
     try {
       final brightnessPref = await AppLocalStorage().read(StorageKeys.brightness.name);
-      final isDarkMode = brightnessPref == 'dark';
+      ThemeMode themeMode;
+      if (brightnessPref == 'dark') {
+        themeMode = ThemeMode.dark;
+      } else if (brightnessPref == 'light') {
+        themeMode = ThemeMode.light;
+      } else {
+        themeMode = ThemeMode.system;
+      }
 
       final palettePref = await AppLocalStorage().read(StorageKeys.theme.name);
       AppThemePalette palette = AppThemePalette.classic;
@@ -36,9 +44,9 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
         }
       }
 
-      emit(state.copyWith(palette: palette, isDarkMode: isDarkMode));
+      emit(state.copyWith(palette: palette, themeMode: themeMode));
     } catch (_) {
-      emit(state.copyWith(palette: AppThemePalette.classic, isDarkMode: false));
+      emit(state.copyWith(palette: AppThemePalette.classic, themeMode: ThemeMode.system));
     }
   }
 
@@ -62,10 +70,10 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   }
 
   Future<void> _onToggleBrightness(ToggleBrightness event, Emitter<ThemeState> emit) async {
-    final newIsDarkMode = !state.isDarkMode;
-    emit(state.copyWith(isDarkMode: newIsDarkMode));
+    final newMode = state.themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    emit(state.copyWith(themeMode: newMode));
     try {
-      await AppLocalStorage().save(StorageKeys.brightness.name, newIsDarkMode ? 'dark' : 'light');
+      await AppLocalStorage().save(StorageKeys.brightness.name, newMode == ThemeMode.dark ? 'dark' : 'light');
     } catch (_) {}
   }
 }
