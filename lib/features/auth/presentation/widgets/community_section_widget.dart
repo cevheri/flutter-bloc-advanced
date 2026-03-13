@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/testing/app_key_constants.dart';
 import '../../../../generated/l10n.dart';
+import '../../../../infrastructure/config/template_config.dart';
 
 class CommunityUrls {
   static const repo = 'https://github.com/cevheri/flutter-bloc-advanced';
@@ -13,7 +14,7 @@ class CommunityUrls {
   static const contributing = 'https://github.com/cevheri/flutter-bloc-advanced/blob/main/CONTRIBUTING.md';
   static const translate = 'https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/l10n';
   static const sponsor = 'https://github.com/sponsors/cevheri';
-  static const docs = 'https://dartpilot.github.io';
+  static const docs = TemplateConfig.docsUrl;
 }
 
 class _CommunityAction {

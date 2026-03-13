@@ -46,7 +46,7 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
   Future<Result<List<String>>> list() async {
     _log.debug('BEGIN:getAuthorities repository start');
     try {
-      final queryParams = {'sort': '&sort=name'};
+      final queryParams = {'sort': 'name'};
       final response = await ApiClient.get('/$_resource', queryParams: queryParams);
       final result = Authority.fromJsonStringList(response.data!);
       final nonNullList = result.whereType<String>().toList();

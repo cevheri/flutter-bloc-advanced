@@ -10,6 +10,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../generated/l10n.dart';
+import '../../../../infrastructure/config/template_config.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -110,7 +111,7 @@ class SettingsScreen extends StatelessWidget {
   }
 
   Future<void> _launchWebsite() async {
-    final uri = Uri.parse('https://dartpilot.github.io');
+    final uri = Uri.parse(TemplateConfig.docsUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }

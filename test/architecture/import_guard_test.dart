@@ -173,17 +173,49 @@ void main() {
   });
 }
 
-/// Extract package imports from a Dart file (ignore dart: and external packages).
+/// Extract package and relative imports from a Dart file (ignore dart: and external packages).
 List<String> _getImports(File file) {
-  return file
-      .readAsLinesSync()
-      .where((line) => line.startsWith('import ') && line.contains('flutter_bloc_advance'))
-      .map((line) {
-        final match = RegExp(r"import '([^']+)'").firstMatch(line);
-        return match?.group(1) ?? '';
-      })
-      .where((s) => s.isNotEmpty)
-      .toList();
+  final lines = file.readAsLinesSync();
+  final result = <String>[];
+
+  for (final line in lines) {
+    if (!line.startsWith('import ')) continue;
+    final match = RegExp(r"import '([^']+)'").firstMatch(line);
+    if (match == null) continue;
+    final importPath = match.group(1)!;
+
+    if (importPath.contains('flutter_bloc_advance')) {
+      result.add(importPath);
+    } else if (importPath.startsWith('.')) {
+      // Resolve relative import to package-style path for consistent checking
+      final filePath = file.path.replaceAll('\\', '/');
+      final lastSlash = filePath.lastIndexOf('/');
+      final fileDir = lastSlash != -1 ? filePath.substring(0, lastSlash) : '.';
+      final resolved = _resolveRelativePath(fileDir, importPath);
+      // Convert to package:flutter_bloc_advance/... style
+      final libIndex = resolved.indexOf('/lib/');
+      if (libIndex != -1) {
+        final packagePath = 'package:flutter_bloc_advance/${resolved.substring(libIndex + 5)}';
+        result.add(packagePath);
+      }
+    }
+  }
+
+  return result;
+}
+
+/// Resolve a relative path against a directory, normalizing '..' segments.
+String _resolveRelativePath(String dir, String relativePath) {
+  final segments = '$dir/$relativePath'.replaceAll('\\', '/').split('/');
+  final resolved = <String>[];
+  for (final segment in segments) {
+    if (segment == '..') {
+      if (resolved.isNotEmpty) resolved.removeLast();
+    } else if (segment != '.' && segment.isNotEmpty) {
+      resolved.add(segment);
+    }
+  }
+  return '/${resolved.join('/')}';
 }
 
 /// Extract feature name from a file path (e.g., lib/features/users/... → 'users').

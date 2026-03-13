@@ -38,17 +38,14 @@ class MockInterceptor extends Interceptor {
       }
     }
 
-    // Determine status code and early-return for DELETE
-    int statusCode;
-    switch (options.method) {
-      case 'POST':
-        statusCode = HttpStatus.created;
-      case 'DELETE':
-        handler.resolve(Response(requestOptions: options, data: 'OK', statusCode: HttpStatus.noContent));
-        return;
-      default:
-        statusCode = HttpStatus.ok;
+    // Early-return for DELETE (no mock file needed)
+    if (options.method == 'DELETE') {
+      handler.resolve(Response(requestOptions: options, data: 'OK', statusCode: HttpStatus.noContent));
+      return;
     }
+
+    // Determine status code
+    final statusCode = options.method == 'POST' ? HttpStatus.created : HttpStatus.ok;
 
     // Build mock file path
     final hasPathParams = options.extra['_pathParams'] != null;

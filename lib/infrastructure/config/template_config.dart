@@ -16,6 +16,7 @@ class TemplateConfig {
   // Web / SEO
   static const String baseUrl = '__WEB_BASE_URL__';
   static const String githubRepo = '__GITHUB_REPO_URL__';
+  static const String docsUrl = '__DOCS_URL__';
 
   // Author
   static const String authorName = '__AUTHOR_NAME__';

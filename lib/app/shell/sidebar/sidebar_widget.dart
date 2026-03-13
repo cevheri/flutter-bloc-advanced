@@ -14,6 +14,7 @@ import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.d
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_durations.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'sidebar_nav_item.dart';
 import 'sidebar_sub_menu.dart';
@@ -245,7 +246,7 @@ class _SidebarFooter extends StatelessWidget {
   }
 
   Future<void> _launchWebsite() async {
-    final uri = Uri.parse('https://dartpilot.github.io');
+    final uri = Uri.parse(TemplateConfig.docsUrl);
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
