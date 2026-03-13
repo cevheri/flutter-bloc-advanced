@@ -12,22 +12,23 @@ The project follows Feature-First Clean Boundaries architecture with strict depe
 - `core/` — Cross-cutting primitives: errors, logging, security utilities
 - `infrastructure/` — External adapters: HTTP client, environment config, local storage
 - `shared/` — Business-free reusable UI: design system (14 components, theme tokens), shared widgets, utilities
-- `features/` — 6 self-contained business modules: account, auth, catalog, dashboard, settings, users
+- `features/` — 5 self-contained business modules: account, auth, dashboard, settings, users
 
-Each feature contains: `application/` (BLoC + use cases), `data/` (models, mappers, repositories), `domain/` (entities, repository interfaces), `navigation/` (route definitions), `presentation/` (pages, widgets).
+Each feature contains: `application/` (BLoC + use cases), `data/` (models, repositories), `domain/` (entities, repository interfaces), `navigation/` (route definitions), `presentation/` (pages, widgets).
 
-Dependency flow: `app` → `features` → `shared` → `core`. Features cannot import from other features' internals. BLoCs depend on use cases, not repositories directly.
+Dependency flow: `app` → `features` → `shared` → `core`. Features cannot import from other features' internals. BLoCs depend on use cases, not repositories directly. Dependency rules are enforced by architecture guard tests.
 
 ## Tech Stack
 
 - **State Management:** flutter_bloc 9.1.1 with Equatable for state equality
 - **Routing:** go_router 17.1.0 with feature-based route composition
-- **HTTP:** http 1.6.0 with certificate pinning
+- **HTTP:** dio 5.7.0 with interceptor chain (auth token injection, mock data, structured logging)
+- **Error Handling:** Dart 3 sealed Result<T> type with typed AppError hierarchy (no raw exceptions)
 - **Forms:** flutter_form_builder 10.3.0+2 with form_builder_validators
 - **Localization:** intl 0.20.2 with ARB files and intl_utils code generation
-- **Storage:** shared_preferences, get_storage
+- **Storage:** shared_preferences 2.5.4
 - **Charts:** fl_chart for dashboard visualizations
-- **Testing:** flutter_test, bloc_test, mocktail (472+ tests)
+- **Testing:** flutter_test, bloc_test, mocktail (568+ tests, architecture guard tests)
 - **CI/CD:** GitHub Actions (build, test, web deploy, SonarQube)
 
 ## Quick Start
@@ -54,7 +55,7 @@ Demo credentials: admin/admin (full access), user/user (limited access).
 
 - [GitHub Repository](https://github.com/cevheri/flutter-bloc-advanced): Full source code
 - [lib/app/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/app): Application foundation (DI, router, shell, theme)
-- [lib/features/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/features): Feature modules (account, auth, catalog, dashboard, settings, users)
+- [lib/features/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/features): Feature modules (account, auth, dashboard, settings, users)
 - [lib/shared/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/shared): Design system, shared widgets, and utilities
 - [lib/core/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/core): Error handling, logging, security
 - [lib/infrastructure/](https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/infrastructure): HTTP, environment config, storage

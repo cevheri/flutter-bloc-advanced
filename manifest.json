@@ -1,10 +1,8 @@
 {
-    "name": "Flutter BLoC Advance Template",
-    "short_name": "BLoC Advance",
-    "description": "Production-ready Flutter BLoC template with clean architecture and responsive design.",
+    "name": "__APP_NAME__",
+    "short_name": "__APP_SHORT_NAME__",
+    "description": "__APP_DESCRIPTION__",
     "start_url": ".",
-    "id": "/flutter-bloc-advanced/",
-    "scope": "/flutter-bloc-advanced/",
     "display": "standalone",
     "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
     "background_color": "#09090B",
@@ -107,11 +105,11 @@
     "shortcuts": [
         {
             "name": "Dashboard",
-            "url": "/flutter-bloc-advanced/"
+            "url": "./"
         },
         {
             "name": "Settings",
-            "url": "/flutter-bloc-advanced/settings"
+            "url": "./settings"
         }
     ]
 }
