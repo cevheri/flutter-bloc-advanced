@@ -1,70 +1,68 @@
-name: Build & deploy
+name: Build & Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
-
     steps:
-      - name: Clone repository
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          channel: 'stable'
           flutter-version: '3.41.4'
+          channel: stable
+          cache: true
 
-      - name: Get dependencies
+      - name: Install dependencies
         run: flutter pub get
 
-      - name: Build release project
-        run: flutter build web --base-href /flutter-bloc-advanced/ --target lib/main/main_local.dart
+      - name: Build web
+        run: flutter build web --release --base-href /flutter-bloc-advanced/ --target lib/main/main_local.dart
 
-      - name: Ensure .nojekyll exists in build output
-        run: touch build/web/.nojekyll
-
-      - name: Ensure .well-known directory exists in build output
-        run: cp -r web/.well-known build/web/.well-known 2>/dev/null || true
+      - name: Prepare deployment assets
+        run: |
+          touch build/web/.nojekyll
+          cp -r web/.well-known build/web/.well-known 2>/dev/null || true
 
       - name: Verify web assets
         run: |
-          ls -la build/web/robots.txt
-          ls -la build/web/sitemap.xml
-          ls -la build/web/404.html
-          ls -la build/web/browserconfig.xml
-          ls -la build/web/.nojekyll
-          ls -la build/web/llms.txt
-          ls -la build/web/llms-full.txt
-          ls -la build/web/humans.txt
+          echo "Checking required web assets..."
+          for f in robots.txt sitemap.xml 404.html browserconfig.xml .nojekyll llms.txt llms-full.txt humans.txt; do
+            test -f "build/web/$f" && echo "OK: $f" || echo "WARN: $f missing"
+          done
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v4
 
-      - name: Upload production-ready build files
-        uses: actions/upload-artifact@v4
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: production-files
           path: build/web
 
   deploy:
     name: Deploy
     needs: build
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: production-files
-          path: build/web
-
-      - name: Deploy to gh-pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.PAT_GITHUB_TOKEN }}
-          publish_dir: build/web
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
