@@ -1,3 +1,5 @@
+import 'dart:ui' show PlatformDispatcher;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
@@ -70,7 +72,13 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
   }
 
   Future<void> _onToggleBrightness(ToggleBrightness event, Emitter<ThemeState> emit) async {
-    final newMode = state.themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    final ThemeMode newMode;
+    if (state.themeMode == ThemeMode.system) {
+      final systemIsDark = PlatformDispatcher.instance.platformBrightness == Brightness.dark;
+      newMode = systemIsDark ? ThemeMode.light : ThemeMode.dark;
+    } else {
+      newMode = state.themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+    }
     emit(state.copyWith(themeMode: newMode));
     try {
       await AppLocalStorage().save(StorageKeys.brightness.name, newMode == ThemeMode.dark ? 'dark' : 'light');
