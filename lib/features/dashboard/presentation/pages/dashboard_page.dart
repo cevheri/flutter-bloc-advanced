@@ -8,6 +8,7 @@ import 'package:flutter_bloc_advance/shared/design_system/components/app_respons
 import 'package:flutter_bloc_advance/shared/design_system/components/app_skeleton.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/semantic_colors.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
+import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:flutter_bloc_advance/shared/utils/icon_utils.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
@@ -93,6 +94,11 @@ class _DashboardHeader extends StatelessWidget {
         Icon(Icons.dashboard_outlined, color: colorScheme.primary, size: 28),
         const SizedBox(width: AppSpacing.md),
         Text(S.of(context).dashboard, style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(width: AppSpacing.sm),
+        Text(
+          'v${AppConstants.appVersion}',
+          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
         const Spacer(),
         IconButton(tooltip: S.of(context).refresh, icon: const Icon(Icons.refresh), onPressed: onRefresh),
       ],

@@ -10,6 +10,8 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 
+import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
+
 import '../../application/login_bloc.dart';
 import '../../../../generated/l10n.dart';
 import '../widgets/community_section_widget.dart';
@@ -415,7 +417,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           _registerLink(context),
           const SizedBox(height: 4),
           const CommunitySectionWidget(isDesktop: false),
+          const SizedBox(height: 16),
+          _versionText(context),
         ],
+      ),
+    );
+  }
+
+  Widget _versionText(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Center(
+      child: Text(
+        'v${AppConstants.appVersion}+${AppConstants.appBuildNumber}',
+        style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant.withValues(alpha: 0.6)),
       ),
     );
   }
