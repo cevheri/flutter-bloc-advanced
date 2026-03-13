@@ -5,7 +5,7 @@ import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
@@ -31,7 +31,7 @@ class AppScope extends StatelessWidget {
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
-        RepositoryProvider<AuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
+        RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
         RepositoryProvider<IDashboardRepository>(create: (_) => dependencies.createDashboardRepository()),
         RepositoryProvider<IAuthRepository>(create: (_) => dependencies.createAuthRepository()),
         RepositoryProvider<MenuRepository>(create: (_) => dependencies.createMenuRepository()),
@@ -49,7 +49,7 @@ class AppScope extends StatelessWidget {
             ),
           ),
           BlocProvider<AuthorityBloc>(
-            create: (context) => AuthorityBloc(repository: context.read<AuthorityRepository>()),
+            create: (context) => AuthorityBloc(repository: context.read<IAuthorityRepository>()),
           ),
           BlocProvider<AccountBloc>(
             create: (context) => AccountBloc(

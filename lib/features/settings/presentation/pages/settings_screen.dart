@@ -7,8 +7,10 @@ import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.d
 import 'package:flutter_bloc_advance/shared/widgets/theme_selection_dialog.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../generated/l10n.dart';
+import '../../../../infrastructure/config/template_config.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -71,6 +73,21 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.lg),
 
+              // Help & Resources section
+              _SettingsSection(
+                title: S.of(context).help_resources,
+                children: [
+                  _SettingsTile(
+                    key: settingsWebsiteButtonKey,
+                    icon: Icons.language,
+                    title: S.of(context).website,
+                    subtitle: S.of(context).help_resources_subtitle,
+                    onTap: () => _launchWebsite(),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.lg),
+
               // Danger zone
               _SettingsSection(
                 title: S.of(context).logout,
@@ -91,6 +108,13 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  Future<void> _launchWebsite() async {
+    final uri = Uri.parse(TemplateConfig.docsUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Future<void> _handleLogout(BuildContext context) async {

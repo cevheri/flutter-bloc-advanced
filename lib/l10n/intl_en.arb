@@ -1,5 +1,7 @@
 {
+  "@@locale": "en",
   "screen_size_error": "Screen size is too small.",
+  "@screen_size_error": {},
   "admin": "Admin",
   "guest": "Guest",
   "role": "Role",
@@ -65,6 +67,13 @@
   "loading": "Loading...",
   "email_send": "Send Email",
   "translate_menu_title": "{translate, select, account{Account} userManagement{User Management} settings{Settings}  logout{Logout}  info{Info} language{Language}  theme{Theme}  new_user{New}  list_user{List} other{Other}}",
+  "@translate_menu_title": {
+    "placeholders": {
+      "translate": {
+        "type": "String"
+      }
+    }
+  },
   "login_with_email": "Login with Email",
   "send_otp_code": "Send OTP Code",
   "invalid_email": "Invalid email address",
@@ -76,8 +85,7 @@
   "otp_sent_to": "OTP sent to",
   "taskSaveScreenTitle": "Task Save",
   "taskName": "Task Name",
-  "taskPrice": "Task Price"
-,
+  "taskPrice": "Task Price",
   "theme": "Theme",
   "language": "Language",
   "dashboard": "Dashboard",
@@ -103,5 +111,9 @@
   "community_contribute": "Contribute",
   "community_translate": "Translate",
   "community_sponsor": "Sponsor",
+  "community_docs": "Documentation",
+  "help_resources": "Help & Resources",
+  "help_resources_subtitle": "Visit our website for documentation and guides",
+  "website": "Website",
   "more": "More"
 }

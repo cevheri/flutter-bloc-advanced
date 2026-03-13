@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/repositories/dashboard_repository.dart';
 
@@ -6,7 +7,7 @@ class LoadDashboardUseCase {
 
   final IDashboardRepository _repository;
 
-  Future<DashboardEntity> call() {
+  Future<Result<DashboardEntity>> call() {
     return _repository.fetch();
   }
 }

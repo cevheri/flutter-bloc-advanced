@@ -35,6 +35,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chart_kpi_placeholder": MessageLookupByLibrary.simpleMessage("Chart / KPI Placeholder"),
     "community_contribute": MessageLookupByLibrary.simpleMessage("Contribute"),
     "community_discussions": MessageLookupByLibrary.simpleMessage("Discussions"),
+    "community_docs": MessageLookupByLibrary.simpleMessage("Documentation"),
     "community_issue": MessageLookupByLibrary.simpleMessage("Open an Issue"),
     "community_sponsor": MessageLookupByLibrary.simpleMessage("Sponsor"),
     "community_star": MessageLookupByLibrary.simpleMessage("Star & Fork"),
@@ -58,6 +59,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
     "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
     "guest": MessageLookupByLibrary.simpleMessage("Guest"),
+    "help_resources": MessageLookupByLibrary.simpleMessage("Help & Resources"),
+    "help_resources_subtitle": MessageLookupByLibrary.simpleMessage("Visit our website for documentation and guides"),
     "invalid_email": MessageLookupByLibrary.simpleMessage("Invalid email address"),
     "just_now": MessageLookupByLibrary.simpleMessage("just now"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),
@@ -132,6 +135,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("Verify OTP Code"),
     "view_user": MessageLookupByLibrary.simpleMessage("View User"),
     "warning": MessageLookupByLibrary.simpleMessage("Warning"),
+    "website": MessageLookupByLibrary.simpleMessage("Website"),
     "yes": MessageLookupByLibrary.simpleMessage("Yes"),
   };
 }

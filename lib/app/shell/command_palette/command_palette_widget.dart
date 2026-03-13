@@ -53,12 +53,6 @@ const _allCommands = [
     icon: Icons.lock_outline,
     route: ApplicationRoutesConstants.changePassword,
   ),
-  _CommandEntry(
-    label: 'Component Catalog',
-    description: 'Design system preview (dev only)',
-    icon: Icons.palette_outlined,
-    route: '/catalog',
-  ),
 ];
 
 /// Keyboard shortcut wrapper that listens for Ctrl+K / Cmd+K to open the command palette.

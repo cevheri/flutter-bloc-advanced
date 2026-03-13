@@ -1,10 +1,9 @@
 import 'dart:async';
-import 'dart:io';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/reset_password_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 
@@ -33,18 +32,16 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   FutureOr<void> _onSubmit(ForgotPasswordEmailChanged event, Emitter<ForgotPasswordState> emit) async {
     _log.debug("BEGIN: forgotPassword bloc: _onSubmit");
     emit(state.copyWith(status: ForgotPasswordStatus.loading));
-    try {
-      final result = event.email.replaceAll('"', '');
-      final resultStatusCode = await _resetPasswordUseCase(result);
-      if (resultStatusCode < HttpStatus.badRequest) {
-        emit(state.copyWith(status: ForgotPasswordStatus.success, email: result));
-      } else {
-        throw BadRequestException("API Error");
-      }
-      _log.debug("END: forgotPassword bloc: _onSubmit success: {}", [resultStatusCode.toString()]);
-    } catch (e) {
-      emit(state.copyWith(status: ForgotPasswordStatus.failure));
-      _log.error("END: forgotPassword bloc: _onSubmit error: {}", [e.toString()]);
+
+    final email = event.email.replaceAll('"', '');
+    final result = await _resetPasswordUseCase(email);
+    switch (result) {
+      case Success():
+        emit(state.copyWith(status: ForgotPasswordStatus.success, email: email));
+        _log.debug("END: forgotPassword bloc: _onSubmit success");
+      case Failure(:final error):
+        emit(state.copyWith(status: ForgotPasswordStatus.failure));
+        _log.error("END: forgotPassword bloc: _onSubmit error: {}", [error.toString()]);
     }
   }
 }

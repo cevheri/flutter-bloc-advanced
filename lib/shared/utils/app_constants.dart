@@ -1,12 +1,13 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
 
 class AppConstants {
-  static const String appKey = "flutter_bloc_advanced";
-  static const String appName = "FlutterTemplate";
+  static const String appKey = TemplateConfig.appKey;
+  static const String appName = TemplateConfig.appName;
   static const String appVersion = "1.0.0";
-  static const String appDescription = "Flutter Template with BLOC and Clean Architecture";
-  static const String appAuthor = "sample.tech";
-  static const String appAuthorEmail = "info@sample.tech";
+  static const String appDescription = TemplateConfig.appDescription;
+  static const String appAuthor = TemplateConfig.authorName;
+  static const String appAuthorEmail = TemplateConfig.authorEmail;
 }
 
 class UpperCaseTextFormatter extends TextInputFormatter {

@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
@@ -15,7 +16,7 @@ class SearchUsersUseCase {
 
   final IUserRepository _repository;
 
-  Future<List<UserEntity>> call(SearchUsersParams params) {
+  Future<Result<List<UserEntity>>> call(SearchUsersParams params) {
     if ((params.name == null || params.name!.isEmpty) && (params.authorities == null || params.authorities!.isEmpty)) {
       return _repository.list(page: params.page, size: params.size);
     }

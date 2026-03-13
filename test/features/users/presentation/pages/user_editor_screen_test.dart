@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
@@ -142,7 +143,7 @@ void main() {
         authorities: ['ROLE_USER'],
       );
 
-      when(() => mockUserRepository.retrieve(userId)).thenAnswer((_) async => mockUser);
+      when(() => mockUserRepository.retrieve(userId)).thenAnswer((_) async => const Success(mockUser));
       when(() => mockUserBloc.state).thenReturn(const UserState());
 
       final userStateController = StreamController<UserState>.broadcast();

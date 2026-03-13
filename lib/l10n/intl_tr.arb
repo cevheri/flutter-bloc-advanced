@@ -1,5 +1,7 @@
 {
+  "@@locale": "tr",
   "screen_size_error": "Ekran boyutu çok küçük.",
+  "@screen_size_error": {},
   "admin": "Admin",
   "guest": "Kullanıcı",
   "role": "Rol",
@@ -65,6 +67,13 @@
   "loading": "Loading...",
   "email_send": "E-posta Gönder",
   "translate_menu_title": "{translate, select, account{Hesabım}  userManagement{Kullanıcı Yönetimi} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  new_user{Yeni Kullanıcı Ekle}  list_user{Kullanıcılar} other{Diğer}}",
+  "@translate_menu_title": {
+    "placeholders": {
+      "translate": {
+        "type": "String"
+      }
+    }
+  },
   "login_with_email": "E-posta ile Giriş",
   "send_otp_code": "OTP Kodu Gönder",
   "invalid_email": "Geçersiz e-posta adresi",
@@ -76,9 +85,7 @@
   "otp_sent_to": "OTP kodu gönderildi",
   "taskSaveScreenTitle": "Görev Kaydet",
   "taskName": "Görev Adı",
-  "taskPrice": "Görev Fiyatı"
-
-,
+  "taskPrice": "Görev Fiyatı",
   "theme": "Tema",
   "language": "Dil",
   "dashboard": "Panel",
@@ -104,5 +111,9 @@
   "community_contribute": "Katkıda Bulun",
   "community_translate": "Çeviriye Yardım Et",
   "community_sponsor": "Sponsor Ol",
+  "community_docs": "Dokümantasyon",
+  "help_resources": "Yardım ve Kaynaklar",
+  "help_resources_subtitle": "Dokümantasyon ve rehberler için web sitemizi ziyaret edin",
+  "website": "Web Sitesi",
   "more": "Daha Fazla"
 }

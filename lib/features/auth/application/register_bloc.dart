@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/register_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
@@ -34,17 +34,15 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   FutureOr<void> _onSubmit(RegisterFormSubmitted event, Emitter<RegisterState> emit) async {
     _log.debug("BEGIN: onSubmit RegisterFormSubmitted event: {}", [event.data.toString()]);
     emit(const RegisterLoadingState());
-    try {
-      final user = await _registerAccountUseCase(event.data);
-      if (user != null) {
-        emit(RegisterCompletedState(user: user));
-        _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [user.toString()]);
-      } else {
-        throw BadRequestException("Register Error: response is null");
-      }
-    } catch (e) {
-      emit(RegisterErrorState(message: e.toString()));
-      _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [e.toString()]);
+
+    final result = await _registerAccountUseCase(event.data);
+    switch (result) {
+      case Success(:final data):
+        emit(RegisterCompletedState(user: data));
+        _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [data.toString()]);
+      case Failure(:final error):
+        emit(RegisterErrorState(message: error.message));
+        _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [error.toString()]);
     }
   }
 }

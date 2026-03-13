@@ -35,6 +35,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "chart_kpi_placeholder": MessageLookupByLibrary.simpleMessage("Grafik / KPI Alanı"),
     "community_contribute": MessageLookupByLibrary.simpleMessage("Katkıda Bulun"),
     "community_discussions": MessageLookupByLibrary.simpleMessage("Tartışmalar"),
+    "community_docs": MessageLookupByLibrary.simpleMessage("Dokümantasyon"),
     "community_issue": MessageLookupByLibrary.simpleMessage("Sorun Bildir"),
     "community_sponsor": MessageLookupByLibrary.simpleMessage("Sponsor Ol"),
     "community_star": MessageLookupByLibrary.simpleMessage("Yıldız & Fork"),
@@ -58,6 +59,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "filter": MessageLookupByLibrary.simpleMessage("Filtrele"),
     "first_name": MessageLookupByLibrary.simpleMessage("İsim"),
     "guest": MessageLookupByLibrary.simpleMessage("Kullanıcı"),
+    "help_resources": MessageLookupByLibrary.simpleMessage("Yardım ve Kaynaklar"),
+    "help_resources_subtitle": MessageLookupByLibrary.simpleMessage(
+      "Dokümantasyon ve rehberler için web sitemizi ziyaret edin",
+    ),
     "invalid_email": MessageLookupByLibrary.simpleMessage("Geçersiz e-posta adresi"),
     "just_now": MessageLookupByLibrary.simpleMessage("az önce"),
     "language": MessageLookupByLibrary.simpleMessage("Dil"),
@@ -132,6 +137,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Doğrula"),
     "view_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Görüntüle"),
     "warning": MessageLookupByLibrary.simpleMessage("Uyarı"),
+    "website": MessageLookupByLibrary.simpleMessage("Web Sitesi"),
     "yes": MessageLookupByLibrary.simpleMessage("Evet"),
   };
 }

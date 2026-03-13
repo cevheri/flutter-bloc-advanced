@@ -1,6 +1,4 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:get_storage/get_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -13,23 +11,43 @@ import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dar
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
 
-// Repository imports
+// Repository imports (concrete)
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
-import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 
-// Repository mocks
+// Repository imports (interfaces)
+import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
+import 'package:flutter_bloc_advance/features/dashboard/domain/repositories/dashboard_repository.dart';
+
+// Entity/model imports for fallback values
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
+
+// Concrete repository mocks (for BLoC tests that depend on concrete types)
 class MockAccountRepository extends Mock implements AccountRepository {}
 
 class MockLoginRepository extends Mock implements LoginRepository {}
 
 class MockUserRepository extends Mock implements UserRepository {}
 
-class MockAuthorityRepository extends Mock implements AuthorityRepository {}
+class MockAuthorityRepository extends Mock implements IAuthorityRepository {}
 
 class MockMenuRepository extends Mock implements MenuRepository {}
+
+// Interface repository mocks (for use case tests)
+class MockIAccountRepository extends Mock implements IAccountRepository {}
+
+class MockIAuthRepository extends Mock implements IAuthRepository {}
+
+class MockIUserRepository extends Mock implements IUserRepository {}
+
+class MockIDashboardRepository extends Mock implements IDashboardRepository {}
 
 // BLoC mocks (using MockBloc from bloc_test)
 class MockAccountBloc extends MockBloc<AccountEvent, AccountState> implements AccountBloc {}
@@ -47,13 +65,19 @@ class MockRegisterBloc extends MockBloc<RegisterEvent, RegisterState> implements
 class MockLoginBloc extends MockBloc<LoginEvent, LoginState> implements LoginBloc {}
 
 // Infrastructure mocks
-class MockClient extends Mock implements http.Client {}
-
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
-class MockGetStorage extends Mock implements GetStorage {}
-
 // Fake classes for fallback values
+class FakeUserEntity extends Fake implements UserEntity {}
+
+class FakePasswordChangeDTO extends Fake implements PasswordChangeDTO {}
+
+class FakeAuthCredentialsEntity extends Fake implements AuthCredentialsEntity {}
+
+class FakeSendOtpEntity extends Fake implements SendOtpEntity {}
+
+class FakeVerifyOtpEntity extends Fake implements VerifyOtpEntity {}
+
 class FakeAccountEvent extends Fake implements AccountEvent {}
 
 class FakeUserEvent extends Fake implements UserEvent {}
@@ -78,4 +102,9 @@ void registerAllFallbackValues() {
   registerFallbackValue(FakeRegisterEvent());
   registerFallbackValue(FakeLoginEvent());
   registerFallbackValue(FakeUri());
+  registerFallbackValue(FakeUserEntity());
+  registerFallbackValue(FakePasswordChangeDTO());
+  registerFallbackValue(FakeAuthCredentialsEntity());
+  registerFallbackValue(FakeSendOtpEntity());
+  registerFallbackValue(FakeVerifyOtpEntity());
 }

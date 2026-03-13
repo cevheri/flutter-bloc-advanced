@@ -1,5 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
@@ -139,7 +141,7 @@ void main() {
       blocTest<MenuBloc, MenuState>(
         "emits [success] when Logout is added",
         setUp: () {
-          when(() => loginRepository.logout()).thenAnswer((_) => Future.value());
+          when(() => loginRepository.logout()).thenAnswer((_) => Future.value(const Success<void>(null)));
           MenuListCache.menus = [];
         },
         build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
@@ -148,9 +150,11 @@ void main() {
       );
 
       blocTest<MenuBloc, MenuState>(
-        "emits [success] when Logout is added",
+        "emits [failure] when Logout fails",
         setUp: () {
-          when(() => loginRepository.logout()).thenThrow(Exception("Error"));
+          when(
+            () => loginRepository.logout(),
+          ).thenAnswer((_) => Future.value(const Failure<void>(UnknownError("Error"))));
           MenuListCache.menus = [];
         },
         build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),

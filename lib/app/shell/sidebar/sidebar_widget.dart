@@ -4,6 +4,7 @@ import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
+import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
@@ -13,6 +14,8 @@ import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.d
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_durations.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'sidebar_nav_item.dart';
 import 'sidebar_sub_menu.dart';
 
@@ -215,6 +218,14 @@ class _SidebarFooter extends StatelessWidget {
               );
             },
           ),
+          // Website link
+          SidebarNavItem(
+            key: sidebarWebsiteButtonKey,
+            icon: Icons.language,
+            label: S.of(context).website,
+            isCollapsed: isCollapsed,
+            onTap: () => _launchWebsite(),
+          ),
           // Collapse toggle
           SidebarNavItem(
             icon: isCollapsed ? Icons.chevron_right : Icons.chevron_left,
@@ -232,6 +243,13 @@ class _SidebarFooter extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _launchWebsite() async {
+    final uri = Uri.parse(TemplateConfig.docsUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
   }
 
   Future<void> _handleLogout(BuildContext context) async {

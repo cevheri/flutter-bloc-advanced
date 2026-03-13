@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
@@ -6,7 +7,7 @@ class GetAccountUseCase {
 
   final IAccountRepository _repository;
 
-  Future<UserEntity> call() {
+  Future<Result<UserEntity>> call() {
     return _repository.getAccount();
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 
 class LogoutUseCase {
@@ -5,7 +6,7 @@ class LogoutUseCase {
 
   final IAuthRepository _repository;
 
-  Future<void> call() {
+  Future<Result<void>> call() {
     return _repository.logout();
   }
 }

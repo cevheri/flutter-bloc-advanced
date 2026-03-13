@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
@@ -13,11 +14,13 @@ import '../../../../test_utils.dart';
 
 class _StubDashboardRepo implements IDashboardRepository {
   @override
-  Future<DashboardEntity> fetch() async {
-    return const DashboardEntity(
-      summary: [DashboardSummaryEntity(id: 'leads', label: 'Leads', value: 120, trend: 8)],
-      activities: [],
-      quickActions: [DashboardQuickActionEntity(id: 'qa1', label: 'New Lead', icon: 'person_add')],
+  Future<Result<DashboardEntity>> fetch() async {
+    return const Success(
+      DashboardEntity(
+        summary: [DashboardSummaryEntity(id: 'leads', label: 'Leads', value: 120, trend: 8)],
+        activities: [],
+        quickActions: [DashboardQuickActionEntity(id: 'qa1', label: 'New Lead', icon: 'person_add')],
+      ),
     );
   }
 }

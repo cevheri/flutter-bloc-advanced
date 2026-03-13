@@ -1,4 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
@@ -16,29 +19,27 @@ import '../../../test_utils.dart';
 /// 2. Event test <p>
 /// 3. Bloc test <p>
 class _FakeAccountRepository implements IAccountRepository {
-  UserEntity? registerResult;
-  Object? failure;
+  Result<UserEntity>? registerResult;
 
   @override
-  Future<int> changePassword(passwordChangeDTO) async => 200;
+  Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async => const Success(null);
 
   @override
-  Future<bool> delete(String id) async => true;
+  Future<Result<void>> delete(String id) async => const Success(null);
 
   @override
-  Future<UserEntity> getAccount() async => const UserEntity();
+  Future<Result<UserEntity>> getAccount() async => const Success(UserEntity());
 
   @override
-  Future<UserEntity?> register(UserEntity? newUser) async {
-    if (failure != null) throw failure!;
-    return registerResult;
+  Future<Result<UserEntity>> register(UserEntity newUser) async {
+    return registerResult ?? Success(newUser);
   }
 
   @override
-  Future<int> resetPassword(String mailAddress) async => 200;
+  Future<Result<void>> resetPassword(String mailAddress) async => const Success(null);
 
   @override
-  Future<UserEntity> update(UserEntity? user) async => user ?? const UserEntity();
+  Future<Result<UserEntity>> update(UserEntity user) async => Success(user);
 }
 
 void main() {
@@ -124,7 +125,7 @@ void main() {
 
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, success] when submit is successful",
-        setUp: () => repository.registerResult = input,
+        setUp: () => repository.registerResult = const Success(input),
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
@@ -132,15 +133,15 @@ void main() {
 
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, failure] when exception occurs",
-        setUp: () => repository.failure = Exception(),
+        setUp: () => repository.registerResult = const Failure(UnknownError("Register Error")),
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );
 
       blocTest<RegisterBloc, RegisterState>(
-        "emits [loading, failure] when response is null",
-        setUp: () => repository.registerResult = null,
+        "emits [loading, failure] when response is failure",
+        setUp: () => repository.registerResult = const Failure(ValidationError("Register Error")),
         build: () => RegisterBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,

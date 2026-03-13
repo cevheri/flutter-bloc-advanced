@@ -22,6 +22,22 @@ class User extends UserEntity {
     super.authorities,
   });
 
+  /// Create a [User] (with serialization) from a plain [UserEntity].
+  factory User.fromEntity(UserEntity entity) => User(
+    id: entity.id,
+    login: entity.login,
+    firstName: entity.firstName,
+    lastName: entity.lastName,
+    email: entity.email,
+    activated: entity.activated,
+    langKey: entity.langKey,
+    createdBy: entity.createdBy,
+    createdDate: entity.createdDate,
+    lastModifiedBy: entity.lastModifiedBy,
+    lastModifiedDate: entity.lastModifiedDate,
+    authorities: entity.authorities,
+  );
+
   /// CopyWith method to create a new instance of the User class with new values
   @override
   User copyWith({

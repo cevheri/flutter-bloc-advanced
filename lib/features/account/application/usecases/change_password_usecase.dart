@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 
@@ -6,7 +7,7 @@ class ChangePasswordUseCase {
 
   final IAccountRepository _repository;
 
-  Future<int> call(PasswordChangeDTO request) {
+  Future<Result<void>> call(PasswordChangeDTO request) {
     return _repository.changePassword(request);
   }
 }

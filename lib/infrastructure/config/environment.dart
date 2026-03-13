@@ -1,3 +1,5 @@
+import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
+
 /// This file is used to set the environment
 enum Environment { dev, prod, test }
 
@@ -45,5 +47,5 @@ class _Config {
 
   static Map<String, dynamic> testConstants = {api: "mock"};
 
-  static Map<String, dynamic> prodConstants = {api: "https://dhw-api.onrender.com/api"};
+  static Map<String, dynamic> prodConstants = {api: TemplateConfig.prodApiUrl};
 }

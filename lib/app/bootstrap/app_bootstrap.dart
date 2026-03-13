@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/bootstrap/app_bootstrap_config.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
@@ -15,7 +16,6 @@ class AppBootstrap {
     final log = AppLogger.getLogger('AppBootstrap');
 
     ProfileConstants.setEnvironment(config.environment);
-    AppLocalStorage().setStorage(StorageType.sharedPreferences);
 
     await AppLocalStorage().save(StorageKeys.language.name, config.defaultLanguage);
     await AppLocalStorage().save(StorageKeys.theme.name, config.defaultPalette);
@@ -33,6 +33,11 @@ class AppBootstrap {
       config.defaultBrightness,
     ]);
 
-    runApp(App(language: config.defaultLanguage));
+    runApp(
+      App(
+        language: config.defaultLanguage,
+        dependencies: AppDependencies(environment: config.environment),
+      ),
+    );
   }
 }

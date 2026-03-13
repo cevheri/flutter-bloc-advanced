@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
@@ -6,7 +7,7 @@ class SaveUserUseCase {
 
   final IUserRepository _repository;
 
-  Future<UserEntity?> call(UserEntity user) {
+  Future<Result<UserEntity>> call(UserEntity user) {
     if (user.id == null) {
       return _repository.create(user);
     }

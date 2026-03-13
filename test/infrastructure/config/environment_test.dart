@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/security/allowed_paths.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -20,7 +21,7 @@ void main() {
     test('setEnvironment sets prod environment', () {
       ProfileConstants.setEnvironment(Environment.prod);
       expect(ProfileConstants.isProduction, true);
-      expect(ProfileConstants.api, "https://dhw-api.onrender.com/api");
+      expect(ProfileConstants.api, TemplateConfig.prodApiUrl);
     });
   });
   test("allowed paths", () {

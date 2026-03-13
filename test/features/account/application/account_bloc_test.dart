@@ -1,4 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
@@ -19,33 +22,33 @@ import '../../../test_utils.dart';
 
 class _FakeAccountRepository implements IAccountRepository {
   UserEntity? account;
-  Object? failure;
+  AppError? failure;
 
   @override
-  Future<int> changePassword(passwordChangeDTO) async => 200;
+  Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async => const Success(null);
 
   @override
-  Future<bool> delete(String id) async => true;
+  Future<Result<void>> delete(String id) async => const Success(null);
 
   @override
-  Future<UserEntity> getAccount() async {
-    if (failure != null) throw failure!;
-    return account!;
+  Future<Result<UserEntity>> getAccount() async {
+    if (failure != null) return Failure(failure!);
+    return Success(account!);
   }
 
   @override
-  Future<UserEntity?> register(UserEntity? newUser) async {
-    if (failure != null) throw failure!;
-    return account ?? newUser;
+  Future<Result<UserEntity>> register(UserEntity newUser) async {
+    if (failure != null) return Failure(failure!);
+    return Success(account ?? newUser);
   }
 
   @override
-  Future<int> resetPassword(String mailAddress) async => 200;
+  Future<Result<void>> resetPassword(String mailAddress) async => const Success(null);
 
   @override
-  Future<UserEntity> update(UserEntity? user) async {
-    if (failure != null) throw failure!;
-    return user ?? account!;
+  Future<Result<UserEntity>> update(UserEntity user) async {
+    if (failure != null) return Failure(failure!);
+    return Success(account ?? user);
   }
 }
 
@@ -150,7 +153,7 @@ void main() {
       blocTest<AccountBloc, AccountState>(
         "emits [loading, failure] when AccountLoad is added and getAccount fails",
         build: () {
-          repository.failure = Exception("error");
+          repository.failure = const UnknownError("error");
           return bloc;
         },
         act: (bloc) => bloc.add(const AccountFetchEvent()),

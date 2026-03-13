@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -116,7 +115,6 @@ void main() {
 
     group("ChangePasswordChanged", () {
       const input = mockPasswordChangePayload;
-      Future<int> output = Future.value(HttpStatus.ok);
       method() => repository.changePassword(input);
 
       final event = ChangePasswordChanged(currentPassword: input.currentPassword!, newPassword: input.newPassword!);
@@ -129,7 +127,7 @@ void main() {
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading, success] when ChangePasswordChanged is added",
-        setUp: () => when(method).thenAnswer((_) => Future.value(output)),
+        setUp: () => when(method).thenAnswer((_) async => const Success<void>(null)),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
@@ -137,8 +135,8 @@ void main() {
       );
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
-        "emits [loading, error] when ChangePasswordChanged is added",
-        setUp: () => when(method).thenThrow(BadRequestException()),
+        "emits [loading, error] when ChangePasswordChanged is added and returns Failure",
+        setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ServerError('Change password failed'))),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesError,
@@ -146,8 +144,8 @@ void main() {
       );
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
-        "emits [loading error400] when repository return 400",
-        setUp: () => when(method).thenAnswer((_) => Future.value(400)),
+        "emits [loading, error] when repository returns Failure with ValidationError",
+        setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid password'))),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesError,

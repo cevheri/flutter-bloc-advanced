@@ -1,7 +1,6 @@
-import 'dart:io';
-
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/forgot_password_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -70,7 +69,7 @@ void main() {
       expect(const ForgotPasswordState(), state);
     });
 
-    //ForgotPasswordState İnitial Test
+    //ForgotPasswordState Initial Test
     test('initial state is ForgotPasswordState', () {
       expect(
         ForgotPasswordBloc(repository: repository).state,
@@ -94,7 +93,6 @@ void main() {
         const ForgotPasswordErrorState(message: "Reset Password Error"),
         const ForgotPasswordErrorState(message: "Reset Password Error"),
       );
-      //expect(const ForgotPasswordErrorState(message: "Reset Password Error", ["Reset Password Error"]);
     });
 
     test("copyWith retains the same values if no arguments are provided", () {
@@ -123,7 +121,7 @@ void main() {
     const email = "test@test.com";
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
       'emits [ForgotPasswordLoadingState, ForgotPasswordCompletedState] when resetPassword is successful',
-      setUp: () => when(() => repository.resetPassword(email)).thenAnswer((_) => Future.value(HttpStatus.ok)),
+      setUp: () => when(() => repository.resetPassword(email)).thenAnswer((_) async => const Success<void>(null)),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
       expect: () => [
@@ -133,8 +131,10 @@ void main() {
     );
 
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
-      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when resetPassword fails',
-      setUp: () => when(() => repository.resetPassword(email)).thenAnswer((_) => Future.value(HttpStatus.badRequest)),
+      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when resetPassword returns Failure',
+      setUp: () => when(
+        () => repository.resetPassword(email),
+      ).thenAnswer((_) async => const Failure<void>(ServerError('Reset failed'))),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
       expect: () => [
@@ -142,9 +142,12 @@ void main() {
         const ForgotPasswordState(status: ForgotPasswordStatus.failure),
       ],
     );
+
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
-      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when invalid-email then resetPassword fails',
-      setUp: () => when(() => repository.resetPassword('invalid-email')).thenThrow(BadRequestException()),
+      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when resetPassword returns ValidationError',
+      setUp: () => when(
+        () => repository.resetPassword('invalid-email'),
+      ).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid email'))),
       build: () => ForgotPasswordBloc(repository: repository),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: 'invalid-email')),
       expect: () => [
