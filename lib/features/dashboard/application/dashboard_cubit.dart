@@ -1,5 +1,6 @@
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/usecases/load_dashboard_usecase.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/repositories/dashboard_repository.dart';
@@ -16,11 +17,12 @@ class DashboardCubit extends Cubit<DashboardState> {
 
   Future<void> load() async {
     emit(const DashboardState.loading());
-    try {
-      final model = await _loadDashboardUseCase();
-      emit(DashboardState.loaded(model));
-    } catch (e) {
-      emit(DashboardState.error(e.toString()));
+    final result = await _loadDashboardUseCase();
+    switch (result) {
+      case Success(:final data):
+        emit(DashboardState.loaded(data));
+      case Failure(:final error):
+        emit(DashboardState.error(error.message));
     }
   }
 }

@@ -8,6 +8,7 @@ import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_list_cache.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 
@@ -45,13 +46,14 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
 
   FutureOr<void> _onLogout(Logout event, Emitter<MenuState> emit) async {
     emit(state.copyWith(isLogout: false, status: MenuStateStatus.loading));
-    try {
-      await _loginRepository.logout();
-      MenuListCache.menus = [];
-      emit(state.copyWith(isLogout: true, status: MenuStateStatus.success));
-    } catch (e) {
-      emit(state.copyWith(isLogout: false, status: MenuStateStatus.error));
-      _log.error('END:onLogout Logout event error: {}', [e.toString()]);
+    final result = await _loginRepository.logout();
+    switch (result) {
+      case Success():
+        MenuListCache.menus = [];
+        emit(state.copyWith(isLogout: true, status: MenuStateStatus.success));
+      case Failure(:final error):
+        emit(state.copyWith(isLogout: false, status: MenuStateStatus.error));
+        _log.error('END:onLogout Logout event error: {}', [error.message]);
     }
   }
 

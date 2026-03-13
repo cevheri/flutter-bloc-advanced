@@ -1,4 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/entities/dashboard_entity.dart';
 import 'package:flutter_bloc_advance/features/dashboard/domain/repositories/dashboard_repository.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
@@ -8,18 +10,22 @@ import '../../../test_utils.dart';
 
 class _FakeDashboardRepositorySuccess implements IDashboardRepository {
   @override
-  Future<DashboardEntity> fetch() async {
-    return const DashboardEntity(
-      summary: [DashboardSummaryEntity(id: 'leads', label: 'Leads', value: 120, trend: 8)],
-      activities: [],
-      quickActions: [DashboardQuickActionEntity(id: 'qa1', label: 'New Lead', icon: 'person_add')],
+  Future<Result<DashboardEntity>> fetch() async {
+    return const Success(
+      DashboardEntity(
+        summary: [DashboardSummaryEntity(id: 'leads', label: 'Leads', value: 120, trend: 8)],
+        activities: [],
+        quickActions: [DashboardQuickActionEntity(id: 'qa1', label: 'New Lead', icon: 'person_add')],
+      ),
     );
   }
 }
 
 class _FakeDashboardRepositoryFailure implements IDashboardRepository {
   @override
-  Future<DashboardEntity> fetch() => Future.error(Exception('load failed'));
+  Future<Result<DashboardEntity>> fetch() async {
+    return const Failure(UnknownError('load failed'));
+  }
 }
 
 void main() {

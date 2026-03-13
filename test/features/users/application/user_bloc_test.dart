@@ -1,6 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -9,53 +11,54 @@ import '../../../test_utils.dart';
 class _FakeUserRepository implements IUserRepository {
   UserEntity? retrieveResult;
   List<UserEntity> listResult = const [];
-  Object? failure;
+  AppError? failure;
 
   @override
-  Future<UserEntity?> create(UserEntity user) async {
-    if (failure != null) throw failure!;
-    return retrieveResult ?? user;
+  Future<Result<UserEntity>> create(UserEntity user) async {
+    if (failure != null) return Failure(failure!);
+    return Success(retrieveResult ?? user);
   }
 
   @override
-  Future<void> delete(String id) async {
-    if (failure != null) throw failure!;
+  Future<Result<void>> delete(String id) async {
+    if (failure != null) return Failure(failure!);
+    return const Success(null);
   }
 
   @override
-  Future<List<UserEntity>> list({int page = 0, int size = 10, List<String> sort = const ['id,desc']}) async {
-    if (failure != null) throw failure!;
-    return listResult;
+  Future<Result<List<UserEntity>>> list({int page = 0, int size = 10, List<String> sort = const ['id,desc']}) async {
+    if (failure != null) return Failure(failure!);
+    return Success(listResult);
   }
 
   @override
-  Future<List<UserEntity>> listByAuthority(int page, int size, String authority) async {
-    if (failure != null) throw failure!;
-    return listResult;
+  Future<Result<List<UserEntity>>> listByAuthority(int page, int size, String authority) async {
+    if (failure != null) return Failure(failure!);
+    return Success(listResult);
   }
 
   @override
-  Future<List<UserEntity>> listByNameAndRole(int page, int size, String name, String authority) async {
-    if (failure != null) throw failure!;
-    return listResult;
+  Future<Result<List<UserEntity>>> listByNameAndRole(int page, int size, String name, String authority) async {
+    if (failure != null) return Failure(failure!);
+    return Success(listResult);
   }
 
   @override
-  Future<UserEntity?> retrieve(String id) async {
-    if (failure != null) throw failure!;
-    return retrieveResult;
+  Future<Result<UserEntity>> retrieve(String id) async {
+    if (failure != null) return Failure(failure!);
+    return Success(retrieveResult!);
   }
 
   @override
-  Future<UserEntity?> retrieveByLogin(String login) async {
-    if (failure != null) throw failure!;
-    return retrieveResult;
+  Future<Result<UserEntity>> retrieveByLogin(String login) async {
+    if (failure != null) return Failure(failure!);
+    return Success(retrieveResult!);
   }
 
   @override
-  Future<UserEntity?> update(UserEntity user) async {
-    if (failure != null) throw failure!;
-    return retrieveResult ?? user;
+  Future<Result<UserEntity>> update(UserEntity user) async {
+    if (failure != null) return Failure(failure!);
+    return Success(retrieveResult ?? user);
   }
 }
 
@@ -143,21 +146,27 @@ void main() {
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits failure state on create error',
       setUp: () {
-        repository.failure = Exception('Failed to create user');
+        repository.failure = const UnknownError('Failed to create user');
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
-      expect: () => [const UserState(status: UserStatus.loading), const UserState(status: UserStatus.failure)],
+      expect: () => [
+        const UserState(status: UserStatus.loading),
+        const UserState(status: UserStatus.failure, err: "Failed to create user"),
+      ],
     );
 
     blocTest<UserBloc, UserState>(
       'UserSubmitEvent emits failure state on update error',
       setUp: () {
-        repository.failure = Exception('Failed to update user');
+        repository.failure = const UnknownError('Failed to update user');
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
-      expect: () => [const UserState(status: UserStatus.loading), const UserState(status: UserStatus.failure)],
+      expect: () => [
+        const UserState(status: UserStatus.loading),
+        const UserState(status: UserStatus.failure, err: "Failed to update user"),
+      ],
     );
 
     group('UserSearchEvent Tests', () {
@@ -195,13 +204,13 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits failure state when search fails',
         setUp: () {
-          repository.failure = Exception('Search failed');
+          repository.failure = const UnknownError('Search failed');
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Exception: Search failed"),
+          const UserState(status: UserStatus.failure, err: "Search failed"),
         ],
       );
     });
@@ -223,13 +232,13 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits failure state when fetch fails',
         setUp: () {
-          repository.failure = Exception('Fetch failed');
+          repository.failure = const UnknownError('Fetch failed');
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserFetchEvent("1")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Exception: Fetch failed"),
+          const UserState(status: UserStatus.failure, err: "Fetch failed"),
         ],
       );
     });
@@ -255,13 +264,13 @@ void main() {
       blocTest<UserBloc, UserState>(
         'emits failure state when delete fails',
         setUp: () {
-          repository.failure = Exception('Delete failed');
+          repository.failure = const UnknownError('Delete failed');
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),
         expect: () => [
           const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Exception: Delete failed"),
+          const UserState(status: UserStatus.failure, err: "Delete failed"),
         ],
       );
     });

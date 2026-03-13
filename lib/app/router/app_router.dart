@@ -4,7 +4,6 @@ import 'package:flutter_bloc_advance/app/shell/app_shell.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/features/account/navigation/account_routes.dart';
 import 'package:flutter_bloc_advance/features/auth/navigation/auth_routes.dart';
-import 'package:flutter_bloc_advance/features/catalog/navigation/catalog_routes.dart';
 import 'package:flutter_bloc_advance/features/dashboard/navigation/dashboard_routes.dart';
 import 'package:flutter_bloc_advance/features/settings/navigation/settings_routes.dart';
 import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
@@ -35,7 +34,6 @@ class AppRouterFactory {
             ...AccountFeatureRoutes.routes,
             ...UsersFeatureRoutes.routes,
             ...SettingsFeatureRoutes.routes,
-            ...CatalogFeatureRoutes.routes,
           ],
         ),
         ...AuthFeatureRoutes.routes,

@@ -1,7 +1,9 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
-import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -16,7 +18,7 @@ import '../../../test_utils.dart';
 /// 3. Bloc test <p>
 void main() {
   //region setup
-  late AuthorityRepository repository;
+  late IAuthorityRepository repository;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
@@ -108,13 +110,13 @@ void main() {
 
     group("AuthorityLoad", () {
       const authorities = [Authority(name: "test")];
-      final authoritiesMap = authorities.map((e) => e.name).toList();
+      final authoritiesMap = authorities.map((e) => e.name).whereType<String>().toList();
       method() => repository.list();
-      Future<List<String?>> output = Future<List<String?>>.value(authoritiesMap);
+      final output = Future<Result<List<String>>>.value(Success(authoritiesMap));
       const event = AuthorityLoad();
       const loadingState = AuthorityLoadingState();
       final successState = AuthorityLoadSuccessState(authorities: authoritiesMap);
-      const failureState = AuthorityLoadFailureState(message: "Exception: Error");
+      const failureState = AuthorityLoadFailureState(message: "Error");
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
@@ -129,7 +131,7 @@ void main() {
 
       blocTest<AuthorityBloc, AuthorityState>(
         "emits [loading, failure] when load is unsuccessful",
-        setUp: () => when(method).thenThrow(Exception("Error")),
+        setUp: () => when(method).thenAnswer((_) async => const Failure(UnknownError("Error"))),
         build: () => AuthorityBloc(repository: repository),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,

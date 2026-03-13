@@ -90,6 +90,6 @@ bash
 By contributing to this project, you agree to adhere to our Code of Conduct.
 Contact
 
-If you have any questions, please contact us at email@example.com.
+If you have any questions, please contact us at __AUTHOR_EMAIL__.
 
 Thank you for your interest in contributing to our project!

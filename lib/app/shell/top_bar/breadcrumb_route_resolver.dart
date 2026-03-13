@@ -12,7 +12,7 @@ class BreadcrumbItem {
 
 /// Resolves a URI path into a list of [BreadcrumbItem]s for breadcrumb navigation.
 class BreadcrumbRouteResolver {
-  static const _featureRoots = {'user': '/user', 'account': '/account', 'settings': '/settings', 'catalog': '/catalog'};
+  static const _featureRoots = {'user': '/user', 'account': '/account', 'settings': '/settings'};
 
   static const _actionSuffixes = {'view', 'edit', 'new'};
 

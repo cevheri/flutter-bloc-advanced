@@ -131,17 +131,11 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - `navigation/`: AuthFeatureRoutes
 - `presentation/pages/`: LoginPage, RegisterPage, ForgotPasswordPage, ChangePasswordPage
 
-### Catalog (3 files)
-
-- `navigation/`: CatalogFeatureRoutes
-- `presentation/pages/`: CatalogScreen (design system component showcase)
-
 ### Dashboard (12 files)
 
 - `application/`: DashboardCubit + use cases
 - `data/models/`: DashboardModel
-- `data/mappers/`: DashboardMapper
-- `data/repositories/`: DashboardMockRepository
+- `data/repositories/`: DashboardMockRepository, DashboardApiRepository
 - `domain/entities/`: DashboardEntity
 - `domain/repositories/`: IDashboardRepository
 - `navigation/`: DashboardFeatureRoutes
@@ -157,9 +151,8 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 
 - `application/`: UserBloc, AuthorityBloc + use cases
 - `data/models/`: User, Authority, UserModel
-- `data/mappers/`: UserMapper
 - `data/repositories/`: UserRepository, AuthorityRepository
-- `domain/repositories/`: IUserRepository
+- `domain/repositories/`: IUserRepository, IAuthorityRepository
 - `navigation/`: UsersFeatureRoutes
 - `presentation/`: UserListPage, UserEditorPage + widgets
 
@@ -167,22 +160,30 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 
 ### HTTP (infrastructure/http/)
 
-- `http_utils.dart`: HTTP client utilities with certificate pinning support
+- `api_client.dart`: Dio-based HTTP client with interceptor chain
+- `interceptors/auth_interceptor.dart`: Automatic JWT token injection from local storage
+- `interceptors/logging_interceptor.dart`: Structured request/response logging via AppLogger
+- `interceptors/mock_interceptor.dart`: Dev/test mode mock data from assets
 
 ### Configuration (infrastructure/config/)
 
 - `environment.dart`: Environment-driven configuration for local and production modes
-- `constants.dart`: Application-wide constants
+- `template_config.dart`: Customizable template settings (app name, API URL, author info, feature flags)
 
 ### Storage (infrastructure/storage/)
 
-- `local_storage.dart`: Local storage abstraction using shared_preferences and get_storage
+- `local_storage.dart`: Local storage abstraction using shared_preferences
 
 ## Core
 
+### Result Type (core/result/)
+
+- `result.dart`: Dart 3 sealed `Result<T>` type — `Success<T>` and `Failure<T>` with typed `AppError`
+
 ### Errors (core/errors/)
 
-- `app_api_exception.dart`: Custom API exception handling
+- `app_error.dart`: Sealed error hierarchy — `NetworkError`, `AuthError`, `ValidationError`, `ServerError`, `NotFoundError`, `TimeoutError`, `UnknownError`
+- `app_api_exception.dart`: Legacy API exception types (used by HTTP layer)
 
 ### Logging (core/logging/)
 
@@ -197,7 +198,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 
 ### Design System (shared/design_system/)
 
-14 composable components: AppButton, AppCard, AppBadge, AppAvatar, AppInput, AppSelect, AppCheckbox, AppSwitch, AppDialog, AppToast, AppSkeleton, AppDivider, AppProgressBar, AppTooltip.
+16 composable components: AppButton, AppCard, AppBadge, AppAvatar, AppInput, AppForm, AppSheet, AppToast, AppSkeleton, AppDivider, AppEmptyState, AppErrorState, AppLoadingOverlay, AppPageTransition, AppResponsiveBuilder, AppStatusBadge.
 
 4 theme files: AppTheme, AppThemePalette, SemanticColors, ThemeColors.
 
@@ -245,15 +246,13 @@ All BLoCs and Cubits are provided to the widget tree from here.
 | Dart SDK | 3.11.1 |
 | State Management | flutter_bloc 9.1.1 |
 | Routing | go_router 17.1.0 |
-| HTTP | http 1.6.0 |
-| Certificate Pinning | http_certificate_pinning 3.0.1 |
+| HTTP | dio 5.7.0 (interceptor chain: auth, logging, mock) |
+| Error Handling | Dart 3 sealed Result<T> type with typed AppError hierarchy |
 | Forms | flutter_form_builder 10.3.0+2 |
 | Form Validation | form_builder_validators 11.3.0 |
 | Localization | intl 0.20.2, intl_utils 2.8.14 |
-| Storage | shared_preferences 2.5.4, get_storage 2.1.1 |
-| Charts | fl_chart |
-| PDF | pdf 3.11.3, printing 5.14.2 |
-| WebView | flutter_inappwebview 6.1.5 |
+| Storage | shared_preferences 2.5.4 |
+| Charts | fl_chart 1.1.1 |
 | Loading Effects | shimmer |
 | Image Caching | cached_network_image |
 | Logging | logger 2.6.2 |
@@ -304,7 +303,7 @@ fvm flutter build web --target lib/main/main_prod.dart              # Web
 ### Test
 
 ```bash
-fvm flutter test                    # Run all tests (472+)
+fvm flutter test                    # Run all tests (568+)
 fvm flutter test --coverage         # With coverage
 fvm dart analyze                    # Static analysis
 fvm dart format . --line-length=120 # Format code
@@ -312,24 +311,30 @@ fvm dart format . --line-length=120 # Format code
 
 ## Testing Structure
 
-472+ tests organized by feature:
+568+ tests organized by feature:
 
 ```
 test/
+  architecture/  # Import guard tests enforcing dependency rules
   app/           # Router, shell, DI tests
   core/          # Error, logging, security tests
   features/      # Feature-specific tests
     <feature>/
-      application/     # BLoC/Cubit tests
+      application/
+        usecases/      # Use case unit tests
+        *_bloc_test.dart  # BLoC/Cubit tests
       data/
         models/        # Model serialization tests
+        mappers/       # Mapper tests
         repositories/  # Repository tests
+      domain/
+        entities/      # Entity tests
       presentation/
         pages/         # Widget/page tests
         widgets/       # Component tests
       navigation/      # Route tests
-  infrastructure/      # HTTP, storage tests
-  shared/              # Design system, widget tests
+  infrastructure/      # HTTP (ApiClient), storage tests
+  shared/              # Design system, widget, model tests
   mocks/               # Mock classes and fake data
 ```
 
@@ -337,7 +342,7 @@ test/
 
 1. Create directory: `lib/features/<feature>/`
 2. Define domain: entities in `domain/entities/`, repository interface in `domain/repositories/`
-3. Implement data: models in `data/models/`, mapper in `data/mappers/`, repository in `data/repositories/`
+3. Implement data: models in `data/models/`, repository in `data/repositories/` (return `Result<T>`, mappers only when API shape differs from domain)
 4. Add business logic: use cases in `application/usecases/`, BLoC in `application/`
 5. Build UI: pages in `presentation/pages/`, widgets in `presentation/widgets/`
 6. Define routes: `navigation/<feature>_routes.dart`

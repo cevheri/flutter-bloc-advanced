@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +40,7 @@ class TestUtils {
   }
 
   Future<void> tearDownUnitTest() async {
+    ApiClient.reset();
     return await _clearStorage();
   }
 

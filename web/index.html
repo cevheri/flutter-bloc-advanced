@@ -20,13 +20,14 @@
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
 
-  <!-- SEO -->
+  <!-- SEO - Search for __KEYWORD__ placeholders and replace with your values -->
   <meta name="description" content="Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.">
   <meta name="keywords" content="flutter, bloc, template, dart, web application, clean architecture, responsive, authentication">
-  <meta name="author" content="cevheri">
+  <meta name="author" content="__AUTHOR_NAME__">
   <meta name="robots" content="index, follow">
   <meta name="generator" content="Flutter">
-  <link rel="canonical" href="https://cevheri.github.io/flutter-bloc-advanced/">
+  <!-- Replace __WEB_BASE_URL__ with your deployment URL -->
+  <link rel="canonical" href="__WEB_BASE_URL__">
 
   <!-- Theme color -->
   <meta name="theme-color" content="#18181B" media="(prefers-color-scheme: dark)">
@@ -34,10 +35,10 @@
 
   <!-- Open Graph -->
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://cevheri.github.io/flutter-bloc-advanced/">
+  <meta property="og:url" content="__WEB_BASE_URL__">
   <meta property="og:title" content="Flutter BLoC Advance Template">
   <meta property="og:description" content="Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.">
-  <meta property="og:image" content="https://cevheri.github.io/flutter-bloc-advanced/icons/og-image.png">
+  <meta property="og:image" content="__WEB_BASE_URL__icons/og-image.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:site_name" content="Flutter BLoC Advance">
@@ -47,7 +48,7 @@
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:title" content="Flutter BLoC Advance Template">
   <meta name="twitter:description" content="Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.">
-  <meta name="twitter:image" content="https://cevheri.github.io/flutter-bloc-advanced/icons/og-image.png">
+  <meta name="twitter:image" content="__WEB_BASE_URL__icons/og-image.png">
 
   <!-- iOS / Mobile -->
   <meta name="apple-mobile-web-app-capable" content="yes">
@@ -65,9 +66,11 @@
   <link rel="icon" type="image/png" sizes="16x16" href="icons/Icon-16.png">
   <link rel="apple-touch-icon" sizes="180x180" href="icons/Icon-180.png">
 
-  <!-- Resource hints -->
-  <link rel="preconnect" href="https://dhw-api.onrender.com" crossorigin>
-  <link rel="dns-prefetch" href="https://dhw-api.onrender.com">
+  <!-- Resource hints - Replace __PROD_API_URL__ with your API domain -->
+  <!--
+  <link rel="preconnect" href="__PROD_API_URL__" crossorigin>
+  <link rel="dns-prefetch" href="__PROD_API_URL__">
+  -->
 
   <title>Flutter BLoC Advance Template</title>
   <link rel="manifest" href="manifest.json">
@@ -79,13 +82,13 @@
     "@type": "WebApplication",
     "name": "Flutter BLoC Advance Template",
     "description": "Production-ready Flutter BLoC template with clean architecture, authentication, role-based access, responsive design system, and multi-platform support.",
-    "url": "https://cevheri.github.io/flutter-bloc-advanced/",
+    "url": "__WEB_BASE_URL__",
     "applicationCategory": "DeveloperApplication",
     "operatingSystem": "Web, Android, iOS, macOS, Linux, Windows",
     "author": {
       "@type": "Person",
-      "name": "cevheri",
-      "url": "https://github.com/cevheri"
+      "name": "__AUTHOR_NAME__",
+      "url": "__AUTHOR_URL__"
     }
   }
   </script>
@@ -93,17 +96,14 @@
   <!-- Disable browser back button for Flutter SPA -->
   <script>
     (function() {
-      // Store initial URL
       let currentUrl = window.location.href;
       let isDisabled = false;
 
-      // Capture and prevent popstate events
       window.addEventListener('popstate', function(event) {
         event.preventDefault();
         event.stopPropagation();
         event.stopImmediatePropagation();
 
-        // Restore URL
         if (window.location.href !== currentUrl) {
           window.history.pushState(null, '', currentUrl);
         }
@@ -112,7 +112,6 @@
         return false;
       }, true);
 
-      // Capture beforeunload event
       window.addEventListener('beforeunload', function(event) {
         if (isDisabled) {
           event.preventDefault();
@@ -121,7 +120,6 @@
         }
       });
 
-      // Override History API
       const originalPushState = window.history.pushState;
       const originalReplaceState = window.history.replaceState;
       const originalGo = window.history.go;
@@ -144,10 +142,8 @@
       window.history.back = function() { return; };
       window.history.forward = function() { return; };
 
-      // Store initial URL
       window.history.pushState(null, '', currentUrl);
 
-      // Capture keyboard shortcuts (Alt+Backspace)
       document.addEventListener('keydown', function(event) {
         if (event.key === 'Backspace' && event.altKey) {
           event.preventDefault();

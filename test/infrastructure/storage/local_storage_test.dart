@@ -21,17 +21,6 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test("set strategy sharedPreferences", () {
-      localStorage.setStorage(StorageType.sharedPreferences);
-    });
-    test("set strategy getStorage", () {
-      localStorage.setStorage(StorageType.getStorage);
-    });
-
-    test("set strategy sharedPreferences", () {
-      localStorage.setStorage(StorageType.sharedPreferences);
-    });
-
     test('save and read String value', () async {
       await localStorage.save('testKey', 'testValue');
       final result = await localStorage.read('testKey');
@@ -97,12 +86,12 @@ void main() {
   });
 
   group('remove method error handling', () {
-    late SharedPreferencesStrategy localStorage;
+    late AppLocalStorage localStorage;
     late SharedPreferences mockPrefs;
 
     setUp(() {
       AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-      localStorage = SharedPreferencesStrategy();
+      localStorage = AppLocalStorage();
       mockPrefs = MockSharedPreferences();
       SharedPreferences.setMockInitialValues({});
       localStorage.setPreferencesInstance(mockPrefs);
@@ -119,13 +108,13 @@ void main() {
     });
   });
 
-  group('remove method error handling', () {
-    late SharedPreferencesStrategy localStorage;
+  group('remove method error handling - various scenarios', () {
+    late AppLocalStorage localStorage;
     late SharedPreferences mockPrefs;
 
     setUp(() {
       AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-      localStorage = SharedPreferencesStrategy();
+      localStorage = AppLocalStorage();
       mockPrefs = MockSharedPreferences();
       SharedPreferences.setMockInitialValues({});
       localStorage.setPreferencesInstance(mockPrefs);

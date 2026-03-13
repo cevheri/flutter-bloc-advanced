@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/save_user_usecase.dart';
@@ -55,59 +56,63 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   FutureOr<void> _onSubmit(UserSubmitEvent event, Emitter<UserState> emit) async {
     _log.debug('BEGIN: onSubmit UserSubmitEvent event: {}', [event.user.toString()]);
     emit(state.copyWith(status: UserStatus.loading));
-    try {
-      final user = await _saveUserUseCase(event.user);
-      emit(state.copyWith(status: UserStatus.saveSuccess, data: user));
-      _log.debug('END:onSubmit UserSubmitEvent event success: {}', [user.toString()]);
-    } catch (e) {
-      emit(state.copyWith(status: UserStatus.failure));
-      _log.error('END:onSubmit UserSubmitEvent event error: {}', [e.toString()]);
+    final result = await _saveUserUseCase(event.user);
+    switch (result) {
+      case Success(:final data):
+        emit(state.copyWith(status: UserStatus.saveSuccess, data: data));
+        _log.debug('END:onSubmit UserSubmitEvent event success: {}', [data.toString()]);
+      case Failure(:final error):
+        emit(state.copyWith(status: UserStatus.failure, err: error.message));
+        _log.error('END:onSubmit UserSubmitEvent event error: {}', [error.message]);
     }
   }
 
   FutureOr<void> _onDelete(UserDeleteEvent event, Emitter<UserState> emit) async {
     _log.debug('BEGIN: onDelete UserDelete event: {}', [event.id]);
     emit(const UserState(status: UserStatus.loading));
-    try {
-      if (event.id == 'user-1') {
-        emit(state.copyWith(status: UserStatus.failure, err: 'Admin user cannot be deleted'));
-        _log.error('END:onDelete UserDelete event error: {}', ['Admin user cannot be deleted']);
-        return;
-      }
-      await _deleteUserUseCase(event.id);
-      emit(state.copyWith(status: UserStatus.deleteSuccess));
-      _log.debug('END:onDelete UserDelete event success: {}', [event.id]);
-    } catch (e) {
-      emit(state.copyWith(status: UserStatus.failure, err: e.toString()));
-      _log.error('END:onDelete UserDelete event error: {}', [e.toString()]);
+    if (event.id == 'user-1') {
+      emit(state.copyWith(status: UserStatus.failure, err: 'Admin user cannot be deleted'));
+      _log.error('END:onDelete UserDelete event error: {}', ['Admin user cannot be deleted']);
+      return;
+    }
+    final result = await _deleteUserUseCase(event.id);
+    switch (result) {
+      case Success():
+        emit(state.copyWith(status: UserStatus.deleteSuccess));
+        _log.debug('END:onDelete UserDelete event success: {}', [event.id]);
+      case Failure(:final error):
+        emit(state.copyWith(status: UserStatus.failure, err: error.message));
+        _log.error('END:onDelete UserDelete event error: {}', [error.message]);
     }
   }
 
   FutureOr<void> _onFetchUser(UserFetchEvent event, Emitter<UserState> emit) async {
     _log.debug('BEGIN: onFetchUser FetchUserEvent event: {}', [event.id]);
     emit(const UserState(status: UserStatus.loading));
-    try {
-      final entity = await _fetchUserUseCase(event.id);
-      emit(state.copyWith(status: UserStatus.fetchSuccess, data: entity));
-      _log.debug('END:onFetchUser FetchUserEvent event success: {}', [entity.toString()]);
-    } catch (e) {
-      emit(state.copyWith(status: UserStatus.failure, err: e.toString()));
-      _log.error('END:onFetchUser FetchUserEvent event error: {}', [e.toString()]);
+    final result = await _fetchUserUseCase(event.id);
+    switch (result) {
+      case Success(:final data):
+        emit(state.copyWith(status: UserStatus.fetchSuccess, data: data));
+        _log.debug('END:onFetchUser FetchUserEvent event success: {}', [data.toString()]);
+      case Failure(:final error):
+        emit(state.copyWith(status: UserStatus.failure, err: error.message));
+        _log.error('END:onFetchUser FetchUserEvent event error: {}', [error.message]);
     }
   }
 
   FutureOr<void> _onSearch(UserSearchEvent event, Emitter<UserState> emit) async {
     _log.debug('BEGIN: onSearch UserSearch event. name:{} authority: {}', [event.name, event.authorities]);
     emit(state.copyWith(status: UserStatus.loading));
-    try {
-      final entities = await _searchUsersUseCase(
-        SearchUsersParams(page: event.page, size: event.size, name: event.name, authorities: event.authorities),
-      );
-      emit(state.copyWith(status: UserStatus.searchSuccess, userList: entities));
-      _log.debug('END:onSearch UserSearch event success - content count: {}', [entities.length]);
-    } catch (e) {
-      emit(state.copyWith(status: UserStatus.failure, err: e.toString()));
-      _log.error('END:onSearch UserSearch event error: {}', [e.toString()]);
+    final result = await _searchUsersUseCase(
+      SearchUsersParams(page: event.page, size: event.size, name: event.name, authorities: event.authorities),
+    );
+    switch (result) {
+      case Success(:final data):
+        emit(state.copyWith(status: UserStatus.searchSuccess, userList: data));
+        _log.debug('END:onSearch UserSearch event success - content count: {}', [data.length]);
+      case Failure(:final error):
+        emit(state.copyWith(status: UserStatus.failure, err: error.message));
+        _log.error('END:onSearch UserSearch event error: {}', [error.message]);
     }
   }
 

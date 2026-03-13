@@ -1,7 +1,8 @@
 import 'package:bloc_test/bloc_test.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
-import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
+import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -16,30 +18,53 @@ import '../../../mocks/fake_data.dart';
 import '../../../test_utils.dart';
 
 class _FakeAuthRepository implements IAuthRepository {
-  AuthTokenEntity? authenticateResult;
-  AuthTokenEntity? verifyResult;
-  Object? authenticateFailure;
-  Object? sendOtpFailure;
-  Object? verifyFailure;
+  Result<AuthTokenEntity>? authenticateResult;
+  Result<AuthTokenEntity>? verifyResult;
 
   @override
-  Future<AuthTokenEntity?> authenticate(AuthCredentialsEntity userJWT) async {
-    if (authenticateFailure != null) throw authenticateFailure!;
-    return authenticateResult;
+  Future<Result<AuthTokenEntity>> authenticate(AuthCredentialsEntity userJWT) async {
+    return authenticateResult ?? const Failure(UnknownError("No result configured"));
   }
 
   @override
-  Future<void> logout() async {}
-
-  @override
-  Future<void> sendOtp(SendOtpEntity request) async {
-    if (sendOtpFailure != null) throw sendOtpFailure!;
+  Future<Result<void>> logout() async {
+    return const Success(null);
   }
 
   @override
-  Future<AuthTokenEntity?> verifyOtp(VerifyOtpEntity request) async {
-    if (verifyFailure != null) throw verifyFailure!;
-    return verifyResult;
+  Future<Result<void>> sendOtp(SendOtpEntity request) async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<AuthTokenEntity>> verifyOtp(VerifyOtpEntity request) async {
+    return verifyResult ?? const Failure(UnknownError("No result configured"));
+  }
+}
+
+class _FakeAuthRepositoryWithSendOtp implements IAuthRepository {
+  Result<void>? sendOtpResult;
+  Result<AuthTokenEntity>? authenticateResult;
+  Result<AuthTokenEntity>? verifyResult;
+
+  @override
+  Future<Result<AuthTokenEntity>> authenticate(AuthCredentialsEntity userJWT) async {
+    return authenticateResult ?? const Failure(UnknownError("No result configured"));
+  }
+
+  @override
+  Future<Result<void>> logout() async {
+    return const Success(null);
+  }
+
+  @override
+  Future<Result<void>> sendOtp(SendOtpEntity request) async {
+    return sendOtpResult ?? const Success(null);
+  }
+
+  @override
+  Future<Result<AuthTokenEntity>> verifyOtp(VerifyOtpEntity request) async {
+    return verifyResult ?? const Failure(UnknownError("No result configured"));
   }
 }
 
@@ -47,25 +72,38 @@ class _FakeAccountRepository implements IAccountRepository {
   UserEntity? account;
 
   @override
-  Future<int> changePassword(passwordChangeDTO) async => 200;
+  Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async => const Success(null);
 
   @override
-  Future<bool> delete(String id) async => true;
+  Future<Result<void>> delete(String id) async => const Success(null);
 
   @override
-  Future<UserEntity> getAccount() async => account ?? mockUserFullPayload;
+  Future<Result<UserEntity>> getAccount() async => Success(account ?? mockUserFullPayload);
 
   @override
-  Future<UserEntity?> register(UserEntity? newUser) async => newUser;
+  Future<Result<UserEntity>> register(UserEntity newUser) async => Success(newUser);
 
   @override
-  Future<int> resetPassword(String mailAddress) async => 200;
+  Future<Result<void>> resetPassword(String mailAddress) async => const Success(null);
 
   @override
-  Future<UserEntity> update(UserEntity? user) async => user ?? mockUserFullPayload;
+  Future<Result<UserEntity>> update(UserEntity user) async => Success(user);
 }
 
 LoginBloc _buildBloc(_FakeAuthRepository repository, [_FakeAccountRepository? accountRepository]) {
+  final accountRepo = accountRepository ?? (_FakeAccountRepository()..account = mockUserFullPayload);
+  return LoginBloc(
+    authenticateUserUseCase: AuthenticateUserUseCase(repository),
+    sendOtpUseCase: SendOtpUseCase(repository),
+    verifyOtpUseCase: VerifyOtpUseCase(repository),
+    getAccountUseCase: GetAccountUseCase(accountRepo),
+  );
+}
+
+LoginBloc _buildBlocWithSendOtp(
+  _FakeAuthRepositoryWithSendOtp repository, [
+  _FakeAccountRepository? accountRepository,
+]) {
   final accountRepo = accountRepository ?? (_FakeAccountRepository()..account = mockUserFullPayload);
   return LoginBloc(
     authenticateUserUseCase: AuthenticateUserUseCase(repository),
@@ -184,8 +222,8 @@ void main() {
 
       final loadingState = LoginLoadingState(username: input.username, password: input.password);
       final successState = LoginLoadedState(username: input.username, password: input.password);
-      const failureState = LoginErrorState(message: "Login API Error: Unauthorized: null");
-      const failure2State = LoginErrorState(message: "Login API Error: Invalid Request: Invalid Access Token");
+      const failureState = LoginErrorState(message: "Login API Error: Unauthorized");
+      const failure2State = LoginErrorState(message: "Login API Error: Invalid Access Token");
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
@@ -194,7 +232,7 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         "emits [loading, success] when login is successful",
         setUp: () {
-          repository.authenticateResult = output;
+          repository.authenticateResult = const Success(output);
         },
         build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
@@ -204,7 +242,7 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid operation input failed",
         setUp: () {
-          repository.authenticateFailure = UnauthorizedException();
+          repository.authenticateResult = const Failure(AuthError("Unauthorized"));
         },
         build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
@@ -214,7 +252,7 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         "emits [loading, failure] when invalid input then failed",
         setUp: () {
-          repository.authenticateResult = const AuthTokenEntity(idToken: null);
+          repository.authenticateResult = const Success(AuthTokenEntity(idToken: null));
         },
         build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
@@ -236,7 +274,7 @@ void main() {
 
       final loadingState = LoginLoadingState(username: input.username, password: input.password);
       final successState = LoginLoadedState(username: input.username, password: input.password);
-      const failureState = LoginErrorState(message: "Login API Error: Unauthorized: null");
+      const failureState = LoginErrorState(message: "Login API Error: Unauthorized");
 
       blocTest<LoginBloc, LoginState>(
         'given valid credentials when submitted then emits [loading, success]',
@@ -244,7 +282,7 @@ void main() {
           await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
           await AppLocalStorage().save(StorageKeys.username.name, "username");
           await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
-          repository.authenticateResult = const AuthTokenEntity(idToken: 'MOCK_TOKEN');
+          repository.authenticateResult = const Success(AuthTokenEntity(idToken: 'MOCK_TOKEN'));
         },
         build: () => _buildBloc(repository, accountRepository),
         act: (bloc) => bloc..add(event),
@@ -253,7 +291,7 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         'given invalid credentials when submitted then emits [loading, error]',
-        setUp: () => repository.authenticateFailure = UnauthorizedException(),
+        setUp: () => repository.authenticateResult = const Failure(AuthError("Unauthorized")),
         build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(event),
         expect: () => [loadingState, failureState],
@@ -266,7 +304,6 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         'given valid email when requested then emits [loading, success]',
-        setUp: () => repository.sendOtpFailure = null,
         build: () => _buildBloc(repository),
         act: (bloc) => bloc..add(event),
         expect: () => [
@@ -277,8 +314,11 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         'given invalid email when requested then emits [loading, error]',
-        setUp: () => repository.sendOtpFailure = Exception("Invalid email"),
-        build: () => _buildBloc(repository),
+        build: () {
+          final sendOtpRepo = _FakeAuthRepositoryWithSendOtp()
+            ..sendOtpResult = const Failure(ValidationError("Invalid email"));
+          return _buildBlocWithSendOtp(sendOtpRepo);
+        },
         act: (bloc) => bloc.add(event),
         expect: () => [const LoginLoadingState(username: email), isA<LoginErrorState>()],
       );
@@ -293,7 +333,7 @@ void main() {
 
       blocTest<LoginBloc, LoginState>(
         'given invalid OTP when submitted then emits [loading, error]',
-        setUp: () => repository.verifyResult = const AuthTokenEntity(idToken: null),
+        setUp: () => repository.verifyResult = const Success(AuthTokenEntity(idToken: null)),
         build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(event),
         expect: () => [loadingState, const LoginErrorState(message: "OTP validation error")],

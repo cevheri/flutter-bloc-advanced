@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
@@ -35,26 +36,29 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     _log.debug('BEGIN: getAccount bloc: _onLoad');
     emit(state.copyWith(status: AccountStatus.loading));
 
-    try {
-      final user = await _getAccountUseCase();
-      emit(state.copyWith(data: user, status: AccountStatus.success));
-      _log.debug('END: getAccount bloc: _onLoad success: {}', [user.toString()]);
-    } catch (e) {
-      emit(state.copyWith(status: AccountStatus.failure));
-      _log.error('END: getAccount bloc: _onLoad error: {}', [e.toString()]);
+    final result = await _getAccountUseCase();
+    switch (result) {
+      case Success(:final data):
+        emit(state.copyWith(data: data, status: AccountStatus.success));
+        _log.debug('END: getAccount bloc: _onLoad success: {}', [data.toString()]);
+      case Failure(:final error):
+        emit(state.copyWith(status: AccountStatus.failure));
+        _log.error('END: getAccount bloc: _onLoad error: {}', [error.toString()]);
     }
   }
 
   FutureOr<void> _onSubmit(AccountSubmitEvent event, Emitter<AccountState> emit) async {
     _log.debug('BEGIN: onSubmit AccountSubmitEvent event: {}', [event.data.toString()]);
     emit(state.copyWith(status: AccountStatus.loading));
-    try {
-      final user = await _updateAccountUseCase(event.data);
-      emit(state.copyWith(status: AccountStatus.success, data: user));
-      _log.debug('END:onSubmitAccountSubmitEvent event success: {}', [user.toString()]);
-    } catch (e) {
-      emit(state.copyWith(status: AccountStatus.failure));
-      _log.error('END:onSubmit AccountSubmitEvent event error: {}', [e.toString()]);
+
+    final result = await _updateAccountUseCase(event.data);
+    switch (result) {
+      case Success(:final data):
+        emit(state.copyWith(status: AccountStatus.success, data: data));
+        _log.debug('END:onSubmitAccountSubmitEvent event success: {}', [data.toString()]);
+      case Failure(:final error):
+        emit(state.copyWith(status: AccountStatus.failure));
+        _log.error('END:onSubmit AccountSubmitEvent event error: {}', [error.toString()]);
     }
   }
 }

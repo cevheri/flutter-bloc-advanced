@@ -1,54 +1,129 @@
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/http_utils.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 
-class AuthorityRepository {
-  static final _log = AppLogger.getLogger("AuthorityRepository");
+class AuthorityRepositoryImpl implements IAuthorityRepository {
+  static final _log = AppLogger.getLogger('AuthorityRepository');
 
-  AuthorityRepository();
+  AuthorityRepositoryImpl();
 
-  final String _resource = "authorities";
+  final String _resource = 'authorities';
 
-  Future<Authority?> create(Authority authority) async {
-    _log.debug("BEGIN:createAuthority repository start : {}", [authority.toString()]);
+  @override
+  Future<Result<Authority>> create(Authority authority) async {
+    _log.debug('BEGIN:createAuthority repository start : {}', [authority.toString()]);
     if (authority.name == null || authority.name!.isEmpty) {
-      throw BadRequestException("Authority name null");
+      return const Failure(ValidationError('Authority name null'));
     }
-    final httpResponse = await HttpUtils.postRequest<Authority>("/$_resource", authority);
-    final response = Authority.fromJsonString(httpResponse.body);
-    _log.debug("END:createAuthority successful");
-    return response;
+    try {
+      final response = await ApiClient.post<Authority>('/$_resource', authority);
+      final result = Authority.fromJsonString(response.data!);
+      _log.debug('END:createAuthority successful');
+      if (result == null) {
+        return const Failure(UnknownError('Failed to parse authority response'));
+      }
+      return Success(result);
+    } on UnauthorizedException catch (e) {
+      _log.error('END:createAuthority auth error: {}', [e.toString()]);
+      return Failure(AuthError(e.toString()));
+    } on BadRequestException catch (e) {
+      _log.error('END:createAuthority validation error: {}', [e.toString()]);
+      return Failure(ValidationError(e.toString()));
+    } on FetchDataException catch (e) {
+      _log.error('END:createAuthority network error: {}', [e.toString()]);
+      return Failure(_mapFetchDataException(e));
+    } catch (e) {
+      _log.error('END:createAuthority unknown error: {}', [e.toString()]);
+      return Failure(UnknownError(e.toString()));
+    }
   }
 
-  Future<List<String?>> list() async {
-    _log.debug("BEGIN:getAuthorities repository start");
-    final queryParams = {"sort": "&sort=name"};
-    final httpResponse = await HttpUtils.getRequest("/$_resource", queryParams: queryParams);
-    final response = Authority.fromJsonStringList(httpResponse.body);
-    _log.debug("END:getAuthorities successful - response list size: {}", [response.length]);
-    return response;
+  @override
+  Future<Result<List<String>>> list() async {
+    _log.debug('BEGIN:getAuthorities repository start');
+    try {
+      final queryParams = {'sort': '&sort=name'};
+      final response = await ApiClient.get('/$_resource', queryParams: queryParams);
+      final result = Authority.fromJsonStringList(response.data!);
+      final nonNullList = result.whereType<String>().toList();
+      _log.debug('END:getAuthorities successful - response list size: {}', [nonNullList.length]);
+      return Success(nonNullList);
+    } on UnauthorizedException catch (e) {
+      _log.error('END:getAuthorities auth error: {}', [e.toString()]);
+      return Failure(AuthError(e.toString()));
+    } on BadRequestException catch (e) {
+      _log.error('END:getAuthorities validation error: {}', [e.toString()]);
+      return Failure(ValidationError(e.toString()));
+    } on FetchDataException catch (e) {
+      _log.error('END:getAuthorities network error: {}', [e.toString()]);
+      return Failure(_mapFetchDataException(e));
+    } catch (e) {
+      _log.error('END:getAuthorities unknown error: {}', [e.toString()]);
+      return Failure(UnknownError(e.toString()));
+    }
   }
 
-  Future<Authority?> retrieve(String id) async {
-    _log.debug("BEGIN:getAuthority repository start - id: {}", [id]);
+  @override
+  Future<Result<Authority>> retrieve(String id) async {
+    _log.debug('BEGIN:getAuthority repository start - id: {}', [id]);
     if (id.isEmpty) {
-      throw BadRequestException("Authority id null");
+      return const Failure(ValidationError('Authority id null'));
     }
-    final pathParams = id;
-    final httpResponse = await HttpUtils.getRequest("/$_resource", pathParams: pathParams);
-    final response = Authority.fromJsonString(httpResponse.body);
-    _log.debug("END:getAuthority successful - response.body: {}", [response.toString()]);
-    return response;
+    try {
+      final response = await ApiClient.get('/$_resource', pathParams: id);
+      final result = Authority.fromJsonString(response.data!);
+      _log.debug('END:getAuthority successful - response.body: {}', [result.toString()]);
+      if (result == null) {
+        return const Failure(NotFoundError('Authority not found'));
+      }
+      return Success(result);
+    } on UnauthorizedException catch (e) {
+      _log.error('END:getAuthority auth error: {}', [e.toString()]);
+      return Failure(AuthError(e.toString()));
+    } on BadRequestException catch (e) {
+      _log.error('END:getAuthority validation error: {}', [e.toString()]);
+      return Failure(ValidationError(e.toString()));
+    } on FetchDataException catch (e) {
+      _log.error('END:getAuthority network error: {}', [e.toString()]);
+      return Failure(_mapFetchDataException(e));
+    } catch (e) {
+      _log.error('END:getAuthority unknown error: {}', [e.toString()]);
+      return Failure(UnknownError(e.toString()));
+    }
   }
 
-  Future<void> delete(String id) async {
-    _log.debug("BEGIN:deleteAuthority repository start - id: {}", [id]);
+  @override
+  Future<Result<void>> delete(String id) async {
+    _log.debug('BEGIN:deleteAuthority repository start - id: {}', [id]);
     if (id.isEmpty) {
-      throw BadRequestException("Authority id null");
+      return const Failure(ValidationError('Authority id null'));
     }
-    final pathParams = id;
-    final httpResponse = await HttpUtils.deleteRequest("/$_resource", pathParams: pathParams);
-    _log.debug("END:deleteAuthority successful - response status code: {}", [httpResponse.statusCode]);
+    try {
+      final response = await ApiClient.delete('/$_resource', pathParams: id);
+      _log.debug('END:deleteAuthority successful - response status code: {}', [response.statusCode]);
+      return const Success(null);
+    } on UnauthorizedException catch (e) {
+      _log.error('END:deleteAuthority auth error: {}', [e.toString()]);
+      return Failure(AuthError(e.toString()));
+    } on BadRequestException catch (e) {
+      _log.error('END:deleteAuthority validation error: {}', [e.toString()]);
+      return Failure(ValidationError(e.toString()));
+    } on FetchDataException catch (e) {
+      _log.error('END:deleteAuthority network error: {}', [e.toString()]);
+      return Failure(_mapFetchDataException(e));
+    } catch (e) {
+      _log.error('END:deleteAuthority unknown error: {}', [e.toString()]);
+      return Failure(UnknownError(e.toString()));
+    }
+  }
+
+  static AppError _mapFetchDataException(FetchDataException e) {
+    final message = e.toString().toLowerCase();
+    if (message.contains('timeout')) return TimeoutError(e.toString());
+    return NetworkError(e.toString());
   }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 
 class DeleteUserUseCase {
@@ -5,7 +6,7 @@ class DeleteUserUseCase {
 
   final IUserRepository _repository;
 
-  Future<void> call(String id) {
+  Future<Result<void>> call(String id) {
     return _repository.delete(id);
   }
 }

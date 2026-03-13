@@ -1,7 +1,7 @@
-/* TEAM */
-Developer: cevheri
-Site: https://github.com/cevheri
-Location: Turkey
+/* TEAM - Replace __KEYWORD__ placeholders with your values */
+Developer: __AUTHOR_NAME__
+Site: __AUTHOR_URL__
+Location: __AUTHOR_LOCATION__
 
 /* SITE */
 Standards: HTML5, CSS3, JavaScript
