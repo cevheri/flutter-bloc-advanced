@@ -35,3 +35,6 @@ const Key communityDiscussionsKey = Key("communityDiscussionsKey");
 const Key communityContributeKey = Key("communityContributeKey");
 const Key communityTranslateKey = Key("communityTranslateKey");
 const Key communitySponsorKey = Key("communitySponsorKey");
+const Key communityDocsKey = Key("communityDocsKey");
+const Key settingsWebsiteButtonKey = Key("settingsWebsiteButtonKey");
+const Key sidebarWebsiteButtonKey = Key("sidebarWebsiteButtonKey");

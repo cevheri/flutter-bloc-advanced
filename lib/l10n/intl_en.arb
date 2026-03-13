@@ -103,5 +103,9 @@
   "community_contribute": "Contribute",
   "community_translate": "Translate",
   "community_sponsor": "Sponsor",
+  "community_docs": "Documentation",
+  "help_resources": "Help & Resources",
+  "help_resources_subtitle": "Visit our website for documentation and guides",
+  "website": "Website",
   "more": "More"
 }

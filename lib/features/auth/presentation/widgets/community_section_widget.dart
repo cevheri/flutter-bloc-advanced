@@ -13,6 +13,7 @@ class CommunityUrls {
   static const contributing = 'https://github.com/cevheri/flutter-bloc-advanced/blob/main/CONTRIBUTING.md';
   static const translate = 'https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/l10n';
   static const sponsor = 'https://github.com/sponsors/cevheri';
+  static const docs = 'https://dartpilot.github.io';
 }
 
 class _CommunityAction {
@@ -81,6 +82,14 @@ final List<_CommunityAction> _communityActions = [
     iconColor: const Color(0xFFF9A8D4),
     label: (l10n) => l10n.community_sponsor,
     url: CommunityUrls.sponsor,
+  ),
+  _CommunityAction(
+    key: communityDocsKey,
+    icon: Icons.menu_book_rounded,
+    iconBackground: const Color(0xFFF59E0B),
+    iconColor: const Color(0xFFFCD34D),
+    label: (l10n) => l10n.community_docs,
+    url: CommunityUrls.docs,
   ),
 ];
 

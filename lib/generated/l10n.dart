@@ -599,6 +599,31 @@ class S {
     return Intl.message('Sponsor', name: 'community_sponsor', desc: '', args: []);
   }
 
+  /// `Documentation`
+  String get community_docs {
+    return Intl.message('Documentation', name: 'community_docs', desc: '', args: []);
+  }
+
+  /// `Help & Resources`
+  String get help_resources {
+    return Intl.message('Help & Resources', name: 'help_resources', desc: '', args: []);
+  }
+
+  /// `Visit our website for documentation and guides`
+  String get help_resources_subtitle {
+    return Intl.message(
+      'Visit our website for documentation and guides',
+      name: 'help_resources_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Website`
+  String get website {
+    return Intl.message('Website', name: 'website', desc: '', args: []);
+  }
+
   /// `More`
   String get more {
     return Intl.message('More', name: 'more', desc: '', args: []);
