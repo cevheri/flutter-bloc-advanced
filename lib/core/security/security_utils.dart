@@ -1,4 +1,4 @@
-//import 'dart:convert';
+import 'dart:convert';
 
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/allowed_paths.dart';
@@ -30,9 +30,6 @@ class SecurityUtils {
   static bool isTokenExpired() {
     _log.trace("BEGIN:isTokenExpired");
 
-    //TODO activate your token expiration check
-    return false;
-    /*
     final token = AppLocalStorageCached.jwtToken;
     if (token != null) {
       try {
@@ -68,8 +65,31 @@ class SecurityUtils {
     }
     _log.trace("END:isTokenExpired - token null");
     return true;
+  }
 
- */
+  /// Decode a JWT token and return the expiration time as [DateTime].
+  ///
+  /// Returns null if the token is invalid or does not contain an `exp` claim.
+  static DateTime? getTokenExpiration(String token) {
+    _log.trace("BEGIN:getTokenExpiration");
+    try {
+      final parts = token.split(".");
+      if (parts.length != 3) return null;
+
+      var payload = parts[1];
+      if (payload.length % 4 != 0) {
+        payload += '=' * (4 - payload.length % 4);
+      }
+      final decoded = String.fromCharCodes(base64Url.decode(payload));
+      final payloadMap = json.decode(decoded) as Map<String, dynamic>;
+      final exp = payloadMap["exp"];
+      if (exp == null) return null;
+
+      return DateTime.fromMillisecondsSinceEpoch((exp as int) * 1000);
+    } catch (e) {
+      _log.error("END:getTokenExpiration - Error: {}", [e]);
+      return null;
+    }
   }
 
   /// Check if the path is allowed

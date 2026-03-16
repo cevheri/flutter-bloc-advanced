@@ -35,3 +35,12 @@ class InvalidInputException extends AppException {
 class ApiBusinessException extends AppException {
   ApiBusinessException(String message) : super(message, "Api Business Exception: ");
 }
+
+/// Thrown when a circuit breaker is in the OPEN state, rejecting requests
+/// to prevent cascading failures against an unhealthy endpoint.
+class CircuitBreakerOpenException extends AppException {
+  /// The endpoint key whose circuit breaker is open.
+  final String endpoint;
+
+  CircuitBreakerOpenException(this.endpoint) : super(endpoint, "Circuit Breaker Open: ");
+}

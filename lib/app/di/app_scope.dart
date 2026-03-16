@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/connectivity/connectivity_cubit.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
@@ -14,8 +15,12 @@ import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
-import 'package:flutter_bloc_advance/features/dashboard/domain/repositories/dashboard_repository.dart';
+import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
+import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
@@ -32,13 +37,13 @@ class AppScope extends StatelessWidget {
       providers: [
         RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
         RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
-        RepositoryProvider<IDashboardRepository>(create: (_) => dependencies.createDashboardRepository()),
         RepositoryProvider<IAuthRepository>(create: (_) => dependencies.createAuthRepository()),
         RepositoryProvider<MenuRepository>(create: (_) => dependencies.createMenuRepository()),
         RepositoryProvider<IUserRepository>(create: (_) => dependencies.createUserRepository()),
       ],
       child: MultiBlocProvider(
         providers: [
+          BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()..monitor()),
           BlocProvider<SessionCubit>(create: (_) => SessionCubit()..restore()),
           BlocProvider<LoginBloc>(
             create: (context) => LoginBloc(
@@ -65,6 +70,14 @@ class AppScope extends StatelessWidget {
             ),
           ),
           BlocProvider<SidebarBloc>(create: (_) => SidebarBloc()),
+          BlocProvider<SystemDashboardCubit>(
+            create: (_) => SystemDashboardCubit(
+              connectivityService: ConnectivityService.instance,
+              featureFlagService: FeatureFlagService.instance,
+              resilienceInterceptor: ResilienceInterceptor.instance,
+              cacheStorage: SharedPrefsCacheStorage.instance,
+            ),
+          ),
         ],
         child: child,
       ),

@@ -41,35 +41,30 @@ void main() {
 
     group('isTokenExpired Tests', () {
       test('should return true when token is null', () {
-        // expect(SecurityUtils.isTokenExpired(), true); //TODO activate after your custom jtw token expire method implementation
-        expect(SecurityUtils.isTokenExpired(), false);
+        expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return true when token is invalid format', () async {
         await AppLocalStorage().save(StorageKeys.jwtToken.name, "invalid.token");
-        // expect(SecurityUtils.isTokenExpired(), true); //TODO activate after your custom jtw token expire method implementation
-        expect(SecurityUtils.isTokenExpired(), false);
+        expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return true when token payload is invalid', () async {
         await AppLocalStorage().save(StorageKeys.jwtToken.name, "header.invalid_payload.signature");
-        //expect(SecurityUtils.isTokenExpired(), true); //TODO activate after your custom jtw token expire method implementation
-        expect(SecurityUtils.isTokenExpired(), false);
+        expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return true when exp is missing in payload', () async {
         final payload = base64Url.encode('{"sub":"test"}'.codeUnits);
         await AppLocalStorage().save(StorageKeys.jwtToken.name, "header.$payload.signature");
-        //expect(SecurityUtils.isTokenExpired(), true) ; //TODO activate after your custom jtw token expire method implementation
-        expect(SecurityUtils.isTokenExpired(), false);
+        expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return true when token is expired', () async {
         final expiredTime = DateTime.now().subtract(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
         final payload = base64Url.encode('{"exp":$expiredTime}'.codeUnits);
         await AppLocalStorage().save(StorageKeys.jwtToken.name, "header.$payload.signature");
-        //expect(SecurityUtils.isTokenExpired(), true); //TODO activate after your custom jtw token expire method implementation
-        expect(SecurityUtils.isTokenExpired(), false);
+        expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return false when token is valid and not expired', () async {
@@ -77,6 +72,25 @@ void main() {
         final payload = base64Url.encode('{"exp":$futureTime}'.codeUnits);
         await AppLocalStorage().save(StorageKeys.jwtToken.name, "header.$payload.signature");
         expect(SecurityUtils.isTokenExpired(), false);
+      });
+    });
+
+    group('getTokenExpiration Tests', () {
+      test('should return null for invalid token', () {
+        expect(SecurityUtils.getTokenExpiration('invalid'), isNull);
+      });
+
+      test('should return null for token without exp claim', () {
+        final payload = base64Url.encode('{"sub":"test"}'.codeUnits);
+        expect(SecurityUtils.getTokenExpiration('header.$payload.signature'), isNull);
+      });
+
+      test('should return correct DateTime for valid token', () {
+        final futureTime = DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
+        final payload = base64Url.encode('{"exp":$futureTime}'.codeUnits);
+        final result = SecurityUtils.getTokenExpiration('header.$payload.signature');
+        expect(result, isNotNull);
+        expect(result!.millisecondsSinceEpoch ~/ 1000, futureTime);
       });
     });
   });

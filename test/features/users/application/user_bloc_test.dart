@@ -108,6 +108,157 @@ void main() {
     });
   });
 
+  group('UserEvent equality and props', () {
+    test('base UserEvent supports value equality', () {
+      const event1 = UserEvent();
+      const event2 = UserEvent();
+      expect(event1, equals(event2));
+    });
+
+    test('base UserEvent props is empty list', () {
+      const event = UserEvent();
+      expect(event.props, <Object>[]);
+    });
+
+    test('UserSearchEvent supports value equality with same parameters', () {
+      const event1 = UserSearchEvent(page: 1, size: 10, authorities: 'ROLE_USER', name: 'Test');
+      const event2 = UserSearchEvent(page: 1, size: 10, authorities: 'ROLE_USER', name: 'Test');
+      expect(event1, equals(event2));
+    });
+
+    test('UserSearchEvent has default values for page and size', () {
+      const event = UserSearchEvent();
+      expect(event.page, 0);
+      expect(event.size, 10);
+      expect(event.authorities, isNull);
+      expect(event.name, isNull);
+    });
+
+    test('UserSearchEvent props does not include fields (inherits empty)', () {
+      const event = UserSearchEvent(page: 1, size: 20, authorities: 'ROLE_ADMIN');
+      // UserSearchEvent does not override props, so it inherits empty list
+      expect(event.props, <Object>[]);
+    });
+
+    test('UserEditorInit supports value equality', () {
+      const event1 = UserEditorInit();
+      const event2 = UserEditorInit();
+      expect(event1, equals(event2));
+    });
+
+    test('UserEditorInit props is empty list', () {
+      const event = UserEditorInit();
+      expect(event.props, <Object>[]);
+    });
+
+    test('UserSubmitEvent supports value equality with same user', () {
+      const user = UserEntity(id: '1', firstName: 'Test', lastName: 'User');
+      const event1 = UserSubmitEvent(user);
+      const event2 = UserSubmitEvent(user);
+      expect(event1, equals(event2));
+    });
+
+    test('UserSubmitEvent is not equal when user differs', () {
+      const user1 = UserEntity(id: '1', firstName: 'Test');
+      const user2 = UserEntity(id: '2', firstName: 'Other');
+      const event1 = UserSubmitEvent(user1);
+      const event2 = UserSubmitEvent(user2);
+      expect(event1, isNot(equals(event2)));
+    });
+
+    test('UserSubmitEvent props contains user', () {
+      const user = UserEntity(id: '1', firstName: 'Test');
+      const event = UserSubmitEvent(user);
+      expect(event.props, [user]);
+    });
+
+    test('UserSubmitEvent user getter returns correct value', () {
+      const user = UserEntity(id: '1', firstName: 'Test');
+      const event = UserSubmitEvent(user);
+      expect(event.user, user);
+    });
+
+    test('UserFetchEvent supports value equality with same id', () {
+      const event1 = UserFetchEvent('1');
+      const event2 = UserFetchEvent('1');
+      expect(event1, equals(event2));
+    });
+
+    test('UserFetchEvent is not equal when id differs', () {
+      const event1 = UserFetchEvent('1');
+      const event2 = UserFetchEvent('2');
+      expect(event1, isNot(equals(event2)));
+    });
+
+    test('UserFetchEvent props contains id', () {
+      const event = UserFetchEvent('abc');
+      expect(event.props, ['abc']);
+    });
+
+    test('UserDeleteEvent supports value equality with same id', () {
+      const event1 = UserDeleteEvent('1');
+      const event2 = UserDeleteEvent('1');
+      expect(event1, equals(event2));
+    });
+
+    test('UserDeleteEvent is not equal when id differs', () {
+      const event1 = UserDeleteEvent('1');
+      const event2 = UserDeleteEvent('2');
+      expect(event1, isNot(equals(event2)));
+    });
+
+    test('UserDeleteEvent props contains id', () {
+      const event = UserDeleteEvent('xyz');
+      expect(event.props, ['xyz']);
+    });
+
+    test('UserSaveCompleteEvent supports value equality', () {
+      const event1 = UserSaveCompleteEvent();
+      const event2 = UserSaveCompleteEvent();
+      expect(event1, equals(event2));
+    });
+
+    test('UserSaveCompleteEvent props is empty list', () {
+      const event = UserSaveCompleteEvent();
+      expect(event.props, <Object>[]);
+    });
+
+    test('UserViewCompleteEvent supports value equality', () {
+      const event1 = UserViewCompleteEvent();
+      const event2 = UserViewCompleteEvent();
+      expect(event1, equals(event2));
+    });
+
+    test('UserViewCompleteEvent props is empty list', () {
+      const event = UserViewCompleteEvent();
+      expect(event.props, <Object>[]);
+    });
+
+    test('different event types are not equal', () {
+      const fetch = UserFetchEvent('1');
+      const delete = UserDeleteEvent('1');
+      const submit = UserSubmitEvent(UserEntity(id: '1'));
+      const editorInit = UserEditorInit();
+      const saveComplete = UserSaveCompleteEvent();
+      const viewComplete = UserViewCompleteEvent();
+
+      expect(fetch, isNot(equals(delete)));
+      expect(fetch, isNot(equals(submit)));
+      expect(editorInit, isNot(equals(saveComplete)));
+      expect(saveComplete, isNot(equals(viewComplete)));
+    });
+
+    test('all event types are subclasses of UserEvent', () {
+      expect(const UserSearchEvent(), isA<UserEvent>());
+      expect(const UserEditorInit(), isA<UserEvent>());
+      expect(const UserSubmitEvent(UserEntity(id: '1')), isA<UserEvent>());
+      expect(const UserFetchEvent('1'), isA<UserEvent>());
+      expect(const UserDeleteEvent('1'), isA<UserEvent>());
+      expect(const UserSaveCompleteEvent(), isA<UserEvent>());
+      expect(const UserViewCompleteEvent(), isA<UserEvent>());
+    });
+  });
+
   group('UserBloc Event Tests', () {
     const testUser = UserEntity(id: "1", firstName: "Test", lastName: "User", email: "test@test.com");
 

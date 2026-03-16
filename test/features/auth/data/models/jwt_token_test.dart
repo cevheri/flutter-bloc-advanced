@@ -65,7 +65,7 @@ void main() {
     test('should return string', () {
       const entity = mockJWTTokenPayload;
 
-      expect(entity.toString(), 'JWTToken(MOCK_TOKEN)');
+      expect(entity.toString(), contains('MOCK_TOKEN'));
     });
 
     test('should return true when comparing two JWTToken instances', () {
@@ -78,7 +78,7 @@ void main() {
     test('should return hashcode', () {
       const entity = mockJWTTokenPayload;
 
-      expect(entity.hashCode, entity.idToken.hashCode);
+      expect(entity.hashCode, Object.hash(entity.idToken, entity.refreshToken));
     });
   });
 }

@@ -5,15 +5,24 @@ import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_console_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 
 /// Dio-based HTTP client with interceptor chain.
 ///
 /// Interceptor order:
-/// 1. [AuthInterceptor] — injects JWT token
-/// 2. [MockInterceptor] — (dev/test only) short-circuits with mock data
-/// 3. [LoggingInterceptor] — structured request/response logging
+/// 1. [ConnectivityInterceptor] — rejects requests immediately when offline
+/// 2. [AuthInterceptor] — injects JWT token
+/// 3. [TokenRefreshInterceptor] — handles 401 responses with token refresh
+/// 4. [ResilienceInterceptor] — smart retry + circuit breaker
+/// 5. [MockInterceptor] — (dev/test only) short-circuits with mock data
+/// 6. [DevConsoleInterceptor] — records requests in debug console
+/// 7. [LoggingInterceptor] — structured request/response logging
 ///
 /// Error mapping happens in the convenience methods ([get], [post], etc.)
 /// which catch [DioException] and rethrow as [AppException] types so that
@@ -25,6 +34,12 @@ class ApiClient {
 
   static Dio? _dio;
   static Dio? _testDio;
+
+  /// Callback invoked when the session has expired (token refresh failed).
+  ///
+  /// Set this before the first API call (typically in app initialization) so
+  /// that the [TokenRefreshInterceptor] can notify the app layer to log out.
+  static OnSessionExpired? onSessionExpired;
 
   /// Inject a custom Dio instance for testing.
   static void setTestInstance(Dio dio) => _testDio = dio;
@@ -59,8 +74,13 @@ class ApiClient {
     );
 
     dio.interceptors.addAll([
+      ConnectivityInterceptor(),
       AuthInterceptor(),
+      TokenRefreshInterceptor(dio: dio, onSessionExpired: onSessionExpired),
+      ResilienceInterceptor(),
       if (!ProfileConstants.isProduction) MockInterceptor(),
+      CacheInterceptor(),
+      DevConsoleInterceptor(),
       LoggingInterceptor(),
     ]);
 

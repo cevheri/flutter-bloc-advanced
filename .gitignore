@@ -59,3 +59,5 @@ app.*.map.json
 
 # Oracle JDK (large files)
 Oracle_JDK-24/
+
+test_results/

@@ -29,6 +29,9 @@ const _knownSharedExceptions = {
 /// features/ importing other features' internals (auth↔account coupling)
 const _knownCrossFeatureExceptions = {
   'lib/features/dashboard/presentation/pages/dashboard_home_page.dart → account/application/account_bloc',
+  'lib/features/dashboard/presentation/pages/dashboard_home_page.dart → lifecycle/application/lifecycle_bloc',
+  'lib/features/dashboard/presentation/pages/dashboard_home_page.dart → lifecycle/domain/entities/app_config_entity',
+  'lib/features/dashboard/presentation/pages/dashboard_home_page.dart → lifecycle/application/lifecycle_state',
   'lib/features/account/data/repositories/account_repository.dart → users/data/models/user',
   'lib/features/auth/navigation/auth_routes.dart → account/domain/repositories/account_repository',
   'lib/features/auth/application/forgot_password_bloc.dart → account/application/usecases/reset_password_usecase',

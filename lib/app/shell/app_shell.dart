@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/connectivity/connectivity_banner.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/command_palette/command_palette_widget.dart';
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
+import 'package:flutter_bloc_advance/app/dev_console/dev_console_overlay.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:go_router/go_router.dart';
 
@@ -41,8 +43,17 @@ class _AppShellState extends State<AppShell> {
       }
     });
 
-    return CommandPaletteShortcut(
-      child: ResponsiveScaffold(activeRoute: currentRoute, child: widget.child),
+    return DevConsoleShortcut(
+      child: CommandPaletteShortcut(
+        child: Column(
+          children: [
+            const ConnectivityBanner(),
+            Expanded(
+              child: ResponsiveScaffold(activeRoute: currentRoute, child: widget.child),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -6,18 +6,23 @@ import 'package:flutter_bloc_advance/features/account/navigation/account_routes.
 import 'package:flutter_bloc_advance/features/auth/navigation/auth_routes.dart';
 import 'package:flutter_bloc_advance/features/dashboard/navigation/dashboard_routes.dart';
 import 'package:flutter_bloc_advance/features/settings/navigation/settings_routes.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouterFactory {
-  AppRouterFactory({required SessionCubit sessionCubit}) : _sessionCubit = sessionCubit;
+  AppRouterFactory({required SessionCubit sessionCubit, List<NavigatorObserver>? observers})
+    : _sessionCubit = sessionCubit,
+      _observers = observers ?? [];
 
   static final _log = AppLogger.getLogger('AppRouterFactory');
 
   final SessionCubit _sessionCubit;
+  final List<NavigatorObserver> _observers;
 
   GoRouter create() {
     final refreshNotifier = AppRouterRefreshNotifier(_sessionCubit.stream);
@@ -26,6 +31,7 @@ class AppRouterFactory {
       initialLocation: ApplicationRoutesConstants.home,
       debugLogDiagnostics: true,
       refreshListenable: refreshNotifier,
+      observers: _observers,
       routes: [
         ShellRoute(
           builder: (context, state, child) => AppShell(state: state, child: child),
@@ -34,6 +40,7 @@ class AppRouterFactory {
             ...AccountFeatureRoutes.routes,
             ...UsersFeatureRoutes.routes,
             ...SettingsFeatureRoutes.routes,
+            ...DynamicFormsFeatureRoutes.routes,
           ],
         ),
         ...AuthFeatureRoutes.routes,
