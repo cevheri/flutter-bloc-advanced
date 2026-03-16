@@ -93,8 +93,9 @@ class CacheInterceptor extends Interceptor {
 
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
-    // On network error for GET requests with networkFirst policy: try cache fallback
-    if (err.requestOptions.method.toUpperCase() == 'GET') {
+    // Only fall back to cache for connectivity/timeout failures on GET requests.
+    // Auth errors (401/403), server errors (5xx), etc. must propagate normally.
+    if (err.requestOptions.method.toUpperCase() == 'GET' && _isConnectivityError(err)) {
       final policy = _extractPolicy(err.requestOptions);
       if (policy == CachePolicy.networkFirst || policy == CachePolicy.cacheFirst) {
         final entry = await _storage.read(_cacheKey(err.requestOptions));
@@ -115,6 +116,14 @@ class CacheInterceptor extends Interceptor {
       }
     }
     handler.next(err);
+  }
+
+  bool _isConnectivityError(DioException err) {
+    return err.type == DioExceptionType.connectionError ||
+        err.type == DioExceptionType.connectionTimeout ||
+        err.type == DioExceptionType.sendTimeout ||
+        err.type == DioExceptionType.receiveTimeout ||
+        (err.type == DioExceptionType.unknown && err.response == null);
   }
 
   CachePolicy _extractPolicy(RequestOptions options) {

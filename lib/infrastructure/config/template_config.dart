@@ -11,7 +11,7 @@ class TemplateConfig {
   static const String appKey = 'flutter_bloc_advanced';
 
   // API
-  static const String prodApiUrl = 'http://localhost:8080/api';
+  static const String prodApiUrl = '__PROD_API_URL__';
 
   // Web / SEO
   static const String baseUrl = '__WEB_BASE_URL__';

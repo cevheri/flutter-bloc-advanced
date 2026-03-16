@@ -50,11 +50,12 @@ class SecurityUtils {
           if (payloadMap["exp"] == null) throw Exception("Invalid payload exp(null)");
 
           final exp = payloadMap["exp"];
+          if (exp is! num) throw Exception("Invalid payload exp type: ${exp.runtimeType}");
           _log.trace("exp: {}", [exp]);
           final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
           _log.trace("now: {}", [now]);
 
-          var result = now >= exp;
+          var result = now >= exp.toInt();
           _log.trace("END:isTokenExpired - {}", [result]);
           return result;
         }
@@ -85,7 +86,8 @@ class SecurityUtils {
       final exp = payloadMap["exp"];
       if (exp == null) return null;
 
-      return DateTime.fromMillisecondsSinceEpoch((exp as int) * 1000);
+      if (exp is! num) return null;
+      return DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000);
     } catch (e) {
       _log.error("END:getTokenExpiration - Error: {}", [e]);
       return null;
