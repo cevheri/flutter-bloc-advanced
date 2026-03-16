@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:flutter_bloc_advance/features/auth/data/models/jwt_token.dart';
 import 'package:flutter_bloc_advance/features/auth/data/models/send_otp_request.dart';
 import 'package:flutter_bloc_advance/features/auth/data/models/user_jwt.dart';
@@ -21,6 +22,12 @@ class AuthMapper {
 
   static AuthTokenEntity? toTokenEntity(JWTToken? model) {
     if (model == null) return null;
-    return AuthTokenEntity(idToken: model.idToken);
+
+    DateTime? expiresAt;
+    if (model.idToken != null) {
+      expiresAt = SecurityUtils.getTokenExpiration(model.idToken!);
+    }
+
+    return AuthTokenEntity(idToken: model.idToken, refreshToken: model.refreshToken, expiresAt: expiresAt);
   }
 }

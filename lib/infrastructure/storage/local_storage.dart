@@ -31,7 +31,7 @@ class AppLocalStorageCached {
 }
 
 /// LocalStorage predefined keys
-enum StorageKeys { jwtToken, roles, language, username, theme, brightness }
+enum StorageKeys { jwtToken, refreshToken, roles, language, username, theme, brightness }
 
 /// Application Local Storage
 ///

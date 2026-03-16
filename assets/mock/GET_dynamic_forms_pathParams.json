@@ -1,0 +1,22 @@
+{
+  "id": "create_lead",
+  "title": "New Lead",
+  "description": "Create a new sales lead entry.",
+  "fields": [
+    {"type": "section_header", "key": "_section_contact", "label": "Contact Information"},
+    {"type": "text", "key": "name", "label": "Full Name", "required": true, "validators": ["minLength:2"]},
+    {"type": "email", "key": "email", "label": "Email Address", "required": true},
+    {"type": "phone", "key": "phone", "label": "Phone Number", "hint": "+1 (555) 000-0000"},
+    {"type": "section_header", "key": "_section_details", "label": "Lead Details"},
+    {"type": "dropdown", "key": "source", "label": "Lead Source", "required": true, "options": ["Web", "Referral", "Cold Call", "Conference", "Social Media"]},
+    {"type": "radio", "key": "type", "label": "Lead Type", "options": ["B2B", "B2C", "Partner"], "default": "B2B"},
+    {"type": "textarea", "key": "notes", "label": "Notes", "maxLines": 4, "hint": "Any additional details..."},
+    {"type": "divider", "key": "_divider_1", "label": ""},
+    {"type": "date", "key": "followUp", "label": "Follow-up Date"},
+    {"type": "slider", "key": "priority", "label": "Priority Level", "min": 1, "max": 10, "default": 5},
+    {"type": "toggle", "key": "isHighPriority", "label": "High Priority", "default": false},
+    {"type": "multi_select", "key": "tags", "label": "Tags", "options": ["Hot", "Warm", "Cold", "VIP", "Enterprise"]}
+  ],
+  "submitAction": {"method": "POST", "endpoint": "/leads"},
+  "layout": "responsive"
+}

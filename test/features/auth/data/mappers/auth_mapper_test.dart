@@ -1,9 +1,14 @@
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/features/auth/data/mappers/auth_mapper.dart';
 import 'package:flutter_bloc_advance/features/auth/data/models/jwt_token.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  setUpAll(() {
+    AppLogger.configure(isProduction: false);
+  });
+
   group('AuthMapper', () {
     test('toUserJwt maps credentials to UserJWT', () {
       const credentials = AuthCredentialsEntity(username: 'admin', password: 'pass');

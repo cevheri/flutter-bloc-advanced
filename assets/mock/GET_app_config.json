@@ -1,0 +1,13 @@
+{
+  "minimumVersion": "0.1.0",
+  "latestVersion": "1.0.0",
+  "maintenanceMode": false,
+  "maintenanceMessage": "We are performing scheduled maintenance. Please check back soon.",
+  "maintenanceEstimatedEnd": "2024-12-01T12:00:00Z",
+  "storeUrl": "https://play.google.com/store",
+  "featureFlags": {
+    "beta_chat": false,
+    "dark_mode_v2": true,
+    "export_pdf": true
+  }
+}

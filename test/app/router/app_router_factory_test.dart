@@ -13,7 +13,7 @@ void main() {
 
   void setDesktopViewport(WidgetTester tester) {
     addTearDown(tester.view.reset);
-    tester.view.physicalSize = const Size(1440, 1600);
+    tester.view.physicalSize = const Size(1600, 1600);
     tester.view.devicePixelRatio = 1.0;
   }
 

@@ -1,7 +1,8 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/dashboard/domain/entities/dashboard_entity.dart';
+import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
+import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_error_state.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_responsive_builder.dart';
@@ -9,40 +10,42 @@ import 'package:flutter_bloc_advance/shared/design_system/components/app_skeleto
 import 'package:flutter_bloc_advance/shared/design_system/theme/semantic_colors.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
-import 'package:flutter_bloc_advance/shared/utils/icon_utils.dart';
-import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
+import 'package:go_router/go_router.dart';
 
-/// DashboardPage body widget - displays KPIs, charts, activity, and quick actions.
+/// System Dashboard page — displays infrastructure metrics, circuit breaker
+/// health, feature flags, interceptor chain, and quick actions.
 class DashboardPage extends StatelessWidget {
   const DashboardPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DashboardCubit, DashboardState>(
+    return BlocBuilder<SystemDashboardCubit, SystemDashboardState>(
       builder: (context, state) {
         switch (state.status) {
-          case DashboardStatus.initial:
-          case DashboardStatus.loading:
+          case SystemDashboardStatus.initial:
+          case SystemDashboardStatus.loading:
             return const _DashboardSkeleton();
-          case DashboardStatus.error:
+          case SystemDashboardStatus.error:
             return AppErrorState(
-              title: S.of(context).failed,
-              description: state.message,
-              onRetry: () => context.read<DashboardCubit>().load(),
+              title: 'Dashboard Error',
+              description: state.errorMessage,
+              onRetry: () => context.read<SystemDashboardCubit>().load(),
             );
-          case DashboardStatus.loaded:
-            return _DashboardContent(model: state.model!);
+          case SystemDashboardStatus.loaded:
+            return _DashboardContent(state: state);
         }
       },
     );
   }
 }
 
-/// Main dashboard content when data is loaded.
+// =============================================================================
+// Main content
+// =============================================================================
+
 class _DashboardContent extends StatelessWidget {
-  final DashboardEntity model;
-  const _DashboardContent({required this.model});
+  final SystemDashboardState state;
+  const _DashboardContent({required this.state});
 
   @override
   Widget build(BuildContext context) {
@@ -51,36 +54,43 @@ class _DashboardContent extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _DashboardHeader(onRefresh: () => context.read<DashboardCubit>().load()),
+          _DashboardHeader(onRefresh: () => context.read<SystemDashboardCubit>().load()),
           const SizedBox(height: AppSpacing.xl),
-          _SummaryCards(summaries: model.summary),
+          _KpiCards(state: state),
           const SizedBox(height: AppSpacing.xl),
-          _ChartSection(summaries: model.summary),
+          _CircuitBreakerHealthSection(endpoints: state.endpointHealthList),
           const SizedBox(height: AppSpacing.xl),
           AppResponsiveBuilder(
             mobile: (_, _) => Column(
               children: [
-                _RecentActivitySection(activities: model.activities),
+                _FeatureFlagsSection(flags: state.featureFlags),
                 const SizedBox(height: AppSpacing.xl),
-                _QuickActionsSection(actions: model.quickActions),
+                _AppConfigSection(config: state.appConfig),
               ],
             ),
             tablet: (_, _) => Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(child: _RecentActivitySection(activities: model.activities)),
+                Expanded(child: _FeatureFlagsSection(flags: state.featureFlags)),
                 const SizedBox(width: AppSpacing.xl),
-                Expanded(child: _QuickActionsSection(actions: model.quickActions)),
+                Expanded(child: _AppConfigSection(config: state.appConfig)),
               ],
             ),
           ),
+          const SizedBox(height: AppSpacing.xl),
+          _InterceptorChainSection(interceptors: state.interceptors),
+          const SizedBox(height: AppSpacing.xl),
+          const _QuickActionsSection(),
         ],
       ),
     );
   }
 }
 
-/// Header with title and refresh button.
+// =============================================================================
+// 1. Header
+// =============================================================================
+
 class _DashboardHeader extends StatelessWidget {
   final VoidCallback onRefresh;
   const _DashboardHeader({required this.onRefresh});
@@ -89,327 +99,235 @@ class _DashboardHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+
     return Row(
       children: [
-        Icon(Icons.dashboard_outlined, color: colorScheme.primary, size: 28),
+        Icon(Icons.admin_panel_settings_outlined, color: colorScheme.primary, size: 28),
         const SizedBox(width: AppSpacing.md),
-        Text(S.of(context).dashboard, style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+        Flexible(
+          child: Text(
+            'System Dashboard',
+            style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
         const SizedBox(width: AppSpacing.sm),
-        Text(
-          'v${AppConstants.appVersion}',
-          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: 2),
+          decoration: BoxDecoration(color: colorScheme.primaryContainer, borderRadius: BorderRadius.circular(12)),
+          child: Text(
+            'v${AppConstants.appVersion}',
+            style: textTheme.labelSmall?.copyWith(color: colorScheme.onPrimaryContainer),
+          ),
         ),
         const Spacer(),
-        IconButton(tooltip: S.of(context).refresh, icon: const Icon(Icons.refresh), onPressed: onRefresh),
+        IconButton(tooltip: 'Refresh', icon: const Icon(Icons.refresh), onPressed: onRefresh),
       ],
     );
   }
 }
 
-/// Summary stat cards displayed in an adaptive grid.
-class _SummaryCards extends StatelessWidget {
-  final List<DashboardSummaryEntity> summaries;
-  const _SummaryCards({required this.summaries});
+// =============================================================================
+// 2. KPI Cards
+// =============================================================================
+
+class _KpiCards extends StatelessWidget {
+  final SystemDashboardState state;
+  const _KpiCards({required this.state});
 
   @override
   Widget build(BuildContext context) {
     return AppAdaptiveGrid(
       mobileColumns: 1,
       tabletColumns: 2,
-      desktopColumns: summaries.length.clamp(1, 4),
+      desktopColumns: 4,
       spacing: AppSpacing.lg,
       runSpacing: AppSpacing.lg,
-      children: summaries.map((s) => _StatCard(summary: s)).toList(),
+      children: [
+        _KpiCard(
+          icon: Icons.wifi,
+          label: 'Connectivity',
+          value: state.connectivity == ConnectivityStatus.online ? 'Online' : 'Offline',
+          dotColor: state.connectivity == ConnectivityStatus.online
+              ? context.semanticColors.success
+              : Theme.of(context).colorScheme.error,
+        ),
+        _KpiCard(
+          icon: Icons.shield_outlined,
+          label: 'Circuit Breaker',
+          value: '${state.circuitBreakerTotal} endpoints',
+          subtitle: '${state.circuitBreakerOpen} open',
+        ),
+        _KpiCard(icon: Icons.storage_outlined, label: 'Cache', value: '${state.cacheItemCount} items cached'),
+        _KpiCard(
+          icon: Icons.flag_outlined,
+          label: 'Feature Flags',
+          value: '${state.featureFlagsOn}/${state.featureFlagsTotal} enabled',
+        ),
+      ],
     );
   }
 }
 
-/// Individual stat card showing label, value, and trend.
-class _StatCard extends StatelessWidget {
-  final DashboardSummaryEntity summary;
-  const _StatCard({required this.summary});
+class _KpiCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final String? subtitle;
+  final Color? dotColor;
+
+  const _KpiCard({required this.icon, required this.label, required this.value, this.subtitle, this.dotColor});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
-    final semantic = context.semanticColors;
-    final isUp = summary.trend >= 0;
-    final trendColor = isUp ? semantic.success : colorScheme.error;
-    final trendIcon = isUp ? Icons.trending_up : Icons.trending_down;
 
     return AppCard(
       variant: AppCardVariant.outlined,
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      padding: const EdgeInsets.all(AppSpacing.lg),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Icon(_iconForLabel(summary.label), color: colorScheme.primary, size: 20),
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
-                decoration: BoxDecoration(color: trendColor.withAlpha(20), borderRadius: BorderRadius.circular(20)),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(trendIcon, color: trendColor, size: 14),
-                    const SizedBox(width: 2),
-                    Text(
-                      '${summary.trend.abs()}%',
-                      style: textTheme.labelSmall?.copyWith(color: trendColor, fontWeight: FontWeight.w600),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.lg),
-          Text(_formatValue(summary.value), style: textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w700)),
-          const SizedBox(height: AppSpacing.xs),
-          Text(summary.label, style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
-        ],
-      ),
-    );
-  }
-
-  IconData _iconForLabel(String label) {
-    final lower = label.toLowerCase();
-    if (lower.contains('lead')) return Icons.people_outline;
-    if (lower.contains('customer')) return Icons.business;
-    if (lower.contains('revenue')) return Icons.attach_money;
-    return Icons.analytics_outlined;
-  }
-
-  String _formatValue(num value) {
-    if (value >= 1000) {
-      final formatted = (value / 1000).toStringAsFixed(1);
-      return '${formatted}K';
-    }
-    return value.toString();
-  }
-}
-
-/// Chart section with a bar chart of summary values.
-class _ChartSection extends StatelessWidget {
-  final List<DashboardSummaryEntity> summaries;
-  const _ChartSection({required this.summaries});
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
-
-    return AppCard(
-      variant: AppCardVariant.outlined,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            S.of(context).chart_kpi_placeholder,
-            style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          SizedBox(
-            height: 200,
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: _maxY,
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem(
-                        '${summaries[groupIndex].label}\n${summaries[groupIndex].value}',
-                        textTheme.bodySmall!.copyWith(color: colorScheme.onPrimary, fontWeight: FontWeight.w600),
-                      );
-                    },
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        final idx = value.toInt();
-                        if (idx >= 0 && idx < summaries.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: AppSpacing.sm),
-                            child: Text(
-                              summaries[idx].label,
-                              style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
-                            ),
-                          );
-                        }
-                        return const SizedBox.shrink();
-                      },
-                    ),
-                  ),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                borderData: FlBorderData(show: false),
-                gridData: const FlGridData(show: false),
-                barGroups: summaries.asMap().entries.map((e) {
-                  return BarChartGroupData(
-                    x: e.key,
-                    barRods: [
-                      BarChartRodData(
-                        toY: e.value.value.toDouble(),
-                        color: _barColor(e.key, colorScheme),
-                        width: 32,
-                        borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
-                      ),
-                    ],
-                  );
-                }).toList(),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  double get _maxY {
-    if (summaries.isEmpty) return 100;
-    final max = summaries.map((s) => s.value.toDouble()).reduce((a, b) => a > b ? a : b);
-    return max * 1.2;
-  }
-
-  Color _barColor(int index, ColorScheme cs) {
-    final colors = [cs.primary, cs.secondary, cs.tertiary];
-    return colors[index % colors.length];
-  }
-}
-
-/// Recent activity list.
-class _RecentActivitySection extends StatelessWidget {
-  final List<DashboardActivityEntity> activities;
-  const _RecentActivitySection({required this.activities});
-
-  @override
-  Widget build(BuildContext context) {
-    final textTheme = Theme.of(context).textTheme;
-    final colorScheme = Theme.of(context).colorScheme;
-
-    return AppCard(
-      variant: AppCardVariant.outlined,
-      padding: const EdgeInsets.all(AppSpacing.xl),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Icon(Icons.history, size: 20, color: colorScheme.onSurfaceVariant),
+              Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text(S.of(context).recent_activity, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Text(label, style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant)),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Row(
+            children: [
+              if (dotColor != null) ...[
+                Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(color: dotColor, shape: BoxShape.circle),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+              ],
+              Expanded(
+                child: Text(value, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
+          if (subtitle != null) ...[
+            const SizedBox(height: AppSpacing.xs),
+            Text(subtitle!, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 3. Circuit Breaker Health
+// =============================================================================
+
+class _CircuitBreakerHealthSection extends StatelessWidget {
+  final List<EndpointHealth> endpoints;
+  const _CircuitBreakerHealthSection({required this.endpoints});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.monitor_heart_outlined, size: 20, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppSpacing.sm),
+              Text('Circuit Breaker Health', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          if (activities.isEmpty)
+          if (endpoints.isEmpty)
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               child: Center(
                 child: Text(
-                  S.of(context).subtitle_context,
+                  'No endpoints tracked yet',
                   style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                 ),
               ),
             )
           else
-            ...activities.map((a) => _ActivityItem(activity: a)),
+            ...endpoints.map((ep) => _EndpointHealthRow(endpoint: ep)),
         ],
       ),
     );
   }
 }
 
-class _ActivityItem extends StatelessWidget {
-  final DashboardActivityEntity activity;
-  const _ActivityItem({required this.activity});
+class _EndpointHealthRow extends StatelessWidget {
+  final EndpointHealth endpoint;
+  const _EndpointHealthRow({required this.endpoint});
+
+  Color _stateColor(BuildContext context) {
+    switch (endpoint.state) {
+      case CircuitBreakerState.closed:
+        return context.semanticColors.success;
+      case CircuitBreakerState.halfOpen:
+        return Colors.orange;
+      case CircuitBreakerState.open:
+        return Theme.of(context).colorScheme.error;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final color = _stateColor(context);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
       child: Row(
         children: [
           Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: _typeColor(colorScheme).withAlpha(25),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(_typeIcon, color: _typeColor(colorScheme), size: 18),
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
           ),
           const SizedBox(width: AppSpacing.md),
           Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(activity.title, style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
-                Text(activity.subtitle, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
-              ],
+            flex: 3,
+            child: Text(endpoint.endpoint, style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              endpoint.state.name,
+              style: textTheme.bodySmall?.copyWith(color: color, fontWeight: FontWeight.w600),
             ),
           ),
-          Text(_formatTime(activity.time), style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+          SizedBox(
+            width: 80,
+            child: Text(
+              'Failures: ${endpoint.failureCount}',
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
+          ),
         ],
       ),
     );
   }
-
-  IconData get _typeIcon {
-    switch (activity.type) {
-      case 'lead':
-        return Icons.person_add_outlined;
-      case 'sale':
-        return Icons.handshake_outlined;
-      default:
-        return Icons.circle_outlined;
-    }
-  }
-
-  Color _typeColor(ColorScheme cs) {
-    switch (activity.type) {
-      case 'lead':
-        return cs.primary;
-      case 'sale':
-        return cs.tertiary;
-      default:
-        return cs.secondary;
-    }
-  }
-
-  String _formatTime(DateTime time) {
-    final diff = DateTime.now().difference(time);
-    if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-    if (diff.inHours < 24) return '${diff.inHours}h ago';
-    if (diff.inDays < 7) return '${diff.inDays}d ago';
-    return '${time.day}/${time.month}';
-  }
 }
 
-/// Quick actions grid.
-class _QuickActionsSection extends StatelessWidget {
-  final List<DashboardQuickActionEntity> actions;
-  const _QuickActionsSection({required this.actions});
+// =============================================================================
+// 4a. Feature Flags
+// =============================================================================
+
+class _FeatureFlagsSection extends StatelessWidget {
+  final Map<String, bool> flags;
+  const _FeatureFlagsSection({required this.flags});
 
   @override
   Widget build(BuildContext context) {
@@ -418,7 +336,203 @@ class _QuickActionsSection extends StatelessWidget {
 
     return AppCard(
       variant: AppCardVariant.outlined,
-      padding: const EdgeInsets.all(AppSpacing.xl),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.flag_outlined, size: 20, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppSpacing.sm),
+              Text('Feature Flags', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          if (flags.isEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+              child: Center(
+                child: Text(
+                  'No feature flags configured',
+                  style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
+                ),
+              ),
+            )
+          else
+            ...flags.entries.map(
+              (entry) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(entry.key, style: textTheme.bodyMedium)),
+                    Switch(
+                      value: entry.value,
+                      onChanged: (value) {
+                        context.read<SystemDashboardCubit>().toggleFeatureFlag(entry.key, value);
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 4b. App Config
+// =============================================================================
+
+class _AppConfigSection extends StatelessWidget {
+  final AppConfigSummary config;
+  const _AppConfigSection({required this.config});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.settings_applications_outlined, size: 20, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppSpacing.sm),
+              Text('App Configuration', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          _ConfigRow(label: 'Current Version', value: config.currentVersion),
+          _ConfigRow(label: 'Minimum Version', value: config.minimumVersion),
+          _ConfigRow(
+            label: 'Maintenance Mode',
+            value: config.maintenanceMode ? 'ON' : 'OFF',
+            valueColor: config.maintenanceMode ? Theme.of(context).colorScheme.error : null,
+          ),
+          _ConfigRow(label: 'Environment', value: config.environment),
+        ],
+      ),
+    );
+  }
+}
+
+class _ConfigRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color? valueColor;
+  const _ConfigRow({required this.label, required this.value, this.valueColor});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(label, style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+          ),
+          Text(
+            value,
+            style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600, color: valueColor),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 5. Interceptor Chain
+// =============================================================================
+
+class _InterceptorChainSection extends StatelessWidget {
+  final List<InterceptorInfo> interceptors;
+  const _InterceptorChainSection({required this.interceptors});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.layers_outlined, size: 20, color: colorScheme.onSurfaceVariant),
+              const SizedBox(width: AppSpacing.sm),
+              Text('Interceptor Chain', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          ...interceptors.map((info) => _InterceptorRow(info: info)),
+        ],
+      ),
+    );
+  }
+}
+
+class _InterceptorRow extends StatelessWidget {
+  final InterceptorInfo info;
+  const _InterceptorRow({required this.info});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+    final statusColor = info.active ? context.semanticColors.success : colorScheme.onSurfaceVariant;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 24,
+            child: Text('${info.order}', style: textTheme.labelMedium?.copyWith(color: colorScheme.onSurfaceVariant)),
+          ),
+          Container(
+            width: 8,
+            height: 8,
+            decoration: BoxDecoration(color: statusColor, shape: BoxShape.circle),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          Expanded(
+            flex: 2,
+            child: Text(info.name, style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text(info.detail, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// =============================================================================
+// 6. Quick Actions
+// =============================================================================
+
+class _QuickActionsSection extends StatelessWidget {
+  const _QuickActionsSection();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return AppCard(
+      variant: AppCardVariant.outlined,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -426,14 +540,30 @@ class _QuickActionsSection extends StatelessWidget {
             children: [
               Icon(Icons.bolt, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text(S.of(context).quick_actions, style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Text('Quick Actions', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
           Wrap(
             spacing: AppSpacing.sm,
             runSpacing: AppSpacing.sm,
-            children: actions.map((a) => _QuickActionChip(action: a)).toList(),
+            children: [
+              FilledButton.tonalIcon(
+                onPressed: () => context.read<SystemDashboardCubit>().clearCache(),
+                icon: const Icon(Icons.delete_sweep_outlined, size: 18),
+                label: const Text('Clear Cache'),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: () => context.read<SystemDashboardCubit>().resetCircuitBreakers(),
+                icon: const Icon(Icons.restart_alt, size: 18),
+                label: const Text('Reset Circuit Breakers'),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: () => GoRouter.of(context).go('/dynamic-forms/sample'),
+                icon: const Icon(Icons.dynamic_form_outlined, size: 18),
+                label: const Text('Open Dynamic Forms'),
+              ),
+            ],
           ),
         ],
       ),
@@ -441,23 +571,10 @@ class _QuickActionsSection extends StatelessWidget {
   }
 }
 
-class _QuickActionChip extends StatelessWidget {
-  final DashboardQuickActionEntity action;
-  const _QuickActionChip({required this.action});
+// =============================================================================
+// Skeleton loading state
+// =============================================================================
 
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton.tonalIcon(
-      onPressed: () {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Action: ${action.label}')));
-      },
-      icon: Icon(getIconFromString(action.icon), size: 18),
-      label: Text(action.label),
-    );
-  }
-}
-
-/// Skeleton loading state for the dashboard.
 class _DashboardSkeleton extends StatelessWidget {
   const _DashboardSkeleton();
 
@@ -469,45 +586,51 @@ class _DashboardSkeleton extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           // Header skeleton
-          Row(
+          const Row(
             children: [
-              const AppSkeleton(width: 28, height: 28, shape: AppSkeletonShape.circle),
-              const SizedBox(width: AppSpacing.md),
-              const AppSkeleton.text(width: 160, height: 24),
+              AppSkeleton(width: 28, height: 28, shape: AppSkeletonShape.circle),
+              SizedBox(width: AppSpacing.md),
+              AppSkeleton.text(width: 200, height: 24),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          // Stat cards skeleton
+          // KPI cards skeleton
           AppAdaptiveGrid(
             mobileColumns: 1,
             tabletColumns: 2,
-            desktopColumns: 3,
+            desktopColumns: 4,
             spacing: AppSpacing.lg,
             runSpacing: AppSpacing.lg,
-            children: List.generate(3, (_) => const AppSkeleton.card(height: 140)),
+            children: List.generate(4, (_) => const AppSkeleton.card(height: 100)),
           ),
           const SizedBox(height: AppSpacing.xl),
-          // Chart skeleton
-          const AppSkeleton.card(height: 260),
+          // Circuit breaker section skeleton
+          const AppSkeleton.card(height: 180),
           const SizedBox(height: AppSpacing.xl),
-          // Bottom sections skeleton
+          // Middle sections skeleton
           AppResponsiveBuilder(
-            mobile: (_, _) => Column(
+            mobile: (_, _) => const Column(
               children: [
-                const AppSkeleton.card(height: 200),
-                const SizedBox(height: AppSpacing.xl),
-                const AppSkeleton.card(height: 160),
+                AppSkeleton.card(height: 200),
+                SizedBox(height: AppSpacing.xl),
+                AppSkeleton.card(height: 160),
               ],
             ),
-            tablet: (_, _) => Row(
+            tablet: (_, _) => const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Expanded(child: AppSkeleton.card(height: 200)),
-                const SizedBox(width: AppSpacing.xl),
-                const Expanded(child: AppSkeleton.card(height: 160)),
+                Expanded(child: AppSkeleton.card(height: 200)),
+                SizedBox(width: AppSpacing.xl),
+                Expanded(child: AppSkeleton.card(height: 160)),
               ],
             ),
           ),
+          const SizedBox(height: AppSpacing.xl),
+          // Interceptor chain skeleton
+          const AppSkeleton.card(height: 240),
+          const SizedBox(height: AppSpacing.xl),
+          // Quick actions skeleton
+          const AppSkeleton.card(height: 80),
         ],
       ),
     );

@@ -1,10 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/bootstrap/app_bootstrap_config.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/app/analytics/crash_reporter.dart';
+import 'package:flutter_bloc_advance/app/dev_console/time_travel/time_travel_bloc_observer.dart';
+import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
@@ -31,6 +37,17 @@ class AppBootstrap {
     // Don't save default brightness — let ThemeBloc use ThemeMode.system when no preference exists
     await AppLocalStorageCached.loadCache();
 
+    // Connectivity monitoring
+    await ConnectivityService.instance.initialize();
+
+    // Analytics & crash reporting
+    final analytics = LogAnalyticsService();
+    CrashReporter.install(analytics);
+
+    if (kDebugMode) {
+      Bloc.observer = TimeTravelBlocObserver();
+    }
+
     AppRouter().setRouter(RouterType.goRouter);
 
     await SystemChrome.setPreferredOrientations(config.preferredOrientations);
@@ -46,6 +63,7 @@ class AppBootstrap {
       App(
         language: config.defaultLanguage,
         dependencies: AppDependencies(environment: config.environment),
+        analytics: analytics,
       ),
     );
   }
