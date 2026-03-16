@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question / Discussion
+    url: https://github.com/cevheri/flutter-bloc-advanced/discussions
+    about: Ask questions and discuss ideas in GitHub Discussions
