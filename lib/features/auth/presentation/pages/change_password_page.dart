@@ -22,7 +22,6 @@ class ChangePasswordScreen extends StatefulWidget {
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   final _formKey = GlobalKey<FormBuilderState>();
-  final _scaffoldKey = GlobalKey<ScaffoldState>();
 
   bool _showCurrentPassword = false;
   bool _showNewPassword = false;
@@ -34,19 +33,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       listener: (context, state) => _handleStateChanges(context, state),
       child: PopScope(
         canPop: !(_formKey.currentState?.isDirty ?? false),
-        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(didPop, data),
-        child: Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context)),
-      ),
-    );
-  }
-
-  AppBar _buildAppBar(BuildContext context) {
-    return AppBar(
-      title: Text(S.of(context).change_password),
-      leading: IconButton(
-        key: const Key('changePasswordScreenAppBarBackButtonKey'),
-        icon: const Icon(Icons.arrow_back),
-        onPressed: () async => _handlePopScope(false, null, context),
+        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(context, didPop),
+        child: _buildBody(context),
       ),
     );
   }
@@ -55,42 +43,59 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return BlocBuilder<ChangePasswordBloc, ChangePasswordState>(
       buildWhen: (previous, current) => previous.status != current.status,
       builder: (context, state) {
-        return ResponsiveFormBuilder(
-          formKey: _formKey,
-          children: [
-            const SizedBox(height: AppSpacing.lg),
-            Card(
-              elevation: 2,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AppSpacing.md),
-                side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5)),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(AppSpacing.xl),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: AppSpacing.lg,
-                  children: [
-                    Text(
-                      S.of(context).change_password,
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+        return SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.xl),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 640),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        key: const Key('changePasswordScreenAppBarBackButtonKey'),
+                        icon: const Icon(Icons.arrow_back),
+                        onPressed: () async => _handlePopScope(context, false),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Text(
+                        S.of(context).change_password,
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.xl),
+                  Card(
+                    elevation: 2,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AppSpacing.md),
+                      side: BorderSide(color: Theme.of(context).colorScheme.outlineVariant.withValues(alpha: 0.5)),
                     ),
-                    Text(
-                      'Ensure your account is using a long, random password to stay secure.',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSpacing.xl),
+                      child: ResponsiveFormBuilder(
+                        formKey: _formKey,
+                        children: [
+                          Text(
+                            S.of(context).change_password_description,
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                          ),
+                          const Divider(),
+                          _currentPasswordField(context),
+                          _newPasswordField(context),
+                          const SizedBox(height: AppSpacing.sm),
+                          _submitButton(context, state),
+                        ],
+                      ),
                     ),
-                    const Divider(),
-                    _currentPasswordField(context),
-                    _newPasswordField(context),
-                    const SizedBox(height: AppSpacing.sm),
-                    _submitButton(context, state),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         );
       },
     );
@@ -142,7 +147,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       child: ResponsiveSubmitButton(
         key: changePasswordButtonSubmitKey,
         buttonText: S.of(context).save,
-        onPressed: () => state.status == ChangePasswordStatus.loading ? null : _onSubmit(context, state),
+        onPressed: state.status == ChangePasswordStatus.loading ? null : () => _onSubmit(context, state),
         isLoading: state.status == ChangePasswordStatus.loading,
       ),
     );
@@ -192,10 +197,8 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
   }
 
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
+  Future<void> _handlePopScope(BuildContext context, bool didPop) async {
     if (didPop) return;
-
-    final context = contextParam ?? data as BuildContext;
     if (!context.mounted) return;
 
     if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {

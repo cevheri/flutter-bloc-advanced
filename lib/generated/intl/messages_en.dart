@@ -32,6 +32,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
     "back": MessageLookupByLibrary.simpleMessage("Back"),
     "change_password": MessageLookupByLibrary.simpleMessage("Change Password"),
+    "change_password_description": MessageLookupByLibrary.simpleMessage(
+      "Ensure your account is using a long, random password to stay secure.",
+    ),
     "chart_kpi_placeholder": MessageLookupByLibrary.simpleMessage("Chart / KPI Placeholder"),
     "community_contribute": MessageLookupByLibrary.simpleMessage("Contribute"),
     "community_discussions": MessageLookupByLibrary.simpleMessage("Discussions"),

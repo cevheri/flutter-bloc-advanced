@@ -46,6 +46,7 @@
   "settings": "Settings",
   "account": "Account",
   "change_password": "Change Password",
+  "change_password_description": "Ensure your account is using a long, random password to stay secure.",
   "language_select": "Select Language",
   "logout": "Logout",
   "logout_sure": "Are you sure you want to logout?",

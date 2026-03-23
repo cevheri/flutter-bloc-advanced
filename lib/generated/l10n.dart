@@ -277,6 +277,16 @@ class S {
     return Intl.message('Change Password', name: 'change_password', desc: '', args: []);
   }
 
+  /// `Ensure your account is using a long, random password to stay secure.`
+  String get change_password_description {
+    return Intl.message(
+      'Ensure your account is using a long, random password to stay secure.',
+      name: 'change_password_description',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Select Language`
   String get language_select {
     return Intl.message('Select Language', name: 'language_select', desc: '', args: []);

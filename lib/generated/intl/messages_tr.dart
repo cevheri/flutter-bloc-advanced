@@ -32,6 +32,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
     "back": MessageLookupByLibrary.simpleMessage("Geri"),
     "change_password": MessageLookupByLibrary.simpleMessage("Şifre Değiştir"),
+    "change_password_description": MessageLookupByLibrary.simpleMessage(
+      "Hesabınızın güvende kalması için uzun ve rastgele bir şifre kullandığınızdan emin olun.",
+    ),
     "chart_kpi_placeholder": MessageLookupByLibrary.simpleMessage("Grafik / KPI Alanı"),
     "community_contribute": MessageLookupByLibrary.simpleMessage("Katkıda Bulun"),
     "community_discussions": MessageLookupByLibrary.simpleMessage("Tartışmalar"),
