@@ -48,6 +48,12 @@ class SettingsScreen extends StatelessWidget {
                     subtitle: 'View or edit your profile information',
                     onTap: () => context.push(ApplicationRoutesConstants.account),
                   ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              _SettingsSection(
+                title: S.of(context).change_password,
+                children: [
                   _SettingsTile(
                     key: settingsChangePasswordButtonKey,
                     icon: Icons.lock_outline,
