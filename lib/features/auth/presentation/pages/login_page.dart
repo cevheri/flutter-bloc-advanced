@@ -27,6 +27,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(debugLabel: '__loginScaffoldKey__');
   late AnimationController _animController;
+  final FocusNode _forgotPwFocus = FocusNode(skipTraversal: true);
 
   @override
   void initState() {
@@ -37,6 +38,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   void dispose() {
+    _forgotPwFocus.dispose();
     _animController.dispose();
     super.dispose();
   }
@@ -497,6 +499,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       key: loginTextFieldUsernameKey,
       name: 'username',
       decoration: const InputDecoration(hintText: 'm@example.com'),
+      textInputAction: TextInputAction.next,
       validator: FormBuilderValidators.compose([
         FormBuilderValidators.required(errorText: S.of(context).required_field),
         FormBuilderValidators.minLength(4, errorText: S.of(context).min_length_4),
@@ -558,6 +561,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget _forgotPasswordLink(BuildContext context) {
     return TextButton(
       key: loginButtonForgotPasswordKey,
+      focusNode: _forgotPwFocus,
       onPressed: () => context.push(ApplicationRoutesConstants.forgotPassword),
       style: TextButton.styleFrom(
         padding: const EdgeInsets.symmetric(horizontal: 4),
