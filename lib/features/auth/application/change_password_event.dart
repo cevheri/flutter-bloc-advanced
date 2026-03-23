@@ -10,13 +10,12 @@ abstract class ChangePasswordEvent extends Equatable {
   bool get stringify => true;
 }
 
-class TogglePasswordVisibility extends ChangePasswordEvent {
-  const TogglePasswordVisibility();
-}
-
 class ChangePasswordChanged extends ChangePasswordEvent {
   final String currentPassword;
   final String newPassword;
 
   const ChangePasswordChanged({required this.currentPassword, required this.newPassword});
+
+  @override
+  List<Object> get props => [currentPassword, newPassword];
 }

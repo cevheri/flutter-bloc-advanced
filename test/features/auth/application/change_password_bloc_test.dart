@@ -10,15 +10,12 @@ import '../../../mocks/fake_data.dart';
 import '../../../mocks/mock_classes.dart';
 import '../../../test_utils.dart';
 
-/// BLoc Test for UserBloc
+/// BLoc Test for ChangePasswordBloc
 ///
-/// Tests: <p>
-/// 1. State test <p>
-/// 1.1. Supports value comparisons <p>
-/// 1.2. CopyWith retains the same values if no arguments are provided <p>
-/// 1.3. CopyWith replaces non-null parameters <p>
-/// 2. Event test <p>
-/// 3. Bloc test <p>
+/// Tests:
+/// 1. State test
+/// 2. Event test
+/// 3. Bloc test
 
 void main() {
   //region main setup
@@ -35,78 +32,52 @@ void main() {
   //endregion main setup
 
   //region state
-  /// ChangePasswordState State Tests
   group("ChangePasswordState", () {
-    //ChangePasswordEvent and prob event test
-    test("ChangePasswordState", () {
+    test("ChangePasswordState supports value comparisons", () {
       expect(const ChangePasswordState(), const ChangePasswordState());
     });
 
-    // ChangePasswordInitialState prob state test
-    test("ChangePasswordInitialState", () {
-      expect(const ChangePasswordInitialState(), const ChangePasswordInitialState());
+    test("ChangePasswordState with different status are not equal", () {
+      expect(
+        const ChangePasswordState(status: ChangePasswordStatus.loading),
+        isNot(const ChangePasswordState(status: ChangePasswordStatus.initial)),
+      );
     });
 
-    // ChangePasswordPasswordCompletedState
-    test("ChangePasswordPasswordCompletedState", () {
-      expect(const ChangePasswordCompletedState(), const ChangePasswordCompletedState());
-    });
-
-    // ChangePasswordPasswordErrorState
-    test("ChangePasswordPasswordErrorState", () {
-      expect(const ChangePasswordErrorState(message: ""), const ChangePasswordErrorState(message: ""));
-    });
-
-    test("copyWith state", () {
+    test("copyWith retains same values if no arguments provided", () {
       expect(const ChangePasswordState().copyWith(), const ChangePasswordState());
     });
-    test("copyWith initialState", () {
+
+    test("copyWith replaces status", () {
       expect(
-        const ChangePasswordInitialState().copyWith(),
-        const ChangePasswordState(status: ChangePasswordStatus.initial),
-      );
-    });
-    test("copyWith loadingState", () {
-      expect(
-        const ChangePasswordLoadingState().copyWith(),
+        const ChangePasswordState().copyWith(status: ChangePasswordStatus.loading),
         const ChangePasswordState(status: ChangePasswordStatus.loading),
-      );
-    });
-    test("copyWith passwordCompletedState", () {
-      expect(
-        const ChangePasswordCompletedState().copyWith(),
-        const ChangePasswordState(status: ChangePasswordStatus.success),
-      );
-    });
-    test("copyWith passwordErrorState", () {
-      expect(
-        const ChangePasswordErrorState(message: "").copyWith(),
-        const ChangePasswordState(status: ChangePasswordStatus.failure),
       );
     });
   });
   //endregion state
 
   //region event
-  /// ChangePasswordEvent Tests
   group("ChangePasswordEvent", () {
-    // ChangePasswordChanged
-    test("ChangePasswordChanged", () {
+    test("ChangePasswordChanged supports value comparisons", () {
       expect(
-        const ChangePasswordChanged(currentPassword: "123", newPassword: "123"),
-        const ChangePasswordChanged(currentPassword: "123", newPassword: "123"),
+        const ChangePasswordChanged(currentPassword: "123", newPassword: "456"),
+        const ChangePasswordChanged(currentPassword: "123", newPassword: "456"),
       );
     });
-    test("TogglePasswordVisibility", () {
-      expect(const TogglePasswordVisibility(), const TogglePasswordVisibility());
+
+    test("ChangePasswordChanged with different values are not equal", () {
+      expect(
+        const ChangePasswordChanged(currentPassword: "123", newPassword: "456"),
+        isNot(const ChangePasswordChanged(currentPassword: "123", newPassword: "789")),
+      );
     });
   });
   //endregion event
 
   //region bloc
-  /// ChangePasswordBloc Tests
   group("ChangePasswordBloc", () {
-    test("initial state is LoginState", () {
+    test("initial state is ChangePasswordState with initial status", () {
       expect(
         ChangePasswordBloc(repository: repository).state,
         const ChangePasswordState(status: ChangePasswordStatus.initial),

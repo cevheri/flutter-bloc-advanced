@@ -8,10 +8,12 @@ import 'package:flutter_bloc_advance/features/auth/presentation/pages/forgot_pas
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/shared/design_system/components/app_page_transition.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthFeatureRoutes {
-  static final List<GoRoute> routes = [
+  /// Public routes (login, register, forgot-password) — outside ShellRoute
+  static final List<GoRoute> publicRoutes = [
     GoRoute(name: 'login', path: ApplicationRoutesConstants.login, builder: (context, state) => const LoginScreen()),
     GoRoute(
       name: 'login-otp',
@@ -32,19 +34,27 @@ class AuthFeatureRoutes {
       ),
     ),
     GoRoute(
-      name: 'change-password',
-      path: ApplicationRoutesConstants.changePassword,
-      builder: (context, state) => BlocProvider(
-        create: (_) => ChangePasswordBloc(repository: context.read<IAccountRepository>()),
-        child: ChangePasswordScreen(),
-      ),
-    ),
-    GoRoute(
       name: 'register',
       path: ApplicationRoutesConstants.register,
       builder: (context, state) => BlocProvider(
         create: (_) => RegisterBloc(repository: context.read<IAccountRepository>()),
         child: RegisterScreen(),
+      ),
+    ),
+  ];
+
+  /// Authenticated routes (change-password) — inside ShellRoute
+  static final List<GoRoute> authenticatedRoutes = [
+    GoRoute(
+      name: 'change-password',
+      path: ApplicationRoutesConstants.changePassword,
+      pageBuilder: (context, state) => appTransitionPage(
+        state: state,
+        type: AppPageTransitionType.slideRight,
+        child: BlocProvider(
+          create: (_) => ChangePasswordBloc(repository: context.read<IAccountRepository>()),
+          child: ChangePasswordScreen(),
+        ),
       ),
     ),
   ];

@@ -46,6 +46,7 @@
   "settings": "Ayarlar",
   "account": "Hesabım",
   "change_password": "Şifre Değiştir",
+  "change_password_description": "Hesabınızın güvende kalması için uzun ve rastgele bir şifre kullandığınızdan emin olun.",
   "language_select": "Dil Seçimi",
   "logout": "Çıkış Yap",
   "logout_sure": "Çıkış yapmak istediğinize emin misiniz?",

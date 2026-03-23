@@ -41,9 +41,10 @@ class AppRouterFactory {
             ...UsersFeatureRoutes.routes,
             ...SettingsFeatureRoutes.routes,
             ...DynamicFormsFeatureRoutes.routes,
+            ...AuthFeatureRoutes.authenticatedRoutes,
           ],
         ),
-        ...AuthFeatureRoutes.routes,
+        ...AuthFeatureRoutes.publicRoutes,
       ],
       redirect: (context, state) {
         final location = state.uri.path;
