@@ -79,9 +79,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         children: [
                           Text(
                             S.of(context).change_password_description,
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                           ),
                           const Divider(),
                           _currentPasswordField(context),

@@ -69,9 +69,7 @@ void main() {
     return MaterialApp(
       localizationsDelegates: locales,
       supportedLocales: S.delegate.supportedLocales,
-      home: Scaffold(
-        body: buildBlocProviders(child: ChangePasswordScreen()),
-      ),
+      home: Scaffold(body: buildBlocProviders(child: ChangePasswordScreen())),
     );
   }
 
@@ -79,12 +77,13 @@ void main() {
     final router = GoRouter(
       initialLocation: '/change-password',
       routes: [
-        GoRoute(path: '/', builder: (_, __) => const Scaffold(body: Text('Home'))),
+        GoRoute(
+          path: '/',
+          builder: (_, _) => const Scaffold(body: Text('Home')),
+        ),
         GoRoute(
           path: '/change-password',
-          builder: (_, __) => Scaffold(
-            body: buildBlocProviders(child: ChangePasswordScreen()),
-          ),
+          builder: (_, _) => Scaffold(body: buildBlocProviders(child: ChangePasswordScreen())),
         ),
       ],
     );

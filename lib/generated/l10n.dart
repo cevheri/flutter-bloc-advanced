@@ -28,9 +28,7 @@ class S {
   static const AppLocalizationDelegate delegate = AppLocalizationDelegate();
 
   static Future<S> load(Locale locale) {
-    final name = (locale.countryCode?.isEmpty ?? false)
-        ? locale.languageCode
-        : locale.toString();
+    final name = (locale.countryCode?.isEmpty ?? false) ? locale.languageCode : locale.toString();
     final localeName = Intl.canonicalizedLocale(name);
     return initializeMessages(localeName).then((_) {
       Intl.defaultLocale = localeName;
@@ -56,12 +54,7 @@ class S {
 
   /// `Screen size is too small.`
   String get screen_size_error {
-    return Intl.message(
-      'Screen size is too small.',
-      name: 'screen_size_error',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Screen size is too small.', name: 'screen_size_error', desc: '', args: []);
   }
 
   /// `Admin`
@@ -96,12 +89,7 @@ class S {
 
   /// `Phone Number`
   String get phone_number {
-    return Intl.message(
-      'Phone Number',
-      name: 'phone_number',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Phone Number', name: 'phone_number', desc: '', args: []);
   }
 
   /// `Email`
@@ -136,142 +124,72 @@ class S {
 
   /// `Required Field`
   String get required_field {
-    return Intl.message(
-      'Required Field',
-      name: 'required_field',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Required Field', name: 'required_field', desc: '', args: []);
   }
 
   /// `Field must be at least 2 characters long`
   String get min_length_2 {
-    return Intl.message(
-      'Field must be at least 2 characters long',
-      name: 'min_length_2',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field must be at least 2 characters long', name: 'min_length_2', desc: '', args: []);
   }
 
   /// `Field must be at least 3 characters long`
   String get min_length_3 {
-    return Intl.message(
-      'Field must be at least 3 characters long',
-      name: 'min_length_3',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field must be at least 3 characters long', name: 'min_length_3', desc: '', args: []);
   }
 
   /// `Field must be at least 4 characters long`
   String get min_length_4 {
-    return Intl.message(
-      'Field must be at least 4 characters long',
-      name: 'min_length_4',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field must be at least 4 characters long', name: 'min_length_4', desc: '', args: []);
   }
 
   /// `Field must be at least 5 characters long`
   String get min_length_5 {
-    return Intl.message(
-      'Field must be at least 5 characters long',
-      name: 'min_length_5',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field must be at least 5 characters long', name: 'min_length_5', desc: '', args: []);
   }
 
   /// `Field cannot be more than 10 characters long`
   String get max_length_10 {
-    return Intl.message(
-      'Field cannot be more than 10 characters long',
-      name: 'max_length_10',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 10 characters long', name: 'max_length_10', desc: '', args: []);
   }
 
   /// `Field cannot be more than 20 characters long`
   String get max_length_20 {
-    return Intl.message(
-      'Field cannot be more than 20 characters long',
-      name: 'max_length_20',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 20 characters long', name: 'max_length_20', desc: '', args: []);
   }
 
   /// `Field cannot be more than 50 characters long`
   String get max_length_50 {
-    return Intl.message(
-      'Field cannot be more than 50 characters long',
-      name: 'max_length_50',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 50 characters long', name: 'max_length_50', desc: '', args: []);
   }
 
   /// `Field cannot be more than 100 characters long`
   String get max_length_100 {
-    return Intl.message(
-      'Field cannot be more than 100 characters long',
-      name: 'max_length_100',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 100 characters long', name: 'max_length_100', desc: '', args: []);
   }
 
   /// `Field cannot be more than 250 characters long`
   String get max_length_250 {
-    return Intl.message(
-      'Field cannot be more than 250 characters long',
-      name: 'max_length_250',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 250 characters long', name: 'max_length_250', desc: '', args: []);
   }
 
   /// `Field cannot be more than 500 characters long`
   String get max_length_500 {
-    return Intl.message(
-      'Field cannot be more than 500 characters long',
-      name: 'max_length_500',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 500 characters long', name: 'max_length_500', desc: '', args: []);
   }
 
   /// `Field cannot be more than 1000 characters long`
   String get max_length_1000 {
-    return Intl.message(
-      'Field cannot be more than 1000 characters long',
-      name: 'max_length_1000',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 1000 characters long', name: 'max_length_1000', desc: '', args: []);
   }
 
   /// `Field cannot be more than 4000 characters long`
   String get max_length_4000 {
-    return Intl.message(
-      'Field cannot be more than 4000 characters long',
-      name: 'max_length_4000',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Field cannot be more than 4000 characters long', name: 'max_length_4000', desc: '', args: []);
   }
 
   /// `Range is required`
   String get required_range {
-    return Intl.message(
-      'Range is required',
-      name: 'required_range',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Range is required', name: 'required_range', desc: '', args: []);
   }
 
   /// `List`
@@ -311,12 +229,7 @@ class S {
 
   /// `Email must be a valid email address`
   String get email_pattern {
-    return Intl.message(
-      'Email must be a valid email address',
-      name: 'email_pattern',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Email must be a valid email address', name: 'email_pattern', desc: '', args: []);
   }
 
   /// `Turkish`
@@ -346,12 +259,7 @@ class S {
 
   /// `Are you sure you want to delete?`
   String get delete_confirmation {
-    return Intl.message(
-      'Are you sure you want to delete?',
-      name: 'delete_confirmation',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Are you sure you want to delete?', name: 'delete_confirmation', desc: '', args: []);
   }
 
   /// `Settings`
@@ -366,12 +274,7 @@ class S {
 
   /// `Change Password`
   String get change_password {
-    return Intl.message(
-      'Change Password',
-      name: 'change_password',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Change Password', name: 'change_password', desc: '', args: []);
   }
 
   /// `Ensure your account is using a long, random password to stay secure.`
@@ -386,12 +289,7 @@ class S {
 
   /// `Select Language`
   String get language_select {
-    return Intl.message(
-      'Select Language',
-      name: 'language_select',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Select Language', name: 'language_select', desc: '', args: []);
   }
 
   /// `Logout`
@@ -401,12 +299,7 @@ class S {
 
   /// `Are you sure you want to logout?`
   String get logout_sure {
-    return Intl.message(
-      'Are you sure you want to logout?',
-      name: 'logout_sure',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Are you sure you want to logout?', name: 'logout_sure', desc: '', args: []);
   }
 
   /// `Yes`
@@ -436,12 +329,7 @@ class S {
 
   /// `No changes made`
   String get no_changes_made {
-    return Intl.message(
-      'No changes made',
-      name: 'no_changes_made',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('No changes made', name: 'no_changes_made', desc: '', args: []);
   }
 
   /// `No Data`
@@ -451,12 +339,7 @@ class S {
 
   /// `Username`
   String get login_user_name {
-    return Intl.message(
-      'Username',
-      name: 'login_user_name',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Username', name: 'login_user_name', desc: '', args: []);
   }
 
   /// `Password`
@@ -466,32 +349,17 @@ class S {
 
   /// `Current Password`
   String get current_password {
-    return Intl.message(
-      'Current Password',
-      name: 'current_password',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Current Password', name: 'current_password', desc: '', args: []);
   }
 
   /// `New Password`
   String get new_password {
-    return Intl.message(
-      'New Password',
-      name: 'new_password',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('New Password', name: 'new_password', desc: '', args: []);
   }
 
   /// `Forgot Password`
   String get password_forgot {
-    return Intl.message(
-      'Forgot Password',
-      name: 'password_forgot',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Forgot Password', name: 'password_forgot', desc: '', args: []);
   }
 
   /// `Register`
@@ -511,12 +379,7 @@ class S {
 
   /// `Password must be at least 5 characters long`
   String get password_min_length {
-    return Intl.message(
-      'Password must be at least 5 characters long',
-      name: 'password_min_length',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Password must be at least 5 characters long', name: 'password_min_length', desc: '', args: []);
   }
 
   /// `Login`
@@ -558,72 +421,37 @@ class S {
 
   /// `Login with Email`
   String get login_with_email {
-    return Intl.message(
-      'Login with Email',
-      name: 'login_with_email',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Login with Email', name: 'login_with_email', desc: '', args: []);
   }
 
   /// `Send OTP Code`
   String get send_otp_code {
-    return Intl.message(
-      'Send OTP Code',
-      name: 'send_otp_code',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Send OTP Code', name: 'send_otp_code', desc: '', args: []);
   }
 
   /// `Invalid email address`
   String get invalid_email {
-    return Intl.message(
-      'Invalid email address',
-      name: 'invalid_email',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Invalid email address', name: 'invalid_email', desc: '', args: []);
   }
 
   /// `Resend OTP Code`
   String get resend_otp_code {
-    return Intl.message(
-      'Resend OTP Code',
-      name: 'resend_otp_code',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Resend OTP Code', name: 'resend_otp_code', desc: '', args: []);
   }
 
   /// `Verify OTP Code`
   String get verify_otp_code {
-    return Intl.message(
-      'Verify OTP Code',
-      name: 'verify_otp_code',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Verify OTP Code', name: 'verify_otp_code', desc: '', args: []);
   }
 
   /// `Only numbers are allowed`
   String get only_numbers {
-    return Intl.message(
-      'Only numbers are allowed',
-      name: 'only_numbers',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Only numbers are allowed', name: 'only_numbers', desc: '', args: []);
   }
 
   /// `OTP must be 6 characters long`
   String get otp_length {
-    return Intl.message(
-      'OTP must be 6 characters long',
-      name: 'otp_length',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('OTP must be 6 characters long', name: 'otp_length', desc: '', args: []);
   }
 
   /// `OTP Code`
@@ -638,12 +466,7 @@ class S {
 
   /// `Task Save`
   String get taskSaveScreenTitle {
-    return Intl.message(
-      'Task Save',
-      name: 'taskSaveScreenTitle',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Task Save', name: 'taskSaveScreenTitle', desc: '', args: []);
   }
 
   /// `Task Name`
@@ -693,42 +516,22 @@ class S {
 
   /// `Chart / KPI Placeholder`
   String get chart_kpi_placeholder {
-    return Intl.message(
-      'Chart / KPI Placeholder',
-      name: 'chart_kpi_placeholder',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Chart / KPI Placeholder', name: 'chart_kpi_placeholder', desc: '', args: []);
   }
 
   /// `Recent Activity`
   String get recent_activity {
-    return Intl.message(
-      'Recent Activity',
-      name: 'recent_activity',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Recent Activity', name: 'recent_activity', desc: '', args: []);
   }
 
   /// `Sample activity item`
   String get sample_activity_item {
-    return Intl.message(
-      'Sample activity item',
-      name: 'sample_activity_item',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sample activity item', name: 'sample_activity_item', desc: '', args: []);
   }
 
   /// `Subtitle / Context`
   String get subtitle_context {
-    return Intl.message(
-      'Subtitle / Context',
-      name: 'subtitle_context',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Subtitle / Context', name: 'subtitle_context', desc: '', args: []);
   }
 
   /// `just now`
@@ -738,12 +541,7 @@ class S {
 
   /// `Quick Actions`
   String get quick_actions {
-    return Intl.message(
-      'Quick Actions',
-      name: 'quick_actions',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Quick Actions', name: 'quick_actions', desc: '', args: []);
   }
 
   /// `New Lead`
@@ -763,22 +561,12 @@ class S {
 
   /// `Send Email`
   String get send_email_action {
-    return Intl.message(
-      'Send Email',
-      name: 'send_email_action',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Send Email', name: 'send_email_action', desc: '', args: []);
   }
 
   /// `Join the Community`
   String get community_title {
-    return Intl.message(
-      'Join the Community',
-      name: 'community_title',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Join the Community', name: 'community_title', desc: '', args: []);
   }
 
   /// `This project is open source. Your contributions make it better!`
@@ -793,82 +581,42 @@ class S {
 
   /// `Star & Fork`
   String get community_star {
-    return Intl.message(
-      'Star & Fork',
-      name: 'community_star',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Star & Fork', name: 'community_star', desc: '', args: []);
   }
 
   /// `Open an Issue`
   String get community_issue {
-    return Intl.message(
-      'Open an Issue',
-      name: 'community_issue',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Open an Issue', name: 'community_issue', desc: '', args: []);
   }
 
   /// `Discussions`
   String get community_discussions {
-    return Intl.message(
-      'Discussions',
-      name: 'community_discussions',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Discussions', name: 'community_discussions', desc: '', args: []);
   }
 
   /// `Contribute`
   String get community_contribute {
-    return Intl.message(
-      'Contribute',
-      name: 'community_contribute',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Contribute', name: 'community_contribute', desc: '', args: []);
   }
 
   /// `Translate`
   String get community_translate {
-    return Intl.message(
-      'Translate',
-      name: 'community_translate',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Translate', name: 'community_translate', desc: '', args: []);
   }
 
   /// `Sponsor`
   String get community_sponsor {
-    return Intl.message(
-      'Sponsor',
-      name: 'community_sponsor',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Sponsor', name: 'community_sponsor', desc: '', args: []);
   }
 
   /// `Documentation`
   String get community_docs {
-    return Intl.message(
-      'Documentation',
-      name: 'community_docs',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Documentation', name: 'community_docs', desc: '', args: []);
   }
 
   /// `Help & Resources`
   String get help_resources {
-    return Intl.message(
-      'Help & Resources',
-      name: 'help_resources',
-      desc: '',
-      args: [],
-    );
+    return Intl.message('Help & Resources', name: 'help_resources', desc: '', args: []);
   }
 
   /// `Visit our website for documentation and guides`
@@ -896,10 +644,7 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[
-      Locale.fromSubtags(languageCode: 'en'),
-      Locale.fromSubtags(languageCode: 'tr'),
-    ];
+    return const <Locale>[Locale.fromSubtags(languageCode: 'en'), Locale.fromSubtags(languageCode: 'tr')];
   }
 
   @override
