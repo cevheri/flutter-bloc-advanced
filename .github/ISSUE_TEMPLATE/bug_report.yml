@@ -82,7 +82,7 @@ body:
     attributes:
       label: Dart Version
       description: Output of `dart --version`
-      placeholder: "e.g., Dart SDK 3.11.1"
+      placeholder: "e.g., Dart SDK 3.11.5"
 
   - type: textarea
     id: logs

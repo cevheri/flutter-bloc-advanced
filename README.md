@@ -2,7 +2,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 ![Flutter](https://img.shields.io/badge/Flutter-3.41.8-02569B?logo=flutter)
-![Dart](https://img.shields.io/badge/Dart-3.11.1-0175C2?logo=dart)
+![Dart](https://img.shields.io/badge/Dart-3.11.5-0175C2?logo=dart)
 ![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows-2E7D32)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Community%20Template-black)
 
@@ -83,7 +83,7 @@ The screenshots below are included to help contributors and adopters understand 
 
 ### Prerequisites
 
-- Flutter `3.41.8` and Dart `3.11.1`
+- Flutter `3.41.8` and Dart `3.11.5`
 - [FVM](https://fvm.app/documentation/getting-started/installation) recommended for version consistency
 - Android SDK for Android builds
 - Xcode for iOS and macOS builds
@@ -149,7 +149,7 @@ The production environment is configured in `lib/infrastructure/config/environme
 | Category | Technology |
 | --- | --- |
 | Flutter | 3.41.8 |
-| Dart | 3.11.1 |
+| Dart | 3.11.5 |
 | State Management | flutter_bloc 9.1.1 |
 | Routing | go_router 17.1.0 |
 | HTTP | dio 5.7.0 (interceptor chain: auth, logging, mock) |
