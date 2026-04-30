@@ -25,8 +25,7 @@ class FlutterSecureStorageAdapter implements ISecureStorage {
 
   final FlutterSecureStorage _storage;
 
-  FlutterSecureStorageAdapter({FlutterSecureStorage? storage})
-    : _storage = storage ?? const FlutterSecureStorage(aOptions: AndroidOptions(encryptedSharedPreferences: true));
+  FlutterSecureStorageAdapter({FlutterSecureStorage? storage}) : _storage = storage ?? const FlutterSecureStorage();
 
   @override
   Future<String?> read(String key) async {
