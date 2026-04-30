@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -478,15 +479,30 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _themeBadge(bool isDark) {
     final cs = Theme.of(context).colorScheme;
-    return Container(
-      width: 36,
-      height: 36,
-      decoration: BoxDecoration(
-        color: cs.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: cs.outlineVariant),
+    final radius = BorderRadius.circular(8);
+    return Tooltip(
+      message: isDark ? 'Switch to light mode' : 'Switch to dark mode',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.read<ThemeBloc>().add(const ToggleBrightness()),
+          borderRadius: radius,
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: cs.surfaceContainerHighest,
+              borderRadius: radius,
+              border: Border.all(color: cs.outlineVariant),
+            ),
+            child: Icon(
+              isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+              size: 18,
+              color: cs.onSurfaceVariant,
+            ),
+          ),
+        ),
       ),
-      child: Icon(isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined, size: 18, color: cs.onSurfaceVariant),
     );
   }
 
