@@ -174,7 +174,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       runSpacing: 8,
       children: [
         _glassPill('Advanced Flutter BLoC Template', const Color(0xFFA5B4FC)),
-        _glassPill('Flutter 3.41.4', const Color(0xFF94A3B8)),
+        _glassPill('Flutter 3.41.8', const Color(0xFF94A3B8)),
       ],
     );
   }

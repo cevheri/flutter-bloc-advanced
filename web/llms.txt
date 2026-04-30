@@ -1,6 +1,6 @@
 # Flutter BLoC Advance Template
 
-> A production-ready, open-source Flutter starter template using BLoC pattern for state management with Feature-First Clean Architecture. Supports Android, iOS, Web, macOS, Linux, and Windows. Built with Flutter 3.41.4, Dart 3.11.1, flutter_bloc 9.1.1, and go_router 17.1.0.
+> A production-ready, open-source Flutter starter template using BLoC pattern for state management with Feature-First Clean Architecture. Supports Android, iOS, Web, macOS, Linux, and Windows. Built with Flutter 3.41.8, Dart 3.11.1, flutter_bloc 9.1.1, and go_router 17.1.0.
 
 This project provides a complete foundation for building enterprise-grade Flutter applications. It includes authentication (login, register, forgot password, OTP verification), user management (CRUD operations), role-based access control (Admin/User roles), a responsive design system, dark/light theming, English/Turkish localization, and multi-environment support (local mock data and production API).
 
@@ -37,7 +37,7 @@ Clone and run with mock data (no backend required):
 ```
 git clone https://github.com/cevheri/flutter-bloc-advanced.git
 cd flutter-bloc-advanced
-fvm install 3.41.4 && fvm use 3.41.4 && fvm flutter pub get
+fvm install 3.41.8 && fvm use 3.41.8 && fvm flutter pub get
 fvm flutter run --target lib/main/main_local.dart
 ```
 
@@ -48,7 +48,7 @@ Demo credentials: admin/admin (full access), user/user (limited access).
 - [README](https://github.com/cevheri/flutter-bloc-advanced/blob/main/README.md): Full project overview, quick start, tech stack, and contributing guide
 - [Architecture Design Document](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/feature-first-clean-boundaries.md): Dependency rules, feature structure, routing and state management rules
 - [Architecture Migration Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/architecture-migration_en.md): Detailed migration from layered to feature-first architecture
-- [Flutter Upgrade Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/upgrade_flutter_3.41.4.md): Flutter 3.41.4 upgrade notes
+- [Flutter Upgrade Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/upgrade_flutter_3.41.8.md): Flutter 3.41.8 upgrade notes
 - [DeepWiki](https://deepwiki.com/cevheri/flutter-bloc-advanced): AI-powered project wiki
 
 ## Source Code

@@ -3,9 +3,14 @@ description: "Flutter Bloc Advance Template"
 publish_to: 'none'
 version: 0.20.0+1
 
+# ➜  flutter_bloc_advance git:(main) ✗ flutter --version
+# Flutter 3.41.8 • channel stable • https://github.com/flutter/flutter.git
+# Framework • revision 02085feb3f (5 days ago) • 2026-04-24 13:54:45 -0700
+# Engine • hash 7a53c052bc4b472cf780b199087e1368e4a9aa8c (revision 59aa584fdf) (14 days ago) • 2026-04-16 02:32:16.000Z
+# Tools • Dart 3.11.5 • DevTools 2.54.2
 environment:
-  sdk: ^3.11.1
-  flutter: '3.41.4'
+  sdk: ^3.11.5
+  flutter: '3.41.8'
 
 dependencies:
   flutter:

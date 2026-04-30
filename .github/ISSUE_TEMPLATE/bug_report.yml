@@ -73,7 +73,7 @@ body:
     attributes:
       label: Flutter Version
       description: Output of `flutter --version`
-      placeholder: "e.g., Flutter 3.41.4"
+      placeholder: "e.g., Flutter 3.41.8"
     validations:
       required: true
 

@@ -1,6 +1,6 @@
 # Flutter BLoC Advance Template
 
-> A production-ready, open-source Flutter starter template using BLoC pattern for state management with Feature-First Clean Architecture. Supports Android, iOS, Web, macOS, Linux, and Windows. Built with Flutter 3.41.4, Dart 3.11.1, flutter_bloc 9.1.1, and go_router 17.1.0.
+> A production-ready, open-source Flutter starter template using BLoC pattern for state management with Feature-First Clean Architecture. Supports Android, iOS, Web, macOS, Linux, and Windows. Built with Flutter 3.41.8, Dart 3.11.1, flutter_bloc 9.1.1, and go_router 17.1.0.
 
 This project provides a complete foundation for building enterprise-grade Flutter applications. It includes authentication (login, register, forgot password, OTP verification), user management (CRUD operations), role-based access control (Admin/User roles), a responsive design system, dark/light theming, English/Turkish localization, and multi-environment support (local mock data and production API).
 
@@ -242,7 +242,7 @@ All BLoCs and Cubits are provided to the widget tree from here.
 
 | Category | Technology |
 |----------|-----------|
-| Flutter | 3.41.4 |
+| Flutter | 3.41.8 |
 | Dart SDK | 3.11.1 |
 | State Management | flutter_bloc 9.1.1 |
 | Routing | go_router 17.1.0 |
@@ -262,7 +262,7 @@ All BLoCs and Cubits are provided to the widget tree from here.
 
 ### Prerequisites
 
-- Flutter 3.41.4 and Dart 3.11.1
+- Flutter 3.41.8 and Dart 3.11.1
 - FVM (Flutter Version Management) recommended
 - Android SDK for Android builds
 - Xcode for iOS and macOS builds
@@ -272,8 +272,8 @@ All BLoCs and Cubits are provided to the widget tree from here.
 ```bash
 git clone https://github.com/cevheri/flutter-bloc-advanced.git
 cd flutter-bloc-advanced
-fvm install 3.41.4
-fvm use 3.41.4
+fvm install 3.41.8
+fvm use 3.41.8
 fvm flutter pub get
 ```
 
