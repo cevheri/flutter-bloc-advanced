@@ -1,9 +1,12 @@
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_refresh_notifier.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/shell/app_shell.dart';
+import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/features/account/navigation/account_routes.dart';
 import 'package:flutter_bloc_advance/features/auth/navigation/auth_routes.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/dashboard/navigation/dashboard_routes.dart';
 import 'package:flutter_bloc_advance/features/settings/navigation/settings_routes.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/navigation/dynamic_forms_routes.dart';
@@ -44,7 +47,10 @@ class AppRouterFactory {
             ...AuthFeatureRoutes.authenticatedRoutes,
           ],
         ),
-        ...AuthFeatureRoutes.publicRoutes,
+        ...AuthFeatureRoutes.publicRoutes(
+          loginBuilder: (context) =>
+              LoginScreen(onToggleTheme: () => context.read<ThemeBloc>().add(const ToggleBrightness())),
+        ),
       ],
       redirect: (context, state) {
         final location = state.uri.path;

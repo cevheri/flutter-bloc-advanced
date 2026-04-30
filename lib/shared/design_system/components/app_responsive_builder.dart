@@ -15,11 +15,11 @@ class AppResponsiveBuilder extends StatelessWidget {
       builder: (context, constraints) {
         final width = constraints.maxWidth;
 
-        if (AppBreakpoints.isDesktop(width) && desktop != null) {
-          return desktop!(context, constraints);
+        if (AppBreakpoints.isDesktop(width)) {
+          return (desktop ?? tablet ?? mobile)(context, constraints);
         }
-        if (AppBreakpoints.isTablet(width) && tablet != null) {
-          return tablet!(context, constraints);
+        if (AppBreakpoints.isTablet(width)) {
+          return (tablet ?? mobile)(context, constraints);
         }
         return mobile(context, constraints);
       },

@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
@@ -12,9 +13,15 @@ import 'package:flutter_bloc_advance/shared/design_system/components/app_page_tr
 import 'package:go_router/go_router.dart';
 
 class AuthFeatureRoutes {
-  /// Public routes (login, register, forgot-password) — outside ShellRoute
-  static final List<GoRoute> publicRoutes = [
-    GoRoute(name: 'login', path: ApplicationRoutesConstants.login, builder: (context, state) => const LoginScreen()),
+  /// Public routes (login, register, forgot-password) — outside ShellRoute.
+  /// [loginBuilder] lets the router inject app-level bindings (e.g. ThemeBloc)
+  /// without making this file import `app/`.
+  static List<GoRoute> publicRoutes({Widget Function(BuildContext context)? loginBuilder}) => [
+    GoRoute(
+      name: 'login',
+      path: ApplicationRoutesConstants.login,
+      builder: (context, state) => loginBuilder?.call(context) ?? const LoginScreen(),
+    ),
     GoRoute(
       name: 'login-otp',
       path: ApplicationRoutesConstants.loginOtp,

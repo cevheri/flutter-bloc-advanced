@@ -6,7 +6,6 @@ import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
-import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -18,7 +17,10 @@ import '../../../../generated/l10n.dart';
 import '../widgets/community_section_widget.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
+  const LoginScreen({super.key, this.onToggleTheme});
+
+  /// Wired by the router; null = non-interactive badge (features cannot import app/theme).
+  final VoidCallback? onToggleTheme;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -480,28 +482,25 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget _themeBadge(bool isDark) {
     final cs = Theme.of(context).colorScheme;
     final radius = BorderRadius.circular(8);
+    final badge = Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest,
+        borderRadius: radius,
+        border: Border.all(color: cs.outlineVariant),
+      ),
+      child: Icon(isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined, size: 18, color: cs.onSurfaceVariant),
+    );
+
+    final onToggle = widget.onToggleTheme;
+    if (onToggle == null) return badge;
+
     return Tooltip(
       message: isDark ? 'Switch to light mode' : 'Switch to dark mode',
       child: Material(
         color: Colors.transparent,
-        child: InkWell(
-          onTap: () => context.read<ThemeBloc>().add(const ToggleBrightness()),
-          borderRadius: radius,
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: cs.surfaceContainerHighest,
-              borderRadius: radius,
-              border: Border.all(color: cs.outlineVariant),
-            ),
-            child: Icon(
-              isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-              size: 18,
-              color: cs.onSurfaceVariant,
-            ),
-          ),
-        ),
+        child: InkWell(onTap: onToggle, borderRadius: radius, child: badge),
       ),
     );
   }

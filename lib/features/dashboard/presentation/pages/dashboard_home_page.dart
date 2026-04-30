@@ -42,16 +42,17 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
   }
 
   void _bridgeLifecycleConfig() {
+    LifecycleState? lifecycleState;
     try {
-      final lifecycleState = context.read<LifecycleBloc>().state;
-      _updateAppConfigFromLifecycle(lifecycleState);
+      lifecycleState = context.read<LifecycleBloc>().state;
     } catch (_) {
-      // LifecycleBloc may not be in the widget tree — gracefully ignore.
+      // LifecycleBloc not provided — still publish baseline (app version + env).
     }
+    _updateAppConfigFromLifecycle(lifecycleState);
   }
 
-  void _updateAppConfigFromLifecycle(LifecycleState lifecycleState) {
-    final config = lifecycleState.config;
+  void _updateAppConfigFromLifecycle(LifecycleState? lifecycleState) {
+    final config = lifecycleState?.config;
 
     final environment = ProfileConstants.isProduction
         ? 'prod'
