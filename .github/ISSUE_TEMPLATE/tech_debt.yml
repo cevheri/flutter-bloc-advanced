@@ -1,0 +1,125 @@
+name: Tech Debt / Refactor
+description: Report code quality issues, architectural concerns, or technical debt from audits/reviews
+title: "[Tech Debt]: "
+labels: ["tech-debt", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to report code quality, architectural, or technical debt issues — typically discovered during internal code reviews, audits, or refactoring planning.
+
+        - For runtime bugs reported by users, please use the **Bug Report** template.
+        - For new feature proposals, please use the **Feature Request** template.
+        - For open-ended questions or discussions, please use [GitHub Discussions](https://github.com/cevheri/flutter-bloc-advanced/discussions).
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: A single sentence stating the problem. The issue title should mirror this.
+      placeholder: e.g., LoginBloc mixes subclass-based states and copyWith, causing field loss across emits.
+    validations:
+      required: true
+
+  - type: textarea
+    id: location
+    attributes:
+      label: Location
+      description: One or more `file:line` references where the issue lives.
+      placeholder: |
+        lib/features/auth/application/login_bloc.dart:48
+        lib/features/auth/application/login_bloc.dart:90
+    validations:
+      required: true
+
+  - type: textarea
+    id: current
+    attributes:
+      label: Current State
+      description: The existing code or structure, and what is wrong with it. Code snippets are encouraged.
+      render: dart
+    validations:
+      required: true
+
+  - type: textarea
+    id: desired
+    attributes:
+      label: Desired State
+      description: An enterprise-grade or idiomatic alternative. Include code snippets if helpful.
+      render: dart
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why It Matters
+      description: The impact of leaving this unresolved — e.g., bug risk, maintainability, performance, security, testability, onboarding cost.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: |
+        How urgent is this?
+          - **Critical** — Latent bug, data corruption risk, security exposure, or layering violation.
+          - **High** — Significant maintainability or quality gap; blocks future enterprise-grade work.
+          - **Medium** — Design hygiene issue; should be fixed but not blocking.
+          - **Low** — Minor cleanup; can be done opportunistically.
+      options:
+        - Critical
+        - High
+        - Medium
+        - Low
+    validations:
+      required: true
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Category
+      description: The primary concern of this issue.
+      options:
+        - State Management (BLoC)
+        - Architecture
+        - Error Handling
+        - Logging
+        - Testing
+        - Performance
+        - Security
+        - Code Style
+        - Other
+
+  - type: dropdown
+    id: features
+    attributes:
+      label: Affected Feature(s) / Module(s)
+      description: Which feature modules or shared layers does this touch?
+      multiple: true
+      options:
+        - account
+        - auth
+        - dashboard
+        - dynamic_forms
+        - lifecycle
+        - settings
+        - users
+        - shared
+        - core
+        - infrastructure
+        - app
+        - other
+
+  - type: textarea
+    id: references
+    attributes:
+      label: References
+      description: Links to Bloc documentation, Flutter style guide, enterprise pattern sources, blog posts, RFCs, prior issues/PRs, etc.
+
+  - type: textarea
+    id: approach
+    attributes:
+      label: Suggested Approach
+      description: A high-level idea only. Implementation details belong in the PR. Leave blank if you want maintainers to decide.
