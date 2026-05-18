@@ -8,6 +8,7 @@ import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/analytics/crash_reporter.dart';
 import 'package:flutter_bloc_advance/app/dev_console/time_travel/time_travel_bloc_observer.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
+import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
@@ -44,9 +45,7 @@ class AppBootstrap {
     final analytics = LogAnalyticsService();
     CrashReporter.install(analytics);
 
-    if (kDebugMode) {
-      Bloc.observer = TimeTravelBlocObserver();
-    }
+    Bloc.observer = kDebugMode ? TimeTravelBlocObserver() : AppBlocObserver();
 
     AppRouter().setRouter(RouterType.goRouter);
 

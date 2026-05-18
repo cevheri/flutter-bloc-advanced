@@ -22,14 +22,6 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
     on<ChangePasswordChanged>(_onSubmit);
   }
 
-  @override
-  void onTransition(Transition<ChangePasswordEvent, ChangePasswordState> transition) {
-    super.onTransition(transition);
-    _log.trace("current state: ${transition.currentState.toString()}");
-    _log.trace("event: ${transition.event.toString()}");
-    _log.trace("next state: ${transition.nextState.toString()}");
-  }
-
   FutureOr<void> _onSubmit(ChangePasswordChanged event, Emitter<ChangePasswordState> emit) async {
     _log.debug("BEGIN: changePassword bloc: _onSubmit");
     emit(state.copyWith(status: ChangePasswordStatus.loading));

@@ -1,13 +1,17 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
 import 'package:flutter_bloc_advance/app/dev_console/time_travel/time_travel_store.dart';
+import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
 
 /// Combined BlocObserver that feeds both [DevConsoleStore] and [TimeTravelStore].
 ///
+/// Extends [AppBlocObserver] so transitions are also routed through [AppLogger]
+/// in addition to the dev-console / time-travel sinks.
+///
 /// Replaces [DevConsoleBlocObserver] when time-travel is enabled.
 /// Install via `Bloc.observer = TimeTravelBlocObserver();` in bootstrap.
-class TimeTravelBlocObserver extends BlocObserver {
+class TimeTravelBlocObserver extends AppBlocObserver {
   @override
   void onCreate(BlocBase bloc) {
     super.onCreate(bloc);
