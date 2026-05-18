@@ -30,7 +30,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
        _deleteUserUseCase =
            deleteUserUseCase ?? DeleteUserUseCase(repository ?? (throw ArgumentError('repository is required'))),
        super(const UserState()) {
-    on<UserEvent>((event, emit) {});
     on<UserSearchEvent>(_onSearch);
     on<UserFetchEvent>(_onFetchUser);
     on<UserDeleteEvent>(_onDelete);
