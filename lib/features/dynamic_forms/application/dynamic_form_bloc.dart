@@ -49,7 +49,9 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       final response = switch (action.method.toUpperCase()) {
         'POST' => await ApiClient.post(action.endpoint, event.data),
         'PUT' => await ApiClient.put(action.endpoint, event.data),
-        _ => await ApiClient.post(action.endpoint, event.data),
+        'PATCH' => await ApiClient.patch(action.endpoint, event.data),
+        'DELETE' => await ApiClient.delete(action.endpoint),
+        final method => throw UnsupportedError('Unsupported HTTP method: $method'),
       };
 
       emit(state.copyWith(status: DynamicFormStatus.submitted, submitResponse: response.data));
