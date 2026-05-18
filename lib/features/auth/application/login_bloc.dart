@@ -40,7 +40,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
     _log.debug("BEGIN: onSubmit LoginFormSubmitted event: {}", [event.username]);
-    emit(LoginLoadingState(username: event.username, password: event.password));
+    emit(LoginLoadingState(username: event.username));
 
     if (event.username == "invalid") {
       emit(const LoginErrorState(message: "Login API Error: Invalid username"));
@@ -69,7 +69,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           case Success(data: final user):
             await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
             _log.debug("onSubmit save storage roles: {}", [user.authorities]);
-            emit(LoginLoadedState(username: event.username, password: event.password));
+            emit(LoginLoadedState(username: event.username));
             _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [data.toString()]);
           case Failure(:final error):
             emit(LoginErrorState(message: "Login API Error: ${error.message}"));
@@ -119,7 +119,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         switch (accountResult) {
           case Success(data: final user):
             await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
-            emit(LoginLoadedState(username: event.email, password: event.otpCode));
+            emit(LoginLoadedState(username: event.email));
           case Failure():
             emit(const LoginErrorState(message: "OTP validation error"));
         }
