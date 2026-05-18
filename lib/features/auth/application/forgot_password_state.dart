@@ -7,15 +7,20 @@ const String authenticationFailKey = 'error.authenticate';
 class ForgotPasswordState extends Equatable {
   final String? email;
   final ForgotPasswordStatus status;
+  final String? errorMessage;
 
-  const ForgotPasswordState({this.email, this.status = ForgotPasswordStatus.initial});
+  const ForgotPasswordState({this.email, this.status = ForgotPasswordStatus.initial, this.errorMessage});
 
-  ForgotPasswordState copyWith({String? email, ForgotPasswordStatus? status}) {
-    return ForgotPasswordState(email: email ?? this.email, status: status ?? this.status);
+  ForgotPasswordState copyWith({String? email, ForgotPasswordStatus? status, String? errorMessage}) {
+    return ForgotPasswordState(
+      email: email ?? this.email,
+      status: status ?? this.status,
+      errorMessage: errorMessage ?? this.errorMessage,
+    );
   }
 
   @override
-  List<Object> get props => [status, email ?? ""];
+  List<Object?> get props => [status, email, errorMessage];
 
   @override
   bool get stringify => true;
@@ -39,5 +44,5 @@ class ForgotPasswordErrorState extends ForgotPasswordState {
   const ForgotPasswordErrorState({required this.message}) : super(status: ForgotPasswordStatus.failure);
 
   @override
-  List<Object> get props => [status, message];
+  List<Object?> get props => [status, message];
 }

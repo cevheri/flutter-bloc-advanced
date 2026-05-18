@@ -24,15 +24,25 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
 
   FutureOr<void> _onSubmit(ChangePasswordChanged event, Emitter<ChangePasswordState> emit) async {
     _log.debug("BEGIN: changePassword bloc: _onSubmit");
-    emit(state.copyWith(status: ChangePasswordStatus.loading));
+    emit(const ChangePasswordState(status: ChangePasswordStatus.loading));
 
     if (event.currentPassword.isEmpty || event.newPassword.isEmpty) {
-      emit(state.copyWith(status: ChangePasswordStatus.failure));
+      emit(
+        const ChangePasswordState(
+          status: ChangePasswordStatus.failure,
+          errorMessage: 'Both current and new password are required',
+        ),
+      );
       return;
     }
 
     if (event.currentPassword == event.newPassword) {
-      emit(state.copyWith(status: ChangePasswordStatus.failure));
+      emit(
+        const ChangePasswordState(
+          status: ChangePasswordStatus.failure,
+          errorMessage: 'New password must be different from current password',
+        ),
+      );
       return;
     }
 
@@ -41,10 +51,10 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
     final result = await _changePasswordUseCase(passwordChangeDTO);
     switch (result) {
       case Success():
-        emit(state.copyWith(status: ChangePasswordStatus.success));
+        emit(const ChangePasswordState(status: ChangePasswordStatus.success));
         _log.debug("END: changePassword bloc: _onSubmit success");
       case Failure(:final error):
-        emit(state.copyWith(status: ChangePasswordStatus.failure));
+        emit(ChangePasswordState(status: ChangePasswordStatus.failure, errorMessage: error.message));
         _log.error("END: changePassword bloc: _onSubmit error: {}", [error.toString()]);
     }
   }
