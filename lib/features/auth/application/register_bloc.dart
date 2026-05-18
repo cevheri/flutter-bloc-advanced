@@ -32,7 +32,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   }
 
   FutureOr<void> _onSubmit(RegisterFormSubmitted event, Emitter<RegisterState> emit) async {
-    _log.debug("BEGIN: onSubmit RegisterFormSubmitted event: {}", [event.data.toString()]);
+    _log.debug('BEGIN: onSubmit RegisterFormSubmitted login={}', [event.data.login]);
     emit(const RegisterLoadingState());
 
     final result = await _registerAccountUseCase(event.data);
