@@ -22,7 +22,6 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
        _updateAccountUseCase =
            updateAccountUseCase ?? UpdateAccountUseCase(repository ?? (throw ArgumentError('repository is required'))),
        super(const AccountState()) {
-    on<AccountEvent>((event, emit) {});
     on<AccountFetchEvent>(_onFetchAccount);
     on<AccountSubmitEvent>(_onSubmit);
   }

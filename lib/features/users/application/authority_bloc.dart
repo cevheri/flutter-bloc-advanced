@@ -13,7 +13,6 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
   AuthorityBloc({required IAuthorityRepository repository})
     : _repository = repository,
       super(const AuthorityInitialState()) {
-    on<AuthorityEvent>((event, emit) {});
     on<AuthorityLoad>(_onLoad);
   }
 
