@@ -23,14 +23,6 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     on<RegisterFormSubmitted>(_onSubmit);
   }
 
-  @override
-  void onTransition(Transition<RegisterEvent, RegisterState> transition) {
-    super.onTransition(transition);
-    _log.trace("current state: ${transition.currentState.toString()}");
-    _log.trace("event: ${transition.event.toString()}");
-    _log.trace("next state: ${transition.nextState.toString()}");
-  }
-
   FutureOr<void> _onSubmit(RegisterFormSubmitted event, Emitter<RegisterState> emit) async {
     _log.debug('BEGIN: onSubmit RegisterFormSubmitted login={}', [event.data.login]);
     emit(const RegisterLoadingState());

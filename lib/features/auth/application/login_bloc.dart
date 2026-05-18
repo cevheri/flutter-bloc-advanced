@@ -38,11 +38,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted);
   }
 
-  @override
-  void onTransition(Transition<LoginEvent, LoginState> transition) {
-    super.onTransition(transition);
-  }
-
   FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
     _log.debug("BEGIN: onSubmit LoginFormSubmitted event: {}", [event.username]);
     emit(LoginLoadingState(username: event.username, password: event.password));
