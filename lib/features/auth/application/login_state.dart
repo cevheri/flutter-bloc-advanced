@@ -4,7 +4,6 @@ enum LoginStatus { initial, loading, success, failure }
 
 class LoginState extends Equatable {
   final String? username;
-  final String? password;
   final LoginStatus status;
   final bool passwordVisible;
   final String? email;
@@ -15,7 +14,6 @@ class LoginState extends Equatable {
 
   const LoginState({
     this.username,
-    this.password,
     this.status = LoginStatus.initial,
     this.passwordVisible = false,
     this.email,
@@ -26,7 +24,6 @@ class LoginState extends Equatable {
 
   LoginState copyWith({
     String? username,
-    String? password,
     LoginStatus? status,
     bool? passwordVisible,
     String? email,
@@ -36,7 +33,6 @@ class LoginState extends Equatable {
   }) {
     return LoginState(
       username: username ?? this.username,
-      password: password ?? this.password,
       status: status ?? this.status,
       passwordVisible: passwordVisible ?? this.passwordVisible,
       email: email ?? this.email,
@@ -50,7 +46,7 @@ class LoginState extends Equatable {
   bool get stringify => true;
 
   @override
-  List<Object?> get props => [username, password, status, passwordVisible, email, otpCode, isOtpSent, loginMethod];
+  List<Object?> get props => [username, status, passwordVisible, email, otpCode, isOtpSent, loginMethod];
 }
 
 class LoginInitialState extends LoginState {
@@ -58,17 +54,17 @@ class LoginInitialState extends LoginState {
 }
 
 class LoginLoadingState extends LoginState {
-  const LoginLoadingState({super.username, super.password}) : super(status: LoginStatus.loading);
+  const LoginLoadingState({super.username}) : super(status: LoginStatus.loading);
 
   @override
-  List<Object?> get props => [username, password, status];
+  List<Object?> get props => [username, status];
 }
 
 class LoginLoadedState extends LoginState {
-  const LoginLoadedState({super.username, super.password}) : super(status: LoginStatus.success);
+  const LoginLoadedState({super.username}) : super(status: LoginStatus.success);
 
   @override
-  List<Object?> get props => [username, password, status];
+  List<Object?> get props => [username, status];
 }
 
 class LoginOtpSentState extends LoginState {

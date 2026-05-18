@@ -204,7 +204,7 @@ void main() {
       await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
       await AppLocalStorage().save(StorageKeys.username.name, "mock");
       await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
-      loginStateController.add(const LoginLoadedState(username: "test@example.com", password: "123456"));
+      loginStateController.add(const LoginLoadedState(username: "test@example.com"));
       await tester.pump();
 
       expect(mockGoRouter.routerDelegate.currentConfiguration.uri.path, ApplicationRoutesConstants.home);

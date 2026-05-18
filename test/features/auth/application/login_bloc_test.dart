@@ -180,10 +180,15 @@ void main() {
     });
 
     test("props", () {
-      expect(
-        const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test", password: "test").props,
-        ["test", "test", LoginStatus.initial, false, null, null, false, LoginMethod.password],
-      );
+      expect(const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test").props, [
+        "test",
+        LoginStatus.initial,
+        false,
+        null,
+        null,
+        false,
+        LoginMethod.password,
+      ]);
     });
   });
   //endregion state
@@ -220,8 +225,8 @@ void main() {
 
       final event = LoginFormSubmitted(username: input.username, password: input.password);
 
-      final loadingState = LoginLoadingState(username: input.username, password: input.password);
-      final successState = LoginLoadedState(username: input.username, password: input.password);
+      final loadingState = LoginLoadingState(username: input.username);
+      final successState = LoginLoadedState(username: input.username);
       const failureState = LoginErrorState(message: "Login API Error: Unauthorized");
       const failure2State = LoginErrorState(message: "Login API Error: Invalid Access Token");
 
@@ -272,8 +277,8 @@ void main() {
       const input = AuthCredentialsEntity(username: "username", password: "password");
       final event = LoginFormSubmitted(username: input.username, password: input.password);
 
-      final loadingState = LoginLoadingState(username: input.username, password: input.password);
-      final successState = LoginLoadedState(username: input.username, password: input.password);
+      final loadingState = LoginLoadingState(username: input.username);
+      final successState = LoginLoadedState(username: input.username);
       const failureState = LoginErrorState(message: "Login API Error: Unauthorized");
 
       blocTest<LoginBloc, LoginState>(
