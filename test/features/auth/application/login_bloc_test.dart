@@ -180,10 +180,15 @@ void main() {
     });
 
     test("props", () {
-      expect(
-        const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test").props,
-        ["test", LoginStatus.initial, false, null, null, false, LoginMethod.password],
-      );
+      expect(const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test").props, [
+        "test",
+        LoginStatus.initial,
+        false,
+        null,
+        null,
+        false,
+        LoginMethod.password,
+      ]);
     });
   });
   //endregion state
