@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 
 /// Web'de Chrome'un geri butonunu devre dışı bırakan widget
 /// Bu widget sadece web platformunda çalışır ve sadece Chrome geri butonunu engeller
@@ -13,6 +14,8 @@ class WebBackButtonDisabler extends StatefulWidget {
 }
 
 class _WebBackButtonDisablerState extends State<WebBackButtonDisabler> {
+  static final _log = AppLogger.getLogger('WebBackButtonDisabler');
+
   @override
   void initState() {
     super.initState();
@@ -34,9 +37,9 @@ class _WebBackButtonDisablerState extends State<WebBackButtonDisabler> {
   void _injectBackButtonDisableScript() {
     // JavaScript ile browser geri butonunu devre dışı bırak
     try {
-      debugPrint('Browser back button disable script injected');
+      _log.debug('Browser back button disable script injected');
     } catch (e) {
-      debugPrint('Browser back button disable script injection failed: $e');
+      _log.error('Browser back button disable script injection failed: {}', [e]);
     }
   }
 
@@ -49,7 +52,7 @@ class _WebBackButtonDisablerState extends State<WebBackButtonDisabler> {
           // Geri butonuna basıldığında hiçbir şey yapma
           // Bu sadece Chrome'un kendi geri butonunu engeller
           // Uygulama içi navigasyon etkilenmez
-          debugPrint('Chrome back button pressed - ignoring');
+          _log.debug('Chrome back button pressed - ignoring');
         },
         child: widget.child,
       );
