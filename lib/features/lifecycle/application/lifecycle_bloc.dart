@@ -10,7 +10,10 @@ import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/life
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 
 class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
-  LifecycleBloc({required ILifecycleRepository repository}) : _repository = repository, super(const LifecycleState()) {
+  LifecycleBloc({required ILifecycleRepository repository, required FeatureFlagService featureFlagService})
+    : _repository = repository,
+      _featureFlagService = featureFlagService,
+      super(const LifecycleState()) {
     on<LifecycleCheckEvent>(_onCheck);
     on<LifecycleDismissUpdateEvent>(_onDismissUpdate);
   }
@@ -18,6 +21,7 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
   static final _log = AppLogger.getLogger('LifecycleBloc');
 
   final ILifecycleRepository _repository;
+  final FeatureFlagService _featureFlagService;
 
   FutureOr<void> _onCheck(LifecycleCheckEvent event, Emitter<LifecycleState> emit) async {
     _log.debug('Checking app lifecycle config');
@@ -29,7 +33,7 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
       case Success(:final data):
         // Update feature flags
         if (data.featureFlags.isNotEmpty) {
-          FeatureFlagService.instance.updateFlags(data.featureFlags);
+          _featureFlagService.updateFlags(data.featureFlags);
         }
 
         // Check maintenance mode first
