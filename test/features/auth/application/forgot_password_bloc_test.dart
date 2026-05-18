@@ -104,6 +104,7 @@ void main() {
       expect(const ForgotPasswordState(status: ForgotPasswordStatus.initial, email: 'test@example.com').props, [
         ForgotPasswordStatus.initial,
         "test@example.com",
+        null,
       ]);
     });
 
@@ -139,7 +140,7 @@ void main() {
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
       expect: () => [
         const ForgotPasswordState(status: ForgotPasswordStatus.loading),
-        const ForgotPasswordState(status: ForgotPasswordStatus.failure),
+        const ForgotPasswordState(status: ForgotPasswordStatus.failure, email: email, errorMessage: 'Reset failed'),
       ],
     );
 
@@ -152,7 +153,11 @@ void main() {
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: 'invalid-email')),
       expect: () => [
         const ForgotPasswordState(status: ForgotPasswordStatus.loading),
-        const ForgotPasswordState(status: ForgotPasswordStatus.failure),
+        const ForgotPasswordState(
+          status: ForgotPasswordStatus.failure,
+          email: 'invalid-email',
+          errorMessage: 'Invalid email',
+        ),
       ],
     );
   });

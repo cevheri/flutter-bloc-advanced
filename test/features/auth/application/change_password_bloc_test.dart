@@ -91,10 +91,8 @@ void main() {
       final event = ChangePasswordChanged(currentPassword: input.currentPassword!, newPassword: input.newPassword!);
       const loadingState = ChangePasswordState(status: ChangePasswordStatus.loading);
       const successState = ChangePasswordState(status: ChangePasswordStatus.success);
-      const errorState = ChangePasswordState(status: ChangePasswordStatus.failure);
 
       const statesSuccess = [loadingState, successState];
-      const statesError = [loadingState, errorState];
 
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading, success] when ChangePasswordChanged is added",
@@ -110,7 +108,10 @@ void main() {
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ServerError('Change password failed'))),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
-        expect: () => statesError,
+        expect: () => [
+          loadingState,
+          const ChangePasswordState(status: ChangePasswordStatus.failure, errorMessage: 'Change password failed'),
+        ],
         verify: (_) => verify(method).called(1),
       );
 
@@ -119,7 +120,10 @@ void main() {
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid password'))),
         build: () => ChangePasswordBloc(repository: repository),
         act: (bloc) => bloc..add(event),
-        expect: () => statesError,
+        expect: () => [
+          loadingState,
+          const ChangePasswordState(status: ChangePasswordStatus.failure, errorMessage: 'Invalid password'),
+        ],
         verify: (_) => verify(method).called(1),
       );
     });
