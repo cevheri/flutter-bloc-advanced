@@ -1,57 +1,53 @@
 part of 'settings_cubit.dart';
 
-enum SettingsStatus { initial, loading, success, failure }
-
-abstract class SettingsState extends Equatable {
-  const SettingsState({required this.status});
-
-  final SettingsStatus status;
+sealed class SettingsState extends Equatable {
+  const SettingsState();
 }
 
-class SettingsInitial extends SettingsState {
-  const SettingsInitial() : super(status: SettingsStatus.initial);
+final class SettingsInitial extends SettingsState {
+  const SettingsInitial();
 
   @override
-  List<Object> get props => [status];
+  List<Object?> get props => const [];
 }
 
-class SettingsLoading extends SettingsState {
-  const SettingsLoading() : super(status: SettingsStatus.loading);
+final class SettingsLoading extends SettingsState {
+  const SettingsLoading();
 
   @override
-  List<Object> get props => [status];
+  List<Object?> get props => const [];
 }
 
-class SettingsLogoutSuccess extends SettingsState {
-  const SettingsLogoutSuccess() : super(status: SettingsStatus.success);
+final class SettingsLogoutSuccess extends SettingsState {
+  const SettingsLogoutSuccess();
 
   @override
-  List<Object> get props => [status];
+  List<Object?> get props => const [];
 }
 
-class SettingsLanguageChanged extends SettingsState {
-  const SettingsLanguageChanged({required this.language}) : super(status: SettingsStatus.success);
+final class SettingsLanguageChanged extends SettingsState {
+  const SettingsLanguageChanged({required this.language});
 
   final String? language;
 
   @override
-  List<Object> get props => [status, language ?? ''];
+  List<Object?> get props => [language];
 }
 
-class SettingsThemeChanged extends SettingsState {
-  const SettingsThemeChanged({required this.theme}) : super(status: SettingsStatus.success);
+final class SettingsThemeChanged extends SettingsState {
+  const SettingsThemeChanged({required this.theme});
 
   final ThemeMode theme;
 
   @override
-  List<Object> get props => [theme, status];
+  List<Object?> get props => [theme];
 }
 
-class SettingsFailure extends SettingsState {
-  const SettingsFailure({required this.message}) : super(status: SettingsStatus.failure);
+final class SettingsFailure extends SettingsState {
+  const SettingsFailure({required this.message});
 
   final String message;
 
   @override
-  List<Object> get props => [message, status];
+  List<Object?> get props => [message];
 }
