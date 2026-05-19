@@ -298,4 +298,50 @@ void main() {
       expect(decoded, equals(testString));
     });
   });
+
+  // Regression for #63 + #64: the snapshot is the single source of
+  // truth for the interceptor chain — what's exposed here is exactly
+  // what gets registered with Dio. Pin the order + names so future
+  // chain edits surface as a deliberate test update.
+  group('ApiClient.interceptorChainSnapshot (#63, #64)', () {
+    setUp(() {
+      ApiClient.reset();
+    });
+
+    test('is populated after the Dio instance is built', () {
+      // Force lazy build.
+      ApiClient.instance;
+      expect(ApiClient.interceptorChainSnapshot, isNotEmpty);
+    });
+
+    test('lists every interceptor in declared order (non-production includes MockInterceptor)', () {
+      ApiClient.instance;
+      final names = ApiClient.interceptorChainSnapshot.map((e) => e.name).toList();
+
+      expect(names, [
+        'ConnectivityInterceptor',
+        'AuthInterceptor',
+        'TokenRefreshInterceptor',
+        'ResilienceInterceptor',
+        'MockInterceptor',
+        'CacheInterceptor',
+        'DevConsoleInterceptor',
+        'LoggingInterceptor',
+      ]);
+    });
+
+    test('MockInterceptor entry is flagged active=false (dev/test fallback)', () {
+      ApiClient.instance;
+      final mock = ApiClient.interceptorChainSnapshot.firstWhere((e) => e.name == 'MockInterceptor');
+      expect(mock.active, isFalse);
+    });
+
+    test('snapshot is returned as an unmodifiable view', () {
+      ApiClient.instance;
+      expect(
+        () => ApiClient.interceptorChainSnapshot..add(const InterceptorChainEntry(name: 'X', detail: 'X')),
+        throwsUnsupportedError,
+      );
+    });
+  });
 }
