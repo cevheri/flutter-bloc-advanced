@@ -15,10 +15,16 @@ import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 class DynamicFormRepository implements IDynamicFormRepository {
   static final _log = AppLogger.getLogger('DynamicFormRepository');
   static const String _resource = '/dynamic_forms';
+  static const String formIdRequired = 'Form id is required';
+  static const String submitEndpointRequired = 'Submit action endpoint is required';
+  static const String submitMethodRequired = 'Submit action method is required';
 
   @override
   Future<Result<FormSchemaEntity>> fetchSchema(String formId) async {
     _log.debug('BEGIN:fetchSchema id: {}', [formId]);
+    if (formId.isEmpty) {
+      return const Failure(ValidationError(formIdRequired));
+    }
     try {
       final response = await ApiClient.get(_resource, pathParams: formId);
       final schema = FormSchemaModel.fromJsonString(response.data!);
@@ -42,6 +48,12 @@ class DynamicFormRepository implements IDynamicFormRepository {
   @override
   Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data) async {
     _log.debug('BEGIN:submit {} {}', [action.method, action.endpoint]);
+    if (action.endpoint.isEmpty) {
+      return const Failure(ValidationError(submitEndpointRequired));
+    }
+    if (action.method.isEmpty) {
+      return const Failure(ValidationError(submitMethodRequired));
+    }
     try {
       final response = switch (action.method.toUpperCase()) {
         'POST' => await ApiClient.post(action.endpoint, data),
