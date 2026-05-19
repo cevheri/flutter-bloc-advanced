@@ -20,7 +20,7 @@ class RegisterScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<RegisterBloc, RegisterState>(
-      listenWhen: (previous, current) => previous.status != current.status,
+      listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) => _handleStateChanges(context, state),
       child: Scaffold(appBar: _buildAppBar(context), body: _buildBody(context)),
     );
@@ -61,18 +61,20 @@ class RegisterScreen extends StatelessWidget {
   }
 
   List<Widget> _buildFormFields(BuildContext context, RegisterState state) {
+    final user = state is RegisterCompletedState ? state.user : null;
     return [
-      UserFormFields.firstNameField(context, state.data?.firstName),
-      UserFormFields.lastNameField(context, state.data?.lastName),
-      UserFormFields.emailField(context, state.data?.email),
+      UserFormFields.firstNameField(context, user?.firstName),
+      UserFormFields.lastNameField(context, user?.lastName),
+      UserFormFields.emailField(context, user?.email),
     ];
   }
 
   Widget _submitButton(BuildContext context, RegisterState state) {
+    final isLoading = state is RegisterLoadingState;
     return ResponsiveSubmitButton(
       key: const Key('registerSubmitButtonKey'),
-      onPressed: () => state.status == RegisterStatus.loading ? null : _onSubmit(context, state),
-      isLoading: state.status == RegisterStatus.loading,
+      onPressed: () => isLoading ? null : _onSubmit(context, state),
+      isLoading: isLoading,
     );
   }
 
@@ -100,19 +102,16 @@ class RegisterScreen extends StatelessWidget {
 
   void _handleStateChanges(BuildContext context, RegisterState state) {
     const duration = Duration(milliseconds: 1000);
-    switch (state.status) {
-      case RegisterStatus.initial:
+    switch (state) {
+      case RegisterInitialState():
         break;
-      case RegisterStatus.loading:
+      case RegisterLoadingState():
         _showSnackBar(context, S.of(context).loading, duration);
-        break;
-      case RegisterStatus.success:
+      case RegisterCompletedState():
         _formKey.currentState?.reset();
         _showSnackBar(context, S.of(context).success, duration);
-        break;
-      case RegisterStatus.error:
+      case RegisterErrorState():
         _showSnackBar(context, S.of(context).failed, duration);
-        break;
     }
   }
 
