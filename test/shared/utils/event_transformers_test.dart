@@ -68,4 +68,21 @@ void main() {
       expect: () => [1],
     );
   });
+
+  group('EventTransformers.queue', () {
+    blocTest<_CounterBloc, int>(
+      'events are processed strictly one-at-a-time in arrival order',
+      build: () => _CounterBloc(transformer: EventTransformers.queue()),
+      act: (bloc) {
+        bloc.add(_Run());
+        bloc.add(_Run());
+        bloc.add(_Run());
+      },
+      // 3 handlers × 80ms each, run sequentially, so wait > 240ms.
+      wait: const Duration(milliseconds: 350),
+      // None dropped, none cancelled — three emissions in order.
+      expect: () => [1, 2, 3],
+      verify: (bloc) => expect(bloc.runs, 3),
+    );
+  });
 }
