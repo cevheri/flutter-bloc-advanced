@@ -152,13 +152,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           );
           return;
         }
-        await _completeLogin(
-          token: data,
-          username: event.email,
-          loginMethod: LoginMethod.otp,
-          emit: emit,
-          overrideErrorCode: AppErrorCode.authOtpValidationError,
-        );
+        await _completeLogin(token: data, username: event.email, loginMethod: LoginMethod.otp, emit: emit);
       case Failure(:final error):
         emit(
           LoginErrorState(
@@ -187,7 +181,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     required String username,
     required LoginMethod loginMethod,
     required Emitter<LoginState> emit,
-    AppErrorCode? overrideErrorCode,
   }) async {
     // Phase 1: persist token-bearing fields so AuthInterceptor can read
     // the JWT for the upcoming account request.
@@ -196,7 +189,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     if (preResult is Failure<void>) {
       emit(
         LoginErrorState(
-          errorCode: overrideErrorCode ?? AppErrorCode.authSessionPersistFailed,
+          errorCode: AppErrorCode.authSessionPersistFailed,
           message: preResult.error.message,
           loginMethod: loginMethod,
           passwordVisible: state.passwordVisible,
@@ -226,7 +219,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           case Failure(:final error):
             emit(
               LoginErrorState(
-                errorCode: overrideErrorCode ?? AppErrorCode.authSessionPersistFailed,
+                errorCode: AppErrorCode.authSessionPersistFailed,
                 message: error.message,
                 loginMethod: loginMethod,
                 passwordVisible: state.passwordVisible,
@@ -237,7 +230,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            errorCode: overrideErrorCode ?? AppErrorCode.authLoginFailed,
+            errorCode: AppErrorCode.authLoginFailed,
             message: error.message,
             loginMethod: loginMethod,
             passwordVisible: state.passwordVisible,

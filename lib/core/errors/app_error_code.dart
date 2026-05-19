@@ -1,12 +1,19 @@
 /// Typed registry of error codes the application can emit.
 ///
 /// BLoC error states carry these instead of hardcoded English strings,
-/// so the UI can translate them via i18n (see `S.of(context)` and the
-/// `AppErrorCodeL10n` extension in `lib/shared/l10n/`).
+/// so the UI can translate them via i18n (see the `AppErrorCodeL10n`
+/// extension in `lib/shared/l10n/`).
 ///
-/// The [key] is the stable identifier used in ARB files. Renaming an
-/// enum value is safe; changing the [key] is a translation-breaking
-/// change.
+/// The [key] is the *domain-facing* stable identifier — for example, it
+/// is what use cases attach to `AppError.code` and what gets logged.
+/// Renaming an enum value is safe; changing a [key] is a domain-API
+/// break that other layers may match on.
+///
+/// ARB translation keys (in `lib/l10n/intl_*.arb`) are a separate
+/// concern, owned by `AppErrorCodeL10n.resolve(BuildContext)` which
+/// maps each enum value to the appropriate `S.of(context).error_*`
+/// getter. The two namespaces are intentionally distinct because ARB
+/// keys must conform to intl_utils' identifier rules.
 enum AppErrorCode {
   // --- auth ---
   authInvalidAccessToken('auth.invalid_access_token'),
