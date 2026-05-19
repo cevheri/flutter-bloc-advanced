@@ -136,59 +136,45 @@ void main() {
   //region state
   /// Login State Tests
   group("LoginState", () {
-    // LoginState
-    test("supports value comparisons", () {
-      expect(const LoginState(), const LoginState());
-      const state = LoginState(status: LoginStatus.initial, passwordVisible: false);
-      expect(const LoginState(), state);
-    });
-
-    // LoginInitialState
-    test("LoginInitialState", () {
+    test("LoginInitialState equality and props", () {
       expect(const LoginInitialState(), const LoginInitialState());
+      expect(const LoginInitialState().props, const <Object?>[LoginMethod.password, false]);
     });
 
-    // LoginLoadingState
-    test("LoginLoadingState", () {
-      expect(const LoginLoadingState(), const LoginLoadingState());
+    test("LoginLoadingState carries username", () {
+      expect(const LoginLoadingState(username: "u"), const LoginLoadingState(username: "u"));
+      expect(const LoginLoadingState(username: "u").props, const <Object?>["u", LoginMethod.password, false]);
     });
 
-    // LoginLoadedState
-    test("LoginLoadedState", () {
-      expect(const LoginLoadedState(), const LoginLoadedState());
+    test("LoginLoadedState carries username", () {
+      expect(const LoginLoadedState(username: "u"), const LoginLoadedState(username: "u"));
+      expect(const LoginLoadedState(username: "u").props, const <Object?>["u", LoginMethod.password, false]);
     });
 
-    // LoginErrorState
-    test("LoginErrorState", () {
+    test("LoginOtpSentState carries email", () {
+      expect(const LoginOtpSentState(email: "e@x"), const LoginOtpSentState(email: "e@x"));
+      expect(const LoginOtpSentState(email: "e@x").loginMethod, LoginMethod.otp);
+    });
+
+    test("LoginOtpVerifiedState carries email + otpCode", () {
+      expect(
+        const LoginOtpVerifiedState(email: "e@x", otpCode: "123"),
+        const LoginOtpVerifiedState(email: "e@x", otpCode: "123"),
+      );
+    });
+
+    test("LoginErrorState carries message", () {
       expect(const LoginErrorState(message: "test"), const LoginErrorState(message: "test"));
-      expect(const LoginErrorState(message: "test").props, ["test"]);
+      expect(const LoginErrorState(message: "test").props, const <Object?>["test", LoginMethod.password, false]);
     });
 
-    test("copyWith retains the same values if no arguments are provided", () {
-      const state = LoginState(status: LoginStatus.initial, passwordVisible: false);
-      expect(state.copyWith(), state);
+    test("Initial bloc state is LoginInitialState", () {
+      expect(_buildBloc(_FakeAuthRepository()).state, const LoginInitialState());
     });
 
-    test("copyWith replaces non-null parameters", () {
-      const state = LoginState(status: LoginStatus.initial, passwordVisible: false);
-      const secondState = LoginState(status: LoginStatus.success, passwordVisible: true);
-      expect(state.copyWith(status: LoginStatus.success, passwordVisible: true), secondState);
-    });
-
-    test("Initial state is LoginState", () {
-      expect(_buildBloc(_FakeAuthRepository()).state, const LoginState());
-    });
-
-    test("props", () {
-      expect(const LoginState(status: LoginStatus.initial, passwordVisible: false, username: "test").props, [
-        "test",
-        LoginStatus.initial,
-        false,
-        null,
-        null,
-        false,
-        LoginMethod.password,
-      ]);
+    test("passwordVisible flows through variants", () {
+      expect(const LoginInitialState(passwordVisible: true).passwordVisible, true);
+      expect(const LoginLoadingState(passwordVisible: true).passwordVisible, true);
     });
   });
   //endregion state
@@ -215,8 +201,8 @@ void main() {
   //region bloc
   /// Login Bloc Tests
   group("LoginBloc", () {
-    test("initial state is LoginState", () {
-      expect(_buildBloc(repository).state, const LoginState());
+    test("initial state is LoginInitialState", () {
+      expect(_buildBloc(repository).state, const LoginInitialState());
     });
 
     group("LoginFormSubmitted", () {
@@ -269,8 +255,8 @@ void main() {
   //endregion bloc
 
   group('LoginBloc test 2', () {
-    test('initial state is LoginState', () {
-      expect(_buildBloc(repository).state, const LoginState());
+    test('initial state is LoginInitialState', () {
+      expect(_buildBloc(repository).state, const LoginInitialState());
     });
 
     group('LoginFormSubmitted', () {
@@ -325,7 +311,7 @@ void main() {
           return _buildBlocWithSendOtp(sendOtpRepo);
         },
         act: (bloc) => bloc.add(event),
-        expect: () => [const LoginLoadingState(username: email), isA<LoginErrorState>()],
+        expect: () => [const LoginLoadingState(username: email, loginMethod: LoginMethod.otp), isA<LoginErrorState>()],
       );
     });
 
@@ -334,14 +320,17 @@ void main() {
       const otpCode = "123456";
       const event = VerifyOtpSubmitted(email: email, otpCode: otpCode);
 
-      const loadingState = LoginState(status: LoginStatus.loading);
+      const loadingState = LoginLoadingState(username: email, loginMethod: LoginMethod.otp);
 
       blocTest<LoginBloc, LoginState>(
         'given invalid OTP when submitted then emits [loading, error]',
         setUp: () => repository.verifyResult = const Success(AuthTokenEntity(idToken: null)),
         build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(event),
-        expect: () => [loadingState, const LoginErrorState(message: "OTP validation error")],
+        expect: () => [
+          loadingState,
+          const LoginErrorState(message: "OTP validation error", loginMethod: LoginMethod.otp),
+        ],
       );
     });
 
@@ -350,7 +339,7 @@ void main() {
         'given OTP method when changed then updates login method',
         build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(const ChangeLoginMethod(method: LoginMethod.otp)),
-        expect: () => [const LoginState(loginMethod: LoginMethod.otp, status: LoginStatus.initial, isOtpSent: false)],
+        expect: () => [const LoginInitialState(loginMethod: LoginMethod.otp)],
       );
     });
 
@@ -359,7 +348,7 @@ void main() {
         'when toggled then updates password visibility',
         build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(const TogglePasswordVisibility()),
-        expect: () => [const LoginState(passwordVisible: true)],
+        expect: () => [const LoginInitialState(passwordVisible: true)],
       );
     });
   });

@@ -36,7 +36,7 @@ void main() {
     mockLoginBloc = MockLoginBloc();
 
     // Set basic state for login bloc
-    when(() => mockLoginBloc.state).thenReturn(const LoginState());
+    when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());
     mockGoRouter = GoRouter(
       initialLocation: "${ApplicationRoutesConstants.loginOtpVerify}/test@example.com",
       routes: [
@@ -180,7 +180,7 @@ void main() {
       TestUtils().setupUnitTest();
       final loginStateController = StreamController<LoginState>.broadcast();
       when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
-      when(() => mockLoginBloc.state).thenReturn(const LoginState());
+      when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());
 
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
@@ -190,15 +190,7 @@ void main() {
       await tester.tap(submitButtonFinder);
       await tester.pump();
 
-      loginStateController.add(
-        const LoginState(
-          email: "test@example.com",
-          otpCode: "123456",
-          status: LoginStatus.loading,
-          isOtpSent: true,
-          loginMethod: LoginMethod.otp,
-        ),
-      );
+      loginStateController.add(const LoginLoadingState(username: "test@example.com", loginMethod: LoginMethod.otp));
       await tester.pump();
 
       await AppLocalStorage().save(StorageKeys.jwtToken.key, "MOCK_TOKEN");
@@ -219,7 +211,7 @@ void main() {
       TestUtils().setupUnitTest();
       final loginStateController = StreamController<LoginState>.broadcast();
       when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
-      when(() => mockLoginBloc.state).thenReturn(const LoginState());
+      when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());
 
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
@@ -229,15 +221,7 @@ void main() {
       await tester.tap(submitButtonFinder);
       await tester.pump();
 
-      loginStateController.add(
-        const LoginState(
-          email: "test@example.com",
-          otpCode: "123456",
-          status: LoginStatus.loading,
-          isOtpSent: true,
-          loginMethod: LoginMethod.otp,
-        ),
-      );
+      loginStateController.add(const LoginLoadingState(username: "test@example.com", loginMethod: LoginMethod.otp));
       await tester.pump();
 
       loginStateController.add(const LoginErrorState(message: "Invalid OTP Token"));
