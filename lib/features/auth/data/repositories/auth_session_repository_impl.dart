@@ -26,6 +26,13 @@ class AuthSessionRepository implements IAuthSessionRepository {
       await _write(StorageKeys.jwtToken, session.idToken, written);
       if (session.refreshToken != null) {
         await _write(StorageKeys.refreshToken, session.refreshToken, written);
+      } else {
+        // Owner-of-keys contract: a session without a refresh token must
+        // not inherit one from a previous login. Best-effort removal —
+        // a remove failure here is not fatal because the field is just
+        // unused if it lingers, but we still try and surface the error
+        // via the rollback path on persist failure further down.
+        await _storage.remove(StorageKeys.refreshToken.key);
       }
       await _write(StorageKeys.username, session.username, written);
       await _write(StorageKeys.roles, session.roles, written);

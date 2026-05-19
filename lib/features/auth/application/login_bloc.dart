@@ -179,6 +179,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   /// both the password and OTP success paths. Storage writes go through
   /// [PersistAuthSessionUseCase] — the bloc itself never imports
   /// `infrastructure/storage` (fixes #71).
+  ///
+  /// Two-phase persistence is intentional: the token + username MUST be
+  /// in storage before `_getAccountUseCase()` runs, because the HTTP
+  /// `AuthInterceptor` reads the JWT from storage to attach the
+  /// Authorization header. After the account is resolved we re-persist
+  /// with the user's authorities included.
   Future<void> _completeLogin({
     required AuthTokenEntity token,
     required String username,
@@ -186,17 +192,34 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     required Emitter<LoginState> emit,
     String? errorMessage,
   }) async {
+    // Phase 1: persist token-bearing fields so AuthInterceptor can read
+    // the JWT for the upcoming account request.
+    final preSession = AuthSession(idToken: token.idToken!, refreshToken: token.refreshToken, username: username);
+    final preResult = await _persistAuthSessionUseCase(preSession);
+    if (preResult is Failure<void>) {
+      emit(
+        LoginErrorState(
+          message: errorMessage ?? "Login API Error: ${preResult.error.message}",
+          loginMethod: loginMethod,
+          passwordVisible: state.passwordVisible,
+        ),
+      );
+      _log.error("session pre-persist failed: {}", [preResult.error.message]);
+      return;
+    }
+
     final accountResult = await _getAccountUseCase();
     switch (accountResult) {
       case Success(data: final user):
-        final session = AuthSession(
-          idToken: token.idToken,
+        // Phase 2: re-persist with authorities included.
+        final fullSession = AuthSession(
+          idToken: token.idToken!,
           refreshToken: token.refreshToken,
           username: username,
           roles: user.authorities ?? const [],
         );
-        final persistResult = await _persistAuthSessionUseCase(session);
-        switch (persistResult) {
+        final fullResult = await _persistAuthSessionUseCase(fullSession);
+        switch (fullResult) {
           case Success():
             emit(
               LoginLoadedState(username: username, loginMethod: loginMethod, passwordVisible: state.passwordVisible),
@@ -210,7 +233,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
                 passwordVisible: state.passwordVisible,
               ),
             );
-            _log.error("session persist failed: {}", [error.message]);
+            _log.error("session roles-persist failed: {}", [error.message]);
         }
       case Failure(:final error):
         emit(

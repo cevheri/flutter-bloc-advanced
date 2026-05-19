@@ -391,7 +391,7 @@ void main() {
       });
 
       blocTest<LoginBloc, LoginState>(
-        'invokes PersistAuthSessionUseCase with the resolved session on success',
+        'invokes PersistAuthSessionUseCase TWICE (pre-account then with roles) on success',
         setUp: () {
           repository.authenticateResult = const Success(
             AuthTokenEntity(idToken: "MOCK_TOKEN", refreshToken: "MOCK_REFRESH"),
@@ -400,10 +400,15 @@ void main() {
         build: () => _buildBloc(repository, accountRepository, sessionRepo),
         act: (bloc) => bloc.add(event),
         verify: (_) {
-          expect(sessionRepo.persisted, hasLength(1));
-          expect(sessionRepo.persisted.single.idToken, "MOCK_TOKEN");
-          expect(sessionRepo.persisted.single.refreshToken, "MOCK_REFRESH");
-          expect(sessionRepo.persisted.single.username, "username");
+          // Two-phase persistence: pre-session lacks roles (interceptor
+          // needs JWT before getAccount); full-session includes roles.
+          expect(sessionRepo.persisted, hasLength(2));
+          expect(sessionRepo.persisted.first.idToken, "MOCK_TOKEN");
+          expect(sessionRepo.persisted.first.refreshToken, "MOCK_REFRESH");
+          expect(sessionRepo.persisted.first.username, "username");
+          expect(sessionRepo.persisted.first.roles, isEmpty);
+          expect(sessionRepo.persisted.last.idToken, "MOCK_TOKEN");
+          expect(sessionRepo.persisted.last.roles, isNotEmpty);
         },
       );
 
