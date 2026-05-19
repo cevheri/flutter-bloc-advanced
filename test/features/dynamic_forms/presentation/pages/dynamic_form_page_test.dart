@@ -53,7 +53,7 @@ void main() {
   group('DynamicFormPage', () {
     group('loading state', () {
       testWidgets('shows CircularProgressIndicator when status is loading', (tester) async {
-        when(() => mockBloc.state).thenReturn(const DynamicFormState(status: DynamicFormStatus.loading));
+        when(() => mockBloc.state).thenReturn(const DynamicFormLoading());
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -65,9 +65,7 @@ void main() {
 
     group('failure state', () {
       testWidgets('shows AppErrorState when status is failure', (tester) async {
-        when(
-          () => mockBloc.state,
-        ).thenReturn(const DynamicFormState(status: DynamicFormStatus.failure, error: 'Network error'));
+        when(() => mockBloc.state).thenReturn(const DynamicFormFailure(error: 'Network error'));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -78,7 +76,7 @@ void main() {
       });
 
       testWidgets('shows default error message when error is null', (tester) async {
-        when(() => mockBloc.state).thenReturn(const DynamicFormState(status: DynamicFormStatus.failure));
+        when(() => mockBloc.state).thenReturn(const DynamicFormFailure(error: 'Failed to load form'));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -87,9 +85,7 @@ void main() {
       });
 
       testWidgets('shows retry button in error state', (tester) async {
-        when(
-          () => mockBloc.state,
-        ).thenReturn(const DynamicFormState(status: DynamicFormStatus.failure, error: 'Something went wrong'));
+        when(() => mockBloc.state).thenReturn(const DynamicFormFailure(error: 'Something went wrong'));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -97,22 +93,20 @@ void main() {
       });
     });
 
-    group('initial state with no schema', () {
-      testWidgets('shows "No form schema available." when schema is null and status is initial', (tester) async {
-        when(() => mockBloc.state).thenReturn(const DynamicFormState());
+    group('initial state', () {
+      testWidgets('shows CircularProgressIndicator while bloc is in DynamicFormInitial', (tester) async {
+        when(() => mockBloc.state).thenReturn(const DynamicFormInitial());
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
-        expect(find.text('No form schema available.'), findsOneWidget);
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.byType(DynamicFormRenderer), findsNothing);
       });
     });
 
     group('loaded state', () {
       testWidgets('shows form title and DynamicFormRenderer when loaded', (tester) async {
-        when(
-          () => mockBloc.state,
-        ).thenReturn(const DynamicFormState(status: DynamicFormStatus.loaded, schema: _testSchema));
+        when(() => mockBloc.state).thenReturn(const DynamicFormLoaded(schema: _testSchema));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -123,9 +117,7 @@ void main() {
       });
 
       testWidgets('renders form fields when loaded', (tester) async {
-        when(
-          () => mockBloc.state,
-        ).thenReturn(const DynamicFormState(status: DynamicFormStatus.loaded, schema: _testSchema));
+        when(() => mockBloc.state).thenReturn(const DynamicFormLoaded(schema: _testSchema));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -135,9 +127,7 @@ void main() {
       });
 
       testWidgets('shows submit button when form is loaded and not submitting', (tester) async {
-        when(
-          () => mockBloc.state,
-        ).thenReturn(const DynamicFormState(status: DynamicFormStatus.loaded, schema: _testSchema));
+        when(() => mockBloc.state).thenReturn(const DynamicFormLoaded(schema: _testSchema));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -147,9 +137,7 @@ void main() {
 
     group('submitting state', () {
       testWidgets('renders form as readOnly when submitting', (tester) async {
-        when(
-          () => mockBloc.state,
-        ).thenReturn(const DynamicFormState(status: DynamicFormStatus.submitting, schema: _testSchema));
+        when(() => mockBloc.state).thenReturn(const DynamicFormSubmitting(schema: _testSchema));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
@@ -165,10 +153,10 @@ void main() {
         whenListen(
           statesController,
           Stream<DynamicFormState>.fromIterable([
-            const DynamicFormState(status: DynamicFormStatus.loaded, schema: _testSchema),
-            const DynamicFormState(status: DynamicFormStatus.submitted, schema: _testSchema),
+            const DynamicFormLoaded(schema: _testSchema),
+            const DynamicFormSubmitted(schema: _testSchema),
           ]),
-          initialState: const DynamicFormState(status: DynamicFormStatus.loaded, schema: _testSchema),
+          initialState: const DynamicFormLoaded(schema: _testSchema),
         );
 
         await tester.pumpWidget(_buildTestWidget(statesController));

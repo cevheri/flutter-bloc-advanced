@@ -1,30 +1,67 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_schema_entity.dart';
 
-enum DynamicFormStatus { initial, loading, loaded, submitting, submitted, failure }
+/// Sealed state for the dynamic-form flow.
+///
+/// Variants enforce at compile time which fields are available where:
+/// - schema is required from [DynamicFormLoaded] onward (the bloc cannot
+///   submit before a schema is loaded);
+/// - submitResponse only exists once a submit has completed;
+/// - error is only carried on failure variants.
+sealed class DynamicFormState extends Equatable {
+  const DynamicFormState();
+}
 
-class DynamicFormState extends Equatable {
-  const DynamicFormState({this.status = DynamicFormStatus.initial, this.schema, this.submitResponse, this.error});
-
-  final DynamicFormStatus status;
-  final FormSchemaEntity? schema;
-  final String? submitResponse;
-  final String? error;
-
-  DynamicFormState copyWith({
-    DynamicFormStatus? status,
-    FormSchemaEntity? schema,
-    String? submitResponse,
-    String? error,
-  }) {
-    return DynamicFormState(
-      status: status ?? this.status,
-      schema: schema ?? this.schema,
-      submitResponse: submitResponse ?? this.submitResponse,
-      error: error ?? this.error,
-    );
-  }
+final class DynamicFormInitial extends DynamicFormState {
+  const DynamicFormInitial();
 
   @override
-  List<Object?> get props => [status, schema, submitResponse, error];
+  List<Object?> get props => const [];
+}
+
+final class DynamicFormLoading extends DynamicFormState {
+  const DynamicFormLoading();
+
+  @override
+  List<Object?> get props => const [];
+}
+
+final class DynamicFormLoaded extends DynamicFormState {
+  const DynamicFormLoaded({required this.schema});
+
+  final FormSchemaEntity schema;
+
+  @override
+  List<Object?> get props => [schema];
+}
+
+final class DynamicFormSubmitting extends DynamicFormState {
+  const DynamicFormSubmitting({required this.schema});
+
+  final FormSchemaEntity schema;
+
+  @override
+  List<Object?> get props => [schema];
+}
+
+final class DynamicFormSubmitted extends DynamicFormState {
+  const DynamicFormSubmitted({required this.schema, this.submitResponse});
+
+  final FormSchemaEntity schema;
+  final String? submitResponse;
+
+  @override
+  List<Object?> get props => [schema, submitResponse];
+}
+
+/// Failure can happen either at load time (no schema) or at submit time
+/// (schema present from the prior [DynamicFormLoaded] state).
+final class DynamicFormFailure extends DynamicFormState {
+  const DynamicFormFailure({required this.error, this.schema});
+
+  final String error;
+  final FormSchemaEntity? schema;
+
+  @override
+  List<Object?> get props => [error, schema];
 }
