@@ -201,7 +201,7 @@ void main() {
   //region bloc
   /// Login Bloc Tests
   group("LoginBloc", () {
-    test("initial state is LoginState", () {
+    test("initial state is LoginInitialState", () {
       expect(_buildBloc(repository).state, const LoginInitialState());
     });
 
@@ -255,7 +255,7 @@ void main() {
   //endregion bloc
 
   group('LoginBloc test 2', () {
-    test('initial state is LoginState', () {
+    test('initial state is LoginInitialState', () {
       expect(_buildBloc(repository).state, const LoginInitialState());
     });
 
