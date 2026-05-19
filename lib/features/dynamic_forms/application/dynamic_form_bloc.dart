@@ -1,16 +1,19 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_state.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/data/models/form_schema_model.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/load_form_schema_usecase.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/submit_form_usecase.dart';
 import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
-  DynamicFormBloc() : super(const DynamicFormInitial()) {
+  DynamicFormBloc({required LoadFormSchemaUseCase loadFormSchemaUseCase, required SubmitFormUseCase submitFormUseCase})
+    : _loadFormSchemaUseCase = loadFormSchemaUseCase,
+      _submitFormUseCase = submitFormUseCase,
+      super(const DynamicFormInitial()) {
     on<DynamicFormLoadEvent>(_onLoad, transformer: EventTransformers.restart());
     on<DynamicFormSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<DynamicFormResetEvent>(_onReset);
@@ -18,17 +21,18 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
   static final _log = AppLogger.getLogger('DynamicFormBloc');
 
+  final LoadFormSchemaUseCase _loadFormSchemaUseCase;
+  final SubmitFormUseCase _submitFormUseCase;
+
   FutureOr<void> _onLoad(DynamicFormLoadEvent event, Emitter<DynamicFormState> emit) async {
     _log.debug('Loading form schema: {}', [event.formId]);
     emit(const DynamicFormLoading());
-    try {
-      final response = await ApiClient.get('/dynamic_forms', pathParams: event.formId);
-      final schema = FormSchemaModel.fromJsonString(response.data!);
-      emit(DynamicFormLoaded(schema: schema));
-    } on AppException catch (e) {
-      emit(DynamicFormFailure(error: e.toString()));
-    } catch (e) {
-      emit(DynamicFormFailure(error: e.toString()));
+    final result = await _loadFormSchemaUseCase(event.formId);
+    switch (result) {
+      case Success(:final data):
+        emit(DynamicFormLoaded(schema: data));
+      case Failure(:final error):
+        emit(DynamicFormFailure(error: error.message));
     }
   }
 
@@ -44,27 +48,19 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     _log.debug('Submitting form: {}', [schema.id]);
     emit(DynamicFormSubmitting(schema: schema));
 
-    try {
-      final action = schema.submitAction;
-      if (action == null) {
-        _log.info('No submit action defined — logging form data: {}', [event.data]);
-        emit(DynamicFormSubmitted(schema: schema, submitResponse: 'Form data logged'));
-        return;
-      }
+    final action = schema.submitAction;
+    if (action == null) {
+      _log.info('No submit action defined — logging form data: {}', [event.data]);
+      emit(DynamicFormSubmitted(schema: schema, submitResponse: 'Form data logged'));
+      return;
+    }
 
-      final response = switch (action.method.toUpperCase()) {
-        'POST' => await ApiClient.post(action.endpoint, event.data),
-        'PUT' => await ApiClient.put(action.endpoint, event.data),
-        'PATCH' => await ApiClient.patch(action.endpoint, event.data),
-        'DELETE' => await ApiClient.delete(action.endpoint),
-        final method => throw UnsupportedError('Unsupported HTTP method: $method'),
-      };
-
-      emit(DynamicFormSubmitted(schema: schema, submitResponse: response.data));
-    } on AppException catch (e) {
-      emit(DynamicFormFailure(error: e.toString(), schema: schema));
-    } catch (e) {
-      emit(DynamicFormFailure(error: e.toString(), schema: schema));
+    final result = await _submitFormUseCase(action, event.data);
+    switch (result) {
+      case Success(:final data):
+        emit(DynamicFormSubmitted(schema: schema, submitResponse: data));
+      case Failure(:final error):
+        emit(DynamicFormFailure(error: error.message, schema: schema));
     }
   }
 
