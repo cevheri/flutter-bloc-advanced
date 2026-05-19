@@ -90,30 +90,45 @@ void main() {
   });
 
   group('UserState Tests', () {
-    test('initial state is correct', () {
-      expect(bloc.state, const UserState());
+    const testUser = UserEntity(id: "1", firstName: "Test");
+    const users = [UserEntity(id: "1", firstName: "Test")];
+
+    test('initial state is UserInitial', () {
+      expect(bloc.state, const UserInitial());
     });
 
-    test('UserState copyWith test', () {
-      const user = UserEntity(id: "1", firstName: "Test");
-      const users = [UserEntity(id: "1", firstName: "Test")];
-
-      expect(
-        const UserState().copyWith(status: UserStatus.success, data: user, userList: users, err: "error"),
-        const UserState(status: UserStatus.success, data: user, userList: users, err: "error"),
-      );
+    test('UserInitial props', () {
+      expect(const UserInitial().props, const <Object?>[]);
     });
 
-    test('UserState props test', () {
-      const user = UserEntity(id: "1", firstName: "Test");
-      const users = [UserEntity(id: "1", firstName: "Test")];
+    test('UserLoading carries optional data forward', () {
+      expect(const UserLoading().props, const <Object?>[null]);
+      expect(const UserLoading(data: testUser).props, const <Object?>[testUser]);
+    });
 
-      expect(const UserState(status: UserStatus.loading, data: user, userList: users, err: "error").props, [
-        UserStatus.loading,
-        user,
-        users,
-        "error",
-      ]);
+    test('UserSearchSuccess props', () {
+      expect(const UserSearchSuccess(userList: users).props, const <Object?>[users]);
+    });
+
+    test('UserFetchSuccess props', () {
+      expect(const UserFetchSuccess(data: testUser).props, const <Object?>[testUser]);
+    });
+
+    test('UserSaveSuccess props', () {
+      expect(const UserSaveSuccess(data: testUser).props, const <Object?>[testUser]);
+      expect(const UserSaveSuccess().props, const <Object?>[null]);
+    });
+
+    test('UserDeleteSuccess props', () {
+      expect(const UserDeleteSuccess().props, const <Object?>[]);
+    });
+
+    test('UserViewSuccess props', () {
+      expect(const UserViewSuccess(data: testUser).props, const <Object?>[testUser]);
+    });
+
+    test('UserFailure props', () {
+      expect(const UserFailure(error: "boom").props, const <Object?>["boom"]);
     });
   });
 
@@ -280,12 +295,7 @@ void main() {
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
-      expect: () => [
-        isA<UserState>().having((state) => state.status, 'status', UserStatus.loading),
-        isA<UserState>()
-            .having((state) => state.status, 'status', UserStatus.saveSuccess)
-            .having((state) => state.data, 'data', testUser),
-      ],
+      expect: () => [isA<UserLoading>(), isA<UserSaveSuccess>().having((s) => s.data, 'data', testUser)],
     );
 
     blocTest<UserBloc, UserState>(
@@ -295,12 +305,7 @@ void main() {
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
-      expect: () => [
-        isA<UserState>().having((state) => state.status, 'status', UserStatus.loading),
-        isA<UserState>()
-            .having((state) => state.status, 'status', UserStatus.saveSuccess)
-            .having((state) => state.data, 'data', testUser),
-      ],
+      expect: () => [isA<UserLoading>(), isA<UserSaveSuccess>().having((s) => s.data, 'data', testUser)],
     );
 
     blocTest<UserBloc, UserState>(
@@ -310,10 +315,7 @@ void main() {
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(newUser)),
-      expect: () => [
-        const UserState(status: UserStatus.loading),
-        const UserState(status: UserStatus.failure, err: "Failed to create user"),
-      ],
+      expect: () => [const UserLoading(), UserFailure(error: "Failed to create user")],
     );
 
     blocTest<UserBloc, UserState>(
@@ -323,10 +325,7 @@ void main() {
       },
       build: () => bloc,
       act: (bloc) => bloc.add(const UserSubmitEvent(testUser)),
-      expect: () => [
-        const UserState(status: UserStatus.loading),
-        const UserState(status: UserStatus.failure, err: "Failed to update user"),
-      ],
+      expect: () => [const UserLoading(), UserFailure(error: "Failed to update user")],
     );
 
     group('UserSearchEvent Tests', () {
@@ -342,10 +341,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
-        expect: () => [
-          const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.searchSuccess, userList: users),
-        ],
+        expect: () => [const UserLoading(), UserSearchSuccess(userList: users)],
       );
 
       blocTest<UserBloc, UserState>(
@@ -355,10 +351,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(name: "Test", authorities: "ROLE_USER")),
-        expect: () => [
-          const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.searchSuccess, userList: users),
-        ],
+        expect: () => [const UserLoading(), UserSearchSuccess(userList: users)],
       );
 
       blocTest<UserBloc, UserState>(
@@ -368,10 +361,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
-        expect: () => [
-          const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Search failed"),
-        ],
+        expect: () => [const UserLoading(), UserFailure(error: "Search failed")],
       );
     });
 
@@ -383,10 +373,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserFetchEvent("1")),
-        expect: () => [
-          const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.fetchSuccess, data: testUser),
-        ],
+        expect: () => [const UserLoading(), UserFetchSuccess(data: testUser)],
       );
 
       blocTest<UserBloc, UserState>(
@@ -396,10 +383,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserFetchEvent("1")),
-        expect: () => [
-          const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Fetch failed"),
-        ],
+        expect: () => [const UserLoading(), UserFailure(error: "Fetch failed")],
       );
     });
 
@@ -408,17 +392,14 @@ void main() {
         'emits success state when delete is successful',
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),
-        expect: () => [const UserState(status: UserStatus.loading), const UserState(status: UserStatus.deleteSuccess)],
+        expect: () => [const UserLoading(), const UserDeleteSuccess()],
       );
 
       blocTest<UserBloc, UserState>(
         'emits failure state when trying to delete admin user',
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("user-1")),
-        expect: () => [
-          const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Admin user cannot be deleted"),
-        ],
+        expect: () => [const UserLoading(), UserFailure(error: "Admin user cannot be deleted")],
       );
 
       blocTest<UserBloc, UserState>(
@@ -428,10 +409,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserDeleteEvent("2")),
-        expect: () => [
-          const UserState(status: UserStatus.loading),
-          const UserState(status: UserStatus.failure, err: "Delete failed"),
-        ],
+        expect: () => [const UserLoading(), UserFailure(error: "Delete failed")],
       );
     });
 
@@ -440,25 +418,25 @@ void main() {
         'emits initial state when editor is initialized',
         build: () => bloc,
         act: (bloc) => bloc.add(const UserEditorInit()),
-        expect: () => [const UserState()],
+        expect: () => [const UserInitial()],
       );
     });
 
     group('UserViewCompleteEvent Tests', () {
       blocTest<UserBloc, UserState>(
-        'emits viewSuccess state when view is completed',
+        'emits UserViewSuccess when view is completed',
         build: () => bloc,
         act: (bloc) => bloc.add(const UserViewCompleteEvent()),
-        expect: () => [const UserState(status: UserStatus.viewSuccess)],
+        expect: () => [const UserViewSuccess()],
       );
     });
 
     group('UserSaveCompleteEvent Tests', () {
       blocTest<UserBloc, UserState>(
-        'emits saveSuccess state when save is completed',
+        'emits UserSaveSuccess when save is completed',
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSaveCompleteEvent()),
-        expect: () => [const UserState(status: UserStatus.saveSuccess)],
+        expect: () => [const UserSaveSuccess()],
       );
     });
   });

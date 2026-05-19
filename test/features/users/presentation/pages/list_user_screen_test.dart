@@ -100,7 +100,7 @@ void main() {
 
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -132,7 +132,7 @@ void main() {
 
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       final mockUsers = [
         User(
@@ -156,7 +156,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Simulate successful search
-      userStateController.add(UserState(status: UserStatus.searchSuccess, userList: mockUsers));
+      userStateController.add(UserSearchSuccess(userList: mockUsers));
       await tester.pumpAndSettle();
 
       // ASSERT
@@ -176,7 +176,7 @@ void main() {
 
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -205,7 +205,7 @@ void main() {
 
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -227,7 +227,7 @@ void main() {
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       // Test large screen
       tester.view.physicalSize = const Size(1200, 800);

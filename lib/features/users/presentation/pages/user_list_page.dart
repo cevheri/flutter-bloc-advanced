@@ -46,21 +46,15 @@ class _ListUserScreenState extends State<ListUserScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<UserBloc, UserState>(
-      listenWhen: (previous, current) => previous.status != current.status,
+      listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: _handleUserStateChanges,
       child: UserListView(formKey: _formKey),
     );
   }
 
   void _handleUserStateChanges(BuildContext context, UserState state) {
-    switch (state.status) {
-      case UserStatus.deleteSuccess:
-      case UserStatus.saveSuccess:
-      case UserStatus.viewSuccess:
-        _refreshUserList(context);
-        break;
-      default:
-        break;
+    if (state is UserDeleteSuccess || state is UserSaveSuccess || state is UserViewSuccess) {
+      _refreshUserList(context);
     }
   }
 
@@ -81,8 +75,8 @@ class UserListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<UserBloc, UserState>(
       builder: (context, state) {
-        final items = state.status == UserStatus.searchSuccess ? state.userList : null;
-        final isLoading = state.status == UserStatus.loading;
+        final items = state is UserSearchSuccess ? state.userList : null;
+        final isLoading = state is UserLoading;
 
         return AppResponsiveListView<UserEntity>(
           title: S.of(context).list_user,
