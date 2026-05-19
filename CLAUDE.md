@@ -75,8 +75,7 @@ lib/
 ## BLoC Pattern
 
 Every feature follows: **Event → BLoC → State → UI**
-- BLoCs use `Equatable` for state equality, `copyWith()` for immutable updates.
-- States use status enums: `initial`, `loading`, `success`, `failure`.
+- BLoCs use `Equatable` for state equality.
 - Local UI state can be handled within the page, but business logic MUST be in BLoCs.
 
 ### `Bloc` vs `Cubit`
@@ -84,6 +83,53 @@ Every feature follows: **Event → BLoC → State → UI**
 - Use **`Cubit`** when every interaction is an atomic, fire-and-forget call and the event stream adds no value (no debouncing, no concurrency policy, no historical event payload needed). Example: `SettingsCubit` (`changeLanguage`, `changeTheme`, `logout`).
 - Use **`Bloc`** when events carry meaningful payload, when an `EventTransformer` (debounce, restartable, droppable) is needed, or when the event log itself is valuable for replay/observability. Example: `UserBloc` (search + pagination + CRUD).
 - Default to `Bloc` for any new feature touching network requests or user input streams; reach for `Cubit` only after confirming none of the above apply.
+
+### State Modeling — MAIN RULE
+
+> ⚠️ **Migration in progress (May 2026):** The project is transitioning to sealed state hierarchies as the default state-modeling pattern. Some BLoCs may still be on the legacy single-state + status enum pattern during this transition; new code MUST follow the rule below, and existing BLoCs are being migrated under the tech-debt audit. Once the migration completes, this warning will be removed.
+
+**Default to sealed state hierarchies** that leverage Dart 3's `sealed` modifier and exhaustive `switch` expressions. The compiler enforces handling of every state variant; UIs render via pattern matching.
+
+```dart
+// State
+sealed class UserState extends Equatable {
+  const UserState();
+}
+final class UserInitial extends UserState { /* ... */ }
+final class UserLoading extends UserState { /* ... */ }
+final class UserLoaded extends UserState {
+  const UserLoaded(this.users);
+  final List<UserEntity> users;
+  @override List<Object?> get props => [users];
+}
+final class UserFailure extends UserState {
+  const UserFailure(this.errorCode);
+  final String errorCode;
+  @override List<Object?> get props => [errorCode];
+}
+
+// UI
+BlocBuilder<UserBloc, UserState>(
+  builder: (context, state) => switch (state) {
+    UserInitial() => const SizedBox.shrink(),
+    UserLoading() => const Loading(),
+    UserLoaded(:final users) => UserList(users),
+    UserFailure(:final errorCode) => ErrorBanner(errorCode),
+  },
+);
+```
+
+**Use single-state + status enum only when** one of these is genuinely true:
+
+1. **Concurrent state access:** UI must render data from one state while reacting to another (e.g., show the previously loaded list while an error banner appears for the latest refresh attempt).
+2. **Transactional snapshot:** State carries a coherent bundle whose fields all evolve together (search query + filters + pagination + result set) and splitting them into sealed variants would lose meaning.
+3. **Form persistence:** Thin form/CRUD wrapper where status changes but form fields persist across all states, AND no genuine state machine exists underneath.
+
+When in doubt, prefer sealed and split the BLoC instead of growing the single state.
+
+**UI consumers** use `switch (state) { ... }` expressions, NOT `if (state is X) ... else if (state is Y)`. Reach for `BlocSelector` only when narrowing to a slice of a variant's fields — not for type discrimination.
+
+**Why this rule (short version):** Compile-time exhaustive matching catches forgotten states at build time; impossible-state combinations (e.g. `loading=true && error="…"`) become unrepresentable; the `copyWith` null-clearing class of bugs disappears because variants carry only their own fields. Bloc creator [Felix Angelov](https://github.com/felangel/bloc/issues/1726) treats both patterns as valid; we pick sealed because Dart 3's modifiers + switch expressions tilt the trade-off decisively in its favor for this codebase.
 
 ## Logging
 
