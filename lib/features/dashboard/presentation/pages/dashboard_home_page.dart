@@ -52,7 +52,12 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
   }
 
   void _updateAppConfigFromLifecycle(LifecycleState? lifecycleState) {
-    final config = lifecycleState?.config;
+    final config = switch (lifecycleState) {
+      LifecycleReady(:final config) => config,
+      LifecycleMaintenance(:final config) => config,
+      LifecycleForceUpdate(:final config) => config,
+      _ => null,
+    };
 
     final environment = ProfileConstants.isProduction
         ? 'prod'
@@ -89,7 +94,7 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
     try {
       context.read<LifecycleBloc>();
       child = BlocListener<LifecycleBloc, LifecycleState>(
-        listenWhen: (previous, current) => previous.config != current.config,
+        listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
         listener: (context, lifecycleState) {
           _updateAppConfigFromLifecycle(lifecycleState);
         },
