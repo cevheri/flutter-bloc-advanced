@@ -24,16 +24,6 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
     _log.debug("BEGIN: changePassword bloc: _onSubmit");
     emit(const ChangePasswordLoadingState());
 
-    if (event.currentPassword.isEmpty || event.newPassword.isEmpty) {
-      emit(const ChangePasswordFailureState(errorMessage: 'Both current and new password are required'));
-      return;
-    }
-
-    if (event.currentPassword == event.newPassword) {
-      emit(const ChangePasswordFailureState(errorMessage: 'New password must be different from current password'));
-      return;
-    }
-
     final passwordChangeDTO = PasswordChangeDTO(currentPassword: event.currentPassword, newPassword: event.newPassword);
 
     final result = await _changePasswordUseCase(passwordChangeDTO);

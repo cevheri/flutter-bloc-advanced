@@ -72,18 +72,6 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       ),
     );
 
-    if (event.username == "invalid") {
-      emit(
-        LoginErrorState(
-          message: "Login API Error: Invalid username",
-          loginMethod: state.loginMethod,
-          passwordVisible: state.passwordVisible,
-        ),
-      );
-      _log.error("END:onSubmit LoginFormSubmitted event error: Invalid username");
-      return;
-    }
-
     final credentials = AuthCredentialsEntity(username: event.username, password: event.password);
     final tokenResult = await _authenticateUserUseCase(credentials);
     switch (tokenResult) {

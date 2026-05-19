@@ -19,6 +19,7 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repo
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
@@ -58,7 +59,8 @@ class AppScope extends StatelessWidget {
             ),
           ),
           BlocProvider<AuthorityBloc>(
-            create: (context) => AuthorityBloc(repository: context.read<IAuthorityRepository>()),
+            create: (context) =>
+                AuthorityBloc(listAuthoritiesUseCase: ListAuthoritiesUseCase(context.read<IAuthorityRepository>())),
           ),
           BlocProvider<AccountBloc>(
             create: (context) => AccountBloc(

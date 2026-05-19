@@ -2,6 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -19,10 +20,12 @@ import '../../../test_utils.dart';
 void main() {
   //region setup
   late IAuthorityRepository repository;
+  late ListAuthoritiesUseCase useCase;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
     repository = MockAuthorityRepository();
+    useCase = ListAuthoritiesUseCase(repository);
   });
 
   tearDown(() async {
@@ -81,7 +84,7 @@ void main() {
   group("AuthorityBloc", () {
     const initialState = AuthorityInitialState();
     test("initial state is AuthorityInitialState", () {
-      expect(AuthorityBloc(repository: repository).state, initialState);
+      expect(AuthorityBloc(listAuthoritiesUseCase: useCase).state, initialState);
     });
 
     group("AuthorityLoad", () {
@@ -100,7 +103,7 @@ void main() {
       blocTest<AuthorityBloc, AuthorityState>(
         "emits [loading, success] when load is successful",
         setUp: () => when(method).thenAnswer((_) => output),
-        build: () => AuthorityBloc(repository: repository),
+        build: () => AuthorityBloc(listAuthoritiesUseCase: useCase),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
       );
@@ -108,7 +111,7 @@ void main() {
       blocTest<AuthorityBloc, AuthorityState>(
         "emits [loading, failure] when load is unsuccessful",
         setUp: () => when(method).thenAnswer((_) async => const Failure(UnknownError("Error"))),
-        build: () => AuthorityBloc(repository: repository),
+        build: () => AuthorityBloc(listAuthoritiesUseCase: useCase),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );
