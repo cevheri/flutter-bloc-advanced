@@ -6,7 +6,6 @@ import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
-import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/presentation/pages/account_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -19,10 +18,8 @@ import '../../../../test_utils.dart';
 
 void main() {
   late MockAccountBloc mockAccountBloc;
-  late MockUserBloc mockUserBloc;
   late TestUtils testUtils;
   late StreamController<AccountState> accountStateController;
-  late StreamController<UserState> userStateController;
 
   // Mock user data for testing
   const mockUser = User(
@@ -44,20 +41,16 @@ void main() {
 
     // Initialize mock blocs and controllers
     mockAccountBloc = MockAccountBloc();
-    mockUserBloc = MockUserBloc();
 
     accountStateController = StreamController<AccountState>.broadcast();
-    userStateController = StreamController<UserState>.broadcast();
 
     // Setup stream responses
     when(() => mockAccountBloc.stream).thenAnswer((_) => accountStateController.stream);
-    when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
   });
 
   tearDown(() async {
     await testUtils.tearDownUnitTest();
     await accountStateController.close();
-    await userStateController.close();
   });
 
   // Helper method to build the widget under test
@@ -72,11 +65,8 @@ void main() {
       initialLocation: '/account',
     );
 
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<AccountBloc>.value(value: mockAccountBloc),
-        BlocProvider<UserBloc>.value(value: mockUserBloc),
-      ],
+    return BlocProvider<AccountBloc>.value(
+      value: mockAccountBloc,
       child: MaterialApp.router(
         routerConfig: router,
         localizationsDelegates: const [
@@ -179,7 +169,8 @@ void main() {
       await tester.tap(find.text(S.current.save));
       await tester.pumpAndSettle();
 
-      verifyNever(() => mockUserBloc.add(any()));
+      // Account submit with empty input should not reach AccountBloc.
+      verifyNever(() => mockAccountBloc.add(any()));
     });
   });
 

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_status_badge.dart';
@@ -13,7 +13,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
 
-UserSearchEvent _buildSearchEventFromForm(FormBuilderState? formState) {
+UserListSearch _buildSearchEventFromForm(FormBuilderState? formState) {
   final pageText = formState?.fields['rangeStart']?.value?.toString() ?? '0';
   final sizeText = formState?.fields['rangeEnd']?.value?.toString() ?? '100';
   final authorityText = formState?.fields['authorities']?.value?.toString();
@@ -25,7 +25,7 @@ UserSearchEvent _buildSearchEventFromForm(FormBuilderState? formState) {
     return trimmed.isEmpty ? null : trimmed;
   }
 
-  return UserSearchEvent(
+  return UserListSearch(
     page: int.tryParse(pageText) ?? 0,
     size: int.tryParse(sizeText) ?? 100,
     authorities: normalize(authorityText),
@@ -45,15 +45,15 @@ class _ListUserScreenState extends State<ListUserScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<UserBloc, UserState>(
+    return BlocListener<UserListBloc, UserListState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: _handleUserStateChanges,
       child: UserListView(formKey: _formKey),
     );
   }
 
-  void _handleUserStateChanges(BuildContext context, UserState state) {
-    if (state is UserDeleteSuccess || state is UserSaveSuccess || state is UserViewSuccess) {
+  void _handleUserStateChanges(BuildContext context, UserListState state) {
+    if (state is UserListDeleteSuccess) {
       _refreshUserList(context);
     }
   }
@@ -61,7 +61,7 @@ class _ListUserScreenState extends State<ListUserScreen> {
   void _refreshUserList(BuildContext context) {
     final formState = _formKey.currentState;
     if (formState == null || formState.saveAndValidate()) {
-      context.read<UserBloc>().add(_buildSearchEventFromForm(formState));
+      context.read<UserListBloc>().add(_buildSearchEventFromForm(formState));
     }
   }
 }
@@ -73,10 +73,10 @@ class UserListView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<UserBloc, UserState>(
+    return BlocBuilder<UserListBloc, UserListState>(
       builder: (context, state) {
-        final items = state is UserSearchSuccess ? state.userList : null;
-        final isLoading = state is UserLoading;
+        final items = state is UserListLoaded ? state.users : null;
+        final isLoading = state is UserListLoading;
 
         return AppResponsiveListView<UserEntity>(
           title: S.of(context).list_user,
@@ -288,7 +288,7 @@ class SearchActionButtons extends StatelessWidget {
 
   void _handleSearch(BuildContext context) {
     if (formKey.currentState!.saveAndValidate()) {
-      context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
+      context.read<UserListBloc>().add(_buildSearchEventFromForm(formKey.currentState));
     }
   }
 }
@@ -340,7 +340,7 @@ class _MobileSearchBar extends StatelessWidget {
 
   void _handleSearch(BuildContext context) {
     if (formKey.currentState?.saveAndValidate() ?? false) {
-      context.read<UserBloc>().add(_buildSearchEventFromForm(formKey.currentState));
+      context.read<UserListBloc>().add(_buildSearchEventFromForm(formKey.currentState));
     }
   }
 }
@@ -506,7 +506,7 @@ class _MobileUserCard extends StatelessWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<UserBloc>().add(UserDeleteEvent(userId));
+              context.read<UserListBloc>().add(UserListDelete(userId));
             },
             style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
             child: Text(S.of(ctx).yes),
@@ -560,7 +560,7 @@ class _DesktopRowActions extends StatelessWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<UserBloc>().add(UserDeleteEvent(userId));
+              context.read<UserListBloc>().add(UserListDelete(userId));
             },
             style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
             child: Text(S.of(ctx).yes),

@@ -12,7 +12,8 @@ import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_state.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
 
 // Repository imports (concrete)
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
@@ -51,7 +52,9 @@ class MockIUserRepository extends Mock implements IUserRepository {}
 // BLoC mocks (using MockBloc from bloc_test)
 class MockAccountBloc extends MockBloc<AccountEvent, AccountState> implements AccountBloc {}
 
-class MockUserBloc extends MockBloc<UserEvent, UserState> implements UserBloc {}
+class MockUserListBloc extends MockBloc<UserListEvent, UserListState> implements UserListBloc {}
+
+class MockUserEditorBloc extends MockBloc<UserEditorEvent, UserEditorState> implements UserEditorBloc {}
 
 class MockAuthorityBloc extends MockBloc<AuthorityEvent, AuthorityState> implements AuthorityBloc {}
 
@@ -81,7 +84,8 @@ class FakeVerifyOtpEntity extends Fake implements VerifyOtpEntity {}
 
 class FakeAccountEvent extends Fake implements AccountEvent {}
 
-class FakeUserEvent extends Fake implements UserEvent {}
+// UserListEvent / UserEditorEvent are sealed (Dart 3); we use concrete
+// variants directly as fallback values instead of Fakes.
 
 class FakeForgotPasswordEvent extends Fake implements ForgotPasswordEvent {}
 
@@ -99,7 +103,8 @@ class FakeUri extends Fake implements Uri {}
 /// Call this in setUpAll() for tests that use any() with non-nullable types.
 void registerAllFallbackValues() {
   registerFallbackValue(FakeAccountEvent());
-  registerFallbackValue(FakeUserEvent());
+  registerFallbackValue(const UserListSearch());
+  registerFallbackValue(const UserEditorReset());
   registerFallbackValue(FakeForgotPasswordEvent());
   registerFallbackValue(FakeChangePasswordEvent());
   registerFallbackValue(FakeRegisterEvent());

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/shared/widgets/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
@@ -26,9 +26,9 @@ class _UserEditorScreenState extends State<UserEditorScreen> {
   @override
   void initState() {
     super.initState();
-    final bloc = context.read<UserBloc>();
+    final bloc = context.read<UserEditorBloc>();
     final userId = widget.id ?? widget.username ?? '';
-    final initialEvent = userId.isNotEmpty ? UserFetchEvent(userId) : const UserEditorInit();
+    final initialEvent = userId.isNotEmpty ? UserEditorFetch(userId) : const UserEditorReset();
     bloc.add(initialEvent);
   }
 
@@ -53,30 +53,30 @@ class _UserEditorViewState extends State<_UserEditorView> {
   /// Extract the user payload from whichever variant currently holds one
   /// (Loading carries it forward during submit; success states carry their
   /// own copy).
-  UserEntity? _userOf(UserState state) => switch (state) {
-    UserLoading(:final data) => data,
-    UserFetchSuccess(:final data) => data,
-    UserSaveSuccess(:final data) => data,
-    UserViewSuccess(:final data) => data,
+  UserEntity? _userOf(UserEditorState state) => switch (state) {
+    UserEditorLoading(:final data) => data,
+    UserEditorLoaded(:final data) => data,
+    UserEditorSaved(:final data) => data,
+    UserEditorViewed(:final data) => data,
     _ => null,
   };
 
-  bool _isInitialLoading(UserState state) {
-    return state is UserLoading && widget.mode != EditorFormMode.create && _userOf(state) == null;
+  bool _isInitialLoading(UserEditorState state) {
+    return state is UserEditorLoading && widget.mode != EditorFormMode.create && _userOf(state) == null;
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<UserBloc, UserState>(
+    return BlocConsumer<UserEditorBloc, UserEditorState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) {
-        if (state is UserSaveSuccess) {
+        if (state is UserEditorSaved) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
           context.go(ApplicationRoutesConstants.userList);
         }
-        if (state is UserFailure) {
+        if (state is UserEditorFailure) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
@@ -87,7 +87,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
     );
   }
 
-  Widget _buildPage(BuildContext context, UserState state) {
+  Widget _buildPage(BuildContext context, UserEditorState state) {
     final user = _userOf(state);
 
     if (_isInitialLoading(state)) {
@@ -99,7 +99,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
 
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final isSubmitting = state is UserLoading && !_isInitialLoading(state);
+    final isSubmitting = state is UserEditorLoading && !_isInitialLoading(state);
 
     return SingleChildScrollView(
       child: Center(
@@ -253,7 +253,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
   Future<void> _handleBack(BuildContext context) async {
     if (widget.mode == EditorFormMode.view) {
       context.go(ApplicationRoutesConstants.userList);
-      context.read<UserBloc>().add(const UserViewCompleteEvent());
+      context.read<UserEditorBloc>().add(const UserEditorViewComplete());
       return;
     }
 
@@ -300,7 +300,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
   void _onSubmit(BuildContext context) {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
-      final id = _userOf(context.read<UserBloc>().state)?.id;
+      final id = _userOf(context.read<UserEditorBloc>().state)?.id;
 
       final user = const UserEntity().copyWith(
         id: id,
@@ -313,7 +313,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
         authorities: [formData['authorities'] ?? ''],
       );
 
-      context.read<UserBloc>().add(UserSubmitEvent(user));
+      context.read<UserEditorBloc>().add(UserEditorSubmit(user));
     }
   }
 

@@ -5,7 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -18,7 +18,7 @@ import '../../../../test_utils.dart';
 
 void main() {
   late MockAuthorityBloc mockAuthorityBloc;
-  late MockUserBloc mockUserBloc;
+  late MockUserListBloc mockUserBloc;
   late TestUtils testUtils;
 
   setUpAll(() {
@@ -29,7 +29,7 @@ void main() {
     testUtils = TestUtils();
     await testUtils.setupUnitTest();
 
-    mockUserBloc = MockUserBloc();
+    mockUserBloc = MockUserListBloc();
     mockAuthorityBloc = MockAuthorityBloc();
 
     // Set up default AuthorityBloc behavior
@@ -75,7 +75,7 @@ void main() {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider<UserBloc>.value(value: mockUserBloc),
+        BlocProvider<UserListBloc>.value(value: mockUserBloc),
         BlocProvider<AuthorityBloc>.value(value: mockAuthorityBloc),
       ],
       child: MaterialApp.router(
@@ -98,9 +98,9 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserListState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserListInitial());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -130,9 +130,9 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserListState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserListInitial());
 
       final mockUsers = [
         User(
@@ -156,7 +156,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Simulate successful search
-      userStateController.add(UserSearchSuccess(userList: mockUsers));
+      userStateController.add(UserListLoaded(users: mockUsers));
       await tester.pumpAndSettle();
 
       // ASSERT
@@ -174,9 +174,9 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserListState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserListInitial());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -203,9 +203,9 @@ void main() {
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserListState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserListInitial());
 
       // ACT
       await tester.pumpWidget(buildTestableWidget());
@@ -225,9 +225,9 @@ void main() {
 
     testWidgets('handles screen size responsiveness', (tester) async {
       // ARRANGE
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserListState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserListInitial());
 
       // Test large screen
       tester.view.physicalSize = const Size(1200, 800);
