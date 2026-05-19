@@ -284,9 +284,9 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         'given valid credentials when submitted then emits [loading, success]',
         setUp: () async {
-          await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
-          await AppLocalStorage().save(StorageKeys.username.name, "username");
-          await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
+          await AppLocalStorage().save(StorageKeys.jwtToken.key, "MOCK_TOKEN");
+          await AppLocalStorage().save(StorageKeys.username.key, "username");
+          await AppLocalStorage().save(StorageKeys.roles.key, ["ROLE_USER"]);
           repository.authenticateResult = const Success(AuthTokenEntity(idToken: 'MOCK_TOKEN'));
         },
         build: () => _buildBloc(repository, accountRepository),

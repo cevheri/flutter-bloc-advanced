@@ -17,7 +17,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
 
   Future<void> _onLoadTheme(LoadTheme event, Emitter<ThemeState> emit) async {
     try {
-      final brightnessPref = await AppLocalStorage().read(StorageKeys.brightness.name);
+      final brightnessPref = await AppLocalStorage().read(StorageKeys.brightness.key);
       ThemeMode themeMode;
       if (brightnessPref == 'dark') {
         themeMode = ThemeMode.dark;
@@ -27,7 +27,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
         themeMode = ThemeMode.system;
       }
 
-      final palettePref = await AppLocalStorage().read(StorageKeys.theme.name);
+      final palettePref = await AppLocalStorage().read(StorageKeys.theme.key);
       AppThemePalette palette = AppThemePalette.classic;
 
       if (palettePref != null) {
@@ -67,7 +67,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
           paletteName = 'sunset';
           break;
       }
-      await AppLocalStorage().save(StorageKeys.theme.name, paletteName);
+      await AppLocalStorage().save(StorageKeys.theme.key, paletteName);
     } catch (_) {}
   }
 
@@ -81,7 +81,7 @@ class ThemeBloc extends Bloc<ThemeEvent, ThemeState> {
     }
     emit(state.copyWith(themeMode: newMode));
     try {
-      await AppLocalStorage().save(StorageKeys.brightness.name, newMode == ThemeMode.dark ? 'dark' : 'light');
+      await AppLocalStorage().save(StorageKeys.brightness.key, newMode == ThemeMode.dark ? 'dark' : 'light');
     } catch (_) {}
   }
 }

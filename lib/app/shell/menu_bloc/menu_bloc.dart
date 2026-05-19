@@ -34,7 +34,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
   FutureOr<void> _onChangeLanguage(ChangeLanguageEvent event, Emitter<MenuState> emit) async {
     emit(state.copyWith(language: event.language, status: MenuStateStatus.loading));
     try {
-      await AppLocalStorage().save(StorageKeys.language.name, event.language);
+      await AppLocalStorage().save(StorageKeys.language.key, event.language);
       AppLocalStorageCached.language = event.language;
       emit(state.copyWith(language: event.language, status: MenuStateStatus.success));
       await S.load(Locale(event.language));

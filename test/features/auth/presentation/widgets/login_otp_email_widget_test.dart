@@ -158,7 +158,7 @@ void main() {
     testWidgets('should handle back button press', (tester) async {
       AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       SharedPreferences.setMockInitialValues({});
-      await AppLocalStorage().save(StorageKeys.language.name, "en");
+      await AppLocalStorage().save(StorageKeys.language.key, "en");
 
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();

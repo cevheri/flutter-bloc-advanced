@@ -51,7 +51,7 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     _log.debug('401 received for {} — attempting token refresh', [requestPath]);
 
     try {
-      final refreshToken = await AppLocalStorage().read(StorageKeys.refreshToken.name);
+      final refreshToken = await AppLocalStorage().read(StorageKeys.refreshToken.key);
       if (refreshToken == null || (refreshToken is String && refreshToken.isEmpty)) {
         _log.warn('No refresh token available — session expired');
         _triggerLogout();
@@ -85,9 +85,9 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
         }
 
         // Persist the new tokens
-        await AppLocalStorage().save(StorageKeys.jwtToken.name, newIdToken);
+        await AppLocalStorage().save(StorageKeys.jwtToken.key, newIdToken);
         if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-          await AppLocalStorage().save(StorageKeys.refreshToken.name, newRefreshToken);
+          await AppLocalStorage().save(StorageKeys.refreshToken.key, newRefreshToken);
         }
 
         _log.info('Token refresh successful — retrying original request');

@@ -201,9 +201,9 @@ void main() {
       );
       await tester.pump();
 
-      await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
-      await AppLocalStorage().save(StorageKeys.username.name, "mock");
-      await AppLocalStorage().save(StorageKeys.roles.name, ["ROLE_USER"]);
+      await AppLocalStorage().save(StorageKeys.jwtToken.key, "MOCK_TOKEN");
+      await AppLocalStorage().save(StorageKeys.username.key, "mock");
+      await AppLocalStorage().save(StorageKeys.roles.key, ["ROLE_USER"]);
       loginStateController.add(const LoginLoadedState(username: "test@example.com"));
       await tester.pump();
 

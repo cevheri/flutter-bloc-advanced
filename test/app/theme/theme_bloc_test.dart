@@ -87,7 +87,7 @@ void main() {
       blocTest<ThemeBloc, ThemeState>(
         'emits dark mode when brightness preference is dark',
         setUp: () async {
-          await AppLocalStorage().save(StorageKeys.brightness.name, 'dark');
+          await AppLocalStorage().save(StorageKeys.brightness.key, 'dark');
         },
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const LoadTheme()),
@@ -101,7 +101,7 @@ void main() {
       blocTest<ThemeBloc, ThemeState>(
         'emits light mode when brightness preference is light',
         setUp: () async {
-          await AppLocalStorage().save(StorageKeys.brightness.name, 'light');
+          await AppLocalStorage().save(StorageKeys.brightness.key, 'light');
         },
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const LoadTheme()),
@@ -111,7 +111,7 @@ void main() {
       blocTest<ThemeBloc, ThemeState>(
         'emits nature palette when theme preference is nature',
         setUp: () async {
-          await AppLocalStorage().save(StorageKeys.theme.name, 'nature');
+          await AppLocalStorage().save(StorageKeys.theme.key, 'nature');
         },
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const LoadTheme()),
@@ -121,7 +121,7 @@ void main() {
       blocTest<ThemeBloc, ThemeState>(
         'emits sunset palette when theme preference is sunset',
         setUp: () async {
-          await AppLocalStorage().save(StorageKeys.theme.name, 'sunset');
+          await AppLocalStorage().save(StorageKeys.theme.key, 'sunset');
         },
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const LoadTheme()),
@@ -131,7 +131,7 @@ void main() {
       blocTest<ThemeBloc, ThemeState>(
         'defaults to classic palette for unknown theme preference',
         setUp: () async {
-          await AppLocalStorage().save(StorageKeys.theme.name, 'unknown_palette');
+          await AppLocalStorage().save(StorageKeys.theme.key, 'unknown_palette');
         },
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const LoadTheme()),
@@ -141,8 +141,8 @@ void main() {
       blocTest<ThemeBloc, ThemeState>(
         'loads both dark mode and sunset palette together',
         setUp: () async {
-          await AppLocalStorage().save(StorageKeys.brightness.name, 'dark');
-          await AppLocalStorage().save(StorageKeys.theme.name, 'sunset');
+          await AppLocalStorage().save(StorageKeys.brightness.key, 'dark');
+          await AppLocalStorage().save(StorageKeys.theme.key, 'sunset');
         },
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const LoadTheme()),
@@ -181,7 +181,7 @@ void main() {
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const ChangeThemePalette(palette: AppThemePalette.nature)),
         verify: (_) async {
-          final stored = await AppLocalStorage().read(StorageKeys.theme.name);
+          final stored = await AppLocalStorage().read(StorageKeys.theme.key);
           expect(stored, 'nature');
         },
       );
@@ -191,7 +191,7 @@ void main() {
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const ChangeThemePalette(palette: AppThemePalette.sunset)),
         verify: (_) async {
-          final stored = await AppLocalStorage().read(StorageKeys.theme.name);
+          final stored = await AppLocalStorage().read(StorageKeys.theme.key);
           expect(stored, 'sunset');
         },
       );
@@ -220,7 +220,7 @@ void main() {
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const ToggleBrightness()),
         verify: (_) async {
-          final stored = await AppLocalStorage().read(StorageKeys.brightness.name);
+          final stored = await AppLocalStorage().read(StorageKeys.brightness.key);
           expect(stored, 'dark');
         },
       );
@@ -231,7 +231,7 @@ void main() {
         build: () => ThemeBloc(),
         act: (bloc) => bloc.add(const ToggleBrightness()),
         verify: (_) async {
-          final stored = await AppLocalStorage().read(StorageKeys.brightness.name);
+          final stored = await AppLocalStorage().read(StorageKeys.brightness.key);
           expect(stored, 'light');
         },
       );

@@ -79,6 +79,12 @@ Every feature follows: **Event → BLoC → State → UI**
 - States use status enums: `initial`, `loading`, `success`, `failure`.
 - Local UI state can be handled within the page, but business logic MUST be in BLoCs.
 
+### `Bloc` vs `Cubit`
+
+- Use **`Cubit`** when every interaction is an atomic, fire-and-forget call and the event stream adds no value (no debouncing, no concurrency policy, no historical event payload needed). Example: `SettingsCubit` (`changeLanguage`, `changeTheme`, `logout`).
+- Use **`Bloc`** when events carry meaningful payload, when an `EventTransformer` (debounce, restartable, droppable) is needed, or when the event log itself is valuable for replay/observability. Example: `UserBloc` (search + pagination + CRUD).
+- Default to `Bloc` for any new feature touching network requests or user input streams; reach for `Cubit` only after confirming none of the above apply.
+
 ## Logging
 
 - Acquire loggers via `AppLogger.getLogger('Name')` (`lib/core/logging/app_logger.dart`).
