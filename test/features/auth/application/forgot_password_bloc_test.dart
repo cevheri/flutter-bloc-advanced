@@ -63,56 +63,39 @@ void main() {
   //region state
   /// ForgotPassword State Tests
   group('ForgotPassword State Tests', () {
-    //ForgotPasswordState
-    test("supports value comparisons", () {
-      expect(const ForgotPasswordState(), const ForgotPasswordState());
-      const state = ForgotPasswordState(status: ForgotPasswordStatus.initial);
-      expect(const ForgotPasswordState(), state);
-    });
-
-    //ForgotPasswordState Initial Test
-    test('initial state is ForgotPasswordState', () {
-      expect(
-        ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)).state,
-        const ForgotPasswordState(status: ForgotPasswordStatus.initial),
-      );
-    });
-
-    //ForgotPasswordInitialState Test
     test("ForgotPasswordInitialState", () {
       expect(const ForgotPasswordInitialState(), const ForgotPasswordInitialState());
+      expect(const ForgotPasswordInitialState().props, const <Object?>[]);
     });
 
-    //ForgotPasswordCompletedState Test
+    test("ForgotPasswordLoadingState", () {
+      expect(const ForgotPasswordLoadingState(), const ForgotPasswordLoadingState());
+      expect(const ForgotPasswordLoadingState().props, const <Object?>[]);
+    });
+
     test("ForgotPasswordCompletedState", () {
-      expect(const ForgotPasswordCompletedState(), const ForgotPasswordCompletedState());
+      expect(
+        const ForgotPasswordCompletedState(email: 'test@example.com'),
+        const ForgotPasswordCompletedState(email: 'test@example.com'),
+      );
+      expect(const ForgotPasswordCompletedState(email: 'test@example.com').props, const <Object?>['test@example.com']);
     });
 
-    // ForgotPasswordErrorState Test
     test("ForgotPasswordErrorState", () {
       expect(
-        const ForgotPasswordErrorState(message: "Reset Password Error"),
-        const ForgotPasswordErrorState(message: "Reset Password Error"),
+        const ForgotPasswordErrorState(email: 'test@example.com', errorMessage: 'boom'),
+        const ForgotPasswordErrorState(email: 'test@example.com', errorMessage: 'boom'),
       );
-    });
-
-    test("copyWith retains the same values if no arguments are provided", () {
-      const state = ForgotPasswordState(status: ForgotPasswordStatus.failure, email: "test@example.com");
-      expect(state.copyWith(), state);
-    });
-
-    test("props", () {
-      expect(const ForgotPasswordState(status: ForgotPasswordStatus.initial, email: 'test@example.com').props, [
-        ForgotPasswordStatus.initial,
-        "test@example.com",
-        null,
+      expect(const ForgotPasswordErrorState(email: 'test@example.com', errorMessage: 'boom').props, const <Object?>[
+        'test@example.com',
+        'boom',
       ]);
     });
 
-    test("initial state is ForgotPasswordState", () {
+    test("initial bloc state is ForgotPasswordInitialState", () {
       expect(
         ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)).state,
-        const ForgotPasswordState(status: ForgotPasswordStatus.initial),
+        const ForgotPasswordInitialState(),
       );
     });
   });
@@ -122,43 +105,36 @@ void main() {
   group("ForgotPassword Bloc Test", () {
     const email = "test@test.com";
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
-      'emits [ForgotPasswordLoadingState, ForgotPasswordCompletedState] when resetPassword is successful',
+      'emits [Loading, Completed] when resetPassword is successful',
       setUp: () => when(() => repository.resetPassword(email)).thenAnswer((_) async => const Success<void>(null)),
       build: () => ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
-      expect: () => [
-        const ForgotPasswordState(status: ForgotPasswordStatus.loading),
-        const ForgotPasswordState(status: ForgotPasswordStatus.success, email: email),
-      ],
+      expect: () => [const ForgotPasswordLoadingState(), const ForgotPasswordCompletedState(email: email)],
     );
 
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
-      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when resetPassword returns Failure',
+      'emits [Loading, Error] when resetPassword returns Failure',
       setUp: () => when(
         () => repository.resetPassword(email),
       ).thenAnswer((_) async => const Failure<void>(ServerError('Reset failed'))),
       build: () => ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
       expect: () => [
-        const ForgotPasswordState(status: ForgotPasswordStatus.loading),
-        const ForgotPasswordState(status: ForgotPasswordStatus.failure, email: email, errorMessage: 'Reset failed'),
+        const ForgotPasswordLoadingState(),
+        const ForgotPasswordErrorState(email: email, errorMessage: 'Reset failed'),
       ],
     );
 
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
-      'emits [ForgotPasswordLoadingState, ForgotPasswordErrorState] when resetPassword returns ValidationError',
+      'emits [Loading, Error] when resetPassword returns ValidationError',
       setUp: () => when(
         () => repository.resetPassword('invalid-email'),
       ).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid email'))),
       build: () => ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: 'invalid-email')),
       expect: () => [
-        const ForgotPasswordState(status: ForgotPasswordStatus.loading),
-        const ForgotPasswordState(
-          status: ForgotPasswordStatus.failure,
-          email: 'invalid-email',
-          errorMessage: 'Invalid email',
-        ),
+        const ForgotPasswordLoadingState(),
+        const ForgotPasswordErrorState(email: 'invalid-email', errorMessage: 'Invalid email'),
       ],
     );
   });

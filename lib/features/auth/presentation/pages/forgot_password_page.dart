@@ -22,7 +22,7 @@ class ForgotPasswordScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
-      listenWhen: (previous, current) => previous.status != current.status,
+      listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) => _handleStateChanges(context, state),
       child: PopScope(
         canPop: !(_formKey.currentState?.isDirty ?? false),
@@ -42,7 +42,7 @@ class ForgotPasswordScreen extends StatelessWidget {
 
   Widget _buildBody(BuildContext context) {
     return BlocBuilder<ForgotPasswordBloc, ForgotPasswordState>(
-      buildWhen: (previous, current) => previous.status != current.status,
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       builder: (context, state) {
         return ResponsiveFormBuilder(
           formKey: _formKey,
@@ -108,8 +108,8 @@ class ForgotPasswordScreen extends StatelessWidget {
       child: ResponsiveSubmitButton(
         key: forgotPasswordButtonSubmitKey,
         buttonText: S.of(context).email_send,
-        onPressed: () => state.status == ForgotPasswordStatus.loading ? null : _onSubmit(context, state),
-        isLoading: state.status == ForgotPasswordStatus.loading,
+        onPressed: () => state is ForgotPasswordLoadingState ? null : _onSubmit(context, state),
+        isLoading: state is ForgotPasswordLoadingState,
       ),
     );
   }
@@ -134,19 +134,16 @@ class ForgotPasswordScreen extends StatelessWidget {
 
   void _handleStateChanges(BuildContext context, ForgotPasswordState state) {
     const duration = Duration(milliseconds: 1000);
-    switch (state.status) {
-      case ForgotPasswordStatus.initial:
+    switch (state) {
+      case ForgotPasswordInitialState():
         break;
-      case ForgotPasswordStatus.loading:
+      case ForgotPasswordLoadingState():
         _showSnackBar(context, S.of(context).loading, duration);
-        break;
-      case ForgotPasswordStatus.success:
+      case ForgotPasswordCompletedState():
         _formKey.currentState?.reset();
         _showSnackBar(context, S.of(context).success, duration);
-        break;
-      case ForgotPasswordStatus.failure:
+      case ForgotPasswordErrorState():
         _showSnackBar(context, S.of(context).failed, duration);
-        break;
     }
   }
 
