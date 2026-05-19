@@ -6,7 +6,6 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/change_password_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
-import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 
 part 'change_password_event.dart';
 part 'change_password_state.dart';
@@ -15,9 +14,8 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
   static final _log = AppLogger.getLogger("ChangePasswordBloc");
   final ChangePasswordUseCase _changePasswordUseCase;
 
-  ChangePasswordBloc({ChangePasswordUseCase? changePasswordUseCase, IAccountRepository? repository})
-    : _changePasswordUseCase =
-          changePasswordUseCase ?? ChangePasswordUseCase(repository ?? (throw ArgumentError('repository is required'))),
+  ChangePasswordBloc({required ChangePasswordUseCase changePasswordUseCase})
+    : _changePasswordUseCase = changePasswordUseCase,
       super(const ChangePasswordState()) {
     on<ChangePasswordChanged>(_onSubmit);
   }

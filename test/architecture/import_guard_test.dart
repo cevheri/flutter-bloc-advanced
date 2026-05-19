@@ -34,14 +34,20 @@ const _knownCrossFeatureExceptions = {
   'lib/features/dashboard/presentation/pages/dashboard_home_page.dart → lifecycle/application/lifecycle_state',
   'lib/features/account/data/repositories/account_repository.dart → users/data/models/user',
   'lib/features/auth/navigation/auth_routes.dart → account/domain/repositories/account_repository',
+  // Cross-feature use case imports moved here when the BLoC constructors
+  // switched to required-use-case DI (#86). Proper fix is to relocate the
+  // Register/Forgot/Change BlocProviders out of auth/navigation into
+  // app/di/app_scope so the cross-feature coupling lives at the composition
+  // root. That move would change BLoC lifecycle (route-scoped → app-scoped),
+  // so it's deferred to its own issue.
+  'lib/features/auth/navigation/auth_routes.dart → account/application/usecases/change_password_usecase',
+  'lib/features/auth/navigation/auth_routes.dart → account/application/usecases/register_account_usecase',
+  'lib/features/auth/navigation/auth_routes.dart → account/application/usecases/reset_password_usecase',
   'lib/features/auth/application/forgot_password_bloc.dart → account/application/usecases/reset_password_usecase',
-  'lib/features/auth/application/forgot_password_bloc.dart → account/domain/repositories/account_repository',
   'lib/features/auth/application/login_bloc.dart → account/application/usecases/get_account_usecase',
   'lib/features/auth/application/change_password_bloc.dart → account/application/usecases/change_password_usecase',
   'lib/features/auth/application/change_password_bloc.dart → account/data/models/change_password',
-  'lib/features/auth/application/change_password_bloc.dart → account/domain/repositories/account_repository',
   'lib/features/auth/application/register_bloc.dart → account/application/usecases/register_account_usecase',
-  'lib/features/auth/application/register_bloc.dart → account/domain/repositories/account_repository',
 };
 
 /// features/ importing app/ (route constants used for navigation)

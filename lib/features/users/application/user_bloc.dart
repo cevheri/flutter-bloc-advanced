@@ -8,7 +8,6 @@ import 'package:flutter_bloc_advance/features/users/application/usecases/delete_
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/save_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/search_users_usecase.dart';
-import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
 part 'user_event.dart';
@@ -16,19 +15,14 @@ part 'user_state.dart';
 
 class UserBloc extends Bloc<UserEvent, UserState> {
   UserBloc({
-    SearchUsersUseCase? searchUsersUseCase,
-    FetchUserUseCase? fetchUserUseCase,
-    SaveUserUseCase? saveUserUseCase,
-    DeleteUserUseCase? deleteUserUseCase,
-    IUserRepository? repository,
-  }) : _searchUsersUseCase =
-           searchUsersUseCase ?? SearchUsersUseCase(repository ?? (throw ArgumentError('repository is required'))),
-       _fetchUserUseCase =
-           fetchUserUseCase ?? FetchUserUseCase(repository ?? (throw ArgumentError('repository is required'))),
-       _saveUserUseCase =
-           saveUserUseCase ?? SaveUserUseCase(repository ?? (throw ArgumentError('repository is required'))),
-       _deleteUserUseCase =
-           deleteUserUseCase ?? DeleteUserUseCase(repository ?? (throw ArgumentError('repository is required'))),
+    required SearchUsersUseCase searchUsersUseCase,
+    required FetchUserUseCase fetchUserUseCase,
+    required SaveUserUseCase saveUserUseCase,
+    required DeleteUserUseCase deleteUserUseCase,
+  }) : _searchUsersUseCase = searchUsersUseCase,
+       _fetchUserUseCase = fetchUserUseCase,
+       _saveUserUseCase = saveUserUseCase,
+       _deleteUserUseCase = deleteUserUseCase,
        super(const UserState()) {
     on<UserSearchEvent>(_onSearch);
     on<UserFetchEvent>(_onFetchUser);

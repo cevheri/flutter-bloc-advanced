@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/features/account/application/usecases/change_password_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -79,7 +80,7 @@ void main() {
   group("ChangePasswordBloc", () {
     test("initial state is ChangePasswordState with initial status", () {
       expect(
-        ChangePasswordBloc(repository: repository).state,
+        ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)).state,
         const ChangePasswordState(status: ChangePasswordStatus.initial),
       );
     });
@@ -97,7 +98,7 @@ void main() {
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading, success] when ChangePasswordChanged is added",
         setUp: () => when(method).thenAnswer((_) async => const Success<void>(null)),
-        build: () => ChangePasswordBloc(repository: repository),
+        build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
         verify: (_) => verify(method).called(1),
@@ -106,7 +107,7 @@ void main() {
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading, error] when ChangePasswordChanged is added and returns Failure",
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ServerError('Change password failed'))),
-        build: () => ChangePasswordBloc(repository: repository),
+        build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)),
         act: (bloc) => bloc..add(event),
         expect: () => [
           loadingState,
@@ -118,7 +119,7 @@ void main() {
       blocTest<ChangePasswordBloc, ChangePasswordState>(
         "emits [loading, error] when repository returns Failure with ValidationError",
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid password'))),
-        build: () => ChangePasswordBloc(repository: repository),
+        build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)),
         act: (bloc) => bloc..add(event),
         expect: () => [
           loadingState,

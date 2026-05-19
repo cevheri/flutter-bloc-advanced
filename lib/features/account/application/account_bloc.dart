@@ -6,22 +6,16 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
-import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
 part 'account_event.dart';
 part 'account_state.dart';
 
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
-  AccountBloc({
-    GetAccountUseCase? getAccountUseCase,
-    UpdateAccountUseCase? updateAccountUseCase,
-    IAccountRepository? repository,
-  }) : _getAccountUseCase =
-           getAccountUseCase ?? GetAccountUseCase(repository ?? (throw ArgumentError('repository is required'))),
-       _updateAccountUseCase =
-           updateAccountUseCase ?? UpdateAccountUseCase(repository ?? (throw ArgumentError('repository is required'))),
-       super(const AccountState()) {
+  AccountBloc({required GetAccountUseCase getAccountUseCase, required UpdateAccountUseCase updateAccountUseCase})
+    : _getAccountUseCase = getAccountUseCase,
+      _updateAccountUseCase = updateAccountUseCase,
+      super(const AccountState()) {
     on<AccountFetchEvent>(_onFetchAccount);
     on<AccountSubmitEvent>(_onSubmit);
   }
