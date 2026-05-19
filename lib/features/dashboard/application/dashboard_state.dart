@@ -4,6 +4,15 @@ part of 'dashboard_cubit.dart';
 enum SystemDashboardStatus { initial, loading, loaded, error }
 
 /// State for the system dashboard cubit.
+///
+/// **Documented exception to the sealed-by-default rule** (see CLAUDE.md → "State Modeling — MAIN RULE").
+/// This state is a transactional snapshot: every field is part of one coherent dashboard
+/// reading (connectivity, circuit-breaker counts, cache stats, feature flags, endpoint
+/// health, app config, interceptors) and they all evolve together on each `load()`.
+/// Splitting into sealed variants would either duplicate the bundle across `loading`/
+/// `loaded`/`error` or drop the last-known snapshot when an error fires — both worse than
+/// the single-state design. The `errorMessage` field exists alongside the data precisely
+/// so a transient refresh failure can surface without wiping the previously loaded view.
 class SystemDashboardState extends Equatable {
   const SystemDashboardState({
     this.status = SystemDashboardStatus.initial,
