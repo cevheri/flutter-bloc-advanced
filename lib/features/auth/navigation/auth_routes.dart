@@ -1,5 +1,8 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/features/account/application/usecases/change_password_usecase.dart';
+import 'package:flutter_bloc_advance/features/account/application/usecases/register_account_usecase.dart';
+import 'package:flutter_bloc_advance/features/account/application/usecases/reset_password_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/forgot_password_bloc.dart';
@@ -36,7 +39,8 @@ class AuthFeatureRoutes {
       name: 'forgot-password',
       path: ApplicationRoutesConstants.forgotPassword,
       builder: (context, state) => BlocProvider(
-        create: (_) => ForgotPasswordBloc(repository: context.read<IAccountRepository>()),
+        create: (_) =>
+            ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(context.read<IAccountRepository>())),
         child: ForgotPasswordScreen(),
       ),
     ),
@@ -44,7 +48,7 @@ class AuthFeatureRoutes {
       name: 'register',
       path: ApplicationRoutesConstants.register,
       builder: (context, state) => BlocProvider(
-        create: (_) => RegisterBloc(repository: context.read<IAccountRepository>()),
+        create: (_) => RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(context.read<IAccountRepository>())),
         child: RegisterScreen(),
       ),
     ),
@@ -59,7 +63,8 @@ class AuthFeatureRoutes {
         state: state,
         type: AppPageTransitionType.slideRight,
         child: BlocProvider(
-          create: (_) => ChangePasswordBloc(repository: context.read<IAccountRepository>()),
+          create: (_) =>
+              ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(context.read<IAccountRepository>())),
           child: ChangePasswordScreen(),
         ),
       ),

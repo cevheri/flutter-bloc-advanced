@@ -5,7 +5,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/register_account_usecase.dart';
-import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
 part 'register_event.dart';
@@ -15,10 +14,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   static final _log = AppLogger.getLogger("RegisterBloc");
   final RegisterAccountUseCase _registerAccountUseCase;
 
-  RegisterBloc({RegisterAccountUseCase? registerAccountUseCase, IAccountRepository? repository})
-    : _registerAccountUseCase =
-          registerAccountUseCase ??
-          RegisterAccountUseCase(repository ?? (throw ArgumentError('repository is required'))),
+  RegisterBloc({required RegisterAccountUseCase registerAccountUseCase})
+    : _registerAccountUseCase = registerAccountUseCase,
       super(const RegisterInitialState()) {
     on<RegisterFormSubmitted>(_onSubmit);
   }

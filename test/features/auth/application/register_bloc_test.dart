@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/features/account/application/usecases/register_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
@@ -110,7 +111,7 @@ void main() {
   group("RegisterBloc", () {
     const initialState = RegisterInitialState();
     test("initial state is LoginState", () {
-      expect(RegisterBloc(repository: repository).state, initialState);
+      expect(RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(repository)).state, initialState);
     });
 
     group("LoginFormSubmitted", () {
@@ -126,7 +127,7 @@ void main() {
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, success] when submit is successful",
         setUp: () => repository.registerResult = const Success(input),
-        build: () => RegisterBloc(repository: repository),
+        build: () => RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(repository)),
         act: (bloc) => bloc..add(event),
         expect: () => statesSuccess,
       );
@@ -134,7 +135,7 @@ void main() {
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, failure] when exception occurs",
         setUp: () => repository.registerResult = const Failure(UnknownError("Register Error")),
-        build: () => RegisterBloc(repository: repository),
+        build: () => RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(repository)),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );
@@ -142,7 +143,7 @@ void main() {
       blocTest<RegisterBloc, RegisterState>(
         "emits [loading, failure] when response is failure",
         setUp: () => repository.registerResult = const Failure(ValidationError("Register Error")),
-        build: () => RegisterBloc(repository: repository),
+        build: () => RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(repository)),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
       );
