@@ -1,38 +1,37 @@
 part of 'register_bloc.dart';
 
-enum RegisterStatus { initial, loading, success, error }
+sealed class RegisterState extends Equatable {
+  const RegisterState();
+}
 
-class RegisterState extends Equatable {
-  final UserEntity? data;
-  final RegisterStatus status;
-
-  const RegisterState({this.data, this.status = RegisterStatus.initial});
-
-  RegisterState copyWith({UserEntity? data, RegisterStatus? status}) {
-    return RegisterState(data: data ?? this.data, status: status ?? this.status);
-  }
+final class RegisterInitialState extends RegisterState {
+  const RegisterInitialState();
 
   @override
-  List<Object> get props => [status, data ?? ''];
+  List<Object?> get props => const [];
+}
+
+final class RegisterLoadingState extends RegisterState {
+  const RegisterLoadingState();
 
   @override
-  bool get stringify => true;
+  List<Object?> get props => const [];
 }
 
-class RegisterInitialState extends RegisterState {
-  const RegisterInitialState() : super(status: RegisterStatus.initial);
+final class RegisterCompletedState extends RegisterState {
+  const RegisterCompletedState({required this.user});
+
+  final UserEntity user;
+
+  @override
+  List<Object?> get props => [user];
 }
 
-class RegisterLoadingState extends RegisterState {
-  const RegisterLoadingState() : super(status: RegisterStatus.loading);
-}
+final class RegisterErrorState extends RegisterState {
+  const RegisterErrorState({required this.message});
 
-class RegisterCompletedState extends RegisterState {
-  const RegisterCompletedState({required UserEntity user}) : super(data: user, status: RegisterStatus.success);
-}
-
-class RegisterErrorState extends RegisterState {
   final String message;
 
-  const RegisterErrorState({required this.message}) : super(status: RegisterStatus.error);
+  @override
+  List<Object?> get props => [message];
 }

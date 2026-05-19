@@ -51,10 +51,8 @@ void main() {
     );
 
     // Setup default bloc behaviors
-    when(
-      () => mockRegisterBloc.stream,
-    ).thenAnswer((_) => Stream.fromIterable([const RegisterState(status: RegisterStatus.initial)]));
-    when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+    when(() => mockRegisterBloc.stream).thenAnswer((_) => Stream.fromIterable([const RegisterInitialState()]));
+    when(() => mockRegisterBloc.state).thenReturn(const RegisterInitialState());
     when(() => mockAccountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
     when(() => mockAccountBloc.state).thenReturn(const AccountState());
   });
@@ -153,7 +151,7 @@ void main() {
       // Setup bloc with broadcast stream to allow multiple listeners
       final controller = StreamController<RegisterState>.broadcast();
       when(() => mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
-      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterInitialState());
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
@@ -164,8 +162,8 @@ void main() {
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
 
       // Change to loading state
-      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
-      controller.add(const RegisterState(status: RegisterStatus.loading));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterLoadingState());
+      controller.add(const RegisterLoadingState());
 
       // Submit form
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
@@ -230,7 +228,7 @@ void main() {
       // Arrange
       final controller = StreamController<RegisterState>.broadcast();
       when(() => mockRegisterBloc.stream).thenAnswer((_) => controller.stream);
-      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.initial));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterInitialState());
 
       await tester.pumpWidget(createWidgetUnderTest());
       await tester.pumpAndSettle();
@@ -241,8 +239,8 @@ void main() {
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), testUser.email!);
 
       // Submit form and emit loading state
-      when(() => mockRegisterBloc.state).thenReturn(const RegisterState(status: RegisterStatus.loading));
-      controller.add(const RegisterState(status: RegisterStatus.loading));
+      when(() => mockRegisterBloc.state).thenReturn(const RegisterLoadingState());
+      controller.add(const RegisterLoadingState());
       await tester.tap(find.byKey(const Key('registerSubmitButtonKey')));
       await tester.pump();
 

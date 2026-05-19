@@ -65,32 +65,25 @@ void main() {
   /// Register State Tests
   group("RegisterState", () {
     const user = UserEntity(firstName: "test", lastName: "test", email: "test@test.com");
-    const status = RegisterStatus.initial;
-
-    test("supports value comparisons", () {
-      expect(const RegisterState(data: user, status: status), const RegisterState(data: user, status: status));
-    });
 
     test("RegisterInitialState", () {
       expect(const RegisterInitialState(), const RegisterInitialState());
+      expect(const RegisterInitialState().props, const <Object?>[]);
     });
 
     test("RegisterLoadingState", () {
       expect(const RegisterLoadingState(), const RegisterLoadingState());
+      expect(const RegisterLoadingState().props, const <Object?>[]);
     });
 
     test("RegisterCompletedState", () {
       expect(const RegisterCompletedState(user: user), const RegisterCompletedState(user: user));
+      expect(const RegisterCompletedState(user: user).props, const <Object?>[user]);
     });
 
     test("RegisterErrorState", () {
       expect(const RegisterErrorState(message: "Register Error"), const RegisterErrorState(message: "Register Error"));
-    });
-
-    test("RegisterState copyWith", () {
-      expect(const RegisterState().copyWith(), const RegisterState());
-      expect(const RegisterState().copyWith(data: user), const RegisterState(data: user));
-      expect(const RegisterState().copyWith(status: status), const RegisterState(status: status));
+      expect(const RegisterErrorState(message: "Register Error").props, const <Object?>["Register Error"]);
     });
   });
   //endregion state
