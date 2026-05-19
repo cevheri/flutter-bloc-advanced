@@ -13,7 +13,7 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
   LifecycleBloc({required ILifecycleRepository repository, required FeatureFlagService featureFlagService})
     : _repository = repository,
       _featureFlagService = featureFlagService,
-      super(const LifecycleState()) {
+      super(const LifecycleInitial()) {
     on<LifecycleCheckEvent>(_onCheck);
     on<LifecycleDismissUpdateEvent>(_onDismissUpdate);
   }
@@ -25,7 +25,7 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
 
   FutureOr<void> _onCheck(LifecycleCheckEvent event, Emitter<LifecycleState> emit) async {
     _log.debug('Checking app lifecycle config');
-    emit(state.copyWith(status: LifecycleStatus.loading));
+    emit(const LifecycleLoading());
 
     final result = await _repository.fetchAppConfig();
 
@@ -39,29 +39,35 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
         // Check maintenance mode first
         if (data.maintenanceMode) {
           _log.info('App is in maintenance mode');
-          emit(state.copyWith(status: LifecycleStatus.maintenance, config: data));
+          emit(LifecycleMaintenance(config: data));
           return;
         }
 
         // Check force update
         if (data.minimumVersion != null && _isVersionBelow(AppConstants.appVersion, data.minimumVersion!)) {
           _log.info('Force update required: current={}, minimum={}', [AppConstants.appVersion, data.minimumVersion]);
-          emit(state.copyWith(status: LifecycleStatus.forceUpdate, config: data));
+          emit(LifecycleForceUpdate(config: data));
           return;
         }
 
         // All clear
-        emit(state.copyWith(status: LifecycleStatus.ready, config: data));
+        emit(LifecycleReady(config: data));
 
       case Failure(:final error):
         _log.warn('Failed to fetch app config: {}', [error.message]);
         // On failure, allow the app to proceed (graceful degradation)
-        emit(state.copyWith(status: LifecycleStatus.ready, error: error.message));
+        emit(LifecycleReady(error: error.message));
     }
   }
 
   FutureOr<void> _onDismissUpdate(LifecycleDismissUpdateEvent event, Emitter<LifecycleState> emit) {
-    emit(state.copyWith(status: LifecycleStatus.ready));
+    final config = switch (state) {
+      LifecycleMaintenance(:final config) => config,
+      LifecycleForceUpdate(:final config) => config,
+      LifecycleReady(:final config) => config,
+      _ => null,
+    };
+    emit(LifecycleReady(config: config));
   }
 
   /// Compare semantic versions. Returns true if [current] < [minimum].

@@ -18,25 +18,17 @@ class LifecycleGate extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<LifecycleBloc, LifecycleState>(
-      builder: (context, state) {
-        switch (state.status) {
-          case LifecycleStatus.forceUpdate:
-            return ForceUpdateScreen(
-              storeUrl: state.config?.storeUrl,
-              currentVersion: AppConstants.appVersion,
-              minimumVersion: state.config?.minimumVersion,
-            );
-          case LifecycleStatus.maintenance:
-            return MaintenanceScreen(
-              message: state.config?.maintenanceMessage,
-              estimatedEnd: state.config?.maintenanceEstimatedEnd,
-            );
-          case LifecycleStatus.initial:
-          case LifecycleStatus.loading:
-          case LifecycleStatus.ready:
-          case LifecycleStatus.failure:
-            return child;
-        }
+      builder: (context, state) => switch (state) {
+        LifecycleForceUpdate(:final config) => ForceUpdateScreen(
+          storeUrl: config.storeUrl,
+          currentVersion: AppConstants.appVersion,
+          minimumVersion: config.minimumVersion,
+        ),
+        LifecycleMaintenance(:final config) => MaintenanceScreen(
+          message: config.maintenanceMessage,
+          estimatedEnd: config.maintenanceEstimatedEnd,
+        ),
+        LifecycleInitial() || LifecycleLoading() || LifecycleReady() => child,
       },
     );
   }

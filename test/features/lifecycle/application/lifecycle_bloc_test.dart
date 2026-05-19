@@ -30,12 +30,9 @@ void main() {
   });
 
   group('LifecycleBloc', () {
-    test('initial state should be LifecycleState with initial status', () {
+    test('initial state should be LifecycleInitial', () {
       final bloc = LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
-      expect(bloc.state, const LifecycleState());
-      expect(bloc.state.status, LifecycleStatus.initial);
-      expect(bloc.state.config, isNull);
-      expect(bloc.state.error, isNull);
+      expect(bloc.state, const LifecycleInitial());
       bloc.close();
     });
 
@@ -50,12 +47,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>()
-              .having((s) => s.status, 'status', LifecycleStatus.ready)
-              .having((s) => s.config, 'config', isNotNull),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleReady>().having((s) => s.config, 'config', isNotNull)],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -68,10 +60,12 @@ void main() {
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>()
-              .having((s) => s.status, 'status', LifecycleStatus.maintenance)
-              .having((s) => s.config!.maintenanceMessage, 'maintenanceMessage', 'Under maintenance'),
+          const LifecycleLoading(),
+          isA<LifecycleMaintenance>().having(
+            (s) => s.config.maintenanceMessage,
+            'maintenanceMessage',
+            'Under maintenance',
+          ),
         ],
       );
 
@@ -86,10 +80,8 @@ void main() {
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>()
-              .having((s) => s.status, 'status', LifecycleStatus.forceUpdate)
-              .having((s) => s.config!.minimumVersion, 'minimumVersion', '2.0.0'),
+          const LifecycleLoading(),
+          isA<LifecycleForceUpdate>().having((s) => s.config.minimumVersion, 'minimumVersion', '2.0.0'),
         ],
       );
 
@@ -103,10 +95,8 @@ void main() {
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>()
-              .having((s) => s.status, 'status', LifecycleStatus.ready)
-              .having((s) => s.error, 'error', 'No connection'),
+          const LifecycleLoading(),
+          isA<LifecycleReady>().having((s) => s.error, 'error', 'No connection'),
         ],
       );
 
@@ -125,10 +115,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.maintenance),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleMaintenance>()],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -140,10 +127,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.ready),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -155,10 +139,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.ready),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -170,10 +151,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.ready),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -210,14 +188,11 @@ void main() {
 
     group('LifecycleDismissUpdateEvent', () {
       blocTest<LifecycleBloc, LifecycleState>(
-        'should emit ready status when update is dismissed',
+        'should emit ready (preserving config) when update is dismissed from force-update',
         build: () => LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance),
-        seed: () => const LifecycleState(
-          status: LifecycleStatus.forceUpdate,
-          config: AppConfigEntity(minimumVersion: '2.0.0'),
-        ),
+        seed: () => const LifecycleForceUpdate(config: AppConfigEntity(minimumVersion: '2.0.0')),
         act: (bloc) => bloc.add(const LifecycleDismissUpdateEvent()),
-        expect: () => [isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.ready)],
+        expect: () => [isA<LifecycleReady>().having((s) => s.config?.minimumVersion, 'config.minimumVersion', '2.0.0')],
       );
     });
 
@@ -232,10 +207,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.forceUpdate),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleForceUpdate>()],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -248,10 +220,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.forceUpdate),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleForceUpdate>()],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -264,10 +233,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.forceUpdate),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleForceUpdate>()],
       );
 
       blocTest<LifecycleBloc, LifecycleState>(
@@ -280,10 +246,7 @@ void main() {
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
-        expect: () => [
-          const LifecycleState(status: LifecycleStatus.loading),
-          isA<LifecycleState>().having((s) => s.status, 'status', LifecycleStatus.ready),
-        ],
+        expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
       );
     });
   });
