@@ -11,10 +11,12 @@ import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
@@ -38,6 +40,7 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
         RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
         RepositoryProvider<IAuthRepository>(create: (_) => dependencies.createAuthRepository()),
+        RepositoryProvider<IAuthSessionRepository>(create: (_) => dependencies.createAuthSessionRepository()),
         RepositoryProvider<MenuRepository>(create: (_) => dependencies.createMenuRepository()),
         RepositoryProvider<IUserRepository>(create: (_) => dependencies.createUserRepository()),
       ],
@@ -51,6 +54,7 @@ class AppScope extends StatelessWidget {
               sendOtpUseCase: SendOtpUseCase(context.read<IAuthRepository>()),
               verifyOtpUseCase: VerifyOtpUseCase(context.read<IAuthRepository>()),
               getAccountUseCase: GetAccountUseCase(context.read<IAccountRepository>()),
+              persistAuthSessionUseCase: PersistAuthSessionUseCase(context.read<IAuthSessionRepository>()),
             ),
           ),
           BlocProvider<AuthorityBloc>(
