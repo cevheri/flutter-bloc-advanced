@@ -55,6 +55,7 @@ class SystemDashboardState extends Equatable {
     AppConfigSummary? appConfig,
     List<InterceptorInfo>? interceptors,
     String? errorMessage,
+    bool clearErrorMessage = false,
   }) {
     return SystemDashboardState(
       status: status ?? this.status,
@@ -68,7 +69,7 @@ class SystemDashboardState extends Equatable {
       featureFlags: featureFlags ?? this.featureFlags,
       appConfig: appConfig ?? this.appConfig,
       interceptors: interceptors ?? this.interceptors,
-      errorMessage: errorMessage ?? this.errorMessage,
+      errorMessage: clearErrorMessage ? null : (errorMessage ?? this.errorMessage),
     );
   }
 

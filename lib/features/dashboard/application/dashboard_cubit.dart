@@ -109,6 +109,7 @@ class SystemDashboardCubit extends Cubit<SystemDashboardState> {
           endpointHealthList: endpointHealthList,
           featureFlags: flags,
           interceptors: interceptors,
+          clearErrorMessage: true,
         ),
       );
 
