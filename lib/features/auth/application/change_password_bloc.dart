@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/change_password_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 part 'change_password_event.dart';
 part 'change_password_state.dart';
@@ -17,7 +18,7 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
   ChangePasswordBloc({required ChangePasswordUseCase changePasswordUseCase})
     : _changePasswordUseCase = changePasswordUseCase,
       super(const ChangePasswordInitialState()) {
-    on<ChangePasswordChanged>(_onSubmit);
+    on<ChangePasswordChanged>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }
 
   FutureOr<void> _onSubmit(ChangePasswordChanged event, Emitter<ChangePasswordState> emit) async {

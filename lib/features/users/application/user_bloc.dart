@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/save_user_usecase.dart';
@@ -24,11 +25,11 @@ class UserBloc extends Bloc<UserEvent, UserState> {
        _saveUserUseCase = saveUserUseCase,
        _deleteUserUseCase = deleteUserUseCase,
        super(const UserInitial()) {
-    on<UserSearchEvent>(_onSearch);
-    on<UserFetchEvent>(_onFetchUser);
-    on<UserDeleteEvent>(_onDelete);
+    on<UserSearchEvent>(_onSearch, transformer: EventTransformers.debounceRestartable());
+    on<UserFetchEvent>(_onFetchUser, transformer: EventTransformers.restart());
+    on<UserDeleteEvent>(_onDelete, transformer: EventTransformers.dropConcurrent());
     on<UserEditorInit>(_onEditorInit);
-    on<UserSubmitEvent>(_onSubmit);
+    on<UserSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<UserViewCompleteEvent>(_onViewComplete);
     on<UserSaveCompleteEvent>(_onSaveComplete);
   }

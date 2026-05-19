@@ -334,6 +334,10 @@ void main() {
         UserEntity(id: "2", firstName: "Test2", lastName: "User2"),
       ];
 
+      // UserSearchEvent is debounced (EventTransformers.debounceRestartable, 300ms),
+      // so each blocTest must wait past that window before checking emissions.
+      const debounceWait = Duration(milliseconds: 400);
+
       blocTest<UserBloc, UserState>(
         'emits success state when search by authority is successful',
         setUp: () {
@@ -341,6 +345,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
+        wait: debounceWait,
         expect: () => [const UserLoading(), UserSearchSuccess(userList: users)],
       );
 
@@ -351,6 +356,7 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(name: "Test", authorities: "ROLE_USER")),
+        wait: debounceWait,
         expect: () => [const UserLoading(), UserSearchSuccess(userList: users)],
       );
 
@@ -361,7 +367,30 @@ void main() {
         },
         build: () => bloc,
         act: (bloc) => bloc.add(const UserSearchEvent(authorities: "ROLE_USER")),
+        wait: debounceWait,
         expect: () => [const UserLoading(), UserFailure(error: "Search failed")],
+      );
+
+      // Regression for #76: rapid bursts must collapse into a single
+      // emission pair thanks to debounceRestartable. (Uses authorities-
+      // only events because the use case has a pre-existing routing
+      // issue with name-only searches; out of scope here.)
+      blocTest<UserBloc, UserState>(
+        'rapid UserSearchEvent bursts are debounced to a single emission pair',
+        setUp: () {
+          repository.listResult = users;
+        },
+        build: () => bloc,
+        act: (bloc) {
+          bloc.add(const UserSearchEvent(authorities: "ROLE_A"));
+          bloc.add(const UserSearchEvent(authorities: "ROLE_B"));
+          bloc.add(const UserSearchEvent(authorities: "ROLE_C"));
+          bloc.add(const UserSearchEvent(authorities: "ROLE_USER"));
+        },
+        wait: debounceWait,
+        // Only the final UserSearchEvent should produce loading + success;
+        // intermediate events are discarded by the debounce window.
+        expect: () => [const UserLoading(), UserSearchSuccess(userList: users)],
       );
     });
 

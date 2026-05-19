@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -36,11 +37,11 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
        _getAccountUseCase = getAccountUseCase,
        _persistAuthSessionUseCase = persistAuthSessionUseCase,
        super(const LoginInitialState()) {
-    on<LoginFormSubmitted>(_onSubmit);
+    on<LoginFormSubmitted>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
     on<ChangeLoginMethod>(_onChangeLoginMethod);
-    on<SendOtpRequested>(_onSendOtpRequested);
-    on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted);
+    on<SendOtpRequested>(_onSendOtpRequested, transformer: EventTransformers.dropConcurrent());
+    on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted, transformer: EventTransformers.dropConcurrent());
   }
 
   /// Recreate the current variant with a flipped `passwordVisible`, preserving
