@@ -1,90 +1,67 @@
 part of 'login_bloc.dart';
 
-enum LoginStatus { initial, loading, success, failure }
+/// Sealed hierarchy. The base class carries the two UI-config fields
+/// (`loginMethod`, `passwordVisible`) that survive across every variant
+/// transition — concurrent-state-access exception (CLAUDE.md → State
+/// Modeling). Auth-flow data (`username`, `email`, `otpCode`, error
+/// message) lives only on the variants that actually carry it.
+sealed class LoginState extends Equatable {
+  const LoginState({this.loginMethod = LoginMethod.password, this.passwordVisible = false});
 
-class LoginState extends Equatable {
-  final String? username;
-  final LoginStatus status;
-  final bool passwordVisible;
-  final String? email;
-  final String? otpCode;
-  final bool isOtpSent;
   final LoginMethod loginMethod;
-
-  const LoginState({
-    this.username,
-    this.status = LoginStatus.initial,
-    this.passwordVisible = false,
-    this.email,
-    this.otpCode,
-    this.isOtpSent = false,
-    this.loginMethod = LoginMethod.password,
-  });
-
-  LoginState copyWith({
-    String? username,
-    LoginStatus? status,
-    bool? passwordVisible,
-    String? email,
-    String? otpCode,
-    bool? isOtpSent,
-    LoginMethod? loginMethod,
-  }) {
-    return LoginState(
-      username: username ?? this.username,
-      status: status ?? this.status,
-      passwordVisible: passwordVisible ?? this.passwordVisible,
-      email: email ?? this.email,
-      otpCode: otpCode ?? this.otpCode,
-      isOtpSent: isOtpSent ?? this.isOtpSent,
-      loginMethod: loginMethod ?? this.loginMethod,
-    );
-  }
-
-  @override
-  bool get stringify => true;
-
-  @override
-  List<Object?> get props => [username, status, passwordVisible, email, otpCode, isOtpSent, loginMethod];
+  final bool passwordVisible;
 }
 
-class LoginInitialState extends LoginState {
-  const LoginInitialState() : super(status: LoginStatus.initial);
-}
-
-class LoginLoadingState extends LoginState {
-  const LoginLoadingState({super.username}) : super(status: LoginStatus.loading);
+final class LoginInitialState extends LoginState {
+  const LoginInitialState({super.loginMethod, super.passwordVisible});
 
   @override
-  List<Object?> get props => [username, status];
+  List<Object?> get props => [loginMethod, passwordVisible];
 }
 
-class LoginLoadedState extends LoginState {
-  const LoginLoadedState({super.username}) : super(status: LoginStatus.success);
+final class LoginLoadingState extends LoginState {
+  const LoginLoadingState({this.username, super.loginMethod, super.passwordVisible});
+
+  final String? username;
 
   @override
-  List<Object?> get props => [username, status];
+  List<Object?> get props => [username, loginMethod, passwordVisible];
 }
 
-class LoginOtpSentState extends LoginState {
-  const LoginOtpSentState({super.email}) : super(status: LoginStatus.success, isOtpSent: true);
+final class LoginLoadedState extends LoginState {
+  const LoginLoadedState({this.username, super.loginMethod, super.passwordVisible});
+
+  final String? username;
 
   @override
-  List<Object?> get props => [email, status];
+  List<Object?> get props => [username, loginMethod, passwordVisible];
 }
 
-class LoginOtpVerifiedState extends LoginState {
-  const LoginOtpVerifiedState({super.email, super.otpCode}) : super(status: LoginStatus.success);
+final class LoginOtpSentState extends LoginState {
+  const LoginOtpSentState({required this.email, super.passwordVisible}) : super(loginMethod: LoginMethod.otp);
+
+  final String email;
 
   @override
-  List<Object?> get props => [email, otpCode, status];
+  List<Object?> get props => [email, passwordVisible];
 }
 
-class LoginErrorState extends LoginState {
+final class LoginOtpVerifiedState extends LoginState {
+  const LoginOtpVerifiedState({required this.email, this.otpCode, super.passwordVisible})
+    : super(loginMethod: LoginMethod.otp);
+
+  final String email;
+  final String? otpCode;
+
+  @override
+  List<Object?> get props => [email, otpCode, passwordVisible];
+}
+
+final class LoginErrorState extends LoginState {
+  const LoginErrorState({required this.message, super.loginMethod, super.passwordVisible});
+
   final String message;
 
-  const LoginErrorState({required this.message}) : super(status: LoginStatus.failure);
-
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, loginMethod, passwordVisible];
 }

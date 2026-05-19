@@ -36,7 +36,7 @@ void main() {
     mockLoginBloc = MockLoginBloc();
 
     // Set basic state for login bloc
-    when(() => mockLoginBloc.state).thenReturn(const LoginState());
+    when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());
     mockGoRouter = GoRouter(
       initialLocation: ApplicationRoutesConstants.loginOtp,
       routes: [
@@ -116,7 +116,7 @@ void main() {
     });
 
     testWidgets('should show loading state when sending OTP', (tester) async {
-      when(() => mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.loading));
+      when(() => mockLoginBloc.state).thenReturn(const LoginLoadingState(loginMethod: LoginMethod.otp));
       await tester.pumpWidget(testWidget);
       await tester.pump();
 
@@ -129,7 +129,7 @@ void main() {
 
       final loginStateController = StreamController<LoginState>.broadcast();
       when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
-      when(() => mockLoginBloc.state).thenReturn(const LoginState());
+      when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());
 
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
@@ -138,9 +138,7 @@ void main() {
       await tester.tap(find.byType(ResponsiveSubmitButton));
       await tester.pump();
 
-      loginStateController.add(
-        const LoginState(status: LoginStatus.loading, email: 'test@example.com', loginMethod: LoginMethod.otp),
-      );
+      loginStateController.add(const LoginLoadingState(username: 'test@example.com', loginMethod: LoginMethod.otp));
       await tester.pump();
 
       loginStateController.add(const LoginOtpSentState(email: 'test@example.com'));
@@ -170,7 +168,9 @@ void main() {
     });
 
     testWidgets('should show error state', (tester) async {
-      when(() => mockLoginBloc.state).thenReturn(const LoginState(status: LoginStatus.failure));
+      when(
+        () => mockLoginBloc.state,
+      ).thenReturn(const LoginErrorState(message: 'failed', loginMethod: LoginMethod.otp));
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 

@@ -552,7 +552,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _submitButton(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) => previous.status != current.status,
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       builder: (context, state) {
         final isLoading = state is LoginLoadingState;
         return FilledButton(
@@ -675,14 +675,11 @@ class OtpEmailScreen extends StatelessWidget {
         ),
       ),
       body: BlocListener<LoginBloc, LoginState>(
-        listenWhen: (previous, current) =>
-            previous.status != current.status ||
-            previous.isOtpSent != current.isOtpSent ||
-            previous.email != current.email,
+        listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
         listener: (context, state) {
-          if (state.status == LoginStatus.success && state.isOtpSent == true && state.email != null) {
+          if (state is LoginOtpSentState) {
             context.go('${ApplicationRoutesConstants.loginOtpVerify}/${state.email}');
-          } else if (state.status == LoginStatus.failure) {
+          } else if (state is LoginErrorState) {
             ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).failed)));
           }
         },
@@ -719,11 +716,11 @@ class OtpEmailScreen extends StatelessWidget {
 
   Widget _submitOtpButton(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) => previous.status != current.status,
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       builder: (context, state) {
         return ResponsiveSubmitButton(
           buttonText: S.of(context).send_otp_code,
-          isLoading: state.status == LoginStatus.loading,
+          isLoading: state is LoginLoadingState,
           onPressed: () {
             if (_formKey.currentState?.saveAndValidate() ?? false) {
               final email = _formKey.currentState!.value['email'] as String;
@@ -788,11 +785,11 @@ class OtpVerifyScreen extends StatelessWidget {
 
   Widget _submitVerifyButton(BuildContext context) {
     return BlocBuilder<LoginBloc, LoginState>(
-      buildWhen: (previous, current) => previous.status != current.status && current.loginMethod == LoginMethod.otp,
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       builder: (context, state) {
         return ResponsiveSubmitButton(
           buttonText: S.of(context).verify_otp_code,
-          isLoading: state.status == LoginStatus.loading,
+          isLoading: state is LoginLoadingState,
           onPressed: () {
             if (_formKey.currentState?.saveAndValidate() ?? false) {
               final otpCode = _formKey.currentState!.value['otpCode'] as String;

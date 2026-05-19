@@ -14,9 +14,9 @@ class AppSessionListeners extends StatelessWidget {
     return MultiBlocListener(
       listeners: [
         BlocListener<LoginBloc, LoginState>(
-          listenWhen: (previous, current) => previous.status != current.status,
+          listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
           listener: (context, state) {
-            if (state.status == LoginStatus.success) {
+            if (state is LoginLoadedState) {
               context.read<SessionCubit>().markAuthenticated();
             }
           },

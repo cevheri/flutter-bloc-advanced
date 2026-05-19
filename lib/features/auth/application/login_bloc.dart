@@ -30,20 +30,52 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
        _sendOtpUseCase = sendOtpUseCase,
        _verifyOtpUseCase = verifyOtpUseCase,
        _getAccountUseCase = getAccountUseCase,
-       super(const LoginState()) {
+       super(const LoginInitialState()) {
     on<LoginFormSubmitted>(_onSubmit);
-    on<TogglePasswordVisibility>((event, emit) => emit(state.copyWith(passwordVisible: !state.passwordVisible)));
+    on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
     on<ChangeLoginMethod>(_onChangeLoginMethod);
     on<SendOtpRequested>(_onSendOtpRequested);
     on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted);
   }
 
+  /// Recreate the current variant with a flipped `passwordVisible`, preserving
+  /// its type and other carried fields. Plain `copyWith` cannot do this under
+  /// sealed semantics — that was the original #70 bug.
+  void _onTogglePasswordVisibility(TogglePasswordVisibility event, Emitter<LoginState> emit) {
+    final v = !state.passwordVisible;
+    final m = state.loginMethod;
+    emit(switch (state) {
+      LoginInitialState() => LoginInitialState(loginMethod: m, passwordVisible: v),
+      LoginLoadingState(:final username) => LoginLoadingState(username: username, loginMethod: m, passwordVisible: v),
+      LoginLoadedState(:final username) => LoginLoadedState(username: username, loginMethod: m, passwordVisible: v),
+      LoginOtpSentState(:final email) => LoginOtpSentState(email: email, passwordVisible: v),
+      LoginOtpVerifiedState(:final email, :final otpCode) => LoginOtpVerifiedState(
+        email: email,
+        otpCode: otpCode,
+        passwordVisible: v,
+      ),
+      LoginErrorState(:final message) => LoginErrorState(message: message, loginMethod: m, passwordVisible: v),
+    });
+  }
+
   FutureOr<void> _onSubmit(LoginFormSubmitted event, Emitter<LoginState> emit) async {
     _log.debug("BEGIN: onSubmit LoginFormSubmitted event: {}", [event.username]);
-    emit(LoginLoadingState(username: event.username));
+    emit(
+      LoginLoadingState(
+        username: event.username,
+        loginMethod: state.loginMethod,
+        passwordVisible: state.passwordVisible,
+      ),
+    );
 
     if (event.username == "invalid") {
-      emit(const LoginErrorState(message: "Login API Error: Invalid username"));
+      emit(
+        LoginErrorState(
+          message: "Login API Error: Invalid username",
+          loginMethod: state.loginMethod,
+          passwordVisible: state.passwordVisible,
+        ),
+      );
       _log.error("END:onSubmit LoginFormSubmitted event error: Invalid username");
       return;
     }
@@ -53,7 +85,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     switch (tokenResult) {
       case Success(:final data):
         if (!data.isValid) {
-          emit(const LoginErrorState(message: "Login API Error: Invalid Access Token"));
+          emit(
+            LoginErrorState(
+              message: "Login API Error: Invalid Access Token",
+              loginMethod: state.loginMethod,
+              passwordVisible: state.passwordVisible,
+            ),
+          );
           return;
         }
         await AppLocalStorage().save(StorageKeys.jwtToken.key, data.idToken);
@@ -69,45 +107,79 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           case Success(data: final user):
             await AppLocalStorage().save(StorageKeys.roles.key, user.authorities);
             _log.debug("onSubmit save storage roles: {}", [user.authorities]);
-            emit(LoginLoadedState(username: event.username));
+            emit(
+              LoginLoadedState(
+                username: event.username,
+                loginMethod: state.loginMethod,
+                passwordVisible: state.passwordVisible,
+              ),
+            );
             _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [data.toString()]);
           case Failure(:final error):
-            emit(LoginErrorState(message: "Login API Error: ${error.message}"));
+            emit(
+              LoginErrorState(
+                message: "Login API Error: ${error.message}",
+                loginMethod: state.loginMethod,
+                passwordVisible: state.passwordVisible,
+              ),
+            );
             _log.error("END:onSubmit getAccount error: {}", [error.toString()]);
         }
       case Failure(:final error):
-        emit(LoginErrorState(message: "Login API Error: ${error.message}"));
+        emit(
+          LoginErrorState(
+            message: "Login API Error: ${error.message}",
+            loginMethod: state.loginMethod,
+            passwordVisible: state.passwordVisible,
+          ),
+        );
         _log.error("END:onSubmit LoginFormSubmitted event error: {}", [error.message]);
     }
   }
 
   void _onChangeLoginMethod(ChangeLoginMethod event, Emitter<LoginState> emit) {
-    emit(state.copyWith(loginMethod: event.method, status: LoginStatus.initial, isOtpSent: false));
+    emit(LoginInitialState(loginMethod: event.method, passwordVisible: state.passwordVisible));
   }
 
   Future<void> _onSendOtpRequested(SendOtpRequested event, Emitter<LoginState> emit) async {
     _log.debug("BEGIN: onSendOtpRequested SendOtpRequested event: {}", [event.email]);
-    emit(LoginLoadingState(username: event.email));
+    emit(
+      LoginLoadingState(username: event.email, loginMethod: LoginMethod.otp, passwordVisible: state.passwordVisible),
+    );
     final result = await _sendOtpUseCase(SendOtpEntity(email: event.email));
     switch (result) {
       case Success():
-        emit(LoginOtpSentState(email: event.email));
+        emit(LoginOtpSentState(email: event.email, passwordVisible: state.passwordVisible));
         _log.debug("END: onSendOtpRequested SendOtpRequested event success: {}", [event.email]);
       case Failure(:final error):
-        emit(LoginErrorState(message: "Send OTP error: ${error.message}"));
+        emit(
+          LoginErrorState(
+            message: "Send OTP error: ${error.message}",
+            loginMethod: LoginMethod.otp,
+            passwordVisible: state.passwordVisible,
+          ),
+        );
         _log.error("END: onSendOtpRequested SendOtpRequested event error: {}", [error.message]);
     }
   }
 
   Future<void> _onVerifyOtpSubmitted(VerifyOtpSubmitted event, Emitter<LoginState> emit) async {
     _log.debug("BEGIN: onVerifyOtpSubmitted VerifyOtpSubmitted event: {}", [event.email]);
-    emit(state.copyWith(status: LoginStatus.loading));
+    emit(
+      LoginLoadingState(username: event.email, loginMethod: LoginMethod.otp, passwordVisible: state.passwordVisible),
+    );
     final tokenResult = await _verifyOtpUseCase(VerifyOtpEntity(email: event.email, otp: event.otpCode));
     switch (tokenResult) {
       case Success(:final data):
         _log.debug("onVerifyOtpSubmitted token: {}", [data.toString()]);
         if (!data.isValid) {
-          emit(const LoginErrorState(message: "OTP validation error"));
+          emit(
+            LoginErrorState(
+              message: "OTP validation error",
+              loginMethod: LoginMethod.otp,
+              passwordVisible: state.passwordVisible,
+            ),
+          );
           return;
         }
         await AppLocalStorage().save(StorageKeys.jwtToken.key, data.idToken);
@@ -119,12 +191,30 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         switch (accountResult) {
           case Success(data: final user):
             await AppLocalStorage().save(StorageKeys.roles.key, user.authorities);
-            emit(LoginLoadedState(username: event.email));
+            emit(
+              LoginLoadedState(
+                username: event.email,
+                loginMethod: LoginMethod.otp,
+                passwordVisible: state.passwordVisible,
+              ),
+            );
           case Failure():
-            emit(const LoginErrorState(message: "OTP validation error"));
+            emit(
+              LoginErrorState(
+                message: "OTP validation error",
+                loginMethod: LoginMethod.otp,
+                passwordVisible: state.passwordVisible,
+              ),
+            );
         }
       case Failure(:final error):
-        emit(const LoginErrorState(message: "OTP validation error"));
+        emit(
+          LoginErrorState(
+            message: "OTP validation error",
+            loginMethod: LoginMethod.otp,
+            passwordVisible: state.passwordVisible,
+          ),
+        );
         _log.error("END: onVerifyOtpSubmitted error: {}", [error.message]);
     }
   }
