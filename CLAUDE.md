@@ -79,6 +79,13 @@ Every feature follows: **Event → BLoC → State → UI**
 - States use status enums: `initial`, `loading`, `success`, `failure`.
 - Local UI state can be handled within the page, but business logic MUST be in BLoCs.
 
+## Logging
+
+- Acquire loggers via `AppLogger.getLogger('Name')` (`lib/core/logging/app_logger.dart`).
+- Use SLF4J-style parameterized substitution: `_log.debug('msg: {}', [arg])` — **not** string interpolation (`_log.debug('msg: ${arg}')`).
+  - Parameterized form skips `toString()` when the log level is disabled — faster, and avoids accidentally stringifying secrets carried on events with `stringify = true`.
+- BLoC lifecycle transitions are logged centrally by `AppBlocObserver` (`lib/core/logging/app_bloc_observer.dart`). Do **not** override `onTransition` inside BLoCs.
+
 ## Environments
 
 - **dev/test** → mock data from `assets/mock/*.json`
