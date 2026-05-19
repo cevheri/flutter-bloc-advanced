@@ -6,10 +6,11 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
 
 part 'login_event.dart';
 part 'login_state.dart';
@@ -20,16 +21,19 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final SendOtpUseCase _sendOtpUseCase;
   final VerifyOtpUseCase _verifyOtpUseCase;
   final GetAccountUseCase _getAccountUseCase;
+  final PersistAuthSessionUseCase _persistAuthSessionUseCase;
 
   LoginBloc({
     required AuthenticateUserUseCase authenticateUserUseCase,
     required SendOtpUseCase sendOtpUseCase,
     required VerifyOtpUseCase verifyOtpUseCase,
     required GetAccountUseCase getAccountUseCase,
+    required PersistAuthSessionUseCase persistAuthSessionUseCase,
   }) : _authenticateUserUseCase = authenticateUserUseCase,
        _sendOtpUseCase = sendOtpUseCase,
        _verifyOtpUseCase = verifyOtpUseCase,
        _getAccountUseCase = getAccountUseCase,
+       _persistAuthSessionUseCase = persistAuthSessionUseCase,
        super(const LoginInitialState()) {
     on<LoginFormSubmitted>(_onSubmit);
     on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
@@ -94,37 +98,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           );
           return;
         }
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, data.idToken);
-        _log.debug("onSubmit save storage token: {}", [data.idToken]);
-        if (data.refreshToken != null) {
-          await AppLocalStorage().save(StorageKeys.refreshToken.key, data.refreshToken);
-          _log.debug("onSubmit save storage refreshToken");
-        }
-        await AppLocalStorage().save(StorageKeys.username.key, event.username);
-        _log.debug("onSubmit save storage username: {}", [event.username]);
-        final accountResult = await _getAccountUseCase();
-        switch (accountResult) {
-          case Success(data: final user):
-            await AppLocalStorage().save(StorageKeys.roles.key, user.authorities);
-            _log.debug("onSubmit save storage roles: {}", [user.authorities]);
-            emit(
-              LoginLoadedState(
-                username: event.username,
-                loginMethod: state.loginMethod,
-                passwordVisible: state.passwordVisible,
-              ),
-            );
-            _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [data.toString()]);
-          case Failure(:final error):
-            emit(
-              LoginErrorState(
-                message: "Login API Error: ${error.message}",
-                loginMethod: state.loginMethod,
-                passwordVisible: state.passwordVisible,
-              ),
-            );
-            _log.error("END:onSubmit getAccount error: {}", [error.toString()]);
-        }
+        await _completeLogin(token: data, username: event.username, loginMethod: state.loginMethod, emit: emit);
       case Failure(:final error):
         emit(
           LoginErrorState(
@@ -182,31 +156,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           );
           return;
         }
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, data.idToken);
-        if (data.refreshToken != null) {
-          await AppLocalStorage().save(StorageKeys.refreshToken.key, data.refreshToken);
-        }
-        await AppLocalStorage().save(StorageKeys.username.key, event.email);
-        final accountResult = await _getAccountUseCase();
-        switch (accountResult) {
-          case Success(data: final user):
-            await AppLocalStorage().save(StorageKeys.roles.key, user.authorities);
-            emit(
-              LoginLoadedState(
-                username: event.email,
-                loginMethod: LoginMethod.otp,
-                passwordVisible: state.passwordVisible,
-              ),
-            );
-          case Failure():
-            emit(
-              LoginErrorState(
-                message: "OTP validation error",
-                loginMethod: LoginMethod.otp,
-                passwordVisible: state.passwordVisible,
-              ),
-            );
-        }
+        await _completeLogin(
+          token: data,
+          username: event.email,
+          loginMethod: LoginMethod.otp,
+          emit: emit,
+          errorMessage: "OTP validation error",
+        );
       case Failure(:final error):
         emit(
           LoginErrorState(
@@ -216,6 +172,78 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           ),
         );
         _log.error("END: onVerifyOtpSubmitted error: {}", [error.message]);
+    }
+  }
+
+  /// Persist the session and resolve the account in one place, used by
+  /// both the password and OTP success paths. Storage writes go through
+  /// [PersistAuthSessionUseCase] — the bloc itself never imports
+  /// `infrastructure/storage` (fixes #71).
+  ///
+  /// Two-phase persistence is intentional: the token + username MUST be
+  /// in storage before `_getAccountUseCase()` runs, because the HTTP
+  /// `AuthInterceptor` reads the JWT from storage to attach the
+  /// Authorization header. After the account is resolved we re-persist
+  /// with the user's authorities included.
+  Future<void> _completeLogin({
+    required AuthTokenEntity token,
+    required String username,
+    required LoginMethod loginMethod,
+    required Emitter<LoginState> emit,
+    String? errorMessage,
+  }) async {
+    // Phase 1: persist token-bearing fields so AuthInterceptor can read
+    // the JWT for the upcoming account request.
+    final preSession = AuthSession(idToken: token.idToken!, refreshToken: token.refreshToken, username: username);
+    final preResult = await _persistAuthSessionUseCase(preSession);
+    if (preResult is Failure<void>) {
+      emit(
+        LoginErrorState(
+          message: errorMessage ?? "Login API Error: ${preResult.error.message}",
+          loginMethod: loginMethod,
+          passwordVisible: state.passwordVisible,
+        ),
+      );
+      _log.error("session pre-persist failed: {}", [preResult.error.message]);
+      return;
+    }
+
+    final accountResult = await _getAccountUseCase();
+    switch (accountResult) {
+      case Success(data: final user):
+        // Phase 2: re-persist with authorities included.
+        final fullSession = AuthSession(
+          idToken: token.idToken!,
+          refreshToken: token.refreshToken,
+          username: username,
+          roles: user.authorities ?? const [],
+        );
+        final fullResult = await _persistAuthSessionUseCase(fullSession);
+        switch (fullResult) {
+          case Success():
+            emit(
+              LoginLoadedState(username: username, loginMethod: loginMethod, passwordVisible: state.passwordVisible),
+            );
+            _log.debug("session persisted for: {}", [username]);
+          case Failure(:final error):
+            emit(
+              LoginErrorState(
+                message: errorMessage ?? "Login API Error: ${error.message}",
+                loginMethod: loginMethod,
+                passwordVisible: state.passwordVisible,
+              ),
+            );
+            _log.error("session roles-persist failed: {}", [error.message]);
+        }
+      case Failure(:final error):
+        emit(
+          LoginErrorState(
+            message: errorMessage ?? "Login API Error: ${error.message}",
+            loginMethod: loginMethod,
+            passwordVisible: state.passwordVisible,
+          ),
+        );
+        _log.error("getAccount failed: {}", [error.message]);
     }
   }
 }

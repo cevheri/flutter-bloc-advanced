@@ -6,10 +6,13 @@ import 'package:flutter_bloc_advance/features/account/data/models/change_passwor
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -68,6 +71,20 @@ class _FakeAuthRepositoryWithSendOtp implements IAuthRepository {
   }
 }
 
+class _FakeAuthSessionRepository implements IAuthSessionRepository {
+  Result<void>? persistResult;
+  final persisted = <AuthSession>[];
+
+  @override
+  Future<Result<void>> persist(AuthSession session) async {
+    persisted.add(session);
+    return persistResult ?? const Success(null);
+  }
+
+  @override
+  Future<Result<void>> clear() async => const Success(null);
+}
+
 class _FakeAccountRepository implements IAccountRepository {
   UserEntity? account;
 
@@ -90,26 +107,35 @@ class _FakeAccountRepository implements IAccountRepository {
   Future<Result<UserEntity>> update(UserEntity user) async => Success(user);
 }
 
-LoginBloc _buildBloc(_FakeAuthRepository repository, [_FakeAccountRepository? accountRepository]) {
+LoginBloc _buildBloc(
+  _FakeAuthRepository repository, [
+  _FakeAccountRepository? accountRepository,
+  _FakeAuthSessionRepository? sessionRepository,
+]) {
   final accountRepo = accountRepository ?? (_FakeAccountRepository()..account = mockUserFullPayload);
+  final sessionRepo = sessionRepository ?? _FakeAuthSessionRepository();
   return LoginBloc(
     authenticateUserUseCase: AuthenticateUserUseCase(repository),
     sendOtpUseCase: SendOtpUseCase(repository),
     verifyOtpUseCase: VerifyOtpUseCase(repository),
     getAccountUseCase: GetAccountUseCase(accountRepo),
+    persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepo),
   );
 }
 
 LoginBloc _buildBlocWithSendOtp(
   _FakeAuthRepositoryWithSendOtp repository, [
   _FakeAccountRepository? accountRepository,
+  _FakeAuthSessionRepository? sessionRepository,
 ]) {
   final accountRepo = accountRepository ?? (_FakeAccountRepository()..account = mockUserFullPayload);
+  final sessionRepo = sessionRepository ?? _FakeAuthSessionRepository();
   return LoginBloc(
     authenticateUserUseCase: AuthenticateUserUseCase(repository),
     sendOtpUseCase: SendOtpUseCase(repository),
     verifyOtpUseCase: VerifyOtpUseCase(repository),
     getAccountUseCase: GetAccountUseCase(accountRepo),
+    persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepo),
   );
 }
 
@@ -349,6 +375,55 @@ void main() {
         build: () => _buildBloc(repository),
         act: (bloc) => bloc.add(const TogglePasswordVisibility()),
         expect: () => [const LoginInitialState(passwordVisible: true)],
+      );
+    });
+
+    // Regression coverage for #71: the bloc must delegate session
+    // persistence to PersistAuthSessionUseCase and never reach into
+    // storage directly. We verify both the call shape on success and
+    // that a persistence failure surfaces as a LoginErrorState.
+    group('PersistAuthSession (#71)', () {
+      const event = LoginFormSubmitted(username: "username", password: "password");
+      late _FakeAuthSessionRepository sessionRepo;
+
+      setUp(() {
+        sessionRepo = _FakeAuthSessionRepository();
+      });
+
+      blocTest<LoginBloc, LoginState>(
+        'invokes PersistAuthSessionUseCase TWICE (pre-account then with roles) on success',
+        setUp: () {
+          repository.authenticateResult = const Success(
+            AuthTokenEntity(idToken: "MOCK_TOKEN", refreshToken: "MOCK_REFRESH"),
+          );
+        },
+        build: () => _buildBloc(repository, accountRepository, sessionRepo),
+        act: (bloc) => bloc.add(event),
+        verify: (_) {
+          // Two-phase persistence: pre-session lacks roles (interceptor
+          // needs JWT before getAccount); full-session includes roles.
+          expect(sessionRepo.persisted, hasLength(2));
+          expect(sessionRepo.persisted.first.idToken, "MOCK_TOKEN");
+          expect(sessionRepo.persisted.first.refreshToken, "MOCK_REFRESH");
+          expect(sessionRepo.persisted.first.username, "username");
+          expect(sessionRepo.persisted.first.roles, isEmpty);
+          expect(sessionRepo.persisted.last.idToken, "MOCK_TOKEN");
+          expect(sessionRepo.persisted.last.roles, isNotEmpty);
+        },
+      );
+
+      blocTest<LoginBloc, LoginState>(
+        'emits LoginErrorState when session persistence fails',
+        setUp: () {
+          repository.authenticateResult = const Success(AuthTokenEntity(idToken: "MOCK_TOKEN"));
+          sessionRepo.persistResult = const Failure(UnknownError("disk full"));
+        },
+        build: () => _buildBloc(repository, accountRepository, sessionRepo),
+        act: (bloc) => bloc.add(event),
+        expect: () => [
+          const LoginLoadingState(username: "username"),
+          isA<LoginErrorState>().having((s) => s.message, 'message', contains('disk full')),
+        ],
       );
     });
   });
