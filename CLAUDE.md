@@ -86,8 +86,6 @@ Every feature follows: **Event → BLoC → State → UI**
 
 ### State Modeling — MAIN RULE
 
-> ⚠️ **Migration in progress (May 2026):** The project is transitioning to sealed state hierarchies as the default state-modeling pattern. Some BLoCs may still be on the legacy single-state + status enum pattern during this transition; new code MUST follow the rule below, and existing BLoCs are being migrated under the tech-debt audit. Once the migration completes, this warning will be removed.
-
 **Default to sealed state hierarchies** that leverage Dart 3's `sealed` modifier and exhaustive `switch` expressions. The compiler enforces handling of every state variant; UIs render via pattern matching.
 
 ```dart
