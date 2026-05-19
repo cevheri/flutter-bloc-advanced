@@ -15,8 +15,8 @@ part 'user_list_state.dart';
 /// Bloc for the user *list* surface — searching/filtering the catalog
 /// and deleting rows from it.
 ///
-/// Split out of the original [UserBloc] god-bloc (#75). Delete lives
-/// here (not in [UserEditorBloc]) because the action is invoked from
+/// Split out of the original `UserBloc` god-bloc (#75). Delete lives
+/// here (not in `UserEditorBloc`) because the action is invoked from
 /// the list rows and the list is the natural place to refresh after a
 /// successful delete.
 class UserListBloc extends Bloc<UserListEvent, UserListState> {

@@ -13,9 +13,9 @@ part 'user_editor_event.dart';
 part 'user_editor_state.dart';
 
 /// Bloc for the user *editor* surface — create / edit / view of a
-/// single user. Split out of the original [UserBloc] god-bloc (#75).
+/// single user. Split out of the original `UserBloc` god-bloc (#75).
 ///
-/// Delete is intentionally NOT here; it belongs to [UserListBloc]
+/// Delete is intentionally NOT here; it belongs to `UserListBloc`
 /// because that's where the action is invoked and where the
 /// post-delete refresh needs to happen.
 class UserEditorBloc extends Bloc<UserEditorEvent, UserEditorState> {
