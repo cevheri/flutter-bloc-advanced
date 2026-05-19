@@ -13,7 +13,9 @@ class ListAuthoritiesUseCase {
   Future<Result<List<String>>> call() async {
     final result = await _repository.list();
     return switch (result) {
-      Success(:final data) when data.isEmpty => const Failure(ValidationError('No authorities found')),
+      Success(:final data) when data.isEmpty => const Failure(
+        ValidationError('No authorities found', code: 'user.no_authorities'),
+      ),
       _ => result,
     };
   }

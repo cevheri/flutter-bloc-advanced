@@ -12,10 +12,14 @@ class ChangePasswordUseCase {
     final current = request.currentPassword;
     final next = request.newPassword;
     if (current == null || current.isEmpty || next == null || next.isEmpty) {
-      return const Failure(ValidationError('Both current and new password are required'));
+      return const Failure(
+        ValidationError('Both current and new password are required', code: 'account.password_required'),
+      );
     }
     if (current == next) {
-      return const Failure(ValidationError('New password must be different from current password'));
+      return const Failure(
+        ValidationError('New password must be different from current password', code: 'account.passwords_same'),
+      );
     }
     return _repository.changePassword(request);
   }

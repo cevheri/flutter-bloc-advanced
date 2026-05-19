@@ -638,6 +638,76 @@ class S {
   String get more {
     return Intl.message('More', name: 'more', desc: '', args: []);
   }
+
+  /// `Invalid access token`
+  String get error_auth_invalid_access_token {
+    return Intl.message('Invalid access token', name: 'error_auth_invalid_access_token', desc: '', args: []);
+  }
+
+  /// `Login failed`
+  String get error_auth_login_failed {
+    return Intl.message('Login failed', name: 'error_auth_login_failed', desc: '', args: []);
+  }
+
+  /// `Could not send the OTP code`
+  String get error_auth_send_otp_failed {
+    return Intl.message('Could not send the OTP code', name: 'error_auth_send_otp_failed', desc: '', args: []);
+  }
+
+  /// `OTP validation failed`
+  String get error_auth_otp_validation {
+    return Intl.message('OTP validation failed', name: 'error_auth_otp_validation', desc: '', args: []);
+  }
+
+  /// `Could not save the session`
+  String get error_auth_session_persist_failed {
+    return Intl.message('Could not save the session', name: 'error_auth_session_persist_failed', desc: '', args: []);
+  }
+
+  /// `Admin user cannot be deleted`
+  String get error_user_cannot_delete_admin {
+    return Intl.message('Admin user cannot be deleted', name: 'error_user_cannot_delete_admin', desc: '', args: []);
+  }
+
+  /// `No authorities found`
+  String get error_user_no_authorities {
+    return Intl.message('No authorities found', name: 'error_user_no_authorities', desc: '', args: []);
+  }
+
+  /// `Both current and new password are required`
+  String get error_account_password_required {
+    return Intl.message(
+      'Both current and new password are required',
+      name: 'error_account_password_required',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New password must be different from current password`
+  String get error_account_passwords_same {
+    return Intl.message(
+      'New password must be different from current password',
+      name: 'error_account_passwords_same',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not change the language`
+  String get error_settings_change_language_failed {
+    return Intl.message(
+      'Could not change the language',
+      name: 'error_settings_change_language_failed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Something went wrong`
+  String get error_generic {
+    return Intl.message('Something went wrong', name: 'error_generic', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -116,5 +116,16 @@
   "help_resources": "Yardım ve Kaynaklar",
   "help_resources_subtitle": "Dokümantasyon ve rehberler için web sitemizi ziyaret edin",
   "website": "Web Sitesi",
-  "more": "Daha Fazla"
+  "more": "Daha Fazla",
+  "error_auth_invalid_access_token": "Geçersiz erişim belirteci",
+  "error_auth_login_failed": "Giriş başarısız",
+  "error_auth_send_otp_failed": "OTP kodu gönderilemedi",
+  "error_auth_otp_validation": "OTP doğrulaması başarısız",
+  "error_auth_session_persist_failed": "Oturum kaydedilemedi",
+  "error_user_cannot_delete_admin": "Yönetici kullanıcı silinemez",
+  "error_user_no_authorities": "Yetki bulunamadı",
+  "error_account_password_required": "Mevcut ve yeni şifre alanları zorunludur",
+  "error_account_passwords_same": "Yeni şifre mevcut şifreden farklı olmalıdır",
+  "error_settings_change_language_failed": "Dil değiştirilemedi",
+  "error_generic": "Bir şeyler ters gitti"
 }

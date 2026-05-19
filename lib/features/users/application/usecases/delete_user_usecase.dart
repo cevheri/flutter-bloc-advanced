@@ -14,7 +14,7 @@ class DeleteUserUseCase {
 
   Future<Result<void>> call(String id) async {
     if (id == _protectedAdminUserId) {
-      return const Failure(ValidationError('Admin user cannot be deleted'));
+      return const Failure(ValidationError('Admin user cannot be deleted', code: 'user.cannot_delete_admin'));
     }
     return _repository.delete(id);
   }

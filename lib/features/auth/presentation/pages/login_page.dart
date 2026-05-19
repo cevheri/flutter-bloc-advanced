@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
@@ -640,7 +641,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
         SnackBar(
           behavior: SnackBarBehavior.floating,
-          content: Text(S.of(context).failed),
+          content: Text(state.errorCode.resolve(context)),
           backgroundColor: Theme.of(context).colorScheme.error,
           width: MediaQuery.of(context).size.width * 0.8,
         ),
@@ -680,7 +681,7 @@ class OtpEmailScreen extends StatelessWidget {
           if (state is LoginOtpSentState) {
             context.go('${ApplicationRoutesConstants.loginOtpVerify}/${state.email}');
           } else if (state is LoginErrorState) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(S.of(context).failed)));
+            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.errorCode.resolve(context))));
           }
         },
         child: ResponsiveFormBuilder(

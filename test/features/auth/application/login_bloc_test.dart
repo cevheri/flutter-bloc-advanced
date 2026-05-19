@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
@@ -189,9 +190,17 @@ void main() {
       );
     });
 
-    test("LoginErrorState carries message", () {
-      expect(const LoginErrorState(message: "test"), const LoginErrorState(message: "test"));
-      expect(const LoginErrorState(message: "test").props, const <Object?>["test", LoginMethod.password, false]);
+    test("LoginErrorState carries code + optional message", () {
+      expect(
+        const LoginErrorState(errorCode: AppErrorCode.authLoginFailed, message: "test"),
+        const LoginErrorState(errorCode: AppErrorCode.authLoginFailed, message: "test"),
+      );
+      expect(const LoginErrorState(errorCode: AppErrorCode.authLoginFailed, message: "test").props, const <Object?>[
+        AppErrorCode.authLoginFailed,
+        "test",
+        LoginMethod.password,
+        false,
+      ]);
     });
 
     test("Initial bloc state is LoginInitialState", () {
@@ -239,8 +248,8 @@ void main() {
 
       final loadingState = LoginLoadingState(username: input.username);
       final successState = LoginLoadedState(username: input.username);
-      const failureState = LoginErrorState(message: "Login API Error: Unauthorized");
-      const failure2State = LoginErrorState(message: "Login API Error: Invalid Access Token");
+      const failureState = LoginErrorState(errorCode: AppErrorCode.authLoginFailed, message: "Unauthorized");
+      const failure2State = LoginErrorState(errorCode: AppErrorCode.authInvalidAccessToken);
 
       final statesSuccess = [loadingState, successState];
       final statesFailure = [loadingState, failureState];
@@ -291,7 +300,7 @@ void main() {
 
       final loadingState = LoginLoadingState(username: input.username);
       final successState = LoginLoadedState(username: input.username);
-      const failureState = LoginErrorState(message: "Login API Error: Unauthorized");
+      const failureState = LoginErrorState(errorCode: AppErrorCode.authLoginFailed, message: "Unauthorized");
 
       blocTest<LoginBloc, LoginState>(
         'given valid credentials when submitted then emits [loading, success]',
@@ -355,7 +364,7 @@ void main() {
         act: (bloc) => bloc.add(event),
         expect: () => [
           loadingState,
-          const LoginErrorState(message: "OTP validation error", loginMethod: LoginMethod.otp),
+          const LoginErrorState(errorCode: AppErrorCode.authOtpValidationError, loginMethod: LoginMethod.otp),
         ],
       );
     });

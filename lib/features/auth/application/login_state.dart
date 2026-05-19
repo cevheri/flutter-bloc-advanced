@@ -58,10 +58,16 @@ final class LoginOtpVerifiedState extends LoginState {
 }
 
 final class LoginErrorState extends LoginState {
-  const LoginErrorState({required this.message, super.loginMethod, super.passwordVisible});
+  const LoginErrorState({required this.errorCode, this.message, super.loginMethod, super.passwordVisible});
 
-  final String message;
+  /// Translated by the UI via `errorCode.resolve(context)`. See
+  /// `lib/shared/l10n/app_error_code_l10n.dart`.
+  final AppErrorCode errorCode;
+
+  /// Optional developer-facing detail (e.g. raw exception text). Never
+  /// shown to end users — the UI always shows the translated [errorCode].
+  final String? message;
 
   @override
-  List<Object?> get props => [message, loginMethod, passwordVisible];
+  List<Object?> get props => [errorCode, message, loginMethod, passwordVisible];
 }

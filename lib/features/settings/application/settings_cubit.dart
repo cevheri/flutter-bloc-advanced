@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/features/settings/application/usecases/change_language_usecase.dart';
 import 'package:flutter_bloc_advance/features/settings/application/usecases/change_theme_usecase.dart';
@@ -38,7 +39,7 @@ class SettingsCubit extends Cubit<SettingsState> {
       emit(SettingsLanguageChanged(language: result));
       _log.debug('END: changeLanguage success');
     } catch (e) {
-      emit(const SettingsFailure(message: 'Change Language Error'));
+      emit(SettingsFailure(errorCode: AppErrorCode.settingsChangeLanguageFailed, message: e.toString()));
       _log.error('END: changeLanguage failure: {}', [e]);
     }
   }

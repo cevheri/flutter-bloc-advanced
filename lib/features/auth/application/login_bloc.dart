@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
@@ -58,7 +59,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         otpCode: otpCode,
         passwordVisible: v,
       ),
-      LoginErrorState(:final message) => LoginErrorState(message: message, loginMethod: m, passwordVisible: v),
+      LoginErrorState(:final errorCode, :final message) => LoginErrorState(
+        errorCode: errorCode,
+        message: message,
+        loginMethod: m,
+        passwordVisible: v,
+      ),
     });
   }
 
@@ -79,7 +85,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         if (!data.isValid) {
           emit(
             LoginErrorState(
-              message: "Login API Error: Invalid Access Token",
+              errorCode: AppErrorCode.authInvalidAccessToken,
               loginMethod: state.loginMethod,
               passwordVisible: state.passwordVisible,
             ),
@@ -90,7 +96,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            message: "Login API Error: ${error.message}",
+            errorCode: AppErrorCode.authLoginFailed,
+            message: error.message,
             loginMethod: state.loginMethod,
             passwordVisible: state.passwordVisible,
           ),
@@ -116,7 +123,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            message: "Send OTP error: ${error.message}",
+            errorCode: AppErrorCode.authSendOtpFailed,
+            message: error.message,
             loginMethod: LoginMethod.otp,
             passwordVisible: state.passwordVisible,
           ),
@@ -137,7 +145,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         if (!data.isValid) {
           emit(
             LoginErrorState(
-              message: "OTP validation error",
+              errorCode: AppErrorCode.authOtpValidationError,
               loginMethod: LoginMethod.otp,
               passwordVisible: state.passwordVisible,
             ),
@@ -149,12 +157,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           username: event.email,
           loginMethod: LoginMethod.otp,
           emit: emit,
-          errorMessage: "OTP validation error",
+          overrideErrorCode: AppErrorCode.authOtpValidationError,
         );
       case Failure(:final error):
         emit(
           LoginErrorState(
-            message: "OTP validation error",
+            errorCode: AppErrorCode.authOtpValidationError,
+            message: error.message,
             loginMethod: LoginMethod.otp,
             passwordVisible: state.passwordVisible,
           ),
@@ -178,7 +187,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     required String username,
     required LoginMethod loginMethod,
     required Emitter<LoginState> emit,
-    String? errorMessage,
+    AppErrorCode? overrideErrorCode,
   }) async {
     // Phase 1: persist token-bearing fields so AuthInterceptor can read
     // the JWT for the upcoming account request.
@@ -187,7 +196,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     if (preResult is Failure<void>) {
       emit(
         LoginErrorState(
-          message: errorMessage ?? "Login API Error: ${preResult.error.message}",
+          errorCode: overrideErrorCode ?? AppErrorCode.authSessionPersistFailed,
+          message: preResult.error.message,
           loginMethod: loginMethod,
           passwordVisible: state.passwordVisible,
         ),
@@ -216,7 +226,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           case Failure(:final error):
             emit(
               LoginErrorState(
-                message: errorMessage ?? "Login API Error: ${error.message}",
+                errorCode: overrideErrorCode ?? AppErrorCode.authSessionPersistFailed,
+                message: error.message,
                 loginMethod: loginMethod,
                 passwordVisible: state.passwordVisible,
               ),
@@ -226,7 +237,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            message: errorMessage ?? "Login API Error: ${error.message}",
+            errorCode: overrideErrorCode ?? AppErrorCode.authLoginFailed,
+            message: error.message,
             loginMethod: loginMethod,
             passwordVisible: state.passwordVisible,
           ),
