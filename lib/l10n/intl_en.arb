@@ -116,5 +116,16 @@
   "help_resources": "Help & Resources",
   "help_resources_subtitle": "Visit our website for documentation and guides",
   "website": "Website",
-  "more": "More"
+  "more": "More",
+  "error_auth_invalid_access_token": "Invalid access token",
+  "error_auth_login_failed": "Login failed",
+  "error_auth_send_otp_failed": "Could not send the OTP code",
+  "error_auth_otp_validation": "OTP validation failed",
+  "error_auth_session_persist_failed": "Could not save the session",
+  "error_user_cannot_delete_admin": "Admin user cannot be deleted",
+  "error_user_no_authorities": "No authorities found",
+  "error_account_password_required": "Both current and new password are required",
+  "error_account_passwords_same": "New password must be different from current password",
+  "error_settings_change_language_failed": "Could not change the language",
+  "error_generic": "Something went wrong"
 }

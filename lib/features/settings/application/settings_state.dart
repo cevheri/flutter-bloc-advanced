@@ -44,10 +44,14 @@ final class SettingsThemeChanged extends SettingsState {
 }
 
 final class SettingsFailure extends SettingsState {
-  const SettingsFailure({required this.message});
+  const SettingsFailure({required this.errorCode, this.message});
 
-  final String message;
+  /// Translated by the UI via `errorCode.resolve(context)`.
+  final AppErrorCode errorCode;
+
+  /// Optional developer-facing detail. Not shown to end users.
+  final String? message;
 
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [errorCode, message];
 }

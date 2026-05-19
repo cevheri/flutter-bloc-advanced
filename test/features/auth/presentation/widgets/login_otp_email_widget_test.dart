@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
@@ -170,7 +171,7 @@ void main() {
     testWidgets('should show error state', (tester) async {
       when(
         () => mockLoginBloc.state,
-      ).thenReturn(const LoginErrorState(message: 'failed', loginMethod: LoginMethod.otp));
+      ).thenReturn(const LoginErrorState(errorCode: AppErrorCode.authSendOtpFailed, loginMethod: LoginMethod.otp));
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 

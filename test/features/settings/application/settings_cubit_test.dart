@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/features/settings/application/settings_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -41,8 +42,14 @@ void main() {
       expect(const SettingsThemeChanged(theme: ThemeMode.system).props, const <Object?>[ThemeMode.system]);
     });
     test("SettingsFailure", () {
-      expect(const SettingsFailure(message: "Error"), const SettingsFailure(message: "Error"));
-      expect(const SettingsFailure(message: "Error").props, const <Object?>["Error"]);
+      expect(
+        const SettingsFailure(errorCode: AppErrorCode.settingsChangeLanguageFailed, message: "Error"),
+        const SettingsFailure(errorCode: AppErrorCode.settingsChangeLanguageFailed, message: "Error"),
+      );
+      expect(
+        const SettingsFailure(errorCode: AppErrorCode.settingsChangeLanguageFailed, message: "Error").props,
+        const <Object?>[AppErrorCode.settingsChangeLanguageFailed, "Error"],
+      );
     });
   });
   //endregion state
@@ -59,8 +66,6 @@ void main() {
       const language = "en";
       const loadingState = SettingsLoading();
       const successState = SettingsLanguageChanged(language: language);
-      const failureState = SettingsFailure(message: "Change Language Error");
-
       blocTest<SettingsCubit, SettingsState>(
         "emits [loading, success] when language change is successful",
         build: () => SettingsCubit(),
@@ -72,7 +77,12 @@ void main() {
         "emits [loading, failure] when language change is unsuccessful",
         build: () => SettingsCubit(),
         act: (cubit) => cubit.changeLanguage(''),
-        expect: () => [loadingState, failureState],
+        expect: () => [
+          loadingState,
+          // The cubit attaches the raw exception text as message; assert
+          // only on the typed errorCode for stability.
+          isA<SettingsFailure>().having((s) => s.errorCode, 'errorCode', AppErrorCode.settingsChangeLanguageFailed),
+        ],
       );
     });
 

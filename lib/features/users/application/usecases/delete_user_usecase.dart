@@ -1,4 +1,5 @@
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 
@@ -14,7 +15,7 @@ class DeleteUserUseCase {
 
   Future<Result<void>> call(String id) async {
     if (id == _protectedAdminUserId) {
-      return const Failure(ValidationError('Admin user cannot be deleted'));
+      return Failure(ValidationError('Admin user cannot be deleted', code: AppErrorCode.userCannotDeleteAdmin.key));
     }
     return _repository.delete(id);
   }
