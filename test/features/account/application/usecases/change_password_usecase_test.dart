@@ -36,4 +36,32 @@ void main() {
 
     expect(result, isA<Failure<void>>());
   });
+
+  // Regression coverage for #73: validation rules now live in the use case,
+  // not the bloc. These tests pin the contract independently of any UI.
+  group('validation rules (#73)', () {
+    test('rejects when currentPassword is empty', () async {
+      final result = await useCase.call(const PasswordChangeDTO(currentPassword: '', newPassword: 'new'));
+
+      expect(result, isA<Failure<void>>());
+      expect((result as Failure).error, isA<ValidationError>());
+      verifyNever(() => mockRepo.changePassword(any()));
+    });
+
+    test('rejects when newPassword is null', () async {
+      final result = await useCase.call(const PasswordChangeDTO(currentPassword: 'cur', newPassword: null));
+
+      expect(result, isA<Failure<void>>());
+      expect((result as Failure).error.message, contains('required'));
+      verifyNever(() => mockRepo.changePassword(any()));
+    });
+
+    test('rejects when current and new passwords match', () async {
+      final result = await useCase.call(const PasswordChangeDTO(currentPassword: 'same', newPassword: 'same'));
+
+      expect(result, isA<Failure<void>>());
+      expect((result as Failure).error.message, contains('different'));
+      verifyNever(() => mockRepo.changePassword(any()));
+    });
+  });
 }

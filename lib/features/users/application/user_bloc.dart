@@ -73,11 +73,6 @@ class UserBloc extends Bloc<UserEvent, UserState> {
   FutureOr<void> _onDelete(UserDeleteEvent event, Emitter<UserState> emit) async {
     _log.debug('BEGIN: onDelete UserDelete event: {}', [event.id]);
     emit(const UserLoading());
-    if (event.id == 'user-1') {
-      emit(const UserFailure(error: 'Admin user cannot be deleted'));
-      _log.error('END:onDelete UserDelete event error: {}', ['Admin user cannot be deleted']);
-      return;
-    }
     final result = await _deleteUserUseCase(event.id);
     switch (result) {
       case Success():

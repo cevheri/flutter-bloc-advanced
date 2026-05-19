@@ -31,4 +31,15 @@ void main() {
 
     expect(result, isA<Failure<void>>());
   });
+
+  // Regression coverage for #73: the admin-protection rule now lives in
+  // the use case, not in UserBloc.
+  test('rejects deletion of the protected admin user (user-1) without hitting repo', () async {
+    final result = await useCase.call('user-1');
+
+    expect(result, isA<Failure<void>>());
+    expect((result as Failure).error, isA<ValidationError>());
+    expect(result.error.message, 'Admin user cannot be deleted');
+    verifyNever(() => mockRepo.delete(any()));
+  });
 }

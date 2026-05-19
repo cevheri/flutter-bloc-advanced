@@ -8,6 +8,7 @@ import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_ev
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_state.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
+import 'package:flutter_bloc_advance/shared/utils/semver.dart';
 
 class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
   LifecycleBloc({required ILifecycleRepository repository, required FeatureFlagService featureFlagService})
@@ -44,7 +45,7 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
         }
 
         // Check force update
-        if (data.minimumVersion != null && _isVersionBelow(AppConstants.appVersion, data.minimumVersion!)) {
+        if (data.minimumVersion != null && Semver.isBelow(AppConstants.appVersion, data.minimumVersion!)) {
           _log.info('Force update required: current={}, minimum={}', [AppConstants.appVersion, data.minimumVersion]);
           emit(LifecycleForceUpdate(config: data));
           return;
@@ -68,24 +69,5 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
       _ => null,
     };
     emit(LifecycleReady(config: config));
-  }
-
-  /// Compare semantic versions. Returns true if [current] < [minimum].
-  bool _isVersionBelow(String current, String minimum) {
-    try {
-      final currentParts = current.split('.').map(int.parse).toList();
-      final minimumParts = minimum.split('.').map(int.parse).toList();
-
-      for (int i = 0; i < 3; i++) {
-        final c = i < currentParts.length ? currentParts[i] : 0;
-        final m = i < minimumParts.length ? minimumParts[i] : 0;
-        if (c < m) return true;
-        if (c > m) return false;
-      }
-      return false; // Equal versions
-    } catch (e) {
-      _log.error('Version comparison failed: {} vs {}', [current, minimum]);
-      return false;
-    }
   }
 }
