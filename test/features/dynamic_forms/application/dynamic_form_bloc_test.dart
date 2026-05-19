@@ -127,37 +127,22 @@ void main() {
   });
 
   group('DynamicFormState', () {
-    test('initial state has correct defaults', () {
-      const state = DynamicFormState();
-      expect(state.status, DynamicFormStatus.initial);
-      expect(state.schema, isNull);
-      expect(state.submitResponse, isNull);
-      expect(state.error, isNull);
+    test('DynamicFormInitial equality and props', () {
+      expect(const DynamicFormInitial(), const DynamicFormInitial());
+      expect(const DynamicFormInitial().props, const <Object?>[]);
     });
 
-    test('supports value equality', () {
-      const state1 = DynamicFormState();
-      const state2 = DynamicFormState();
-      expect(state1, equals(state2));
+    test('DynamicFormLoading equality and props', () {
+      expect(const DynamicFormLoading(), const DynamicFormLoading());
+      expect(const DynamicFormLoading().props, const <Object?>[]);
     });
 
-    test('copyWith replaces non-null parameters', () {
-      const state = DynamicFormState();
-      final updated = state.copyWith(status: DynamicFormStatus.loading);
-      expect(updated.status, DynamicFormStatus.loading);
-      expect(updated.schema, isNull);
+    test('different variants are not equal', () {
+      expect(const DynamicFormInitial(), isNot(equals(const DynamicFormLoading())));
     });
 
-    test('copyWith preserves existing values when no args given', () {
-      const state = DynamicFormState(status: DynamicFormStatus.loaded, error: 'something');
-      final copy = state.copyWith();
-      expect(copy.status, DynamicFormStatus.loaded);
-      expect(copy.error, 'something');
-    });
-
-    test('props contains all fields', () {
-      const state = DynamicFormState();
-      expect(state.props, [DynamicFormStatus.initial, null, null, null]);
+    test('DynamicFormFailure carries error', () {
+      expect(const DynamicFormFailure(error: 'boom'), equals(const DynamicFormFailure(error: 'boom')));
     });
   });
 
@@ -306,10 +291,9 @@ void main() {
   });
 
   group('DynamicFormBloc', () {
-    test('initial state is DynamicFormState with initial status', () {
+    test('initial state is DynamicFormInitial', () {
       final bloc = DynamicFormBloc();
-      expect(bloc.state, const DynamicFormState());
-      expect(bloc.state.status, DynamicFormStatus.initial);
+      expect(bloc.state, const DynamicFormInitial());
       bloc.close();
     });
 
@@ -321,13 +305,11 @@ void main() {
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
         wait: const Duration(milliseconds: 300),
         expect: () => [
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.loaded)
-              .having((s) => s.schema, 'schema', isNotNull)
-              .having((s) => s.schema!.id, 'schema.id', 'test_form')
-              .having((s) => s.schema!.title, 'schema.title', 'Test Form')
-              .having((s) => s.schema!.fields, 'schema.fields', hasLength(3)),
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormLoaded>()
+              .having((s) => s.schema.id, 'schema.id', 'test_form')
+              .having((s) => s.schema.title, 'schema.title', 'Test Form')
+              .having((s) => s.schema.fields, 'schema.fields', hasLength(3)),
         ],
       );
 
@@ -337,12 +319,7 @@ void main() {
         build: () => DynamicFormBloc(),
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
         wait: const Duration(milliseconds: 300),
-        expect: () => [
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.failure)
-              .having((s) => s.error, 'error', isNotNull),
-        ],
+        expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>().having((s) => s.error, 'error', isNotNull)],
       );
 
       blocTest<DynamicFormBloc, DynamicFormState>(
@@ -351,12 +328,7 @@ void main() {
         build: () => DynamicFormBloc(),
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('unknown')),
         wait: const Duration(milliseconds: 300),
-        expect: () => [
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.failure)
-              .having((s) => s.error, 'error', isNotNull),
-        ],
+        expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>().having((s) => s.error, 'error', isNotNull)],
       );
 
       blocTest<DynamicFormBloc, DynamicFormState>(
@@ -366,10 +338,8 @@ void main() {
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
         wait: const Duration(milliseconds: 300),
         expect: () => [
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.failure)
-              .having((s) => s.error, 'error', contains('Timeout')),
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormFailure>().having((s) => s.error, 'error', contains('Timeout')),
         ],
       );
     });
@@ -394,13 +364,11 @@ void main() {
         wait: const Duration(milliseconds: 300),
         expect: () => [
           // Load events
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loaded),
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormLoaded>(),
           // Submit events
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.submitting),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.submitted)
-              .having((s) => s.submitResponse, 'submitResponse', 'Form data logged'),
+          isA<DynamicFormSubmitting>(),
+          isA<DynamicFormSubmitted>().having((s) => s.submitResponse, 'submitResponse', 'Form data logged'),
         ],
       );
 
@@ -418,13 +386,11 @@ void main() {
         wait: const Duration(milliseconds: 300),
         expect: () => [
           // Load events
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loaded),
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormLoaded>(),
           // Submit events
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.submitting),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.submitted)
-              .having((s) => s.submitResponse, 'submitResponse', '{"id": "lead_1"}'),
+          isA<DynamicFormSubmitting>(),
+          isA<DynamicFormSubmitted>().having((s) => s.submitResponse, 'submitResponse', '{"id": "lead_1"}'),
         ],
       );
 
@@ -440,12 +406,10 @@ void main() {
         },
         wait: const Duration(milliseconds: 300),
         expect: () => [
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loaded),
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.submitting),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.submitted)
-              .having((s) => s.submitResponse, 'submitResponse', '{"updated": true}'),
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormLoaded>(),
+          isA<DynamicFormSubmitting>(),
+          isA<DynamicFormSubmitted>().having((s) => s.submitResponse, 'submitResponse', '{"updated": true}'),
         ],
       );
 
@@ -461,12 +425,10 @@ void main() {
         },
         wait: const Duration(milliseconds: 300),
         expect: () => [
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loaded),
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.submitting),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.failure)
-              .having((s) => s.error, 'error', isNotNull),
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormLoaded>(),
+          isA<DynamicFormSubmitting>(),
+          isA<DynamicFormFailure>().having((s) => s.error, 'error', isNotNull),
         ],
       );
     });
@@ -482,43 +444,15 @@ void main() {
           bloc.add(const DynamicFormResetEvent());
         },
         wait: const Duration(milliseconds: 300),
-        expect: () => [
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loading),
-          isA<DynamicFormState>().having((s) => s.status, 'status', DynamicFormStatus.loaded),
-          isA<DynamicFormState>()
-              .having((s) => s.status, 'status', DynamicFormStatus.initial)
-              .having((s) => s.schema, 'schema', isNull)
-              .having((s) => s.error, 'error', isNull)
-              .having((s) => s.submitResponse, 'submitResponse', isNull),
-        ],
+        expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormLoaded>(), isA<DynamicFormInitial>()],
       );
 
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits initial state when reset is dispatched from initial state',
         build: () => DynamicFormBloc(),
         act: (bloc) => bloc.add(const DynamicFormResetEvent()),
-        expect: () => [const DynamicFormState()],
+        expect: () => [const DynamicFormInitial()],
       );
-    });
-  });
-
-  group('DynamicFormStatus', () {
-    test('has all expected enum values', () {
-      expect(
-        DynamicFormStatus.values,
-        containsAll([
-          DynamicFormStatus.initial,
-          DynamicFormStatus.loading,
-          DynamicFormStatus.loaded,
-          DynamicFormStatus.submitting,
-          DynamicFormStatus.submitted,
-          DynamicFormStatus.failure,
-        ]),
-      );
-    });
-
-    test('has exactly 6 values', () {
-      expect(DynamicFormStatus.values, hasLength(6));
     });
   });
 }

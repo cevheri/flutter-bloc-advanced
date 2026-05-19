@@ -9,7 +9,7 @@ import 'package:flutter_bloc_advance/features/dynamic_forms/data/models/form_sch
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
-  DynamicFormBloc() : super(const DynamicFormState()) {
+  DynamicFormBloc() : super(const DynamicFormInitial()) {
     on<DynamicFormLoadEvent>(_onLoad);
     on<DynamicFormSubmitEvent>(_onSubmit);
     on<DynamicFormResetEvent>(_onReset);
@@ -19,30 +19,35 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
   FutureOr<void> _onLoad(DynamicFormLoadEvent event, Emitter<DynamicFormState> emit) async {
     _log.debug('Loading form schema: {}', [event.formId]);
-    emit(state.copyWith(status: DynamicFormStatus.loading));
+    emit(const DynamicFormLoading());
     try {
       final response = await ApiClient.get('/dynamic_forms', pathParams: event.formId);
       final schema = FormSchemaModel.fromJsonString(response.data!);
-      emit(state.copyWith(status: DynamicFormStatus.loaded, schema: schema));
+      emit(DynamicFormLoaded(schema: schema));
     } on AppException catch (e) {
-      emit(state.copyWith(status: DynamicFormStatus.failure, error: e.toString()));
+      emit(DynamicFormFailure(error: e.toString()));
     } catch (e) {
-      emit(state.copyWith(status: DynamicFormStatus.failure, error: e.toString()));
+      emit(DynamicFormFailure(error: e.toString()));
     }
   }
 
   FutureOr<void> _onSubmit(DynamicFormSubmitEvent event, Emitter<DynamicFormState> emit) async {
-    final schema = state.schema;
+    final schema = switch (state) {
+      DynamicFormLoaded(:final schema) => schema,
+      DynamicFormSubmitted(:final schema) => schema,
+      DynamicFormFailure(:final schema?) => schema,
+      _ => null,
+    };
     if (schema == null) return;
 
     _log.debug('Submitting form: {}', [schema.id]);
-    emit(state.copyWith(status: DynamicFormStatus.submitting));
+    emit(DynamicFormSubmitting(schema: schema));
 
     try {
       final action = schema.submitAction;
       if (action == null) {
         _log.info('No submit action defined — logging form data: {}', [event.data]);
-        emit(state.copyWith(status: DynamicFormStatus.submitted, submitResponse: 'Form data logged'));
+        emit(DynamicFormSubmitted(schema: schema, submitResponse: 'Form data logged'));
         return;
       }
 
@@ -54,15 +59,15 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
         final method => throw UnsupportedError('Unsupported HTTP method: $method'),
       };
 
-      emit(state.copyWith(status: DynamicFormStatus.submitted, submitResponse: response.data));
+      emit(DynamicFormSubmitted(schema: schema, submitResponse: response.data));
     } on AppException catch (e) {
-      emit(state.copyWith(status: DynamicFormStatus.failure, error: e.toString()));
+      emit(DynamicFormFailure(error: e.toString(), schema: schema));
     } catch (e) {
-      emit(state.copyWith(status: DynamicFormStatus.failure, error: e.toString()));
+      emit(DynamicFormFailure(error: e.toString(), schema: schema));
     }
   }
 
   FutureOr<void> _onReset(DynamicFormResetEvent event, Emitter<DynamicFormState> emit) {
-    emit(const DynamicFormState());
+    emit(const DynamicFormInitial());
   }
 }
