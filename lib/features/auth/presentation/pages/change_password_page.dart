@@ -29,7 +29,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ChangePasswordBloc, ChangePasswordState>(
-      listenWhen: (previous, current) => previous.status != current.status,
+      listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) => _handleStateChanges(context, state),
       child: PopScope(
         canPop: !(_formKey.currentState?.isDirty ?? false),
@@ -41,7 +41,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   Widget _buildBody(BuildContext context) {
     return BlocBuilder<ChangePasswordBloc, ChangePasswordState>(
-      buildWhen: (previous, current) => previous.status != current.status,
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       builder: (context, state) {
         return SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -142,13 +142,14 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
   }
 
   Widget _submitButton(BuildContext context, ChangePasswordState state) {
+    final isLoading = state is ChangePasswordLoadingState;
     return SizedBox(
       width: double.infinity,
       child: ResponsiveSubmitButton(
         key: changePasswordButtonSubmitKey,
         buttonText: S.of(context).save,
-        onPressed: state.status == ChangePasswordStatus.loading ? null : () => _onSubmit(context, state),
-        isLoading: state.status == ChangePasswordStatus.loading,
+        onPressed: isLoading ? null : () => _onSubmit(context, state),
+        isLoading: isLoading,
       ),
     );
   }
@@ -175,21 +176,18 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   void _handleStateChanges(BuildContext context, ChangePasswordState state) {
     const duration = Duration(milliseconds: 1000);
-    switch (state.status) {
-      case ChangePasswordStatus.initial:
+    switch (state) {
+      case ChangePasswordInitialState():
         break;
-      case ChangePasswordStatus.loading:
+      case ChangePasswordLoadingState():
         _showSnackBar(context, S.of(context).loading, duration);
-        break;
-      case ChangePasswordStatus.success:
+      case ChangePasswordSuccessState():
         _formKey.currentState?.fields['currentPassword']?.reset();
         _formKey.currentState?.fields['newPassword']?.reset();
         _formKey.currentState?.reset();
         _showSnackBar(context, S.of(context).success, duration);
-        break;
-      case ChangePasswordStatus.failure:
+      case ChangePasswordFailureState():
         _showSnackBar(context, S.of(context).failed, duration);
-        break;
     }
   }
 

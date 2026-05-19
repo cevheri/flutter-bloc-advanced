@@ -34,26 +34,31 @@ void main() {
 
   //region state
   group("ChangePasswordState", () {
-    test("ChangePasswordState supports value comparisons", () {
-      expect(const ChangePasswordState(), const ChangePasswordState());
+    test("ChangePasswordInitialState equals", () {
+      expect(const ChangePasswordInitialState(), const ChangePasswordInitialState());
+      expect(const ChangePasswordInitialState().props, const <Object?>[]);
     });
 
-    test("ChangePasswordState with different status are not equal", () {
+    test("ChangePasswordLoadingState equals", () {
+      expect(const ChangePasswordLoadingState(), const ChangePasswordLoadingState());
+      expect(const ChangePasswordLoadingState().props, const <Object?>[]);
+    });
+
+    test("ChangePasswordSuccessState equals", () {
+      expect(const ChangePasswordSuccessState(), const ChangePasswordSuccessState());
+      expect(const ChangePasswordSuccessState().props, const <Object?>[]);
+    });
+
+    test("ChangePasswordFailureState equals", () {
       expect(
-        const ChangePasswordState(status: ChangePasswordStatus.loading),
-        isNot(const ChangePasswordState(status: ChangePasswordStatus.initial)),
+        const ChangePasswordFailureState(errorMessage: "boom"),
+        const ChangePasswordFailureState(errorMessage: "boom"),
       );
+      expect(const ChangePasswordFailureState(errorMessage: "boom").props, const <Object?>["boom"]);
     });
 
-    test("copyWith retains same values if no arguments provided", () {
-      expect(const ChangePasswordState().copyWith(), const ChangePasswordState());
-    });
-
-    test("copyWith replaces status", () {
-      expect(
-        const ChangePasswordState().copyWith(status: ChangePasswordStatus.loading),
-        const ChangePasswordState(status: ChangePasswordStatus.loading),
-      );
+    test("different variants are not equal", () {
+      expect(const ChangePasswordLoadingState(), isNot(const ChangePasswordInitialState()));
     });
   });
   //endregion state
@@ -78,10 +83,10 @@ void main() {
 
   //region bloc
   group("ChangePasswordBloc", () {
-    test("initial state is ChangePasswordState with initial status", () {
+    test("initial state is ChangePasswordInitialState", () {
       expect(
         ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)).state,
-        const ChangePasswordState(status: ChangePasswordStatus.initial),
+        const ChangePasswordInitialState(),
       );
     });
 
@@ -90,8 +95,8 @@ void main() {
       method() => repository.changePassword(input);
 
       final event = ChangePasswordChanged(currentPassword: input.currentPassword!, newPassword: input.newPassword!);
-      const loadingState = ChangePasswordState(status: ChangePasswordStatus.loading);
-      const successState = ChangePasswordState(status: ChangePasswordStatus.success);
+      const loadingState = ChangePasswordLoadingState();
+      const successState = ChangePasswordSuccessState();
 
       const statesSuccess = [loadingState, successState];
 
@@ -109,10 +114,7 @@ void main() {
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ServerError('Change password failed'))),
         build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)),
         act: (bloc) => bloc..add(event),
-        expect: () => [
-          loadingState,
-          const ChangePasswordState(status: ChangePasswordStatus.failure, errorMessage: 'Change password failed'),
-        ],
+        expect: () => [loadingState, const ChangePasswordFailureState(errorMessage: 'Change password failed')],
         verify: (_) => verify(method).called(1),
       );
 
@@ -121,10 +123,7 @@ void main() {
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid password'))),
         build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)),
         act: (bloc) => bloc..add(event),
-        expect: () => [
-          loadingState,
-          const ChangePasswordState(status: ChangePasswordStatus.failure, errorMessage: 'Invalid password'),
-        ],
+        expect: () => [loadingState, const ChangePasswordFailureState(errorMessage: 'Invalid password')],
         verify: (_) => verify(method).called(1),
       );
     });
