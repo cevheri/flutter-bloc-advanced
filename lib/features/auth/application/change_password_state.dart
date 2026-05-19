@@ -1,20 +1,35 @@
 part of 'change_password_bloc.dart';
 
-enum ChangePasswordStatus { initial, loading, success, failure }
+sealed class ChangePasswordState extends Equatable {
+  const ChangePasswordState();
+}
 
-class ChangePasswordState extends Equatable {
-  final ChangePasswordStatus status;
-  final String? errorMessage;
-
-  const ChangePasswordState({this.status = ChangePasswordStatus.initial, this.errorMessage});
-
-  ChangePasswordState copyWith({ChangePasswordStatus? status, String? errorMessage}) {
-    return ChangePasswordState(status: status ?? this.status, errorMessage: errorMessage ?? this.errorMessage);
-  }
+final class ChangePasswordInitialState extends ChangePasswordState {
+  const ChangePasswordInitialState();
 
   @override
-  List<Object?> get props => [status, errorMessage];
+  List<Object?> get props => const [];
+}
+
+final class ChangePasswordLoadingState extends ChangePasswordState {
+  const ChangePasswordLoadingState();
 
   @override
-  bool get stringify => true;
+  List<Object?> get props => const [];
+}
+
+final class ChangePasswordSuccessState extends ChangePasswordState {
+  const ChangePasswordSuccessState();
+
+  @override
+  List<Object?> get props => const [];
+}
+
+final class ChangePasswordFailureState extends ChangePasswordState {
+  const ChangePasswordFailureState({required this.errorMessage});
+
+  final String errorMessage;
+
+  @override
+  List<Object?> get props => [errorMessage];
 }

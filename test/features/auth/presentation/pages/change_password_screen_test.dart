@@ -42,7 +42,7 @@ void main() {
     stateController = StreamController<ChangePasswordState>.broadcast();
 
     when(() => changePasswordBloc.stream).thenAnswer((_) => stateController.stream);
-    when(() => changePasswordBloc.state).thenReturn(const ChangePasswordState());
+    when(() => changePasswordBloc.state).thenReturn(const ChangePasswordInitialState());
 
     when(() => authorityBloc.stream).thenAnswer((_) => Stream.fromIterable([const AuthorityInitialState()]));
     when(() => authorityBloc.state).thenReturn(const AuthorityInitialState());
@@ -200,7 +200,7 @@ void main() {
       await tester.pumpWidget(getWidget());
       await tester.pumpAndSettle();
       // When: emit loading state via stream
-      stateController.add(const ChangePasswordState(status: ChangePasswordStatus.loading));
+      stateController.add(const ChangePasswordLoadingState());
       await tester.pump();
       await tester.pump();
       // Then
@@ -218,7 +218,7 @@ void main() {
       await tester.pump();
 
       // When: emit success state
-      stateController.add(const ChangePasswordState(status: ChangePasswordStatus.success));
+      stateController.add(const ChangePasswordSuccessState());
       await tester.pump();
       await tester.pump();
       // Then
@@ -230,7 +230,7 @@ void main() {
       await tester.pumpWidget(getWidget());
       await tester.pumpAndSettle();
       // When: emit failure state
-      stateController.add(const ChangePasswordState(status: ChangePasswordStatus.failure));
+      stateController.add(const ChangePasswordFailureState(errorMessage: 'Test error'));
       await tester.pump();
       await tester.pump();
       // Then
