@@ -22,27 +22,27 @@ void main() {
 
     test("SettingsInitial", () {
       expect(const SettingsInitial(), const SettingsInitial());
-      expect(const SettingsInitial().props, [SettingsStatus.initial]);
+      expect(const SettingsInitial().props, const <Object?>[]);
     });
     test("SettingsLoading", () {
       expect(const SettingsLoading(), const SettingsLoading());
-      expect(const SettingsLoading().props, [SettingsStatus.loading]);
+      expect(const SettingsLoading().props, const <Object?>[]);
     });
     test("SettingsLogoutSuccess", () {
       expect(const SettingsLogoutSuccess(), const SettingsLogoutSuccess());
-      expect(const SettingsLogoutSuccess().props, [SettingsStatus.success]);
+      expect(const SettingsLogoutSuccess().props, const <Object?>[]);
     });
     test("SettingsLanguageChanged", () {
       expect(const SettingsLanguageChanged(language: "en"), const SettingsLanguageChanged(language: "en"));
-      expect(const SettingsLanguageChanged(language: "en").props, [SettingsStatus.success, "en"]);
+      expect(const SettingsLanguageChanged(language: "en").props, const <Object?>["en"]);
     });
     test("SettingsThemeChanged", () {
       expect(const SettingsThemeChanged(theme: ThemeMode.system), const SettingsThemeChanged(theme: ThemeMode.system));
-      expect(const SettingsThemeChanged(theme: ThemeMode.system).props, [ThemeMode.system, SettingsStatus.success]);
+      expect(const SettingsThemeChanged(theme: ThemeMode.system).props, const <Object?>[ThemeMode.system]);
     });
     test("SettingsFailure", () {
       expect(const SettingsFailure(message: "Error"), const SettingsFailure(message: "Error"));
-      expect(const SettingsFailure(message: "Error").props, ["Error", SettingsStatus.failure]);
+      expect(const SettingsFailure(message: "Error").props, const <Object?>["Error"]);
     });
   });
   //endregion state
