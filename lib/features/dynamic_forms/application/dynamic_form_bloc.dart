@@ -7,11 +7,12 @@ import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_state.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/data/models/form_schema_model.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   DynamicFormBloc() : super(const DynamicFormInitial()) {
-    on<DynamicFormLoadEvent>(_onLoad);
-    on<DynamicFormSubmitEvent>(_onSubmit);
+    on<DynamicFormLoadEvent>(_onLoad, transformer: EventTransformers.restart());
+    on<DynamicFormSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<DynamicFormResetEvent>(_onReset);
   }
 

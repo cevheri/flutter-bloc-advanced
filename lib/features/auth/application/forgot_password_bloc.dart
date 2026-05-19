@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/reset_password_usecase.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 part 'forgot_password_event.dart';
 part 'forgot_password_state.dart';
@@ -16,7 +17,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   ForgotPasswordBloc({required ResetPasswordUseCase resetPasswordUseCase})
     : _resetPasswordUseCase = resetPasswordUseCase,
       super(const ForgotPasswordInitialState()) {
-    on<ForgotPasswordEmailChanged>(_onSubmit);
+    on<ForgotPasswordEmailChanged>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }
 
   FutureOr<void> _onSubmit(ForgotPasswordEmailChanged event, Emitter<ForgotPasswordState> emit) async {

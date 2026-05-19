@@ -26,6 +26,7 @@ dependencies:
   form_builder_validators: 11.3.0
   intl_utils: 2.8.14
   bloc_concurrency: 0.3.0
+  stream_transform: 2.1.1
   shared_preferences: 2.5.5
   logger: 2.7.0
   dio: 5.9.2

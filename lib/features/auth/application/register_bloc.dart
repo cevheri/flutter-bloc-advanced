@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/register_account_usecase.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 part 'register_event.dart';
 part 'register_state.dart';
@@ -17,7 +18,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   RegisterBloc({required RegisterAccountUseCase registerAccountUseCase})
     : _registerAccountUseCase = registerAccountUseCase,
       super(const RegisterInitialState()) {
-    on<RegisterFormSubmitted>(_onSubmit);
+    on<RegisterFormSubmitted>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }
 
   FutureOr<void> _onSubmit(RegisterFormSubmitted event, Emitter<RegisterState> emit) async {

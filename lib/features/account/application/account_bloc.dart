@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 part 'account_event.dart';
 part 'account_state.dart';
@@ -16,8 +17,8 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     : _getAccountUseCase = getAccountUseCase,
       _updateAccountUseCase = updateAccountUseCase,
       super(const AccountState()) {
-    on<AccountFetchEvent>(_onFetchAccount);
-    on<AccountSubmitEvent>(_onSubmit);
+    on<AccountFetchEvent>(_onFetchAccount, transformer: EventTransformers.restart());
+    on<AccountSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }
 
   static final _log = AppLogger.getLogger('AccountBloc');

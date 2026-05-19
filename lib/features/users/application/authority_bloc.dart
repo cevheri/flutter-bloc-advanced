@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';
+import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 part 'authority_event.dart';
 part 'authority_state.dart';
@@ -13,7 +14,7 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
   AuthorityBloc({required ListAuthoritiesUseCase listAuthoritiesUseCase})
     : _listAuthoritiesUseCase = listAuthoritiesUseCase,
       super(const AuthorityInitialState()) {
-    on<AuthorityLoad>(_onLoad);
+    on<AuthorityLoad>(_onLoad, transformer: EventTransformers.restart());
   }
 
   static final _log = AppLogger.getLogger('AuthorityBloc');
