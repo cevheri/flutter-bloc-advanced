@@ -44,8 +44,8 @@ void main() {
     when(() => changePasswordBloc.stream).thenAnswer((_) => stateController.stream);
     when(() => changePasswordBloc.state).thenReturn(const ChangePasswordState());
 
-    when(() => authorityBloc.stream).thenAnswer((_) => Stream.fromIterable([const AuthorityState()]));
-    when(() => authorityBloc.state).thenReturn(const AuthorityState());
+    when(() => authorityBloc.stream).thenAnswer((_) => Stream.fromIterable([const AuthorityInitialState()]));
+    when(() => authorityBloc.state).thenReturn(const AuthorityInitialState());
   });
 
   final Iterable<LocalizationsDelegate<dynamic>> locales = [

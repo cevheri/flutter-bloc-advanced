@@ -34,52 +34,28 @@ void main() {
   /// Authority State Tests
   group("AuthorityState", () {
     const authorities = ["test"];
-    const status = AuthorityStatus.initial;
 
-    test("supports value comparisons", () {
-      expect(
-        const AuthorityState(authorities: authorities, status: status),
-        const AuthorityState(authorities: authorities, status: status),
-      );
-    });
-
-    test("AuthorityInitialState", () {
+    test("AuthorityInitialState equals", () {
       expect(const AuthorityInitialState(), const AuthorityInitialState());
+      expect(const AuthorityInitialState().props, const <Object?>[]);
     });
 
-    test("AuthorityLoadInProgressState", () {
+    test("AuthorityLoadingState equals", () {
       expect(const AuthorityLoadingState(), const AuthorityLoadingState());
+      expect(const AuthorityLoadingState().props, const <Object?>[]);
     });
 
-    test("AuthorityLoadSuccessState", () {
+    test("AuthorityLoadSuccessState equals", () {
       expect(
         const AuthorityLoadSuccessState(authorities: authorities),
         const AuthorityLoadSuccessState(authorities: authorities),
       );
+      expect(const AuthorityLoadSuccessState(authorities: authorities).props, const <Object?>[authorities]);
     });
 
-    test("AuthorityLoadFailureState", () {
+    test("AuthorityLoadFailureState equals", () {
       expect(const AuthorityLoadFailureState(message: "test"), const AuthorityLoadFailureState(message: "test"));
-    });
-    test("AuthorityState copyWith", () {
-      expect(const AuthorityState().copyWith(), const AuthorityState());
-      expect(const AuthorityState().copyWith(authorities: authorities), const AuthorityState(authorities: authorities));
-      expect(
-        const AuthorityState().copyWith(status: AuthorityStatus.success),
-        const AuthorityState(status: AuthorityStatus.success),
-      );
-    });
-    test("AuthorityState stringify", () {
-      expect(const AuthorityState().stringify, true);
-    });
-    test("AuthorityState props", () {
-      expect(const AuthorityState().props, [AuthorityStatus.initial, []]);
-      expect(const AuthorityState(authorities: authorities).props, [AuthorityStatus.initial, authorities]);
-
-      expect(const AuthorityInitialState().props, [AuthorityStatus.initial, []]);
-      expect(const AuthorityLoadingState().props, [AuthorityStatus.loading, []]);
-      expect(const AuthorityLoadSuccessState(authorities: authorities).props, [AuthorityStatus.success, authorities]);
-      expect(const AuthorityLoadFailureState(message: "test").props, [AuthorityStatus.failure, "test"]);
+      expect(const AuthorityLoadFailureState(message: "test").props, const <Object?>["test"]);
     });
   });
 
