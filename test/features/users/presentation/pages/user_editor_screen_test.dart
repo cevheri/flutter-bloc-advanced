@@ -8,7 +8,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/editor_form_mode.dart';
-import 'package:flutter_bloc_advance/features/users/application/user_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -22,7 +22,7 @@ import '../../../../test_utils.dart';
 void main() {
   late MockUserRepository mockUserRepository;
   late MockAuthorityBloc mockAuthorityBloc;
-  late MockUserBloc mockUserBloc;
+  late MockUserEditorBloc mockUserBloc;
   late TestUtils testUtils;
 
   setUpAll(() {
@@ -34,7 +34,7 @@ void main() {
     await testUtils.setupUnitTest();
 
     mockUserRepository = MockUserRepository();
-    mockUserBloc = MockUserBloc();
+    mockUserBloc = MockUserEditorBloc();
     mockAuthorityBloc = MockAuthorityBloc();
 
     when(() => mockAuthorityBloc.stream).thenAnswer(
@@ -76,7 +76,7 @@ void main() {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider<UserBloc>.value(value: mockUserBloc),
+        BlocProvider<UserEditorBloc>.value(value: mockUserBloc),
         BlocProvider<AuthorityBloc>.value(value: mockAuthorityBloc),
       ],
       child: MaterialApp.router(
@@ -95,9 +95,9 @@ void main() {
   group('UserEditorScreen Tests', () {
     testWidgets('Create Mode - Should render empty form', (tester) async {
       // ARRANGE
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserEditorState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -107,8 +107,8 @@ void main() {
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
-        if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserInitial());
+        if (invocation.positionalArguments[0] is UserEditorReset) {
+          userStateController.add(const UserEditorInitial());
         }
       });
 
@@ -144,16 +144,16 @@ void main() {
       );
 
       when(() => mockUserRepository.retrieve(userId)).thenAnswer((_) async => const Success(mockUser));
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
 
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserEditorState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) async {
-        if (invocation.positionalArguments[0] is UserFetchEvent) {
-          userStateController.add(const UserLoading());
+        if (invocation.positionalArguments[0] is UserEditorFetch) {
+          userStateController.add(const UserEditorLoading());
           await Future.delayed(const Duration(milliseconds: 100));
-          userStateController.add(UserFetchSuccess(data: mockUser));
+          userStateController.add(UserEditorLoaded(data: mockUser));
         }
       });
 
@@ -186,9 +186,9 @@ void main() {
         authorities: ['ROLE_USER'],
       );
 
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserEditorState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(UserFetchSuccess(data: mockUser));
+      when(() => mockUserBloc.state).thenReturn(UserEditorLoaded(data: mockUser));
 
       when(
         () => mockAuthorityBloc.state,
@@ -198,8 +198,8 @@ void main() {
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
-        if (invocation.positionalArguments[0] is UserFetchEvent) {
-          userStateController.add(UserFetchSuccess(data: mockUser));
+        if (invocation.positionalArguments[0] is UserEditorFetch) {
+          userStateController.add(UserEditorLoaded(data: mockUser));
         }
       });
 
@@ -224,9 +224,9 @@ void main() {
 
     testWidgets('Create Mode - Should validate form before submit', (tester) async {
       // ARRANGE
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserEditorState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -236,8 +236,8 @@ void main() {
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
-        if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserInitial());
+        if (invocation.positionalArguments[0] is UserEditorReset) {
+          userStateController.add(const UserEditorInitial());
         }
       });
 
@@ -269,9 +269,9 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1200, 800));
 
       // ARRANGE
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserEditorState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -281,10 +281,10 @@ void main() {
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
-        if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserInitial());
-        } else if (invocation.positionalArguments[0] is UserSubmitEvent) {
-          userStateController.add(const UserSaveSuccess());
+        if (invocation.positionalArguments[0] is UserEditorReset) {
+          userStateController.add(const UserEditorInitial());
+        } else if (invocation.positionalArguments[0] is UserEditorSubmit) {
+          userStateController.add(const UserEditorSaved());
         }
       });
 
@@ -311,9 +311,9 @@ void main() {
 
     testWidgets('Should handle cancel button tap', (tester) async {
       // ARRANGE
-      final userStateController = StreamController<UserState>.broadcast();
+      final userStateController = StreamController<UserEditorState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserInitial());
+      when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -323,8 +323,8 @@ void main() {
       ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
-        if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserInitial());
+        if (invocation.positionalArguments[0] is UserEditorReset) {
+          userStateController.add(const UserEditorInitial());
         }
       });
 
