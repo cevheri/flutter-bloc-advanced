@@ -8,7 +8,7 @@ class AuthInterceptor extends Interceptor {
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.name);
+    final jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.key);
     if (jwtToken != null) {
       options.headers['Authorization'] = 'Bearer $jwtToken';
     }

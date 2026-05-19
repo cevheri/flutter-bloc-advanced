@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/settings/application/settings_bloc.dart';
+import 'package:flutter_bloc_advance/features/settings/application/settings_cubit.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 
 class SettingsPage extends StatelessWidget {
@@ -8,6 +8,6 @@ class SettingsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(create: (_) => SettingsBloc(), child: const SettingsScreen());
+    return BlocProvider(create: (_) => SettingsCubit(), child: const SettingsScreen());
   }
 }

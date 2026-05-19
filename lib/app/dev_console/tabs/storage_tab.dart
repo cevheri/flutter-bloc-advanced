@@ -38,7 +38,7 @@ class _StorageTabState extends State<StorageTab> {
   }
 
   String _maskSensitive(String key, String value) {
-    if (key == StorageKeys.jwtToken.name && value.length > 20) {
+    if (key == StorageKeys.jwtToken.key && value.length > 20) {
       return '${value.substring(0, 10)}...[masked]...${value.substring(value.length - 10)}';
     }
     return value;

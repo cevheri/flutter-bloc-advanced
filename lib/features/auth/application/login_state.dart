@@ -10,7 +10,6 @@ class LoginState extends Equatable {
   final String? otpCode;
   final bool isOtpSent;
   final LoginMethod loginMethod;
-  static const String authenticationFailKey = 'error.authenticate';
 
   const LoginState({
     this.username,

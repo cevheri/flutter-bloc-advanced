@@ -43,12 +43,12 @@ void main() {
     test("Given stored entity when logout then clear storage successfully", () async {
       TestUtils().setupAuthentication();
 
-      expect(await AppLocalStorage().read(StorageKeys.jwtToken.name), isNotNull);
-      expect(await AppLocalStorage().read(StorageKeys.jwtToken.name), isA<String>());
+      expect(await AppLocalStorage().read(StorageKeys.jwtToken.key), isNotNull);
+      expect(await AppLocalStorage().read(StorageKeys.jwtToken.key), isA<String>());
 
       final result = await LoginRepository().logout();
       expect(result, isA<Success<void>>());
-      expect(await AppLocalStorage().read(StorageKeys.jwtToken.name), null);
+      expect(await AppLocalStorage().read(StorageKeys.jwtToken.key), null);
     });
   });
 

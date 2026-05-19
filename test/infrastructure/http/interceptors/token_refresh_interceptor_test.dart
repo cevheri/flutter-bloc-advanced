@@ -202,7 +202,7 @@ void main() {
     });
 
     test('should call onSessionExpired when refresh token is empty string', () async {
-      await localStorage.save(StorageKeys.refreshToken.name, '');
+      await localStorage.save(StorageKeys.refreshToken.key, '');
 
       var sessionExpiredCalled = false;
       final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
@@ -223,8 +223,8 @@ void main() {
 
   group('TokenRefreshInterceptor - 401 with refresh token', () {
     test('should attempt refresh and call onSessionExpired when refresh fails', () async {
-      await localStorage.save(StorageKeys.refreshToken.name, 'valid-refresh-token');
-      await localStorage.save(StorageKeys.jwtToken.name, 'old-jwt-token');
+      await localStorage.save(StorageKeys.refreshToken.key, 'valid-refresh-token');
+      await localStorage.save(StorageKeys.jwtToken.key, 'old-jwt-token');
 
       var sessionExpiredCalled = false;
       final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);

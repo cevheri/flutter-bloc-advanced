@@ -13,12 +13,12 @@ class AppLocalStorageCached {
 
   static Future<void> loadCache() async {
     _log.trace("Loading cache");
-    jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.name);
-    roles = await AppLocalStorage().read(StorageKeys.roles.name);
-    language = await AppLocalStorage().read(StorageKeys.language.name) ?? "en";
-    username = await AppLocalStorage().read(StorageKeys.username.name);
-    theme = await AppLocalStorage().read(StorageKeys.theme.name) ?? "classic";
-    brightness = await AppLocalStorage().read(StorageKeys.brightness.name) ?? "light";
+    jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.key);
+    roles = await AppLocalStorage().read(StorageKeys.roles.key);
+    language = await AppLocalStorage().read(StorageKeys.language.key) ?? "en";
+    username = await AppLocalStorage().read(StorageKeys.username.key);
+    theme = await AppLocalStorage().read(StorageKeys.theme.key) ?? "classic";
+    brightness = await AppLocalStorage().read(StorageKeys.brightness.key) ?? "light";
     _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}, brightness:{}", [
       username,
       roles,
@@ -30,8 +30,26 @@ class AppLocalStorageCached {
   }
 }
 
-/// LocalStorage predefined keys
-enum StorageKeys { jwtToken, refreshToken, roles, language, username, theme, brightness }
+/// LocalStorage predefined keys.
+///
+/// Each enum value carries an explicit [key] string used as the
+/// SharedPreferences key. Renaming an enum value will NOT change the
+/// stored key, so user data survives refactors safely. Add new entries
+/// by appending — do not change existing [key] strings without a
+/// migration.
+enum StorageKeys {
+  jwtToken('jwtToken'),
+  refreshToken('refreshToken'),
+  roles('roles'),
+  language('language'),
+  username('username'),
+  theme('theme'),
+  brightness('brightness');
+
+  const StorageKeys(this.key);
+
+  final String key;
+}
 
 /// Application Local Storage
 ///

@@ -35,7 +35,7 @@ class LanguageSelectionDialog extends StatelessWidget {
   }
 
   Future<void> _setLanguage(BuildContext context, String langCode) async {
-    await AppLocalStorage().save(StorageKeys.language.name, langCode);
+    await AppLocalStorage().save(StorageKeys.language.key, langCode);
     await S.load(Locale(langCode));
     LanguageNotifier.current.value = langCode;
     if (context.mounted) {

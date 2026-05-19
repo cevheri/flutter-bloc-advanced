@@ -56,18 +56,18 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           emit(const LoginErrorState(message: "Login API Error: Invalid Access Token"));
           return;
         }
-        await AppLocalStorage().save(StorageKeys.jwtToken.name, data.idToken);
+        await AppLocalStorage().save(StorageKeys.jwtToken.key, data.idToken);
         _log.debug("onSubmit save storage token: {}", [data.idToken]);
         if (data.refreshToken != null) {
-          await AppLocalStorage().save(StorageKeys.refreshToken.name, data.refreshToken);
+          await AppLocalStorage().save(StorageKeys.refreshToken.key, data.refreshToken);
           _log.debug("onSubmit save storage refreshToken");
         }
-        await AppLocalStorage().save(StorageKeys.username.name, event.username);
+        await AppLocalStorage().save(StorageKeys.username.key, event.username);
         _log.debug("onSubmit save storage username: {}", [event.username]);
         final accountResult = await _getAccountUseCase();
         switch (accountResult) {
           case Success(data: final user):
-            await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
+            await AppLocalStorage().save(StorageKeys.roles.key, user.authorities);
             _log.debug("onSubmit save storage roles: {}", [user.authorities]);
             emit(LoginLoadedState(username: event.username));
             _log.debug("END:onSubmit LoginFormSubmitted event success: {}", [data.toString()]);
@@ -110,15 +110,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           emit(const LoginErrorState(message: "OTP validation error"));
           return;
         }
-        await AppLocalStorage().save(StorageKeys.jwtToken.name, data.idToken);
+        await AppLocalStorage().save(StorageKeys.jwtToken.key, data.idToken);
         if (data.refreshToken != null) {
-          await AppLocalStorage().save(StorageKeys.refreshToken.name, data.refreshToken);
+          await AppLocalStorage().save(StorageKeys.refreshToken.key, data.refreshToken);
         }
-        await AppLocalStorage().save(StorageKeys.username.name, event.email);
+        await AppLocalStorage().save(StorageKeys.username.key, event.email);
         final accountResult = await _getAccountUseCase();
         switch (accountResult) {
           case Success(data: final user):
-            await AppLocalStorage().save(StorageKeys.roles.name, user.authorities);
+            await AppLocalStorage().save(StorageKeys.roles.key, user.authorities);
             emit(LoginLoadedState(username: event.email));
           case Failure():
             emit(const LoginErrorState(message: "OTP validation error"));

@@ -27,7 +27,7 @@ class TestUtils {
     TestWidgetsFlutterBinding.ensureInitialized();
     EquatableConfig.stringify = true;
     await _clearStorage();
-    await AppLocalStorage().save(StorageKeys.language.name, "en");
+    await AppLocalStorage().save(StorageKeys.language.key, "en");
     AppRouter().setRouter(RouterType.goRouter);
   }
 
@@ -35,7 +35,7 @@ class TestUtils {
     AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
     ProfileConstants.setEnvironment(Environment.test);
     await _clearStorage();
-    await AppLocalStorage().save(StorageKeys.language.name, "en");
+    await AppLocalStorage().save(StorageKeys.language.key, "en");
     AppRouter().setRouter(RouterType.goRouter);
   }
 
@@ -46,7 +46,7 @@ class TestUtils {
 
   // add mock token to storage
   Future<void> setupAuthentication() async {
-    await AppLocalStorage().save(StorageKeys.jwtToken.name, "MOCK_TOKEN");
+    await AppLocalStorage().save(StorageKeys.jwtToken.key, "MOCK_TOKEN");
   }
 
   Future<void> _clearStorage() async {
