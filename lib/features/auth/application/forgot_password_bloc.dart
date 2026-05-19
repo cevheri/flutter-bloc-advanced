@@ -15,23 +15,21 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
 
   ForgotPasswordBloc({required ResetPasswordUseCase resetPasswordUseCase})
     : _resetPasswordUseCase = resetPasswordUseCase,
-      super(const ForgotPasswordState(status: ForgotPasswordStatus.initial)) {
+      super(const ForgotPasswordInitialState()) {
     on<ForgotPasswordEmailChanged>(_onSubmit);
   }
 
   FutureOr<void> _onSubmit(ForgotPasswordEmailChanged event, Emitter<ForgotPasswordState> emit) async {
     _log.debug("BEGIN: forgotPassword bloc: _onSubmit");
-    emit(const ForgotPasswordState(status: ForgotPasswordStatus.loading));
+    emit(const ForgotPasswordLoadingState());
 
     final result = await _resetPasswordUseCase(event.email);
     switch (result) {
       case Success():
-        emit(ForgotPasswordState(status: ForgotPasswordStatus.success, email: event.email));
+        emit(ForgotPasswordCompletedState(email: event.email));
         _log.debug("END: forgotPassword bloc: _onSubmit success");
       case Failure(:final error):
-        emit(
-          ForgotPasswordState(status: ForgotPasswordStatus.failure, email: event.email, errorMessage: error.message),
-        );
+        emit(ForgotPasswordErrorState(email: event.email, errorMessage: error.message));
         _log.error("END: forgotPassword bloc: _onSubmit error: {}", [error.toString()]);
     }
   }

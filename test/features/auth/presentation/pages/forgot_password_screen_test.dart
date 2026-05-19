@@ -31,10 +31,8 @@ void main() {
     forgotPasswordBloc = MockForgotPasswordBloc();
     accountBloc = MockAccountBloc();
 
-    when(
-      () => forgotPasswordBloc.stream,
-    ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordState(status: ForgotPasswordStatus.initial)]));
-    when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.initial));
+    when(() => forgotPasswordBloc.stream).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordInitialState()]));
+    when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordInitialState());
 
     when(() => accountBloc.stream).thenAnswer((_) => Stream.fromIterable([const AccountState()]));
     when(() => accountBloc.state).thenReturn(const AccountState());
@@ -124,8 +122,8 @@ void main() {
       // Given
       when(
         () => forgotPasswordBloc.stream,
-      ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordState(status: ForgotPasswordStatus.loading)]));
-      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.loading));
+      ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordLoadingState()]));
+      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordLoadingState());
       await tester.pumpWidget(getWidget());
 
       //When:
@@ -141,8 +139,8 @@ void main() {
       // Given
       when(
         () => forgotPasswordBloc.stream,
-      ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordState(status: ForgotPasswordStatus.success)]));
-      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordState(status: ForgotPasswordStatus.success));
+      ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordCompletedState(email: 'test@example.com')]));
+      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordCompletedState(email: 'test@example.com'));
       await tester.pumpWidget(getWidget());
 
       //When:
@@ -157,10 +155,12 @@ void main() {
     // ForgotPasswordFailureState
     testWidgets("Validate failure state", (WidgetTester tester) async {
       // Given
+      when(() => forgotPasswordBloc.stream).thenAnswer(
+        (_) => Stream.fromIterable([const ForgotPasswordErrorState(email: 'test@example.com', errorMessage: 'Failed')]),
+      );
       when(
-        () => forgotPasswordBloc.stream,
-      ).thenAnswer((_) => Stream.fromIterable([const ForgotPasswordErrorState(message: "Failed")]));
-      when(() => forgotPasswordBloc.state).thenReturn(const ForgotPasswordErrorState(message: "Failed"));
+        () => forgotPasswordBloc.state,
+      ).thenReturn(const ForgotPasswordErrorState(email: 'test@example.com', errorMessage: 'Failed'));
       await tester.pumpWidget(getWidget());
 
       //When:
