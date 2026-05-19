@@ -113,6 +113,21 @@ void main() {
     );
 
     blocTest<SystemDashboardCubit, SystemDashboardState>(
+      'load() clears stale errorMessage when refresh succeeds after a previous error',
+      build: buildCubit,
+      seed: () => const SystemDashboardState(status: SystemDashboardStatus.error, errorMessage: 'previous failure'),
+      act: (cubit) => cubit.load(),
+      expect: () => [
+        isA<SystemDashboardState>()
+            .having((s) => s.status, 'status', SystemDashboardStatus.loading)
+            .having((s) => s.errorMessage, 'errorMessage', 'previous failure'),
+        isA<SystemDashboardState>()
+            .having((s) => s.status, 'status', SystemDashboardStatus.loaded)
+            .having((s) => s.errorMessage, 'errorMessage', isNull),
+      ],
+    );
+
+    blocTest<SystemDashboardCubit, SystemDashboardState>(
       'load() includes circuit breaker endpoint health',
       setUp: () {
         final breaker = CircuitBreaker();
