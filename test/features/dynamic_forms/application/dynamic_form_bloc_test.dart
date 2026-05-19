@@ -5,6 +5,9 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_state.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/load_form_schema_usecase.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/submit_form_usecase.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -125,6 +128,14 @@ void main() {
     ApiClient.reset();
     await TestUtils().tearDownUnitTest();
   });
+
+  DynamicFormBloc buildBloc() {
+    final repo = DynamicFormRepository();
+    return DynamicFormBloc(
+      loadFormSchemaUseCase: LoadFormSchemaUseCase(repo),
+      submitFormUseCase: SubmitFormUseCase(repo),
+    );
+  }
 
   group('DynamicFormState', () {
     test('DynamicFormInitial equality and props', () {
@@ -292,7 +303,7 @@ void main() {
 
   group('DynamicFormBloc', () {
     test('initial state is DynamicFormInitial', () {
-      final bloc = DynamicFormBloc();
+      final bloc = buildBloc();
       expect(bloc.state, const DynamicFormInitial());
       bloc.close();
     });
@@ -301,7 +312,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [loading, loaded] when API returns valid form schema',
         setUp: () => stub.stubSuccess(data: _validFormSchemaJson),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
         wait: const Duration(milliseconds: 300),
         expect: () => [
@@ -316,7 +327,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [loading, failure] when API returns connection error',
         setUp: () => stub.stubDioError(DioExceptionType.connectionError, message: 'Connection failed'),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
         wait: const Duration(milliseconds: 300),
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>().having((s) => s.error, 'error', isNotNull)],
@@ -325,7 +336,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [loading, failure] when API returns 404',
         setUp: () => stub.stubDioError(DioExceptionType.badResponse, statusCode: 404, data: 'Not found'),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('unknown')),
         wait: const Duration(milliseconds: 300),
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>().having((s) => s.error, 'error', isNotNull)],
@@ -334,7 +345,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [loading, failure] when API returns timeout',
         setUp: () => stub.stubDioError(DioExceptionType.connectionTimeout, message: 'Timeout'),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
         wait: const Duration(milliseconds: 300),
         expect: () => [
@@ -347,7 +358,7 @@ void main() {
     group('DynamicFormSubmitEvent', () {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'does nothing when schema is null',
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) => bloc.add(const DynamicFormSubmitEvent({'name': 'John'})),
         expect: () => <DynamicFormState>[],
       );
@@ -355,7 +366,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [submitting, submitted] with "Form data logged" when no submitAction',
         setUp: () => stub.stubSuccess(data: _formSchemaNoAction),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('no_action_form'));
           await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -375,7 +386,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [submitting, submitted] with POST when submitAction method is POST',
         setUp: () => stub.stubSuccess(data: _validFormSchemaJson),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('test_form'));
           await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -397,7 +408,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [submitting, submitted] with PUT when submitAction method is PUT',
         setUp: () => stub.stubSuccess(data: _formSchemaPutAction),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('put_form'));
           await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -416,7 +427,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [submitting, failure] when submit API call fails',
         setUp: () => stub.stubSuccess(data: _validFormSchemaJson),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('test_form'));
           await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -437,7 +448,7 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits initial state when reset is dispatched',
         setUp: () => stub.stubSuccess(data: _validFormSchemaJson),
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('test_form'));
           await Future<void>.delayed(const Duration(milliseconds: 100));
@@ -449,7 +460,7 @@ void main() {
 
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits initial state when reset is dispatched from initial state',
-        build: () => DynamicFormBloc(),
+        build: () => buildBloc(),
         act: (bloc) => bloc.add(const DynamicFormResetEvent()),
         expect: () => [const DynamicFormInitial()],
       );
