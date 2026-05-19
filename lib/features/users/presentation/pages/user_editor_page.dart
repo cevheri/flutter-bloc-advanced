@@ -50,43 +50,56 @@ class _UserEditorView extends StatefulWidget {
 class _UserEditorViewState extends State<_UserEditorView> {
   final _formKey = GlobalKey<FormBuilderState>();
 
+  /// Extract the user payload from whichever variant currently holds one
+  /// (Loading carries it forward during submit; success states carry their
+  /// own copy).
+  UserEntity? _userOf(UserState state) => switch (state) {
+    UserLoading(:final data) => data,
+    UserFetchSuccess(:final data) => data,
+    UserSaveSuccess(:final data) => data,
+    UserViewSuccess(:final data) => data,
+    _ => null,
+  };
+
   bool _isInitialLoading(UserState state) {
-    return state.status == UserStatus.loading && widget.mode != EditorFormMode.create && state.data == null;
+    return state is UserLoading && widget.mode != EditorFormMode.create && _userOf(state) == null;
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UserBloc, UserState>(
-      listenWhen: (previous, current) => previous.status != current.status,
+      listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) {
-        if (state.status == UserStatus.saveSuccess) {
+        if (state is UserSaveSuccess) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
           context.go(ApplicationRoutesConstants.userList);
         }
-        if (state.status == UserStatus.failure) {
+        if (state is UserFailure) {
           ScaffoldMessenger.of(
             context,
           ).showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
         }
       },
-      buildWhen: (previous, current) => previous.status != current.status,
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       builder: (context, state) => _buildPage(context, state),
     );
   }
 
   Widget _buildPage(BuildContext context, UserState state) {
+    final user = _userOf(state);
+
     if (_isInitialLoading(state)) {
       return const Center(child: CircularProgressIndicator());
     }
-    if ((widget.mode == EditorFormMode.edit || widget.mode == EditorFormMode.view) && state.data == null) {
+    if ((widget.mode == EditorFormMode.edit || widget.mode == EditorFormMode.view) && user == null) {
       return const Center(child: Text('No data'));
     }
 
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final isSubmitting = state.status == UserStatus.loading && !_isInitialLoading(state);
+    final isSubmitting = state is UserLoading && !_isInitialLoading(state);
 
     return SingleChildScrollView(
       child: Center(
@@ -141,7 +154,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
                         ? null
                         : FilledButton(
                             key: const Key('userEditorSubmitButtonKey'),
-                            onPressed: isSubmitting ? null : () => _onSubmit(context, state),
+                            onPressed: isSubmitting ? null : () => _onSubmit(context),
                             child: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
@@ -161,14 +174,14 @@ class _UserEditorViewState extends State<_UserEditorView> {
                   child: FormBuilder(
                     key: _formKey,
                     initialValue: {
-                      'login': state.data?.login ?? '',
-                      'firstName': state.data?.firstName ?? '',
-                      'lastName': state.data?.lastName ?? '',
-                      'email': state.data?.email ?? '',
-                      'activated': state.data?.activated ?? true,
-                      'authorities': state.data?.authorities?.firstOrNull ?? '',
+                      'login': user?.login ?? '',
+                      'firstName': user?.firstName ?? '',
+                      'lastName': user?.lastName ?? '',
+                      'email': user?.email ?? '',
+                      'activated': user?.activated ?? true,
+                      'authorities': user?.authorities?.firstOrNull ?? '',
                     },
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: _buildFields(context, state)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: _buildFields(context, user)),
                   ),
                 ),
               ],
@@ -179,7 +192,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
     );
   }
 
-  List<Widget> _buildFields(BuildContext context, UserState state) {
+  List<Widget> _buildFields(BuildContext context, UserEntity? user) {
     final readOnly = widget.mode == EditorFormMode.view;
     return [
       AppFormSection(
@@ -188,21 +201,17 @@ class _UserEditorViewState extends State<_UserEditorView> {
         children: [
           AppFormField(
             label: S.of(context).login,
-            child: UserFormFields.usernameField(
-              context,
-              state.data?.login,
-              enabled: widget.mode == EditorFormMode.create,
-            ),
+            child: UserFormFields.usernameField(context, user?.login, enabled: widget.mode == EditorFormMode.create),
           ),
           const SizedBox(height: 20),
           AppFormField(
             label: S.of(context).first_name,
-            child: UserFormFields.firstNameField(context, state.data?.firstName, enabled: !readOnly),
+            child: UserFormFields.firstNameField(context, user?.firstName, enabled: !readOnly),
           ),
           const SizedBox(height: 20),
           AppFormField(
             label: S.of(context).last_name,
-            child: UserFormFields.lastNameField(context, state.data?.lastName, enabled: !readOnly),
+            child: UserFormFields.lastNameField(context, user?.lastName, enabled: !readOnly),
           ),
         ],
       ),
@@ -213,7 +222,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
         children: [
           AppFormField(
             label: S.of(context).email,
-            child: UserFormFields.emailField(context, state.data?.email, enabled: !readOnly),
+            child: UserFormFields.emailField(context, user?.email, enabled: !readOnly),
           ),
         ],
       ),
@@ -224,14 +233,14 @@ class _UserEditorViewState extends State<_UserEditorView> {
         children: [
           AppFormField(
             label: S.of(context).active,
-            child: UserFormFields.activatedField(context, state.data?.activated, enabled: !readOnly, showTitle: false),
+            child: UserFormFields.activatedField(context, user?.activated, enabled: !readOnly, showTitle: false),
           ),
           const SizedBox(height: 20),
           AppFormField(
             label: S.of(context).authorities,
             child: AuthoritiesDropdown(
               enabled: !readOnly,
-              initialValue: state.data?.authorities?.firstOrNull,
+              initialValue: user?.authorities?.firstOrNull,
               hintText: S.of(context).authorities,
               isRequired: true,
             ),
@@ -288,10 +297,10 @@ class _UserEditorViewState extends State<_UserEditorView> {
     }
   }
 
-  void _onSubmit(BuildContext context, UserState state) {
+  void _onSubmit(BuildContext context) {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
-      final id = context.read<UserBloc>().state.data?.id;
+      final id = _userOf(context.read<UserBloc>().state)?.id;
 
       final user = const UserEntity().copyWith(
         id: id,

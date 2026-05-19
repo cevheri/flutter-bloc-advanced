@@ -97,7 +97,7 @@ void main() {
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -108,7 +108,7 @@ void main() {
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserState());
+          userStateController.add(const UserInitial());
         }
       });
 
@@ -144,16 +144,16 @@ void main() {
       );
 
       when(() => mockUserRepository.retrieve(userId)).thenAnswer((_) async => const Success(mockUser));
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) async {
         if (invocation.positionalArguments[0] is UserFetchEvent) {
-          userStateController.add(const UserState(status: UserStatus.loading));
+          userStateController.add(const UserLoading());
           await Future.delayed(const Duration(milliseconds: 100));
-          userStateController.add(const UserState(status: UserStatus.fetchSuccess, data: mockUser));
+          userStateController.add(UserFetchSuccess(data: mockUser));
         }
       });
 
@@ -188,7 +188,7 @@ void main() {
 
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState(data: mockUser));
+      when(() => mockUserBloc.state).thenReturn(UserFetchSuccess(data: mockUser));
 
       when(
         () => mockAuthorityBloc.state,
@@ -199,7 +199,7 @@ void main() {
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserFetchEvent) {
-          userStateController.add(const UserState(data: mockUser));
+          userStateController.add(UserFetchSuccess(data: mockUser));
         }
       });
 
@@ -226,7 +226,7 @@ void main() {
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -237,7 +237,7 @@ void main() {
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserState());
+          userStateController.add(const UserInitial());
         }
       });
 
@@ -271,7 +271,7 @@ void main() {
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -282,9 +282,9 @@ void main() {
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserState());
+          userStateController.add(const UserInitial());
         } else if (invocation.positionalArguments[0] is UserSubmitEvent) {
-          userStateController.add(const UserState(status: UserStatus.saveSuccess));
+          userStateController.add(const UserSaveSuccess());
         }
       });
 
@@ -313,7 +313,7 @@ void main() {
       // ARRANGE
       final userStateController = StreamController<UserState>.broadcast();
       when(() => mockUserBloc.stream).thenAnswer((_) => userStateController.stream);
-      when(() => mockUserBloc.state).thenReturn(const UserState());
+      when(() => mockUserBloc.state).thenReturn(const UserInitial());
 
       when(
         () => mockAuthorityBloc.state,
@@ -324,7 +324,7 @@ void main() {
 
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) {
         if (invocation.positionalArguments[0] is UserEditorInit) {
-          userStateController.add(const UserState());
+          userStateController.add(const UserInitial());
         }
       });
 
