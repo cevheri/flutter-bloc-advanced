@@ -38,8 +38,6 @@ class AppLocalStorageCached {
 /// by appending — do not change existing [key] strings without a
 /// migration.
 enum StorageKeys {
-  jwtToken('jwtToken'),
-  refreshToken('refreshToken'),
   roles('roles'),
   language('language'),
   username('username'),

@@ -68,3 +68,18 @@ class FlutterSecureStorageAdapter implements ISecureStorage {
     }
   }
 }
+
+/// Keys for values that must be stored in the platform-backed secure
+/// store (iOS Keychain, Android EncryptedSharedPreferences).
+///
+/// Renaming an enum value will NOT change the stored key, so user data
+/// survives refactors safely. Add new entries by appending — do not
+/// change existing [key] strings without a migration.
+enum SecureStorageKeys {
+  jwtToken('jwtToken'),
+  refreshToken('refreshToken');
+
+  const SecureStorageKeys(this.key);
+
+  final String key;
+}
