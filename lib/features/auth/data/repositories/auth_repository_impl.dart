@@ -52,20 +52,36 @@ class LoginRepository implements IAuthRepository {
   @override
   Future<Result<void>> logout() async {
     _log.debug("BEGIN:logout repository start");
+    // Best-effort cleanup across BOTH backends. Each step is wrapped in
+    // its own try/catch so that a failure to delete one secure key does
+    // not skip the others — partial logout is the worst outcome since
+    // any leftover token would let AuthInterceptor re-attach it on the
+    // next request and silently defeat logout. Any individual failure
+    // surfaces as a Failure result so callers can decide whether to
+    // retry or notify the user.
+    final errors = <String>[];
     try {
-      // Wipe BOTH backends. AuthInterceptor reads JWT directly from
-      // secure storage on every request, so leaving the JWT/refreshToken
-      // there would re-attach the old token on the next request and
-      // silently defeat logout.
       await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
-      await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
-      await AppLocalStorage().clear();
-      _log.debug("END:logout successful");
-      return const Success(null);
-    } catch (e, st) {
-      _log.error("END:logout error: {}", [e.toString()]);
-      return Failure(UnknownError(e.toString()), stackTrace: st);
+    } catch (e) {
+      errors.add('jwt: $e');
     }
+    try {
+      await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
+    } catch (e) {
+      errors.add('refresh: $e');
+    }
+    try {
+      await AppLocalStorage().clear();
+    } catch (e) {
+      errors.add('local: $e');
+    }
+    if (errors.isNotEmpty) {
+      final msg = errors.join('; ');
+      _log.error("END:logout partial failures: {}", [msg]);
+      return Failure(UnknownError(msg));
+    }
+    _log.debug("END:logout successful");
+    return const Success(null);
   }
 
   @override

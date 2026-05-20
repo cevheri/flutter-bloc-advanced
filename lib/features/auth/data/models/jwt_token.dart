@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
 
 class JWTToken extends Equatable {
   final String? idToken;
@@ -39,6 +40,16 @@ class JWTToken extends Equatable {
   @override
   List<Object?> get props => [idToken, refreshToken];
 
+  /// Tokens are masked so this model is safe to embed in log output —
+  /// including via the `Equatable.stringify = true` path on which any
+  /// `_log.debug("... {}", [jwt])` call would otherwise leak the raw
+  /// idToken / refreshToken.
   @override
-  bool get stringify => true;
+  String toString() =>
+      'JWTToken(idToken: ${LogSanitizer.maskToken(idToken)}, refreshToken: ${LogSanitizer.maskToken(refreshToken)})';
+
+  // stringify is intentionally not overridden — the explicit toString()
+  // above takes precedence anyway, and keeping stringify behaviour off
+  // (`false`, the default) means the masked toString is the only path
+  // used by interpolation as well.
 }

@@ -40,7 +40,18 @@ class SessionMigration {
         return;
       }
 
-      await localStorage.remove(legacyKey);
+      final removed = await localStorage.remove(legacyKey);
+      if (!removed) {
+        // The token IS now in secure storage (write+verify above), so the
+        // user is not stranded — but a leftover plaintext copy in
+        // SharedPreferences is exactly what this migration is meant to
+        // eliminate. Surface it so operators can act.
+        _log.warn(
+          'Migrated {} to SecureStorage but legacy SharedPreferences remove returned false; plaintext value may persist',
+          [legacyKey],
+        );
+        return;
+      }
       _log.info('Migrated {} from SharedPreferences to SecureStorage', [legacyKey]);
     } catch (e) {
       _log.warn('Migration failed for {}: {}', [legacyKey, e]);

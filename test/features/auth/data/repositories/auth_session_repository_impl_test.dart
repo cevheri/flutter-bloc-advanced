@@ -21,6 +21,26 @@ class _MemorySecureStorage implements ISecureStorage {
   Future<void> deleteAll() async => _store.clear();
 }
 
+/// ISecureStorage that throws on the configured delete key. Exercises
+/// the best-effort sequential cleanup path in clear().
+class _SelectiveFailSecureStorage implements ISecureStorage {
+  _SelectiveFailSecureStorage({required this.failOn});
+  final String failOn;
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async => _store[key];
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async {
+    if (key == failOn) throw StateError('boom on $key');
+    _store.remove(key);
+  }
+
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
 /// Storage fake that lets a test choose which key's `save` should fail.
 class _FlakyStorage implements AppLocalStorage {
   _FlakyStorage(this._inner, this.failOnKey);
@@ -154,6 +174,22 @@ void main() {
 
       expect(result, isA<Failure<void>>());
       expect(await secure.read(SecureStorageKeys.refreshToken.key), 'STALE_REFRESH');
+    });
+
+    test('clear keeps wiping even if one secure delete throws', () async {
+      // _MemorySecureStorage that selectively throws on one key — proves
+      // clear() doesn't bail on the first failure and leave the other
+      // secure key behind.
+      final flaky = _SelectiveFailSecureStorage(failOn: SecureStorageKeys.jwtToken.key);
+      await flaky.write(SecureStorageKeys.refreshToken.key, 'REFRESH');
+      await storage.save(StorageKeys.username.key, 'alice');
+      final repo = AuthSessionRepository(secureStorage: flaky, storage: storage);
+
+      final result = await repo.clear();
+
+      expect(result, isA<Failure<void>>(), reason: 'partial failure surfaces as Failure');
+      expect(await flaky.read(SecureStorageKeys.refreshToken.key), isNull);
+      expect(await storage.read(StorageKeys.username.key), isNull, reason: 'local clear still ran');
     });
 
     test('clear empties both backends', () async {

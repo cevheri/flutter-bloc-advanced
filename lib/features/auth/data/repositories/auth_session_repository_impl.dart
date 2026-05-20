@@ -79,15 +79,33 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   @override
   Future<Result<void>> clear() async {
+    // Best-effort across BOTH backends: a throw on the first secure
+    // delete must not skip the second key or the local clear. Any
+    // leftover token would let AuthInterceptor re-attach it on the
+    // next request and silently defeat a clear/logout.
+    final errors = <String>[];
     try {
       await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
-      await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
-      await _storage.clear();
-      _log.info('clear: session wiped from both backends');
-      return const Success(null);
     } catch (e) {
-      return Failure(UnknownError('Session clear failed: $e'));
+      errors.add('jwt: $e');
     }
+    try {
+      await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
+    } catch (e) {
+      errors.add('refresh: $e');
+    }
+    try {
+      await _storage.clear();
+    } catch (e) {
+      errors.add('local: $e');
+    }
+    if (errors.isNotEmpty) {
+      final msg = errors.join('; ');
+      _log.error('clear: partial failures: {}', [msg]);
+      return Failure(UnknownError('Session clear failed: $msg'));
+    }
+    _log.info('clear: session wiped from both backends');
+    return const Success(null);
   }
 
   Future<void> _writeLocal(StorageKeys key, dynamic value, Set<StorageKeys> mutated) async {
