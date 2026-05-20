@@ -256,8 +256,16 @@ class _SidebarFooter extends StatelessWidget {
 
   Future<void> _handleLogout(BuildContext context) async {
     final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
-    if (shouldLogout && context.mounted) {
-      BlocProvider.of<MenuBloc>(context).add(Logout());
+    if (!shouldLogout || !context.mounted) return;
+    // Await a MenuBloc terminal state before navigating; otherwise the
+    // router's "authenticated user on public route → home" rule
+    // (added in the secure-storage wiring refactor) momentarily bounces
+    // the user back to home until SessionCubit catches up.
+    final menuBloc = BlocProvider.of<MenuBloc>(context);
+    menuBloc.add(Logout());
+    await menuBloc.stream.firstWhere((s) => s.isLogout || s.status == MenuStateStatus.error);
+    if (!context.mounted) return;
+    if (menuBloc.state.isLogout) {
       AppRouter().push(context, ApplicationRoutesConstants.login);
     }
   }

@@ -128,11 +128,20 @@ class TopBarWidget extends StatelessWidget {
     if (!shouldLogout || !context.mounted) return;
     // Route through MenuBloc.Logout so the same code path that the
     // sidebar uses fires — LoginRepository.logout wipes BOTH secure
-    // storage (JWT + refreshToken) and AppLocalStorage. A bare
-    // AppLocalStorage().clear() here would leave the encrypted JWT on
-    // disk, defeating logout.
-    context.read<MenuBloc>().add(Logout());
-    AppRouter().push(context, ApplicationRoutesConstants.login);
+    // storage (JWT + refreshToken) and AppLocalStorage. Then AWAIT a
+    // terminal state before navigating: navigating immediately would
+    // race the async logout work and (with the router's
+    // "authenticated user on public route → home" rule) momentarily
+    // bounce back to home until SessionCubit catches up.
+    final menuBloc = context.read<MenuBloc>();
+    menuBloc.add(Logout());
+    await menuBloc.stream.firstWhere((s) => s.isLogout || s.status == MenuStateStatus.error);
+    if (!context.mounted) return;
+    if (menuBloc.state.isLogout) {
+      AppRouter().push(context, ApplicationRoutesConstants.login);
+    }
+    // On failure, stay where we are — caller will see the error state
+    // via the MenuBloc stream and can surface a toast if desired.
   }
 
   String _getInitials(String? first, String? last) {

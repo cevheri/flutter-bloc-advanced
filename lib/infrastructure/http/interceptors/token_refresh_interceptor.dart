@@ -58,7 +58,23 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       return;
     }
 
-    _log.debug('401 received for {} — attempting token refresh', [requestPath]);
+    _log.debug('401 received for {} — checking refresh state', [requestPath]);
+
+    // Stale-header short-circuit: if the JWT has already been rotated
+    // since this request was sent (e.g. a previous refresh completed
+    // while this request was in flight), just retry with the current
+    // token. Avoids back-to-back refresh calls when a serialised wave
+    // of 401s arrives after the first refresh completes.
+    final currentToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    final requestAuth = err.requestOptions.headers['Authorization'] as String?;
+    final requestToken = (requestAuth != null && requestAuth.startsWith('Bearer '))
+        ? requestAuth.substring('Bearer '.length)
+        : null;
+    if (currentToken != null && currentToken.isNotEmpty && requestToken != null && requestToken != currentToken) {
+      _log.debug('JWT already rotated since {} was sent — retrying with current token', [requestPath]);
+      await _retryWithToken(err, currentToken, handler);
+      return;
+    }
 
     final newIdToken = await _refreshOnce();
     if (newIdToken == null) {
@@ -67,23 +83,22 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       return;
     }
 
+    await _retryWithToken(err, newIdToken, handler);
+  }
+
+  /// Retry the original request with [token]. Forwards retry failures
+  /// (not the original 401) to the handler so the real cause surfaces.
+  Future<void> _retryWithToken(DioException err, String token, ErrorInterceptorHandler handler) async {
     try {
-      // Retry the original request with the rotated token.
       final retryOptions = err.requestOptions;
-      retryOptions.headers['Authorization'] = 'Bearer $newIdToken';
+      retryOptions.headers['Authorization'] = 'Bearer $token';
       final retryResponse = await _dio.fetch(retryOptions);
       handler.resolve(retryResponse);
     } on DioException catch (retryErr) {
-      // Forward the RETRY failure — not the original 401 — so callers
-      // see the real cause (network error, 5xx, etc.) instead of a
-      // stale auth error. The original 401 has already been resolved
-      // by a successful token refresh; the retry is its own attempt.
       _log.error('Retry after refresh failed (Dio): {}', [retryErr.message]);
       handler.next(retryErr);
     } catch (e, st) {
       _log.error('Retry after refresh failed (non-Dio): {}', [e]);
-      // Wrap non-Dio failures in a DioException so the interceptor
-      // contract holds (handler.next requires a DioException).
       handler.next(
         DioException(requestOptions: err.requestOptions, error: e, stackTrace: st, type: DioExceptionType.unknown),
       );

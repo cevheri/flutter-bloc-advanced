@@ -309,6 +309,31 @@ void main() {
       );
     });
 
+    test('skips refresh when JWT was already rotated since the failing request was sent', () async {
+      // Secure store already has the rotated token; the failing
+      // request carries the previous one. Interceptor should detect
+      // that and NOT call refresh again.
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'NEW_JWT');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final baselineRefreshReads = secureStorage.refreshTokenReadCount;
+
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      final requestOptions = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(
+        secureStorage.refreshTokenReadCount - baselineRefreshReads,
+        0,
+        reason: 'stale header path must NOT call refresh; refresh-token read is the proxy for that',
+      );
+    });
+
     test('clears in-flight Future so a later 401 starts a fresh refresh', () async {
       await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
       final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
