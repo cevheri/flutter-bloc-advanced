@@ -1,6 +1,7 @@
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/submit_form_usecase.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_bundle_entity.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -12,6 +13,10 @@ class _FakeRepo implements IDynamicFormRepository {
 
   @override
   Future<Result<FormSchemaEntity>> fetchSchema(String formId) async => const Failure(UnknownError('not used'));
+
+  @override
+  Future<Result<FormBundleEntity>> fetchBundle(String endpoint) async =>
+      const Failure(UnknownError('not used'));
 
   @override
   Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data) async {

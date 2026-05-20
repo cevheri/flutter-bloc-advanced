@@ -1,4 +1,5 @@
 import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_bundle_entity.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_schema_entity.dart';
 
 /// Domain port for dynamic-form persistence and dispatch.
@@ -9,6 +10,11 @@ abstract class IDynamicFormRepository {
   /// Fetch the schema describing the form fields, layout, and submit
   /// action for [formId].
   Future<Result<FormSchemaEntity>> fetchSchema(String formId);
+
+  /// Fetch a schema bundled with prefilled values from [endpoint]. Used by
+  /// forms whose schema and values are served together (e.g. user
+  /// extended-info).
+  Future<Result<FormBundleEntity>> fetchBundle(String endpoint);
 
   /// Dispatch the user-entered [data] to the submit endpoint described
   /// by [action]. Returns the server response body as a string, or

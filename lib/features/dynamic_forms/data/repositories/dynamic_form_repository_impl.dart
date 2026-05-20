@@ -2,7 +2,9 @@ import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/data/models/form_bundle_model.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/data/models/form_schema_model.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_bundle_entity.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
@@ -18,6 +20,7 @@ class DynamicFormRepository implements IDynamicFormRepository {
   static const String formIdRequired = 'Form id is required';
   static const String submitEndpointRequired = 'Submit action endpoint is required';
   static const String submitMethodRequired = 'Submit action method is required';
+  static const String endpointRequired = 'Endpoint is required';
 
   @override
   Future<Result<FormSchemaEntity>> fetchSchema(String formId) async {
@@ -41,6 +44,32 @@ class DynamicFormRepository implements IDynamicFormRepository {
       return Failure(NetworkError(e.toString()));
     } catch (e) {
       _log.error('END:fetchSchema unknown error: {}', [e]);
+      return Failure(UnknownError(e.toString()));
+    }
+  }
+
+  @override
+  Future<Result<FormBundleEntity>> fetchBundle(String endpoint) async {
+    _log.debug('BEGIN:fetchBundle endpoint: {}', [endpoint]);
+    if (endpoint.isEmpty) {
+      return const Failure(ValidationError(endpointRequired));
+    }
+    try {
+      final response = await ApiClient.get(endpoint);
+      final bundle = FormBundleModel.fromJsonString(response.data!);
+      _log.debug('END:fetchBundle successful: {}', [bundle.schema.id]);
+      return Success(bundle);
+    } on UnauthorizedException catch (e) {
+      _log.error('END:fetchBundle auth error: {}', [e]);
+      return Failure(AuthError(e.toString()));
+    } on BadRequestException catch (e) {
+      _log.error('END:fetchBundle validation error: {}', [e]);
+      return Failure(ValidationError(e.toString()));
+    } on FetchDataException catch (e) {
+      _log.error('END:fetchBundle network error: {}', [e]);
+      return Failure(NetworkError(e.toString()));
+    } catch (e) {
+      _log.error('END:fetchBundle unknown error: {}', [e]);
       return Failure(UnknownError(e.toString()));
     }
   }
