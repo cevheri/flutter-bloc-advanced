@@ -129,9 +129,9 @@
   "error_settings_change_language_failed": "Dil değiştirilemedi",
   "error_generic": "Bir şeyler ters gitti",
   "user_extended_info_title": "Genişletilmiş Bilgi",
-  "user_extended_info_button": "Genişletilmiş Bilgi",
+  "user_extended_info_button": "Detaylar",
   "user_extended_info_saved": "Kaydedildi",
-  "user_extended_info_save_failed": "Kayıt başarısız: {error}",
+  "user_extended_info_save_failed": "Kaydedilemedi: {error}",
   "@user_extended_info_save_failed": {
     "placeholders": {
       "error": {
