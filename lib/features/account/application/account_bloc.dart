@@ -13,10 +13,7 @@ part 'account_event.dart';
 part 'account_state.dart';
 
 class AccountBloc extends Bloc<AccountEvent, AccountState> {
-  AccountBloc({required GetAccountUseCase getAccountUseCase, required UpdateAccountUseCase updateAccountUseCase})
-    : _getAccountUseCase = getAccountUseCase,
-      _updateAccountUseCase = updateAccountUseCase,
-      super(const AccountState()) {
+  AccountBloc({required this._getAccountUseCase, required this._updateAccountUseCase}) : super(const AccountState()) {
     on<AccountFetchEvent>(_onFetchAccount, transformer: EventTransformers.restart());
     on<AccountSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }

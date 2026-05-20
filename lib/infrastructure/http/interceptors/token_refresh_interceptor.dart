@@ -27,9 +27,7 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
   final Dio _dio;
   final OnSessionExpired? _onSessionExpired;
 
-  TokenRefreshInterceptor({required Dio dio, OnSessionExpired? onSessionExpired})
-    : _dio = dio,
-      _onSessionExpired = onSessionExpired;
+  TokenRefreshInterceptor({required this._dio, this._onSessionExpired});
 
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {

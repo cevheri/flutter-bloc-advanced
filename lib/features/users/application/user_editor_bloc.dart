@@ -19,10 +19,7 @@ part 'user_editor_state.dart';
 /// because that's where the action is invoked and where the
 /// post-delete refresh needs to happen.
 class UserEditorBloc extends Bloc<UserEditorEvent, UserEditorState> {
-  UserEditorBloc({required FetchUserUseCase fetchUserUseCase, required SaveUserUseCase saveUserUseCase})
-    : _fetchUserUseCase = fetchUserUseCase,
-      _saveUserUseCase = saveUserUseCase,
-      super(const UserEditorInitial()) {
+  UserEditorBloc({required this._fetchUserUseCase, required this._saveUserUseCase}) : super(const UserEditorInitial()) {
     on<UserEditorReset>(_onReset);
     on<UserEditorFetch>(_onFetch, transformer: EventTransformers.restart());
     on<UserEditorSubmit>(_onSubmit, transformer: EventTransformers.dropConcurrent());

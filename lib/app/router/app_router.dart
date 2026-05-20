@@ -18,9 +18,7 @@ import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouterFactory {
-  AppRouterFactory({required SessionCubit sessionCubit, List<NavigatorObserver>? observers})
-    : _sessionCubit = sessionCubit,
-      _observers = observers ?? [];
+  AppRouterFactory({required this._sessionCubit, List<NavigatorObserver>? observers}) : _observers = observers ?? [];
 
   static final _log = AppLogger.getLogger('AppRouterFactory');
 

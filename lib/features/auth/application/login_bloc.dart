@@ -26,17 +26,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final PersistAuthSessionUseCase _persistAuthSessionUseCase;
 
   LoginBloc({
-    required AuthenticateUserUseCase authenticateUserUseCase,
-    required SendOtpUseCase sendOtpUseCase,
-    required VerifyOtpUseCase verifyOtpUseCase,
-    required GetAccountUseCase getAccountUseCase,
-    required PersistAuthSessionUseCase persistAuthSessionUseCase,
-  }) : _authenticateUserUseCase = authenticateUserUseCase,
-       _sendOtpUseCase = sendOtpUseCase,
-       _verifyOtpUseCase = verifyOtpUseCase,
-       _getAccountUseCase = getAccountUseCase,
-       _persistAuthSessionUseCase = persistAuthSessionUseCase,
-       super(const LoginInitialState()) {
+    required this._authenticateUserUseCase,
+    required this._sendOtpUseCase,
+    required this._verifyOtpUseCase,
+    required this._getAccountUseCase,
+    required this._persistAuthSessionUseCase,
+  }) : super(const LoginInitialState()) {
     on<LoginFormSubmitted>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
     on<ChangeLoginMethod>(_onChangeLoginMethod);

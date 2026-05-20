@@ -15,9 +15,7 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
   static final _log = AppLogger.getLogger("ChangePasswordBloc");
   final ChangePasswordUseCase _changePasswordUseCase;
 
-  ChangePasswordBloc({required ChangePasswordUseCase changePasswordUseCase})
-    : _changePasswordUseCase = changePasswordUseCase,
-      super(const ChangePasswordInitialState()) {
+  ChangePasswordBloc({required this._changePasswordUseCase}) : super(const ChangePasswordInitialState()) {
     on<ChangePasswordChanged>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }
 

@@ -10,10 +10,8 @@ import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases
 import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
-  DynamicFormBloc({required LoadFormSchemaUseCase loadFormSchemaUseCase, required SubmitFormUseCase submitFormUseCase})
-    : _loadFormSchemaUseCase = loadFormSchemaUseCase,
-      _submitFormUseCase = submitFormUseCase,
-      super(const DynamicFormInitial()) {
+  DynamicFormBloc({required this._loadFormSchemaUseCase, required this._submitFormUseCase})
+    : super(const DynamicFormInitial()) {
     on<DynamicFormLoadEvent>(_onLoad, transformer: EventTransformers.restart());
     on<DynamicFormSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<DynamicFormResetEvent>(_onReset);

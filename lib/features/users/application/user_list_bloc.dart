@@ -20,10 +20,7 @@ part 'user_list_state.dart';
 /// the list rows and the list is the natural place to refresh after a
 /// successful delete.
 class UserListBloc extends Bloc<UserListEvent, UserListState> {
-  UserListBloc({required SearchUsersUseCase searchUsersUseCase, required DeleteUserUseCase deleteUserUseCase})
-    : _searchUsersUseCase = searchUsersUseCase,
-      _deleteUserUseCase = deleteUserUseCase,
-      super(const UserListInitial()) {
+  UserListBloc({required this._searchUsersUseCase, required this._deleteUserUseCase}) : super(const UserListInitial()) {
     on<UserListSearch>(_onSearch, transformer: EventTransformers.debounceRestartable());
     on<UserListDelete>(_onDelete, transformer: EventTransformers.dropConcurrent());
   }

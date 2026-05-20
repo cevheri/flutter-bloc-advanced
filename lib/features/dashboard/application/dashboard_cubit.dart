@@ -18,15 +18,11 @@ part 'dashboard_state.dart';
 /// [ResilienceInterceptor] (circuit breakers), and [SharedPrefsCacheStorage].
 class SystemDashboardCubit extends Cubit<SystemDashboardState> {
   SystemDashboardCubit({
-    required ConnectivityService connectivityService,
-    required FeatureFlagService featureFlagService,
-    required ResilienceInterceptor resilienceInterceptor,
-    required SharedPrefsCacheStorage cacheStorage,
-  }) : _connectivityService = connectivityService,
-       _featureFlagService = featureFlagService,
-       _resilienceInterceptor = resilienceInterceptor,
-       _cacheStorage = cacheStorage,
-       super(const SystemDashboardState()) {
+    required this._connectivityService,
+    required this._featureFlagService,
+    required this._resilienceInterceptor,
+    required this._cacheStorage,
+  }) : super(const SystemDashboardState()) {
     _connectivitySubscription = _connectivityService.statusStream.listen(_onConnectivityChanged);
     _featureFlagService.addListener(_onFeatureFlagsChanged);
   }

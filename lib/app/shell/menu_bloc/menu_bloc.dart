@@ -16,10 +16,7 @@ part 'menu_event.dart';
 part 'menu_state.dart';
 
 class MenuBloc extends Bloc<MenuEvent, MenuState> {
-  MenuBloc({required IAuthRepository loginRepository, required MenuRepository menuRepository})
-    : _loginRepository = loginRepository,
-      _menuRepository = menuRepository,
-      super(const MenuState()) {
+  MenuBloc({required this._loginRepository, required this._menuRepository}) : super(const MenuState()) {
     on<LoadMenus>(_loadMenus);
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);

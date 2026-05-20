@@ -16,12 +16,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class App extends StatelessWidget {
-  const App({
-    super.key,
-    required this.language,
-    this.dependencies = const AppDependencies(),
-    IAnalyticsService? analytics,
-  }) : _analytics = analytics;
+  const App({super.key, required this.language, this.dependencies = const AppDependencies(), this._analytics});
 
   final String language;
   final AppDependencies dependencies;

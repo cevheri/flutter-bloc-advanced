@@ -15,9 +15,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   static final _log = AppLogger.getLogger("RegisterBloc");
   final RegisterAccountUseCase _registerAccountUseCase;
 
-  RegisterBloc({required RegisterAccountUseCase registerAccountUseCase})
-    : _registerAccountUseCase = registerAccountUseCase,
-      super(const RegisterInitialState()) {
+  RegisterBloc({required this._registerAccountUseCase}) : super(const RegisterInitialState()) {
     on<RegisterFormSubmitted>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }
 

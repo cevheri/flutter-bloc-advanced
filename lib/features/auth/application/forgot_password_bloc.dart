@@ -14,9 +14,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
   static final _log = AppLogger.getLogger("ForgotPasswordBloc");
   final ResetPasswordUseCase _resetPasswordUseCase;
 
-  ForgotPasswordBloc({required ResetPasswordUseCase resetPasswordUseCase})
-    : _resetPasswordUseCase = resetPasswordUseCase,
-      super(const ForgotPasswordInitialState()) {
+  ForgotPasswordBloc({required this._resetPasswordUseCase}) : super(const ForgotPasswordInitialState()) {
     on<ForgotPasswordEmailChanged>(_onSubmit, transformer: EventTransformers.dropConcurrent());
   }
 

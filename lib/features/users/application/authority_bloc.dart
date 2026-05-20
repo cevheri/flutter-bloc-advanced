@@ -11,9 +11,7 @@ part 'authority_event.dart';
 part 'authority_state.dart';
 
 class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
-  AuthorityBloc({required ListAuthoritiesUseCase listAuthoritiesUseCase})
-    : _listAuthoritiesUseCase = listAuthoritiesUseCase,
-      super(const AuthorityInitialState()) {
+  AuthorityBloc({required this._listAuthoritiesUseCase}) : super(const AuthorityInitialState()) {
     on<AuthorityLoad>(_onLoad, transformer: EventTransformers.restart());
   }
 

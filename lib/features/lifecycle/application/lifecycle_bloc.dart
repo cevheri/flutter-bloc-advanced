@@ -11,10 +11,7 @@ import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:flutter_bloc_advance/shared/utils/semver.dart';
 
 class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
-  LifecycleBloc({required ILifecycleRepository repository, required FeatureFlagService featureFlagService})
-    : _repository = repository,
-      _featureFlagService = featureFlagService,
-      super(const LifecycleInitial()) {
+  LifecycleBloc({required this._repository, required this._featureFlagService}) : super(const LifecycleInitial()) {
     on<LifecycleCheckEvent>(_onCheck);
     on<LifecycleDismissUpdateEvent>(_onDismissUpdate);
   }
