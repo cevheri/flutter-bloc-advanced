@@ -53,9 +53,10 @@ class LoginRepository implements IAuthRepository {
   Future<Result<void>> logout() async {
     _log.debug("BEGIN:logout repository start");
     try {
-      // Wipe BOTH backends. Leaving JWT/refreshToken in secure storage
-      // makes AuthInterceptor (which falls back to secure on cache miss)
-      // re-attach the old token on the next request — defeating logout.
+      // Wipe BOTH backends. AuthInterceptor reads JWT directly from
+      // secure storage on every request, so leaving the JWT/refreshToken
+      // there would re-attach the old token on the next request and
+      // silently defeat logout.
       await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
       await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
       await AppLocalStorage().clear();

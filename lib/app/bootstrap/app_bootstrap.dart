@@ -32,8 +32,9 @@ class AppBootstrap {
     final secureStorage = dependencies.createSecureStorage();
 
     // One-shot migration of legacy plaintext tokens (jwtToken/refreshToken).
-    // Must run BEFORE AppLocalStorageCached.loadCache so the cache sees
-    // the post-migration state.
+    // Must run BEFORE any consumer reads the secure store (SessionCubit
+    // .restore, AuthInterceptor, TokenRefreshInterceptor) so the
+    // migrated tokens are available on first use.
     await SessionMigration.run(secureStorage: secureStorage, localStorage: AppLocalStorage());
 
     final existingLang = await AppLocalStorage().read(StorageKeys.language.key);

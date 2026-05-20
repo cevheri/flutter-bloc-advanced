@@ -171,7 +171,7 @@ _log.debug("onVerifyOtpSubmitted token: {}", [LogSanitizer.maskToken(data?.idTok
 |---|---|
 | `test/features/auth/data/repositories/auth_session_repository_impl_test.dart` | (1) Round-trip: `idToken`/`refreshToken` written to secure backend, `username`/`roles` to local. (2) Cross-backend rollback: secure write succeeds, local write fails → secure side also rolled back. (3) `clear()` clears both. (4) Null `refreshToken` → secure key removed best-effort. |
 | `test/infrastructure/storage/session_migration_test.dart` | (1) Migrates `jwtToken` and `refreshToken` from local → secure, removes from local. (2) Idempotent: second invocation is a no-op when secure already has the value. (3) Empty/missing legacy values → no-op. (4) Failure path logs warning and continues. |
-| `test/infrastructure/http/interceptors/token_refresh_interceptor_test.dart` | Existing tests updated to construct with `ISecureStorage`; add scenarios for (1) refresh token read from secure storage, (2) rotated tokens written back to secure storage, (3) `AppLocalStorageCached.jwtToken` reflects the rotated value after refresh. |
+| `test/infrastructure/http/interceptors/token_refresh_interceptor_test.dart` | Existing tests updated to construct with `ISecureStorage`; scenarios cover (1) refresh token read from secure storage and (2) rotated tokens written back to secure storage. No cache assertion needed — `AuthInterceptor` re-reads from secure storage on every request. |
 | `test/core/logging/log_sanitizer_test.dart` | Boundary tests: null, empty, length 1, length 7, length 8, normal-length, very long. |
 | `test/features/auth/domain/entities/auth_session_test.dart` | `toString()` does not contain the JWT value; produces masked form. |
 
@@ -182,7 +182,7 @@ _log.debug("onVerifyOtpSubmitted token: {}", [LogSanitizer.maskToken(data?.idTok
 - [ ] `SecureStorageKeys` enum separate from `StorageKeys`.
 - [ ] One-shot eager migration on first launch after upgrade (idempotent).
 - [ ] Cross-backend atomic-write rollback preserved.
-- [ ] `TokenRefreshInterceptor` reads refresh token from secure storage and persists rotated tokens there; cache layer is refreshed after rotation.
+- [ ] `TokenRefreshInterceptor` reads refresh token from secure storage and persists rotated tokens there. No in-memory cache to refresh — `AuthInterceptor` reads JWT directly from secure storage on every request, so the next outgoing request automatically picks up the rotated token.
 - [ ] `login_bloc.dart:140` sanitized with `LogSanitizer.maskToken`.
 - [ ] `LogSanitizer.maskToken()` helper under `lib/core/logging/`.
 - [ ] `AuthSession.toString()` renders masked tokens (resilient to `stringify = true`).

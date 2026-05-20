@@ -14,10 +14,14 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 ///
 /// This class contains utility methods that are used in the tests
 class TestUtils {
-  /// In-memory backing for the mocked flutter_secure_storage channel so
-  /// production code that creates a [FlutterSecureStorageAdapter()] —
-  /// including [AppLocalStorageCached.loadCache] when called with an
-  /// adapter — does not throw `MissingPluginException` in unit tests.
+  /// In-memory backing for the mocked flutter_secure_storage channel.
+  ///
+  /// Production code instantiates [FlutterSecureStorageAdapter] in
+  /// several places — `AuthInterceptor`, `TokenRefreshInterceptor`,
+  /// `SessionCubit`, `AuthSessionRepository`, `LoginRepository.logout`,
+  /// `SessionMigration` — and each adapter call routes through this
+  /// MethodChannel. Without a mock, every test that touches those paths
+  /// would throw `MissingPluginException`.
   static final Map<String, String> _secureStore = {};
 
   static const _secureChannel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
@@ -83,8 +87,11 @@ class TestUtils {
     return await _clearStorage();
   }
 
-  /// Seed a mock JWT in the secure store backing — the single source of
-  /// truth read by `SecurityUtils`, `AuthInterceptor`, and `SessionCubit`.
+  /// Seed a mock JWT in the secure-store backing. This is the only
+  /// place tokens live in the shipped architecture — `AuthInterceptor`
+  /// and `SessionCubit.restore` both read it on demand. `SecurityUtils`
+  /// itself takes the token as an argument (no I/O), so seeding here
+  /// is sufficient for any auth-dependent test path.
   Future<void> setupAuthentication() async {
     _secureStore['jwtToken'] = 'MOCK_TOKEN';
   }

@@ -12,6 +12,27 @@
 **Issue:** [#129](https://github.com/cevheri/flutter_bloc_advance/issues/129)
 **Branch:** `feat/129-secure-storage-wiring` (already created)
 
+> **Historical note — superseded by shipped architecture.** This plan
+> was written before PR review revealed that caching the JWT in
+> `AppLocalStorageCached.jwtToken` (Tasks 7 and 8) forces six
+> coordinated write paths to stay in sync (persist, refresh, logout,
+> rollback, clear, bootstrap) — each a potential stale-token bug. The
+> shipped implementation removes the JWT cache entirely:
+>
+> - `AuthInterceptor` reads JWT directly from `ISecureStorage` on every
+>   request — no cache, no fallback.
+> - `SessionCubit.restore` reads from `ISecureStorage`, runs the pure
+>   `SecurityUtils.hasToken` / `isTokenExpired` checks, and emits the
+>   derived `isAuthenticated` boolean (which is the sync state UI/router
+>   consumers read).
+> - Repository, refresh interceptor, and logout no longer mutate any
+>   cache field.
+>
+> Tasks 7 (cache loadCache from SecureStorage) and 8 (AuthInterceptor
+> reads cached field) below describe a design that was not shipped. Tasks
+> 1-6 and 9-13 still match the codebase; see the spec doc for the final
+> architecture.
+
 ---
 
 ## Task 1: `LogSanitizer.maskToken` utility
