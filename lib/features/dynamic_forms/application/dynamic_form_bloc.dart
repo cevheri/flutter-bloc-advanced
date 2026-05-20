@@ -5,14 +5,19 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_state.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/load_form_bundle_usecase.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/load_form_schema_usecase.dart';
 import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/submit_form_usecase.dart';
 import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
-  DynamicFormBloc({required this._loadFormSchemaUseCase, required this._submitFormUseCase})
-    : super(const DynamicFormInitial()) {
+  DynamicFormBloc({
+    required this._loadFormSchemaUseCase,
+    required this._submitFormUseCase,
+    required this._loadFormBundleUseCase,
+  }) : super(const DynamicFormInitial()) {
     on<DynamicFormLoadEvent>(_onLoad, transformer: EventTransformers.restart());
+    on<DynamicFormLoadBundleEvent>(_onLoadBundle, transformer: EventTransformers.restart());
     on<DynamicFormSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<DynamicFormResetEvent>(_onReset);
   }
@@ -21,6 +26,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
   final LoadFormSchemaUseCase _loadFormSchemaUseCase;
   final SubmitFormUseCase _submitFormUseCase;
+  final LoadFormBundleUseCase _loadFormBundleUseCase;
 
   FutureOr<void> _onLoad(DynamicFormLoadEvent event, Emitter<DynamicFormState> emit) async {
     _log.debug('Loading form schema: {}', [event.formId]);
@@ -64,5 +70,17 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
 
   FutureOr<void> _onReset(DynamicFormResetEvent event, Emitter<DynamicFormState> emit) {
     emit(const DynamicFormInitial());
+  }
+
+  FutureOr<void> _onLoadBundle(DynamicFormLoadBundleEvent event, Emitter<DynamicFormState> emit) async {
+    _log.debug('Loading form bundle: {}', [event.endpoint]);
+    emit(const DynamicFormLoading());
+    final result = await _loadFormBundleUseCase(event.endpoint);
+    switch (result) {
+      case Success(:final data):
+        emit(DynamicFormLoaded(schema: data.schema, initialValues: data.values));
+      case Failure(:final error):
+        emit(DynamicFormFailure(error: error.message));
+    }
   }
 }

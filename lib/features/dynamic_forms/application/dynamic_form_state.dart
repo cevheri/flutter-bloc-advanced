@@ -27,12 +27,13 @@ final class DynamicFormLoading extends DynamicFormState {
 }
 
 final class DynamicFormLoaded extends DynamicFormState {
-  const DynamicFormLoaded({required this.schema});
+  const DynamicFormLoaded({required this.schema, this.initialValues = const {}});
 
   final FormSchemaEntity schema;
+  final Map<String, dynamic> initialValues;
 
   @override
-  List<Object?> get props => [schema];
+  List<Object?> get props => [schema, initialValues];
 }
 
 final class DynamicFormSubmitting extends DynamicFormState {

@@ -26,3 +26,11 @@ class DynamicFormSubmitEvent extends DynamicFormEvent {
 class DynamicFormResetEvent extends DynamicFormEvent {
   const DynamicFormResetEvent();
 }
+
+/// Load a form schema bundled with prefilled values from an absolute endpoint.
+class DynamicFormLoadBundleEvent extends DynamicFormEvent {
+  const DynamicFormLoadBundleEvent(this.endpoint);
+  final String endpoint;
+  @override
+  List<Object?> get props => [endpoint];
+}
