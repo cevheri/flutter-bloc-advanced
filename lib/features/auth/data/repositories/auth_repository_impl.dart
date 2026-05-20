@@ -8,11 +8,14 @@ import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.d
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class LoginRepository implements IAuthRepository {
   static final _log = AppLogger.getLogger("LoginRepository");
 
-  LoginRepository();
+  LoginRepository({ISecureStorage? secureStorage}) : _secureStorage = secureStorage ?? FlutterSecureStorageAdapter();
+
+  final ISecureStorage _secureStorage;
 
   @override
   Future<Result<AuthTokenEntity>> authenticate(AuthCredentialsEntity userJWT) async {
@@ -50,6 +53,11 @@ class LoginRepository implements IAuthRepository {
   Future<Result<void>> logout() async {
     _log.debug("BEGIN:logout repository start");
     try {
+      // Wipe BOTH backends. Leaving JWT/refreshToken in secure storage
+      // makes AuthInterceptor (which falls back to secure on cache miss)
+      // re-attach the old token on the next request — defeating logout.
+      await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
+      await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
       await AppLocalStorage().clear();
       _log.debug("END:logout successful");
       return const Success(null);

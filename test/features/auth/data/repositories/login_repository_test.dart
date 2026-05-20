@@ -2,6 +2,7 @@ import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../test_utils.dart';
@@ -50,6 +51,24 @@ void main() {
       // AppLocalStorage.clear() reloads the cache; secure storage plugin is absent
       // so the cache read returns null — confirming local storage was cleared.
       expect(AppLocalStorageCached.jwtToken, isNull);
+    });
+
+    test("logout wipes JWT and refresh token from secure storage", () async {
+      // Seed both backends to simulate a fully-logged-in session.
+      final secure = FlutterSecureStorageAdapter();
+      await secure.write(SecureStorageKeys.jwtToken.key, 'JWT_VALUE');
+      await secure.write(SecureStorageKeys.refreshToken.key, 'REFRESH_VALUE');
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'JWT_VALUE');
+
+      final result = await LoginRepository().logout();
+
+      expect(result, isA<Success<void>>());
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull, reason: 'secure JWT must not survive logout');
+      expect(
+        await secure.read(SecureStorageKeys.refreshToken.key),
+        isNull,
+        reason: 'secure refresh must not survive logout',
+      );
     });
   });
 

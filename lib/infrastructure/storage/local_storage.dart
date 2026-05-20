@@ -87,23 +87,32 @@ class AppLocalStorage {
   /// Save data to local storage.
   ///
   /// Supported value types: String, int, double, bool, `List<String>`.
-  /// Returns false if value type is not supported or an error occurs.
+  /// Returns false if the value type is unsupported, the underlying
+  /// SharedPreferences write reports failure, or an error is thrown.
+  /// This boolean is the contract that [AuthSessionRepository._writeLocal]
+  /// relies on for cross-backend rollback — silent success here breaks
+  /// atomicity, so each platform call is awaited and its result honored.
   Future<bool> save(String key, dynamic value) async {
     _log.trace("Saving data to local storage {} {}", [key, value]);
     final prefs = await _prefs;
     try {
+      final bool ok;
       if (value is String) {
-        prefs.setString(key, value);
+        ok = await prefs.setString(key, value);
       } else if (value is int) {
-        prefs.setInt(key, value);
+        ok = await prefs.setInt(key, value);
       } else if (value is double) {
-        prefs.setDouble(key, value);
+        ok = await prefs.setDouble(key, value);
       } else if (value is bool) {
-        prefs.setBool(key, value);
+        ok = await prefs.setBool(key, value);
       } else if (value is List<String>) {
-        prefs.setStringList(key, value);
+        ok = await prefs.setStringList(key, value);
       } else {
         throw Exception("Unsupported value type");
+      }
+      if (!ok) {
+        _log.error("SharedPreferences refused write for key {}", [key]);
+        return false;
       }
 
       await AppLocalStorageCached.loadCache();
@@ -125,7 +134,11 @@ class AppLocalStorage {
     _log.trace("Removing data from local storage");
     try {
       final prefs = await _prefs;
-      prefs.remove(key);
+      final ok = await prefs.remove(key);
+      if (!ok) {
+        _log.error("SharedPreferences refused remove for key {}", [key]);
+        return false;
+      }
       await AppLocalStorageCached.loadCache();
       _log.trace("Removed data from local storage {}", [key]);
       return true;
@@ -138,7 +151,10 @@ class AppLocalStorage {
   Future<void> clear() async {
     _log.info("Clearing all data from local storage");
     final prefs = await _prefs;
-    prefs.clear();
+    final ok = await prefs.clear();
+    if (!ok) {
+      _log.error("SharedPreferences clear returned false");
+    }
     // Also clear the secure-storage cache entry so that SecurityUtils
     // reflects the cleared state synchronously.
     AppLocalStorageCached.jwtToken = null;
