@@ -244,7 +244,7 @@ void main() {
       });
 
       test('given test environment when GET request is made then should return mock data', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.get('/test');
         expect(response.statusCode, lessThan(300));
       });
@@ -254,7 +254,7 @@ void main() {
       });
 
       test('given test environment when POST request is made then should return mock data', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.post('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
@@ -264,7 +264,7 @@ void main() {
       });
 
       test('given test environment when PUT request is made then should return mock data', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.put('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
@@ -274,7 +274,7 @@ void main() {
       });
 
       test('given test environment when DELETE request is made then should return 204', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.delete('/test');
         expect(response.statusCode, lessThan(300));
       });

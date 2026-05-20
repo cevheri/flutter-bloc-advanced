@@ -148,7 +148,13 @@ class AppLocalStorage {
     final prefs = await _prefs;
     final ok = await prefs.clear();
     if (!ok) {
+      // Symmetric with [save] / [remove]: a refused mutation surfaces
+      // to callers via exception so Result/rollback paths
+      // (LoginRepository.logout, AuthSessionRepository.clear) treat it
+      // as a failure rather than logging "Cleared all data" and moving
+      // on with stale state.
       _log.error("SharedPreferences clear returned false");
+      throw StateError('SharedPreferences clear returned false');
     }
     await AppLocalStorageCached.loadCache();
     _log.info("Cleared all data from local storage");

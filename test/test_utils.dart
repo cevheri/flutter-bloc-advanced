@@ -92,7 +92,11 @@ class TestUtils {
   /// and `SessionCubit.restore` both read it on demand. `SecurityUtils`
   /// itself takes the token as an argument (no I/O), so seeding here
   /// is sufficient for any auth-dependent test path.
-  Future<void> setupAuthentication() async {
+  ///
+  /// Synchronous: the backing is just an in-memory map and tests have
+  /// historically called this without `await`. Keeping it sync makes
+  /// the no-await call sites correct rather than racy.
+  void setupAuthentication() {
     _secureStore['jwtToken'] = 'MOCK_TOKEN';
   }
 

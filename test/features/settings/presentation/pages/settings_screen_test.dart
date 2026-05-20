@@ -50,7 +50,7 @@ void main() {
 
   group('SettingsScreen Tests', () {
     testWidgets('renders all buttons correctly', (WidgetTester tester) async {
-      await testUtils.setupAuthentication();
+      testUtils.setupAuthentication();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
@@ -59,7 +59,7 @@ void main() {
     });
 
     testWidgets('navigates to change password screen when button is pressed', (WidgetTester tester) async {
-      await testUtils.setupAuthentication();
+      testUtils.setupAuthentication();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
