@@ -41,6 +41,14 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       _onSessionExpired = onSessionExpired,
       _secureStorage = secureStorage ?? FlutterSecureStorageAdapter();
 
+  /// Marker placed on [RequestOptions.extra] for requests that have
+  /// already been retried after a refresh. A second 401 on the same
+  /// request short-circuits to logout instead of attempting another
+  /// refresh — prevents infinite refresh loops when the backend keeps
+  /// rejecting freshly-rotated tokens (revoked session, clock skew,
+  /// backend bug, etc.).
+  static const _retriedAfterRefresh = '_tokenRefresh_retried';
+
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     // Only handle 401 Unauthorized responses
@@ -53,6 +61,17 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     final requestPath = err.requestOptions.path;
     if (requestPath.contains('/api/token/refresh')) {
       _log.warn('Refresh endpoint returned 401 — session expired');
+      _triggerLogout();
+      handler.next(err);
+      return;
+    }
+
+    // Second 401 on the same request after a refresh+retry round
+    // already happened — refusing to refresh again. The newly-rotated
+    // token is being rejected; another refresh would just produce
+    // another rejected token. Surface the failure and log out.
+    if (err.requestOptions.extra[_retriedAfterRefresh] == true) {
+      _log.warn('401 again after refresh+retry for {} — giving up to avoid loop', [requestPath]);
       _triggerLogout();
       handler.next(err);
       return;
@@ -99,10 +118,15 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
 
   /// Retry the original request with [token]. Forwards retry failures
   /// (not the original 401) to the handler so the real cause surfaces.
+  ///
+  /// Stamps [RequestOptions.extra] with [_retriedAfterRefresh] so a
+  /// second 401 on the same retried request short-circuits to logout
+  /// in [onError] — see the loop-prevention check there.
   Future<void> _retryWithToken(DioException err, String token, ErrorInterceptorHandler handler) async {
     try {
       final retryOptions = err.requestOptions;
       retryOptions.headers['Authorization'] = 'Bearer $token';
+      retryOptions.extra[_retriedAfterRefresh] = true;
       final retryResponse = await _dio.fetch(retryOptions);
       handler.resolve(retryResponse);
     } on DioException catch (retryErr) {

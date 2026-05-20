@@ -327,6 +327,43 @@ void main() {
       );
     });
 
+    test('does not attempt a second refresh when the retried request 401s again', () async {
+      // Simulates a request that has already been retried after a
+      // refresh — RequestOptions.extra carries the _retriedAfterRefresh
+      // marker. A second 401 must short-circuit to logout instead of
+      // entering another refresh round (which would just rotate
+      // tokens forever against a backend that keeps rejecting them).
+      var sessionExpiredCalls = 0;
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final baselineRefreshReads = secureStorage.refreshTokenReadCount;
+
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      final ro = RequestOptions(
+        path: '/api/users',
+        headers: {'Authorization': 'Bearer SOME_JWT'},
+        extra: {'_tokenRefresh_retried': true},
+      );
+      final error = DioException(
+        requestOptions: ro,
+        response: Response(requestOptions: ro, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(sessionExpiredCalls, 1, reason: 'must surface logout on second 401');
+      expect(handler.nextCalled, isTrue);
+      expect(
+        secureStorage.refreshTokenReadCount - baselineRefreshReads,
+        0,
+        reason: 'must NOT enter the refresh path — refresh-token read is the proxy',
+      );
+    });
+
     test('stale-header check survives a throwing secure read (graceful fallback)', () async {
       // Failing-but-readable secure store: jwtToken throws, refreshToken
       // exists. The stale-header optimization read should be swallowed
