@@ -43,6 +43,11 @@ The screenshots below are included to help contributors and adopters understand 
 - Registration flow
 - Forgot password flow
 - OTP send and verify flow
+- **Token storage** — JWT and refresh tokens are persisted via `flutter_secure_storage`
+  (iOS Keychain, Android Keystore-backed `EncryptedSharedPreferences`). Non-secret session
+  fields (`username`, `roles`) remain in `SharedPreferences` for synchronous access.
+  The first launch after upgrading from an older build runs a one-shot migration from
+  the legacy plaintext keys into secure storage.
 
 ### User Management
 

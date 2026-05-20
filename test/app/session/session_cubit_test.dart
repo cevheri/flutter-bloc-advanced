@@ -1,9 +1,32 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../test_utils.dart';
+
+class _MemorySecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async => _store[key];
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
+class _ReadThrowsSecureStorage implements ISecureStorage {
+  @override
+  Future<String?> read(String key) async => throw StateError('boom on read $key');
+  @override
+  Future<void> write(String key, String value) async {}
+  @override
+  Future<void> delete(String key) async {}
+  @override
+  Future<void> deleteAll() async {}
+}
 
 void main() {
   final testUtils = TestUtils();
@@ -83,37 +106,50 @@ void main() {
     );
 
     blocTest<SessionCubit, SessionState>(
-      'restore emits unauthenticated when no token cached',
-      build: () => SessionCubit(),
+      'restore emits unauthenticated when secure storage has no token',
+      build: () => SessionCubit(secureStorage: _MemorySecureStorage()),
       act: (cubit) => cubit.restore(),
       expect: () => [const SessionState(isAuthenticated: false)],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'restore emits authenticated when token is cached',
-      setUp: () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, 'MOCK_TOKEN');
+      'restore emits authenticated when secure storage has a token',
+      build: () {
+        final secure = _MemorySecureStorage();
+        // Map write is synchronous; the async `write` wrapper just
+        // exists to satisfy the ISecureStorage interface. Seeding
+        // directly avoids the unawaited-write race the linter would
+        // otherwise (correctly) flag.
+        secure._store[SecureStorageKeys.jwtToken.key] = 'MOCK_TOKEN';
+        return SessionCubit(secureStorage: secure);
       },
-      build: () => SessionCubit(),
       act: (cubit) => cubit.restore(),
       expect: () => [const SessionState(isAuthenticated: true)],
     );
 
     blocTest<SessionCubit, SessionState>(
       'refresh delegates to restore and emits correct state',
-      build: () => SessionCubit(),
+      build: () => SessionCubit(secureStorage: _MemorySecureStorage()),
       act: (cubit) => cubit.refresh(),
       expect: () => [const SessionState(isAuthenticated: false)],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'refresh emits authenticated when token is cached',
-      setUp: () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, 'MOCK_TOKEN');
+      'refresh emits authenticated when secure storage has a token',
+      build: () {
+        final secure = _MemorySecureStorage();
+        secure._store[SecureStorageKeys.jwtToken.key] = 'MOCK_TOKEN';
+        return SessionCubit(secureStorage: secure);
       },
-      build: () => SessionCubit(),
       act: (cubit) => cubit.refresh(),
       expect: () => [const SessionState(isAuthenticated: true)],
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'restore emits unauthenticated (safe default) when secure read throws',
+      build: () => SessionCubit(secureStorage: _ReadThrowsSecureStorage()),
+      act: (cubit) => cubit.restore(),
+      expect: () => [const SessionState(isAuthenticated: false)],
     );
 
     blocTest<SessionCubit, SessionState>(

@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_consol
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Metadata describing one entry in the [ApiClient] interceptor chain.
 ///
@@ -65,6 +66,15 @@ class ApiClient {
   /// that the [TokenRefreshInterceptor] can notify the app layer to log out.
   static OnSessionExpired? onSessionExpired;
 
+  /// Secure storage instance threaded into [AuthInterceptor] and
+  /// [TokenRefreshInterceptor] when Dio is built. Bootstrap sets this
+  /// to the same [ISecureStorage] adapter it uses for migration and
+  /// the widget tree, so the HTTP interceptors and the repository
+  /// layer share one source of truth. Falls back to a default
+  /// [FlutterSecureStorageAdapter] when unset (tests that don't go
+  /// through bootstrap).
+  static ISecureStorage? secureStorage;
+
   /// Inject a custom Dio instance for testing.
   static void setTestInstance(Dio dio) => _testDio = dio;
 
@@ -107,11 +117,15 @@ class ApiClient {
         meta: const InterceptorChainEntry(name: 'ConnectivityInterceptor', detail: 'Rejects requests when offline'),
       ),
       (
-        interceptor: AuthInterceptor(),
+        interceptor: AuthInterceptor(secureStorage: secureStorage),
         meta: const InterceptorChainEntry(name: 'AuthInterceptor', detail: 'Attaches JWT token to requests'),
       ),
       (
-        interceptor: TokenRefreshInterceptor(dio: dio, onSessionExpired: onSessionExpired),
+        interceptor: TokenRefreshInterceptor(
+          dio: dio,
+          onSessionExpired: onSessionExpired,
+          secureStorage: secureStorage,
+        ),
         meta: const InterceptorChainEntry(name: 'TokenRefreshInterceptor', detail: 'Refreshes expired access tokens'),
       ),
       (

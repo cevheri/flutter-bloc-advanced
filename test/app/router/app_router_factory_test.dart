@@ -45,7 +45,7 @@ void main() {
 
     testWidgets('allows authenticated users to open settings', (tester) async {
       setDesktopViewport(tester);
-      await testUtils.setupAuthentication();
+      testUtils.setupAuthentication();
       await tester.pumpWidget(const App(language: 'en'));
       await tester.pumpAndSettle();
 

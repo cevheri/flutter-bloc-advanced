@@ -8,11 +8,14 @@ import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.d
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class LoginRepository implements IAuthRepository {
   static final _log = AppLogger.getLogger("LoginRepository");
 
-  LoginRepository();
+  LoginRepository({ISecureStorage? secureStorage}) : _secureStorage = secureStorage ?? FlutterSecureStorageAdapter();
+
+  final ISecureStorage _secureStorage;
 
   @override
   Future<Result<AuthTokenEntity>> authenticate(AuthCredentialsEntity userJWT) async {
@@ -49,14 +52,41 @@ class LoginRepository implements IAuthRepository {
   @override
   Future<Result<void>> logout() async {
     _log.debug("BEGIN:logout repository start");
+    // Best-effort cleanup across BOTH backends. Each step is wrapped in
+    // its own try/catch so that a failure to delete one secure key does
+    // not skip the others — partial logout is the worst outcome since
+    // any leftover token would let AuthInterceptor re-attach it on the
+    // next request and silently defeat logout. Any individual failure
+    // surfaces as a Failure result (with the first stack trace attached
+    // for diagnostics) so callers can decide whether to retry or notify
+    // the user.
+    final errors = <String>[];
+    StackTrace? firstStackTrace;
+    try {
+      await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
+    } catch (e, st) {
+      errors.add('jwt: $e');
+      firstStackTrace ??= st;
+    }
+    try {
+      await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
+    } catch (e, st) {
+      errors.add('refresh: $e');
+      firstStackTrace ??= st;
+    }
     try {
       await AppLocalStorage().clear();
-      _log.debug("END:logout successful");
-      return const Success(null);
     } catch (e, st) {
-      _log.error("END:logout error: {}", [e.toString()]);
-      return Failure(UnknownError(e.toString()), stackTrace: st);
+      errors.add('local: $e');
+      firstStackTrace ??= st;
     }
+    if (errors.isNotEmpty) {
+      final msg = errors.join('; ');
+      _log.error("END:logout partial failures: {}\n{}", [msg, firstStackTrace]);
+      return Failure(UnknownError(msg), stackTrace: firstStackTrace);
+    }
+    _log.debug("END:logout successful");
+    return const Success(null);
   }
 
   @override

@@ -62,10 +62,18 @@ void main() {
 
   // toString, equals, hashcode
   group("toString, equals and hashcode", () {
-    test('should return string', () {
-      const entity = mockJWTTokenPayload;
+    test('toString masks tokens — raw idToken/refreshToken must not appear', () {
+      const entity = JWTToken(
+        idToken: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.payload.signature',
+        refreshToken: 'refresh-token-secret-value-12345',
+      );
 
-      expect(entity.toString(), contains('MOCK_TOKEN'));
+      final rendered = entity.toString();
+
+      expect(rendered, isNot(contains('payload')));
+      expect(rendered, isNot(contains('signature')));
+      expect(rendered, isNot(contains('refresh-token-secret-value-12345')));
+      expect(rendered, startsWith('JWTToken('));
     });
 
     test('should return true when comparing two JWTToken instances', () {

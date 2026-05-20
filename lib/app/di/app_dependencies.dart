@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/features/users/data/repositories/user_repos
 import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class AppDependencies {
   const AppDependencies({this.environment = Environment.dev});
@@ -20,15 +21,18 @@ class AppDependencies {
 
   IAccountRepository createAccountRepository() => AccountRepository();
 
+  IAuthRepository createAuthRepository(ISecureStorage secureStorage) => LoginRepository(secureStorage: secureStorage);
+
+  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) =>
+      AuthSessionRepository(secureStorage: secureStorage);
+
   IAuthorityRepository createAuthorityRepository() => AuthorityRepositoryImpl();
-
-  IAuthRepository createAuthRepository() => LoginRepository();
-
-  IAuthSessionRepository createAuthSessionRepository() => AuthSessionRepository();
 
   IDynamicFormRepository createDynamicFormRepository() => DynamicFormRepository();
 
   MenuRepository createMenuRepository() => MenuRepository();
+
+  ISecureStorage createSecureStorage() => FlutterSecureStorageAdapter();
 
   IUserRepository createUserRepository() => UserRepository();
 }

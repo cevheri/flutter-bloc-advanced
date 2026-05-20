@@ -2,70 +2,47 @@ import 'dart:convert';
 
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/allowed_paths.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 
+/// Pure token / role utility functions.
+///
+/// Intentionally has no I/O dependencies: callers (e.g. [SessionCubit])
+/// own the secure-storage read and hand the token here as a String. This
+/// keeps `core/` free of `infrastructure/` imports per the architecture
+/// guard, and makes every function trivially testable.
 class SecurityUtils {
   static final _log = AppLogger.getLogger("SecurityUtils");
 
-  static bool isUserLoggedIn() {
-    _log.trace("BEGIN:isUserLoggedIn");
-    final result = AppLocalStorageCached.jwtToken != null;
-    _log.trace("END:isUserLoggedIn", [result]);
-    return result;
+  /// True when [token] is non-null and non-empty.
+  static bool hasToken(String? token) {
+    return token != null && token.isNotEmpty;
   }
 
-  static bool isCurrentUserAdmin() {
-    _log.trace("BEGIN:isCurrentUserAdmin");
-    final roles = AppLocalStorageCached.roles;
-    if (roles != null) {
-      var result = roles.contains("ROLE_ADMIN");
-      _log.trace("END:isCurrentUserAdmin - {}", [result]);
-      return result;
-    } else {
-      _log.trace("END:isCurrentUserAdmin - roles null");
-      return false;
-    }
+  static bool isCurrentUserAdmin(List<String>? roles) {
+    if (roles == null) return false;
+    return roles.contains("ROLE_ADMIN");
   }
 
-  static bool isTokenExpired() {
-    _log.trace("BEGIN:isTokenExpired");
-
-    final token = AppLocalStorageCached.jwtToken;
-    if (token != null) {
-      try {
-        final jwt = token.split(".");
-        if (jwt.length == 3) {
-          final payload = jwt[1];
-
-          var normalizedPayload = payload;
-          if (payload.length % 4 != 0) {
-            final padLength = 4 - payload.length % 4;
-            normalizedPayload += '=' * padLength;
-          }
-          final base64Decode = base64Url.decode(normalizedPayload);
-          final decoded = String.fromCharCodes(base64Decode);
-          final payloadMap = json.decode(decoded);
-
-          if (payloadMap == null) throw Exception("Invalid payload(null)");
-          if (payloadMap["exp"] == null) throw Exception("Invalid payload exp(null)");
-
-          final exp = payloadMap["exp"];
-          if (exp is! num) throw Exception("Invalid payload exp type: ${exp.runtimeType}");
-          _log.trace("exp: {}", [exp]);
-          final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
-          _log.trace("now: {}", [now]);
-
-          var result = now >= exp.toInt();
-          _log.trace("END:isTokenExpired - {}", [result]);
-          return result;
-        }
-      } catch (e) {
-        _log.error("END:isTokenExpired - Error parsing token", [e]);
-        return true;
+  /// True when [token] is missing, malformed, or past its `exp` claim.
+  static bool isTokenExpired(String? token) {
+    if (token == null || token.isEmpty) return true;
+    try {
+      final jwt = token.split(".");
+      if (jwt.length != 3) return true;
+      var normalizedPayload = jwt[1];
+      if (normalizedPayload.length % 4 != 0) {
+        normalizedPayload += '=' * (4 - normalizedPayload.length % 4);
       }
+      final decoded = String.fromCharCodes(base64Url.decode(normalizedPayload));
+      final payloadMap = json.decode(decoded);
+      if (payloadMap == null) return true;
+      final exp = payloadMap["exp"];
+      if (exp is! num) return true;
+      final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+      return now >= exp.toInt();
+    } catch (e) {
+      _log.error("isTokenExpired - error parsing token: {}", [e]);
+      return true;
     }
-    _log.trace("END:isTokenExpired - token null");
-    return true;
   }
 
   /// Decode a JWT token and return the expiration time as [DateTime].

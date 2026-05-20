@@ -12,7 +12,9 @@ import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 
@@ -26,6 +28,21 @@ class AppBootstrap {
     final log = AppLogger.getLogger('AppBootstrap');
 
     ProfileConstants.setEnvironment(config.environment);
+
+    final dependencies = AppDependencies(environment: config.environment);
+    final secureStorage = dependencies.createSecureStorage();
+    // Publish the same adapter instance into the static [ApiClient]
+    // hook so AuthInterceptor and TokenRefreshInterceptor share it
+    // with the repository layer and SessionCubit. Must happen BEFORE
+    // the first HTTP call (before Dio is built lazily) — setting it
+    // here, ahead of any await on a network-dependent path, is safe.
+    ApiClient.secureStorage = secureStorage;
+
+    // One-shot migration of legacy plaintext tokens (jwtToken/refreshToken).
+    // Must run BEFORE any consumer reads the secure store (SessionCubit
+    // .restore, AuthInterceptor, TokenRefreshInterceptor) so the
+    // migrated tokens are available on first use.
+    await SessionMigration.run(secureStorage: secureStorage, localStorage: AppLocalStorage());
 
     final existingLang = await AppLocalStorage().read(StorageKeys.language.key);
     if (existingLang == null) {
@@ -58,10 +75,15 @@ class AppBootstrap {
       config.defaultBrightness,
     ]);
 
+    // Reuse the same ISecureStorage that ran the migration above so
+    // the entire widget tree shares one adapter instance — no config
+    // drift between migration and runtime consumers, and overriding
+    // for tests / alternate environments is a single hand-off.
     runApp(
       App(
         language: config.defaultLanguage,
-        dependencies: AppDependencies(environment: config.environment),
+        dependencies: dependencies,
+        secureStorage: secureStorage,
         analytics: analytics,
       ),
     );

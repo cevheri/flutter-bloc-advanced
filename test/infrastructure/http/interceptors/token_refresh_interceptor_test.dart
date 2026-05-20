@@ -1,22 +1,57 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../test_utils.dart';
 
+/// ISecureStorage whose jwtToken read throws (refresh token is normal).
+/// Exercises the stale-header check's graceful-fallback path.
+class _ReadThrowsOnJwtSecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async {
+    if (key == SecureStorageKeys.jwtToken.key) throw StateError('boom on jwt read');
+    return _store[key];
+  }
+
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
+/// In-memory ISecureStorage for tests. Counts reads of the refresh-token
+/// key so concurrent-refresh coalescing can be asserted.
+class _MemorySecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  int refreshTokenReadCount = 0;
+  @override
+  Future<String?> read(String key) async {
+    if (key == SecureStorageKeys.refreshToken.key) refreshTokenReadCount++;
+    return _store[key];
+  }
+
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
 void main() {
   late Dio dio;
-  late AppLocalStorage localStorage;
+  late _MemorySecureStorage secureStorage;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
   });
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    localStorage = AppLocalStorage();
+    secureStorage = _MemorySecureStorage();
     dio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
   });
 
@@ -202,10 +237,14 @@ void main() {
     });
 
     test('should call onSessionExpired when refresh token is empty string', () async {
-      await localStorage.save(StorageKeys.refreshToken.key, '');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, '');
 
       var sessionExpiredCalled = false;
-      final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        onSessionExpired: () => sessionExpiredCalled = true,
+        secureStorage: secureStorage,
+      );
       final handler = _TestErrorHandler();
       final requestOptions = RequestOptions(path: '/api/users');
 
@@ -223,11 +262,15 @@ void main() {
 
   group('TokenRefreshInterceptor - 401 with refresh token', () {
     test('should attempt refresh and call onSessionExpired when refresh fails', () async {
-      await localStorage.save(StorageKeys.refreshToken.key, 'valid-refresh-token');
-      await localStorage.save(StorageKeys.jwtToken.key, 'old-jwt-token');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt-token');
 
       var sessionExpiredCalled = false;
-      final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        onSessionExpired: () => sessionExpiredCalled = true,
+        secureStorage: secureStorage,
+      );
       final handler = _TestErrorHandler();
       final requestOptions = RequestOptions(path: '/api/users');
 
@@ -243,6 +286,152 @@ void main() {
 
       expect(sessionExpiredCalled, isTrue);
       expect(handler.nextCalled, isTrue);
+    });
+  });
+
+  group('TokenRefreshInterceptor - concurrent refresh coalescing', () {
+    test('coalesces concurrent 401s into a single refresh request', () async {
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      // Baseline the counter — earlier setup or other code paths may
+      // have read the key — so we assert the DELTA introduced by the
+      // three concurrent onError calls below, not the absolute count.
+      final baseline = secureStorage.refreshTokenReadCount;
+
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      DioException makeErr() {
+        final ro = RequestOptions(path: '/api/users');
+        return DioException(
+          requestOptions: ro,
+          response: Response(requestOptions: ro, statusCode: 401),
+        );
+      }
+
+      final h1 = _TestErrorHandler();
+      final h2 = _TestErrorHandler();
+      final h3 = _TestErrorHandler();
+
+      await Future.wait([
+        interceptor.onError(makeErr(), h1),
+        interceptor.onError(makeErr(), h2),
+        interceptor.onError(makeErr(), h3),
+      ]);
+
+      // Without coalescing this would be 3 — one refreshToken read per
+      // concurrent 401. With the in-flight Future shared, all three
+      // queued callers await the same refresh and the secure store is
+      // read exactly once.
+      expect(
+        secureStorage.refreshTokenReadCount - baseline,
+        1,
+        reason: 'concurrent 401s should share a single refresh attempt',
+      );
+    });
+
+    test('does not attempt a second refresh when the retried request 401s again', () async {
+      // Simulates a request that has already been retried after a
+      // refresh — RequestOptions.extra carries the _retriedAfterRefresh
+      // marker. A second 401 must short-circuit to logout instead of
+      // entering another refresh round (which would just rotate
+      // tokens forever against a backend that keeps rejecting them).
+      var sessionExpiredCalls = 0;
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final baselineRefreshReads = secureStorage.refreshTokenReadCount;
+
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      final ro = RequestOptions(
+        path: '/api/users',
+        headers: {'Authorization': 'Bearer SOME_JWT'},
+        extra: {'_tokenRefresh_retried': true},
+      );
+      final error = DioException(
+        requestOptions: ro,
+        response: Response(requestOptions: ro, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(sessionExpiredCalls, 1, reason: 'must surface logout on second 401');
+      expect(handler.nextCalled, isTrue);
+      expect(
+        secureStorage.refreshTokenReadCount - baselineRefreshReads,
+        0,
+        reason: 'must NOT enter the refresh path — refresh-token read is the proxy',
+      );
+    });
+
+    test('stale-header check survives a throwing secure read (graceful fallback)', () async {
+      // Failing-but-readable secure store: jwtToken throws, refreshToken
+      // exists. The stale-header optimization read should be swallowed
+      // and we should fall through to the normal refresh path — letting
+      // the throw escape would break the request pipeline.
+      final flaky = _ReadThrowsOnJwtSecureStorage();
+      await flaky.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: flaky);
+      final ro = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
+      final error = DioException(
+        requestOptions: ro,
+        response: Response(requestOptions: ro, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      // Must NOT throw; falls through to refresh attempt which will
+      // also fail (no real server), so onSessionExpired is reached.
+      await interceptor.onError(error, handler);
+      expect(handler.nextCalled, isTrue);
+    });
+
+    test('skips refresh when JWT was already rotated since the failing request was sent', () async {
+      // Secure store already has the rotated token; the failing
+      // request carries the previous one. Interceptor should detect
+      // that and NOT call refresh again.
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'NEW_JWT');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final baselineRefreshReads = secureStorage.refreshTokenReadCount;
+
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      final requestOptions = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(
+        secureStorage.refreshTokenReadCount - baselineRefreshReads,
+        0,
+        reason: 'stale header path must NOT call refresh; refresh-token read is the proxy for that',
+      );
+    });
+
+    test('clears in-flight Future so a later 401 starts a fresh refresh', () async {
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      DioException makeErr() {
+        final ro = RequestOptions(path: '/api/users');
+        return DioException(
+          requestOptions: ro,
+          response: Response(requestOptions: ro, statusCode: 401),
+        );
+      }
+
+      // First wave completes…
+      await interceptor.onError(makeErr(), _TestErrorHandler());
+      final after1 = secureStorage.refreshTokenReadCount;
+
+      // …then a later 401 (after the in-flight Future cleared) starts
+      // its own refresh sequence.
+      await interceptor.onError(makeErr(), _TestErrorHandler());
+      final after2 = secureStorage.refreshTokenReadCount;
+
+      expect(after2, greaterThan(after1), reason: 'next 401 must trigger a new refresh');
     });
   });
 

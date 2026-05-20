@@ -2,28 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+/// In-memory cache for fields that are read synchronously across the app.
+///
+/// The JWT is intentionally NOT cached here: it lives in `ISecureStorage`
+/// and is read on demand by `AuthInterceptor` (per-request) and by
+/// `SessionCubit.restore` (per app launch). `SecurityUtils` itself is
+/// pure — it takes the token as an argument and does no I/O. Keeping a
+/// sync mirror of an async secret created six coordinated write paths
+/// that all had to agree; removing it eliminated that class of bugs.
+///
+/// The other fields legitimately live in SharedPreferences and a sync
+/// read is cheap and correct.
 class AppLocalStorageCached {
   static final _log = AppLogger.getLogger("AppLocalStorageCached");
-  static late String? jwtToken;
-  static late List<String>? roles;
-  static late String? language;
-  static late String? username;
-  static late String? theme;
-  static late String? brightness;
+  static List<String>? roles;
+  static String? language;
+  static String? username;
+  static String? theme;
+  static String? brightness;
 
   static Future<void> loadCache() async {
     _log.trace("Loading cache");
-    jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.key);
     roles = await AppLocalStorage().read(StorageKeys.roles.key);
     language = await AppLocalStorage().read(StorageKeys.language.key) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.key);
     theme = await AppLocalStorage().read(StorageKeys.theme.key) ?? "classic";
     brightness = await AppLocalStorage().read(StorageKeys.brightness.key) ?? "light";
-    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}, brightness:{}", [
+    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, theme:{}, brightness:{}", [
       username,
       roles,
       language,
-      jwtToken,
       theme,
       brightness,
     ]);
@@ -38,8 +46,6 @@ class AppLocalStorageCached {
 /// by appending — do not change existing [key] strings without a
 /// migration.
 enum StorageKeys {
-  jwtToken('jwtToken'),
-  refreshToken('refreshToken'),
   roles('roles'),
   language('language'),
   username('username'),
@@ -76,23 +82,32 @@ class AppLocalStorage {
   /// Save data to local storage.
   ///
   /// Supported value types: String, int, double, bool, `List<String>`.
-  /// Returns false if value type is not supported or an error occurs.
+  /// Returns false if the value type is unsupported, the underlying
+  /// SharedPreferences write reports failure, or an error is thrown.
+  /// This boolean is the contract that [AuthSessionRepository._writeLocal]
+  /// relies on for cross-backend rollback — silent success here breaks
+  /// atomicity, so each platform call is awaited and its result honored.
   Future<bool> save(String key, dynamic value) async {
     _log.trace("Saving data to local storage {} {}", [key, value]);
     final prefs = await _prefs;
     try {
+      final bool ok;
       if (value is String) {
-        prefs.setString(key, value);
+        ok = await prefs.setString(key, value);
       } else if (value is int) {
-        prefs.setInt(key, value);
+        ok = await prefs.setInt(key, value);
       } else if (value is double) {
-        prefs.setDouble(key, value);
+        ok = await prefs.setDouble(key, value);
       } else if (value is bool) {
-        prefs.setBool(key, value);
+        ok = await prefs.setBool(key, value);
       } else if (value is List<String>) {
-        prefs.setStringList(key, value);
+        ok = await prefs.setStringList(key, value);
       } else {
         throw Exception("Unsupported value type");
+      }
+      if (!ok) {
+        _log.error("SharedPreferences refused write for key {}", [key]);
+        return false;
       }
 
       await AppLocalStorageCached.loadCache();
@@ -114,7 +129,11 @@ class AppLocalStorage {
     _log.trace("Removing data from local storage");
     try {
       final prefs = await _prefs;
-      prefs.remove(key);
+      final ok = await prefs.remove(key);
+      if (!ok) {
+        _log.error("SharedPreferences refused remove for key {}", [key]);
+        return false;
+      }
       await AppLocalStorageCached.loadCache();
       _log.trace("Removed data from local storage {}", [key]);
       return true;
@@ -127,7 +146,16 @@ class AppLocalStorage {
   Future<void> clear() async {
     _log.info("Clearing all data from local storage");
     final prefs = await _prefs;
-    prefs.clear();
+    final ok = await prefs.clear();
+    if (!ok) {
+      // Symmetric with [save] / [remove]: a refused mutation surfaces
+      // to callers via exception so Result/rollback paths
+      // (LoginRepository.logout, AuthSessionRepository.clear) treat it
+      // as a failure rather than logging "Cleared all data" and moving
+      // on with stale state.
+      _log.error("SharedPreferences clear returned false");
+      throw StateError('SharedPreferences clear returned false');
+    }
     await AppLocalStorageCached.loadCache();
     _log.info("Cleared all data from local storage");
   }

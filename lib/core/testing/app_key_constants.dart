@@ -21,7 +21,8 @@ const Key registerEmailTextFieldKey = Key("registerEmailTextFieldKey");
 // settings screen
 const Key settingsChangePasswordButtonKey = Key("settingsChangePasswordButtonKey");
 const Key settingsChangeLanguageButtonKey = Key("settingsChangeLanguageButtonKey");
-const Key settingsLogoutButtonKey = Key("settingsLogoutButtonKey");
+// Logout is intentionally not exposed from settings — it lives in the
+// sidebar / topbar shell (see SettingsScreen for the rationale).
 
 // change password screen
 const Key changePasswordButtonSubmitKey = Key("changePasswordButtonSubmitKey");

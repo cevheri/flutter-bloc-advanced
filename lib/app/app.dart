@@ -10,16 +10,31 @@ import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/widgets/web_back_button_disabler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 class App extends StatelessWidget {
-  const App({super.key, required this.language, this.dependencies = const AppDependencies(), this._analytics});
+  const App({
+    super.key,
+    required this.language,
+    this.dependencies = const AppDependencies(),
+    this.secureStorage,
+    this._analytics,
+  });
 
   final String language;
   final AppDependencies dependencies;
+
+  /// Single [ISecureStorage] instance created in bootstrap. Threaded
+  /// through so the same adapter handles bootstrap-time migration AND
+  /// runtime consumers (repositories, interceptors, SessionCubit) —
+  /// avoids divergent instances if adapter configuration ever varies
+  /// and makes overriding for tests / alternate environments trivial.
+  /// When null, [AppScope] falls back to [AppDependencies.createSecureStorage].
+  final ISecureStorage? secureStorage;
   final IAnalyticsService? _analytics;
 
   @override
@@ -27,6 +42,7 @@ class App extends StatelessWidget {
     final analytics = _analytics ?? LogAnalyticsService();
     return AppScope(
       dependencies: dependencies,
+      secureStorage: secureStorage,
       child: AppSessionListeners(
         child: _AppView(language: language, analytics: analytics),
       ),

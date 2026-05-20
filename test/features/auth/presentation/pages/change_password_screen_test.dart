@@ -127,7 +127,7 @@ void main() {
   group("ChangePasswordScreen FormFieldsTest", () {
     testWidgets("Render Screen Validate Field Type Successful", (tester) async {
       _log.debug("begin Validate Field Type");
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       // Given:
       await tester.pumpWidget(getWidget());
       //When:
