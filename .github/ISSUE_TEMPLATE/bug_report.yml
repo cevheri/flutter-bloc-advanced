@@ -73,7 +73,7 @@ body:
     attributes:
       label: Flutter Version
       description: Output of `flutter --version`
-      placeholder: "e.g., Flutter 3.41.8"
+      placeholder: "e.g., Flutter 3.44.0"
     validations:
       required: true
 
@@ -82,7 +82,7 @@ body:
     attributes:
       label: Dart Version
       description: Output of `dart --version`
-      placeholder: "e.g., Dart SDK 3.11.5"
+      placeholder: "e.g., Dart SDK 3.12.0"
 
   - type: textarea
     id: logs
