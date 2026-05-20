@@ -17,6 +17,17 @@ class _MemorySecureStorage implements ISecureStorage {
   Future<void> deleteAll() async => _store.clear();
 }
 
+class _ReadThrowsSecureStorage implements ISecureStorage {
+  @override
+  Future<String?> read(String key) async => throw StateError('boom on read $key');
+  @override
+  Future<void> write(String key, String value) async {}
+  @override
+  Future<void> delete(String key) async {}
+  @override
+  Future<void> deleteAll() async {}
+}
+
 void main() {
   final testUtils = TestUtils();
 
@@ -128,6 +139,13 @@ void main() {
       },
       act: (cubit) => cubit.refresh(),
       expect: () => [const SessionState(isAuthenticated: true)],
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'restore emits unauthenticated (safe default) when secure read throws',
+      build: () => SessionCubit(secureStorage: _ReadThrowsSecureStorage()),
+      act: (cubit) => cubit.restore(),
+      expect: () => [const SessionState(isAuthenticated: false)],
     );
 
     blocTest<SessionCubit, SessionState>(

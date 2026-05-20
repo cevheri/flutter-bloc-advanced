@@ -36,23 +36,34 @@ class SessionCubit extends Cubit<SessionState> {
   final ISecureStorage _secureStorage;
 
   Future<void> restore() async {
-    final token = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
-    final hasToken = SecurityUtils.hasToken(token);
-    if (!hasToken) {
-      _log.info('restore: no token in secure storage → unauthenticated');
+    // ISecureStorage.read can throw on platform / decryption failure.
+    // restore() is invoked fire-and-forget from BlocProvider, so any
+    // escaping exception becomes an unhandled async error. Wrap the
+    // read + decision in try/catch and treat any failure as
+    // unauthenticated — the safe default that forces a fresh login
+    // rather than leaving the cubit in `unknown` forever.
+    try {
+      final token = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+      final hasToken = SecurityUtils.hasToken(token);
+      if (!hasToken) {
+        _log.info('restore: no token in secure storage → unauthenticated');
+        emit(const SessionState(isAuthenticated: false));
+        return;
+      }
+      // In production we additionally reject expired tokens. In non-prod
+      // (mocks/dev) we stay lenient so a static MOCK_TOKEN without an
+      // `exp` claim does not log the user out on every restart.
+      if (ProfileConstants.isProduction) {
+        final expired = SecurityUtils.isTokenExpired(token);
+        _log.info('restore: token found, expired={} → authenticated={}', [expired, !expired]);
+        emit(SessionState(isAuthenticated: !expired));
+      } else {
+        _log.info('restore: token found (dev/test lenient) → authenticated');
+        emit(const SessionState(isAuthenticated: true));
+      }
+    } catch (e, st) {
+      _log.error('restore: secure storage read failed → unauthenticated (safe default): {}\n{}', [e, st]);
       emit(const SessionState(isAuthenticated: false));
-      return;
-    }
-    // In production we additionally reject expired tokens. In non-prod
-    // (mocks/dev) we stay lenient so a static MOCK_TOKEN without an
-    // `exp` claim does not log the user out on every restart.
-    if (ProfileConstants.isProduction) {
-      final expired = SecurityUtils.isTokenExpired(token);
-      _log.info('restore: token found, expired={} → authenticated={}', [expired, !expired]);
-      emit(SessionState(isAuthenticated: !expired));
-    } else {
-      _log.info('restore: token found (dev/test lenient) → authenticated');
-      emit(const SessionState(isAuthenticated: true));
     }
   }
 

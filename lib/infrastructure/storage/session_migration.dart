@@ -12,7 +12,11 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 class SessionMigration {
   static final _log = AppLogger.getLogger('SessionMigration');
 
-  static const _legacyKeys = <String>['jwtToken', 'refreshToken'];
+  /// Legacy SharedPreferences keys to migrate into [ISecureStorage].
+  /// Sourced from [SecureStorageKeys] so the canonical token-key
+  /// strings stay in lockstep — if a key string ever changes, this
+  /// list moves with it automatically.
+  static final _legacyKeys = <String>[SecureStorageKeys.jwtToken.key, SecureStorageKeys.refreshToken.key];
 
   static Future<void> run({required ISecureStorage secureStorage, required AppLocalStorage localStorage}) async {
     for (final legacyKey in _legacyKeys) {

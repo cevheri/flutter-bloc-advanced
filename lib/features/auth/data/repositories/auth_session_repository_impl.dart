@@ -30,20 +30,25 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   @override
   Future<Result<void>> persist(AuthSession session) async {
+    final mutatedSecure = <SecureStorageKeys>{};
+    final mutatedLocal = <StorageKeys>{};
     // Snapshot pre-persist values on BOTH backends so rollback restores
     // them — including the "delete stale refreshToken when the new
     // session has none" path, where the delete itself is the mutation
-    // we need to be able to undo. Without a local snapshot a re-login
-    // could wipe a previously persisted username/roles when persist()
-    // fails mid-way, violating the "no half-written session" invariant.
-    final priorJwt = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
-    final priorRefresh = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
-    final priorUsername = await _storage.read(StorageKeys.username.key);
-    final priorRoles = await _storage.read(StorageKeys.roles.key);
-
-    final mutatedSecure = <SecureStorageKeys>{};
-    final mutatedLocal = <StorageKeys>{};
+    // we need to be able to undo. The snapshot itself must live inside
+    // the try block: ISecureStorage.read can throw on platform /
+    // decryption failure, and the contract is that persist always
+    // returns a Result — never propagates a raw exception.
+    String? priorJwt;
+    String? priorRefresh;
+    dynamic priorUsername;
+    dynamic priorRoles;
     try {
+      priorJwt = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+      priorRefresh = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
+      priorUsername = await _storage.read(StorageKeys.username.key);
+      priorRoles = await _storage.read(StorageKeys.roles.key);
+
       await _secureStorage.write(SecureStorageKeys.jwtToken.key, session.idToken);
       mutatedSecure.add(SecureStorageKeys.jwtToken);
       if (session.refreshToken != null) {

@@ -19,7 +19,17 @@ class AuthInterceptor extends Interceptor {
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    final jwtToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    // ISecureStorage.read can throw on platform / decryption failure.
+    // If that happens, send the request anonymously rather than failing
+    // the request itself — the downstream 401 path will trigger logout
+    // / re-auth, which is the right user-visible outcome. Crashing the
+    // interceptor would break every HTTP call until app restart.
+    String? jwtToken;
+    try {
+      jwtToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    } catch (e) {
+      _log.warn('secure read failed for {}; sending request without Authorization: {}', [options.path, e]);
+    }
     final hasAuth = jwtToken != null && jwtToken.isNotEmpty;
     if (hasAuth) {
       options.headers['Authorization'] = 'Bearer $jwtToken';

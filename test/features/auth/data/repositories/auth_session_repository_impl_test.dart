@@ -21,6 +21,19 @@ class _MemorySecureStorage implements ISecureStorage {
   Future<void> deleteAll() async => _store.clear();
 }
 
+/// ISecureStorage whose read() always throws. Exercises the
+/// Result-on-snapshot-failure contract in persist().
+class _ReadThrowsSecureStorage implements ISecureStorage {
+  @override
+  Future<String?> read(String key) async => throw StateError('boom on read $key');
+  @override
+  Future<void> write(String key, String value) async {}
+  @override
+  Future<void> delete(String key) async {}
+  @override
+  Future<void> deleteAll() async {}
+}
+
 /// ISecureStorage that throws on the configured delete key. Exercises
 /// the best-effort sequential cleanup path in clear().
 class _SelectiveFailSecureStorage implements ISecureStorage {
@@ -174,6 +187,20 @@ void main() {
 
       expect(result, isA<Failure<void>>());
       expect(await secure.read(SecureStorageKeys.refreshToken.key), 'STALE_REFRESH');
+    });
+
+    test('persist returns Failure (does not throw) when snapshot read fails', () async {
+      // ISecureStorage.read is allowed to throw on platform failure.
+      // Repository contract: persist always returns a Result — never
+      // propagates a raw exception, including from the pre-write
+      // snapshot.
+      final flaky = _ReadThrowsSecureStorage();
+      final repo = AuthSessionRepository(secureStorage: flaky, storage: storage);
+      const session = AuthSession(idToken: 'TOKEN', username: 'alice');
+
+      final result = await repo.persist(session);
+
+      expect(result, isA<Failure<void>>());
     });
 
     test('clear keeps wiping even if one secure delete throws', () async {
