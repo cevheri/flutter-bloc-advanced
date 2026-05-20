@@ -82,7 +82,7 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
   /// Merges [values] into each field's `defaultValue` so the renderer
   /// (which prefills from `field.defaultValue`) picks up the bundled
   /// initial values without needing a new public arg.
-  FormSchemaEntity _hydrateSchema(FormSchemaEntity schema, Map<String, dynamic> values) {
+  static FormSchemaEntity _hydrateSchema(FormSchemaEntity schema, Map<String, dynamic> values) {
     if (values.isEmpty) return schema;
     final fields = schema.fields.map((f) {
       if (!values.containsKey(f.key)) return f;
