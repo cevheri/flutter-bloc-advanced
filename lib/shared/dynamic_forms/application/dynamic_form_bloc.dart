@@ -41,16 +41,16 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   FutureOr<void> _onSubmit(DynamicFormSubmitEvent event, Emitter<DynamicFormState> emit) async {
-    final schema = switch (state) {
-      DynamicFormLoaded(:final schema) => schema,
-      DynamicFormSubmitted(:final schema) => schema,
-      DynamicFormFailure(:final schema?) => schema,
-      _ => null,
+    final (schema, submitPathParams) = switch (state) {
+      DynamicFormLoaded(:final schema, :final submitPathParams) => (schema, submitPathParams),
+      DynamicFormSubmitted(:final schema) => (schema, null),
+      DynamicFormFailure(:final schema?) => (schema, null),
+      _ => (null, null),
     };
     if (schema == null) return;
 
-    _log.debug('Submitting form: {}', [schema.id]);
-    emit(DynamicFormSubmitting(schema: schema));
+    _log.debug('Submitting form: {} pathParams: {}', [schema.id, submitPathParams]);
+    emit(DynamicFormSubmitting(schema: schema, submitPathParams: submitPathParams));
 
     final action = schema.submitAction;
     if (action == null) {
@@ -59,7 +59,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       return;
     }
 
-    final result = await _submitFormUseCase(action, event.data);
+    final result = await _submitFormUseCase(action, event.data, pathParams: submitPathParams);
     switch (result) {
       case Success(:final data):
         emit(DynamicFormSubmitted(schema: schema, submitResponse: data));
@@ -73,12 +73,12 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
   }
 
   FutureOr<void> _onLoadBundle(DynamicFormLoadBundleEvent event, Emitter<DynamicFormState> emit) async {
-    _log.debug('Loading form bundle: {}', [event.endpoint]);
+    _log.debug('Loading form bundle: {} pathParams: {}', [event.basePath, event.pathParams]);
     emit(const DynamicFormLoading());
-    final result = await _loadFormBundleUseCase(event.endpoint);
+    final result = await _loadFormBundleUseCase(event.basePath, pathParams: event.pathParams);
     switch (result) {
       case Success(:final data):
-        emit(DynamicFormLoaded(schema: data.schema, initialValues: data.values));
+        emit(DynamicFormLoaded(schema: data.schema, initialValues: data.values, submitPathParams: event.pathParams));
       case Failure(:final error):
         emit(DynamicFormFailure(error: error.message));
     }

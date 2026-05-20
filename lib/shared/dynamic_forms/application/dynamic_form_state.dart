@@ -27,22 +27,28 @@ final class DynamicFormLoading extends DynamicFormState {
 }
 
 final class DynamicFormLoaded extends DynamicFormState {
-  const DynamicFormLoaded({required this.schema, this.initialValues = const {}});
+  const DynamicFormLoaded({required this.schema, this.initialValues = const {}, this.submitPathParams});
 
   final FormSchemaEntity schema;
   final Map<String, dynamic> initialValues;
 
+  /// Path parameter to append to the submit URL (e.g. the user id loaded
+  /// from `DynamicFormLoadBundleEvent.pathParams`). Null when the schema's
+  /// `submitAction.endpoint` is a complete URL on its own.
+  final String? submitPathParams;
+
   @override
-  List<Object?> get props => [schema, initialValues];
+  List<Object?> get props => [schema, initialValues, submitPathParams];
 }
 
 final class DynamicFormSubmitting extends DynamicFormState {
-  const DynamicFormSubmitting({required this.schema});
+  const DynamicFormSubmitting({required this.schema, this.submitPathParams});
 
   final FormSchemaEntity schema;
+  final String? submitPathParams;
 
   @override
-  List<Object?> get props => [schema];
+  List<Object?> get props => [schema, submitPathParams];
 }
 
 final class DynamicFormSubmitted extends DynamicFormState {

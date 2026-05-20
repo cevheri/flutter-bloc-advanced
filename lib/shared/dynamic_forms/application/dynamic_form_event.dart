@@ -27,10 +27,17 @@ class DynamicFormResetEvent extends DynamicFormEvent {
   const DynamicFormResetEvent();
 }
 
-/// Load a form schema bundled with prefilled values from an absolute endpoint.
+/// Load a form schema bundled with prefilled values.
+///
+/// The request URL is composed as `basePath[/pathParams]` so the mock
+/// interceptor's filename resolution sees a stable `basePath` regardless
+/// of the per-instance [pathParams] (e.g. user id). [pathParams] is also
+/// stored on the resulting [DynamicFormLoaded] state so the bloc can
+/// reuse it for the matching submit URL.
 class DynamicFormLoadBundleEvent extends DynamicFormEvent {
-  const DynamicFormLoadBundleEvent(this.endpoint);
-  final String endpoint;
+  const DynamicFormLoadBundleEvent(this.basePath, {this.pathParams});
+  final String basePath;
+  final String? pathParams;
   @override
-  List<Object?> get props => [endpoint];
+  List<Object?> get props => [basePath, pathParams];
 }

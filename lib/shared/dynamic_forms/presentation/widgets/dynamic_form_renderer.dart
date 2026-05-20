@@ -15,12 +15,33 @@ class DynamicFormRenderer extends StatelessWidget {
     required this.formKey,
     this.onSubmit,
     this.readOnly = false,
+    this.initialValues = const {},
   });
 
   final FormSchemaEntity schema;
   final GlobalKey<FormBuilderState> formKey;
   final ValueChanged<Map<String, dynamic>>? onSubmit;
   final bool readOnly;
+
+  /// Prefilled values keyed by field key, taking precedence over each
+  /// field's own [FormFieldEntity.defaultValue]. Lets callers hydrate the
+  /// form from a server response without mutating the schema. Empty by
+  /// default — existing schema-only callers behave exactly as before.
+  final Map<String, dynamic> initialValues;
+
+  dynamic _initialFor(FormFieldEntity field) =>
+      initialValues.containsKey(field.key) ? initialValues[field.key] : field.defaultValue;
+
+  /// Coerces a JSON-friendly date representation (ISO-8601 string or
+  /// `DateTime`) into a `DateTime` for `FormBuilderDateTimePicker`. Returns
+  /// null for missing or unparseable values rather than throwing, so a typo
+  /// in a server response degrades gracefully to an empty picker.
+  DateTime? _parseDateTime(dynamic value) {
+    if (value == null) return null;
+    if (value is DateTime) return value;
+    if (value is String) return DateTime.tryParse(value);
+    return null;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +104,7 @@ class DynamicFormRenderer extends StatelessWidget {
   }) {
     return FormBuilderTextField(
       name: field.key,
-      initialValue: field.defaultValue?.toString(),
+      initialValue: _initialFor(field)?.toString(),
       decoration: InputDecoration(labelText: field.label, hintText: field.hint),
       readOnly: readOnly || field.readOnly,
       obscureText: obscureText,
@@ -96,7 +117,7 @@ class DynamicFormRenderer extends StatelessWidget {
   Widget _buildDropdown(FormFieldEntity field) {
     return FormBuilderDropdown<String>(
       name: field.key,
-      initialValue: field.defaultValue?.toString(),
+      initialValue: _initialFor(field)?.toString(),
       decoration: InputDecoration(labelText: field.label, hintText: field.hint),
       enabled: !readOnly && !field.readOnly,
       validator: _buildValidators(field),
@@ -105,9 +126,10 @@ class DynamicFormRenderer extends StatelessWidget {
   }
 
   Widget _buildMultiSelect(FormFieldEntity field) {
+    final initial = _initialFor(field);
     return FormBuilderCheckboxGroup<String>(
       name: field.key,
-      initialValue: field.defaultValue is List ? List<String>.from(field.defaultValue as List) : const [],
+      initialValue: initial is List ? List<String>.from(initial.map((e) => e.toString())) : const [],
       decoration: InputDecoration(labelText: field.label),
       enabled: !readOnly && !field.readOnly,
       options: field.options.map((opt) => FormBuilderFieldOption(value: opt, child: Text(opt))).toList(),
@@ -118,6 +140,7 @@ class DynamicFormRenderer extends StatelessWidget {
     return FormBuilderDateTimePicker(
       name: field.key,
       inputType: InputType.date,
+      initialValue: _parseDateTime(_initialFor(field)),
       decoration: InputDecoration(labelText: field.label, hintText: field.hint),
       enabled: !readOnly && !field.readOnly,
       validator: _buildValidators(field),
@@ -128,6 +151,7 @@ class DynamicFormRenderer extends StatelessWidget {
     return FormBuilderDateTimePicker(
       name: field.key,
       inputType: InputType.both,
+      initialValue: _parseDateTime(_initialFor(field)),
       decoration: InputDecoration(labelText: field.label, hintText: field.hint),
       enabled: !readOnly && !field.readOnly,
       validator: _buildValidators(field),
@@ -137,7 +161,7 @@ class DynamicFormRenderer extends StatelessWidget {
   Widget _buildToggle(FormFieldEntity field) {
     return FormBuilderSwitch(
       name: field.key,
-      initialValue: field.defaultValue == true,
+      initialValue: _initialFor(field) == true,
       title: Text(field.label),
       decoration: const InputDecoration(border: InputBorder.none),
       enabled: !readOnly && !field.readOnly,
@@ -147,7 +171,7 @@ class DynamicFormRenderer extends StatelessWidget {
   Widget _buildCheckbox(FormFieldEntity field) {
     return FormBuilderCheckbox(
       name: field.key,
-      initialValue: field.defaultValue == true,
+      initialValue: _initialFor(field) == true,
       title: Text(field.label),
       decoration: const InputDecoration(border: InputBorder.none),
       enabled: !readOnly && !field.readOnly,
@@ -157,7 +181,7 @@ class DynamicFormRenderer extends StatelessWidget {
   Widget _buildRadioGroup(FormFieldEntity field) {
     return FormBuilderRadioGroup<String>(
       name: field.key,
-      initialValue: field.defaultValue?.toString(),
+      initialValue: _initialFor(field)?.toString(),
       decoration: InputDecoration(labelText: field.label),
       enabled: !readOnly && !field.readOnly,
       options: field.options.map((opt) => FormBuilderFieldOption(value: opt, child: Text(opt))).toList(),
@@ -167,7 +191,7 @@ class DynamicFormRenderer extends StatelessWidget {
   Widget _buildSlider(FormFieldEntity field) {
     return FormBuilderSlider(
       name: field.key,
-      initialValue: (field.defaultValue as num?)?.toDouble() ?? field.min ?? 0,
+      initialValue: (_initialFor(field) as num?)?.toDouble() ?? field.min ?? 0,
       min: field.min ?? 0,
       max: field.max ?? 100,
       decoration: InputDecoration(labelText: field.label),

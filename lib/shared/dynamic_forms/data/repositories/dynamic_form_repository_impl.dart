@@ -49,13 +49,13 @@ class DynamicFormRepository implements IDynamicFormRepository {
   }
 
   @override
-  Future<Result<FormBundleEntity>> fetchBundle(String endpoint) async {
-    _log.debug('BEGIN:fetchBundle endpoint: {}', [endpoint]);
-    if (endpoint.isEmpty) {
+  Future<Result<FormBundleEntity>> fetchBundle(String basePath, {String? pathParams}) async {
+    _log.debug('BEGIN:fetchBundle basePath: {}, pathParams: {}', [basePath, pathParams]);
+    if (basePath.isEmpty) {
       return const Failure(ValidationError(endpointRequired));
     }
     try {
-      final response = await ApiClient.get(endpoint);
+      final response = await ApiClient.get(basePath, pathParams: pathParams);
       final bundle = FormBundleModel.fromJsonString(response.data!);
       _log.debug('END:fetchBundle successful: {}', [bundle.schema.id]);
       return Success(bundle);
@@ -75,8 +75,8 @@ class DynamicFormRepository implements IDynamicFormRepository {
   }
 
   @override
-  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data) async {
-    _log.debug('BEGIN:submit {} {}', [action.method, action.endpoint]);
+  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams}) async {
+    _log.debug('BEGIN:submit {} {} pathParams: {}', [action.method, action.endpoint, pathParams]);
     if (action.endpoint.isEmpty) {
       return const Failure(ValidationError(submitEndpointRequired));
     }
@@ -85,10 +85,10 @@ class DynamicFormRepository implements IDynamicFormRepository {
     }
     try {
       final response = switch (action.method.toUpperCase()) {
-        'POST' => await ApiClient.post(action.endpoint, data),
-        'PUT' => await ApiClient.put(action.endpoint, data),
-        'PATCH' => await ApiClient.patch(action.endpoint, data),
-        'DELETE' => await ApiClient.delete(action.endpoint),
+        'POST' => await ApiClient.post(action.endpoint, data, pathParams: pathParams),
+        'PUT' => await ApiClient.put(action.endpoint, data, pathParams: pathParams),
+        'PATCH' => await ApiClient.patch(action.endpoint, data, pathParams: pathParams),
+        'DELETE' => await ApiClient.delete(action.endpoint, pathParams: pathParams),
         _ => throw UnsupportedError('Unsupported HTTP method: ${action.method}'),
       };
       _log.debug('END:submit successful', []);

@@ -11,12 +11,17 @@ import 'package:go_router/go_router.dart';
 
 /// Page that hosts a server-driven dynamic form for a single user's
 /// extended profile information. Loads schema + prefilled values from
-/// `GET /admin/users/:id/extended` and submits via the schema's
-/// declared `submitAction`.
+/// `GET /admin/users/extended/{userId}` and submits to the same path via
+/// the schema's declared `submitAction`. The per-user path segment is
+/// passed through the engine's [DynamicFormLoadBundleEvent.pathParams]
+/// channel, so the mock interceptor sees a stable `/admin/users/extended`
+/// base and a single fixture serves every user.
 class UserExtendedInfoPage extends StatefulWidget {
   const UserExtendedInfoPage({super.key, required this.userId});
 
   final String userId;
+
+  static const String basePath = '/admin/users/extended';
 
   @override
   State<UserExtendedInfoPage> createState() => _UserExtendedInfoPageState();
@@ -28,7 +33,9 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
   @override
   void initState() {
     super.initState();
-    context.read<DynamicFormBloc>().add(DynamicFormLoadBundleEvent('/admin/users/${widget.userId}/extended'));
+    context.read<DynamicFormBloc>().add(
+      DynamicFormLoadBundleEvent(UserExtendedInfoPage.basePath, pathParams: widget.userId),
+    );
   }
 
   @override
@@ -63,47 +70,16 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
     );
   }
 
-  Widget _renderForm(FormSchemaEntity schema, Map<String, dynamic> values, {required bool readOnly}) {
+  Widget _renderForm(FormSchemaEntity schema, Map<String, dynamic> initialValues, {required bool readOnly}) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: DynamicFormRenderer(
-        schema: _hydrateSchema(schema, values),
+        schema: schema,
         formKey: _formKey,
         readOnly: readOnly,
+        initialValues: initialValues,
         onSubmit: (data) => context.read<DynamicFormBloc>().add(DynamicFormSubmitEvent(data)),
       ),
-    );
-  }
-
-  /// Merges [values] into each field's `defaultValue` so the renderer
-  /// (which prefills from `field.defaultValue`) picks up the bundled
-  /// initial values without needing a new public arg.
-  static FormSchemaEntity _hydrateSchema(FormSchemaEntity schema, Map<String, dynamic> values) {
-    if (values.isEmpty) return schema;
-    final fields = schema.fields.map((f) {
-      if (!values.containsKey(f.key)) return f;
-      return FormFieldEntity(
-        type: f.type,
-        key: f.key,
-        label: f.label,
-        hint: f.hint,
-        required: f.required,
-        readOnly: f.readOnly,
-        defaultValue: values[f.key],
-        options: f.options,
-        validators: f.validators,
-        maxLines: f.maxLines,
-        min: f.min,
-        max: f.max,
-      );
-    }).toList();
-    return FormSchemaEntity(
-      id: schema.id,
-      title: schema.title,
-      description: schema.description,
-      fields: fields,
-      submitAction: schema.submitAction,
-      layout: schema.layout,
     );
   }
 }

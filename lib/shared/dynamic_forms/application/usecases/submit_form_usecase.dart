@@ -7,7 +7,7 @@ class SubmitFormUseCase {
 
   final IDynamicFormRepository _repository;
 
-  Future<Result<String?>> call(FormSubmitAction action, Map<String, dynamic> data) {
-    return _repository.submit(action, data);
+  Future<Result<String?>> call(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams}) {
+    return _repository.submit(action, data, pathParams: pathParams);
   }
 }

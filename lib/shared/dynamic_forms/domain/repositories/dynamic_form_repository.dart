@@ -11,13 +11,18 @@ abstract class IDynamicFormRepository {
   /// action for [formId].
   Future<Result<FormSchemaEntity>> fetchSchema(String formId);
 
-  /// Fetch a schema bundled with prefilled values from [endpoint]. Used by
-  /// forms whose schema and values are served together (e.g. user
-  /// extended-info).
-  Future<Result<FormBundleEntity>> fetchBundle(String endpoint);
+  /// Fetch a schema bundled with prefilled values from [basePath], optionally
+  /// appending [pathParams] as a trailing URL segment. Used by forms whose
+  /// schema and values are served together (e.g. user extended-info). Passing
+  /// path parameters via the named arg (instead of pre-composing them into
+  /// [basePath]) keeps the mock-interceptor file name stable across instances,
+  /// so a single fixture can serve every user/entity id.
+  Future<Result<FormBundleEntity>> fetchBundle(String basePath, {String? pathParams});
 
   /// Dispatch the user-entered [data] to the submit endpoint described
-  /// by [action]. Returns the server response body as a string, or
+  /// by [action]. If [pathParams] is provided, it is appended as a
+  /// trailing URL segment (matching the per-instance routing used by
+  /// [fetchBundle]). Returns the server response body as a string, or
   /// `null` if the response had no body.
-  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data);
+  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams});
 }

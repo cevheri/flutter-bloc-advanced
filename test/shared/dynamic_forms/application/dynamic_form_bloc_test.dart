@@ -498,6 +498,23 @@ void main() {
         wait: const Duration(milliseconds: 300),
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>()],
       );
+
+      blocTest<DynamicFormBloc, DynamicFormState>(
+        'carries pathParams from the load event onto the Loaded state so submit can reuse it',
+        setUp: () => stub.stubSuccess(
+          data: jsonEncode({
+            'schema': jsonDecode(_validFormSchemaJson),
+            'values': {'name': 'Alice'},
+          }),
+        ),
+        build: () => buildBloc(),
+        act: (bloc) => bloc.add(const DynamicFormLoadBundleEvent('/admin/users/extended', pathParams: 'user-1')),
+        wait: const Duration(milliseconds: 300),
+        expect: () => [
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormLoaded>().having((s) => s.submitPathParams, 'submitPathParams', 'user-1'),
+        ],
+      );
     });
   });
 }

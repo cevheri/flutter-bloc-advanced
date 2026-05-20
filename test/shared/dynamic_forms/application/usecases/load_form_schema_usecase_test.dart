@@ -17,10 +17,12 @@ class _FakeRepo implements IDynamicFormRepository {
   }
 
   @override
-  Future<Result<FormBundleEntity>> fetchBundle(String endpoint) async => const Failure(UnknownError('not used'));
+  Future<Result<FormBundleEntity>> fetchBundle(String basePath, {String? pathParams}) async =>
+      const Failure(UnknownError('not used'));
 
   @override
-  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data) async => const Success(null);
+  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams}) async =>
+      const Success(null);
 }
 
 void main() {

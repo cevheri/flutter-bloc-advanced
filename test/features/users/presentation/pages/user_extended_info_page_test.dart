@@ -78,7 +78,11 @@ void main() {
     await tester.pump();
     verify(
       () => bloc.add(
-        any(that: isA<DynamicFormLoadBundleEvent>().having((e) => e.endpoint, 'endpoint', '/admin/users/42/extended')),
+        any(
+          that: isA<DynamicFormLoadBundleEvent>()
+              .having((e) => e.basePath, 'basePath', '/admin/users/extended')
+              .having((e) => e.pathParams, 'pathParams', '42'),
+        ),
       ),
     ).called(1);
   });

@@ -7,5 +7,6 @@ class LoadFormBundleUseCase {
 
   final IDynamicFormRepository _repository;
 
-  Future<Result<FormBundleEntity>> call(String endpoint) => _repository.fetchBundle(endpoint);
+  Future<Result<FormBundleEntity>> call(String basePath, {String? pathParams}) =>
+      _repository.fetchBundle(basePath, pathParams: pathParams);
 }
