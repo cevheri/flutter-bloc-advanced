@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/navigation/dynamic_forms_routes.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/save_user_usecase.dart';

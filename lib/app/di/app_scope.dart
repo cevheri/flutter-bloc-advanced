@@ -17,7 +17,7 @@ import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_o
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';

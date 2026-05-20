@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_bloc.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_event.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_state.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/domain/entities/form_schema_entity.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/presentation/widgets/dynamic_form_renderer.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';

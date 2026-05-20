@@ -6,8 +6,8 @@ import 'package:flutter_bloc_advance/features/account/data/repositories/account_
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
