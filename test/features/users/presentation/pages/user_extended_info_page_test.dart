@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../test_utils.dart';
@@ -80,5 +81,81 @@ void main() {
         any(that: isA<DynamicFormLoadBundleEvent>().having((e) => e.endpoint, 'endpoint', '/admin/users/42/extended')),
       ),
     ).called(1);
+  });
+
+  testWidgets('on DynamicFormSubmitted shows saved snackbar and pops the route', (tester) async {
+    final bloc = _MockBloc();
+    const schema = FormSchemaEntity(
+      id: 'user_extended_info',
+      title: 'Extended Information',
+      fields: [FormFieldEntity(type: FormFieldType.text, key: 'firstName', label: 'First name')],
+    );
+    const initial = DynamicFormLoaded(schema: schema);
+    final submitted = DynamicFormSubmitted(schema: schema, submitResponse: '{"ok":true}');
+
+    whenListen(bloc, Stream.fromIterable([submitted]), initialState: initial);
+
+    // Use GoRouter so context.canPop() / context.pop() work correctly.
+    final router = GoRouter(
+      initialLocation: '/home',
+      routes: [
+        GoRoute(
+          path: '/home',
+          builder: (ctx, state) => const Scaffold(body: Text('home')),
+        ),
+        GoRoute(
+          path: '/extended',
+          builder: (ctx, state) => BlocProvider<DynamicFormBloc>.value(
+            value: bloc,
+            child: const UserExtendedInfoPage(userId: '42'),
+          ),
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+      ),
+    );
+
+    // Push (not go) so /home stays in the stack and context.canPop() returns true.
+    router.push('/extended');
+    await tester.pumpAndSettle();
+
+    // The whenListen stream has already emitted Submitted — verify snackbar.
+    expect(find.text('Saved'), findsOneWidget);
+
+    // After the snackbar and pop animation settle, the page is gone.
+    await tester.pumpAndSettle();
+    expect(find.byType(UserExtendedInfoPage), findsNothing);
+  });
+
+  testWidgets('on DynamicFormFailure with schema shows save_failed snackbar', (tester) async {
+    final bloc = _MockBloc();
+    const schema = FormSchemaEntity(
+      id: 'user_extended_info',
+      title: 'Extended Information',
+      fields: [FormFieldEntity(type: FormFieldType.text, key: 'firstName', label: 'First name')],
+    );
+    const initial = DynamicFormLoaded(schema: schema);
+    const failure = DynamicFormFailure(error: 'boom', schema: schema);
+
+    whenListen(bloc, Stream.fromIterable([failure]), initialState: initial);
+
+    await tester.pumpWidget(host(const UserExtendedInfoPage(userId: '42'), bloc));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('Save failed'), findsOneWidget);
+    expect(find.textContaining('boom'), findsOneWidget);
+    // Form is still on screen — the page is preserved, not popped.
+    expect(find.byType(UserExtendedInfoPage), findsOneWidget);
   });
 }
