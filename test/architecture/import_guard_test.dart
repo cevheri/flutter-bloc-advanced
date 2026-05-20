@@ -48,6 +48,17 @@ const _knownCrossFeatureExceptions = {
   'lib/features/auth/application/change_password_bloc.dart → account/application/usecases/change_password_usecase',
   'lib/features/auth/application/change_password_bloc.dart → account/data/models/change_password',
   'lib/features/auth/application/register_bloc.dart → account/application/usecases/register_account_usecase',
+  // Coupling between users profile and dynamic_forms for rendering extended questionnaire
+  'lib/features/users/presentation/pages/user_extended_info_page.dart → dynamic_forms/application/dynamic_form_bloc',
+  'lib/features/users/presentation/pages/user_extended_info_page.dart → dynamic_forms/application/dynamic_form_event',
+  'lib/features/users/presentation/pages/user_extended_info_page.dart → dynamic_forms/application/dynamic_form_state',
+  'lib/features/users/presentation/pages/user_extended_info_page.dart → dynamic_forms/domain/entities/form_schema_entity',
+  'lib/features/users/presentation/pages/user_extended_info_page.dart → dynamic_forms/presentation/widgets/dynamic_form_renderer',
+  // Users routes consume dynamic_forms via its public withBloc helper (single
+  // intentional cross-feature contract — the page-level imports above remain
+  // because the renderer / state / bloc types are exchanged at the consumer
+  // surface).
+  'lib/features/users/navigation/users_routes.dart → dynamic_forms/navigation/dynamic_forms_routes',
 };
 
 /// features/ importing app/ (route constants used for navigation)
