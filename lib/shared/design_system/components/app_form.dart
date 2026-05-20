@@ -38,7 +38,9 @@ class AppFormCard extends StatelessWidget {
           Padding(padding: const EdgeInsets.fromLTRB(AppSpacing.xl, 0, AppSpacing.xl, AppSpacing.xl), child: child),
           if (footer != null)
             DecoratedBox(
-              decoration: BoxDecoration(border: Border(top: BorderSide(color: cs.outlineVariant))),
+              decoration: BoxDecoration(
+                border: Border(top: BorderSide(color: cs.outlineVariant)),
+              ),
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(AppSpacing.xl, AppSpacing.lg, AppSpacing.xl, AppSpacing.xl),
                 child: SizedBox(width: double.infinity, child: footer),
