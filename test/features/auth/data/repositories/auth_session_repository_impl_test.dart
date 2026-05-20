@@ -121,6 +121,26 @@ void main() {
       expect(await secure.read(SecureStorageKeys.refreshToken.key), 'OLD_REFRESH');
     });
 
+    test('rollback restores prior username and roles on local-write failure', () async {
+      // Pre-existing local session: simulates a re-login where the user
+      // was already authenticated and persist() is invoked again with
+      // new tokens but fails partway through the local writes.
+      await storage.save(StorageKeys.username.key, 'OLD_USER');
+      await storage.save(StorageKeys.roles.key, ['ROLE_OLD']);
+
+      final flaky = _FlakyStorage(storage, StorageKeys.roles.key);
+      final repo = AuthSessionRepository(secureStorage: secure, storage: flaky);
+      const session = AuthSession(idToken: 'NEW_JWT', username: 'NEW_USER', roles: ['ROLE_NEW']);
+
+      final result = await repo.persist(session);
+
+      expect(result, isA<Failure<void>>());
+      // username was written but rollback restored the prior value
+      // rather than deleting (which would have wiped the old session).
+      expect(await storage.read(StorageKeys.username.key), 'OLD_USER');
+      expect(await storage.read(StorageKeys.roles.key), ['ROLE_OLD']);
+    });
+
     test('rollback restores stale refreshToken that persist had deleted', () async {
       // Pre-existing refresh token; new session has none, so persist would
       // delete it. If a later write fails, rollback must restore it.

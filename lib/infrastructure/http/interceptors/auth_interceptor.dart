@@ -19,10 +19,11 @@ class AuthInterceptor extends Interceptor {
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     final jwtToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
-    if (jwtToken != null && jwtToken.isNotEmpty) {
+    final hasAuth = jwtToken != null && jwtToken.isNotEmpty;
+    if (hasAuth) {
       options.headers['Authorization'] = 'Bearer $jwtToken';
     }
-    _log.debug('Request [{}] {} (auth: {})', [options.method, options.path, jwtToken != null]);
+    _log.debug('Request [{}] {} (auth: {})', [options.method, options.path, hasAuth]);
     handler.next(options);
   }
 }

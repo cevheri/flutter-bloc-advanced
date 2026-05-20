@@ -4,11 +4,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 /// In-memory cache for fields that are read synchronously across the app.
 ///
-/// The JWT is intentionally NOT cached here: it lives in [ISecureStorage]
-/// and is read on demand via [SecurityUtils] / [AuthInterceptor]. Keeping
-/// a sync mirror of an async secret created six write paths that all had
-/// to agree — see PR #137 history. The other fields legitimately live in
-/// SharedPreferences and a sync read is cheap and correct.
+/// The JWT is intentionally NOT cached here: it lives in `ISecureStorage`
+/// and is read on demand by `AuthInterceptor` (per-request) and by
+/// `SessionCubit.restore` (per app launch). `SecurityUtils` itself is
+/// pure — it takes the token as an argument and does no I/O. Keeping a
+/// sync mirror of an async secret created six coordinated write paths
+/// that all had to agree; removing it eliminated that class of bugs.
+///
+/// The other fields legitimately live in SharedPreferences and a sync
+/// read is cheap and correct.
 class AppLocalStorageCached {
   static final _log = AppLogger.getLogger("AppLocalStorageCached");
   static List<String>? roles;

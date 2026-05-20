@@ -68,6 +68,10 @@ class TestUtils {
   Future<void> setupRepositoryUnitTest() async {
     AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
     ProfileConstants.setEnvironment(Environment.test);
+    // Binding must be initialized BEFORE installing the MethodChannel
+    // mock — `TestDefaultBinaryMessengerBinding.instance` throws
+    // otherwise. setupUnitTest does the same.
+    TestWidgetsFlutterBinding.ensureInitialized();
     _installSecureStorageMock();
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.key, "en");

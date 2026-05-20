@@ -30,15 +30,19 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   @override
   Future<Result<void>> persist(AuthSession session) async {
-    // Snapshot pre-persist secure values so rollback can restore them
-    // on failure — including the "delete stale refreshToken when the
-    // new session has none" path, where the delete itself is the
-    // mutation we need to be able to undo.
+    // Snapshot pre-persist values on BOTH backends so rollback restores
+    // them — including the "delete stale refreshToken when the new
+    // session has none" path, where the delete itself is the mutation
+    // we need to be able to undo. Without a local snapshot a re-login
+    // could wipe a previously persisted username/roles when persist()
+    // fails mid-way, violating the "no half-written session" invariant.
     final priorJwt = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
     final priorRefresh = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
+    final priorUsername = await _storage.read(StorageKeys.username.key);
+    final priorRoles = await _storage.read(StorageKeys.roles.key);
 
     final mutatedSecure = <SecureStorageKeys>{};
-    final writtenLocal = <StorageKeys>[];
+    final mutatedLocal = <StorageKeys>{};
     try {
       await _secureStorage.write(SecureStorageKeys.jwtToken.key, session.idToken);
       mutatedSecure.add(SecureStorageKeys.jwtToken);
@@ -51,20 +55,22 @@ class AuthSessionRepository implements IAuthSessionRepository {
         await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
         mutatedSecure.add(SecureStorageKeys.refreshToken);
       }
-      await _writeLocal(StorageKeys.username, session.username, writtenLocal);
-      await _writeLocal(StorageKeys.roles, session.roles, writtenLocal);
+      await _writeLocal(StorageKeys.username, session.username, mutatedLocal);
+      await _writeLocal(StorageKeys.roles, session.roles, mutatedLocal);
       return const Success(null);
     } catch (e) {
       _log.error('persist failed after {} secure + {} local mutations; rolling back: {}', [
         mutatedSecure.length,
-        writtenLocal.length,
+        mutatedLocal.length,
         e,
       ]);
       await _rollback(
         mutatedSecure: mutatedSecure,
-        writtenLocal: writtenLocal,
+        mutatedLocal: mutatedLocal,
         priorJwt: priorJwt,
         priorRefresh: priorRefresh,
+        priorUsername: priorUsername,
+        priorRoles: priorRoles,
       );
       return Failure(UnknownError('Session persistence failed: $e'));
     }
@@ -82,19 +88,21 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
-  Future<void> _writeLocal(StorageKeys key, dynamic value, List<StorageKeys> written) async {
+  Future<void> _writeLocal(StorageKeys key, dynamic value, Set<StorageKeys> mutated) async {
     final ok = await _storage.save(key.key, value);
     if (!ok) {
       throw StateError('save returned false for ${key.key}');
     }
-    written.add(key);
+    mutated.add(key);
   }
 
   Future<void> _rollback({
     required Set<SecureStorageKeys> mutatedSecure,
-    required List<StorageKeys> writtenLocal,
+    required Set<StorageKeys> mutatedLocal,
     required String? priorJwt,
     required String? priorRefresh,
+    required dynamic priorUsername,
+    required dynamic priorRoles,
   }) async {
     for (final key in mutatedSecure) {
       try {
@@ -111,9 +119,18 @@ class AuthSessionRepository implements IAuthSessionRepository {
         _log.warn('secure rollback failed for {}: {}', [key.key, e]);
       }
     }
-    for (final key in writtenLocal) {
+    for (final key in mutatedLocal) {
       try {
-        await _storage.remove(key.key);
+        final prior = switch (key) {
+          StorageKeys.username => priorUsername,
+          StorageKeys.roles => priorRoles,
+          _ => null,
+        };
+        if (prior == null) {
+          await _storage.remove(key.key);
+        } else {
+          await _storage.save(key.key, prior);
+        }
       } catch (e) {
         _log.warn('local rollback failed for {}: {}', [key.key, e]);
       }

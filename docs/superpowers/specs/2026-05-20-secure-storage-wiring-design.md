@@ -88,50 +88,51 @@ Bootstrap call order (`lib/app/bootstrap/app_bootstrap.dart`):
 1. `WidgetsFlutterBinding.ensureInitialized()`
 2. `AppLogger.configure(...)`
 3. **`await SessionMigration.run(...)`** — new step
-4. `await AppLocalStorageCached.loadCache(secureStorage: ...)` — now reads `jwtToken` from secure storage
+4. `await AppLocalStorageCached.loadCache()` — loads non-JWT fields (roles, language, theme, brightness, username) from SharedPreferences
 
-### AppLocalStorageCached — source change only
+> **Note (shipped behavior diverges from initial design):** the original design proposed caching `jwtToken` in `AppLocalStorageCached` after reading it from secure storage. During PR review the sync-cache approach proved to require six coordinated write paths (persist, refresh, logout, rollback, clear, bootstrap) — each a potential source of stale-token bugs. The shipped design eliminates that cache entirely. See the "Shipped architecture" section below.
 
-The cache layer is preserved so synchronous callers (`SecurityUtils.isUserLoggedIn()`, `isTokenExpired()`) keep working. Only the **source** of `jwtToken` changes:
+### AppLocalStorageCached — non-JWT fields only
+
+The cache layer holds only fields that legitimately live in SharedPreferences (`roles`, `language`, `username`, `theme`, `brightness`) and benefit from synchronous reads. `loadCache()` takes no `ISecureStorage` parameter; the JWT is not cached.
 
 ```dart
-static Future<void> loadCache({ISecureStorage? secureStorage}) async {
-  final secure = secureStorage ?? FlutterSecureStorageAdapter();
-  jwtToken = await secure.read(SecureStorageKeys.jwtToken.key);
+static Future<void> loadCache() async {
   roles    = await AppLocalStorage().read(StorageKeys.roles.key);
-  // language, username, theme, brightness — unchanged
+  language = await AppLocalStorage().read(StorageKeys.language.key) ?? "en";
+  // username, theme, brightness — same pattern
 }
 ```
 
-Note: no static `refreshToken` field is added. The refresh token is only consumed asynchronously inside `TokenRefreshInterceptor`, so a synchronous cache provides no value there.
-
-JWT still lives in process memory as a static field. That is a different threat model (memory dump) and out of scope.
-
 ### TokenRefreshInterceptor — read/save refresh token via SecureStorage
 
-`lib/infrastructure/http/interceptors/token_refresh_interceptor.dart` currently reads `StorageKeys.refreshToken` from `AppLocalStorage` and persists the rotated tokens back there. With the split, both reads and writes move to `ISecureStorage`.
+`lib/infrastructure/http/interceptors/token_refresh_interceptor.dart` reads `SecureStorageKeys.refreshToken` from `ISecureStorage` and persists rotated tokens there. Constructor:
 
-Constructor change:
 ```dart
 TokenRefreshInterceptor({
   required Dio dio,
-  required ISecureStorage secureStorage,
+  ISecureStorage? secureStorage,  // defaults to FlutterSecureStorageAdapter()
   OnSessionExpired? onSessionExpired,
 });
 ```
 
-`lib/infrastructure/http/api_client.dart` (line ~114) threads `secureStorage` through. `ApiClient` itself takes `ISecureStorage` from `AppDependencies` / `AppScope`.
+No cache sync is needed after rotation: `AuthInterceptor` reads from secure storage on every request, so the next outgoing request picks up the rotated JWT directly.
 
-After persisting rotated tokens, the interceptor refreshes the in-memory cache:
-```dart
-await _secureStorage.write(SecureStorageKeys.jwtToken.key, newIdToken);
-if (newRefreshToken?.isNotEmpty == true) {
-  await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken!);
-}
-await AppLocalStorageCached.loadCache(secureStorage: _secureStorage);
-```
+### Shipped architecture — JWT lives only in `ISecureStorage`
 
-Otherwise `SecurityUtils.isUserLoggedIn()` and `isTokenExpired()` would observe the stale pre-refresh JWT until next bootstrap.
+After PR review the cache layer for JWT was removed entirely. The shipped data flow:
+
+| Caller | How it reads JWT |
+|---|---|
+| `AuthInterceptor.onRequest` | `await _secureStorage.read(...)` on every request |
+| `SessionCubit.restore` / `refresh` | `await _secureStorage.read(...)` → `SecurityUtils.hasToken(token)` + `isTokenExpired(token)` (pure) |
+| `AuthSessionRepository.persist` / `clear` | writes / deletes via `ISecureStorage` |
+| `TokenRefreshInterceptor` | reads / writes via `ISecureStorage` |
+| `LoginRepository.logout` | deletes via `ISecureStorage`, then `AppLocalStorage.clear()` |
+
+`SecurityUtils` is a pure-function module: callers hand it a token string, it returns a derived boolean. This keeps `core/` free of `infrastructure/` imports per the architecture guard.
+
+`SessionCubit` owns the only "is the user authenticated?" decision for UI / router consumers. The router redirect reads `state.isAuthenticated` synchronously; it no longer calls `SecurityUtils.isTokenExpired()` directly.
 
 ### Log sanitization
 
