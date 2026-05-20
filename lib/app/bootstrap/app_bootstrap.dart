@@ -13,6 +13,7 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 
@@ -27,6 +28,14 @@ class AppBootstrap {
 
     ProfileConstants.setEnvironment(config.environment);
 
+    final dependencies = AppDependencies(environment: config.environment);
+    final secureStorage = dependencies.createSecureStorage();
+
+    // One-shot migration of legacy plaintext tokens (jwtToken/refreshToken).
+    // Must run BEFORE AppLocalStorageCached.loadCache so the cache sees
+    // the post-migration state.
+    await SessionMigration.run(secureStorage: secureStorage, localStorage: AppLocalStorage());
+
     final existingLang = await AppLocalStorage().read(StorageKeys.language.key);
     if (existingLang == null) {
       await AppLocalStorage().save(StorageKeys.language.key, config.defaultLanguage);
@@ -36,7 +45,7 @@ class AppBootstrap {
       await AppLocalStorage().save(StorageKeys.theme.key, config.defaultPalette);
     }
     // Don't save default brightness — let ThemeBloc use ThemeMode.system when no preference exists
-    await AppLocalStorageCached.loadCache();
+    await AppLocalStorageCached.loadCache(secureStorage: secureStorage);
 
     // Connectivity monitoring
     await ConnectivityService.instance.initialize();
@@ -58,12 +67,6 @@ class AppBootstrap {
       config.defaultBrightness,
     ]);
 
-    runApp(
-      App(
-        language: config.defaultLanguage,
-        dependencies: AppDependencies(environment: config.environment),
-        analytics: analytics,
-      ),
-    );
+    runApp(App(language: config.defaultLanguage, dependencies: dependencies, analytics: analytics));
   }
 }
