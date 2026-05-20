@@ -16,12 +16,21 @@ class ConnectivityException implements Exception {
 ///
 /// Must be added as the FIRST interceptor in the chain so that requests
 /// are rejected immediately when offline, instead of waiting for a timeout.
+///
+/// The connectivity check is injected via [statusProvider] so tests can
+/// deterministically exercise the offline-rejection branch without
+/// mutating the global [ConnectivityService] singleton (fixes #65).
 class ConnectivityInterceptor extends Interceptor {
+  ConnectivityInterceptor({ConnectivityStatus Function()? statusProvider})
+    : _statusProvider = statusProvider ?? (() => ConnectivityService.instance.currentStatus);
+
   static final _log = AppLogger.getLogger('ConnectivityInterceptor');
+
+  final ConnectivityStatus Function() _statusProvider;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    final status = ConnectivityService.instance.currentStatus;
+    final status = _statusProvider();
 
     if (status == ConnectivityStatus.offline) {
       _log.warn('Request blocked — device is offline: {} {}', [options.method, options.path]);

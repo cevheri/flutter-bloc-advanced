@@ -97,25 +97,23 @@ void main() {
         }
       });
 
-      test('should reject with connectionError type when offline', () {
-        // Test interceptor directly with a handler that captures the rejection
-        final options = RequestOptions(path: '/api/users', method: 'GET');
+      test('should reject with connectionError type when offline (#65 — injected status)', () async {
+        // Fresh interceptor configured to report offline deterministically.
+        final offlineInterceptor = ConnectivityInterceptor(statusProvider: () => ConnectivityStatus.offline);
+        final testDio = Dio(BaseOptions(baseUrl: 'https://test.api'));
+        testDio.interceptors.add(offlineInterceptor);
 
-        // We create a scenario by directly testing what the interceptor would do.
-        // Since ConnectivityService is a singleton, we verify the rejection structure
-        // by examining the code behavior when status would be offline.
-
-        // Verify the interceptor creates the correct DioException structure
-        final dioException = DioException(
-          requestOptions: options,
-          type: DioExceptionType.connectionError,
-          error: const ConnectivityException(),
-          message: 'No internet connection. Please check your network and try again.',
+        await expectLater(
+          testDio.get('/test'),
+          throwsA(
+            allOf([
+              isA<DioException>(),
+              predicate<DioException>((e) => e.type == DioExceptionType.connectionError),
+              predicate<DioException>((e) => e.error is ConnectivityException),
+              predicate<DioException>((e) => (e.message ?? '').contains('No internet connection')),
+            ]),
+          ),
         );
-
-        expect(dioException.type, DioExceptionType.connectionError);
-        expect(dioException.error, isA<ConnectivityException>());
-        expect(dioException.message, contains('No internet connection'));
       });
     });
 
