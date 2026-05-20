@@ -81,7 +81,7 @@ Every feature follows: **Event → BLoC → State → UI**
 ### `Bloc` vs `Cubit`
 
 - Use **`Cubit`** when every interaction is an atomic, fire-and-forget call and the event stream adds no value (no debouncing, no concurrency policy, no historical event payload needed). Example: `SettingsCubit` (`changeLanguage`, `changeTheme`, `logout`).
-- Use **`Bloc`** when events carry meaningful payload, when an `EventTransformer` (debounce, restartable, droppable) is needed, or when the event log itself is valuable for replay/observability. Example: `UserBloc` (search + pagination + CRUD).
+- Use **`Bloc`** when events carry meaningful payload, when an `EventTransformer` (debounce, restartable, droppable) is needed, or when the event log itself is valuable for replay/observability. Examples: `UserListBloc` (search debounce + delete drop-concurrent), `UserEditorBloc` (fetch/save lifecycle), `LoginBloc` (multi-step auth flow).
 - Default to `Bloc` for any new feature touching network requests or user input streams; reach for `Cubit` only after confirming none of the above apply.
 
 ### State Modeling — MAIN RULE
@@ -89,30 +89,32 @@ Every feature follows: **Event → BLoC → State → UI**
 **Default to sealed state hierarchies** that leverage Dart 3's `sealed` modifier and exhaustive `switch` expressions. The compiler enforces handling of every state variant; UIs render via pattern matching.
 
 ```dart
-// State
-sealed class UserState extends Equatable {
-  const UserState();
+// State (real example: lib/features/users/application/user_list_state.dart)
+sealed class UserListState extends Equatable {
+  const UserListState();
 }
-final class UserInitial extends UserState { /* ... */ }
-final class UserLoading extends UserState { /* ... */ }
-final class UserLoaded extends UserState {
-  const UserLoaded(this.users);
+final class UserListInitial extends UserListState { /* ... */ }
+final class UserListLoading extends UserListState { /* ... */ }
+final class UserListLoaded extends UserListState {
+  const UserListLoaded({required this.users});
   final List<UserEntity> users;
   @override List<Object?> get props => [users];
 }
-final class UserFailure extends UserState {
-  const UserFailure(this.errorCode);
-  final String errorCode;
-  @override List<Object?> get props => [errorCode];
+final class UserListDeleteSuccess extends UserListState { /* ... */ }
+final class UserListFailure extends UserListState {
+  const UserListFailure({required this.error});
+  final String error;
+  @override List<Object?> get props => [error];
 }
 
 // UI
-BlocBuilder<UserBloc, UserState>(
+BlocBuilder<UserListBloc, UserListState>(
   builder: (context, state) => switch (state) {
-    UserInitial() => const SizedBox.shrink(),
-    UserLoading() => const Loading(),
-    UserLoaded(:final users) => UserList(users),
-    UserFailure(:final errorCode) => ErrorBanner(errorCode),
+    UserListInitial() => const SizedBox.shrink(),
+    UserListLoading() => const Loading(),
+    UserListLoaded(:final users) => UserList(users),
+    UserListDeleteSuccess() => const SizedBox.shrink(),
+    UserListFailure(:final error) => ErrorBanner(error),
   },
 );
 ```
@@ -139,7 +141,7 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
 ## Environments
 
 - **dev/test** → mock data from `assets/mock/*.json`
-- **prod** → real API (configured in `lib/app/configuration/environment.dart`)
+- **prod** → real API (configured in `lib/infrastructure/config/environment.dart`)
 
 ## Adding a New Feature
 
