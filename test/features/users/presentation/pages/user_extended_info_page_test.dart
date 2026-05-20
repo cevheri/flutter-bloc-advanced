@@ -34,15 +34,15 @@ void main() {
   });
 
   Widget host(Widget child, DynamicFormBloc bloc) => MaterialApp(
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: BlocProvider<DynamicFormBloc>.value(value: bloc, child: child),
-      );
+    localizationsDelegates: const [
+      S.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: S.delegate.supportedLocales,
+    home: BlocProvider<DynamicFormBloc>.value(value: bloc, child: child),
+  );
 
   testWidgets('renders loading indicator while bloc is Loading', (tester) async {
     final bloc = _MockBloc();
@@ -60,9 +60,7 @@ void main() {
         schema: FormSchemaEntity(
           id: 'user_extended_info',
           title: 'Extended Information',
-          fields: [
-            FormFieldEntity(type: FormFieldType.text, key: 'firstName', label: 'First name'),
-          ],
+          fields: [FormFieldEntity(type: FormFieldType.text, key: 'firstName', label: 'First name')],
         ),
         initialValues: {'firstName': 'Alice'},
       ),
@@ -77,8 +75,10 @@ void main() {
     whenListen(bloc, const Stream<DynamicFormState>.empty(), initialState: const DynamicFormInitial());
     await tester.pumpWidget(host(const UserExtendedInfoPage(userId: '42'), bloc));
     await tester.pump();
-    verify(() => bloc.add(any(
-        that: isA<DynamicFormLoadBundleEvent>()
-            .having((e) => e.endpoint, 'endpoint', '/admin/users/42/extended')))).called(1);
+    verify(
+      () => bloc.add(
+        any(that: isA<DynamicFormLoadBundleEvent>().having((e) => e.endpoint, 'endpoint', '/admin/users/42/extended')),
+      ),
+    ).called(1);
   });
 }

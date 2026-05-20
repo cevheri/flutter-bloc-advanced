@@ -472,16 +472,21 @@ void main() {
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [loading, loaded] with schema and initialValues on success',
         setUp: () => stub.stubSuccess(
-          data: jsonEncode({'schema': jsonDecode(_validFormSchemaJson), 'values': {'name': 'Alice'}}),
+          data: jsonEncode({
+            'schema': jsonDecode(_validFormSchemaJson),
+            'values': {'name': 'Alice'},
+          }),
         ),
         build: () => buildBloc(),
         act: (bloc) => bloc.add(const DynamicFormLoadBundleEvent('/admin/users/1/extended')),
         wait: const Duration(milliseconds: 300),
         expect: () => [
           isA<DynamicFormLoading>(),
-          isA<DynamicFormLoaded>()
-              .having((s) => s.schema.id, 'schema.id', 'test_form')
-              .having((s) => s.initialValues, 'initialValues', {'name': 'Alice'}),
+          isA<DynamicFormLoaded>().having((s) => s.schema.id, 'schema.id', 'test_form').having(
+            (s) => s.initialValues,
+            'initialValues',
+            {'name': 'Alice'},
+          ),
         ],
       );
 

@@ -28,9 +28,7 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
   @override
   void initState() {
     super.initState();
-    context.read<DynamicFormBloc>().add(
-          DynamicFormLoadBundleEvent('/admin/users/${widget.userId}/extended'),
-        );
+    context.read<DynamicFormBloc>().add(DynamicFormLoadBundleEvent('/admin/users/${widget.userId}/extended'));
   }
 
   @override
@@ -41,27 +39,25 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
         listener: (context, state) {
           switch (state) {
             case DynamicFormSubmitted():
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(S.of(context).user_extended_info_saved)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_saved)));
               if (context.canPop()) context.pop();
             case DynamicFormFailure(:final error, :final schema) when schema != null:
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(S.of(context).user_extended_info_save_failed(error))),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_save_failed(error))));
             case _:
               break;
           }
         },
         builder: (context, state) => switch (state) {
           DynamicFormInitial() || DynamicFormLoading() => const Center(child: CircularProgressIndicator()),
-          DynamicFormLoaded(:final schema, :final initialValues) =>
-            _renderForm(schema, initialValues, readOnly: false),
+          DynamicFormLoaded(:final schema, :final initialValues) => _renderForm(schema, initialValues, readOnly: false),
           DynamicFormSubmitting(:final schema) => _renderForm(schema, const {}, readOnly: true),
           DynamicFormSubmitted(:final schema) => _renderForm(schema, const {}, readOnly: true),
-          DynamicFormFailure(:final error, :final schema) => schema == null
-              ? Center(child: Text(error))
-              : _renderForm(schema, const {}, readOnly: false),
+          DynamicFormFailure(:final error, :final schema) =>
+            schema == null ? Center(child: Text(error)) : _renderForm(schema, const {}, readOnly: false),
         },
       ),
     );

@@ -76,10 +76,7 @@ class UsersFeatureRoutes {
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,
-        child: DynamicFormsFeatureRoutes.withBloc(
-          context,
-          UserExtendedInfoPage(userId: state.pathParameters['id']!),
-        ),
+        child: DynamicFormsFeatureRoutes.withBloc(context, UserExtendedInfoPage(userId: state.pathParameters['id']!)),
       ),
     ),
   ];

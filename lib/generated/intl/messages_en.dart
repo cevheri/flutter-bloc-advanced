@@ -37,13 +37,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "change_password_description": MessageLookupByLibrary.simpleMessage(
       "Ensure your account is using a long, random password to stay secure.",
     ),
-    "chart_kpi_placeholder": MessageLookupByLibrary.simpleMessage(
-      "Chart / KPI Placeholder",
-    ),
+    "chart_kpi_placeholder": MessageLookupByLibrary.simpleMessage("Chart / KPI Placeholder"),
     "community_contribute": MessageLookupByLibrary.simpleMessage("Contribute"),
-    "community_discussions": MessageLookupByLibrary.simpleMessage(
-      "Discussions",
-    ),
+    "community_discussions": MessageLookupByLibrary.simpleMessage("Discussions"),
     "community_docs": MessageLookupByLibrary.simpleMessage("Documentation"),
     "community_issue": MessageLookupByLibrary.simpleMessage("Open an Issue"),
     "community_sponsor": MessageLookupByLibrary.simpleMessage("Sponsor"),
@@ -51,25 +47,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "community_subtitle": MessageLookupByLibrary.simpleMessage(
       "This project is open source. Your contributions make it better!",
     ),
-    "community_title": MessageLookupByLibrary.simpleMessage(
-      "Join the Community",
-    ),
+    "community_title": MessageLookupByLibrary.simpleMessage("Join the Community"),
     "community_translate": MessageLookupByLibrary.simpleMessage("Translate"),
     "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
-    "current_password": MessageLookupByLibrary.simpleMessage(
-      "Current Password",
-    ),
+    "current_password": MessageLookupByLibrary.simpleMessage("Current Password"),
     "customers": MessageLookupByLibrary.simpleMessage("Customers"),
     "dashboard": MessageLookupByLibrary.simpleMessage("Dashboard"),
-    "delete_confirmation": MessageLookupByLibrary.simpleMessage(
-      "Are you sure you want to delete?",
-    ),
+    "delete_confirmation": MessageLookupByLibrary.simpleMessage("Are you sure you want to delete?"),
     "delete_user": MessageLookupByLibrary.simpleMessage("Delete User"),
     "edit_user": MessageLookupByLibrary.simpleMessage("Edit User"),
     "email": MessageLookupByLibrary.simpleMessage("Email"),
-    "email_pattern": MessageLookupByLibrary.simpleMessage(
-      "Email must be a valid email address",
-    ),
+    "email_pattern": MessageLookupByLibrary.simpleMessage("Email must be a valid email address"),
     "email_send": MessageLookupByLibrary.simpleMessage("Send Email"),
     "english": MessageLookupByLibrary.simpleMessage("English"),
     "error_account_password_required": MessageLookupByLibrary.simpleMessage(
@@ -78,43 +66,22 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_account_passwords_same": MessageLookupByLibrary.simpleMessage(
       "New password must be different from current password",
     ),
-    "error_auth_invalid_access_token": MessageLookupByLibrary.simpleMessage(
-      "Invalid access token",
-    ),
-    "error_auth_login_failed": MessageLookupByLibrary.simpleMessage(
-      "Login failed",
-    ),
-    "error_auth_otp_validation": MessageLookupByLibrary.simpleMessage(
-      "OTP validation failed",
-    ),
-    "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage(
-      "Could not send the OTP code",
-    ),
-    "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage(
-      "Could not save the session",
-    ),
-    "error_generic": MessageLookupByLibrary.simpleMessage(
-      "Something went wrong",
-    ),
-    "error_settings_change_language_failed":
-        MessageLookupByLibrary.simpleMessage("Could not change the language"),
-    "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage(
-      "Admin user cannot be deleted",
-    ),
-    "error_user_no_authorities": MessageLookupByLibrary.simpleMessage(
-      "No authorities found",
-    ),
+    "error_auth_invalid_access_token": MessageLookupByLibrary.simpleMessage("Invalid access token"),
+    "error_auth_login_failed": MessageLookupByLibrary.simpleMessage("Login failed"),
+    "error_auth_otp_validation": MessageLookupByLibrary.simpleMessage("OTP validation failed"),
+    "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("Could not send the OTP code"),
+    "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Could not save the session"),
+    "error_generic": MessageLookupByLibrary.simpleMessage("Something went wrong"),
+    "error_settings_change_language_failed": MessageLookupByLibrary.simpleMessage("Could not change the language"),
+    "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage("Admin user cannot be deleted"),
+    "error_user_no_authorities": MessageLookupByLibrary.simpleMessage("No authorities found"),
     "failed": MessageLookupByLibrary.simpleMessage("Failed"),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
     "first_name": MessageLookupByLibrary.simpleMessage("First Name"),
     "guest": MessageLookupByLibrary.simpleMessage("Guest"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Help & Resources"),
-    "help_resources_subtitle": MessageLookupByLibrary.simpleMessage(
-      "Visit our website for documentation and guides",
-    ),
-    "invalid_email": MessageLookupByLibrary.simpleMessage(
-      "Invalid email address",
-    ),
+    "help_resources_subtitle": MessageLookupByLibrary.simpleMessage("Visit our website for documentation and guides"),
+    "invalid_email": MessageLookupByLibrary.simpleMessage("Invalid email address"),
     "just_now": MessageLookupByLibrary.simpleMessage("just now"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),
     "language_select": MessageLookupByLibrary.simpleMessage("Select Language"),
@@ -127,49 +94,21 @@ class MessageLookup extends MessageLookupByLibrary {
     "login_button": MessageLookupByLibrary.simpleMessage("Login"),
     "login_password": MessageLookupByLibrary.simpleMessage("Password"),
     "login_user_name": MessageLookupByLibrary.simpleMessage("Username"),
-    "login_with_email": MessageLookupByLibrary.simpleMessage(
-      "Login with Email",
-    ),
+    "login_with_email": MessageLookupByLibrary.simpleMessage("Login with Email"),
     "logout": MessageLookupByLibrary.simpleMessage("Logout"),
-    "logout_sure": MessageLookupByLibrary.simpleMessage(
-      "Are you sure you want to logout?",
-    ),
-    "max_length_10": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 10 characters long",
-    ),
-    "max_length_100": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 100 characters long",
-    ),
-    "max_length_1000": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 1000 characters long",
-    ),
-    "max_length_20": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 20 characters long",
-    ),
-    "max_length_250": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 250 characters long",
-    ),
-    "max_length_4000": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 4000 characters long",
-    ),
-    "max_length_50": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 50 characters long",
-    ),
-    "max_length_500": MessageLookupByLibrary.simpleMessage(
-      "Field cannot be more than 500 characters long",
-    ),
-    "min_length_2": MessageLookupByLibrary.simpleMessage(
-      "Field must be at least 2 characters long",
-    ),
-    "min_length_3": MessageLookupByLibrary.simpleMessage(
-      "Field must be at least 3 characters long",
-    ),
-    "min_length_4": MessageLookupByLibrary.simpleMessage(
-      "Field must be at least 4 characters long",
-    ),
-    "min_length_5": MessageLookupByLibrary.simpleMessage(
-      "Field must be at least 5 characters long",
-    ),
+    "logout_sure": MessageLookupByLibrary.simpleMessage("Are you sure you want to logout?"),
+    "max_length_10": MessageLookupByLibrary.simpleMessage("Field cannot be more than 10 characters long"),
+    "max_length_100": MessageLookupByLibrary.simpleMessage("Field cannot be more than 100 characters long"),
+    "max_length_1000": MessageLookupByLibrary.simpleMessage("Field cannot be more than 1000 characters long"),
+    "max_length_20": MessageLookupByLibrary.simpleMessage("Field cannot be more than 20 characters long"),
+    "max_length_250": MessageLookupByLibrary.simpleMessage("Field cannot be more than 250 characters long"),
+    "max_length_4000": MessageLookupByLibrary.simpleMessage("Field cannot be more than 4000 characters long"),
+    "max_length_50": MessageLookupByLibrary.simpleMessage("Field cannot be more than 50 characters long"),
+    "max_length_500": MessageLookupByLibrary.simpleMessage("Field cannot be more than 500 characters long"),
+    "min_length_2": MessageLookupByLibrary.simpleMessage("Field must be at least 2 characters long"),
+    "min_length_3": MessageLookupByLibrary.simpleMessage("Field must be at least 3 characters long"),
+    "min_length_4": MessageLookupByLibrary.simpleMessage("Field must be at least 4 characters long"),
+    "min_length_5": MessageLookupByLibrary.simpleMessage("Field must be at least 5 characters long"),
     "more": MessageLookupByLibrary.simpleMessage("More"),
     "name": MessageLookupByLibrary.simpleMessage("Name"),
     "new_deal": MessageLookupByLibrary.simpleMessage("New Deal"),
@@ -179,21 +118,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "no": MessageLookupByLibrary.simpleMessage("No"),
     "no_changes_made": MessageLookupByLibrary.simpleMessage("No changes made"),
     "no_data": MessageLookupByLibrary.simpleMessage("No Data"),
-    "only_numbers": MessageLookupByLibrary.simpleMessage(
-      "Only numbers are allowed",
-    ),
+    "only_numbers": MessageLookupByLibrary.simpleMessage("Only numbers are allowed"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Code"),
-    "otp_length": MessageLookupByLibrary.simpleMessage(
-      "OTP must be 6 characters long",
-    ),
+    "otp_length": MessageLookupByLibrary.simpleMessage("OTP must be 6 characters long"),
     "otp_sent_to": MessageLookupByLibrary.simpleMessage("OTP sent to"),
     "password_forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
-    "password_max_length": MessageLookupByLibrary.simpleMessage(
-      "Password cannot be more than 6 characters long",
-    ),
-    "password_min_length": MessageLookupByLibrary.simpleMessage(
-      "Password must be at least 5 characters long",
-    ),
+    "password_max_length": MessageLookupByLibrary.simpleMessage("Password cannot be more than 6 characters long"),
+    "password_min_length": MessageLookupByLibrary.simpleMessage("Password must be at least 5 characters long"),
     "phone_number": MessageLookupByLibrary.simpleMessage("Phone Number"),
     "quick_actions": MessageLookupByLibrary.simpleMessage("Quick Actions"),
     "recent_activity": MessageLookupByLibrary.simpleMessage("Recent Activity"),
@@ -204,19 +135,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "resend_otp_code": MessageLookupByLibrary.simpleMessage("Resend OTP Code"),
     "revenue": MessageLookupByLibrary.simpleMessage("Revenue"),
     "role": MessageLookupByLibrary.simpleMessage("Role"),
-    "sample_activity_item": MessageLookupByLibrary.simpleMessage(
-      "Sample activity item",
-    ),
+    "sample_activity_item": MessageLookupByLibrary.simpleMessage("Sample activity item"),
     "save": MessageLookupByLibrary.simpleMessage("Save"),
-    "screen_size_error": MessageLookupByLibrary.simpleMessage(
-      "Screen size is too small.",
-    ),
+    "screen_size_error": MessageLookupByLibrary.simpleMessage("Screen size is too small."),
     "send_email_action": MessageLookupByLibrary.simpleMessage("Send Email"),
     "send_otp_code": MessageLookupByLibrary.simpleMessage("Send OTP Code"),
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
-    "subtitle_context": MessageLookupByLibrary.simpleMessage(
-      "Subtitle / Context",
-    ),
+    "subtitle_context": MessageLookupByLibrary.simpleMessage("Subtitle / Context"),
     "success": MessageLookupByLibrary.simpleMessage("Success"),
     "taskName": MessageLookupByLibrary.simpleMessage("Task Name"),
     "taskPrice": MessageLookupByLibrary.simpleMessage("Task Price"),
@@ -227,14 +152,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
     ),
-    "user_extended_info_button": MessageLookupByLibrary.simpleMessage(
-      "Extended Info",
-    ),
+    "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
     "user_extended_info_save_failed": m1,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
-    "user_extended_info_title": MessageLookupByLibrary.simpleMessage(
-      "Extended Information",
-    ),
+    "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("Verify OTP Code"),
     "view_user": MessageLookupByLibrary.simpleMessage("View User"),
     "warning": MessageLookupByLibrary.simpleMessage("Warning"),

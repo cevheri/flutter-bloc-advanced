@@ -15,8 +15,7 @@ class _FakeRepo implements IDynamicFormRepository {
   Future<Result<FormSchemaEntity>> fetchSchema(String formId) async => const Failure(UnknownError('not used'));
 
   @override
-  Future<Result<FormBundleEntity>> fetchBundle(String endpoint) async =>
-      const Failure(UnknownError('not used'));
+  Future<Result<FormBundleEntity>> fetchBundle(String endpoint) async => const Failure(UnknownError('not used'));
 
   @override
   Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data) async {
