@@ -1,7 +1,6 @@
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -42,15 +41,15 @@ void main() {
     });
 
     test("Given stored entity when logout then clear storage successfully", () async {
-      // Seed cache directly — FlutterSecureStorageAdapter plugin unavailable in unit tests.
-      AppLocalStorageCached.jwtToken = 'MOCK_TOKEN';
-      expect(AppLocalStorageCached.jwtToken, isNotNull);
+      final secure = FlutterSecureStorageAdapter();
+      await secure.write(SecureStorageKeys.jwtToken.key, 'MOCK_TOKEN');
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'MOCK_TOKEN');
 
       final result = await LoginRepository().logout();
       expect(result, isA<Success<void>>());
-      // AppLocalStorage.clear() reloads the cache; secure storage plugin is absent
-      // so the cache read returns null — confirming local storage was cleared.
-      expect(AppLocalStorageCached.jwtToken, isNull);
+      // Both backends are wiped after logout — secure store no longer
+      // holds the JWT, so AuthInterceptor cannot re-attach it.
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
     });
 
     test("logout wipes JWT and refresh token from secure storage", () async {

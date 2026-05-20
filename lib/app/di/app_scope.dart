@@ -54,7 +54,9 @@ class AppScope extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()..monitor()),
-          BlocProvider<SessionCubit>(create: (_) => SessionCubit()..restore()),
+          BlocProvider<SessionCubit>(
+            create: (context) => SessionCubit(secureStorage: context.read<ISecureStorage>())..restore(),
+          ),
           BlocProvider<LoginBloc>(
             create: (context) => LoginBloc(
               authenticateUserUseCase: AuthenticateUserUseCase(context.read<IAuthRepository>()),

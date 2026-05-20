@@ -29,7 +29,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1280, 800));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      TestUtils().setupAuthentication();
+      await TestUtils().setupAuthentication();
 
       // Given:
       await tester.pumpWidget(const App(language: language).buildHomeApp());

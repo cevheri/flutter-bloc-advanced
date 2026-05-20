@@ -11,10 +11,8 @@ import 'package:flutter_bloc_advance/features/dashboard/navigation/dashboard_rou
 import 'package:flutter_bloc_advance/features/settings/navigation/settings_routes.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
-import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouterFactory {
@@ -56,6 +54,15 @@ class AppRouterFactory {
 
         _log.debug('redirect - location: {}, isAuthenticated: {}', [location, isAuthenticated]);
 
+        // Authenticated user landing on a public route (login / register /
+        // forgot-password / OTP) should be sent to the home shell. Without
+        // this, async session restore would leave a logged-in user stuck
+        // on the login page after the first frame's redirect raced against
+        // the cubit emission.
+        if (isAuthenticated && _isPublicRoute(location)) {
+          return ApplicationRoutesConstants.home;
+        }
+
         if (_isPublicRoute(location)) {
           return null;
         }
@@ -64,11 +71,10 @@ class AppRouterFactory {
           return ApplicationRoutesConstants.login;
         }
 
-        if (ProfileConstants.isProduction &&
-            SecurityUtils.isTokenExpired() &&
-            location != ApplicationRoutesConstants.login) {
-          return ApplicationRoutesConstants.login;
-        }
+        // Token expiry is no longer checked here — SessionCubit owns
+        // that decision and flips isAuthenticated to false when the JWT
+        // is missing or past its `exp` claim. Anything that needs to
+        // re-evaluate validity calls `sessionCubit.refresh()`.
 
         return null;
       },

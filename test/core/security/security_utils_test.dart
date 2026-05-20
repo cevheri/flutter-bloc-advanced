@@ -1,8 +1,7 @@
 import 'dart:convert';
 
-import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_bloc_advance/core/security/security_utils.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 import '../../test_utils.dart';
 
@@ -11,92 +10,90 @@ void main() {
     await TestUtils().setupUnitTest();
   });
 
-  setUp(() {
-    // Reset the sync cache before each test so no token lingers.
-    AppLocalStorageCached.jwtToken = null;
-  });
-
   tearDown(() async {
-    AppLocalStorageCached.jwtToken = null;
     await TestUtils().tearDownUnitTest();
   });
 
-  group('SecurityUtils Tests', () {
-    test('isUserLoggedIn should return false when token is null', () {
-      expect(SecurityUtils.isUserLoggedIn(), false);
-    });
-
-    test('isUserLoggedIn should return true when token exists', () async {
-      await TestUtils().setupAuthentication();
-      expect(SecurityUtils.isUserLoggedIn(), true);
-    });
-
-    test('isCurrentUserAdmin should return false when roles is null', () {
-      expect(SecurityUtils.isCurrentUserAdmin(), false);
-    });
-
-    test('isCurrentUserAdmin should return true when user has admin role', () async {
-      await AppLocalStorage().save(StorageKeys.roles.key, ["ROLE_ADMIN"]);
-      expect(SecurityUtils.isCurrentUserAdmin(), true);
-    });
-
-    test('isCurrentUserAdmin should return false when user does not have admin role', () async {
-      await AppLocalStorage().save(StorageKeys.roles.key, ["ROLE_USER"]);
-      expect(SecurityUtils.isCurrentUserAdmin(), false);
-    });
-
-    group('isTokenExpired Tests', () {
-      test('should return true when token is null', () {
-        expect(SecurityUtils.isTokenExpired(), true);
+  group('SecurityUtils', () {
+    group('hasToken', () {
+      test('returns false for null', () {
+        expect(SecurityUtils.hasToken(null), isFalse);
       });
 
-      test('should return true when token is invalid format', () async {
-        AppLocalStorageCached.jwtToken = 'invalid.token';
-        expect(SecurityUtils.isTokenExpired(), true);
+      test('returns false for empty', () {
+        expect(SecurityUtils.hasToken(''), isFalse);
       });
 
-      test('should return true when token payload is invalid', () async {
-        AppLocalStorageCached.jwtToken = 'header.invalid_payload.signature';
-        expect(SecurityUtils.isTokenExpired(), true);
+      test('returns true for non-empty', () {
+        expect(SecurityUtils.hasToken('MOCK_TOKEN'), isTrue);
+      });
+    });
+
+    group('isCurrentUserAdmin', () {
+      test('returns false when roles is null', () {
+        expect(SecurityUtils.isCurrentUserAdmin(null), isFalse);
       });
 
-      test('should return true when exp is missing in payload', () async {
+      test('returns true when roles contains ROLE_ADMIN', () {
+        expect(SecurityUtils.isCurrentUserAdmin(['ROLE_ADMIN']), isTrue);
+      });
+
+      test('returns false when roles lacks ROLE_ADMIN', () {
+        expect(SecurityUtils.isCurrentUserAdmin(['ROLE_USER']), isFalse);
+      });
+    });
+
+    group('isTokenExpired', () {
+      test('returns true for null', () {
+        expect(SecurityUtils.isTokenExpired(null), isTrue);
+      });
+
+      test('returns true for empty', () {
+        expect(SecurityUtils.isTokenExpired(''), isTrue);
+      });
+
+      test('returns true for malformed token (wrong segment count)', () {
+        expect(SecurityUtils.isTokenExpired('invalid.token'), isTrue);
+      });
+
+      test('returns true for invalid base64 payload', () {
+        expect(SecurityUtils.isTokenExpired('header.invalid_payload.signature'), isTrue);
+      });
+
+      test('returns true when exp claim is missing', () {
         final payload = base64Url.encode('{"sub":"test"}'.codeUnits);
-        AppLocalStorageCached.jwtToken = 'header.$payload.signature';
-        expect(SecurityUtils.isTokenExpired(), true);
+        expect(SecurityUtils.isTokenExpired('header.$payload.signature'), isTrue);
       });
 
-      test('should return true when token is expired', () async {
-        final expiredTime = DateTime.now().subtract(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
-        final payload = base64Url.encode('{"exp":$expiredTime}'.codeUnits);
-        AppLocalStorageCached.jwtToken = 'header.$payload.signature';
-        expect(SecurityUtils.isTokenExpired(), true);
+      test('returns true when exp is in the past', () {
+        final past = DateTime.now().subtract(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
+        final payload = base64Url.encode('{"exp":$past}'.codeUnits);
+        expect(SecurityUtils.isTokenExpired('header.$payload.signature'), isTrue);
       });
 
-      test('should return false when token is valid and not expired', () async {
-        final futureTime = DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
-        final payload = base64Url.encode('{"exp":$futureTime}'.codeUnits);
-        AppLocalStorageCached.jwtToken = 'header.$payload.signature';
-        expect(SecurityUtils.isTokenExpired(), false);
+      test('returns false when exp is in the future', () {
+        final future = DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
+        final payload = base64Url.encode('{"exp":$future}'.codeUnits);
+        expect(SecurityUtils.isTokenExpired('header.$payload.signature'), isFalse);
       });
     });
 
-    group('getTokenExpiration Tests', () {
-      test('should return null for invalid token', () {
+    group('getTokenExpiration', () {
+      test('returns null for invalid token', () {
         expect(SecurityUtils.getTokenExpiration('invalid'), isNull);
       });
 
-      test('should return null for token without exp claim', () {
+      test('returns null for token without exp claim', () {
         final payload = base64Url.encode('{"sub":"test"}'.codeUnits);
         expect(SecurityUtils.getTokenExpiration('header.$payload.signature'), isNull);
       });
 
-      test('should return correct DateTime for valid token', () {
-        final futureTime = DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
-        final payload = base64Url.encode('{"exp":$futureTime}'.codeUnits);
+      test('returns DateTime for valid token', () {
+        final future = DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
+        final payload = base64Url.encode('{"exp":$future}'.codeUnits);
         final result = SecurityUtils.getTokenExpiration('header.$payload.signature');
         expect(result, isNotNull);
-        expect(result!.millisecondsSinceEpoch ~/ 1000, futureTime);
+        expect(result!.millisecondsSinceEpoch ~/ 1000, future);
       });
     });
   });

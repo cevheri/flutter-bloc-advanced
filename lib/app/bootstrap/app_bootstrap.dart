@@ -45,7 +45,7 @@ class AppBootstrap {
       await AppLocalStorage().save(StorageKeys.theme.key, config.defaultPalette);
     }
     // Don't save default brightness — let ThemeBloc use ThemeMode.system when no preference exists
-    await AppLocalStorageCached.loadCache(secureStorage: secureStorage);
+    await AppLocalStorageCached.loadCache();
 
     // Connectivity monitoring
     await ConnectivityService.instance.initialize();

@@ -79,18 +79,16 @@ class TestUtils {
     return await _clearStorage();
   }
 
-  /// Seed a mock JWT visible to both sync (`AppLocalStorageCached.jwtToken`)
-  /// and async (`FlutterSecureStorageAdapter().read(...)`) call paths.
+  /// Seed a mock JWT in the secure store backing — the single source of
+  /// truth read by `SecurityUtils`, `AuthInterceptor`, and `SessionCubit`.
   Future<void> setupAuthentication() async {
     _secureStore['jwtToken'] = 'MOCK_TOKEN';
-    AppLocalStorageCached.jwtToken = 'MOCK_TOKEN';
   }
 
   Future<void> _clearStorage() async {
     SharedPreferences.setMockInitialValues({});
     SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
     _secureStore.clear();
-    AppLocalStorageCached.jwtToken = null;
     await AppLocalStorage().clear();
   }
 }

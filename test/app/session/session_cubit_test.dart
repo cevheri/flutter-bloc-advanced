@@ -1,9 +1,21 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../test_utils.dart';
+
+class _MemorySecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async => _store[key];
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
 
 void main() {
   final testUtils = TestUtils();
@@ -83,39 +95,37 @@ void main() {
     );
 
     blocTest<SessionCubit, SessionState>(
-      'restore emits unauthenticated when no token cached',
-      build: () => SessionCubit(),
+      'restore emits unauthenticated when secure storage has no token',
+      build: () => SessionCubit(secureStorage: _MemorySecureStorage()),
       act: (cubit) => cubit.restore(),
       expect: () => [const SessionState(isAuthenticated: false)],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'restore emits authenticated when token is cached',
-      setUp: () async {
-        // Seed the sync cache directly — FlutterSecureStorageAdapter is not
-        // available in unit tests.
-        AppLocalStorageCached.jwtToken = 'MOCK_TOKEN';
+      'restore emits authenticated when secure storage has a token',
+      build: () {
+        final secure = _MemorySecureStorage();
+        secure.write(SecureStorageKeys.jwtToken.key, 'MOCK_TOKEN');
+        return SessionCubit(secureStorage: secure);
       },
-      build: () => SessionCubit(),
       act: (cubit) => cubit.restore(),
       expect: () => [const SessionState(isAuthenticated: true)],
     );
 
     blocTest<SessionCubit, SessionState>(
       'refresh delegates to restore and emits correct state',
-      build: () => SessionCubit(),
+      build: () => SessionCubit(secureStorage: _MemorySecureStorage()),
       act: (cubit) => cubit.refresh(),
       expect: () => [const SessionState(isAuthenticated: false)],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'refresh emits authenticated when token is cached',
-      setUp: () async {
-        // Seed the sync cache directly — FlutterSecureStorageAdapter is not
-        // available in unit tests.
-        AppLocalStorageCached.jwtToken = 'MOCK_TOKEN';
+      'refresh emits authenticated when secure storage has a token',
+      build: () {
+        final secure = _MemorySecureStorage();
+        secure.write(SecureStorageKeys.jwtToken.key, 'MOCK_TOKEN');
+        return SessionCubit(secureStorage: secure);
       },
-      build: () => SessionCubit(),
       act: (cubit) => cubit.refresh(),
       expect: () => [const SessionState(isAuthenticated: true)],
     );
