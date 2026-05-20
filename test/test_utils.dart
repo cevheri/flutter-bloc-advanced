@@ -44,9 +44,11 @@ class TestUtils {
     return await _clearStorage();
   }
 
-  // add mock token to storage
+  // Set mock token in the sync cache so SecurityUtils.isUserLoggedIn() returns true in tests.
+  // FlutterSecureStorageAdapter is unavailable in unit/widget tests, so we seed
+  // AppLocalStorageCached.jwtToken directly.
   Future<void> setupAuthentication() async {
-    await AppLocalStorage().save(StorageKeys.jwtToken.key, "MOCK_TOKEN");
+    AppLocalStorageCached.jwtToken = "MOCK_TOKEN";
   }
 
   Future<void> _clearStorage() async {

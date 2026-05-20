@@ -11,7 +11,13 @@ void main() {
     await TestUtils().setupUnitTest();
   });
 
+  setUp(() {
+    // Reset the sync cache before each test so no token lingers.
+    AppLocalStorageCached.jwtToken = null;
+  });
+
   tearDown(() async {
+    AppLocalStorageCached.jwtToken = null;
     await TestUtils().tearDownUnitTest();
   });
 
@@ -45,32 +51,32 @@ void main() {
       });
 
       test('should return true when token is invalid format', () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, "invalid.token");
+        AppLocalStorageCached.jwtToken = 'invalid.token';
         expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return true when token payload is invalid', () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, "header.invalid_payload.signature");
+        AppLocalStorageCached.jwtToken = 'header.invalid_payload.signature';
         expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return true when exp is missing in payload', () async {
         final payload = base64Url.encode('{"sub":"test"}'.codeUnits);
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, "header.$payload.signature");
+        AppLocalStorageCached.jwtToken = 'header.$payload.signature';
         expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return true when token is expired', () async {
         final expiredTime = DateTime.now().subtract(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
         final payload = base64Url.encode('{"exp":$expiredTime}'.codeUnits);
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, "header.$payload.signature");
+        AppLocalStorageCached.jwtToken = 'header.$payload.signature';
         expect(SecurityUtils.isTokenExpired(), true);
       });
 
       test('should return false when token is valid and not expired', () async {
         final futureTime = DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000;
         final payload = base64Url.encode('{"exp":$futureTime}'.codeUnits);
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, "header.$payload.signature");
+        AppLocalStorageCached.jwtToken = 'header.$payload.signature';
         expect(SecurityUtils.isTokenExpired(), false);
       });
     });

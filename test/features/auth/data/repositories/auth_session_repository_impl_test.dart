@@ -2,20 +2,31 @@ import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../../test_utils.dart';
 
-/// Storage fake that lets a test choose which key's `save` should fail,
-/// so we can simulate a partial-write failure and observe the rollback.
+/// In-memory ISecureStorage for tests.
+class _MemorySecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async => _store[key];
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
+/// Storage fake that lets a test choose which key's `save` should fail.
 class _FlakyStorage implements AppLocalStorage {
   _FlakyStorage(this._inner, this.failOnKey);
-
   final AppLocalStorage _inner;
   final String failOnKey;
   final removedKeys = <String>[];
-
   @override
   Future<bool> save(String key, dynamic value) async {
     if (key == failOnKey) return false;
@@ -30,16 +41,15 @@ class _FlakyStorage implements AppLocalStorage {
 
   @override
   Future<dynamic> read(String key) => _inner.read(key);
-
   @override
   Future<void> clear() => _inner.clear();
-
   @override
   void setPreferencesInstance(SharedPreferences prefs) => _inner.setPreferencesInstance(prefs);
 }
 
 void main() {
   late AppLocalStorage storage;
+  late _MemorySecureStorage secure;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
@@ -49,6 +59,7 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     storage = AppLocalStorage();
     storage.setPreferencesInstance(await SharedPreferences.getInstance());
+    secure = _MemorySecureStorage();
   });
 
   tearDown(() async {
@@ -56,67 +67,51 @@ void main() {
   });
 
   group('AuthSessionRepository', () {
-    test('persist writes jwtToken, username, and roles', () async {
-      final repo = AuthSessionRepository(storage: storage);
+    test('persist routes tokens to secure storage, username/roles to local', () async {
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage);
       const session = AuthSession(idToken: 'TOKEN', refreshToken: 'REFRESH', username: 'alice', roles: ['ROLE_USER']);
 
       final result = await repo.persist(session);
 
       expect(result, isA<Success<void>>());
-      expect(await storage.read(StorageKeys.jwtToken.key), 'TOKEN');
-      expect(await storage.read(StorageKeys.refreshToken.key), 'REFRESH');
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'TOKEN');
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), 'REFRESH');
       expect(await storage.read(StorageKeys.username.key), 'alice');
       expect(await storage.read(StorageKeys.roles.key), ['ROLE_USER']);
     });
 
-    test('persist skips refreshToken when null', () async {
-      final repo = AuthSessionRepository(storage: storage);
+    test('persist deletes refreshToken from secure storage when null', () async {
+      await secure.write(SecureStorageKeys.refreshToken.key, 'STALE');
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage);
       const session = AuthSession(idToken: 'TOKEN', username: 'alice');
 
       await repo.persist(session);
 
-      expect(await storage.read(StorageKeys.jwtToken.key), 'TOKEN');
-      expect(await storage.read(StorageKeys.refreshToken.key), isNull);
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), isNull);
     });
 
-    test('persist rolls back previously-written keys when a later write fails', () async {
+    test('persist rolls back secure writes when a local write fails', () async {
       final flaky = _FlakyStorage(storage, StorageKeys.username.key);
-      final repo = AuthSessionRepository(storage: flaky);
-      const session = AuthSession(idToken: 'TOKEN', refreshToken: 'REFRESH', username: 'alice', roles: ['ROLE_USER']);
+      final repo = AuthSessionRepository(secureStorage: secure, storage: flaky);
+      const session = AuthSession(idToken: 'TOKEN', refreshToken: 'REFRESH', username: 'alice');
 
       final result = await repo.persist(session);
 
       expect(result, isA<Failure<void>>());
-      // After rollback, the partial writes that succeeded (jwtToken,
-      // refreshToken) must have been removed; never a half-persisted
-      // session.
-      expect(await storage.read(StorageKeys.jwtToken.key), isNull);
-      expect(await storage.read(StorageKeys.refreshToken.key), isNull);
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull, reason: 'secure token rolled back');
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), isNull, reason: 'secure refresh rolled back');
       expect(await storage.read(StorageKeys.username.key), isNull);
-      expect(await storage.read(StorageKeys.roles.key), isNull);
-      expect(flaky.removedKeys, containsAll([StorageKeys.jwtToken.key, StorageKeys.refreshToken.key]));
     });
 
-    test('persist removes a stale refreshToken when the new session has none', () async {
-      final repo = AuthSessionRepository(storage: storage);
-      await storage.save(StorageKeys.refreshToken.key, 'STALE_REFRESH');
-      const session = AuthSession(idToken: 'TOKEN', username: 'alice');
-
-      final result = await repo.persist(session);
-
-      expect(result, isA<Success<void>>());
-      expect(await storage.read(StorageKeys.refreshToken.key), isNull);
-    });
-
-    test('clear empties the storage', () async {
-      final repo = AuthSessionRepository(storage: storage);
-      await storage.save(StorageKeys.jwtToken.key, 'TOKEN');
+    test('clear empties both backends', () async {
+      await secure.write(SecureStorageKeys.jwtToken.key, 'TOKEN');
       await storage.save(StorageKeys.username.key, 'alice');
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage);
 
       final result = await repo.clear();
 
       expect(result, isA<Success<void>>());
-      expect(await storage.read(StorageKeys.jwtToken.key), isNull);
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
       expect(await storage.read(StorageKeys.username.key), isNull);
     });
   });

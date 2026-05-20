@@ -11,9 +11,17 @@ class AppLocalStorageCached {
   static late String? theme;
   static late String? brightness;
 
+  /// Reload the local-storage-backed fields from [AppLocalStorage].
+  ///
+  /// [jwtToken] is intentionally NOT reloaded here because it lives in
+  /// secure storage (Keychain / EncryptedSharedPreferences). It is
+  /// updated directly by [AuthSessionRepository.persist] and cleared by
+  /// [AuthSessionRepository.clear] or [AppLocalStorage.clear]. Calling
+  /// the secure storage plugin synchronously on every [AppLocalStorage.save]
+  /// would be both slow and fragile in test environments where the plugin
+  /// is unavailable.
   static Future<void> loadCache() async {
     _log.trace("Loading cache");
-    jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.key);
     roles = await AppLocalStorage().read(StorageKeys.roles.key);
     language = await AppLocalStorage().read(StorageKeys.language.key) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.key);
@@ -126,6 +134,9 @@ class AppLocalStorage {
     _log.info("Clearing all data from local storage");
     final prefs = await _prefs;
     prefs.clear();
+    // Also clear the secure-storage cache entry so that SecurityUtils
+    // reflects the cleared state synchronously.
+    AppLocalStorageCached.jwtToken = null;
     await AppLocalStorageCached.loadCache();
     _log.info("Cleared all data from local storage");
   }

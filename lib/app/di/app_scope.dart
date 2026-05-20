@@ -44,7 +44,9 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
         RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
         RepositoryProvider<IAuthRepository>(create: (_) => dependencies.createAuthRepository()),
-        RepositoryProvider<IAuthSessionRepository>(create: (_) => dependencies.createAuthSessionRepository()),
+        RepositoryProvider<IAuthSessionRepository>(
+          create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
+        ),
         RepositoryProvider<IDynamicFormRepository>(create: (_) => dependencies.createDynamicFormRepository()),
         RepositoryProvider<MenuRepository>(create: (_) => dependencies.createMenuRepository()),
         RepositoryProvider<IUserRepository>(create: (_) => dependencies.createUserRepository()),

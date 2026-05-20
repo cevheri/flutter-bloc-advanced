@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Callback signature for notifying the app layer that the session has expired
 /// and the user must be logged out.
@@ -26,8 +26,12 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
 
   final Dio _dio;
   final OnSessionExpired? _onSessionExpired;
+  final ISecureStorage _secureStorage;
 
-  TokenRefreshInterceptor({required this._dio, this._onSessionExpired});
+  TokenRefreshInterceptor({required Dio dio, OnSessionExpired? onSessionExpired, ISecureStorage? secureStorage})
+    : _dio = dio,
+      _onSessionExpired = onSessionExpired,
+      _secureStorage = secureStorage ?? FlutterSecureStorageAdapter();
 
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
@@ -49,8 +53,8 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     _log.debug('401 received for {} — attempting token refresh', [requestPath]);
 
     try {
-      final refreshToken = await AppLocalStorage().read(StorageKeys.refreshToken.key);
-      if (refreshToken == null || (refreshToken is String && refreshToken.isEmpty)) {
+      final refreshToken = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
+      if (refreshToken == null || refreshToken.isEmpty) {
         _log.warn('No refresh token available — session expired');
         _triggerLogout();
         handler.next(err);
@@ -83,9 +87,9 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
         }
 
         // Persist the new tokens
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, newIdToken);
+        await _secureStorage.write(SecureStorageKeys.jwtToken.key, newIdToken);
         if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-          await AppLocalStorage().save(StorageKeys.refreshToken.key, newRefreshToken);
+          await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken);
         }
 
         _log.info('Token refresh successful — retrying original request');

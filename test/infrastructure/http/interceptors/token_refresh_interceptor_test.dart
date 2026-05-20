@@ -1,22 +1,33 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../test_utils.dart';
 
+/// In-memory ISecureStorage for tests.
+class _MemorySecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async => _store[key];
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
 void main() {
   late Dio dio;
-  late AppLocalStorage localStorage;
+  late _MemorySecureStorage secureStorage;
 
   setUpAll(() async {
     await TestUtils().setupUnitTest();
   });
 
   setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    localStorage = AppLocalStorage();
+    secureStorage = _MemorySecureStorage();
     dio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
   });
 
@@ -202,10 +213,14 @@ void main() {
     });
 
     test('should call onSessionExpired when refresh token is empty string', () async {
-      await localStorage.save(StorageKeys.refreshToken.key, '');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, '');
 
       var sessionExpiredCalled = false;
-      final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        onSessionExpired: () => sessionExpiredCalled = true,
+        secureStorage: secureStorage,
+      );
       final handler = _TestErrorHandler();
       final requestOptions = RequestOptions(path: '/api/users');
 
@@ -223,11 +238,15 @@ void main() {
 
   group('TokenRefreshInterceptor - 401 with refresh token', () {
     test('should attempt refresh and call onSessionExpired when refresh fails', () async {
-      await localStorage.save(StorageKeys.refreshToken.key, 'valid-refresh-token');
-      await localStorage.save(StorageKeys.jwtToken.key, 'old-jwt-token');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt-token');
 
       var sessionExpiredCalled = false;
-      final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        onSessionExpired: () => sessionExpiredCalled = true,
+        secureStorage: secureStorage,
+      );
       final handler = _TestErrorHandler();
       final requestOptions = RequestOptions(path: '/api/users');
 

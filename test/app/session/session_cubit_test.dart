@@ -92,7 +92,9 @@ void main() {
     blocTest<SessionCubit, SessionState>(
       'restore emits authenticated when token is cached',
       setUp: () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, 'MOCK_TOKEN');
+        // Seed the sync cache directly — FlutterSecureStorageAdapter is not
+        // available in unit tests.
+        AppLocalStorageCached.jwtToken = 'MOCK_TOKEN';
       },
       build: () => SessionCubit(),
       act: (cubit) => cubit.restore(),
@@ -109,7 +111,9 @@ void main() {
     blocTest<SessionCubit, SessionState>(
       'refresh emits authenticated when token is cached',
       setUp: () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, 'MOCK_TOKEN');
+        // Seed the sync cache directly — FlutterSecureStorageAdapter is not
+        // available in unit tests.
+        AppLocalStorageCached.jwtToken = 'MOCK_TOKEN';
       },
       build: () => SessionCubit(),
       act: (cubit) => cubit.refresh(),

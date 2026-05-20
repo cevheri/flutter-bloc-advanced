@@ -23,7 +23,8 @@ class AppDependencies {
 
   IAuthRepository createAuthRepository() => LoginRepository();
 
-  IAuthSessionRepository createAuthSessionRepository() => AuthSessionRepository();
+  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) =>
+      AuthSessionRepository(secureStorage: secureStorage);
 
   IAuthorityRepository createAuthorityRepository() => AuthorityRepositoryImpl();
 
