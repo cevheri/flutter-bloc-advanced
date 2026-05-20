@@ -9,4 +9,9 @@ void main() {
     expect(routeNames, containsAll(<String?>['userList', 'userCreate', 'userEdit', 'userView']));
     expect(routePaths, containsAll(<String>['/user', '/user/new', '/user/:id/edit', '/user/:id/view']));
   });
+
+  test('registers userExtendedInfo route at /user/:id/extended-info', () {
+    final route = UsersFeatureRoutes.routes.firstWhere((r) => r.name == 'userExtendedInfo');
+    expect(route.path, '/user/:id/extended-info');
+  });
 }
