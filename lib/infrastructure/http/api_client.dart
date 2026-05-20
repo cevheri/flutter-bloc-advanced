@@ -172,36 +172,44 @@ class ApiClient {
     T data, {
     Map<String, String>? headers,
     String? contentType,
+    String? pathParams,
   }) async {
+    final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
-    final options = Options(extra: {'_basePath': path}, headers: headers, contentType: contentType);
+    final options = Options(
+      extra: {'_basePath': path, '_pathParams': pathParams},
+      headers: headers,
+      contentType: contentType,
+    );
     try {
-      return await instance.post<String>(path, data: serialized, options: options);
+      return await instance.post<String>(fullPath, data: serialized, options: options);
     } on DioException catch (e) {
       throw _mapDioException(e);
     }
   }
 
-  static Future<Response<String>> put<T>(String path, T data) async {
+  static Future<Response<String>> put<T>(String path, T data, {String? pathParams}) async {
+    final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
       return await instance.put<String>(
-        path,
+        fullPath,
         data: serialized,
-        options: Options(extra: {'_basePath': path}),
+        options: Options(extra: {'_basePath': path, '_pathParams': pathParams}),
       );
     } on DioException catch (e) {
       throw _mapDioException(e);
     }
   }
 
-  static Future<Response<String>> patch<T>(String path, T data) async {
+  static Future<Response<String>> patch<T>(String path, T data, {String? pathParams}) async {
+    final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
       return await instance.patch<String>(
-        path,
+        fullPath,
         data: serialized,
-        options: Options(extra: {'_basePath': path}),
+        options: Options(extra: {'_basePath': path, '_pathParams': pathParams}),
       );
     } on DioException catch (e) {
       throw _mapDioException(e);

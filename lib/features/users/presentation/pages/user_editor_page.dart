@@ -181,7 +181,24 @@ class _UserEditorViewState extends State<_UserEditorView> {
                       'activated': user?.activated ?? true,
                       'authorities': user?.authorities?.firstOrNull ?? '',
                     },
-                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: _buildFields(context, user)),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (widget.mode != EditorFormMode.create && user?.id != null) ...[
+                          Align(
+                            alignment: AlignmentDirectional.centerEnd,
+                            child: OutlinedButton.icon(
+                              key: const Key('userExtendedInfoButtonKey'),
+                              icon: const Icon(Icons.assignment_outlined),
+                              label: Text(S.of(context).user_extended_info_button),
+                              onPressed: () => context.push('/user/${user!.id}/extended-info'),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+                        ..._buildFields(context, user),
+                      ],
+                    ),
                   ),
                 ),
               ],

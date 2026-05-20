@@ -9,7 +9,7 @@ import 'package:flutter_bloc_advance/features/auth/navigation/auth_routes.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/dashboard/navigation/dashboard_routes.dart';
 import 'package:flutter_bloc_advance/features/settings/navigation/settings_routes.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/navigation/dynamic_forms_routes.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';

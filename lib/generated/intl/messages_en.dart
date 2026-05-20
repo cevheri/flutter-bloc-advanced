@@ -23,6 +23,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m0(translate) =>
       "${Intl.select(translate, {'account': 'Account', 'userManagement': 'User Management', 'settings': 'Settings', 'logout': 'Logout', 'info': 'Info', 'language': 'Language', 'theme': 'Theme', 'new_user': 'New', 'list_user': 'List', 'other': 'Other'})}";
 
+  static String m1(error) => "Save failed: ${error}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "account": MessageLookupByLibrary.simpleMessage("Account"),
@@ -150,6 +152,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
     ),
+    "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
+    "user_extended_info_save_failed": m1,
+    "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
+    "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("Verify OTP Code"),
     "view_user": MessageLookupByLibrary.simpleMessage("View User"),
     "warning": MessageLookupByLibrary.simpleMessage("Warning"),

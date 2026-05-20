@@ -8,9 +8,9 @@ import 'package:flutter_bloc_advance/features/auth/application/change_password_b
 import 'package:flutter_bloc_advance/features/auth/application/forgot_password_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_bloc.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_event.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_state.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';

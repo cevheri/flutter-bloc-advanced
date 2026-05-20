@@ -56,6 +56,18 @@ The screenshots below are included to help contributors and adopters understand 
 - Public and private route separation
 - Protected admin-only pages
 
+### Server-Driven Dynamic Forms
+
+- 16 supported field types: text, email, password, number, phone, textarea,
+  dropdown, multiSelect, date, datetime, toggle, checkbox, radio, slider,
+  sectionHeader, divider
+- Schema-only loading (`/dynamic-forms/sample` — CRM lead demo) or bundled
+  `{schema, values}` loading with per-instance `pathParams`
+  (`/user/:id/extended-info` — user extended-info kitchen-sink covering all 16
+  types)
+- Reusable from any feature via `DynamicFormsFeatureRoutes.withBloc(context, child)`
+  — the engine lives under `shared/dynamic_forms/` and is feature-agnostic
+
 ### UI and Developer Experience
 
 - Dark and light themes
@@ -186,6 +198,7 @@ lib/
     storage/           # Local storage (SharedPreferences)
   shared/              # Shared foundation across features
     design_system/     # Theme, typography, color tokens, 16 components
+    dynamic_forms/     # Server-driven form engine (16 field types, bundle load, public withBloc helper)
     models/            # Cross-feature entities (UserEntity, PagedResult)
     widgets/           # Reusable components (buttons, forms, dialogs)
   generated/           # Localization generated files (do not edit)

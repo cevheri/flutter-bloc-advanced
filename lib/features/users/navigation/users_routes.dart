@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/save_user_usecase.dart';
@@ -8,6 +9,7 @@ import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc
 import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_extended_info_page.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_page_transition.dart';
 import 'package:flutter_bloc_advance/shared/widgets/editor_form_mode.dart';
@@ -66,6 +68,15 @@ class UsersFeatureRoutes {
         state: state,
         type: AppPageTransitionType.slideRight,
         child: _withEditorBloc(context, UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.view)),
+      ),
+    ),
+    GoRoute(
+      name: 'userExtendedInfo',
+      path: '/user/:id/extended-info',
+      pageBuilder: (context, state) => appTransitionPage(
+        state: state,
+        type: AppPageTransitionType.slideRight,
+        child: DynamicFormsFeatureRoutes.withBloc(context, UserExtendedInfoPage(userId: state.pathParameters['id']!)),
       ),
     ),
   ];

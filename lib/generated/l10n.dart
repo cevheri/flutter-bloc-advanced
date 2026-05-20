@@ -708,6 +708,26 @@ class S {
   String get error_generic {
     return Intl.message('Something went wrong', name: 'error_generic', desc: '', args: []);
   }
+
+  /// `Extended Information`
+  String get user_extended_info_title {
+    return Intl.message('Extended Information', name: 'user_extended_info_title', desc: '', args: []);
+  }
+
+  /// `Extended Info`
+  String get user_extended_info_button {
+    return Intl.message('Extended Info', name: 'user_extended_info_button', desc: '', args: []);
+  }
+
+  /// `Saved`
+  String get user_extended_info_saved {
+    return Intl.message('Saved', name: 'user_extended_info_saved', desc: '', args: []);
+  }
+
+  /// `Save failed: {error}`
+  String user_extended_info_save_failed(String error) {
+    return Intl.message('Save failed: $error', name: 'user_extended_info_save_failed', desc: '', args: [error]);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -127,5 +127,16 @@
   "error_account_password_required": "Both current and new password are required",
   "error_account_passwords_same": "New password must be different from current password",
   "error_settings_change_language_failed": "Could not change the language",
-  "error_generic": "Something went wrong"
+  "error_generic": "Something went wrong",
+  "user_extended_info_title": "Extended Information",
+  "user_extended_info_button": "Extended Info",
+  "user_extended_info_saved": "Saved",
+  "user_extended_info_save_failed": "Save failed: {error}",
+  "@user_extended_info_save_failed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }

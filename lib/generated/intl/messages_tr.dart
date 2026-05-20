@@ -23,6 +23,8 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m0(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
+  static String m1(error) => "Kaydedilemedi: ${error}";
+
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "account": MessageLookupByLibrary.simpleMessage("Hesabım"),
@@ -148,6 +150,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
     ),
+    "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
+    "user_extended_info_save_failed": m1,
+    "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
+    "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Doğrula"),
     "view_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Görüntüle"),
     "warning": MessageLookupByLibrary.simpleMessage("Uyarı"),

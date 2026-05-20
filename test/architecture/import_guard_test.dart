@@ -48,6 +48,10 @@ const _knownCrossFeatureExceptions = {
   'lib/features/auth/application/change_password_bloc.dart → account/application/usecases/change_password_usecase',
   'lib/features/auth/application/change_password_bloc.dart → account/data/models/change_password',
   'lib/features/auth/application/register_bloc.dart → account/application/usecases/register_account_usecase',
+  // (Note: dynamic_forms used to live under features/ and required 6 known
+  // exceptions for every consumer. It is now correctly placed under shared/
+  // as a feature-agnostic forms engine, so those exceptions are removed —
+  // features → shared/dynamic_forms is a normal allowed import direction.)
 };
 
 /// features/ importing app/ (route constants used for navigation)
