@@ -10,7 +10,11 @@ import 'package:flutter_bloc_advance/shared/design_system/components/app_page_tr
 import 'package:go_router/go_router.dart';
 
 class DynamicFormsFeatureRoutes {
-  static Widget _withBloc(BuildContext context, Widget child) {
+  /// Wraps [child] in a `BlocProvider<DynamicFormBloc>` fully wired with its
+  /// repository and use cases. Public so sibling features (e.g. `users`) can
+  /// host routes that reuse this feature's bloc without reaching into its
+  /// internals.
+  static Widget withBloc(BuildContext context, Widget child) {
     final repository = context.read<IDynamicFormRepository>();
     return BlocProvider(
       create: (_) => DynamicFormBloc(
@@ -29,7 +33,7 @@ class DynamicFormsFeatureRoutes {
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.fade,
-        child: _withBloc(context, DynamicFormPage(formId: state.pathParameters['formId']!)),
+        child: withBloc(context, DynamicFormPage(formId: state.pathParameters['formId']!)),
       ),
     ),
   ];

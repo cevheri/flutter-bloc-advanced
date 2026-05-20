@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/dynamic_form_bloc.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/load_form_bundle_usecase.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/load_form_schema_usecase.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/application/usecases/submit_form_usecase.dart';
-import 'package:flutter_bloc_advance/features/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
+import 'package:flutter_bloc_advance/features/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/save_user_usecase.dart';
@@ -33,18 +29,6 @@ class UsersFeatureRoutes {
     final repo = context.read<IUserRepository>();
     return BlocProvider(
       create: (_) => UserEditorBloc(fetchUserUseCase: FetchUserUseCase(repo), saveUserUseCase: SaveUserUseCase(repo)),
-      child: child,
-    );
-  }
-
-  static Widget _withDynamicFormBloc(BuildContext context, Widget child) {
-    final repo = context.read<IDynamicFormRepository>();
-    return BlocProvider(
-      create: (_) => DynamicFormBloc(
-        loadFormSchemaUseCase: LoadFormSchemaUseCase(repo),
-        submitFormUseCase: SubmitFormUseCase(repo),
-        loadFormBundleUseCase: LoadFormBundleUseCase(repo),
-      ),
       child: child,
     );
   }
@@ -92,7 +76,7 @@ class UsersFeatureRoutes {
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,
-        child: _withDynamicFormBloc(
+        child: DynamicFormsFeatureRoutes.withBloc(
           context,
           UserExtendedInfoPage(userId: state.pathParameters['id']!),
         ),
