@@ -57,6 +57,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
       }
       await _writeLocal(StorageKeys.username, session.username, mutatedLocal);
       await _writeLocal(StorageKeys.roles, session.roles, mutatedLocal);
+      _log.info('persist: session written ({} secure + {} local)', [mutatedSecure.length, mutatedLocal.length]);
       return const Success(null);
     } catch (e) {
       _log.error('persist failed after {} secure + {} local mutations; rolling back: {}', [
@@ -82,6 +83,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
       await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
       await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
       await _storage.clear();
+      _log.info('clear: session wiped from both backends');
       return const Success(null);
     } catch (e) {
       return Failure(UnknownError('Session clear failed: $e'));
