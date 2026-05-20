@@ -96,7 +96,12 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     } catch (e) {
       _log.warn('Stale-header check skipped — secure read failed: {}', [e]);
     }
-    final requestAuth = err.requestOptions.headers['Authorization'] as String?;
+    // Dio headers are Map<String, dynamic>; defensive narrowing to
+    // avoid a runtime crash if a non-String value ever lands on
+    // 'Authorization' (interceptor would otherwise break the entire
+    // request pipeline for one malformed header).
+    final rawAuth = err.requestOptions.headers['Authorization'];
+    final requestAuth = rawAuth is String ? rawAuth : null;
     final requestToken = (requestAuth != null && requestAuth.startsWith('Bearer '))
         ? requestAuth.substring('Bearer '.length)
         : null;
