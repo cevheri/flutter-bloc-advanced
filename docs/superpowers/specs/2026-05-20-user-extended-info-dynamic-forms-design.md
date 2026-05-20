@@ -44,7 +44,7 @@ User list  →  User editor (edit or view mode)
               PUT /admin/users/:id/extended
                     │
                     │  on success: success snackbar + pop back to editor
-                    │  on failure: AppErrorBanner above renderer
+                    │  on failure: snackbar (typed values preserved by form key)
 ```
 
 The button is shown in `EditorFormMode.edit` and `EditorFormMode.view` only — not in `create` mode (no `:id` yet).
@@ -74,8 +74,8 @@ features/
    └─ ...DynamicFormBloc, DynamicFormRenderer reused unchanged
 
 assets/mock/
-├─ GET_admin_users_extended_pathParams.json           ← NEW (schema + values)
-└─ PUT_admin_users_extended_pathParams.json           ← NEW ({"ok": true})
+├─ GET_admin_users_42_extended.json                  ← NEW (schema + values, pinned to demo user 42)
+└─ PUT_admin_users_42_extended.json                  ← NEW ({"ok": true, "id": "42"})
 
 lib/l10n/
 ├─ intl_en.arb                                        ← add 4 keys
@@ -130,7 +130,7 @@ This is **additive only** — the existing `loadSchema` + `LoadFormSchemaUseCase
 | `DynamicFormLoaded(schema, initialValues)` | `DynamicFormRenderer(schema, initialValues: initialValues, onSubmit: ...)` |
 | `DynamicFormSubmitting(schema)` | Renderer in `readOnly: true` mode + spinner on save button |
 | `DynamicFormSubmitted(...)` | Success snackbar + `context.pop()` |
-| `DynamicFormFailure(error, schema?)` | If `schema != null`: `AppErrorBanner` above renderer. Else: full-page `AppErrorScreen` with retry. |
+| `DynamicFormFailure(error, schema?)` | If `schema != null`: `SnackBar` via `ScaffoldMessenger` (typed values preserved by the form key). Else: full-page error text with the error message. |
 
 ## 6. Schema content
 
@@ -171,7 +171,7 @@ That's all 16 types in one schema. `sectionHeader` and `divider` are used purely
     "id": "user_extended_info",
     "title": "Extended Information",
     "description": "Profile, preferences and security",
-    "submitAction": { "method": "PUT", "endpoint": "/admin/users/:id/extended" },
+    "submitAction": { "method": "PUT", "endpoint": "/admin/users/42/extended" },
     "layout": "vertical",
     "fields": [ ...all 16 fields... ]
   },
@@ -205,7 +205,7 @@ The PUT mock response is just `{ "ok": true, "id": "<userId>" }`.
 - **Body:** `DynamicFormRenderer` wrapped in `AppFormCard` inside `SingleChildScrollView`.
 - **Save button:** `AppSubmitButton` at the bottom of the card. Sticky on mobile (via `AppResponsiveBuilder`), inline on desktop.
 - **Loading and submitting:** disable the renderer's interactive fields and show an inline spinner on the save button.
-- **Error:** `AppErrorBanner` above the renderer when a partial state (`schema != null` on failure) exists, so the user keeps their typed values.
+- **Error:** `SnackBar` via `ScaffoldMessenger` when a partial state (`schema != null` on failure) exists, so the user keeps their typed values in the form (form key preserves field state).
 
 ## 8. Tests
 
@@ -215,7 +215,7 @@ Unit / widget tests (under `test/features/users/presentation/pages/`):
   - Renders `AppLoadingIndicator` while bloc is `DynamicFormLoading`.
   - Renders `DynamicFormRenderer` with prefilled values on `DynamicFormLoaded`.
   - Submit button triggers `DynamicFormSubmitEvent` and on `DynamicFormSubmitted` pops the route + shows a snackbar.
-  - On `DynamicFormFailure(schema != null)` shows `AppErrorBanner` and preserves typed values.
+  - On `DynamicFormFailure(schema != null)` shows a `SnackBar` with the error and preserves typed values.
 
 Mock interceptor coverage:
 
@@ -245,7 +245,7 @@ Field labels live in the schema JSON (server-driven), not in ARB — matching th
 - [ ] `/user/:id/extended-info` route works from both `edit` and `view` modes of the user editor.
 - [ ] All 16 `FormFieldType`s render correctly with their demo prefills.
 - [ ] Submit `PUT /admin/users/:id/extended` returns 200 from mock; UI shows snackbar + pops.
-- [ ] Submit failure surfaces `AppErrorBanner` and preserves typed values.
+- [ ] Submit failure surfaces a `SnackBar` with the error message and preserves typed values (form key holds state).
 - [ ] `fvm dart analyze` clean.
 - [ ] `fvm dart format --line-length=120 --set-exit-if-changed .` clean.
 - [ ] `fvm flutter test` green (existing 472 tests + new ones).
