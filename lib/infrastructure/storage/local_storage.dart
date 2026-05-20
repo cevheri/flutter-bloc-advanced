@@ -1,37 +1,42 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class AppLocalStorageCached {
   static final _log = AppLogger.getLogger("AppLocalStorageCached");
-  static late String? jwtToken;
-  static late List<String>? roles;
-  static late String? language;
-  static late String? username;
-  static late String? theme;
-  static late String? brightness;
+  static String? jwtToken;
+  static List<String>? roles;
+  static String? language;
+  static String? username;
+  static String? theme;
+  static String? brightness;
 
-  /// Reload the local-storage-backed fields from [AppLocalStorage].
+  /// Reload all cached fields from their respective backends.
   ///
-  /// [jwtToken] is intentionally NOT reloaded here because it lives in
-  /// secure storage (Keychain / EncryptedSharedPreferences). It is
-  /// updated directly by [AuthSessionRepository.persist] and cleared by
-  /// [AuthSessionRepository.clear] or [AppLocalStorage.clear]. Calling
-  /// the secure storage plugin synchronously on every [AppLocalStorage.save]
-  /// would be both slow and fragile in test environments where the plugin
-  /// is unavailable.
-  static Future<void> loadCache() async {
+  /// [jwtToken] is sourced from [ISecureStorage] only when [secureStorage]
+  /// is provided. Bootstrap passes its own adapter so the JWT is restored
+  /// on app launch. Intra-app callers triggered by [AppLocalStorage.save]
+  /// pass nothing — they have no reason to touch the secure store, and
+  /// the JWT field is kept current by [AuthSessionRepository.persist]
+  /// (which writes the cache directly) and `clear` (which nulls it).
+  /// This split keeps the cache layer free of a hard secure-storage
+  /// dependency in test environments where the plugin is unavailable.
+  static Future<void> loadCache({ISecureStorage? secureStorage}) async {
     _log.trace("Loading cache");
+    if (secureStorage != null) {
+      jwtToken = await secureStorage.read(SecureStorageKeys.jwtToken.key);
+    }
     roles = await AppLocalStorage().read(StorageKeys.roles.key);
     language = await AppLocalStorage().read(StorageKeys.language.key) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.key);
     theme = await AppLocalStorage().read(StorageKeys.theme.key) ?? "classic";
     brightness = await AppLocalStorage().read(StorageKeys.brightness.key) ?? "light";
-    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwtToken:{}, theme:{}, brightness:{}", [
+    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, jwt-present:{}, theme:{}, brightness:{}", [
       username,
       roles,
       language,
-      jwtToken,
+      jwtToken != null,
       theme,
       brightness,
     ]);
