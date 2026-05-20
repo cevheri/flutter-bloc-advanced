@@ -27,8 +27,13 @@ class SessionMigration {
   static Future<void> _migrateOne(String legacyKey, ISecureStorage secureStorage, AppLocalStorage localStorage) async {
     try {
       final existing = await secureStorage.read(legacyKey);
-      final legacy = await localStorage.read(legacyKey);
-      final hasLegacyPlaintext = legacy is String && legacy.isNotEmpty;
+      // AppLocalStorage.read returns Future<dynamic>; narrow to String
+      // up front so the rest of the function operates on a concrete
+      // type and a future regression can't quietly send a non-String
+      // down to secure-storage write / verify.
+      final legacyRaw = await localStorage.read(legacyKey);
+      final String? legacy = legacyRaw is String ? legacyRaw : null;
+      final hasLegacyPlaintext = legacy != null && legacy.isNotEmpty;
 
       if (existing != null && existing.isNotEmpty) {
         // Already migrated. But if a plaintext copy is still lingering

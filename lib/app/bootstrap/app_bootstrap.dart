@@ -68,6 +68,17 @@ class AppBootstrap {
       config.defaultBrightness,
     ]);
 
-    runApp(App(language: config.defaultLanguage, dependencies: dependencies, analytics: analytics));
+    // Reuse the same ISecureStorage that ran the migration above so
+    // the entire widget tree shares one adapter instance — no config
+    // drift between migration and runtime consumers, and overriding
+    // for tests / alternate environments is a single hand-off.
+    runApp(
+      App(
+        language: config.defaultLanguage,
+        dependencies: dependencies,
+        secureStorage: secureStorage,
+        analytics: analytics,
+      ),
+    );
   }
 }

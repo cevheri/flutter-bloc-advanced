@@ -31,19 +31,31 @@ import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class AppScope extends StatelessWidget {
-  const AppScope({super.key, required this.dependencies, required this.child});
+  const AppScope({super.key, required this.dependencies, this.secureStorage, required this.child});
 
   final AppDependencies dependencies;
+
+  /// Pre-constructed ISecureStorage from bootstrap. When provided, it is
+  /// shared via `.value` so migration and runtime consumers use the same
+  /// instance. When null, AppScope falls back to `dependencies.createSecureStorage()`
+  /// (useful for tests that don't go through bootstrap).
+  final ISecureStorage? secureStorage;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
+    final secure = secureStorage;
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
+        if (secure != null)
+          RepositoryProvider<ISecureStorage>.value(value: secure)
+        else
+          RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
         RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
         RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
-        RepositoryProvider<IAuthRepository>(create: (_) => dependencies.createAuthRepository()),
+        RepositoryProvider<IAuthRepository>(
+          create: (context) => dependencies.createAuthRepository(context.read<ISecureStorage>()),
+        ),
         RepositoryProvider<IAuthSessionRepository>(
           create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
         ),
