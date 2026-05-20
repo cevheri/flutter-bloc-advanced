@@ -73,9 +73,20 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       retryOptions.headers['Authorization'] = 'Bearer $newIdToken';
       final retryResponse = await _dio.fetch(retryOptions);
       handler.resolve(retryResponse);
-    } catch (e) {
-      _log.error('Retry after refresh failed: {}', [e]);
-      handler.next(err);
+    } on DioException catch (retryErr) {
+      // Forward the RETRY failure — not the original 401 — so callers
+      // see the real cause (network error, 5xx, etc.) instead of a
+      // stale auth error. The original 401 has already been resolved
+      // by a successful token refresh; the retry is its own attempt.
+      _log.error('Retry after refresh failed (Dio): {}', [retryErr.message]);
+      handler.next(retryErr);
+    } catch (e, st) {
+      _log.error('Retry after refresh failed (non-Dio): {}', [e]);
+      // Wrap non-Dio failures in a DioException so the interceptor
+      // contract holds (handler.next requires a DioException).
+      handler.next(
+        DioException(requestOptions: err.requestOptions, error: e, stackTrace: st, type: DioExceptionType.unknown),
+      );
     }
   }
 

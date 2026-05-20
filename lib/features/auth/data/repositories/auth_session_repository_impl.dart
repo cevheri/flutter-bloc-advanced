@@ -51,15 +51,18 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
       await _secureStorage.write(SecureStorageKeys.jwtToken.key, session.idToken);
       mutatedSecure.add(SecureStorageKeys.jwtToken);
-      if (session.refreshToken != null) {
+      // Owner-of-keys contract: a session without a refresh token must
+      // not inherit one from a previous login. Treat null AND empty
+      // string equivalently — TokenRefreshInterceptor reads
+      // `refreshToken.isEmpty` as "absent", so persisting an empty
+      // string here would leave the key present but unusable.
+      final hasRefresh = session.refreshToken != null && session.refreshToken!.isNotEmpty;
+      if (hasRefresh) {
         await _secureStorage.write(SecureStorageKeys.refreshToken.key, session.refreshToken!);
-        mutatedSecure.add(SecureStorageKeys.refreshToken);
       } else {
-        // Owner-of-keys contract: a session without a refresh token
-        // must not inherit one from a previous login.
         await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
-        mutatedSecure.add(SecureStorageKeys.refreshToken);
       }
+      mutatedSecure.add(SecureStorageKeys.refreshToken);
       await _writeLocal(StorageKeys.username, session.username, mutatedLocal);
       await _writeLocal(StorageKeys.roles, session.roles, mutatedLocal);
       _log.info('persist: session written ({} secure + {} local)', [mutatedSecure.length, mutatedLocal.length]);

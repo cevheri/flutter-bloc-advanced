@@ -116,7 +116,11 @@ void main() {
       'restore emits authenticated when secure storage has a token',
       build: () {
         final secure = _MemorySecureStorage();
-        secure.write(SecureStorageKeys.jwtToken.key, 'MOCK_TOKEN');
+        // Map write is synchronous; the async `write` wrapper just
+        // exists to satisfy the ISecureStorage interface. Seeding
+        // directly avoids the unawaited-write race the linter would
+        // otherwise (correctly) flag.
+        secure._store[SecureStorageKeys.jwtToken.key] = 'MOCK_TOKEN';
         return SessionCubit(secureStorage: secure);
       },
       act: (cubit) => cubit.restore(),
@@ -134,7 +138,7 @@ void main() {
       'refresh emits authenticated when secure storage has a token',
       build: () {
         final secure = _MemorySecureStorage();
-        secure.write(SecureStorageKeys.jwtToken.key, 'MOCK_TOKEN');
+        secure._store[SecureStorageKeys.jwtToken.key] = 'MOCK_TOKEN';
         return SessionCubit(secureStorage: secure);
       },
       act: (cubit) => cubit.refresh(),
