@@ -74,8 +74,8 @@ features/
    └─ ...DynamicFormBloc, DynamicFormRenderer reused unchanged
 
 assets/mock/
-├─ GET_admin_users_42_extended.json                  ← NEW (schema + values, pinned to demo user 42)
-└─ PUT_admin_users_42_extended.json                  ← NEW ({"ok": true, "id": "42"})
+├─ GET_admin_users_user_{1..4}_extended.json         ← NEW (schema + values, one per demo user)
+└─ PUT_admin_users_user_{1..4}_extended.json         ← NEW ({"ok": true, "id": "user-N"})
 
 lib/l10n/
 ├─ intl_en.arb                                        ← add 4 keys
@@ -171,7 +171,7 @@ That's all 16 types in one schema. `sectionHeader` and `divider` are used purely
     "id": "user_extended_info",
     "title": "Extended Information",
     "description": "Profile, preferences and security",
-    "submitAction": { "method": "PUT", "endpoint": "/admin/users/42/extended" },
+    "submitAction": { "method": "PUT", "endpoint": "/admin/users/user-1/extended" },
     "layout": "vertical",
     "fields": [ ...all 16 fields... ]
   },

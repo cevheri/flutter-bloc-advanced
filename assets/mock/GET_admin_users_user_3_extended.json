@@ -1,0 +1,52 @@
+{
+  "schema": {
+    "id": "user_extended_info",
+    "title": "Extended Information",
+    "description": "Profile, preferences and security.",
+    "layout": "responsive",
+    "submitAction": {"method": "PUT", "endpoint": "/admin/users/user-3/extended"},
+    "fields": [
+      {"type": "sectionHeader", "key": "_sec_personal", "label": "Personal"},
+      {"type": "text", "key": "firstName", "label": "First name", "readOnly": true},
+      {"type": "text", "key": "lastName", "label": "Last name", "readOnly": true},
+      {"type": "email", "key": "email", "label": "Email", "required": true},
+      {"type": "phone", "key": "phone", "label": "Phone"},
+      {"type": "textarea", "key": "bio", "label": "Bio", "maxLines": 4, "hint": "Tell us about yourself"},
+      {"type": "date", "key": "birthdate", "label": "Birthdate"},
+      {"type": "number", "key": "yearsExperience", "label": "Years of experience", "min": 0, "max": 60},
+      {"type": "divider", "key": "_div_1", "label": ""},
+      {"type": "sectionHeader", "key": "_sec_prefs", "label": "Preferences"},
+      {"type": "dropdown", "key": "country", "label": "Country", "options": ["TR", "US", "DE", "FR", "GB"]},
+      {"type": "dropdown", "key": "language", "label": "Language", "options": ["en", "tr", "de"]},
+      {"type": "multiSelect", "key": "interests", "label": "Interests", "options": ["flutter", "bloc", "dart", "design"]},
+      {"type": "radio", "key": "themePreference", "label": "Theme", "options": ["light", "dark", "system"], "default": "system"},
+      {"type": "radio", "key": "accountType", "label": "Account type", "options": ["individual", "business"], "default": "individual"},
+      {"type": "slider", "key": "notificationVolume", "label": "Notification volume", "min": 0, "max": 100, "default": 60},
+      {"type": "toggle", "key": "newsletter", "label": "Subscribe to newsletter", "default": false},
+      {"type": "divider", "key": "_div_2", "label": ""},
+      {"type": "sectionHeader", "key": "_sec_security", "label": "Security"},
+      {"type": "password", "key": "newPassword", "label": "New password (optional)"},
+      {"type": "datetime", "key": "lastLoginOverride", "label": "Override last login"},
+      {"type": "checkbox", "key": "acceptTerms", "label": "I accept the terms", "required": true}
+    ]
+  },
+  "values": {
+    "firstName": "Alice",
+    "lastName": "Liddell",
+    "email": "alice@example.com",
+    "phone": "+90 555 010 20 30",
+    "bio": "Backend engineer, dabbling in Flutter.",
+    "birthdate": "1990-01-15",
+    "yearsExperience": 8,
+    "country": "TR",
+    "language": "en",
+    "interests": ["flutter", "bloc"],
+    "themePreference": "system",
+    "accountType": "individual",
+    "notificationVolume": 60,
+    "newsletter": true,
+    "newPassword": null,
+    "lastLoginOverride": "2026-05-19T12:30:00Z",
+    "acceptTerms": true
+  }
+}

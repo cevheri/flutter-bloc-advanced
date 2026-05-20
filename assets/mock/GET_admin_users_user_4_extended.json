@@ -4,7 +4,7 @@
     "title": "Extended Information",
     "description": "Profile, preferences and security.",
     "layout": "responsive",
-    "submitAction": {"method": "PUT", "endpoint": "/admin/users/42/extended"},
+    "submitAction": {"method": "PUT", "endpoint": "/admin/users/user-4/extended"},
     "fields": [
       {"type": "sectionHeader", "key": "_sec_personal", "label": "Personal"},
       {"type": "text", "key": "firstName", "label": "First name", "readOnly": true},
