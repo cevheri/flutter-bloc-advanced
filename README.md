@@ -150,14 +150,14 @@ The production environment is configured in `lib/infrastructure/config/environme
 | --- | --- |
 | Flutter | 3.44.0 |
 | Dart | 3.12.0 |
-| State Management | flutter_bloc 9.1.1 |
-| Routing | go_router 17.1.0 |
-| HTTP | dio 5.7.0 (interceptor chain: auth, logging, mock) |
+| State Management | flutter_bloc 9.1.1, bloc_concurrency 0.3.0, stream_transform 2.1.1 |
+| Routing | go_router 17.2.3 |
+| HTTP | dio 5.9.2 (interceptor chain: connectivity, auth, token-refresh, resilience, mock, cache, dev-console, logging) |
 | Forms | flutter_form_builder 10.3.0+2 |
 | Localization | intl 0.20.2, intl_utils 2.8.14 |
-| Storage | shared_preferences 2.5.4 |
-| Charts | fl_chart 1.1.1 |
-| Testing | flutter_test, bloc_test, mocktail |
+| Storage | shared_preferences 2.5.5, flutter_secure_storage 10.2.0 |
+| Charts | fl_chart 1.2.0 |
+| Testing | flutter_test, bloc_test, mocktail, test 1.31.0 |
 
 ## Project Structure
 
@@ -338,7 +338,8 @@ If you are unsure where to start, documentation improvements, screenshot refresh
 | [Transformation Log](docs/clean-modernize-strengthen.md) | What changed, why, before/after comparison |
 | [Architecture Migration](docs/architecture-migration_en.md) | Feature-first migration guide |
 | [Feature-First Boundaries](docs/feature-first-clean-boundaries.md) | Clean architecture design document |
-| [Upgrade Guide](docs/upgrade_flutter_3.44.0.md) | Flutter 3.44.0 upgrade notes |
+| [Upgrade Guide — Flutter 3.44.0](docs/upgrade_flutter_3.44.0.md) | Flutter 3.41.8 → 3.44.0 upgrade notes (v0.21.0) |
+| [Upgrade Guide — Flutter 3.41.4](docs/upgrade_flutter_3.41.4.md) | Historical: Flutter 3.41.4 upgrade notes (v0.18.0) |
 
 ## References
 
