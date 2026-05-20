@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dar
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 
@@ -154,16 +155,15 @@ class SystemDashboardCubit extends Cubit<SystemDashboardState> {
   // Helpers
   // ---------------------------------------------------------------------------
 
-  /// Returns a hardcoded description of the interceptor chain order.
+  /// Snapshot of the live interceptor chain. Pulled from
+  /// [ApiClient.interceptorChainSnapshot] so the dashboard cannot drift
+  /// out of sync when interceptors are added, removed, or conditionally
+  /// included (fixes #64).
   List<InterceptorInfo> _buildInterceptorList() {
-    return const [
-      InterceptorInfo(name: 'AuthInterceptor', order: 1, detail: 'Attaches JWT token to requests'),
-      InterceptorInfo(name: 'TokenRefreshInterceptor', order: 2, detail: 'Refreshes expired access tokens'),
-      InterceptorInfo(name: 'ConnectivityInterceptor', order: 3, detail: 'Rejects requests when offline'),
-      InterceptorInfo(name: 'ResilienceInterceptor', order: 4, detail: 'Retry + circuit breaker'),
-      InterceptorInfo(name: 'CacheInterceptor', order: 5, detail: 'GET response caching with TTL'),
-      InterceptorInfo(name: 'DevConsoleInterceptor', order: 6, detail: 'Logs requests to dev console'),
-      InterceptorInfo(name: 'MockInterceptor', order: 7, active: false, detail: 'Serves mock data in dev/test'),
+    final snapshot = ApiClient.interceptorChainSnapshot;
+    return [
+      for (var i = 0; i < snapshot.length; i++)
+        InterceptorInfo(name: snapshot[i].name, order: i + 1, active: snapshot[i].active, detail: snapshot[i].detail),
     ];
   }
 
