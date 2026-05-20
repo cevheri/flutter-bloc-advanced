@@ -5,6 +5,24 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../test_utils.dart';
 
+/// ISecureStorage whose jwtToken read throws (refresh token is normal).
+/// Exercises the stale-header check's graceful-fallback path.
+class _ReadThrowsOnJwtSecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async {
+    if (key == SecureStorageKeys.jwtToken.key) throw StateError('boom on jwt read');
+    return _store[key];
+  }
+
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
 /// In-memory ISecureStorage for tests. Counts reads of the refresh-token
 /// key so concurrent-refresh coalescing can be asserted.
 class _MemorySecureStorage implements ISecureStorage {
@@ -307,6 +325,28 @@ void main() {
         1,
         reason: 'concurrent 401s should share a single refresh attempt',
       );
+    });
+
+    test('stale-header check survives a throwing secure read (graceful fallback)', () async {
+      // Failing-but-readable secure store: jwtToken throws, refreshToken
+      // exists. The stale-header optimization read should be swallowed
+      // and we should fall through to the normal refresh path — letting
+      // the throw escape would break the request pipeline.
+      final flaky = _ReadThrowsOnJwtSecureStorage();
+      await flaky.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: flaky);
+      final ro = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
+      final error = DioException(
+        requestOptions: ro,
+        response: Response(requestOptions: ro, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      // Must NOT throw; falls through to refresh attempt which will
+      // also fail (no real server), so onSessionExpired is reached.
+      await interceptor.onError(error, handler);
+      expect(handler.nextCalled, isTrue);
     });
 
     test('skips refresh when JWT was already rotated since the failing request was sent', () async {

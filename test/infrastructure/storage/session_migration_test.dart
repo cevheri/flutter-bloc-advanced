@@ -59,14 +59,17 @@ void main() {
       expect(await local.read('refreshToken'), isNull);
     });
 
-    test('is a no-op when secure storage already has the value (idempotent)', () async {
+    test('preserves the secure value across runs (idempotent for secure side)', () async {
+      // Secure-storage value is never overwritten once migrated. The
+      // "cleans up lingering plaintext" test below covers what happens
+      // to a stale SharedPreferences copy in this same scenario —
+      // they're two halves of the same idempotency guarantee.
       await secure.write('jwtToken', 'ALREADY_MIGRATED');
-      await local.save('jwtToken', 'STALE');
 
       await SessionMigration.run(secureStorage: secure, localStorage: local);
 
       expect(await secure.read('jwtToken'), 'ALREADY_MIGRATED');
-      expect(await local.read('jwtToken'), 'STALE');
+      expect(await local.read('jwtToken'), isNull);
     });
 
     test('is a no-op when there is nothing to migrate', () async {
@@ -97,6 +100,20 @@ void main() {
 
       expect(await silent.read('jwtToken'), isNull);
       expect(await local.read('jwtToken'), 'JWT_VALUE');
+    });
+
+    test('cleans up lingering plaintext when secure already has the value', () async {
+      // Simulates an interrupted prior migration: token is in secure
+      // storage, but a plaintext copy still lingers in SharedPreferences.
+      // The migration must clean up the leftover even though early-return
+      // would otherwise skip it — defeating the migration's whole point.
+      await secure.write('jwtToken', 'ALREADY_MIGRATED');
+      await local.save('jwtToken', 'STALE_PLAINTEXT');
+
+      await SessionMigration.run(secureStorage: secure, localStorage: local);
+
+      expect(await secure.read('jwtToken'), 'ALREADY_MIGRATED', reason: 'secure value untouched');
+      expect(await local.read('jwtToken'), isNull, reason: 'lingering plaintext cleaned up');
     });
 
     test('warns when SharedPreferences refuses to remove the legacy key', () async {

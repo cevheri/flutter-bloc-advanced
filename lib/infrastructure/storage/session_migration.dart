@@ -27,10 +27,32 @@ class SessionMigration {
   static Future<void> _migrateOne(String legacyKey, ISecureStorage secureStorage, AppLocalStorage localStorage) async {
     try {
       final existing = await secureStorage.read(legacyKey);
-      if (existing != null && existing.isNotEmpty) return;
-
       final legacy = await localStorage.read(legacyKey);
-      if (legacy is! String || legacy.isEmpty) return;
+      final hasLegacyPlaintext = legacy is String && legacy.isNotEmpty;
+
+      if (existing != null && existing.isNotEmpty) {
+        // Already migrated. But if a plaintext copy is still lingering
+        // in SharedPreferences — a previous migration may have left it
+        // behind, or the migration was interrupted between write and
+        // remove — clean it up now. Best-effort: the token is safe in
+        // secure storage, so a remove failure just delays cleanup
+        // until the next launch.
+        if (hasLegacyPlaintext) {
+          try {
+            final removed = await localStorage.remove(legacyKey);
+            if (removed) {
+              _log.info('Cleaned up lingering plaintext {} after prior migration', [legacyKey]);
+            } else {
+              _log.warn('Lingering plaintext {} remove returned false; will retry next launch', [legacyKey]);
+            }
+          } catch (e) {
+            _log.warn('Lingering plaintext {} cleanup failed: {}', [legacyKey, e]);
+          }
+        }
+        return;
+      }
+
+      if (!hasLegacyPlaintext) return;
 
       await secureStorage.write(legacyKey, legacy);
 

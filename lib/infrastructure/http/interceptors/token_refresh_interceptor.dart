@@ -65,7 +65,18 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     // while this request was in flight), just retry with the current
     // token. Avoids back-to-back refresh calls when a serialised wave
     // of 401s arrives after the first refresh completes.
-    final currentToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    //
+    // ISecureStorage.read can throw on platform / decryption failure
+    // (contract from the secure-storage refactor). Treat that as
+    // "optimization unavailable" and fall through to the normal
+    // refresh path — letting the read escape would break the request
+    // pipeline.
+    String? currentToken;
+    try {
+      currentToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    } catch (e) {
+      _log.warn('Stale-header check skipped — secure read failed: {}', [e]);
+    }
     final requestAuth = err.requestOptions.headers['Authorization'] as String?;
     final requestToken = (requestAuth != null && requestAuth.startsWith('Bearer '))
         ? requestAuth.substring('Bearer '.length)
