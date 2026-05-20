@@ -42,22 +42,29 @@ class _AppCardState extends State<AppCard> {
     final colorScheme = Theme.of(context).colorScheme;
     final effectivePadding = widget.padding ?? const EdgeInsets.all(AppSpacing.lg);
 
+    // The Material(type: transparency) wrapper gives descendant ListTiles
+    // a Material ancestor for their ink splashes. Without it, Flutter 3.44
+    // asserts because the AnimatedContainer's BoxDecoration becomes the
+    // nearest coloured DecoratedBox above the ListTile.
     Widget content = AnimatedContainer(
       duration: AppDurations.fast,
       curve: AppDurations.easeOut,
       width: widget.width,
       height: widget.height,
       decoration: _decoration(colorScheme),
-      child: Padding(
-        padding: effectivePadding,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (widget.header != null) ...[widget.header!, const SizedBox(height: AppSpacing.md)],
-            if (widget.child != null) Flexible(child: widget.child!),
-            if (widget.footer != null) ...[const SizedBox(height: AppSpacing.md), widget.footer!],
-          ],
+      child: Material(
+        type: MaterialType.transparency,
+        child: Padding(
+          padding: effectivePadding,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (widget.header != null) ...[widget.header!, const SizedBox(height: AppSpacing.md)],
+              if (widget.child != null) Flexible(child: widget.child!),
+              if (widget.footer != null) ...[const SizedBox(height: AppSpacing.md), widget.footer!],
+            ],
+          ),
         ),
       ),
     );
