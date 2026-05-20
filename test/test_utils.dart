@@ -4,6 +4,7 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -97,7 +98,7 @@ class TestUtils {
   /// historically called this without `await`. Keeping it sync makes
   /// the no-await call sites correct rather than racy.
   void setupAuthentication() {
-    _secureStore['jwtToken'] = 'MOCK_TOKEN';
+    _secureStore[SecureStorageKeys.jwtToken.key] = 'MOCK_TOKEN';
   }
 
   Future<void> _clearStorage() async {

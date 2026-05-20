@@ -146,10 +146,13 @@ class AuthSessionRepository implements IAuthSessionRepository {
           StorageKeys.roles => priorRoles,
           _ => null,
         };
-        if (prior == null) {
-          await _storage.remove(key.key);
-        } else {
-          await _storage.save(key.key, prior);
+        // AppLocalStorage.save/remove can refuse a mutation by returning
+        // false without throwing. Honor that signal so a rollback that
+        // silently no-ops doesn't leave storage in a partially-mutated
+        // state — symmetric with how _writeLocal treats save == false.
+        final ok = prior == null ? await _storage.remove(key.key) : await _storage.save(key.key, prior);
+        if (!ok) {
+          _log.warn('local rollback refused for {} (storage returned false)', [key.key]);
         }
       } catch (e) {
         _log.warn('local rollback failed for {}: {}', [key.key, e]);

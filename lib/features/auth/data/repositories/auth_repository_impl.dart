@@ -57,28 +57,33 @@ class LoginRepository implements IAuthRepository {
     // not skip the others — partial logout is the worst outcome since
     // any leftover token would let AuthInterceptor re-attach it on the
     // next request and silently defeat logout. Any individual failure
-    // surfaces as a Failure result so callers can decide whether to
-    // retry or notify the user.
+    // surfaces as a Failure result (with the first stack trace attached
+    // for diagnostics) so callers can decide whether to retry or notify
+    // the user.
     final errors = <String>[];
+    StackTrace? firstStackTrace;
     try {
       await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
-    } catch (e) {
+    } catch (e, st) {
       errors.add('jwt: $e');
+      firstStackTrace ??= st;
     }
     try {
       await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
-    } catch (e) {
+    } catch (e, st) {
       errors.add('refresh: $e');
+      firstStackTrace ??= st;
     }
     try {
       await AppLocalStorage().clear();
-    } catch (e) {
+    } catch (e, st) {
       errors.add('local: $e');
+      firstStackTrace ??= st;
     }
     if (errors.isNotEmpty) {
       final msg = errors.join('; ');
-      _log.error("END:logout partial failures: {}", [msg]);
-      return Failure(UnknownError(msg));
+      _log.error("END:logout partial failures: {}\n{}", [msg, firstStackTrace]);
+      return Failure(UnknownError(msg), stackTrace: firstStackTrace);
     }
     _log.debug("END:logout successful");
     return const Success(null);

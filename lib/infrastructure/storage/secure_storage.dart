@@ -6,15 +6,21 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// Used for sensitive data like JWT tokens that should not be stored
 /// in plaintext SharedPreferences.
 ///
-/// Failure contract: mutating methods ([write], [delete], [deleteAll])
-/// MUST throw on failure so that callers using Result/rollback semantics
+/// Failure contract: every method MUST throw on platform failure so
+/// that callers using Result/rollback semantics
 /// (e.g. [AuthSessionRepository.persist], [SessionMigration]) can react
 /// correctly. Silently swallowing errors here makes Success reports
-/// meaningless. [read] returns null on failure to keep the read path
-/// simple — a missing key and an unreadable key are equivalent from the
-/// app's perspective.
+/// meaningless. In particular, [read] does NOT collapse platform
+/// failures to null — a transient read failure during a rollback
+/// snapshot must not be misread as "no prior value" and lead to
+/// deleting an existing token.
+///
+/// [read] returns null only when the key is absent. Platform / decryption
+/// failures throw.
 abstract interface class ISecureStorage {
-  /// Read a value by [key]. Returns null if not found OR on read failure.
+  /// Read a value by [key]. Returns null only when the key is absent.
+  /// Throws on platform / decryption failure so transactional callers
+  /// can distinguish "missing" from "unknown".
   Future<String?> read(String key);
 
   /// Write a [value] for the given [key]. Throws on platform failure.
@@ -38,12 +44,7 @@ class FlutterSecureStorageAdapter implements ISecureStorage {
   @override
   Future<String?> read(String key) async {
     _log.trace('Reading secure storage key: {}', [key]);
-    try {
-      return await _storage.read(key: key);
-    } catch (e) {
-      _log.error('Error reading secure storage key {}: {}', [key, e]);
-      return null;
-    }
+    return await _storage.read(key: key);
   }
 
   @override
