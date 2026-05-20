@@ -127,5 +127,16 @@
   "error_account_password_required": "Mevcut ve yeni şifre alanları zorunludur",
   "error_account_passwords_same": "Yeni şifre mevcut şifreden farklı olmalıdır",
   "error_settings_change_language_failed": "Dil değiştirilemedi",
-  "error_generic": "Bir şeyler ters gitti"
+  "error_generic": "Bir şeyler ters gitti",
+  "user_extended_info_title": "Genişletilmiş Bilgi",
+  "user_extended_info_button": "Genişletilmiş Bilgi",
+  "user_extended_info_saved": "Kaydedildi",
+  "user_extended_info_save_failed": "Kayıt başarısız: {error}",
+  "@user_extended_info_save_failed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  }
 }
