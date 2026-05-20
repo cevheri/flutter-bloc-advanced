@@ -5,17 +5,25 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 ///
 /// Used for sensitive data like JWT tokens that should not be stored
 /// in plaintext SharedPreferences.
+///
+/// Failure contract: mutating methods ([write], [delete], [deleteAll])
+/// MUST throw on failure so that callers using Result/rollback semantics
+/// (e.g. [AuthSessionRepository.persist], [SessionMigration]) can react
+/// correctly. Silently swallowing errors here makes Success reports
+/// meaningless. [read] returns null on failure to keep the read path
+/// simple — a missing key and an unreadable key are equivalent from the
+/// app's perspective.
 abstract interface class ISecureStorage {
-  /// Read a value by [key]. Returns null if not found.
+  /// Read a value by [key]. Returns null if not found OR on read failure.
   Future<String?> read(String key);
 
-  /// Write a [value] for the given [key].
+  /// Write a [value] for the given [key]. Throws on platform failure.
   Future<void> write(String key, String value);
 
-  /// Delete the value for the given [key].
+  /// Delete the value for the given [key]. Throws on platform failure.
   Future<void> delete(String key);
 
-  /// Delete all stored values.
+  /// Delete all stored values. Throws on platform failure.
   Future<void> deleteAll();
 }
 
@@ -41,31 +49,19 @@ class FlutterSecureStorageAdapter implements ISecureStorage {
   @override
   Future<void> write(String key, String value) async {
     _log.trace('Writing secure storage key: {}', [key]);
-    try {
-      await _storage.write(key: key, value: value);
-    } catch (e) {
-      _log.error('Error writing secure storage key {}: {}', [key, e]);
-    }
+    await _storage.write(key: key, value: value);
   }
 
   @override
   Future<void> delete(String key) async {
     _log.trace('Deleting secure storage key: {}', [key]);
-    try {
-      await _storage.delete(key: key);
-    } catch (e) {
-      _log.error('Error deleting secure storage key {}: {}', [key, e]);
-    }
+    await _storage.delete(key: key);
   }
 
   @override
   Future<void> deleteAll() async {
     _log.info('Deleting all secure storage data');
-    try {
-      await _storage.deleteAll();
-    } catch (e) {
-      _log.error('Error deleting all secure storage data: {}', [e]);
-    }
+    await _storage.deleteAll();
   }
 }
 

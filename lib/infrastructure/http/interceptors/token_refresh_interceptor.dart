@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Callback signature for notifying the app layer that the session has expired
@@ -91,6 +92,10 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
         if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
           await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken);
         }
+        // Sync the in-memory cache so AuthInterceptor (which prefers the
+        // cache over a disk read) attaches the rotated JWT on subsequent
+        // requests rather than the stale pre-refresh value.
+        AppLocalStorageCached.jwtToken = newIdToken;
 
         _log.info('Token refresh successful — retrying original request');
 

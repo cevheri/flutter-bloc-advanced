@@ -29,8 +29,17 @@ class AuthSessionRepository implements IAuthSessionRepository {
 
   @override
   Future<Result<void>> persist(AuthSession session) async {
+    // Snapshot pre-persist secure values so rollback can restore them on
+    // failure — including the "delete stale refreshToken when the new
+    // session has none" path, where the delete itself is the mutation we
+    // need to be able to undo.
+    final priorJwt = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    final priorRefresh = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
+    final priorCachedJwt = AppLocalStorageCached.jwtToken;
+
     final writtenSecure = <SecureStorageKeys>[];
     final writtenLocal = <StorageKeys>[];
+    var deletedStaleRefresh = false;
     try {
       await _writeSecure(SecureStorageKeys.jwtToken, session.idToken, writtenSecure);
       // Keep the sync cache consistent with the secure store so that
@@ -40,8 +49,10 @@ class AuthSessionRepository implements IAuthSessionRepository {
         await _writeSecure(SecureStorageKeys.refreshToken, session.refreshToken!, writtenSecure);
       } else {
         // Owner-of-keys contract: a session without a refresh token must
-        // not inherit one from a previous login. Best-effort removal.
+        // not inherit one from a previous login. Tracked separately so
+        // rollback can restore the prior value if a later write fails.
         await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
+        deletedStaleRefresh = true;
       }
       await _writeLocal(StorageKeys.username, session.username, writtenLocal);
       await _writeLocal(StorageKeys.roles, session.roles, writtenLocal);
@@ -52,7 +63,14 @@ class AuthSessionRepository implements IAuthSessionRepository {
         writtenLocal.length,
         e,
       ]);
-      await _rollback(writtenSecure, writtenLocal);
+      await _rollback(
+        writtenSecure: writtenSecure,
+        writtenLocal: writtenLocal,
+        deletedStaleRefresh: deletedStaleRefresh,
+        priorJwt: priorJwt,
+        priorRefresh: priorRefresh,
+        priorCachedJwt: priorCachedJwt,
+      );
       return Failure(UnknownError('Session persistence failed: $e'));
     }
   }
@@ -82,18 +100,41 @@ class AuthSessionRepository implements IAuthSessionRepository {
     written.add(key);
   }
 
-  Future<void> _rollback(List<SecureStorageKeys> writtenSecure, List<StorageKeys> writtenLocal) async {
+  Future<void> _rollback({
+    required List<SecureStorageKeys> writtenSecure,
+    required List<StorageKeys> writtenLocal,
+    required bool deletedStaleRefresh,
+    required String? priorJwt,
+    required String? priorRefresh,
+    required String? priorCachedJwt,
+  }) async {
     for (final key in writtenSecure) {
       try {
-        await _secureStorage.delete(key.key);
-        if (key == SecureStorageKeys.jwtToken) {
-          // Keep the sync cache consistent with the rolled-back secure store.
-          AppLocalStorageCached.jwtToken = null;
+        // Restore the pre-persist value (or delete if there was none) so
+        // that callers observing a Failure see the state as if persist
+        // had never been invoked.
+        final prior = switch (key) {
+          SecureStorageKeys.jwtToken => priorJwt,
+          SecureStorageKeys.refreshToken => priorRefresh,
+        };
+        if (prior == null) {
+          await _secureStorage.delete(key.key);
+        } else {
+          await _secureStorage.write(key.key, prior);
         }
       } catch (e) {
         _log.warn('secure rollback failed for {}: {}', [key.key, e]);
       }
     }
+    if (deletedStaleRefresh && priorRefresh != null) {
+      try {
+        await _secureStorage.write(SecureStorageKeys.refreshToken.key, priorRefresh);
+      } catch (e) {
+        _log.warn('refreshToken restore failed during rollback: {}', [e]);
+      }
+    }
+    // Restore the cached JWT (set unconditionally during persist).
+    AppLocalStorageCached.jwtToken = priorCachedJwt;
     for (final key in writtenLocal) {
       try {
         await _storage.remove(key.key);

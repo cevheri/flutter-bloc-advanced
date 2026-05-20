@@ -7,14 +7,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../test_utils.dart';
 
 class _MemorySecureStorage implements ISecureStorage {
-  _MemorySecureStorage({this.failOnWrite = false});
+  _MemorySecureStorage({this.failOnWrite = false, this.silentlyDropWrites = false});
   final Map<String, String> _store = {};
   final bool failOnWrite;
+
+  /// Simulates a misbehaving adapter that returns successfully but never
+  /// persists the value — exercises the read-after-write verification path.
+  final bool silentlyDropWrites;
   @override
   Future<String?> read(String key) async => _store[key];
   @override
   Future<void> write(String key, String value) async {
     if (failOnWrite) throw StateError('boom');
+    if (silentlyDropWrites) return;
     _store[key] = value;
   }
 
@@ -77,6 +82,20 @@ void main() {
 
       await SessionMigration.run(secureStorage: flaky, localStorage: local);
 
+      expect(await local.read('jwtToken'), 'JWT_VALUE');
+    });
+
+    test('retains legacy key when secure write silently fails to persist', () async {
+      // Simulates a misbehaving adapter that returns without throwing but
+      // drops the write. The read-after-write check should catch this and
+      // leave the legacy SharedPreferences value intact so the user is not
+      // logged out.
+      final silent = _MemorySecureStorage(silentlyDropWrites: true);
+      await local.save('jwtToken', 'JWT_VALUE');
+
+      await SessionMigration.run(secureStorage: silent, localStorage: local);
+
+      expect(await silent.read('jwtToken'), isNull);
       expect(await local.read('jwtToken'), 'JWT_VALUE');
     });
   });

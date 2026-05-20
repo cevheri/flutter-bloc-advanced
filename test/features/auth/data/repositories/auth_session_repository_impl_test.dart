@@ -103,6 +103,39 @@ void main() {
       expect(await storage.read(StorageKeys.username.key), isNull);
     });
 
+    test('rollback restores prior secure values, not just deletes', () async {
+      // Pre-existing session in secure storage.
+      await secure.write(SecureStorageKeys.jwtToken.key, 'OLD_JWT');
+      await secure.write(SecureStorageKeys.refreshToken.key, 'OLD_REFRESH');
+
+      // New persist that will fail on the local username write.
+      final flaky = _FlakyStorage(storage, StorageKeys.username.key);
+      final repo = AuthSessionRepository(secureStorage: secure, storage: flaky);
+      const session = AuthSession(idToken: 'NEW_JWT', refreshToken: 'NEW_REFRESH', username: 'bob');
+
+      final result = await repo.persist(session);
+
+      expect(result, isA<Failure<void>>());
+      // Rollback restored prior values rather than deleting them.
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'OLD_JWT');
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), 'OLD_REFRESH');
+    });
+
+    test('rollback restores stale refreshToken that persist had deleted', () async {
+      // Pre-existing refresh token; new session has none, so persist would
+      // delete it. If a later write fails, rollback must restore it.
+      await secure.write(SecureStorageKeys.refreshToken.key, 'STALE_REFRESH');
+
+      final flaky = _FlakyStorage(storage, StorageKeys.username.key);
+      final repo = AuthSessionRepository(secureStorage: secure, storage: flaky);
+      const session = AuthSession(idToken: 'NEW_JWT', username: 'bob');
+
+      final result = await repo.persist(session);
+
+      expect(result, isA<Failure<void>>());
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), 'STALE_REFRESH');
+    });
+
     test('clear empties both backends', () async {
       await secure.write(SecureStorageKeys.jwtToken.key, 'TOKEN');
       await storage.save(StorageKeys.username.key, 'alice');

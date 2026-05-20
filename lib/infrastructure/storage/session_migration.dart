@@ -29,6 +29,17 @@ class SessionMigration {
       if (legacy is! String || legacy.isEmpty) return;
 
       await secureStorage.write(legacyKey, legacy);
+
+      // Verify the write actually landed before deleting the legacy copy.
+      // The adapter throws on platform errors, but defense-in-depth: if a
+      // future custom adapter quietly drops a write we must not orphan the
+      // token by removing the only remaining copy.
+      final verify = await secureStorage.read(legacyKey);
+      if (verify != legacy) {
+        _log.warn('Migration verify mismatch for {}; legacy key retained', [legacyKey]);
+        return;
+      }
+
       await localStorage.remove(legacyKey);
       _log.info('Migrated {} from SharedPreferences to SecureStorage', [legacyKey]);
     } catch (e) {
