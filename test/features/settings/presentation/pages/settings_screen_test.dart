@@ -55,7 +55,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byKey(settingsChangePasswordButtonKey), findsOneWidget);
-      expect(find.byKey(settingsLogoutButtonKey), findsOneWidget);
+      // Logout intentionally lives only in the sidebar / topbar shell —
+      // settings does not own auth-session lifecycle (cross-feature).
     });
 
     testWidgets('navigates to change password screen when button is pressed', (WidgetTester tester) async {

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
@@ -125,10 +125,14 @@ class TopBarWidget extends StatelessWidget {
 
   Future<void> _handleLogout(BuildContext context) async {
     final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
-    if (shouldLogout && context.mounted) {
-      AppLocalStorage().clear();
-      AppRouter().push(context, ApplicationRoutesConstants.login);
-    }
+    if (!shouldLogout || !context.mounted) return;
+    // Route through MenuBloc.Logout so the same code path that the
+    // sidebar uses fires — LoginRepository.logout wipes BOTH secure
+    // storage (JWT + refreshToken) and AppLocalStorage. A bare
+    // AppLocalStorage().clear() here would leave the encrypted JWT on
+    // disk, defeating logout.
+    context.read<MenuBloc>().add(Logout());
+    AppRouter().push(context, ApplicationRoutesConstants.login);
   }
 
   String _getInitials(String? first, String? last) {
