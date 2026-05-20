@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
@@ -30,6 +31,12 @@ class AppBootstrap {
 
     final dependencies = AppDependencies(environment: config.environment);
     final secureStorage = dependencies.createSecureStorage();
+    // Publish the same adapter instance into the static [ApiClient]
+    // hook so AuthInterceptor and TokenRefreshInterceptor share it
+    // with the repository layer and SessionCubit. Must happen BEFORE
+    // the first HTTP call (before Dio is built lazily) — setting it
+    // here, ahead of any await on a network-dependent path, is safe.
+    ApiClient.secureStorage = secureStorage;
 
     // One-shot migration of legacy plaintext tokens (jwtToken/refreshToken).
     // Must run BEFORE any consumer reads the secure store (SessionCubit
