@@ -13,7 +13,10 @@ void main() {
           'fields': [
             {'type': 'text', 'key': 'firstName', 'label': 'First name'},
           ],
-          'submitAction': {'method': 'PUT', 'endpoint': '/admin/users/:id/extended'},
+          // Literal base path — the engine doesn't substitute templates; per-instance
+          // path segments are passed separately via DynamicFormLoadBundleEvent.pathParams
+          // and threaded through to submit via DynamicFormLoaded.submitPathParams.
+          'submitAction': {'method': 'PUT', 'endpoint': '/admin/users/extended'},
         },
         'values': {'firstName': 'Alice', 'newsletter': true},
       });

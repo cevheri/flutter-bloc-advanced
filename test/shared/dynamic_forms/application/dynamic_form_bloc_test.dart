@@ -515,6 +515,34 @@ void main() {
           isA<DynamicFormLoaded>().having((s) => s.submitPathParams, 'submitPathParams', 'user-1'),
         ],
       );
+
+      blocTest<DynamicFormBloc, DynamicFormState>(
+        'preserves submitPathParams through Failure so a retry submit reuses the same URL',
+        setUp: () {
+          // 1) Load succeeds with pathParams "user-1".
+          stub.stubSuccess(
+            data: jsonEncode({
+              'schema': jsonDecode(_validFormSchemaJson),
+              'values': {'name': 'Alice'},
+            }),
+          );
+        },
+        build: () => buildBloc(),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadBundleEvent('/admin/users/extended', pathParams: 'user-1'));
+          await Future<void>.delayed(const Duration(milliseconds: 150));
+          // 2) First submit fails — bloc must emit Failure(submitPathParams: 'user-1').
+          stub.stubDioError(DioExceptionType.connectionTimeout, message: 'Timeout');
+          bloc.add(const DynamicFormSubmitEvent({'name': 'Alice'}));
+        },
+        wait: const Duration(milliseconds: 500),
+        expect: () => [
+          isA<DynamicFormLoading>(),
+          isA<DynamicFormLoaded>().having((s) => s.submitPathParams, 'submitPathParams', 'user-1'),
+          isA<DynamicFormSubmitting>().having((s) => s.submitPathParams, 'submitPathParams', 'user-1'),
+          isA<DynamicFormFailure>().having((s) => s.submitPathParams, 'submitPathParams', 'user-1'),
+        ],
+      );
     });
   });
 }

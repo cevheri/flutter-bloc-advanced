@@ -1,5 +1,12 @@
 # User Extended-Info Dynamic Form — Implementation Plan
 
+> **Historical note.** This plan was written **before** execution and captures Tasks 1–12 as originally scoped. During implementation (see PR #128 commit history), the work picked up two extra architectural concerns that this plan didn't anticipate:
+>
+> 1. `dynamic_forms` was relocated from `lib/features/dynamic_forms/` to `lib/shared/dynamic_forms/` (and `test/features/dynamic_forms/` → `test/shared/dynamic_forms/`). Every file path below that says `features/dynamic_forms` should be read as `shared/dynamic_forms` in the shipped tree.
+> 2. The engine learned native `pathParams` so a single mock fixture serves every user. The event API shifted from `DynamicFormLoadBundleEvent(endpoint)` to `DynamicFormLoadBundleEvent(basePath, pathParams: ...)`, with `DynamicFormLoaded.submitPathParams` threading the segment through to submit.
+>
+> Use this plan to understand the task decomposition that was actually executed; consult `shared/dynamic_forms/` and the PR for the as-built code.
+>
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Add a new `/user/:id/extended-info` route that loads a server-driven form schema bundled with prefilled values, renders all 16 `FormFieldType`s via the existing `DynamicFormRenderer`, and submits via `PUT /admin/users/:id/extended` — closing #121.

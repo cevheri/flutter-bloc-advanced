@@ -52,23 +52,27 @@ final class DynamicFormSubmitting extends DynamicFormState {
 }
 
 final class DynamicFormSubmitted extends DynamicFormState {
-  const DynamicFormSubmitted({required this.schema, this.submitResponse});
+  const DynamicFormSubmitted({required this.schema, this.submitResponse, this.submitPathParams});
 
   final FormSchemaEntity schema;
   final String? submitResponse;
+  final String? submitPathParams;
 
   @override
-  List<Object?> get props => [schema, submitResponse];
+  List<Object?> get props => [schema, submitResponse, submitPathParams];
 }
 
 /// Failure can happen either at load time (no schema) or at submit time
-/// (schema present from the prior [DynamicFormLoaded] state).
+/// (schema present from the prior [DynamicFormLoaded] state). Carries the
+/// per-instance [submitPathParams] when present so a retry submit reuses
+/// the same URL.
 final class DynamicFormFailure extends DynamicFormState {
-  const DynamicFormFailure({required this.error, this.schema});
+  const DynamicFormFailure({required this.error, this.schema, this.submitPathParams});
 
   final String error;
   final FormSchemaEntity? schema;
+  final String? submitPathParams;
 
   @override
-  List<Object?> get props => [error, schema];
+  List<Object?> get props => [error, schema, submitPathParams];
 }

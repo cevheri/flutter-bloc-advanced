@@ -2,7 +2,15 @@
 
 **Issue:** [#121](https://github.com/cevheri/flutter-bloc-advanced/issues/121)
 **Date:** 2026-05-20
-**Status:** Approved, ready for implementation plan
+**Status:** Implemented in PR #128
+
+> **Note on evolution during implementation.** This spec captured the design **before** execution. Two architectural decisions were made during the PR after this spec was approved:
+>
+> 1. **`dynamic_forms` relocated from `features/` to `shared/`** — the engine has no domain entity of its own (`FormSchemaEntity` describes how to render OTHER entities), so it's structurally a reusable subsystem, not a vertical feature. Where this doc says `features/dynamic_forms/...`, the canonical location is now `shared/dynamic_forms/...`. The architecture import-guard test enforces this.
+>
+> 2. **Engine learned native `pathParams`** — the URL convention shifted from `/admin/users/:id/extended` to `/admin/users/extended/{id}` because the engine now separates `basePath` (`/admin/users/extended`) from the per-instance path segment (`pathParams: userId`). The `DynamicFormLoadBundleEvent(basePath, pathParams: ...)` event and `DynamicFormLoaded.submitPathParams` field carry the segment from load through to submit. A single mock fixture `GET_admin_users_extended_pathParams.json` now serves every user. Section 5.3's `loadBundle(endpoint)` is actually `fetchBundle(basePath, {String? pathParams})` in the shipped code.
+>
+> Read this spec as the original direction; consult the implementation (`shared/dynamic_forms/`) and PR #128 for the as-built reality.
 
 ---
 
@@ -35,13 +43,13 @@ User list  →  User editor (edit or view mode)
                     ▼
               /user/:id/extended-info
                     │
-                    │  on entry: GET /admin/users/:id/extended
+                    │  on entry: GET /admin/users/extended/:id
                     ▼
               schema + values rendered via DynamicFormRenderer
                     │
                     │  user edits, taps [Save]
                     ▼
-              PUT /admin/users/:id/extended
+              PUT /admin/users/extended/:id
                     │
                     │  on success: success snackbar + pop back to editor
                     │  on failure: snackbar (typed values preserved by form key)
@@ -172,7 +180,7 @@ That's all 16 types in one schema. `sectionHeader` and `divider` are used purely
     "title": "Extended Information",
     "description": "Profile, preferences and security",
     "submitAction": { "method": "PUT", "endpoint": "/admin/users/extended" },
-    "layout": "vertical",
+    "layout": "responsive",
     "fields": [ ...all 16 fields... ]
   },
   "values": {
@@ -244,9 +252,9 @@ Field labels live in the schema JSON (server-driven), not in ARB — matching th
 
 - [ ] `/user/:id/extended-info` route works from both `edit` and `view` modes of the user editor.
 - [ ] All 16 `FormFieldType`s render correctly with their demo prefills.
-- [ ] Submit `PUT /admin/users/:id/extended` returns 200 from mock; UI shows snackbar + pops.
+- [ ] Submit `PUT /admin/users/extended/:id` returns 200 from mock; UI shows snackbar + pops.
 - [ ] Submit failure surfaces a `SnackBar` with the error message and preserves typed values (form key holds state).
 - [ ] `fvm dart analyze` clean.
 - [ ] `fvm dart format --line-length=120 --set-exit-if-changed .` clean.
 - [ ] `fvm flutter test` green (existing 472 tests + new ones).
-- [ ] No imports from `features/users/*` into `features/dynamic_forms/*` or vice versa — communication is via the renderer's public widget API and the DI-injected use cases only.
+- [ ] No imports from `features/users/*` into `shared/dynamic_forms/*` or vice versa — communication is via the renderer's public widget API and the DI-injected use cases only.
