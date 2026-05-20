@@ -7,6 +7,20 @@ import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart
 class StorageTab extends StatefulWidget {
   const StorageTab({super.key});
 
+  /// Keys whose values must never be shown in plaintext in the dev
+  /// console. Match is case-insensitive substring — any key containing
+  /// one of these markers is masked (fixes #62, which left
+  /// `refreshToken` visible because only the literal `jwtToken` was
+  /// checked).
+  static const sensitiveKeyMarkers = ['token', 'secret', 'password', 'apikey', 'api_key'];
+
+  /// Returns true when [key] should be masked when rendered in the
+  /// storage tab. Exposed for unit testing.
+  static bool isSensitiveKey(String key) {
+    final lower = key.toLowerCase();
+    return sensitiveKeyMarkers.any(lower.contains);
+  }
+
   @override
   State<StorageTab> createState() => _StorageTabState();
 }
@@ -38,10 +52,12 @@ class _StorageTabState extends State<StorageTab> {
   }
 
   String _maskSensitive(String key, String value) {
-    if (key == StorageKeys.jwtToken.key && value.length > 20) {
+    if (!StorageTab.isSensitiveKey(key)) return value;
+    if (value.length > 20) {
       return '${value.substring(0, 10)}...[masked]...${value.substring(value.length - 10)}';
     }
-    return value;
+    // Short tokens get a flat mask — never leak a short secret in full.
+    return '[masked]';
   }
 
   @override

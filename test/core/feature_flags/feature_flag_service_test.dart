@@ -85,15 +85,23 @@ void main() {
         expect(FeatureFlagService.instance.lastFetched, isNotNull);
       });
 
-      test('should notify listeners', () {
+      test('should notify listeners and stop notifying after removal', () {
+        // Closure identity matters — pass the same reference to both
+        // addListener and removeListener (fixes #61, where two distinct
+        // closures meant removeListener was a no-op and the listener
+        // leaked into later tests).
         int notifyCount = 0;
-        FeatureFlagService.instance.addListener(() => notifyCount++);
+        void listener() => notifyCount++;
+        FeatureFlagService.instance.addListener(listener);
 
         FeatureFlagService.instance.updateFlags({'a': true});
         expect(notifyCount, 1);
 
-        // Clean up listener
-        FeatureFlagService.instance.removeListener(() => notifyCount++);
+        FeatureFlagService.instance.removeListener(listener);
+
+        // Triggering another update must NOT call the listener again.
+        FeatureFlagService.instance.updateFlags({'b': true});
+        expect(notifyCount, 1, reason: 'listener should not fire after removeListener');
       });
     });
 
