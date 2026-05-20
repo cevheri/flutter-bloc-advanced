@@ -5,11 +5,17 @@ import 'package:flutter_test/flutter_test.dart';
 
 import '../../../test_utils.dart';
 
-/// In-memory ISecureStorage for tests.
+/// In-memory ISecureStorage for tests. Counts reads of the refresh-token
+/// key so concurrent-refresh coalescing can be asserted.
 class _MemorySecureStorage implements ISecureStorage {
   final Map<String, String> _store = {};
+  int refreshTokenReadCount = 0;
   @override
-  Future<String?> read(String key) async => _store[key];
+  Future<String?> read(String key) async {
+    if (key == SecureStorageKeys.refreshToken.key) refreshTokenReadCount++;
+    return _store[key];
+  }
+
   @override
   Future<void> write(String key, String value) async => _store[key] = value;
   @override
@@ -262,6 +268,68 @@ void main() {
 
       expect(sessionExpiredCalled, isTrue);
       expect(handler.nextCalled, isTrue);
+    });
+  });
+
+  group('TokenRefreshInterceptor - concurrent refresh coalescing', () {
+    test('coalesces concurrent 401s into a single refresh request', () async {
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      // Baseline the counter — earlier setup or other code paths may
+      // have read the key — so we assert the DELTA introduced by the
+      // three concurrent onError calls below, not the absolute count.
+      final baseline = secureStorage.refreshTokenReadCount;
+
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      DioException makeErr() {
+        final ro = RequestOptions(path: '/api/users');
+        return DioException(
+          requestOptions: ro,
+          response: Response(requestOptions: ro, statusCode: 401),
+        );
+      }
+
+      final h1 = _TestErrorHandler();
+      final h2 = _TestErrorHandler();
+      final h3 = _TestErrorHandler();
+
+      await Future.wait([
+        interceptor.onError(makeErr(), h1),
+        interceptor.onError(makeErr(), h2),
+        interceptor.onError(makeErr(), h3),
+      ]);
+
+      // Without coalescing this would be 3 — one refreshToken read per
+      // concurrent 401. With the in-flight Future shared, all three
+      // queued callers await the same refresh and the secure store is
+      // read exactly once.
+      expect(
+        secureStorage.refreshTokenReadCount - baseline,
+        1,
+        reason: 'concurrent 401s should share a single refresh attempt',
+      );
+    });
+
+    test('clears in-flight Future so a later 401 starts a fresh refresh', () async {
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      DioException makeErr() {
+        final ro = RequestOptions(path: '/api/users');
+        return DioException(
+          requestOptions: ro,
+          response: Response(requestOptions: ro, statusCode: 401),
+        );
+      }
+
+      // First wave completes…
+      await interceptor.onError(makeErr(), _TestErrorHandler());
+      final after1 = secureStorage.refreshTokenReadCount;
+
+      // …then a later 401 (after the in-flight Future cleared) starts
+      // its own refresh sequence.
+      await interceptor.onError(makeErr(), _TestErrorHandler());
+      final after2 = secureStorage.refreshTokenReadCount;
+
+      expect(after2, greaterThan(after1), reason: 'next 401 must trigger a new refresh');
     });
   });
 

@@ -13,9 +13,12 @@ typedef OnSessionExpired = void Function();
 
 /// Intercepts 401 responses and attempts a silent token refresh.
 ///
-/// Extends [QueuedInterceptor] so that concurrent requests hitting a 401 are
-/// serialised — only one refresh attempt is made and all queued requests are
-/// retried with the new token.
+/// Extends [QueuedInterceptor] so dio queues concurrent 401s, but the
+/// refresh request itself is also coalesced via a shared in-flight
+/// [Future]. When several requests fail with 401 around the same time
+/// the first one starts the refresh; the rest await the same Future
+/// and retry with the already-rotated token instead of triggering a
+/// refresh storm against `/api/token/refresh`.
 ///
 /// Interceptor order (must come AFTER [AuthInterceptor]):
 /// ```
@@ -27,6 +30,11 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
   final Dio _dio;
   final OnSessionExpired? _onSessionExpired;
   final ISecureStorage _secureStorage;
+
+  /// Shared in-flight refresh. Non-null while a refresh is in progress;
+  /// concurrent 401s await the same Future. Cleared on completion (success
+  /// or failure) so the next refresh window can start a fresh attempt.
+  Future<String?>? _inFlightRefresh;
 
   TokenRefreshInterceptor({required Dio dio, OnSessionExpired? onSessionExpired, ISecureStorage? secureStorage})
     : _dio = dio,
@@ -52,16 +60,46 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
 
     _log.debug('401 received for {} — attempting token refresh', [requestPath]);
 
+    final newIdToken = await _refreshOnce();
+    if (newIdToken == null) {
+      _triggerLogout();
+      handler.next(err);
+      return;
+    }
+
+    try {
+      // Retry the original request with the rotated token.
+      final retryOptions = err.requestOptions;
+      retryOptions.headers['Authorization'] = 'Bearer $newIdToken';
+      final retryResponse = await _dio.fetch(retryOptions);
+      handler.resolve(retryResponse);
+    } catch (e) {
+      _log.error('Retry after refresh failed: {}', [e]);
+      handler.next(err);
+    }
+  }
+
+  /// Returns a single in-flight refresh Future. The first caller starts
+  /// the refresh; concurrent callers await the same Future. Cleared on
+  /// completion so subsequent refresh windows start fresh.
+  Future<String?> _refreshOnce() {
+    return _inFlightRefresh ??= _performRefresh().whenComplete(() {
+      _inFlightRefresh = null;
+    });
+  }
+
+  /// Performs the actual refresh call + persistence. Returns the new
+  /// idToken on success, null on any failure (missing refresh token,
+  /// non-2xx response, malformed body, transport error).
+  Future<String?> _performRefresh() async {
     try {
       final refreshToken = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
       if (refreshToken == null || refreshToken.isEmpty) {
         _log.warn('No refresh token available — session expired');
-        _triggerLogout();
-        handler.next(err);
-        return;
+        return null;
       }
 
-      // Attempt token refresh using a fresh Dio instance to bypass interceptors
+      // Use a fresh Dio instance to bypass the interceptor chain.
       final refreshDio = Dio(
         BaseOptions(
           baseUrl: _dio.options.baseUrl,
@@ -73,50 +111,36 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
 
       final response = await refreshDio.post('/api/token/refresh', data: jsonEncode({'refresh_token': refreshToken}));
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        final data = response.data is String ? jsonDecode(response.data as String) : response.data;
-
-        final newIdToken = data['id_token'] as String?;
-        final newRefreshToken = data['refresh_token'] as String?;
-
-        if (newIdToken == null || newIdToken.isEmpty) {
-          _log.error('Refresh response missing id_token — session expired');
-          _triggerLogout();
-          handler.next(err);
-          return;
-        }
-
-        // Persist the new tokens. AuthInterceptor reads from secure
-        // storage on every request, so no cache sync is needed here —
-        // the next outgoing request picks up the rotated JWT directly.
-        await _secureStorage.write(SecureStorageKeys.jwtToken.key, newIdToken);
-        if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-          await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken);
-        }
-
-        _log.info('Token refresh successful — retrying original request');
-
-        // Retry the original request with the new token
-        final retryOptions = err.requestOptions;
-        retryOptions.headers['Authorization'] = 'Bearer $newIdToken';
-
-        final retryResponse = await _dio.fetch(retryOptions);
-        handler.resolve(retryResponse);
-        return;
-      } else {
+      if (response.statusCode != 200 && response.statusCode != 201) {
         _log.warn('Token refresh failed with status {} — session expired', [response.statusCode]);
-        _triggerLogout();
-        handler.next(err);
-        return;
+        return null;
       }
+
+      final data = response.data is String ? jsonDecode(response.data as String) : response.data;
+      final newIdToken = data['id_token'] as String?;
+      final newRefreshToken = data['refresh_token'] as String?;
+
+      if (newIdToken == null || newIdToken.isEmpty) {
+        _log.error('Refresh response missing id_token — session expired');
+        return null;
+      }
+
+      // Persist the rotated tokens. AuthInterceptor reads JWT from
+      // secure storage on every request, so the next outgoing call
+      // picks up the rotated value automatically.
+      await _secureStorage.write(SecureStorageKeys.jwtToken.key, newIdToken);
+      if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+        await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken);
+      }
+
+      _log.info('Token refresh successful');
+      return newIdToken;
     } on DioException catch (e) {
       _log.error('Token refresh request failed: {}', [e.message]);
-      _triggerLogout();
-      handler.next(err);
+      return null;
     } catch (e) {
       _log.error('Unexpected error during token refresh: {}', [e]);
-      _triggerLogout();
-      handler.next(err);
+      return null;
     }
   }
 
