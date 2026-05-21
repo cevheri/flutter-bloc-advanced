@@ -10,7 +10,9 @@ import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/widgets/web_back_button_disabler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -68,7 +70,13 @@ class _AppViewState extends State<_AppView> {
     super.didChangeDependencies();
     _router ??= AppRouterFactory(
       sessionCubit: context.read<SessionCubit>(),
-      observers: [AnalyticsRouteObserver(widget.analytics)],
+      observers: [
+        AnalyticsRouteObserver(widget.analytics),
+        // Sentry breadcrumbs from navigation. Only meaningful when the
+        // Sentry SDK was initialized in bootstrap (production + DSN);
+        // outside that window the observer is harmless overhead.
+        if (ProfileConstants.sentryDsn != null) SentryNavigatorObserver(),
+      ],
     ).create();
   }
 

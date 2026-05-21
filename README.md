@@ -62,6 +62,33 @@ The screenshots below are included to help contributors and adopters understand 
 - Public and private route separation
 - Protected admin-only pages
 
+### Crash Reporting (Sentry, opt-in)
+
+The template ships with a Sentry adapter (`SentryAnalyticsService`) and a conservative PII / token scrubber, but **no DSN is committed** — public templates with a committed DSN bleed events from every fork into the original project's quota. Provide a DSN at build time:
+
+```shell
+fvm flutter run --target lib/main/main_prod.dart \
+  --dart-define=SENTRY_DSN=https://YOUR_PUBLIC_KEY@oXXX.ingest.sentry.io/YOUR_PROJECT_ID
+```
+
+```shell
+fvm flutter build apk --release --target lib/main/main_prod.dart \
+  --dart-define=SENTRY_DSN=https://...
+```
+
+- **No DSN, or non-prod build:** `AppDependencies.createAnalyticsService()` returns `LogAnalyticsService`. Errors land in `AppLogger`. No network egress.
+- **DSN + prod build:** bootstrap calls `SentryFlutter.init(...)` and the analytics interface switches to the Sentry-backed implementation. `SentryNavigatorObserver` registers automatically so route changes become breadcrumbs.
+
+`sentryBeforeSend` (see `lib/infrastructure/analytics/sentry_scrub.dart`) drops the following before any event leaves the device:
+
+- `Authorization` / `Cookie` / `Set-Cookie` headers (case-insensitive)
+- Body keys whose names contain `password`, `otp`, `token`, `refreshToken` (case-insensitive substring)
+- JWT-shaped strings (3 base64url segments) in exception values + event message — replaced with `[REDACTED_JWT]`
+
+The scrubber is unit-tested independently of the SDK; review it against your fork's PII surface before adopting in production. Adding new redaction rules is a single-file change.
+
+Default sample rate: `tracesSampleRate: 0.2`. Adjust in `AppBootstrap.run` if your event budget needs different cadence.
+
 ### Server-Driven Dynamic Forms
 
 - 16 supported field types: text, email, password, number, phone, textarea,

@@ -38,6 +38,20 @@ class ProfileConstants {
   static dynamic get api {
     return _config![_Config.api];
   }
+
+  /// Production-only DSN passed via `--dart-define=SENTRY_DSN=...`.
+  /// Returns null in non-prod, or when the define is absent / empty
+  /// so the bootstrap falls back to [LogAnalyticsService] without
+  /// touching the Sentry SDK.
+  ///
+  /// **Never** commit a DSN to source. The repo is a public template;
+  /// a checked-in DSN means anyone running the fork ships events into
+  /// the original project's Sentry quota.
+  static String? get sentryDsn {
+    if (!isProduction) return null;
+    const dsn = String.fromEnvironment('SENTRY_DSN');
+    return dsn.isEmpty ? null : dsn;
+  }
 }
 
 class _Config {
