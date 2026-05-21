@@ -65,6 +65,14 @@ class TestUtils {
     TestWidgetsFlutterBinding.ensureInitialized();
     EquatableConfig.stringify = true;
     _installSecureStorageMock();
+    // Wire ApiClient to a shared FlutterSecureStorageAdapter so the
+    // HTTP interceptors read from the same MethodChannel-mocked store
+    // as the repository layer. Without this, tests touching both
+    // ApiClient.instance and a repository would silently use two
+    // different adapter instances — both backed by the same mock so
+    // tests pass, but the test harness would not catch a future
+    // production refactor that breaks SoT.
+    ApiClient.secureStorage = FlutterSecureStorageAdapter();
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.key, "en");
     AppRouter().setRouter(RouterType.goRouter);
@@ -78,6 +86,7 @@ class TestUtils {
     // otherwise. setupUnitTest does the same.
     TestWidgetsFlutterBinding.ensureInitialized();
     _installSecureStorageMock();
+    ApiClient.secureStorage = FlutterSecureStorageAdapter();
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.key, "en");
     AppRouter().setRouter(RouterType.goRouter);

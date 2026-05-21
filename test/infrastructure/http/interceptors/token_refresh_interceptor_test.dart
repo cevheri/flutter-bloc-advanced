@@ -342,11 +342,12 @@ void main() {
         secureStorage: secureStorage,
         onSessionExpired: () => sessionExpiredCalls++,
       );
-      final ro = RequestOptions(
-        path: '/api/users',
-        headers: {'Authorization': 'Bearer SOME_JWT'},
-        extra: {'_tokenRefresh_retried': true},
-      );
+      final ro = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer SOME_JWT'});
+      // Marker is an Expando keyed on RequestOptions (typed, per-
+      // instance, no map collisions). debugMarkAsRetried is the
+      // sanctioned test-only path to set it without driving a full
+      // refresh+retry round.
+      TokenRefreshInterceptor.debugMarkAsRetried(ro);
       final error = DioException(
         requestOptions: ro,
         response: Response(requestOptions: ro, statusCode: 401),
@@ -731,12 +732,14 @@ class _RefreshWriteFailsSecureStorage implements ISecureStorage {
 /// what bearer the retry used and whether the marker was stamped.
 class _CapturingSuccessStub extends Interceptor {
   String? lastAuthorization;
-  bool? lastRetryMarker;
+  bool lastRetryMarker = false;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     lastAuthorization = options.headers['Authorization'] as String?;
-    lastRetryMarker = options.extra['_tokenRefresh_retried'] as bool?;
+    // Marker is stored in a private Expando on RequestOptions; the
+    // interceptor exposes a test-only reader so we can pin the stamp.
+    lastRetryMarker = TokenRefreshInterceptor.debugIsMarkedAsRetried(options);
     handler.resolve(Response(requestOptions: options, statusCode: 200, data: '{"ok":true}'));
   }
 }

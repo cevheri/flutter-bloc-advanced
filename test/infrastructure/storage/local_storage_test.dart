@@ -141,4 +141,39 @@ void main() {
       reset(mockPrefs);
     });
   });
+
+  group('clear method throw-on-refuse contract', () {
+    // Pins the contract that AuthSessionRepository.clear and
+    // LoginRepository.logout rely on: SharedPreferences.clear() returning
+    // false MUST surface as a thrown StateError so the aggregated logout
+    // result captures the failure instead of reporting Success(null) with
+    // a stale session lingering on disk.
+    late AppLocalStorage localStorage;
+    late SharedPreferences mockPrefs;
+
+    setUp(() {
+      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
+      localStorage = AppLocalStorage();
+      mockPrefs = MockSharedPreferences();
+      SharedPreferences.setMockInitialValues({});
+      localStorage.setPreferencesInstance(mockPrefs);
+    });
+
+    test('throws StateError when SharedPreferences.clear() returns false', () async {
+      when(() => mockPrefs.clear()).thenAnswer((_) async => false);
+
+      await expectLater(localStorage.clear(), throwsA(isA<StateError>()));
+      verify(() => mockPrefs.clear()).called(1);
+    });
+
+    test('propagates exceptions thrown by SharedPreferences.clear()', () async {
+      when(() => mockPrefs.clear()).thenThrow(Exception('platform died'));
+
+      await expectLater(localStorage.clear(), throwsA(isA<Exception>()));
+    });
+
+    tearDown(() {
+      reset(mockPrefs);
+    });
+  });
 }

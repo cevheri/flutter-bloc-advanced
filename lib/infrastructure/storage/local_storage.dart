@@ -90,8 +90,8 @@ class AppLocalStorage {
   Future<bool> save(String key, dynamic value) async {
     _log.trace("Saving data to local storage {} {}", [key, value]);
     final prefs = await _prefs;
+    final bool ok;
     try {
-      final bool ok;
       if (value is String) {
         ok = await prefs.setString(key, value);
       } else if (value is int) {
@@ -105,18 +105,27 @@ class AppLocalStorage {
       } else {
         throw Exception("Unsupported value type");
       }
-      if (!ok) {
-        _log.error("SharedPreferences refused write for key {}", [key]);
-        return false;
-      }
-
-      await AppLocalStorageCached.loadCache();
-      _log.trace("Saved data to local storage {} {}", [key, value]);
-      return true;
     } catch (e) {
       _log.error("Error saving data to local storage: {}, {}", [key, e]);
       return false;
     }
+    if (!ok) {
+      _log.error("SharedPreferences refused write for key {}", [key]);
+      return false;
+    }
+    // Refresh the in-memory cache. A failure here means the cache
+    // is stale, NOT that the write failed — the write already landed
+    // above. Returning false from this path would falsely flag a
+    // successful save as a failure and trigger the cross-backend
+    // rollback in AuthSessionRepository._writeLocal, undoing a
+    // legitimate login over a transient SharedPreferences read error.
+    try {
+      await AppLocalStorageCached.loadCache();
+    } catch (e) {
+      _log.warn("Post-save cache refresh failed for {} — cache may be stale: {}", [key, e]);
+    }
+    _log.trace("Saved data to local storage {} {}", [key, value]);
+    return true;
   }
 
   Future<dynamic> read(String key) async {
@@ -127,20 +136,29 @@ class AppLocalStorage {
 
   Future<bool> remove(String key) async {
     _log.trace("Removing data from local storage");
+    final bool ok;
     try {
       final prefs = await _prefs;
-      final ok = await prefs.remove(key);
-      if (!ok) {
-        _log.error("SharedPreferences refused remove for key {}", [key]);
-        return false;
-      }
-      await AppLocalStorageCached.loadCache();
-      _log.trace("Removed data from local storage {}", [key]);
-      return true;
+      ok = await prefs.remove(key);
     } catch (e) {
       _log.error("Error removing data from local storage: {}, {}", [key, e]);
       return false;
     }
+    if (!ok) {
+      _log.error("SharedPreferences refused remove for key {}", [key]);
+      return false;
+    }
+    // Same cache-refresh-failure invariant as [save]: a failure here
+    // does not mean the remove failed (it landed above) — only that
+    // the cache is now stale. Treating it as a failure would block
+    // logout from an unrelated transient error.
+    try {
+      await AppLocalStorageCached.loadCache();
+    } catch (e) {
+      _log.warn("Post-remove cache refresh failed for {} — cache may be stale: {}", [key, e]);
+    }
+    _log.trace("Removed data from local storage {}", [key]);
+    return true;
   }
 
   Future<void> clear() async {

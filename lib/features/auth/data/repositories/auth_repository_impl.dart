@@ -4,18 +4,21 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/mappers/auth_mapper.dart';
 import 'package:flutter_bloc_advance/features/auth/data/models/jwt_token.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class LoginRepository implements IAuthRepository {
   static final _log = AppLogger.getLogger("LoginRepository");
 
-  LoginRepository({ISecureStorage? secureStorage}) : _secureStorage = secureStorage ?? FlutterSecureStorageAdapter();
+  LoginRepository({ISecureStorage? secureStorage, IAuthSessionRepository? sessionRepository})
+    : _sessionRepository =
+          sessionRepository ?? AuthSessionRepository(secureStorage: secureStorage ?? FlutterSecureStorageAdapter());
 
-  final ISecureStorage _secureStorage;
+  final IAuthSessionRepository _sessionRepository;
 
   @override
   Future<Result<AuthTokenEntity>> authenticate(AuthCredentialsEntity userJWT) async {
@@ -52,41 +55,19 @@ class LoginRepository implements IAuthRepository {
   @override
   Future<Result<void>> logout() async {
     _log.debug("BEGIN:logout repository start");
-    // Best-effort cleanup across BOTH backends. Each step is wrapped in
-    // its own try/catch so that a failure to delete one secure key does
-    // not skip the others — partial logout is the worst outcome since
-    // any leftover token would let AuthInterceptor re-attach it on the
-    // next request and silently defeat logout. Any individual failure
-    // surfaces as a Failure result (with the first stack trace attached
-    // for diagnostics) so callers can decide whether to retry or notify
-    // the user.
-    final errors = <String>[];
-    StackTrace? firstStackTrace;
-    try {
-      await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
-    } catch (e, st) {
-      errors.add('jwt: $e');
-      firstStackTrace ??= st;
+    // Delegate to IAuthSessionRepository.clear so there is exactly
+    // one cleanup implementation (best-effort across both backends,
+    // error aggregation, partial-logout failure semantics). Keeping
+    // two parallel cleanups guaranteed they would drift the next time
+    // either logout flow changed.
+    final result = await _sessionRepository.clear();
+    switch (result) {
+      case Failure(:final error):
+        _log.error("END:logout failed: {}", [error]);
+      case Success():
+        _log.debug("END:logout successful");
     }
-    try {
-      await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
-    } catch (e, st) {
-      errors.add('refresh: $e');
-      firstStackTrace ??= st;
-    }
-    try {
-      await AppLocalStorage().clear();
-    } catch (e, st) {
-      errors.add('local: $e');
-      firstStackTrace ??= st;
-    }
-    if (errors.isNotEmpty) {
-      final msg = errors.join('; ');
-      _log.error("END:logout partial failures: {}\n{}", [msg, firstStackTrace]);
-      return Failure(UnknownError(msg), stackTrace: firstStackTrace);
-    }
-    _log.debug("END:logout successful");
-    return const Success(null);
+    return result;
   }
 
   @override

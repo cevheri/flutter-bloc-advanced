@@ -96,6 +96,20 @@ class ApiClient {
 
   static Dio _createDio() {
     _log.debug('Creating Dio instance (production: {})', [ProfileConstants.isProduction]);
+    if (secureStorage == null) {
+      // Loud warning when Dio is built without a shared secureStorage.
+      // Production code paths through AppBootstrap always set this
+      // before the first HTTP call; if you see this in test or app
+      // logs it means HTTP interceptors are about to construct their
+      // own FlutterSecureStorageAdapter instance, which will diverge
+      // from whatever the repository layer / SessionCubit are using.
+      // Set ApiClient.secureStorage before touching ApiClient.instance
+      // (test setup helpers do this — see test/test_utils.dart).
+      _log.warn(
+        'ApiClient.secureStorage is null at Dio creation — interceptors will fall back '
+        'to a private FlutterSecureStorageAdapter and diverge from the repository layer.',
+      );
+    }
 
     final dio = Dio(
       BaseOptions(

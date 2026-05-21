@@ -1,4 +1,5 @@
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
@@ -17,6 +18,10 @@ class _StubSecureStorage implements ISecureStorage {
 }
 
 void main() {
+  setUpAll(() {
+    AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
+  });
+
   const dependencies = AppDependencies();
 
   test('app dependencies expose account repository contract', () {

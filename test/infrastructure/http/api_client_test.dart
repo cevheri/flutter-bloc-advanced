@@ -343,5 +343,21 @@ void main() {
         throwsUnsupportedError,
       );
     });
+
+    // Guard for the test-ordering hazard called out in the independent
+    // review (I3): when ApiClient.secureStorage is null at Dio creation
+    // time, the interceptors fall back to a private adapter instance
+    // that diverges from the repository layer's adapter. test_utils
+    // wires the shared adapter in setupUnitTest, so by the time any
+    // test reaches this point, secureStorage MUST be non-null.
+    test('ApiClient.secureStorage is wired by setupUnitTest — no silent divergence', () {
+      expect(
+        ApiClient.secureStorage,
+        isNotNull,
+        reason:
+            'If this fires, setupUnitTest is being bypassed or someone reset the static. '
+            'See ApiClient._createDio warn log and lib/infrastructure/http/api_client.dart:76.',
+      );
+    });
   });
 }

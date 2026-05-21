@@ -9,10 +9,11 @@
 | Severity | Count | In-PR | Deferred |
 |---|---:|---:|---:|
 | Critical | 5 | **5 ✓** | 0 |
-| Important | 8 | TBD | TBD |
+| Important | 8 | **8 ✓** | 0 |
 | Suggestion | 11 | TBD | TBD |
 
 **Critical phase status:** complete. 1479/1479 tests passing, format clean, no new analyzer warnings.
+**Important phase status:** complete. 1478/1478 tests passing, format clean, no new analyzer warnings.
 
 ---
 
@@ -28,14 +29,14 @@
 
 ## 🟡 Important
 
-- [ ] **I1** — `SessionState` should be sealed (project MAIN RULE). Today's `bool isAuthenticated` + `.unknown()` collapses three real states into two; router cannot distinguish "still restoring" from "logged out". Sealed `SessionUnknown / SessionAuthenticated / SessionUnauthenticated` eliminates the splash-login-flash race.
-- [ ] **I2** — `LoginRepository.logout` and `AuthSessionRepository.clear` duplicate the same best-effort cleanup. Delegate `LoginRepository.logout()` to `IAuthSessionRepository.clear()`.
-- [ ] **I3** — `ApiClient.secureStorage` static field is a test-ordering hazard. Any test triggering `ApiClient.instance` before the static is assigned gets a different adapter instance than repositories. Add `assert(secureStorage != null)` in `_createDio` or a guard test.
-- [ ] **I4** — Magic strings scattered across refresh path: `'Bearer '`, `'Authorization'`, `'/api/token/refresh'`, `'id_token'`, `'refresh_token'`. Consolidate to a const block. Parse refresh response via `JWTToken.fromJson` (already exists) instead of raw `data['id_token'] as String?`.
-- [ ] **I5** — `_retriedAfterRefresh` is a stringly-typed flag in `RequestOptions.extra` (Map<String, dynamic>). Replace with typed `Expando<bool>` extension on `RequestOptions`.
-- [ ] **I6** — `AppLocalStorage.save()` swallows `loadCache` exceptions as save failures. If `prefs.setString` succeeds but the post-write `loadCache()` throws, the catch returns false → callers roll back successful login. Move `loadCache()` outside the try or catch it separately as a warn.
-- [ ] **I7** — `AuthSessionRepository._rollback` switch uses `_ => null` default, defeating exhaustiveness on `StorageKeys`. A future enum variant rolled back to null = silent delete. Enumerate explicitly or assert default.
-- [ ] **I8** — Two test gaps: `AppLocalStorage.clear()` throw-on-refuse (G4) and `SessionCubit.restore` prod-mode expired-token branch (G7).
+- [x] **I1** — Sealed hierarchy: `SessionUnknown` / `SessionAuthenticated` / `SessionUnauthenticated({reason})` with a `SessionExpiredReason` enum (noToken/expired/storageError/unknown). Router redirect now pattern-checks `state is SessionAuthenticated`; the load-bearing "Token expiry is no longer checked here" prose comment is gone. Tests rewritten with an exhaustive-switch test that the compiler enforces against future variant additions; new prod-mode expired-token test (also closes I8a).
+- [x] **I2** — `LoginRepository.logout` now delegates to `IAuthSessionRepository.clear`. Constructor accepts an optional session repository; falls back to building one from `secureStorage`. Eliminated 30+ lines of duplicated cleanup code; sole remaining responsibility of `logout` is log-band routing the Result. Repository contract test seeds logger so the new internal AuthSessionRepository construction doesn't trip.
+- [x] **I3** — Three-layer defense: (a) `_createDio` now logs a loud `warn` when `secureStorage` is null at construction time so the divergence is auditable from logs; (b) `setupUnitTest` / `setupRepositoryUnitTest` wire `ApiClient.secureStorage = FlutterSecureStorageAdapter()` so the test harness can't accidentally fall back to a private adapter instance; (c) new guard test in `api_client_test.dart` asserts `ApiClient.secureStorage` is non-null after `setupUnitTest`, locking the invariant.
+- [x] **I4** — Backend constants consolidated into private `_RefreshEndpoint` (path + request/response keys) and `_AuthHeader` (name + bearer prefix) classes at the top of `token_refresh_interceptor.dart`. NOT routed through `JWTToken.fromJson` because that would create an `infrastructure → features` import that violates the project dependency rules (`grep -rn "import 'package:flutter_bloc_advance/features" lib/infrastructure` confirmed it would be the only such import in the codebase).
+- [x] **I5** — `_retriedAfterRefresh` is now a private `Expando<bool>` keyed on `RequestOptions`. Magic-string flag in `extra` is gone; `'true'`/`1` mistype is structurally impossible. Two `@visibleForTesting` helpers (`debugMarkAsRetried`, `debugIsMarkedAsRetried`) keep the marker exercisable from tests without leaking the Expando.
+- [x] **I6** — `save()` and `remove()` now treat `loadCache()` failure as a cache-staleness warn, not a save failure. The successful underlying write is no longer rolled back by a transient SharedPreferences read error.
+- [x] **I7** — Default `_ => null` removed; switch enumerates every `StorageKeys` variant. Future enum additions surface as missing-case build errors instead of silent rollback-to-null (== delete).
+- [x] **I8** — `clear()` throw-on-refuse contract pinned with two tests: `MockSharedPreferences.clear() == false` → `throwsA(isA<StateError>())`; `clear()` exception propagates. Prod-mode expired-token branch covered as part of I1 (see new SessionCubit test).
 
 ---
 

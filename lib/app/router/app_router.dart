@@ -50,31 +50,29 @@ class AppRouterFactory {
       ],
       redirect: (context, state) {
         final location = state.uri.path;
-        final isAuthenticated = _sessionCubit.state.isAuthenticated;
+        final sessionState = _sessionCubit.state;
+        final isAuthenticated = sessionState is SessionAuthenticated;
+        final isPublic = _isPublicRoute(location);
 
-        _log.debug('redirect - location: {}, isAuthenticated: {}', [location, isAuthenticated]);
+        _log.debug('redirect - location: {}, session: {}', [location, sessionState.runtimeType]);
 
-        // Authenticated user landing on a public route (login / register /
-        // forgot-password / OTP) should be sent to the home shell. Without
-        // this, async session restore would leave a logged-in user stuck
-        // on the login page after the first frame's redirect raced against
-        // the cubit emission.
-        if (isAuthenticated && _isPublicRoute(location)) {
+        // Authenticated user landing on a public route (login / register
+        // / forgot-password / OTP) should be sent to the home shell.
+        // Without this, async session restore would leave a logged-in
+        // user stuck on the login page after the first frame's redirect
+        // raced against the cubit emission.
+        if (isAuthenticated && isPublic) {
           return ApplicationRoutesConstants.home;
         }
 
-        if (_isPublicRoute(location)) {
-          return null;
-        }
-
-        if (!isAuthenticated && !_isPublicRoute(location)) {
+        // SessionUnknown is treated the same as SessionUnauthenticated
+        // for redirect purposes — we cannot route into protected pages
+        // without proof of session. Token validity (presence + `exp`)
+        // is owned by SessionCubit, which flips state to
+        // SessionUnauthenticated when the JWT is missing or expired.
+        if (!isAuthenticated && !isPublic) {
           return ApplicationRoutesConstants.login;
         }
-
-        // Token expiry is no longer checked here — SessionCubit owns
-        // that decision and flips isAuthenticated to false when the JWT
-        // is missing or past its `exp` claim. Anything that needs to
-        // re-evaluate validity calls `sessionCubit.refresh()`.
 
         return null;
       },

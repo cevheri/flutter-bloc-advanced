@@ -149,10 +149,18 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
     for (final key in mutatedLocal) {
       try {
+        // Compile-time exhaustive — adding a new StorageKeys variant
+        // here without snapshotting its prior value will surface as
+        // a missing case at build time, not as a silent rollback-to-
+        // null (== delete). Persist mutates only the keys listed
+        // below; any new local field this repository persists must
+        // also extend the snapshot/restore signature.
         final prior = switch (key) {
           StorageKeys.username => priorUsername,
           StorageKeys.roles => priorRoles,
-          _ => null,
+          StorageKeys.language => null,
+          StorageKeys.theme => null,
+          StorageKeys.brightness => null,
         };
         // AppLocalStorage.save/remove can refuse a mutation by returning
         // false without throwing. Honor that signal so a rollback that
