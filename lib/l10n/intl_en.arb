@@ -138,5 +138,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "forbidden_title": "Access denied",
+  "@forbidden_title": {},
+  "forbidden_message": "You do not have permission to view this page.",
+  "@forbidden_message": {},
+  "forbidden_back_home": "Back to home",
+  "@forbidden_back_home": {}
 }

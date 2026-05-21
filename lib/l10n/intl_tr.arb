@@ -138,5 +138,11 @@
         "type": "String"
       }
     }
-  }
+  },
+  "forbidden_title": "Erişim engellendi",
+  "@forbidden_title": {},
+  "forbidden_message": "Bu sayfayı görüntüleme yetkiniz yok.",
+  "@forbidden_message": {},
+  "forbidden_back_home": "Ana sayfaya dön",
+  "@forbidden_back_home": {}
 }

@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Session state observed by router redirect and UI guards.
@@ -32,8 +33,21 @@ final class SessionUnknown extends SessionState {
 }
 
 /// User holds a valid session token in secure storage.
+///
+/// [roles] is the **OR** set used by router guards: a route requiring
+/// `{'ROLE_ADMIN'}` accepts a user whose [roles] contains at least one
+/// of the listed values. Defaulting to the empty set preserves the
+/// pre-roles `const SessionAuthenticated()` callers while letting new
+/// code pass a real set. Stored as [Set] so membership checks at every
+/// route transition are O(1) — `AuthSession.roles` upstream is a list
+/// for backend-shape parity; we normalize at the cubit boundary.
 final class SessionAuthenticated extends SessionState {
-  const SessionAuthenticated();
+  const SessionAuthenticated({this.roles = const <String>{}});
+
+  final Set<String> roles;
+
+  @override
+  List<Object?> get props => [roles];
 }
 
 /// User holds no valid session token. The [reason] is for logs and
@@ -108,11 +122,11 @@ class SessionCubit extends Cubit<SessionState> {
         if (expired) {
           emit(const SessionUnauthenticated(reason: SessionExpiredReason.expired));
         } else {
-          emit(const SessionAuthenticated());
+          emit(SessionAuthenticated(roles: await _readRoles()));
         }
       } else {
         _log.info('restore: token found (dev/test lenient) → authenticated');
-        emit(const SessionAuthenticated());
+        emit(SessionAuthenticated(roles: await _readRoles()));
       }
     } catch (e, st) {
       _log.error('restore: secure storage read failed → unauthenticated (safe default): {}\n{}', [e, st]);
@@ -123,8 +137,12 @@ class SessionCubit extends Cubit<SessionState> {
   /// Flips the cubit into [SessionAuthenticated]. Caller-trusted —
   /// used after a login flow has already persisted tokens via
   /// [AuthSessionRepository.persist]. Does not re-read storage.
-  void markAuthenticated() {
-    emit(const SessionAuthenticated());
+  ///
+  /// [roles] defaults to the empty set; the post-login listener in
+  /// `AppSessionListeners` reads the persisted roles and passes them
+  /// here so route guards see them on the next router refresh.
+  void markAuthenticated({Set<String> roles = const <String>{}}) {
+    emit(SessionAuthenticated(roles: roles));
   }
 
   /// Flips the cubit into [SessionUnauthenticated] with the supplied
@@ -137,4 +155,20 @@ class SessionCubit extends Cubit<SessionState> {
   /// Re-run [restore] from current secure-storage state. Fire-and-
   /// forget safe — see [restore] for the failure semantics.
   Future<void> refresh() => restore();
+
+  /// Reads the persisted role list from [AppLocalStorage] and normalizes
+  /// to a [Set]. Returns the empty set when the key is missing or the
+  /// stored shape is unexpected — UI guards fall back to "no access"
+  /// rather than failing open.
+  Future<Set<String>> _readRoles() async {
+    try {
+      final raw = await AppLocalStorage().read(StorageKeys.roles.key);
+      if (raw is List) {
+        return raw.whereType<String>().toSet();
+      }
+    } catch (e) {
+      _log.warn('_readRoles failed; returning empty set: {}', [e]);
+    }
+    return const <String>{};
+  }
 }
