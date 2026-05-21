@@ -1,10 +1,30 @@
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../test_utils.dart';
+
+/// ISecureStorage that throws on the configured delete key. Used to
+/// exercise the best-effort sequential cleanup path in logout.
+class _FlakyDeleteSecureStorage implements ISecureStorage {
+  _FlakyDeleteSecureStorage({required this.failOn});
+  final String failOn;
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async => _store[key];
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async {
+    if (key == failOn) throw StateError('boom on $key');
+    _store.remove(key);
+  }
+
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
 
 void main() {
   setUpAll(() async {
@@ -41,14 +61,52 @@ void main() {
     });
 
     test("Given stored entity when logout then clear storage successfully", () async {
-      TestUtils().setupAuthentication();
-
-      expect(await AppLocalStorage().read(StorageKeys.jwtToken.key), isNotNull);
-      expect(await AppLocalStorage().read(StorageKeys.jwtToken.key), isA<String>());
+      final secure = FlutterSecureStorageAdapter();
+      await secure.write(SecureStorageKeys.jwtToken.key, 'MOCK_TOKEN');
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'MOCK_TOKEN');
 
       final result = await LoginRepository().logout();
       expect(result, isA<Success<void>>());
-      expect(await AppLocalStorage().read(StorageKeys.jwtToken.key), null);
+      // Both backends are wiped after logout — secure store no longer
+      // holds the JWT, so AuthInterceptor cannot re-attach it.
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
+    });
+
+    test("logout keeps wiping even if one secure delete throws", () async {
+      // ISecureStorage that throws on jwtToken delete but succeeds on
+      // refreshToken delete — proves best-effort sequential cleanup:
+      // a partial failure must not skip subsequent cleanup steps,
+      // because any leftover token would let AuthInterceptor re-attach
+      // it on the next request.
+      final secure = _FlakyDeleteSecureStorage(failOn: SecureStorageKeys.jwtToken.key);
+      await secure.write(SecureStorageKeys.refreshToken.key, 'REFRESH');
+
+      final result = await LoginRepository(secureStorage: secure).logout();
+
+      expect(result, isA<Failure<void>>(), reason: 'partial failure surfaced as Failure');
+      expect(
+        await secure.read(SecureStorageKeys.refreshToken.key),
+        isNull,
+        reason: 'refresh delete ran even though jwt delete threw',
+      );
+    });
+
+    test("logout wipes JWT and refresh token from secure storage", () async {
+      // Seed both backends to simulate a fully-logged-in session.
+      final secure = FlutterSecureStorageAdapter();
+      await secure.write(SecureStorageKeys.jwtToken.key, 'JWT_VALUE');
+      await secure.write(SecureStorageKeys.refreshToken.key, 'REFRESH_VALUE');
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'JWT_VALUE');
+
+      final result = await LoginRepository().logout();
+
+      expect(result, isA<Success<void>>());
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull, reason: 'secure JWT must not survive logout');
+      expect(
+        await secure.read(SecureStorageKeys.refreshToken.key),
+        isNull,
+        reason: 'secure refresh must not survive logout',
+      );
     });
   });
 

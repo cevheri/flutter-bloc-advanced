@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_consol
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Metadata describing one entry in the [ApiClient] interceptor chain.
 ///
@@ -65,6 +66,15 @@ class ApiClient {
   /// that the [TokenRefreshInterceptor] can notify the app layer to log out.
   static OnSessionExpired? onSessionExpired;
 
+  /// Secure storage instance threaded into [AuthInterceptor] and
+  /// [TokenRefreshInterceptor] when Dio is built. Bootstrap sets this
+  /// to the same [ISecureStorage] adapter it uses for migration and
+  /// the widget tree, so the HTTP interceptors and the repository
+  /// layer share one source of truth. Falls back to a default
+  /// [FlutterSecureStorageAdapter] when unset (tests that don't go
+  /// through bootstrap).
+  static ISecureStorage? secureStorage;
+
   /// Inject a custom Dio instance for testing.
   static void setTestInstance(Dio dio) => _testDio = dio;
 
@@ -72,10 +82,20 @@ class ApiClient {
   static void resetTestInstance() => _testDio = null;
 
   /// Reset the production singleton (useful in tests).
+  ///
+  /// Clears every static hook the class owns so a re-init path
+  /// (hot reload, test tearDown, multi-test runs in one process)
+  /// cannot leak a previous adapter/callback into the next Dio
+  /// construction. Without resetting [secureStorage] / [onSessionExpired]
+  /// here, a test that sets them and a later test that builds a fresh
+  /// Dio would inherit those — silently re-binding the new interceptors
+  /// to the previous run's instances.
   static void reset() {
     _dio?.close();
     _dio = null;
     _testDio = null;
+    secureStorage = null;
+    onSessionExpired = null;
   }
 
   /// The active Dio instance.
@@ -86,6 +106,20 @@ class ApiClient {
 
   static Dio _createDio() {
     _log.debug('Creating Dio instance (production: {})', [ProfileConstants.isProduction]);
+    if (secureStorage == null) {
+      // Loud warning when Dio is built without a shared secureStorage.
+      // Production code paths through AppBootstrap always set this
+      // before the first HTTP call; if you see this in test or app
+      // logs it means HTTP interceptors are about to construct their
+      // own FlutterSecureStorageAdapter instance, which will diverge
+      // from whatever the repository layer / SessionCubit are using.
+      // Set ApiClient.secureStorage before touching ApiClient.instance
+      // (test setup helpers do this — see test/test_utils.dart).
+      _log.warn(
+        'ApiClient.secureStorage is null at Dio creation — interceptors will fall back '
+        'to a private FlutterSecureStorageAdapter and diverge from the repository layer.',
+      );
+    }
 
     final dio = Dio(
       BaseOptions(
@@ -107,11 +141,15 @@ class ApiClient {
         meta: const InterceptorChainEntry(name: 'ConnectivityInterceptor', detail: 'Rejects requests when offline'),
       ),
       (
-        interceptor: AuthInterceptor(),
+        interceptor: AuthInterceptor(secureStorage: secureStorage),
         meta: const InterceptorChainEntry(name: 'AuthInterceptor', detail: 'Attaches JWT token to requests'),
       ),
       (
-        interceptor: TokenRefreshInterceptor(dio: dio, onSessionExpired: onSessionExpired),
+        interceptor: TokenRefreshInterceptor(
+          dio: dio,
+          onSessionExpired: onSessionExpired,
+          secureStorage: secureStorage,
+        ),
         meta: const InterceptorChainEntry(name: 'TokenRefreshInterceptor', detail: 'Refreshes expired access tokens'),
       ),
       (

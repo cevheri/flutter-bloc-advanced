@@ -28,21 +28,37 @@ import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dar
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class AppScope extends StatelessWidget {
-  const AppScope({super.key, required this.dependencies, required this.child});
+  const AppScope({super.key, required this.dependencies, this.secureStorage, required this.child});
 
   final AppDependencies dependencies;
+
+  /// Pre-constructed ISecureStorage from bootstrap. When provided, it is
+  /// shared via `.value` so migration and runtime consumers use the same
+  /// instance. When null, AppScope falls back to `dependencies.createSecureStorage()`
+  /// (useful for tests that don't go through bootstrap).
+  final ISecureStorage? secureStorage;
   final Widget child;
 
   @override
   Widget build(BuildContext context) {
+    final secure = secureStorage;
     return MultiRepositoryProvider(
       providers: [
+        if (secure != null)
+          RepositoryProvider<ISecureStorage>.value(value: secure)
+        else
+          RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
         RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
         RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
-        RepositoryProvider<IAuthRepository>(create: (_) => dependencies.createAuthRepository()),
-        RepositoryProvider<IAuthSessionRepository>(create: (_) => dependencies.createAuthSessionRepository()),
+        RepositoryProvider<IAuthRepository>(
+          create: (context) => dependencies.createAuthRepository(context.read<ISecureStorage>()),
+        ),
+        RepositoryProvider<IAuthSessionRepository>(
+          create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
+        ),
         RepositoryProvider<IDynamicFormRepository>(create: (_) => dependencies.createDynamicFormRepository()),
         RepositoryProvider<MenuRepository>(create: (_) => dependencies.createMenuRepository()),
         RepositoryProvider<IUserRepository>(create: (_) => dependencies.createUserRepository()),
@@ -50,7 +66,9 @@ class AppScope extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()..monitor()),
-          BlocProvider<SessionCubit>(create: (_) => SessionCubit()..restore()),
+          BlocProvider<SessionCubit>(
+            create: (context) => SessionCubit(secureStorage: context.read<ISecureStorage>())..restore(),
+          ),
           BlocProvider<LoginBloc>(
             create: (context) => LoginBloc(
               authenticateUserUseCase: AuthenticateUserUseCase(context.read<IAuthRepository>()),

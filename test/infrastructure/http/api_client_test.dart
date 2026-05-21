@@ -244,7 +244,7 @@ void main() {
       });
 
       test('given test environment when GET request is made then should return mock data', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.get('/test');
         expect(response.statusCode, lessThan(300));
       });
@@ -254,7 +254,7 @@ void main() {
       });
 
       test('given test environment when POST request is made then should return mock data', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.post('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
@@ -264,7 +264,7 @@ void main() {
       });
 
       test('given test environment when PUT request is made then should return mock data', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.put('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
@@ -274,7 +274,7 @@ void main() {
       });
 
       test('given test environment when DELETE request is made then should return 204', () async {
-        await TestUtils().setupAuthentication();
+        TestUtils().setupAuthentication();
         final response = await ApiClient.delete('/test');
         expect(response.statusCode, lessThan(300));
       });
@@ -341,6 +341,25 @@ void main() {
       expect(
         () => ApiClient.interceptorChainSnapshot..add(const InterceptorChainEntry(name: 'X', detail: 'X')),
         throwsUnsupportedError,
+      );
+    });
+
+    // Guard for the test-ordering hazard called out in the independent
+    // review (I3): when ApiClient.secureStorage is null at Dio creation
+    // time, the interceptors fall back to a private adapter instance
+    // that diverges from the repository layer's adapter. test_utils
+    // wires the shared adapter in setupUnitTest. Drives a fresh
+    // setupUnitTest inside the test so this assertion survives the
+    // group's pre-test ApiClient.reset() (which deliberately clears
+    // the static — see C-C / [ApiClient.reset]).
+    test('ApiClient.secureStorage is wired by setupUnitTest — no silent divergence', () async {
+      await TestUtils().setupUnitTest();
+      expect(
+        ApiClient.secureStorage,
+        isNotNull,
+        reason:
+            'If this fires, setupUnitTest is being bypassed or someone reset the static. '
+            'See ApiClient._createDio warn log and lib/infrastructure/http/api_client.dart:76.',
       );
     });
   });

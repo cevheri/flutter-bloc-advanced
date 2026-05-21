@@ -11,10 +11,8 @@ import 'package:flutter_bloc_advance/features/dashboard/navigation/dashboard_rou
 import 'package:flutter_bloc_advance/features/settings/navigation/settings_routes.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
-import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouterFactory {
@@ -52,21 +50,27 @@ class AppRouterFactory {
       ],
       redirect: (context, state) {
         final location = state.uri.path;
-        final isAuthenticated = _sessionCubit.state.isAuthenticated;
+        final sessionState = _sessionCubit.state;
+        final isAuthenticated = sessionState is SessionAuthenticated;
+        final isPublic = _isPublicRoute(location);
 
-        _log.debug('redirect - location: {}, isAuthenticated: {}', [location, isAuthenticated]);
+        _log.debug('redirect - location: {}, session: {}', [location, sessionState.runtimeType]);
 
-        if (_isPublicRoute(location)) {
-          return null;
+        // Authenticated user landing on a public route (login / register
+        // / forgot-password / OTP) should be sent to the home shell.
+        // Without this, async session restore would leave a logged-in
+        // user stuck on the login page after the first frame's redirect
+        // raced against the cubit emission.
+        if (isAuthenticated && isPublic) {
+          return ApplicationRoutesConstants.home;
         }
 
-        if (!isAuthenticated && !_isPublicRoute(location)) {
-          return ApplicationRoutesConstants.login;
-        }
-
-        if (ProfileConstants.isProduction &&
-            SecurityUtils.isTokenExpired() &&
-            location != ApplicationRoutesConstants.login) {
+        // SessionUnknown is treated the same as SessionUnauthenticated
+        // for redirect purposes — we cannot route into protected pages
+        // without proof of session. Token validity (presence + `exp`)
+        // is owned by SessionCubit, which flips state to
+        // SessionUnauthenticated when the JWT is missing or expired.
+        if (!isAuthenticated && !isPublic) {
           return ApplicationRoutesConstants.login;
         }
 

@@ -49,17 +49,24 @@ void main() {
   }
 
   group('SettingsScreen Tests', () {
-    testWidgets('renders all buttons correctly', (WidgetTester tester) async {
-      await testUtils.setupAuthentication();
+    testWidgets('renders all settings tiles', (WidgetTester tester) async {
+      testUtils.setupAuthentication();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
+      // Assert via Keys only — text-based asserts would couple the
+      // test to the active locale (some titles use S.of(context) /
+      // generated strings, others are still literals pending i18n).
+      // Key presence is enough to guard the screen layout against
+      // accidental tile removal.
       expect(find.byKey(settingsChangePasswordButtonKey), findsOneWidget);
-      expect(find.byKey(settingsLogoutButtonKey), findsOneWidget);
+      expect(find.byKey(settingsWebsiteButtonKey), findsOneWidget);
+      // Logout intentionally lives only in the sidebar / topbar shell —
+      // settings does not own auth-session lifecycle (cross-feature).
     });
 
     testWidgets('navigates to change password screen when button is pressed', (WidgetTester tester) async {
-      await testUtils.setupAuthentication();
+      testUtils.setupAuthentication();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 

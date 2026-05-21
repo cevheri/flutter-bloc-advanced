@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
 
 class JWTToken extends Equatable {
   final String? idToken;
@@ -12,11 +13,11 @@ class JWTToken extends Equatable {
     return JWTToken(idToken: idToken ?? this.idToken, refreshToken: refreshToken ?? this.refreshToken);
   }
 
-  static JWTToken? fromJson(Map<String, dynamic> json) {
+  static JWTToken fromJson(Map<String, dynamic> json) {
     return JWTToken(idToken: json['id_token'], refreshToken: json['refresh_token']);
   }
 
-  static JWTToken? fromJsonString(String json) => fromJson(jsonDecode(json));
+  static JWTToken fromJsonString(String json) => fromJson(jsonDecode(json));
 
   Map<String, dynamic>? toJson() {
     final Map<String, dynamic> json = {};
@@ -39,6 +40,9 @@ class JWTToken extends Equatable {
   @override
   List<Object?> get props => [idToken, refreshToken];
 
+  /// Override masks tokens so this model is safe to embed in log
+  /// output. Any `_log.debug('... {}', [jwt])` call goes through
+  /// `toString()`, never through `props` — the override wins.
   @override
-  bool get stringify => true;
+  String toString() => 'JWTToken(idToken: ${maskToken(idToken)}, refreshToken: ${maskToken(refreshToken)})';
 }

@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
-import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/theme_selection_dialog.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
@@ -92,23 +90,12 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
-
-              // Danger zone
-              _SettingsSection(
-                title: S.of(context).logout,
-                isDanger: true,
-                children: [
-                  _SettingsTile(
-                    key: settingsLogoutButtonKey,
-                    icon: Icons.logout,
-                    title: S.of(context).logout,
-                    subtitle: 'Sign out from this device',
-                    isDanger: true,
-                    onTap: () => _handleLogout(context),
-                  ),
-                ],
-              ),
+              // Logout intentionally lives only in the sidebar / topbar
+              // shell, not here. Settings is feature-scoped and an
+              // auth-session lifecycle action would cross feature
+              // boundaries (architecture guard rejects features/settings
+              // → features/auth imports). Sidebar's MenuBloc.Logout
+              // flow handles it correctly.
             ],
           ),
         ),
@@ -122,23 +109,14 @@ class SettingsScreen extends StatelessWidget {
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
-
-  Future<void> _handleLogout(BuildContext context) async {
-    final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
-    if (shouldLogout && context.mounted) {
-      AppLocalStorage().clear();
-      context.go(ApplicationRoutesConstants.login);
-    }
-  }
 }
 
 /// A grouped settings section with a title and list of tiles.
 class _SettingsSection extends StatelessWidget {
   final String title;
   final List<Widget> children;
-  final bool isDanger;
 
-  const _SettingsSection({required this.title, required this.children, this.isDanger = false});
+  const _SettingsSection({required this.title, required this.children});
 
   @override
   Widget build(BuildContext context) {
@@ -152,14 +130,11 @@ class _SettingsSection extends StatelessWidget {
           padding: const EdgeInsets.only(left: AppSpacing.xs, bottom: AppSpacing.sm),
           child: Text(
             title,
-            style: textTheme.labelLarge?.copyWith(
-              color: isDanger ? colorScheme.error : colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w600,
-            ),
+            style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant, fontWeight: FontWeight.w600),
           ),
         ),
         AppCard(
-          variant: isDanger ? AppCardVariant.outlined : AppCardVariant.outlined,
+          variant: AppCardVariant.outlined,
           padding: EdgeInsets.zero,
           child: Column(
             children: [
@@ -187,16 +162,8 @@ class _SettingsTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
-  final bool isDanger;
 
-  const _SettingsTile({
-    super.key,
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    this.onTap,
-    this.isDanger = false,
-  });
+  const _SettingsTile({super.key, required this.icon, required this.title, required this.subtitle, this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -204,13 +171,13 @@ class _SettingsTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
-      leading: Icon(icon, color: isDanger ? colorScheme.error : colorScheme.onSurfaceVariant),
-      title: Text(title, style: TextStyle(color: isDanger ? colorScheme.error : null)),
+      leading: Icon(icon, color: colorScheme.onSurfaceVariant),
+      title: Text(title),
       subtitle: Text(
         subtitle,
         style: Theme.of(context).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
       ),
-      trailing: isDanger ? null : Icon(Icons.chevron_right_rounded, color: colorScheme.onSurfaceVariant),
+      trailing: Icon(Icons.chevron_right_rounded, color: colorScheme.onSurfaceVariant),
       onTap: onTap,
     );
   }

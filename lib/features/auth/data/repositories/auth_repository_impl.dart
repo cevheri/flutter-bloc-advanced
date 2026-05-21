@@ -4,15 +4,21 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/mappers/auth_mapper.dart';
 import 'package:flutter_bloc_advance/features/auth/data/models/jwt_token.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class LoginRepository implements IAuthRepository {
   static final _log = AppLogger.getLogger("LoginRepository");
 
-  LoginRepository();
+  LoginRepository({ISecureStorage? secureStorage, IAuthSessionRepository? sessionRepository})
+    : _sessionRepository =
+          sessionRepository ?? AuthSessionRepository(secureStorage: secureStorage ?? FlutterSecureStorageAdapter());
+
+  final IAuthSessionRepository _sessionRepository;
 
   @override
   Future<Result<AuthTokenEntity>> authenticate(AuthCredentialsEntity userJWT) async {
@@ -49,14 +55,19 @@ class LoginRepository implements IAuthRepository {
   @override
   Future<Result<void>> logout() async {
     _log.debug("BEGIN:logout repository start");
-    try {
-      await AppLocalStorage().clear();
-      _log.debug("END:logout successful");
-      return const Success(null);
-    } catch (e, st) {
-      _log.error("END:logout error: {}", [e.toString()]);
-      return Failure(UnknownError(e.toString()), stackTrace: st);
+    // Delegate to IAuthSessionRepository.clear so there is exactly
+    // one cleanup implementation (best-effort across both backends,
+    // error aggregation, partial-logout failure semantics). Keeping
+    // two parallel cleanups guaranteed they would drift the next time
+    // either logout flow changed.
+    final result = await _sessionRepository.clear();
+    switch (result) {
+      case Failure(:final error):
+        _log.error("END:logout failed: {}", [error]);
+      case Success():
+        _log.debug("END:logout successful");
     }
+    return result;
   }
 
   @override

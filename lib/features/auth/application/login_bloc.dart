@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
@@ -137,7 +138,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     final tokenResult = await _verifyOtpUseCase(VerifyOtpEntity(email: event.email, otp: event.otpCode));
     switch (tokenResult) {
       case Success(:final data):
-        _log.debug("onVerifyOtpSubmitted token: {}", [data.toString()]);
+        _log.debug("onVerifyOtpSubmitted token: {}", [maskToken(data.idToken)]);
         if (!data.isValid) {
           emit(
             LoginErrorState(

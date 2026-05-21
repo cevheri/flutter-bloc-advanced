@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
 
 /// Value object representing a fully-formed authenticated session.
 ///
@@ -20,4 +21,13 @@ class AuthSession extends Equatable {
 
   @override
   List<Object?> get props => [idToken, refreshToken, username, roles];
+
+  /// Tokens are masked so this is safe to embed in log output.
+  @override
+  String toString() =>
+      'AuthSession('
+      'idToken: ${maskToken(idToken)}, '
+      'refreshToken: ${maskToken(refreshToken)}, '
+      'username: $username, '
+      'roles: $roles)';
 }

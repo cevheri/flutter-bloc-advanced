@@ -86,7 +86,7 @@ void main() {
   //test changePassword
   group("AccountRepository Change Password", () {
     test("Given valid passwordChangeDTO when changePassword then return Success", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       const passwordChangeDTO = mockPasswordChangePayload;
       final result = await AccountRepository().changePassword(passwordChangeDTO);
       expect(result, isA<Success<void>>());
@@ -110,7 +110,7 @@ void main() {
   //test resetPassword
   group("AccountRepository Reset Password", () {
     test("Given valid mailAddress when resetPassword then return Success", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       const mailAddress = "admin@sample.tech";
       final result = await AccountRepository().resetPassword(mailAddress);
       expect(result, isA<Success<void>>());
@@ -133,7 +133,7 @@ void main() {
   group("AccountRepository Get Account", () {
     //success
     test("Given valid user when getAccount then return Success", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       final result = await AccountRepository().getAccount();
       expect(result, isA<Success<UserEntity>>());
     });
@@ -150,7 +150,7 @@ void main() {
   group("AccountRepository Save Account", () {
     //success
     test("Given valid user when saveAccount then return Success", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
       final result = await AccountRepository().update(entity);
       expect(result, isA<Success<UserEntity>>());
@@ -165,7 +165,7 @@ void main() {
     });
 
     test("Given user with empty id when saveAccount then return Failure with ValidationError", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       const entity = User();
       final result = await AccountRepository().update(entity);
       expect(result, isA<Failure<UserEntity>>());
@@ -173,7 +173,7 @@ void main() {
     });
 
     test("Given user with blank id when saveAccount then return Failure with ValidationError", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       final entity = mockUserFullPayload.copyWith(id: "");
       final result = await AccountRepository().update(entity);
       expect(result, isA<Failure<UserEntity>>());
@@ -185,7 +185,7 @@ void main() {
   group("AccountRepository Update Account", () {
     //success
     test("Given valid user when updateAccount then return Success", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       final entity = mockUserFullPayload;
       final result = await AccountRepository().update(entity);
       expect(result, isA<Success<UserEntity>>());
@@ -200,7 +200,7 @@ void main() {
     });
 
     test("Given user with null id when updateAccount then return Failure with ValidationError", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       const entity = User();
       final result = await AccountRepository().update(entity);
       expect(result, isA<Failure<UserEntity>>());
@@ -208,7 +208,7 @@ void main() {
     });
 
     test("Given user with blank id when updateAccount then return Failure with ValidationError", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       final entity = mockUserFullPayload.copyWith(id: "");
       final result = await AccountRepository().update(entity);
       expect(result, isA<Failure<UserEntity>>());
@@ -220,7 +220,7 @@ void main() {
   group("AccountRepository Delete Account", () {
     //success
     test("Given valid id when deleteAccount then return Success", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       final result = await AccountRepository().delete("id");
       expect(result, isA<Success<void>>());
     });
@@ -233,7 +233,7 @@ void main() {
     });
 
     test("Given empty id when deleteAccount then return Failure with ValidationError", () async {
-      await TestUtils().setupAuthentication();
+      TestUtils().setupAuthentication();
       final result = await AccountRepository().delete("");
       expect(result, isA<Failure<void>>());
       expect((result as Failure<void>).error, isA<ValidationError>());

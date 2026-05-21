@@ -1,9 +1,37 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../test_utils.dart';
+
+class _MemorySecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  @override
+  Future<String?> read(String key) async => _store[key];
+  @override
+  Future<void> write(String key, String value) async => _store[key] = value;
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
+class _ReadThrowsSecureStorage implements ISecureStorage {
+  @override
+  Future<String?> read(String key) async => throw StateError('boom on read $key');
+  @override
+  Future<void> write(String key, String value) async {}
+  @override
+  Future<void> delete(String key) async {}
+  @override
+  Future<void> deleteAll() async {}
+}
+
+/// JWT with `exp` claim already in the past. Built statically so tests
+/// can be const-friendly. Payload: `{"sub":"u","exp":1}` (1970-01-01).
+const _expiredJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1IiwiZXhwIjoxfQ.signature';
 
 void main() {
   final testUtils = TestUtils();
@@ -16,104 +44,107 @@ void main() {
     await testUtils.tearDownUnitTest();
   });
 
-  group('SessionState', () {
-    test('unknown() factory creates unauthenticated state', () {
-      const state = SessionState.unknown();
-      expect(state.isAuthenticated, isFalse);
+  group('SessionState — sealed hierarchy', () {
+    test('SessionUnknown is the initial state, distinct from unauthenticated', () {
+      const unknown = SessionUnknown();
+      const unauthenticated = SessionUnauthenticated(reason: SessionExpiredReason.noToken);
+      expect(unknown, isNot(equals(unauthenticated)), reason: 'unknown ≠ unauthenticated by type');
     });
 
-    test('constructor creates state with given authentication status', () {
-      const authenticated = SessionState(isAuthenticated: true);
-      expect(authenticated.isAuthenticated, isTrue);
-
-      const unauthenticated = SessionState(isAuthenticated: false);
-      expect(unauthenticated.isAuthenticated, isFalse);
-    });
-
-    test('copyWith returns new state with updated isAuthenticated', () {
-      const state = SessionState(isAuthenticated: false);
-      final updated = state.copyWith(isAuthenticated: true);
-      expect(updated.isAuthenticated, isTrue);
-    });
-
-    test('copyWith preserves isAuthenticated when not provided', () {
-      const state = SessionState(isAuthenticated: true);
-      final updated = state.copyWith();
-      expect(updated.isAuthenticated, isTrue);
-    });
-
-    test('props contains isAuthenticated', () {
-      const state = SessionState(isAuthenticated: true);
-      expect(state.props, [true]);
-    });
-
-    test('two states with same isAuthenticated are equal', () {
-      const a = SessionState(isAuthenticated: true);
-      const b = SessionState(isAuthenticated: true);
+    test('SessionAuthenticated is a singleton-equivalent value type', () {
+      const a = SessionAuthenticated();
+      const b = SessionAuthenticated();
       expect(a, equals(b));
     });
 
-    test('two states with different isAuthenticated are not equal', () {
-      const a = SessionState(isAuthenticated: true);
-      const b = SessionState(isAuthenticated: false);
-      expect(a, isNot(equals(b)));
+    test('SessionUnauthenticated equality includes the reason', () {
+      const noToken = SessionUnauthenticated(reason: SessionExpiredReason.noToken);
+      const expired = SessionUnauthenticated(reason: SessionExpiredReason.expired);
+      expect(noToken, isNot(equals(expired)));
+    });
+
+    test('exhaustive switch covers all variants without a default', () {
+      // Compiler-enforced exhaustiveness — if a new variant is added
+      // without updating callers, the analyzer fails this build.
+      String label(SessionState s) => switch (s) {
+        SessionUnknown() => 'unknown',
+        SessionAuthenticated() => 'authenticated',
+        SessionUnauthenticated() => 'unauthenticated',
+      };
+      expect(label(const SessionUnknown()), 'unknown');
+      expect(label(const SessionAuthenticated()), 'authenticated');
+      expect(label(const SessionUnauthenticated()), 'unauthenticated');
     });
   });
 
   group('SessionCubit', () {
-    test('initial state is unauthenticated', () {
+    test('initial state is SessionUnknown — distinguishable from unauthenticated', () {
       final cubit = SessionCubit();
-      expect(cubit.state.isAuthenticated, isFalse);
+      expect(cubit.state, isA<SessionUnknown>());
       cubit.close();
     });
 
     blocTest<SessionCubit, SessionState>(
-      'markAuthenticated emits authenticated state',
+      'markAuthenticated emits SessionAuthenticated',
       build: () => SessionCubit(),
       act: (cubit) => cubit.markAuthenticated(),
-      expect: () => [const SessionState(isAuthenticated: true)],
+      expect: () => [const SessionAuthenticated()],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'markLoggedOut emits unauthenticated state',
+      'markLoggedOut emits SessionUnauthenticated with noToken reason by default',
       build: () => SessionCubit(),
-      seed: () => const SessionState(isAuthenticated: true),
+      seed: () => const SessionAuthenticated(),
       act: (cubit) => cubit.markLoggedOut(),
-      expect: () => [const SessionState(isAuthenticated: false)],
+      expect: () => [const SessionUnauthenticated(reason: SessionExpiredReason.noToken)],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'restore emits unauthenticated when no token cached',
-      build: () => SessionCubit(),
+      'restore emits SessionUnauthenticated(noToken) when secure storage is empty',
+      build: () => SessionCubit(secureStorage: _MemorySecureStorage()),
       act: (cubit) => cubit.restore(),
-      expect: () => [const SessionState(isAuthenticated: false)],
+      expect: () => [const SessionUnauthenticated(reason: SessionExpiredReason.noToken)],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'restore emits authenticated when token is cached',
-      setUp: () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, 'MOCK_TOKEN');
+      'restore emits SessionAuthenticated when secure storage has a token',
+      build: () {
+        final secure = _MemorySecureStorage();
+        // Direct map write; the async `write` wrapper only exists to
+        // satisfy ISecureStorage. Seeding synchronously avoids the
+        // unawaited-write race the linter would otherwise flag.
+        secure._store[SecureStorageKeys.jwtToken.key] = 'MOCK_TOKEN';
+        return SessionCubit(secureStorage: secure);
       },
-      build: () => SessionCubit(),
       act: (cubit) => cubit.restore(),
-      expect: () => [const SessionState(isAuthenticated: true)],
+      expect: () => [const SessionAuthenticated()],
     );
 
     blocTest<SessionCubit, SessionState>(
-      'refresh delegates to restore and emits correct state',
-      build: () => SessionCubit(),
-      act: (cubit) => cubit.refresh(),
-      expect: () => [const SessionState(isAuthenticated: false)],
-    );
-
-    blocTest<SessionCubit, SessionState>(
-      'refresh emits authenticated when token is cached',
-      setUp: () async {
-        await AppLocalStorage().save(StorageKeys.jwtToken.key, 'MOCK_TOKEN');
+      'restore emits SessionUnauthenticated(expired) for an expired token in prod',
+      setUp: () => ProfileConstants.setEnvironment(Environment.prod),
+      build: () {
+        final secure = _MemorySecureStorage();
+        secure._store[SecureStorageKeys.jwtToken.key] = _expiredJwt;
+        return SessionCubit(secureStorage: secure);
       },
-      build: () => SessionCubit(),
+      act: (cubit) => cubit.restore(),
+      expect: () => [const SessionUnauthenticated(reason: SessionExpiredReason.expired)],
+      tearDown: () => ProfileConstants.setEnvironment(Environment.test),
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'restore emits SessionUnauthenticated(storageError) when secure read throws',
+      build: () => SessionCubit(secureStorage: _ReadThrowsSecureStorage()),
+      act: (cubit) => cubit.restore(),
+      expect: () => [const SessionUnauthenticated(reason: SessionExpiredReason.storageError)],
+    );
+
+    blocTest<SessionCubit, SessionState>(
+      'refresh delegates to restore',
+      build: () => SessionCubit(secureStorage: _MemorySecureStorage()),
       act: (cubit) => cubit.refresh(),
-      expect: () => [const SessionState(isAuthenticated: true)],
+      expect: () => [const SessionUnauthenticated(reason: SessionExpiredReason.noToken)],
     );
 
     blocTest<SessionCubit, SessionState>(
@@ -123,14 +154,7 @@ void main() {
         cubit.markAuthenticated();
         cubit.markLoggedOut();
       },
-      expect: () => [const SessionState(isAuthenticated: true), const SessionState(isAuthenticated: false)],
-    );
-
-    blocTest<SessionCubit, SessionState>(
-      'markLoggedOut re-emits unauthenticated even when already unauthenticated',
-      build: () => SessionCubit(),
-      act: (cubit) => cubit.markLoggedOut(),
-      expect: () => [const SessionState(isAuthenticated: false)],
+      expect: () => [const SessionAuthenticated(), const SessionUnauthenticated(reason: SessionExpiredReason.noToken)],
     );
   });
 }
