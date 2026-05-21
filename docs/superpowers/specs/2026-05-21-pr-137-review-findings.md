@@ -10,10 +10,11 @@
 |---|---:|---:|---:|
 | Critical | 5 | **5 ✓** | 0 |
 | Important | 8 | **8 ✓** | 0 |
-| Suggestion | 11 | TBD | TBD |
+| Suggestion | 11 | **9 ✓** | 2 |
 
 **Critical phase status:** complete. 1479/1479 tests passing, format clean, no new analyzer warnings.
 **Important phase status:** complete. 1478/1478 tests passing, format clean, no new analyzer warnings.
+**Suggestion phase status:** complete. S1 (Secret wrapper, +200 LoC refactor) and S9 (pre-existing file rename) deferred to follow-up issues. 1478/1478 tests passing.
 
 ---
 
@@ -42,17 +43,17 @@
 
 ## 🟢 Suggestions
 
-- [ ] **S1** — Introduce `Secret` wrapper type for `idToken`/`refreshToken` (turns masked `toString` from convention into structural guarantee).
-- [ ] **S2** — `LogSanitizer` and `SessionMigration` are state-less static-method classes. Convert to top-level functions.
-- [ ] **S3** — `JWTToken.fromJson` declared return type is `JWTToken?` but body never returns null. Tighten to non-nullable.
-- [ ] **S4** — Equatable.stringify misunderstanding in comments. `jwt_token.dart:51-54` and `auth_session.dart:25-26` describe a "stringify could bypass the mask" scenario that doesn't exist — explicit `toString()` override wins regardless. Simplify.
-- [ ] **S5** — `app_bootstrap.dart:36-38` "ahead of any await on a network-dependent path" comment is rescued by qualifier. Line 25 already has an await above. Replace with positive ordering invariant.
-- [ ] **S6** — `token_refresh_interceptor.dart:23-26` interceptor-order ASCII diagram is already stale (`ConnectivityInterceptor` missing). Delete diagram; point to `ApiClient._createDio` as source of truth.
-- [ ] **S7** — `app_router.dart:74-77` "Token expiry is no longer checked here" reads as cargo cult once the deleted code is forgotten. Rewrite forward-looking.
-- [ ] **S8** — `local_storage.dart:6-15` "six coordinated write paths" historical paragraph will be meaningless in 6 months. Keep present-tense invariant only.
-- [ ] **S9** — `lib/core/testing/app_key_constants.dart` is imported by 6 production widgets. The `core/testing/` path is misleading. Rename to `lib/core/keys/widget_keys.dart` or `lib/shared/widgets/widget_keys.dart`. (Pre-existing — deferred.)
-- [ ] **S10** — `SecureStorageKeys.jwtToken('jwtToken')` reuses the legacy SharedPreferences key string. Once migration window closes, rename to `'secure.jwt'`. Mark with TODO.
-- [ ] **S11** — `SessionCubit.markAuthenticated`, `markLoggedOut`, `refresh` are undocumented public mutators on a security-critical cubit. Add dartdoc.
+- [ ] **S1** — `Secret` wrapper type **deferred to follow-up issue**. Refactor touches 27 production call sites (every `.idToken` / `.refreshToken` access becomes `.idToken.reveal()`), plus AuthMapper, domain entities, JWTToken wire model, and test fixtures. Estimated +200 lines, regression risk. Current masked `toString()` provides convention-level protection; Secret wrapper would upgrade it to structural — high-leverage but out of scope for this PR.
+- [x] **S2** — `LogSanitizer.maskToken` → top-level `maskToken` function. `SessionMigration.run` → top-level `runSessionMigration`. Both classes were state-less static-method namespaces with single methods; the prefix carried zero information. All 5 call sites of `LogSanitizer` and 7+ call sites of `SessionMigration.run` migrated.
+- [x] **S3** — `JWTToken.fromJson` and `fromJsonString` return types tightened from `JWTToken?` to `JWTToken`. Body never returned null; the `?` was a lie. Test null-aware operators removed.
+- [x] **S4** — Equatable.stringify misunderstanding cleared from `jwt_token.dart` and `auth_session.dart`. Comments simplified to "override masks tokens so this is safe to log."
+- [x] **S5** — `app_bootstrap.dart` comment rewritten as a positive ordering invariant: "must run before [ApiClient.instance] is touched anywhere — Dio is built lazily on first access."
+- [x] **S6** — Interceptor-order ASCII diagram in `token_refresh_interceptor.dart` deleted. Points to `ApiClient._createDio` as the single source of truth.
+- [x] **S7** — Closed as part of I1 (rewrote the router redirect; removed the "no longer checked here" prose comment entirely).
+- [x] **S8** — `local_storage.dart` "six coordinated write paths" historical paragraph trimmed to the present-tense invariant.
+- [ ] **S9** — `lib/core/testing/app_key_constants.dart` rename — **deferred**. Pre-existing path, out of PR scope (PR only renamed a comment line on this file). Track separately.
+- [x] **S10** — TODO note added to `SecureStorageKeys` doc comment explaining why the legacy SharedPreferences key strings are deliberately reused (for `SessionMigration` source lookup) and when they can be renamed to e.g. `'secure.jwt'` (after 2 minor versions confirm rollout).
+- [x] **S11** — `SessionCubit.markAuthenticated`, `markLoggedOut`, `refresh` now have dartdoc explaining caller-trust semantics and fire-and-forget safety. (Added as part of I1 rewrite.)
 
 ---
 

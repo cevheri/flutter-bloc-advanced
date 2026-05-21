@@ -49,14 +49,14 @@ void main() {
       final json = mockJWTTokenPayload.toJson();
       final entity = JWTToken.fromJson(json!);
 
-      expect(entity?.idToken, 'MOCK_TOKEN');
+      expect(entity.idToken, 'MOCK_TOKEN');
     });
 
     test('should deserialize from JSON string', () {
       final json = mockJWTTokenPayload.toJson();
       final entity = JWTToken.fromJsonString(jsonEncode(json!));
 
-      expect(entity?.idToken, 'MOCK_TOKEN');
+      expect(entity.idToken, 'MOCK_TOKEN');
     });
   });
 

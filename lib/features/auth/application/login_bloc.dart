@@ -138,7 +138,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     final tokenResult = await _verifyOtpUseCase(VerifyOtpEntity(email: event.email, otp: event.otpCode));
     switch (tokenResult) {
       case Success(:final data):
-        _log.debug("onVerifyOtpSubmitted token: {}", [LogSanitizer.maskToken(data.idToken)]);
+        _log.debug("onVerifyOtpSubmitted token: {}", [maskToken(data.idToken)]);
         if (!data.isValid) {
           emit(
             LoginErrorState(

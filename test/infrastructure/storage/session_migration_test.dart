@@ -46,12 +46,12 @@ void main() {
 
   tearDown(() async => TestUtils().tearDownUnitTest());
 
-  group('SessionMigration.run', () {
+  group('runSessionMigration', () {
     test('migrates jwtToken and refreshToken from local to secure', () async {
       await local.save('jwtToken', 'JWT_VALUE');
       await local.save('refreshToken', 'REFRESH_VALUE');
 
-      await SessionMigration.run(secureStorage: secure, localStorage: local);
+      await runSessionMigration(secureStorage: secure, localStorage: local);
 
       expect(await secure.read('jwtToken'), 'JWT_VALUE');
       expect(await secure.read('refreshToken'), 'REFRESH_VALUE');
@@ -66,14 +66,14 @@ void main() {
       // they're two halves of the same idempotency guarantee.
       await secure.write('jwtToken', 'ALREADY_MIGRATED');
 
-      await SessionMigration.run(secureStorage: secure, localStorage: local);
+      await runSessionMigration(secureStorage: secure, localStorage: local);
 
       expect(await secure.read('jwtToken'), 'ALREADY_MIGRATED');
       expect(await local.read('jwtToken'), isNull);
     });
 
     test('is a no-op when there is nothing to migrate', () async {
-      await SessionMigration.run(secureStorage: secure, localStorage: local);
+      await runSessionMigration(secureStorage: secure, localStorage: local);
 
       expect(await secure.read('jwtToken'), isNull);
       expect(await secure.read('refreshToken'), isNull);
@@ -83,7 +83,7 @@ void main() {
       final flaky = _MemorySecureStorage(failOnWrite: true);
       await local.save('jwtToken', 'JWT_VALUE');
 
-      await SessionMigration.run(secureStorage: flaky, localStorage: local);
+      await runSessionMigration(secureStorage: flaky, localStorage: local);
 
       expect(await local.read('jwtToken'), 'JWT_VALUE');
     });
@@ -96,7 +96,7 @@ void main() {
       final silent = _MemorySecureStorage(silentlyDropWrites: true);
       await local.save('jwtToken', 'JWT_VALUE');
 
-      await SessionMigration.run(secureStorage: silent, localStorage: local);
+      await runSessionMigration(secureStorage: silent, localStorage: local);
 
       expect(await silent.read('jwtToken'), isNull);
       expect(await local.read('jwtToken'), 'JWT_VALUE');
@@ -110,7 +110,7 @@ void main() {
       await secure.write('jwtToken', 'ALREADY_MIGRATED');
       await local.save('jwtToken', 'STALE_PLAINTEXT');
 
-      await SessionMigration.run(secureStorage: secure, localStorage: local);
+      await runSessionMigration(secureStorage: secure, localStorage: local);
 
       expect(await secure.read('jwtToken'), 'ALREADY_MIGRATED', reason: 'secure value untouched');
       expect(await local.read('jwtToken'), isNull, reason: 'lingering plaintext cleaned up');
@@ -125,7 +125,7 @@ void main() {
       final secure = _MemorySecureStorage();
       await local.save('jwtToken', 'JWT_VALUE');
 
-      await SessionMigration.run(secureStorage: secure, localStorage: flakyLocal);
+      await runSessionMigration(secureStorage: secure, localStorage: flakyLocal);
 
       expect(await secure.read('jwtToken'), 'JWT_VALUE', reason: 'secure write succeeded');
       // The legacy key is still there because remove returned false;

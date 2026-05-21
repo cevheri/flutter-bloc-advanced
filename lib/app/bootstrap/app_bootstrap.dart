@@ -33,16 +33,17 @@ class AppBootstrap {
     final secureStorage = dependencies.createSecureStorage();
     // Publish the same adapter instance into the static [ApiClient]
     // hook so AuthInterceptor and TokenRefreshInterceptor share it
-    // with the repository layer and SessionCubit. Must happen BEFORE
-    // the first HTTP call (before Dio is built lazily) — setting it
-    // here, ahead of any await on a network-dependent path, is safe.
+    // with the repository layer and SessionCubit. Invariant: this
+    // must run before [ApiClient.instance] is touched anywhere —
+    // Dio is built lazily on first access. Any code path that may
+    // issue HTTP requests must come below this line.
     ApiClient.secureStorage = secureStorage;
 
     // One-shot migration of legacy plaintext tokens (jwtToken/refreshToken).
     // Must run BEFORE any consumer reads the secure store (SessionCubit
     // .restore, AuthInterceptor, TokenRefreshInterceptor) so the
     // migrated tokens are available on first use.
-    await SessionMigration.run(secureStorage: secureStorage, localStorage: AppLocalStorage());
+    await runSessionMigration(secureStorage: secureStorage, localStorage: AppLocalStorage());
 
     final existingLang = await AppLocalStorage().read(StorageKeys.language.key);
     if (existingLang == null) {

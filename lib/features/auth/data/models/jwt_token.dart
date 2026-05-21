@@ -13,11 +13,11 @@ class JWTToken extends Equatable {
     return JWTToken(idToken: idToken ?? this.idToken, refreshToken: refreshToken ?? this.refreshToken);
   }
 
-  static JWTToken? fromJson(Map<String, dynamic> json) {
+  static JWTToken fromJson(Map<String, dynamic> json) {
     return JWTToken(idToken: json['id_token'], refreshToken: json['refresh_token']);
   }
 
-  static JWTToken? fromJsonString(String json) => fromJson(jsonDecode(json));
+  static JWTToken fromJsonString(String json) => fromJson(jsonDecode(json));
 
   Map<String, dynamic>? toJson() {
     final Map<String, dynamic> json = {};
@@ -40,16 +40,9 @@ class JWTToken extends Equatable {
   @override
   List<Object?> get props => [idToken, refreshToken];
 
-  /// Tokens are masked so this model is safe to embed in log output —
-  /// including via the `Equatable.stringify = true` path on which any
-  /// `_log.debug("... {}", [jwt])` call would otherwise leak the raw
-  /// idToken / refreshToken.
+  /// Override masks tokens so this model is safe to embed in log
+  /// output. Any `_log.debug('... {}', [jwt])` call goes through
+  /// `toString()`, never through `props` — the override wins.
   @override
-  String toString() =>
-      'JWTToken(idToken: ${LogSanitizer.maskToken(idToken)}, refreshToken: ${LogSanitizer.maskToken(refreshToken)})';
-
-  // stringify is intentionally not overridden — the explicit toString()
-  // above takes precedence anyway, and keeping stringify behaviour off
-  // (`false`, the default) means the masked toString is the only path
-  // used by interpolation as well.
+  String toString() => 'JWTToken(idToken: ${maskToken(idToken)}, refreshToken: ${maskToken(refreshToken)})';
 }

@@ -7,9 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 /// The JWT is intentionally NOT cached here: it lives in `ISecureStorage`
 /// and is read on demand by `AuthInterceptor` (per-request) and by
 /// `SessionCubit.restore` (per app launch). `SecurityUtils` itself is
-/// pure — it takes the token as an argument and does no I/O. Keeping a
-/// sync mirror of an async secret created six coordinated write paths
-/// that all had to agree; removing it eliminated that class of bugs.
+/// pure — it takes the token as an argument and does no I/O.
 ///
 /// The other fields legitimately live in SharedPreferences and a sync
 /// read is cheap and correct.

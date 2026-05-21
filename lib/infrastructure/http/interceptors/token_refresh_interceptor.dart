@@ -46,12 +46,12 @@ typedef RefreshDioFactory = Dio Function(Dio sourceDio);
 /// [Future]. When several requests fail with 401 around the same time
 /// the first one starts the refresh; the rest await the same Future
 /// and retry with the already-rotated token instead of triggering a
-/// refresh storm against `/api/token/refresh`.
+/// refresh storm against the refresh endpoint.
 ///
-/// Interceptor order (must come AFTER [AuthInterceptor]):
-/// ```
-/// AuthInterceptor -> TokenRefreshInterceptor -> MockInterceptor? -> ...
-/// ```
+/// Must be registered after [AuthInterceptor] in the chain — see
+/// `ApiClient._createDio` for the single source of truth on order
+/// (any inline ASCII diagram here would drift the next time the
+/// chain is edited).
 class TokenRefreshInterceptor extends QueuedInterceptor {
   static final _log = AppLogger.getLogger('TokenRefreshInterceptor');
 

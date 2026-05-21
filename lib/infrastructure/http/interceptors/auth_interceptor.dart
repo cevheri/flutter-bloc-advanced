@@ -34,12 +34,7 @@ class AuthInterceptor extends Interceptor {
     if (hasAuth) {
       options.headers['Authorization'] = 'Bearer $jwtToken';
     }
-    _log.debug('Request [{}] {} (auth: {}, token: {})', [
-      options.method,
-      options.path,
-      hasAuth,
-      LogSanitizer.maskToken(jwtToken),
-    ]);
+    _log.debug('Request [{}] {} (auth: {}, token: {})', [options.method, options.path, hasAuth, maskToken(jwtToken)]);
     handler.next(options);
   }
 }
