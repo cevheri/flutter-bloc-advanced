@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivi
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_console_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotency_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
@@ -33,11 +34,13 @@ class InterceptorChainEntry {
 /// 1. [ConnectivityInterceptor] — rejects requests immediately when offline
 /// 2. [AuthInterceptor] — injects JWT token
 /// 3. [TokenRefreshInterceptor] — handles 401 responses with token refresh
-/// 4. [ResilienceInterceptor] — smart retry + circuit breaker
-/// 5. [MockInterceptor] — (dev/test only) short-circuits with mock data
-/// 6. [CacheInterceptor] — GET response caching with TTL
-/// 7. [DevConsoleInterceptor] — records requests in debug console
-/// 8. [LoggingInterceptor] — structured request/response logging
+/// 4. [IdempotencyInterceptor] — opt-in Idempotency-Key header for mutating
+///    verbs (default off; retries reuse the same key)
+/// 5. [ResilienceInterceptor] — smart retry + circuit breaker
+/// 6. [MockInterceptor] — (dev/test only) short-circuits with mock data
+/// 7. [CacheInterceptor] — GET response caching with TTL
+/// 8. [DevConsoleInterceptor] — records requests in debug console
+/// 9. [LoggingInterceptor] — structured request/response logging
 ///
 /// Error mapping happens in the convenience methods ([get], [post], etc.)
 /// which catch [DioException] and rethrow as [AppException] types so that
@@ -153,6 +156,18 @@ class ApiClient {
         meta: const InterceptorChainEntry(name: 'TokenRefreshInterceptor', detail: 'Refreshes expired access tokens'),
       ),
       (
+        // Idempotency runs before Resilience so the key is set on the very
+        // first outbound request and is then naturally reused on every
+        // retry pass (Resilience and TokenRefresh both re-fetch the same
+        // RequestOptions instance, which carries the cached key in extra).
+        interceptor: IdempotencyInterceptor(),
+        meta: const InterceptorChainEntry(
+          name: 'IdempotencyInterceptor',
+          active: false,
+          detail: 'Opt-in Idempotency-Key for POST/PUT/PATCH',
+        ),
+      ),
+      (
         // Use the shared singleton so dashboard metrics (circuit breakers,
         // reset actions) target the same instance as real HTTP traffic
         // (fixes #60).
@@ -211,11 +226,12 @@ class ApiClient {
     Map<String, String>? headers,
     String? contentType,
     String? pathParams,
+    bool idempotent = false,
   }) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     final options = Options(
-      extra: {'_basePath': path, '_pathParams': pathParams},
+      extra: {'_basePath': path, '_pathParams': pathParams, if (idempotent) IdempotencyInterceptor.optInExtraKey: true},
       headers: headers,
       contentType: contentType,
     );
@@ -226,28 +242,40 @@ class ApiClient {
     }
   }
 
-  static Future<Response<String>> put<T>(String path, T data, {String? pathParams}) async {
+  static Future<Response<String>> put<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
       return await instance.put<String>(
         fullPath,
         data: serialized,
-        options: Options(extra: {'_basePath': path, '_pathParams': pathParams}),
+        options: Options(
+          extra: {
+            '_basePath': path,
+            '_pathParams': pathParams,
+            if (idempotent) IdempotencyInterceptor.optInExtraKey: true,
+          },
+        ),
       );
     } on DioException catch (e) {
       throw _mapDioException(e);
     }
   }
 
-  static Future<Response<String>> patch<T>(String path, T data, {String? pathParams}) async {
+  static Future<Response<String>> patch<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
       return await instance.patch<String>(
         fullPath,
         data: serialized,
-        options: Options(extra: {'_basePath': path, '_pathParams': pathParams}),
+        options: Options(
+          extra: {
+            '_basePath': path,
+            '_pathParams': pathParams,
+            if (idempotent) IdempotencyInterceptor.optInExtraKey: true,
+          },
+        ),
       );
     } on DioException catch (e) {
       throw _mapDioException(e);
