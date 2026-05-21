@@ -348,9 +348,12 @@ void main() {
     // review (I3): when ApiClient.secureStorage is null at Dio creation
     // time, the interceptors fall back to a private adapter instance
     // that diverges from the repository layer's adapter. test_utils
-    // wires the shared adapter in setupUnitTest, so by the time any
-    // test reaches this point, secureStorage MUST be non-null.
-    test('ApiClient.secureStorage is wired by setupUnitTest — no silent divergence', () {
+    // wires the shared adapter in setupUnitTest. Drives a fresh
+    // setupUnitTest inside the test so this assertion survives the
+    // group's pre-test ApiClient.reset() (which deliberately clears
+    // the static — see C-C / [ApiClient.reset]).
+    test('ApiClient.secureStorage is wired by setupUnitTest — no silent divergence', () async {
+      await TestUtils().setupUnitTest();
       expect(
         ApiClient.secureStorage,
         isNotNull,

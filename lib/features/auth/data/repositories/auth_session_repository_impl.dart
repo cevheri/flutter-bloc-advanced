@@ -20,6 +20,7 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 /// observe a half-written session.
 class AuthSessionRepository implements IAuthSessionRepository {
   AuthSessionRepository({required ISecureStorage secureStorage, AppLocalStorage? storage})
+    // ignore: prefer_initializing_formals
     : _secureStorage = secureStorage,
       _storage = storage ?? AppLocalStorage();
 
@@ -49,20 +50,25 @@ class AuthSessionRepository implements IAuthSessionRepository {
       priorUsername = await _storage.read(StorageKeys.username.key);
       priorRoles = await _storage.read(StorageKeys.roles.key);
 
-      await _secureStorage.write(SecureStorageKeys.jwtToken.key, session.idToken);
+      // Record the key as mutated BEFORE the await so that if the
+      // adapter throws after partially mutating platform state, the
+      // rollback path still knows to restore it. If the write throws
+      // cleanly (state unchanged), the rollback is a no-op against
+      // the snapshot (write same value back, or delete an absent key).
       mutatedSecure.add(SecureStorageKeys.jwtToken);
+      await _secureStorage.write(SecureStorageKeys.jwtToken.key, session.idToken);
       // Owner-of-keys contract: a session without a refresh token must
       // not inherit one from a previous login. Treat null AND empty
       // string equivalently — TokenRefreshInterceptor reads
       // `refreshToken.isEmpty` as "absent", so persisting an empty
       // string here would leave the key present but unusable.
+      mutatedSecure.add(SecureStorageKeys.refreshToken);
       final hasRefresh = session.refreshToken != null && session.refreshToken!.isNotEmpty;
       if (hasRefresh) {
         await _secureStorage.write(SecureStorageKeys.refreshToken.key, session.refreshToken!);
       } else {
         await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
       }
-      mutatedSecure.add(SecureStorageKeys.refreshToken);
       await _writeLocal(StorageKeys.username, session.username, mutatedLocal);
       await _writeLocal(StorageKeys.roles, session.roles, mutatedLocal);
       _log.info('persist: session written ({} secure + {} local)', [mutatedSecure.length, mutatedLocal.length]);

@@ -139,6 +139,7 @@ void main() {
 /// (returns false without throwing). Mirrors a SharedPreferences
 /// platform refusal.
 class _RefuseRemoveLocalStorage implements AppLocalStorage {
+  // ignore: prefer_initializing_formals
   _RefuseRemoveLocalStorage({required AppLocalStorage real, required this.refuseKey}) : _real = real;
   final AppLocalStorage _real;
   final String refuseKey;

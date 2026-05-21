@@ -70,7 +70,9 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     OnSessionExpired? onSessionExpired,
     ISecureStorage? secureStorage,
     RefreshDioFactory? refreshDioFactory,
+    // ignore: prefer_initializing_formals
   }) : _dio = dio,
+       // ignore: prefer_initializing_formals
        _onSessionExpired = onSessionExpired,
        _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
        _refreshDioFactory = refreshDioFactory ?? _defaultRefreshDio;

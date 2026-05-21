@@ -82,10 +82,20 @@ class ApiClient {
   static void resetTestInstance() => _testDio = null;
 
   /// Reset the production singleton (useful in tests).
+  ///
+  /// Clears every static hook the class owns so a re-init path
+  /// (hot reload, test tearDown, multi-test runs in one process)
+  /// cannot leak a previous adapter/callback into the next Dio
+  /// construction. Without resetting [secureStorage] / [onSessionExpired]
+  /// here, a test that sets them and a later test that builds a fresh
+  /// Dio would inherit those — silently re-binding the new interceptors
+  /// to the previous run's instances.
   static void reset() {
     _dio?.close();
     _dio = null;
     _testDio = null;
+    secureStorage = null;
+    onSessionExpired = null;
   }
 
   /// The active Dio instance.

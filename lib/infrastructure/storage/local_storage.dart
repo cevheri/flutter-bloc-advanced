@@ -172,7 +172,16 @@ class AppLocalStorage {
       _log.error("SharedPreferences clear returned false");
       throw StateError('SharedPreferences clear returned false');
     }
-    await AppLocalStorageCached.loadCache();
+    // Same cache-refresh-failure invariant as [save] / [remove]: the
+    // clear() mutation already landed above. A loadCache failure
+    // means the in-memory cache is stale, NOT that the clear failed.
+    // Letting it throw would force callers (logout, AuthSessionRepository
+    // .clear) to surface Failure even though the on-disk wipe succeeded.
+    try {
+      await AppLocalStorageCached.loadCache();
+    } catch (e) {
+      _log.warn("Post-clear cache refresh failed — cache may be stale: {}", [e]);
+    }
     _log.info("Cleared all data from local storage");
   }
 }

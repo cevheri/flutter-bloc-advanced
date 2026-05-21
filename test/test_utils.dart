@@ -27,10 +27,16 @@ class TestUtils {
 
   static const _secureChannel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
 
-  static bool _secureMockInstalled = false;
-
+  /// Always re-installs the handler. Previously short-circuited via
+  /// a `_secureMockInstalled` flag, but `secure_storage_test.dart`
+  /// (C3 throw-on-failure contract tests) temporarily overrides the
+  /// same channel and its `tearDown` resets the handler to `null`.
+  /// If this util ran first and set the flag, a later run of
+  /// `setupUnitTest()` would skip re-installation and leave the
+  /// channel with the null handler → `MissingPluginException` for
+  /// every secure-storage call. Re-installing is cheap and
+  /// idempotent.
   static void _installSecureStorageMock() {
-    if (_secureMockInstalled) return;
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(_secureChannel, (
       call,
     ) async {
@@ -56,7 +62,6 @@ class TestUtils {
           return null;
       }
     });
-    _secureMockInstalled = true;
   }
 
   Future<void> setupUnitTest() async {
@@ -94,6 +99,15 @@ class TestUtils {
 
   Future<void> tearDownUnitTest() async {
     ApiClient.reset();
+    // [ApiClient.reset] now also clears `secureStorage` and
+    // `onSessionExpired` (Copilot finding: hot-reload / multi-test
+    // leakage). Test files that rely on `setUpAll` + per-test
+    // `tearDown` (instead of per-test `setUp`) would otherwise see a
+    // null `secureStorage` after the first teardown. Re-wire the
+    // shared adapter here so the next test in the same file starts
+    // with the same SoT invariants `setupUnitTest` established.
+    _installSecureStorageMock();
+    ApiClient.secureStorage = FlutterSecureStorageAdapter();
     return await _clearStorage();
   }
 
