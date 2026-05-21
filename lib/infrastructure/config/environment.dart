@@ -38,14 +38,32 @@ class ProfileConstants {
   static dynamic get api {
     return _config![_Config.api];
   }
+
+  /// Pinned certificate SHA-256 hashes (base64, e.g. produced by
+  /// `openssl dgst -sha256 -binary | openssl enc -base64`).
+  /// Empty list = pinning disabled (default).
+  ///
+  /// See `lib/infrastructure/http/certificate_pinning_adapter.dart` for
+  /// the live validation behaviour, and the README "Certificate Pinning"
+  /// section for the extraction one-liner + key-rotation procedure.
+  static List<String> get certificatePins {
+    final raw = _config?[_Config.certificatePins];
+    if (raw is! List) return const [];
+    return raw.whereType<String>().toList(growable: false);
+  }
 }
 
 class _Config {
   static const api = "API";
+  static const certificatePins = "CERTIFICATE_PINS";
 
-  static Map<String, dynamic> devConstants = {api: "mock"};
+  static Map<String, dynamic> devConstants = {api: "mock", certificatePins: <String>[]};
 
-  static Map<String, dynamic> testConstants = {api: "mock"};
+  static Map<String, dynamic> testConstants = {api: "mock", certificatePins: <String>[]};
 
-  static Map<String, dynamic> prodConstants = {api: TemplateConfig.prodApiUrl};
+  /// Production default: pinning ships disabled (empty list). Add
+  /// base64 SHA-256 pins extracted from your live backend's certificate
+  /// to enable. Backup pin support is automatic — list two and rotate
+  /// per the README procedure.
+  static Map<String, dynamic> prodConstants = {api: TemplateConfig.prodApiUrl, certificatePins: <String>[]};
 }

@@ -728,6 +728,16 @@ class S {
   String user_extended_info_save_failed(String error) {
     return Intl.message('Save failed: $error', name: 'user_extended_info_save_failed', desc: '', args: [error]);
   }
+
+  /// `Could not verify the server's identity. Connection blocked.`
+  String get error_network_cert_invalid {
+    return Intl.message(
+      'Could not verify the server\'s identity. Connection blocked.',
+      name: 'error_network_cert_invalid',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

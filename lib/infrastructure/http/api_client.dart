@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinning_adapter.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
@@ -130,6 +131,16 @@ class ApiClient {
         headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
       ),
     );
+
+    // Certificate pinning. Empty pin list (default) keeps the system
+    // adapter; populating ProfileConstants.certificatePins swaps in a
+    // pinning adapter that fails closed on any non-matching cert. Web
+    // is a hard no-op — see buildPinnedAdapter docs.
+    final pins = ProfileConstants.certificatePins;
+    if (pins.isNotEmpty) {
+      _log.info('Installing certificate pinning adapter ({} pin(s))', [pins.length]);
+      dio.httpClientAdapter = buildPinnedAdapter(pins);
+    }
 
     // Single source of truth for the chain: each entry pairs the live
     // [Interceptor] with the human-readable metadata that the dashboard

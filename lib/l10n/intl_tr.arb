@@ -138,5 +138,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "error_network_cert_invalid": "Sunucu kimliği doğrulanamadı. Bağlantı engellendi.",
+  "@error_network_cert_invalid": {}
 }

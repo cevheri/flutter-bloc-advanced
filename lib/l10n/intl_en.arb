@@ -138,5 +138,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "error_network_cert_invalid": "Could not verify the server's identity. Connection blocked.",
+  "@error_network_cert_invalid": {}
 }
