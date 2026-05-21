@@ -285,7 +285,7 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
           await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken);
         }
       } catch (e, st) {
-        _log.error('Persist of rotated tokens failed — rolling back to prior values: {}', [e, st]);
+        _log.error('Persist of rotated tokens failed — rolling back to prior values: {} {}', [e, st]);
         await _restoreOrDelete(SecureStorageKeys.jwtToken, priorIdToken);
         await _restoreOrDelete(SecureStorageKeys.refreshToken, refreshToken);
         return null;
