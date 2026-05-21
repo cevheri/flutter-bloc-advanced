@@ -34,12 +34,33 @@ abstract interface class ISecureStorage {
 }
 
 /// Production implementation backed by [FlutterSecureStorage].
+///
+/// Platform configuration is pinned explicitly so future package
+/// upgrades or default flips cannot silently weaken the security
+/// posture of stored secrets:
+///
+/// - **Android:** `flutter_secure_storage` ≥ 10 uses custom AES-GCM
+///   ciphers by default (replacing the deprecated Jetpack Crypto
+///   library). Min SDK is 23, so all targets support hardware-backed
+///   key storage. No extra options are needed beyond accepting the
+///   library defaults — flagged here so an audit reader does not
+///   wonder whether plaintext fallback is possible.
+/// - **iOS / macOS:** Keychain accessibility is pinned to
+///   [KeychainAccessibility.first_unlock_this_device] so secrets are
+///   readable after first unlock (e.g. background refresh) but are
+///   NOT synced to iCloud Keychain across devices. This is stricter
+///   than the library default of [KeychainAccessibility.first_unlock]
+///   (which permits iCloud backup) — appropriate for session tokens.
 class FlutterSecureStorageAdapter implements ISecureStorage {
   static final _log = AppLogger.getLogger('FlutterSecureStorageAdapter');
 
+  static const _iosOptions = IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device);
+  static const _macosOptions = MacOsOptions(accessibility: KeychainAccessibility.first_unlock_this_device);
+
   final FlutterSecureStorage _storage;
 
-  FlutterSecureStorageAdapter({FlutterSecureStorage? storage}) : _storage = storage ?? const FlutterSecureStorage();
+  FlutterSecureStorageAdapter({FlutterSecureStorage? storage})
+    : _storage = storage ?? const FlutterSecureStorage(iOptions: _iosOptions, mOptions: _macosOptions);
 
   @override
   Future<String?> read(String key) async {

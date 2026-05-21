@@ -11,6 +11,13 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 /// infrastructure layer.
 typedef OnSessionExpired = void Function();
 
+/// Factory for the bare [Dio] instance used to POST the refresh
+/// request. A separate Dio is needed so the refresh call bypasses the
+/// production interceptor chain (otherwise a 401 on `/api/token/refresh`
+/// would re-enter this interceptor recursively). Pluggable so tests
+/// can short-circuit the POST without depending on `http_mock_adapter`.
+typedef RefreshDioFactory = Dio Function(Dio sourceDio);
+
 /// Intercepts 401 responses and attempts a silent token refresh.
 ///
 /// Extends [QueuedInterceptor] so dio queues concurrent 401s, but the
@@ -30,16 +37,31 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
   final Dio _dio;
   final OnSessionExpired? _onSessionExpired;
   final ISecureStorage _secureStorage;
+  final RefreshDioFactory _refreshDioFactory;
 
   /// Shared in-flight refresh. Non-null while a refresh is in progress;
   /// concurrent 401s await the same Future. Cleared on completion (success
   /// or failure) so the next refresh window can start a fresh attempt.
   Future<String?>? _inFlightRefresh;
 
-  TokenRefreshInterceptor({required Dio dio, OnSessionExpired? onSessionExpired, ISecureStorage? secureStorage})
-    : _dio = dio,
-      _onSessionExpired = onSessionExpired,
-      _secureStorage = secureStorage ?? FlutterSecureStorageAdapter();
+  TokenRefreshInterceptor({
+    required Dio dio,
+    OnSessionExpired? onSessionExpired,
+    ISecureStorage? secureStorage,
+    RefreshDioFactory? refreshDioFactory,
+  }) : _dio = dio,
+       _onSessionExpired = onSessionExpired,
+       _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
+       _refreshDioFactory = refreshDioFactory ?? _defaultRefreshDio;
+
+  static Dio _defaultRefreshDio(Dio source) => Dio(
+    BaseOptions(
+      baseUrl: source.options.baseUrl,
+      connectTimeout: source.options.connectTimeout,
+      receiveTimeout: source.options.receiveTimeout,
+      headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
+    ),
+  );
 
   /// Marker placed on [RequestOptions.extra] for requests that have
   /// already been retried after a refresh. A second 401 on the same
@@ -166,14 +188,7 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       }
 
       // Use a fresh Dio instance to bypass the interceptor chain.
-      final refreshDio = Dio(
-        BaseOptions(
-          baseUrl: _dio.options.baseUrl,
-          connectTimeout: _dio.options.connectTimeout,
-          receiveTimeout: _dio.options.receiveTimeout,
-          headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
-        ),
-      );
+      final refreshDio = _refreshDioFactory(_dio);
 
       final response = await refreshDio.post('/api/token/refresh', data: jsonEncode({'refresh_token': refreshToken}));
 
@@ -194,9 +209,35 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       // Persist the rotated tokens. AuthInterceptor reads JWT from
       // secure storage on every request, so the next outgoing call
       // picks up the rotated value automatically.
-      await _secureStorage.write(SecureStorageKeys.jwtToken.key, newIdToken);
-      if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
-        await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken);
+      //
+      // Both writes are wrapped together with rollback-to-prior so a
+      // partial failure (id_token persisted, refresh_token throws)
+      // cannot leave a torn pair on disk. A torn pair would let the
+      // next request succeed briefly with the new id_token, then fail
+      // on the following 401 because the refresh_token is stale — a
+      // user-visible logout for a reason unrelated to the original
+      // failure. Snapshotting prior values mirrors the pattern in
+      // AuthSessionRepositoryImpl.persist.
+      String? priorIdToken;
+      try {
+        priorIdToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+      } catch (e) {
+        // Snapshot read failed; rollback for jwtToken will fall
+        // through to delete. The session-expired callback will then
+        // force a clean re-auth.
+        _log.warn('Failed to snapshot prior id_token before persist: {}', [e]);
+      }
+
+      try {
+        await _secureStorage.write(SecureStorageKeys.jwtToken.key, newIdToken);
+        if (newRefreshToken != null && newRefreshToken.isNotEmpty) {
+          await _secureStorage.write(SecureStorageKeys.refreshToken.key, newRefreshToken);
+        }
+      } catch (e, st) {
+        _log.error('Persist of rotated tokens failed — rolling back to prior values: {}', [e, st]);
+        await _restoreOrDelete(SecureStorageKeys.jwtToken, priorIdToken);
+        await _restoreOrDelete(SecureStorageKeys.refreshToken, refreshToken);
+        return null;
       }
 
       _log.info('Token refresh successful');
@@ -207,6 +248,22 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     } catch (e) {
       _log.error('Unexpected error during token refresh: {}', [e]);
       return null;
+    }
+  }
+
+  /// Best-effort rollback helper for [_performRefresh]: writes [prior]
+  /// back if it was present, otherwise deletes the key. Swallows any
+  /// failure so a rollback never escalates beyond a clean
+  /// session-expired callback for the user.
+  Future<void> _restoreOrDelete(SecureStorageKeys key, String? prior) async {
+    try {
+      if (prior != null && prior.isNotEmpty) {
+        await _secureStorage.write(key.key, prior);
+      } else {
+        await _secureStorage.delete(key.key);
+      }
+    } catch (e) {
+      _log.warn('Rollback failed for {}: {}', [key.key, e]);
     }
   }
 

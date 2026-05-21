@@ -509,6 +509,236 @@ void main() {
       expect(response.data, '{"result":"ok"}');
     });
   });
+
+  group('TokenRefreshInterceptor - 401 followed by successful refresh', () {
+    // Drives [TokenRefreshInterceptor.onError] directly (mirroring the
+    // existing 401-with-refresh-token test) and short-circuits the
+    // retry's _dio.fetch by adding a [_CapturingSuccessStub] to the
+    // production Dio. This isolates the assertions to the interceptor's
+    // own contract — no full Dio pipeline, no real HTTP.
+
+    test('persists rotated tokens, retries original request with new Bearer, marker stamped', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        refreshDioFactory: (source) {
+          final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+          refreshDio.interceptors.add(
+            _StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt","refresh_token":"new-refresh"}'),
+          );
+          return refreshDio;
+        },
+      );
+
+      final requestOptions = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      // Retry succeeded → resolve.
+      expect(handler.resolveCalled, isTrue, reason: 'retried request must resolve, not surface 401');
+      expect(handler.nextCalled, isFalse);
+
+      // Retry used the rotated token and was marked.
+      expect(retryStub.lastAuthorization, 'Bearer new-jwt');
+      expect(retryStub.lastRetryMarker, isTrue);
+
+      // Rotated tokens persisted, ready for next outgoing call.
+      expect(await secureStorage.read(SecureStorageKeys.jwtToken.key), 'new-jwt');
+      expect(await secureStorage.read(SecureStorageKeys.refreshToken.key), 'new-refresh');
+    });
+
+    test('persists only id_token when refresh response omits new refresh_token', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'still-valid-refresh');
+
+      dio.interceptors.add(_CapturingSuccessStub());
+
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        refreshDioFactory: (source) {
+          final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+          refreshDio.interceptors.add(_StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}'));
+          return refreshDio;
+        },
+      );
+
+      final requestOptions = RequestOptions(path: '/api/users');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      await interceptor.onError(error, _TestErrorHandler());
+
+      expect(await secureStorage.read(SecureStorageKeys.jwtToken.key), 'new-jwt');
+      expect(
+        await secureStorage.read(SecureStorageKeys.refreshToken.key),
+        'still-valid-refresh',
+        reason: 'omitted refresh_token in response must leave the existing one intact',
+      );
+    });
+
+    test('logs out when refresh response is missing id_token', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+
+      var logoutCount = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => logoutCount++,
+        refreshDioFactory: (source) {
+          final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+          refreshDio.interceptors.add(_StubInterceptor()..stubSuccess(data: '{}'));
+          return refreshDio;
+        },
+      );
+
+      final requestOptions = RequestOptions(path: '/api/users');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(logoutCount, 1, reason: 'malformed refresh response must trigger session-expired');
+      expect(handler.nextCalled, isTrue, reason: 'original 401 must surface');
+      // Original token unchanged; no garbage persisted.
+      expect(await secureStorage.read(SecureStorageKeys.jwtToken.key), 'old-jwt');
+    });
+
+    test('logs out when refresh response returns id_token=""', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+
+      var logoutCount = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => logoutCount++,
+        refreshDioFactory: (source) {
+          final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+          refreshDio.interceptors.add(_StubInterceptor()..stubSuccess(data: '{"id_token":""}'));
+          return refreshDio;
+        },
+      );
+
+      final requestOptions = RequestOptions(path: '/api/users');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      await interceptor.onError(error, _TestErrorHandler());
+
+      expect(logoutCount, 1);
+      expect(await secureStorage.read(SecureStorageKeys.jwtToken.key), 'old-jwt');
+    });
+
+    test('rolls back rotated tokens to prior values when refresh_token write throws', () async {
+      // Setup: prior tokens exist. Refresh returns new pair. Secure
+      // storage succeeds writing the new id_token but throws on the
+      // refresh_token write. The interceptor must restore both keys
+      // to their prior values so the user re-authenticates cleanly
+      // instead of running with a torn id/refresh pair.
+      final torn = _RefreshWriteFailsSecureStorage();
+      await torn.seed(jwt: 'prior-jwt', refresh: 'prior-refresh');
+
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: torn,
+        refreshDioFactory: (source) {
+          final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+          refreshDio.interceptors.add(
+            _StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt","refresh_token":"new-refresh"}'),
+          );
+          return refreshDio;
+        },
+      );
+
+      final requestOptions = RequestOptions(path: '/api/users');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      // The failed persist must surface as session-expired, not as a
+      // half-applied rotation.
+      expect(handler.nextCalled, isTrue, reason: 'original 401 must surface after rollback');
+      expect(handler.resolveCalled, isFalse);
+
+      // Both keys restored to prior values — no torn pair.
+      expect(await torn.read(SecureStorageKeys.jwtToken.key), 'prior-jwt');
+      expect(await torn.read(SecureStorageKeys.refreshToken.key), 'prior-refresh');
+    });
+  });
+}
+
+/// ISecureStorage that lets the jwtToken write succeed but throws on
+/// the refresh_token write — used to exercise the rollback path in
+/// `_performRefresh`. Read/delete behave normally so the rollback can
+/// actually restore values.
+class _RefreshWriteFailsSecureStorage implements ISecureStorage {
+  final Map<String, String> _store = {};
+  bool _jwtWriteSeen = false;
+
+  Future<void> seed({required String jwt, required String refresh}) async {
+    _store[SecureStorageKeys.jwtToken.key] = jwt;
+    _store[SecureStorageKeys.refreshToken.key] = refresh;
+  }
+
+  @override
+  Future<String?> read(String key) async => _store[key];
+
+  @override
+  Future<void> write(String key, String value) async {
+    if (key == SecureStorageKeys.jwtToken.key) {
+      _jwtWriteSeen = true;
+      _store[key] = value;
+      return;
+    }
+    if (key == SecureStorageKeys.refreshToken.key && _jwtWriteSeen) {
+      throw StateError('refresh_token write torn after id_token landed');
+    }
+    _store[key] = value;
+  }
+
+  @override
+  Future<void> delete(String key) async => _store.remove(key);
+
+  @override
+  Future<void> deleteAll() async => _store.clear();
+}
+
+/// Captures the Authorization header and the loop-prevention marker on
+/// any incoming request, then resolves it with 200. Used to short-circuit
+/// the retry's `_dio.fetch(retryOptions)` so the assertions can verify
+/// what bearer the retry used and whether the marker was stamped.
+class _CapturingSuccessStub extends Interceptor {
+  String? lastAuthorization;
+  bool? lastRetryMarker;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    lastAuthorization = options.headers['Authorization'] as String?;
+    lastRetryMarker = options.extra['_tokenRefresh_retried'] as bool?;
+    handler.resolve(Response(requestOptions: options, statusCode: 200, data: '{"ok":true}'));
+  }
 }
 
 /// Interceptor that stubs responses or errors before any real HTTP call.
