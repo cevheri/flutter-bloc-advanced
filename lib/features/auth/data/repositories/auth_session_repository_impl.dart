@@ -155,12 +155,20 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
     for (final key in mutatedLocal) {
       try {
-        // Compile-time exhaustive — adding a new StorageKeys variant
-        // here without snapshotting its prior value will surface as
-        // a missing case at build time, not as a silent rollback-to-
-        // null (== delete). Persist mutates only the keys listed
-        // below; any new local field this repository persists must
-        // also extend the snapshot/restore signature.
+        // Compile-time exhaustive over the full StorageKeys enum so a
+        // new variant added here without snapshotting its prior value
+        // surfaces as a missing case at build time, not as a silent
+        // rollback-to-null (== delete).
+        //
+        // [persist] only ever adds [StorageKeys.username] and
+        // [StorageKeys.roles] to `mutatedLocal`, so the
+        // language/theme/brightness branches are unreachable in
+        // practice — but they MUST stay in the switch to enforce
+        // exhaustiveness. The `null` they return is safe because
+        // [persist] never inserts those keys into `mutatedLocal`,
+        // so they cannot iterate here. Any future field this
+        // repository persists must extend the snapshot/restore
+        // signature, not silently land in the unreachable branches.
         final prior = switch (key) {
           StorageKeys.username => priorUsername,
           StorageKeys.roles => priorRoles,

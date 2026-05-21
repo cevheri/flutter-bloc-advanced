@@ -648,6 +648,40 @@ void main() {
       expect(await secureStorage.read(SecureStorageKeys.jwtToken.key), 'old-jwt');
     });
 
+    test('logs out (no crash) when refresh response is a JSON array instead of an object', () async {
+      // Defense against backend/proxy misconfiguration: if the body is
+      // a JSON array (or any non-Map shape), parsing must not crash
+      // the interceptor — surface as session-expired with a
+      // diagnosable log.
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+
+      var logoutCount = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => logoutCount++,
+        refreshDioFactory: (source) {
+          final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+          refreshDio.interceptors.add(_StubInterceptor()..stubSuccess(data: '["not", "a", "map"]'));
+          return refreshDio;
+        },
+      );
+
+      final requestOptions = RequestOptions(path: '/api/users');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(logoutCount, 1, reason: 'non-object body must trigger session-expired');
+      expect(handler.nextCalled, isTrue);
+      expect(await secureStorage.read(SecureStorageKeys.jwtToken.key), 'old-jwt', reason: 'no garbage persisted');
+    });
+
     test('rolls back rotated tokens to prior values when refresh_token write throws', () async {
       // Setup: prior tokens exist. Refresh returns new pair. Secure
       // storage succeeds writing the new id_token but throws on the

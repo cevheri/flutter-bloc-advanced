@@ -248,9 +248,20 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
         return null;
       }
 
-      final data = response.data is String ? jsonDecode(response.data as String) : response.data;
-      final newIdToken = data[_RefreshEndpoint.responseKeyIdToken] as String?;
-      final newRefreshToken = data[_RefreshEndpoint.responseKeyRefreshToken] as String?;
+      // Decode the body, then defensively narrow to Map<String, dynamic>
+      // before indexing. A misconfigured backend / proxy could return a
+      // JSON array, a bare string, or wrap the payload (e.g. `{"data":
+      // {...}}`); in any of those shapes `decoded[id_token]` would throw
+      // a NoSuchMethodError that the outer catch would swallow as
+      // "Unexpected error during token refresh" — surfacing the body
+      // shape explicitly makes the misconfiguration debuggable from logs.
+      final decoded = response.data is String ? jsonDecode(response.data as String) : response.data;
+      if (decoded is! Map<String, dynamic>) {
+        _log.error('Refresh response body is not a JSON object (was {}); session expired', [decoded.runtimeType]);
+        return null;
+      }
+      final newIdToken = decoded[_RefreshEndpoint.responseKeyIdToken] as String?;
+      final newRefreshToken = decoded[_RefreshEndpoint.responseKeyRefreshToken] as String?;
 
       if (newIdToken == null || newIdToken.isEmpty) {
         _log.error('Refresh response missing id_token — session expired');
