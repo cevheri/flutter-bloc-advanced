@@ -7,13 +7,12 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 /// in plaintext SharedPreferences.
 ///
 /// Failure contract: every method MUST throw on platform failure so
-/// that callers using Result/rollback semantics
-/// (e.g. [AuthSessionRepository.persist], [SessionMigration]) can react
-/// correctly. Silently swallowing errors here makes Success reports
-/// meaningless. In particular, [read] does NOT collapse platform
-/// failures to null — a transient read failure during a rollback
-/// snapshot must not be misread as "no prior value" and lead to
-/// deleting an existing token.
+/// that callers using Result/rollback semantics — the session-persist
+/// repository and the session-migration runner — can react correctly.
+/// Silently swallowing errors here makes Success reports meaningless.
+/// In particular, [read] does NOT collapse platform failures to null
+/// — a transient read failure during a rollback snapshot must not be
+/// misread as "no prior value" and lead to deleting an existing token.
 ///
 /// [read] returns null only when the key is absent. Platform / decryption
 /// failures throw.
@@ -96,8 +95,9 @@ class FlutterSecureStorageAdapter implements ISecureStorage {
 ///
 /// The current strings (`'jwtToken'`, `'refreshToken'`) deliberately
 /// match the legacy plaintext SharedPreferences key names so the
-/// one-shot migration in [SessionMigration] can locate the source
-/// data. Once analytics confirm no installs older than the migration
+/// one-shot `runSessionMigration()` can locate the source data
+/// (see `session_migration.dart`). Once analytics confirm no installs
+/// older than the migration
 /// remain in the wild (target: 2 minor versions after #129 ships),
 /// these can be renamed to e.g. `'secure.jwt'` / `'secure.refresh'`
 /// with a one-shot migration step that copies the value forward —
