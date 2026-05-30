@@ -39,10 +39,21 @@ void main() {
     });
 
     test('pin comparison is case-sensitive (base64 is case-sensitive)', () {
-      final lowercased = pinA.toLowerCase();
-      // If pinA happens to be already all lowercase (rare for base64), skip.
-      if (lowercased == pinA) return;
-      expect(CertificatePinner.matches(certA, [lowercased]), isFalse);
+      // Deterministically pick a fixture whose pin contains at least one
+      // uppercase letter so the lowercased variant is guaranteed to differ —
+      // otherwise the assertion below could vacuously pass.
+      var seed = 0;
+      late Uint8List cert;
+      late String pin;
+      do {
+        cert = Uint8List.fromList([seed, seed + 1, seed + 2, seed + 3]);
+        pin = _hashOf(cert);
+        seed++;
+      } while (pin == pin.toLowerCase() && seed < 256);
+
+      expect(pin, isNot(equals(pin.toLowerCase())), reason: 'fixture must contain an uppercase base64 char');
+      expect(CertificatePinner.matches(cert, [pin.toLowerCase()]), isFalse);
+      expect(CertificatePinner.matches(cert, [pin]), isTrue);
     });
   });
 

@@ -1,46 +1,13 @@
-import 'dart:io';
-
-import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
-
-/// Returns the [HttpClientAdapter] Dio should use given the pin
-/// configuration:
+/// Platform-dispatching entry point for the certificate-pinning Dio adapter.
 ///
-/// - **Empty pins or web platform** → default adapter (`IOHttpClientAdapter`
-///   with system trust). Pinning is disabled; behaviour matches today.
-/// - **Non-empty pins on mobile/desktop** → custom adapter that builds
-///   `HttpClient` instances with `SecurityContext(withTrustedRoots: false)`
-///   so **every** certificate falls through `badCertificateCallback` (the
-///   only way to enforce pinning even against system-trusted but
-///   adversarial CAs — e.g. a corporate MITM proxy or malware-installed
-///   root). The callback returns true only when the live cert matches
-///   one of the configured pins; otherwise Dio raises
-///   `DioExceptionType.badCertificate`, which `ResilienceInterceptor`
-///   already treats as non-retryable.
+/// Importers (e.g. `ApiClient`) get the IO implementation on mobile/desktop and
+/// a no-op browser implementation on web — both expose the same
+/// `HttpClientAdapter buildPinnedAdapter(List<String> pins)` signature.
 ///
-/// Web is a hard no-op: browsers control TLS validation; from JS we
-/// cannot intercept the handshake. Forks running on web should pin via
-/// HTTP-layer signals (HSTS, CT) instead.
-HttpClientAdapter buildPinnedAdapter(List<String> pins) {
-  if (kIsWeb || pins.isEmpty) {
-    return IOHttpClientAdapter();
-  }
-  return IOHttpClientAdapter()
-    ..createHttpClient = () {
-      final ctx = SecurityContext(withTrustedRoots: false);
-      final client = HttpClient(context: ctx);
-      client.badCertificateCallback = (X509Certificate cert, String host, int port) {
-        final accepted = CertificatePinner.matches(cert.der, pins);
-        if (!accepted) {
-          AppLogger.getLogger(
-            'CertificatePinningAdapter',
-          ).warn('Pin mismatch — rejecting connection to {}:{} (subject={})', [host, port, cert.subject]);
-        }
-        return accepted;
-      };
-      return client;
-    };
-}
+/// The conditional export defaults to the web stub and selects the `dart:io`
+/// implementation only when `dart:io` is available, so web builds (JS and WASM)
+/// never attempt to compile `dart:io` / `dio/io.dart`. A `kIsWeb` runtime guard
+/// alone is insufficient because the import itself must compile on web.
+library;
+
+export 'certificate_pinning_adapter_web.dart' if (dart.library.io) 'certificate_pinning_adapter_io.dart';
