@@ -58,8 +58,8 @@ class IdempotencyInterceptor extends Interceptor {
       final key = (cached != null && cached.isNotEmpty)
           ? cached
           : (headerValue != null && headerValue.isNotEmpty)
-              ? headerValue
-              : _uuid.v4();
+          ? headerValue
+          : _uuid.v4();
       options.extra[keyExtraKey] = key;
       options.headers[headerName] = key;
     }
