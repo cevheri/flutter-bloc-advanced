@@ -17,7 +17,7 @@ typedef OnIdleTimeout = void Function();
 /// foreground transitions. It does **not** know about session state or
 /// the widget tree. The integration layer (see `AppSessionListeners`)
 /// starts it when authenticated, stops it on logout, and pumps
-/// [recordActivity] from a top-level pointer / key listener.
+/// [recordActivity] from a top-level pointer listener.
 ///
 /// **Background timing.** Dart [Timer]s pause on iOS while the app is
 /// backgrounded. Relying on the timer alone would let a 12-hour
@@ -47,8 +47,15 @@ class IdleTimeoutObserver with WidgetsBindingObserver {
 
   static final _log = AppLogger.getLogger('IdleTimeoutObserver');
 
+  /// Minimum spacing between two activity records. High-frequency signals
+  /// (e.g. `onPointerMove` during a drag/scroll) would otherwise cancel and
+  /// recreate the timer on every event; throttling collapses that churn while
+  /// staying well below any realistic [idleThreshold].
+  static const Duration _activityThrottle = Duration(seconds: 1);
+
   Timer? _timer;
   DateTime? _backgroundedAt;
+  DateTime? _lastActivity;
   bool _started = false;
 
   /// Registers the lifecycle observer and starts the idle timer.
@@ -68,6 +75,7 @@ class IdleTimeoutObserver with WidgetsBindingObserver {
     _timer?.cancel();
     _timer = null;
     _backgroundedAt = null;
+    _lastActivity = null;
     WidgetsBinding.instance.removeObserver(this);
     _started = false;
     _log.debug('stop');
@@ -78,6 +86,10 @@ class IdleTimeoutObserver with WidgetsBindingObserver {
   /// before logout.
   void recordActivity() {
     if (!_started || idleThreshold == null) return;
+    final now = _clock();
+    final last = _lastActivity;
+    if (last != null && now.difference(last) < _activityThrottle) return;
+    _lastActivity = now;
     _resetTimer();
   }
 

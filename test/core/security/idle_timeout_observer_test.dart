@@ -49,17 +49,49 @@ void main() {
     test('recordActivity resets the timer; timeout does not fire if activity is within threshold', () {
       fakeAsync((async) {
         var fired = 0;
-        final observer = IdleTimeoutObserver(idleThreshold: const Duration(minutes: 5), onTimeout: () => fired++);
+        var now = DateTime(2026, 5, 21, 12);
+        final observer = IdleTimeoutObserver(
+          idleThreshold: const Duration(minutes: 5),
+          onTimeout: () => fired++,
+          clock: () => now,
+        );
         observer.start();
 
         for (var i = 0; i < 10; i++) {
           async.elapse(const Duration(minutes: 4));
+          now = now.add(const Duration(minutes: 4));
           observer.recordActivity();
         }
         // Cumulative wall time = 40 minutes, but each tick reset before threshold.
         expect(fired, 0);
 
         // Now stop pinging; the timer should expire 5 minutes later.
+        async.elapse(const Duration(minutes: 5, milliseconds: 1));
+        expect(fired, 1);
+
+        observer.stop();
+      });
+    });
+
+    test('recordActivity is throttled: rapid pings within the throttle window reset the timer only once', () {
+      fakeAsync((async) {
+        var fired = 0;
+        var now = DateTime(2026, 5, 21, 12);
+        final observer = IdleTimeoutObserver(
+          idleThreshold: const Duration(minutes: 5),
+          onTimeout: () => fired++,
+          clock: () => now,
+        );
+        observer.start();
+
+        // Burst of high-frequency activity (e.g. pointer move during a drag)
+        // all landing inside the 1s throttle window: only the first records.
+        for (var i = 0; i < 100; i++) {
+          observer.recordActivity();
+        }
+
+        // The first ping reset the timer at t=0; throttled pings did not. So the
+        // timeout still fires 5 minutes after that first (and only) reset.
         async.elapse(const Duration(minutes: 5, milliseconds: 1));
         expect(fired, 1);
 
