@@ -87,5 +87,24 @@ void main() {
       expect(calls, isEmpty);
       expect(ScreenCaptureProtection.isEnabled, isFalse);
     });
+
+    test('nested leases: protection stays on until the last lease is released', () async {
+      // Two protected screens mounted (e.g. A pushes B).
+      await ScreenCaptureProtection.enable();
+      await ScreenCaptureProtection.enable();
+      expect(ScreenCaptureProtection.isEnabled, isTrue);
+
+      // Inner screen disposed: still one lease held, protection must stay on.
+      calls.clear();
+      await ScreenCaptureProtection.disable();
+      expect(calls, isEmpty);
+      expect(ScreenCaptureProtection.isEnabled, isTrue);
+
+      // Outer screen disposed: last lease released, protection turns off.
+      await ScreenCaptureProtection.disable();
+      expect(ScreenCaptureProtection.isEnabled, isFalse);
+      final methods = calls.map((c) => c.method).toSet();
+      expect(methods, containsAll(<String>{'protectDataLeakageOff', 'protectDataLeakageWithBlurOff'}));
+    });
   });
 }
