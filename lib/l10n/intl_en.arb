@@ -138,5 +138,7 @@
         "type": "String"
       }
     }
-  }
+  },
+  "idle_timeout_signed_out": "You were signed out due to inactivity.",
+  "@idle_timeout_signed_out": {}
 }

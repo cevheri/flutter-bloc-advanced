@@ -728,6 +728,11 @@ class S {
   String user_extended_info_save_failed(String error) {
     return Intl.message('Save failed: $error', name: 'user_extended_info_save_failed', desc: '', args: [error]);
   }
+
+  /// `You were signed out due to inactivity.`
+  String get idle_timeout_signed_out {
+    return Intl.message('You were signed out due to inactivity.', name: 'idle_timeout_signed_out', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

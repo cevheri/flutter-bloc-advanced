@@ -38,14 +38,29 @@ class ProfileConstants {
   static dynamic get api {
     return _config![_Config.api];
   }
+
+  /// Inactivity threshold for auto-logout. `null` disables the
+  /// [IdleTimeoutObserver]; downstream forks override by editing
+  /// [_Config.prodConstants] (or any env map). Stored as an int (seconds)
+  /// in the map so the config can stay a plain `Map<String, dynamic>`.
+  static Duration? get idleTimeout {
+    final raw = _config?[_Config.idleTimeoutSeconds];
+    if (raw is! int || raw <= 0) return null;
+    return Duration(seconds: raw);
+  }
 }
 
 class _Config {
   static const api = "API";
+  static const idleTimeoutSeconds = "IDLE_TIMEOUT_SECONDS";
 
-  static Map<String, dynamic> devConstants = {api: "mock"};
+  /// Dev / test default: disabled. Mocked sessions and rapid hot-reload
+  /// flows would be hostile if the observer logged the user out mid-edit.
+  static Map<String, dynamic> devConstants = {api: "mock", idleTimeoutSeconds: null};
 
-  static Map<String, dynamic> testConstants = {api: "mock"};
+  static Map<String, dynamic> testConstants = {api: "mock", idleTimeoutSeconds: null};
 
-  static Map<String, dynamic> prodConstants = {api: TemplateConfig.prodApiUrl};
+  /// Production default: 15 minutes. Industry baseline for non-financial
+  /// apps; financial-grade forks should lower to 5 minutes.
+  static Map<String, dynamic> prodConstants = {api: TemplateConfig.prodApiUrl, idleTimeoutSeconds: 15 * 60};
 }
