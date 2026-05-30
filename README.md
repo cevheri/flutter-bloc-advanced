@@ -62,6 +62,7 @@ The screenshots below are included to help contributors and adopters understand 
 - Public and private route separation
 - Protected admin-only pages
 
+<<<<<<< HEAD
 ### Certificate Pinning (opt-in)
 
 The HTTP client supports certificate pinning to defend against MITM via user-installed root CAs, rogue intermediates, and other forms of device-trust-store compromise. **Default off** — the template ships with an empty pin list because pinning the wrong cert bricks every install.
@@ -90,6 +91,67 @@ Key rotation procedure:
 3. In a later release, remove the old pin.
 
 This avoids a window where in-flight users with the old app version cannot reach the new cert.
+=======
+### Inactivity Auto-Logout
+
+`IdleTimeoutObserver` (`lib/core/security/`) signs the user out after a configurable window of pointer inactivity. Default threshold is **15 minutes** in production, **disabled** in dev/test (where hot-reload + mocked sessions would make a 15-minute kick out hostile).
+
+- Configured via `ProfileConstants.idleTimeout`. Override per environment in `lib/infrastructure/config/environment.dart` by editing the `IDLE_TIMEOUT_SECONDS` entry (an int in seconds) of the env map (e.g. `_Config.prodConstants`). Set to `null` to disable.
+- Background-aware: on iOS the Dart `Timer` pauses while the app is suspended, so the observer also captures wall-clock `DateTime.now()` on lifecycle transitions; resumes past the threshold fire immediately.
+- Surfacing: when the timer fires, the user sees a localized snackbar ("You were signed out due to inactivity.") and the router redirects to login. The reason is tagged `SessionExpiredReason.idleTimeout` so logs and UI can distinguish it from a manual sign-out.
+- Activity scope: pointer down / pointer move events on the `MaterialApp.router` subtree reset the timer. Scroll-only sessions (a long-form reading view) do extend, since scroll causes pointer move events.
+
+Compliance baselines that expect inactivity timeouts: SOC2 CC6.1, ISO 27001 A.9.4.2, GDPR Art. 32.
+
+### Idempotent Mutations (opt-in)
+
+`POST` / `PUT` / `PATCH` retries can create duplicate records when the client retries on a transient failure. The template ships an opt-in `IdempotencyInterceptor` that attaches an `Idempotency-Key: <uuid-v4>` header so a properly configured backend can deduplicate.
+
+**The header is a contract, not a guarantee.** The server must be configured to deduplicate by this header (see Stripe's worked example, IETF draft `idempotency-key-header`). If the backend ignores it, this feature is theatre — the duplicate is still created server-side. Confirm support before opting in production call sites.
+
+Opt in per call:
+
+```dart
+await ApiClient.post<User>('/admin/users', user, idempotent: true);
+await ApiClient.put<User>('/admin/users', user, pathParams: '42', idempotent: true);
+await ApiClient.patch<User>('/admin/users', user, pathParams: '42', idempotent: true);
+```
+
+Worked example: `UserRepository.create` opts in (see `lib/features/users/data/repositories/user_repository.dart`).
+
+**Retry stability:** once generated, the key is stashed on `RequestOptions.extra['_idempotency_key']` and reused on every subsequent pass — covers both `ResilienceInterceptor` retries (transient 5xx) and `TokenRefreshInterceptor` re-submission after a 401 + refresh.
+
+`GET`, `HEAD`, `OPTIONS`, `DELETE` never get the header (safe / idempotent by HTTP semantics).
+
+### Screen Capture Protection (opt-in)
+
+Mechanism for sensitive screens (credentials, OTP, payment, tokens) shipped **disabled by default**. The template's job is to provide the hook, not impose UX on every fork — many apps legitimately want users to screenshot QR codes, receipts, etc.
+
+- Helper: `ScreenCaptureProtection.enable()` / `.disable()` in `lib/core/security/screen_capture_protection.dart`.
+- Per-screen mixin: `ScreenCaptureProtected<T>` in `lib/core/security/screen_capture_protected.dart` — add to a `State<T>` and it auto-enables on `initState`, releases on `dispose`.
+
+Platform behaviour (**asymmetric — read this**):
+
+| Platform | What happens |
+| --- | --- |
+| Android | `FLAG_SECURE`: screenshots and screen recording are blocked; recent-apps preview renders black. |
+| iOS | iOS provides no API to block screenshots (Apple policy). The task-switcher snapshot is **blurred** so on-screen secrets do not leak into the app preview. Screenshots while foregrounded still succeed. |
+| Web / Desktop | No-op. |
+
+Opt-in example (uncomment in `LoginScreen`):
+
+```dart
+import 'package:flutter_bloc_advance/core/security/screen_capture_protected.dart';
+
+class _LoginScreenState extends State<LoginScreen>
+    with ScreenCaptureProtected<LoginScreen>, SingleTickerProviderStateMixin {
+  // ...
+}
+```
+
+When to enable: credential entry, OTP screens, token display.
+When not to enable: screens with content the user is expected to capture (QR codes, receipts).
+>>>>>>> origin/main
 
 ### Server-Driven Dynamic Forms
 

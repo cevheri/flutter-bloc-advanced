@@ -84,6 +84,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "guest": MessageLookupByLibrary.simpleMessage("Guest"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Help & Resources"),
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage("Visit our website for documentation and guides"),
+    "idle_timeout_signed_out": MessageLookupByLibrary.simpleMessage("You were signed out due to inactivity."),
     "invalid_email": MessageLookupByLibrary.simpleMessage("Invalid email address"),
     "just_now": MessageLookupByLibrary.simpleMessage("just now"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),

@@ -738,6 +738,11 @@ class S {
       args: [],
     );
   }
+
+  /// `You were signed out due to inactivity.`
+  String get idle_timeout_signed_out {
+    return Intl.message('You were signed out due to inactivity.', name: 'idle_timeout_signed_out', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -82,6 +82,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage(
       "Dokümantasyon ve rehberler için web sitemizi ziyaret edin",
     ),
+    "idle_timeout_signed_out": MessageLookupByLibrary.simpleMessage("Hareketsizlik nedeniyle oturumunuz kapatıldı."),
     "invalid_email": MessageLookupByLibrary.simpleMessage("Geçersiz e-posta adresi"),
     "just_now": MessageLookupByLibrary.simpleMessage("az önce"),
     "language": MessageLookupByLibrary.simpleMessage("Dil"),

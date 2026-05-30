@@ -51,19 +51,38 @@ class ProfileConstants {
     if (raw is! List) return const [];
     return raw.whereType<String>().toList(growable: false);
   }
+
+  /// Inactivity threshold for auto-logout. `null` disables the
+  /// [IdleTimeoutObserver]; downstream forks override by editing
+  /// [_Config.prodConstants] (or any env map). Stored as an int (seconds)
+  /// in the map so the config can stay a plain `Map<String, dynamic>`.
+  static Duration? get idleTimeout {
+    final raw = _config?[_Config.idleTimeoutSeconds];
+    if (raw is! int || raw <= 0) return null;
+    return Duration(seconds: raw);
+  }
 }
 
 class _Config {
   static const api = "API";
   static const certificatePins = "CERTIFICATE_PINS";
+  static const idleTimeoutSeconds = "IDLE_TIMEOUT_SECONDS";
 
-  static Map<String, dynamic> devConstants = {api: "mock", certificatePins: <String>[]};
+  /// Dev / test default: pinning disabled (empty list) and idle timeout off.
+  /// Mocked sessions and rapid hot-reload flows would be hostile if the
+  /// observer logged the user out mid-edit.
+  static Map<String, dynamic> devConstants = {api: "mock", certificatePins: <String>[], idleTimeoutSeconds: null};
 
-  static Map<String, dynamic> testConstants = {api: "mock", certificatePins: <String>[]};
+  static Map<String, dynamic> testConstants = {api: "mock", certificatePins: <String>[], idleTimeoutSeconds: null};
 
-  /// Production default: pinning ships disabled (empty list). Add
-  /// base64 SHA-256 pins extracted from your live backend's certificate
-  /// to enable. Backup pin support is automatic — list two and rotate
-  /// per the README procedure.
-  static Map<String, dynamic> prodConstants = {api: TemplateConfig.prodApiUrl, certificatePins: <String>[]};
+  /// Production defaults: pinning ships disabled (empty list) — add base64
+  /// SHA-256 pins extracted from your live backend's certificate to enable
+  /// (backup pin support is automatic; list two and rotate per the README).
+  /// Idle timeout defaults to 15 minutes (industry baseline for non-financial
+  /// apps; financial-grade forks should lower to 5 minutes).
+  static Map<String, dynamic> prodConstants = {
+    api: TemplateConfig.prodApiUrl,
+    certificatePins: <String>[],
+    idleTimeoutSeconds: 15 * 60,
+  };
 }
