@@ -13,11 +13,14 @@ import 'package:uuid/uuid.dart';
 /// Stripe's worked example). The client side of the contract is in this file;
 /// the server side is the template user's responsibility.
 ///
-/// **Retry stability.** Once generated, the UUID is stashed on
-/// `extra['_idempotency_key']` and reused on every subsequent pass through the
-/// chain. This survives both [ResilienceInterceptor] retries and
-/// [TokenRefreshInterceptor] post-refresh retries because both paths re-fetch
-/// the same [RequestOptions] instance.
+/// **Retry stability.** The key is stamped onto the [RequestOptions] (both the
+/// `Idempotency-Key` header and `extra['_idempotency_key']`) on the initial
+/// send. It is preserved across retries because the same [RequestOptions]
+/// instance — headers and extra included — is reused: `ResilienceInterceptor`
+/// replays it through a new bare [Dio] (bypassing the interceptor chain), and
+/// `TokenRefreshInterceptor` re-fetches it after refreshing the token. The
+/// cached `extra` value also lets this interceptor recover the key on the rare
+/// path where it does run again.
 ///
 /// Only acts on POST / PUT / PATCH — `GET`, `HEAD`, `OPTIONS` are safe;
 /// `DELETE` is idempotent by HTTP semantics so it does not need the header.
@@ -46,8 +49,17 @@ class IdempotencyInterceptor extends Interceptor {
     final isMutating = _mutatingMethods.contains(options.method.toUpperCase());
 
     if (optedIn && isMutating) {
-      final existing = options.extra[keyExtraKey] as String?;
-      final key = (existing != null && existing.isNotEmpty) ? existing : _uuid.v4();
+      // Precedence: a key cached from a prior pass (retry stability) wins, then
+      // a caller-supplied header (e.g. a domain-derived correlation ID), and
+      // only as a last resort do we mint a fresh UUID. This avoids silently
+      // overwriting an explicit Idempotency-Key the caller already set.
+      final cached = options.extra[keyExtraKey] as String?;
+      final headerValue = options.headers[headerName]?.toString();
+      final key = (cached != null && cached.isNotEmpty)
+          ? cached
+          : (headerValue != null && headerValue.isNotEmpty)
+              ? headerValue
+              : _uuid.v4();
       options.extra[keyExtraKey] = key;
       options.headers[headerName] = key;
     }

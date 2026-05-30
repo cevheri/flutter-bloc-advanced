@@ -103,6 +103,36 @@ void main() {
       expect(handler.captured!.extra[IdempotencyInterceptor.keyExtraKey], equals(existingKey));
     });
 
+    test('caller-supplied Idempotency-Key header is respected, not overwritten', () {
+      const callerKey = 'caller-correlation-id';
+      final options = _opts(
+        method: 'POST',
+        extra: {IdempotencyInterceptor.optInExtraKey: true},
+        headers: {IdempotencyInterceptor.headerName: callerKey},
+      );
+      final handler = _RecordingRequestHandler();
+
+      interceptor.onRequest(options, handler);
+
+      expect(handler.captured!.headers[IdempotencyInterceptor.headerName], equals(callerKey));
+      // Cached into extra so retries stay stable on the same key.
+      expect(handler.captured!.extra[IdempotencyInterceptor.keyExtraKey], equals(callerKey));
+    });
+
+    test('cached extra key wins over a caller-supplied header on retry', () {
+      const cachedKey = 'cached-from-first-attempt';
+      final options = _opts(
+        method: 'POST',
+        extra: {IdempotencyInterceptor.optInExtraKey: true, IdempotencyInterceptor.keyExtraKey: cachedKey},
+        headers: {IdempotencyInterceptor.headerName: 'stale-header'},
+      );
+      final handler = _RecordingRequestHandler();
+
+      interceptor.onRequest(options, handler);
+
+      expect(handler.captured!.headers[IdempotencyInterceptor.headerName], equals(cachedKey));
+    });
+
     test('opt-in flag set to non-true value is treated as opt-out', () {
       final options = _opts(method: 'POST', extra: {IdempotencyInterceptor.optInExtraKey: 'yes'});
       final handler = _RecordingRequestHandler();
