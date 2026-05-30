@@ -62,6 +62,26 @@ The screenshots below are included to help contributors and adopters understand 
 - Public and private route separation
 - Protected admin-only pages
 
+### Idempotent Mutations (opt-in)
+
+`POST` / `PUT` / `PATCH` retries can create duplicate records when the client retries on a transient failure. The template ships an opt-in `IdempotencyInterceptor` that attaches an `Idempotency-Key: <uuid-v4>` header so a properly configured backend can deduplicate.
+
+**The header is a contract, not a guarantee.** The server must be configured to deduplicate by this header (see Stripe's worked example, IETF draft `idempotency-key-header`). If the backend ignores it, this feature is theatre — the duplicate is still created server-side. Confirm support before opting in production call sites.
+
+Opt in per call:
+
+```dart
+await ApiClient.post<User>('/admin/users', user, idempotent: true);
+await ApiClient.put<User>('/admin/users', user, pathParams: '42', idempotent: true);
+await ApiClient.patch<User>('/admin/users', user, pathParams: '42', idempotent: true);
+```
+
+Worked example: `UserRepository.create` opts in (see `lib/features/users/data/repositories/user_repository.dart`).
+
+**Retry stability:** once generated, the key is stashed on `RequestOptions.extra['_idempotency_key']` and reused on every subsequent pass — covers both `ResilienceInterceptor` retries (transient 5xx) and `TokenRefreshInterceptor` re-submission after a 401 + refresh.
+
+`GET`, `HEAD`, `OPTIONS`, `DELETE` never get the header (safe / idempotent by HTTP semantics).
+
 ### Screen Capture Protection (opt-in)
 
 Mechanism for sensitive screens (credentials, OTP, payment, tokens) shipped **disabled by default**. The template's job is to provide the hook, not impose UX on every fork — many apps legitimately want users to screenshot QR codes, receipts, etc.

@@ -322,6 +322,7 @@ void main() {
         'ConnectivityInterceptor',
         'AuthInterceptor',
         'TokenRefreshInterceptor',
+        'IdempotencyInterceptor',
         'ResilienceInterceptor',
         'MockInterceptor',
         'CacheInterceptor',

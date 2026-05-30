@@ -74,7 +74,7 @@ class UserRepository implements IUserRepository {
       return const Failure(ValidationError('User email is required'));
     }
     try {
-      final response = await ApiClient.post<User>('/admin/$_resource', User.fromEntity(user));
+      final response = await ApiClient.post<User>('/admin/$_resource', User.fromEntity(user), idempotent: true);
       final result = User.fromJsonString(response.data!);
       _log.debug('END:createUser successful');
       if (result == null) {
