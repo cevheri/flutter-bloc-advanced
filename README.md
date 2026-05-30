@@ -82,6 +82,35 @@ Worked example: `UserRepository.create` opts in (see `lib/features/users/data/re
 
 `GET`, `HEAD`, `OPTIONS`, `DELETE` never get the header (safe / idempotent by HTTP semantics).
 
+### Screen Capture Protection (opt-in)
+
+Mechanism for sensitive screens (credentials, OTP, payment, tokens) shipped **disabled by default**. The template's job is to provide the hook, not impose UX on every fork — many apps legitimately want users to screenshot QR codes, receipts, etc.
+
+- Helper: `ScreenCaptureProtection.enable()` / `.disable()` in `lib/core/security/screen_capture_protection.dart`.
+- Per-screen mixin: `ScreenCaptureProtected<T>` in `lib/core/security/screen_capture_protected.dart` — add to a `State<T>` and it auto-enables on `initState`, releases on `dispose`.
+
+Platform behaviour (**asymmetric — read this**):
+
+| Platform | What happens |
+| --- | --- |
+| Android | `FLAG_SECURE`: screenshots and screen recording are blocked; recent-apps preview renders black. |
+| iOS | iOS provides no API to block screenshots (Apple policy). The task-switcher snapshot is **blurred** so on-screen secrets do not leak into the app preview. Screenshots while foregrounded still succeed. |
+| Web / Desktop | No-op. |
+
+Opt-in example (uncomment in `LoginScreen`):
+
+```dart
+import 'package:flutter_bloc_advance/core/security/screen_capture_protected.dart';
+
+class _LoginScreenState extends State<LoginScreen>
+    with ScreenCaptureProtected<LoginScreen>, SingleTickerProviderStateMixin {
+  // ...
+}
+```
+
+When to enable: credential entry, OTP screens, token display.
+When not to enable: screens with content the user is expected to capture (QR codes, receipts).
+
 ### Server-Driven Dynamic Forms
 
 - 16 supported field types: text, email, password, number, phone, textarea,

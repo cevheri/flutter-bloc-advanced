@@ -3,6 +3,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
+// Uncomment to block screenshots / blur task-switcher snapshot on the login screen.
+// See lib/core/security/screen_capture_protection.dart for Android/iOS asymmetry.
+// import 'package:flutter_bloc_advance/core/security/screen_capture_protected.dart';
 import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
@@ -27,6 +30,8 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
+// To opt in to screen capture protection on this screen, also add
+// `ScreenCaptureProtected<LoginScreen>,` to the `with` clause below.
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
   final GlobalKey<FormBuilderState> _loginFormKey = GlobalKey<FormBuilderState>(debugLabel: '__loginFormKey__');
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>(debugLabel: '__loginScaffoldKey__');
