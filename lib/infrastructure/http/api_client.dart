@@ -73,6 +73,9 @@ class ApiClient {
 
   static AppConfig get appConfig => _appConfig;
   static set appConfig(AppConfig value) {
+    // Keep `_testDio` intact: tests that inject a stub Dio via
+    // [setTestInstance] should continue using it regardless of runtime
+    // config changes until they explicitly call [resetTestInstance]/[reset].
     _appConfig = value;
     _dio?.close();
     _dio = null;

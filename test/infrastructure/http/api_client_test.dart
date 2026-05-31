@@ -239,6 +239,8 @@ void main() {
 
     group('Mock Requests', () {
       setUp(() {
+        // reset() intentionally restores the default dev config; set test
+        // config after reset so mock-interceptor gating reads the test env.
         ApiClient.reset();
         ApiClient.appConfig = const AppConfig.test();
       });
