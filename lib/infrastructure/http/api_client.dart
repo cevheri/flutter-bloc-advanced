@@ -109,8 +109,7 @@ class ApiClient {
     _testDio = null;
     secureStorage = null;
     onSessionExpired = null;
-    _appConfig = const AppConfig.dev();
-    _interceptorChainSnapshot = const [];
+    appConfig = const AppConfig.dev();
   }
 
   /// The active Dio instance.
