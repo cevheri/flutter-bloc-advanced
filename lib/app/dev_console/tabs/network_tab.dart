@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/semantic_colors.dart';
@@ -15,20 +16,18 @@ class NetworkTab extends StatelessWidget {
       builder: (context, _) {
         final entries = DevConsoleStore.instance.networkEntries;
 
-        if (entries.isEmpty) {
-          return const Center(child: Text('No network requests captured yet.'));
-        }
-
         return Column(
           children: [
             _buildToolbar(context, entries.length),
             const Divider(height: 1),
             Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
-                itemCount: entries.length,
-                itemBuilder: (context, index) => _NetworkEntryTile(entry: entries[index]),
-              ),
+              child: entries.isEmpty
+                  ? const Center(child: Text('No network requests captured yet.'))
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(vertical: AppSpacing.xs),
+                      itemCount: entries.length,
+                      itemBuilder: (context, index) => _NetworkEntryTile(entry: entries[index]),
+                    ),
             ),
           ],
         );
@@ -43,6 +42,7 @@ class NetworkTab extends StatelessWidget {
         children: [
           Text('$count requests', style: Theme.of(context).textTheme.labelMedium),
           const Spacer(),
+          const _VerboseLogToggle(),
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 18),
             tooltip: 'Clear',
@@ -51,6 +51,35 @@ class NetworkTab extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Toggle that drives [LoggingInterceptor.verbose] — when on, full
+/// (redacted) request/response bodies are written to the debug log on
+/// top of the in-console capture. Local state mirrors the static flag so
+/// the [Switch] rebuilds on tap; the flag itself is the source of truth.
+class _VerboseLogToggle extends StatefulWidget {
+  const _VerboseLogToggle();
+
+  @override
+  State<_VerboseLogToggle> createState() => _VerboseLogToggleState();
+}
+
+class _VerboseLogToggleState extends State<_VerboseLogToggle> {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text('Verbose logs', style: Theme.of(context).textTheme.labelSmall),
+        const SizedBox(width: AppSpacing.xs),
+        Switch(
+          value: LoggingInterceptor.verbose,
+          onChanged: (value) => setState(() => LoggingInterceptor.verbose = value),
+          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        ),
+      ],
     );
   }
 }
