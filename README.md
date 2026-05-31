@@ -62,6 +62,36 @@ The screenshots below are included to help contributors and adopters understand 
 - Public and private route separation
 - Protected admin-only pages
 
+<<<<<<< HEAD
+### Certificate Pinning (opt-in)
+
+The HTTP client supports certificate pinning to defend against MITM via user-installed root CAs, rogue intermediates, and other forms of device-trust-store compromise. **Default off** — the template ships with an empty pin list because pinning the wrong cert bricks every install.
+
+How it works:
+
+- `ProfileConstants.certificatePins` is a `List<String>` of base64 SHA-256 hashes. Empty list = pinning disabled (use system trust); non-empty list installs a custom Dio adapter that uses `SecurityContext(withTrustedRoots: false)` so **every** certificate falls through `badCertificateCallback` for pin checking. This is the only correct way to enforce pinning even against system-trusted but adversarial CAs.
+- Pin mismatch → `DioExceptionType.badCertificate`, which `ResilienceInterceptor` already treats as non-retryable. `AppErrorCode.networkCertInvalid` is available for repository-layer code paths that want to surface a typed error.
+- **Web platform is a hard no-op.** Browsers control TLS; from JS we cannot intercept the handshake. Use HSTS / CT pinning at the server side instead.
+
+Extract pins from your live backend:
+
+```shell
+openssl s_client -servername api.example.com -connect api.example.com:443 < /dev/null 2>/dev/null \
+  | openssl x509 -outform DER \
+  | openssl dgst -sha256 -binary \
+  | openssl enc -base64
+```
+
+(**v1 caveat — full-cert hash, not SPKI.** The OWASP-recommended pin is `SHA-256(SubjectPublicKeyInfo)`, which survives certificate rotation as long as the keypair is reused. Extracting SPKI from X.509 DER requires ASN.1 parsing; we ship full-cert hash for simplicity and auditability. Stored pin shape stays identical when upgrading — only the hash input changes. Track this gap in your fork before adopting in production.)
+
+Key rotation procedure:
+
+1. Add the new (backup) pin to `certificatePins` **before** rotating server keys. Ship that app version.
+2. Rotate server certs to the new keypair.
+3. In a later release, remove the old pin.
+
+This avoids a window where in-flight users with the old app version cannot reach the new cert.
+=======
 ### Inactivity Auto-Logout
 
 `IdleTimeoutObserver` (`lib/core/security/`) signs the user out after a configurable window of pointer inactivity. Default threshold is **15 minutes** in production, **disabled** in dev/test (where hot-reload + mocked sessions would make a 15-minute kick out hostile).
@@ -121,6 +151,7 @@ class _LoginScreenState extends State<LoginScreen>
 
 When to enable: credential entry, OTP screens, token display.
 When not to enable: screens with content the user is expected to capture (QR codes, receipts).
+>>>>>>> origin/main
 
 ### Server-Driven Dynamic Forms
 

@@ -39,6 +39,19 @@ class ProfileConstants {
     return _config![_Config.api];
   }
 
+  /// Pinned certificate SHA-256 hashes (base64, e.g. produced by
+  /// `openssl dgst -sha256 -binary | openssl enc -base64`).
+  /// Empty list = pinning disabled (default).
+  ///
+  /// See `lib/infrastructure/http/certificate_pinning_adapter.dart` for
+  /// the live validation behaviour, and the README "Certificate Pinning"
+  /// section for the extraction one-liner + key-rotation procedure.
+  static List<String> get certificatePins {
+    final raw = _config?[_Config.certificatePins];
+    if (raw is! List) return const [];
+    return raw.whereType<String>().toList(growable: false);
+  }
+
   /// Inactivity threshold for auto-logout. `null` disables the
   /// [IdleTimeoutObserver]; downstream forks override by editing
   /// [_Config.prodConstants] (or any env map). Stored as an int (seconds)
@@ -52,15 +65,24 @@ class ProfileConstants {
 
 class _Config {
   static const api = "API";
+  static const certificatePins = "CERTIFICATE_PINS";
   static const idleTimeoutSeconds = "IDLE_TIMEOUT_SECONDS";
 
-  /// Dev / test default: disabled. Mocked sessions and rapid hot-reload
-  /// flows would be hostile if the observer logged the user out mid-edit.
-  static Map<String, dynamic> devConstants = {api: "mock", idleTimeoutSeconds: null};
+  /// Dev / test default: pinning disabled (empty list) and idle timeout off.
+  /// Mocked sessions and rapid hot-reload flows would be hostile if the
+  /// observer logged the user out mid-edit.
+  static Map<String, dynamic> devConstants = {api: "mock", certificatePins: <String>[], idleTimeoutSeconds: null};
 
-  static Map<String, dynamic> testConstants = {api: "mock", idleTimeoutSeconds: null};
+  static Map<String, dynamic> testConstants = {api: "mock", certificatePins: <String>[], idleTimeoutSeconds: null};
 
-  /// Production default: 15 minutes. Industry baseline for non-financial
-  /// apps; financial-grade forks should lower to 5 minutes.
-  static Map<String, dynamic> prodConstants = {api: TemplateConfig.prodApiUrl, idleTimeoutSeconds: 15 * 60};
+  /// Production defaults: pinning ships disabled (empty list) — add base64
+  /// SHA-256 pins extracted from your live backend's certificate to enable
+  /// (backup pin support is automatic; list two and rotate per the README).
+  /// Idle timeout defaults to 15 minutes (industry baseline for non-financial
+  /// apps; financial-grade forks should lower to 5 minutes).
+  static Map<String, dynamic> prodConstants = {
+    api: TemplateConfig.prodApiUrl,
+    certificatePins: <String>[],
+    idleTimeoutSeconds: 15 * 60,
+  };
 }

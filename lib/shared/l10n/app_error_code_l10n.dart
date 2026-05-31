@@ -21,6 +21,7 @@ extension AppErrorCodeL10n on AppErrorCode {
       AppErrorCode.accountPasswordRequired => s.error_account_password_required,
       AppErrorCode.accountPasswordsSame => s.error_account_passwords_same,
       AppErrorCode.settingsChangeLanguageFailed => s.error_settings_change_language_failed,
+      AppErrorCode.networkCertInvalid => s.error_network_cert_invalid,
       AppErrorCode.generic => s.error_generic,
     };
   }

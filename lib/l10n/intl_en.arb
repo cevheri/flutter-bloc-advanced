@@ -139,6 +139,8 @@
       }
     }
   },
+  "error_network_cert_invalid": "Could not verify the server's identity. Connection blocked.",
+  "@error_network_cert_invalid": {},
   "idle_timeout_signed_out": "You were signed out due to inactivity.",
   "@idle_timeout_signed_out": {}
 }

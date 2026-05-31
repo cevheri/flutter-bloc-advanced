@@ -68,6 +68,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("OTP kodu gönderilemedi"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Oturum kaydedilemedi"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Bir şeyler ters gitti"),
+    "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
+      "Sunucu kimliği doğrulanamadı. Bağlantı engellendi.",
+    ),
     "error_settings_change_language_failed": MessageLookupByLibrary.simpleMessage("Dil değiştirilemedi"),
     "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage("Yönetici kullanıcı silinemez"),
     "error_user_no_authorities": MessageLookupByLibrary.simpleMessage("Yetki bulunamadı"),
