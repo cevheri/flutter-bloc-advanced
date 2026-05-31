@@ -8,7 +8,7 @@
 
 A production-ready, community-friendly Flutter starter built with BLoC, repository pattern, responsive UI, role-based access control, internationalization, and multi-environment support. It is designed to help you move from prototype to maintainable product faster across mobile, web, and desktop.
 
-**Useful links:** [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced) · [Upgrade Guide](docs/upgrade_flutter_3.41.4.md) · [Transformation Log](docs/clean-modernize-strengthen.md) · [Report an Issue](https://github.com/cevheri/flutter-bloc-advanced/issues) · [Contributing](#contributing)
+**Useful links:** [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced) · [Transformation Log](docs/clean-modernize-strengthen.md) · [Report an Issue](https://github.com/cevheri/flutter-bloc-advanced/issues) · [Contributing](#contributing)
 
 ## Why This Template?
 
