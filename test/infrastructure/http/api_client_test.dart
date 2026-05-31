@@ -239,7 +239,6 @@ void main() {
 
     group('Mock Requests', () {
       setUp(() {
-        ApiClient.appConfig = const AppConfig.test();
         ApiClient.reset();
         ApiClient.appConfig = const AppConfig.test();
       });
