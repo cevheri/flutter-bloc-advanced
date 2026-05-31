@@ -62,7 +62,33 @@ The screenshots below are included to help contributors and adopters understand 
 - Public and private route separation
 - Protected admin-only pages
 
-<<<<<<< HEAD
+### Crash Reporting (Sentry, opt-in)
+
+The template ships with a Sentry adapter (`SentryAnalyticsService`) and a conservative PII / token scrubber, but **no DSN is committed** — public templates with a committed DSN bleed events from every fork into the original project's quota. Provide a DSN at build time:
+
+```shell
+fvm flutter run --target lib/main/main_prod.dart \
+  --dart-define=SENTRY_DSN=https://YOUR_PUBLIC_KEY@oXXX.ingest.sentry.io/YOUR_PROJECT_ID
+```
+
+```shell
+fvm flutter build apk --release --target lib/main/main_prod.dart \
+  --dart-define=SENTRY_DSN=https://...
+```
+
+- **No DSN, or non-prod build:** `AppDependencies.createAnalyticsService()` returns `LogAnalyticsService`. Errors land in `AppLogger`. No network egress.
+- **DSN + prod build:** bootstrap calls `SentryFlutter.init(...)` and the analytics interface switches to the Sentry-backed implementation. `SentryNavigatorObserver` registers automatically so route changes become breadcrumbs.
+
+`sentryBeforeSend` (see `lib/infrastructure/analytics/sentry_scrub.dart`) drops the following before any event leaves the device:
+
+- `Authorization` / `Cookie` / `Set-Cookie` headers (case-insensitive)
+- Body keys whose names contain `password`, `otp`, `token`, `refreshToken` (case-insensitive substring)
+- JWT-shaped strings (3 base64url segments) in exception values + event message — replaced with `[REDACTED_JWT]`
+
+The scrubber is unit-tested independently of the SDK; review it against your fork's PII surface before adopting in production. Adding new redaction rules is a single-file change.
+
+Default sample rate: `tracesSampleRate: 0.2`. Adjust in `AppBootstrap.run` if your event budget needs different cadence.
+
 ### Certificate Pinning (opt-in)
 
 The HTTP client supports certificate pinning to defend against MITM via user-installed root CAs, rogue intermediates, and other forms of device-trust-store compromise. **Default off** — the template ships with an empty pin list because pinning the wrong cert bricks every install.
@@ -91,7 +117,7 @@ Key rotation procedure:
 3. In a later release, remove the old pin.
 
 This avoids a window where in-flight users with the old app version cannot reach the new cert.
-=======
+
 ### Inactivity Auto-Logout
 
 `IdleTimeoutObserver` (`lib/core/security/`) signs the user out after a configurable window of pointer inactivity. Default threshold is **15 minutes** in production, **disabled** in dev/test (where hot-reload + mocked sessions would make a 15-minute kick out hostile).
@@ -151,7 +177,6 @@ class _LoginScreenState extends State<LoginScreen>
 
 When to enable: credential entry, OTP screens, token display.
 When not to enable: screens with content the user is expected to capture (QR codes, receipts).
->>>>>>> origin/main
 
 ### Server-Driven Dynamic Forms
 

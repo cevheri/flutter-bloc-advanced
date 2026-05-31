@@ -7,8 +7,8 @@ import 'package:flutter_bloc_advance/app/bootstrap/app_bootstrap_config.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/analytics/crash_reporter.dart';
 import 'package:flutter_bloc_advance/app/dev_console/time_travel/time_travel_bloc_observer.dart';
-import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
+import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_scrub.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
@@ -17,6 +17,7 @@ import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 class AppBootstrap {
   static Future<void> run(AppBootstrapConfig config) async {
@@ -59,9 +60,20 @@ class AppBootstrap {
     // Connectivity monitoring
     await ConnectivityService.instance.initialize();
 
-    // Analytics & crash reporting
-    final analytics = LogAnalyticsService();
-    CrashReporter.install(analytics);
+    // Analytics & crash reporting. When `--dart-define=SENTRY_DSN=...`
+    // is provided in a production build, [AppDependencies] returns the
+    // Sentry-backed implementation. Anywhere else, the local-only
+    // logging implementation.
+    //
+    // CrashReporter always installs framework / PlatformDispatcher hooks for
+    // local logging. When Sentry is active it installs its OWN hooks that both
+    // capture the error and chain to ours, so we must NOT also forward uncaught
+    // errors to the Sentry-backed analytics here — doing so reports every crash
+    // twice. With Sentry off, forwarding to the local logging analytics is the
+    // only sink, so it stays enabled.
+    final analytics = dependencies.createAnalyticsService();
+    final sentryActive = ProfileConstants.sentryDsn != null;
+    CrashReporter.install(analytics, forwardToAnalytics: !sentryActive);
 
     Bloc.observer = kDebugMode ? TimeTravelBlocObserver() : AppBlocObserver();
 
@@ -80,13 +92,34 @@ class AppBootstrap {
     // the entire widget tree shares one adapter instance — no config
     // drift between migration and runtime consumers, and overriding
     // for tests / alternate environments is a single hand-off.
-    runApp(
-      App(
-        language: config.defaultLanguage,
-        dependencies: dependencies,
-        secureStorage: secureStorage,
-        analytics: analytics,
-      ),
-    );
+    final dsn = ProfileConstants.sentryDsn;
+    if (dsn != null) {
+      log.info('Initializing Sentry (release: {}+{})', [AppConstants.appVersion, AppConstants.appBuildNumber]);
+      await SentryFlutter.init(
+        (options) {
+          options.dsn = dsn;
+          options.beforeSend = (event, hint) => sentryBeforeSend(event);
+          options.tracesSampleRate = 0.2;
+          options.release = '${AppConstants.appVersion}+${AppConstants.appBuildNumber}';
+        },
+        appRunner: () => runApp(
+          App(
+            language: config.defaultLanguage,
+            dependencies: dependencies,
+            secureStorage: secureStorage,
+            analytics: analytics,
+          ),
+        ),
+      );
+    } else {
+      runApp(
+        App(
+          language: config.defaultLanguage,
+          dependencies: dependencies,
+          secureStorage: secureStorage,
+          analytics: analytics,
+        ),
+      );
+    }
   }
 }
