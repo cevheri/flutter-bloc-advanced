@@ -10,10 +10,11 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// statement leaking a JWT to Sentry — is much worse than dropping a
 /// few extra fields you wanted to keep.
 ///
-/// Pure function: mutates the [SentryEvent] in place (matching the
-/// post-deprecation SDK API where `copyWith` is gone) and returns it.
-/// Lives in its own file specifically so tests can exercise it without
-/// booting the SDK.
+/// Deterministic and free of external side effects, but **mutates the
+/// passed-in [SentryEvent] in place** (replacing `event.request` / `event.message`
+/// and editing exception values) before returning it — matching the
+/// post-deprecation SDK API where `copyWith` is gone. Lives in its own file
+/// specifically so tests can exercise it without booting the SDK.
 
 const Set<String> _redactedHeaderNames = {'authorization', 'cookie', 'set-cookie'};
 

@@ -63,12 +63,17 @@ class AppBootstrap {
     // Analytics & crash reporting. When `--dart-define=SENTRY_DSN=...`
     // is provided in a production build, [AppDependencies] returns the
     // Sentry-backed implementation. Anywhere else, the local-only
-    // logging implementation. CrashReporter installs framework /
-    // PlatformDispatcher hooks regardless — Sentry has its own
-    // hooks too, the two are additive (Sentry receives the captured
-    // exception, AppLogger gets a local trace).
+    // logging implementation.
+    //
+    // CrashReporter always installs framework / PlatformDispatcher hooks for
+    // local logging. When Sentry is active it installs its OWN hooks that both
+    // capture the error and chain to ours, so we must NOT also forward uncaught
+    // errors to the Sentry-backed analytics here — doing so reports every crash
+    // twice. With Sentry off, forwarding to the local logging analytics is the
+    // only sink, so it stays enabled.
     final analytics = dependencies.createAnalyticsService();
-    CrashReporter.install(analytics);
+    final sentryActive = ProfileConstants.sentryDsn != null;
+    CrashReporter.install(analytics, forwardToAnalytics: !sentryActive);
 
     Bloc.observer = kDebugMode ? TimeTravelBlocObserver() : AppBlocObserver();
 
