@@ -49,7 +49,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(switch (state) {
       LoginInitialState() => LoginInitialState(loginMethod: m, passwordVisible: v),
       LoginLoadingState(:final username) => LoginLoadingState(username: username, loginMethod: m, passwordVisible: v),
-      LoginLoadedState(:final username) => LoginLoadedState(username: username, loginMethod: m, passwordVisible: v),
+      LoginLoadedState(:final username, :final roles) => LoginLoadedState(
+        username: username,
+        roles: roles,
+        loginMethod: m,
+        passwordVisible: v,
+      ),
       LoginOtpSentState(:final email) => LoginOtpSentState(email: email, passwordVisible: v),
       LoginOtpVerifiedState(:final email, :final otpCode) => LoginOtpVerifiedState(
         email: email,
@@ -210,7 +215,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
         switch (fullResult) {
           case Success():
             emit(
-              LoginLoadedState(username: username, loginMethod: loginMethod, passwordVisible: state.passwordVisible),
+              LoginLoadedState(
+                username: username,
+                roles: user.authorities ?? const <String>[],
+                loginMethod: loginMethod,
+                passwordVisible: state.passwordVisible,
+              ),
             );
             _log.debug("session persisted for: {}", [username]);
           case Failure(:final error):

@@ -29,12 +29,19 @@ final class LoginLoadingState extends LoginState {
 }
 
 final class LoginLoadedState extends LoginState {
-  const LoginLoadedState({this.username, super.loginMethod, super.passwordVisible});
+  const LoginLoadedState({this.username, this.roles = const <String>[], super.loginMethod, super.passwordVisible});
 
   final String? username;
 
+  /// Authorities resolved during login. Carried on the state so the
+  /// session can be marked authenticated *synchronously* (with roles)
+  /// before the success listener navigates — see `AppSessionListeners`.
+  /// Reading them from storage in the listener instead opened a redirect
+  /// race against the `returnUrl` deep link.
+  final List<String> roles;
+
   @override
-  List<Object?> get props => [username, loginMethod, passwordVisible];
+  List<Object?> get props => [username, roles, loginMethod, passwordVisible];
 }
 
 final class LoginOtpSentState extends LoginState {

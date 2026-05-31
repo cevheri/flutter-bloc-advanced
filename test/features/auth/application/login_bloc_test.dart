@@ -175,7 +175,19 @@ void main() {
 
     test("LoginLoadedState carries username", () {
       expect(const LoginLoadedState(username: "u"), const LoginLoadedState(username: "u"));
-      expect(const LoginLoadedState(username: "u").props, const <Object?>["u", LoginMethod.password, false]);
+      expect(const LoginLoadedState(username: "u").props, const <Object?>[
+        "u",
+        <String>[],
+        LoginMethod.password,
+        false,
+      ]);
+    });
+
+    test("LoginLoadedState carries roles", () {
+      const state = LoginLoadedState(username: "u", roles: ["ROLE_ADMIN"]);
+      expect(state.roles, const ["ROLE_ADMIN"]);
+      expect(state, const LoginLoadedState(username: "u", roles: ["ROLE_ADMIN"]));
+      expect(state, isNot(const LoginLoadedState(username: "u")));
     });
 
     test("LoginOtpSentState carries email", () {
@@ -247,7 +259,9 @@ void main() {
       final event = LoginFormSubmitted(username: input.username, password: input.password);
 
       final loadingState = LoginLoadingState(username: input.username);
-      final successState = LoginLoadedState(username: input.username);
+      // Roles come from the resolved account (mockUserFullPayload → ROLE_USER)
+      // and are now carried on the success state.
+      final successState = LoginLoadedState(username: input.username, roles: const ['ROLE_USER']);
       const failureState = LoginErrorState(errorCode: AppErrorCode.authLoginFailed, message: "Unauthorized");
       const failure2State = LoginErrorState(errorCode: AppErrorCode.authInvalidAccessToken);
 
@@ -299,7 +313,7 @@ void main() {
       final event = LoginFormSubmitted(username: input.username, password: input.password);
 
       final loadingState = LoginLoadingState(username: input.username);
-      final successState = LoginLoadedState(username: input.username);
+      final successState = LoginLoadedState(username: input.username, roles: const ['ROLE_USER']);
       const failureState = LoginErrorState(errorCode: AppErrorCode.authLoginFailed, message: "Unauthorized");
 
       blocTest<LoginBloc, LoginState>(

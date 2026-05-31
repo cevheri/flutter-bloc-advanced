@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 
 class AppSessionListeners extends StatelessWidget {
   const AppSessionListeners({super.key, required this.child});
@@ -16,17 +15,16 @@ class AppSessionListeners extends StatelessWidget {
       listeners: [
         BlocListener<LoginBloc, LoginState>(
           listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
-          listener: (context, state) async {
+          listener: (context, state) {
             if (state is LoginLoadedState) {
-              // AuthSessionRepository.persist has already written roles to
-              // AppLocalStorage by the time LoginLoadedState is emitted.
-              // Read them here so SessionAuthenticated carries the role set
-              // that route guards consult on the next router refresh.
-              final raw = await AppLocalStorage().read(StorageKeys.roles.key);
-              final roles = raw is List ? raw.whereType<String>().toSet() : const <String>{};
-              if (context.mounted) {
-                context.read<SessionCubit>().markAuthenticated(roles: roles);
-              }
+              // Mark the session authenticated SYNCHRONOUSLY using the roles
+              // carried on LoginLoadedState. As an ancestor of the login page
+              // this listener fires before the page's success listener, so the
+              // session is already authenticated (with roles) when that listener
+              // navigates to the `returnUrl` deep link. The previous version
+              // awaited a storage read here, which let navigation win the race
+              // and bounce the deep link back to /login → home.
+              context.read<SessionCubit>().markAuthenticated(roles: state.roles.toSet());
             }
           },
         ),
