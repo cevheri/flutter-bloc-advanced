@@ -8,8 +8,14 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 
 /// Intercepts all requests in dev/test mode and returns mock JSON from assets.
 ///
-/// Must be added to the interceptor chain AFTER [AuthInterceptor] so that
-/// the Authorization header is present when this interceptor checks it.
+/// Simulates the network, so it must sit **LAST** in the interceptor chain
+/// (after [AuthInterceptor] for the Authorization check, and after the
+/// observability interceptors). It resolves with
+/// `callFollowingResponseInterceptor: true` so the mock response travels
+/// back through every onResponse handler — DevConsole capture, verbose
+/// logging, cache writes — exactly like a real round-trip would. Without
+/// that flag the response short-circuits and those handlers never fire,
+/// leaving the dev console Network tab empty in mock mode.
 class MockInterceptor extends Interceptor {
   static final _log = AppLogger.getLogger('MockInterceptor');
 
@@ -40,7 +46,7 @@ class MockInterceptor extends Interceptor {
 
     // Early-return for DELETE (no mock file needed)
     if (options.method == 'DELETE') {
-      handler.resolve(Response(requestOptions: options, data: 'OK', statusCode: HttpStatus.noContent));
+      handler.resolve(Response(requestOptions: options, data: 'OK', statusCode: HttpStatus.noContent), true);
       return;
     }
 
@@ -66,10 +72,10 @@ class MockInterceptor extends Interceptor {
       _log.debug('Mock data path: {}', [mockDataPath]);
       final responseBody = await rootBundle.loadString(mockDataPath);
       _log.debug('Mock data loaded: {} {} (body length: {})', [options.method, basePath, responseBody.length]);
-      handler.resolve(Response(requestOptions: options, data: responseBody, statusCode: statusCode));
+      handler.resolve(Response(requestOptions: options, data: responseBody, statusCode: statusCode), true);
     } catch (e) {
       _log.error('Error loading mock data: {} {}, error: {}', [options.method, basePath, e]);
-      handler.resolve(Response(requestOptions: options, data: 'OK', statusCode: statusCode));
+      handler.resolve(Response(requestOptions: options, data: 'OK', statusCode: statusCode), true);
     }
   }
 }

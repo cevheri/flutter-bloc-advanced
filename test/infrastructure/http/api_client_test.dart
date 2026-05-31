@@ -324,10 +324,13 @@ void main() {
         'TokenRefreshInterceptor',
         'IdempotencyInterceptor',
         'ResilienceInterceptor',
-        'MockInterceptor',
         'CacheInterceptor',
         'DevConsoleInterceptor',
         'LoggingInterceptor',
+        // Mock simulates the network and must sit LAST so its resolved
+        // response propagates back through every onResponse handler
+        // (DevConsole capture + verbose logging) like a real round-trip.
+        'MockInterceptor',
       ]);
     });
 

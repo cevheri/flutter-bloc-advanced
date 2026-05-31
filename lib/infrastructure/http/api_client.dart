@@ -31,17 +31,19 @@ class InterceptorChainEntry {
 
 /// Dio-based HTTP client with interceptor chain.
 ///
-/// Interceptor order (single source of truth — see `_chainEntries` below):
+/// Interceptor order (single source of truth — see the chain below):
 /// 1. [ConnectivityInterceptor] — rejects requests immediately when offline
 /// 2. [AuthInterceptor] — injects JWT token
 /// 3. [TokenRefreshInterceptor] — handles 401 responses with token refresh
 /// 4. [IdempotencyInterceptor] — opt-in Idempotency-Key header for mutating
 ///    verbs (default off; retries reuse the same key)
 /// 5. [ResilienceInterceptor] — smart retry + circuit breaker
-/// 6. [MockInterceptor] — (dev/test only) short-circuits with mock data
-/// 7. [CacheInterceptor] — GET response caching with TTL
-/// 8. [DevConsoleInterceptor] — records requests in debug console
-/// 9. [LoggingInterceptor] — structured request/response logging
+/// 6. [CacheInterceptor] — GET response caching with TTL
+/// 7. [DevConsoleInterceptor] — records requests in debug console
+/// 8. [LoggingInterceptor] — structured request/response logging
+/// 9. [MockInterceptor] — (dev/test only) simulates the network LAST, so its
+///    response propagates back through the observability interceptors above
+///    just like a real round-trip (it resolves with callFollowing:true).
 ///
 /// Error mapping happens in the convenience methods ([get], [post], etc.)
 /// which catch [DioException] and rethrow as [AppException] types so that
@@ -185,15 +187,6 @@ class ApiClient {
         interceptor: ResilienceInterceptor.instance,
         meta: const InterceptorChainEntry(name: 'ResilienceInterceptor', detail: 'Retry + circuit breaker'),
       ),
-      if (!ProfileConstants.isProduction)
-        (
-          interceptor: MockInterceptor(),
-          meta: const InterceptorChainEntry(
-            name: 'MockInterceptor',
-            active: false,
-            detail: 'Serves mock data in dev/test',
-          ),
-        ),
       (
         interceptor: CacheInterceptor(),
         meta: const InterceptorChainEntry(name: 'CacheInterceptor', detail: 'GET response caching with TTL'),
@@ -206,6 +199,19 @@ class ApiClient {
         interceptor: LoggingInterceptor(),
         meta: const InterceptorChainEntry(name: 'LoggingInterceptor', detail: 'Structured request/response logging'),
       ),
+      // Mock sits LAST: it simulates the server, so its resolved response
+      // must travel back up through the observability interceptors above
+      // (DevConsole capture + verbose logging). It resolves with
+      // callFollowing:true to make that happen.
+      if (!ProfileConstants.isProduction)
+        (
+          interceptor: MockInterceptor(),
+          meta: const InterceptorChainEntry(
+            name: 'MockInterceptor',
+            active: false,
+            detail: 'Serves mock data in dev/test',
+          ),
+        ),
     ];
 
     dio.interceptors.addAll(chain.map((e) => e.interceptor));
