@@ -33,6 +33,9 @@ enum AppErrorCode {
   // --- settings ---
   settingsChangeLanguageFailed('settings.change_language_failed'),
 
+  // --- network ---
+  networkCertInvalid('network.cert_invalid'),
+
   // --- generic fallback ---
   generic('error.generic');
 

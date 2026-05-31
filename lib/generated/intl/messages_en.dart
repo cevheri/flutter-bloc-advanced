@@ -72,6 +72,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("Could not send the OTP code"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Could not save the session"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Something went wrong"),
+    "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
+      "Could not verify the server\'s identity. Connection blocked.",
+    ),
     "error_settings_change_language_failed": MessageLookupByLibrary.simpleMessage("Could not change the language"),
     "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage("Admin user cannot be deleted"),
     "error_user_no_authorities": MessageLookupByLibrary.simpleMessage("No authorities found"),
@@ -81,6 +84,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "guest": MessageLookupByLibrary.simpleMessage("Guest"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Help & Resources"),
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage("Visit our website for documentation and guides"),
+    "idle_timeout_signed_out": MessageLookupByLibrary.simpleMessage("You were signed out due to inactivity."),
     "invalid_email": MessageLookupByLibrary.simpleMessage("Invalid email address"),
     "just_now": MessageLookupByLibrary.simpleMessage("just now"),
     "language": MessageLookupByLibrary.simpleMessage("Language"),

@@ -138,5 +138,9 @@
         "type": "String"
       }
     }
-  }
+  },
+  "error_network_cert_invalid": "Sunucu kimliği doğrulanamadı. Bağlantı engellendi.",
+  "@error_network_cert_invalid": {},
+  "idle_timeout_signed_out": "Hareketsizlik nedeniyle oturumunuz kapatıldı.",
+  "@idle_timeout_signed_out": {}
 }
