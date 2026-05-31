@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
 /// PII / token scrubber for Sentry events. Runs as the SDK's
@@ -10,22 +11,16 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// statement leaking a JWT to Sentry — is much worse than dropping a
 /// few extra fields you wanted to keep.
 ///
+/// The actual redaction policy (which headers/body keys/JWT shape count
+/// as sensitive) lives in `core/security/sensitive_data_scrubber.dart` so
+/// this crash-report exit and the debug-log exit share one definition and
+/// cannot drift apart.
+///
 /// Deterministic and free of external side effects, but **mutates the
 /// passed-in [SentryEvent] in place** (replacing `event.request` / `event.message`
 /// and editing exception values) before returning it — matching the
 /// post-deprecation SDK API where `copyWith` is gone. Lives in its own file
 /// specifically so tests can exercise it without booting the SDK.
-
-const Set<String> _redactedHeaderNames = {'authorization', 'cookie', 'set-cookie'};
-
-const Set<String> _redactedBodyKeySubstrings = {'password', 'otp', 'token', 'refreshtoken'};
-
-/// JWT shape: 3 base64url segments separated by dots, each at least 4
-/// chars. Conservative — does not match every theoretical JWT, but
-/// matches every JWT this app actually mints.
-final RegExp _jwtPattern = RegExp(r'eyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}');
-
-const String _jwtMask = '[REDACTED_JWT]';
 
 SentryEvent sentryBeforeSend(SentryEvent event) {
   final request = event.request;
@@ -41,8 +36,8 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
       cookies: null, // drop entire Cookie field — covered by header scrub but doubled here
       fragment: request.fragment,
       apiTarget: request.apiTarget,
-      data: _scrubBody(request.data),
-      headers: _scrubHeaders(request.headers),
+      data: scrubBodyKeys(request.data),
+      headers: scrubHeaders(request.headers),
       env: request.env,
     );
   }
@@ -51,52 +46,18 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
   if (exceptions != null) {
     for (final ex in exceptions) {
       final v = ex.value;
-      if (v != null) ex.value = _maskJwt(v);
+      if (v != null) ex.value = maskJwts(v);
     }
   }
 
   final msg = event.message;
   if (msg != null) {
     final formatted = msg.formatted;
-    final masked = _maskJwt(formatted);
+    final masked = maskJwts(formatted);
     if (masked != formatted) {
       event.message = SentryMessage(masked);
     }
   }
 
   return event;
-}
-
-Map<String, String>? _scrubHeaders(Map<String, String>? headers) {
-  if (headers == null) return null;
-  final out = <String, String>{};
-  headers.forEach((k, v) {
-    if (!_redactedHeaderNames.contains(k.toLowerCase())) {
-      out[k] = v;
-    }
-  });
-  return out;
-}
-
-/// Body shapes we strip: `Map` (the common JSON case after Dio
-/// decoding). Non-Map bodies (raw String, List, multipart) pass
-/// through untouched — they would require shape-specific scrubbing
-/// and the risk/reward is poor.
-Object? _scrubBody(Object? body) {
-  if (body is! Map) return body;
-  final out = <String, dynamic>{};
-  body.forEach((k, v) {
-    if (k is! String) {
-      out[k.toString()] = v;
-      return;
-    }
-    final lower = k.toLowerCase();
-    final isSecret = _redactedBodyKeySubstrings.any(lower.contains);
-    if (!isSecret) out[k] = v;
-  });
-  return out;
-}
-
-String _maskJwt(String input) {
-  return input.replaceAll(_jwtPattern, _jwtMask);
 }
