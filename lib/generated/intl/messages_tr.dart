@@ -77,6 +77,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "failed": MessageLookupByLibrary.simpleMessage("Başarısız"),
     "filter": MessageLookupByLibrary.simpleMessage("Filtrele"),
     "first_name": MessageLookupByLibrary.simpleMessage("İsim"),
+    "forbidden_back_home": MessageLookupByLibrary.simpleMessage("Ana sayfaya dön"),
+    "forbidden_message": MessageLookupByLibrary.simpleMessage("Bu sayfayı görüntüleme yetkiniz yok."),
+    "forbidden_title": MessageLookupByLibrary.simpleMessage("Erişim engellendi"),
     "guest": MessageLookupByLibrary.simpleMessage("Kullanıcı"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Yardım ve Kaynaklar"),
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage(

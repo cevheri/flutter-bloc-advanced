@@ -28,4 +28,5 @@ class ApplicationRoutesConstants {
   static const notFound = '/not-found';
   static const error = '/error';
   static const error500 = '/error/500';
+  static const forbidden = '/forbidden';
 }

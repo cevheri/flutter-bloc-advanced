@@ -10,6 +10,7 @@ import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/core/security/safe_redirect.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -631,7 +632,12 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         ),
       );
     } else if (state is LoginLoadedState) {
-      context.go(ApplicationRoutesConstants.home);
+      // Honor `?returnUrl=` from the redirect-to-login flow so deep
+      // links survive the auth bounce. Open-redirect guard rejects
+      // off-origin candidates; falls back to home.
+      final returnUrl = GoRouterState.of(context).uri.queryParameters['returnUrl'];
+      final destination = safeRedirectTarget(returnUrl, fallback: ApplicationRoutesConstants.home);
+      context.go(destination);
       ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
       ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(
         SnackBar(

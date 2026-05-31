@@ -729,6 +729,21 @@ class S {
     return Intl.message('Save failed: $error', name: 'user_extended_info_save_failed', desc: '', args: [error]);
   }
 
+  /// `Access denied`
+  String get forbidden_title {
+    return Intl.message('Access denied', name: 'forbidden_title', desc: '', args: []);
+  }
+
+  /// `You do not have permission to view this page.`
+  String get forbidden_message {
+    return Intl.message('You do not have permission to view this page.', name: 'forbidden_message', desc: '', args: []);
+  }
+
+  /// `Back to home`
+  String get forbidden_back_home {
+    return Intl.message('Back to home', name: 'forbidden_back_home', desc: '', args: []);
+  }
+
   /// `Could not verify the server's identity. Connection blocked.`
   String get error_network_cert_invalid {
     return Intl.message(

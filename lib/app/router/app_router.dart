@@ -1,5 +1,8 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_refresh_notifier.dart';
+import 'package:flutter_bloc_advance/app/router/forbidden_page.dart';
+import 'package:flutter_bloc_advance/app/router/route_role_requirements.dart';
+// safeRedirectTarget lives in core/ so features/ guards can consume it too.
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/shell/app_shell.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
@@ -47,6 +50,7 @@ class AppRouterFactory {
           loginBuilder: (context) =>
               LoginScreen(onToggleTheme: () => context.read<ThemeBloc>().add(const ToggleBrightness())),
         ),
+        GoRoute(path: ApplicationRoutesConstants.forbidden, builder: (context, state) => const ForbiddenPage()),
       ],
       redirect: (context, state) {
         final location = state.uri.path;
@@ -71,7 +75,31 @@ class AppRouterFactory {
         // is owned by SessionCubit, which flips state to
         // SessionUnauthenticated when the JWT is missing or expired.
         if (!isAuthenticated && !isPublic) {
-          return ApplicationRoutesConstants.login;
+          // Preserve the intended destination as `returnUrl` so login
+          // success can land the user where they were going. The
+          // dashboard fallback handles the "user typed /login directly"
+          // case where there's nothing meaningful to return to. The
+          // login screen validates the value as a local path before
+          // honoring it (see LoginScreen — open-redirect guard).
+          final fullPath = state.uri.toString();
+          if (fullPath == ApplicationRoutesConstants.home || fullPath == ApplicationRoutesConstants.login) {
+            return ApplicationRoutesConstants.login;
+          }
+          final encoded = Uri.encodeQueryComponent(fullPath);
+          return '${ApplicationRoutesConstants.login}?returnUrl=$encoded';
+        }
+
+        // Role gate. Empty required set → open access.
+        if (isAuthenticated) {
+          final required = requiredRolesFor(location);
+          if (!hasAnyRequiredRole(sessionState.roles, required)) {
+            _log.warn('redirect - role denied at {}: user roles {}, required {}', [
+              location,
+              sessionState.roles,
+              required,
+            ]);
+            return ApplicationRoutesConstants.forbidden;
+          }
         }
 
         return null;

@@ -66,7 +66,14 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
           listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
           listener: (context, state) {
             if (state is LoginLoadedState) {
-              context.read<SessionCubit>().markAuthenticated();
+              // Mark the session authenticated SYNCHRONOUSLY using the roles
+              // carried on LoginLoadedState. As an ancestor of the login page
+              // this listener fires before the page's success listener, so the
+              // session is already authenticated (with roles) when that listener
+              // navigates to the `returnUrl` deep link. The previous version
+              // awaited a storage read here, which let navigation win the race
+              // and bounce the deep link back to /login → home.
+              context.read<SessionCubit>().markAuthenticated(roles: state.roles.toSet());
             }
           },
         ),
