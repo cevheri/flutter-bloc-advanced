@@ -16,7 +16,13 @@ class EnvironmentTab extends StatelessWidget {
     final semantic = context.semanticColors;
 
     final envInfo = _buildEnvironmentInfo();
-    final routeConfig = GoRouter.of(context).configuration;
+    // Read everything from the router itself, not from GoRouterState.of(context):
+    // the dev console is shown in a modal bottom sheet whose subtree is not
+    // under any GoRoute.builder, so GoRouterState.of has no scope to resolve
+    // and throws. GoRouter.of works from anywhere below InheritedGoRouter.
+    final router = GoRouter.of(context);
+    final routeConfig = router.configuration;
+    final currentUri = router.state.uri.toString();
 
     return ListView(
       padding: const EdgeInsets.all(AppSpacing.md),
@@ -33,12 +39,7 @@ class EnvironmentTab extends StatelessWidget {
         const SizedBox(height: AppSpacing.xl),
         _SectionHeader(title: 'Current Route', icon: Icons.location_on_outlined),
         const SizedBox(height: AppSpacing.sm),
-        _InfoRow(
-          label: 'Path',
-          value: GoRouterState.of(context).uri.toString(),
-          colorScheme: colorScheme,
-          textTheme: textTheme,
-        ),
+        _InfoRow(label: 'Path', value: currentUri, colorScheme: colorScheme, textTheme: textTheme),
       ],
     );
   }
