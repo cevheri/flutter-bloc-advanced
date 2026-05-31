@@ -14,8 +14,8 @@ class AppSessionListeners extends StatefulWidget {
   final Widget child;
 
   /// Test seam — lets a widget test inject a smaller threshold than
-  /// production without re-pointing [ProfileConstants]. Null falls back
-  /// to [ProfileConstants.idleTimeout].
+  /// production without changing the injected [AppConfig]. Null falls back
+  /// to `context.read<AppConfig>().idleTimeout`.
   final Duration? idleTimeoutOverride;
 
   @override
@@ -36,7 +36,7 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
 
   void _startIdleObserver() {
     if (_idleObserver != null) return;
-    final threshold = widget.idleTimeoutOverride ?? ProfileConstants.idleTimeout;
+    final threshold = widget.idleTimeoutOverride ?? context.read<AppConfig>().idleTimeout;
     if (threshold == null) {
       _log.debug('idle timeout disabled (no threshold configured)');
       return;

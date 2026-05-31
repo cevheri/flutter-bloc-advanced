@@ -75,7 +75,7 @@ class _AppViewState extends State<_AppView> {
         // Sentry breadcrumbs from navigation. Only meaningful when the
         // Sentry SDK was initialized in bootstrap (production + DSN);
         // outside that window the observer is harmless overhead.
-        if (ProfileConstants.sentryDsn != null) SentryNavigatorObserver(),
+        if (context.read<AppConfig>().sentryDsn != null) SentryNavigatorObserver(),
       ],
     ).create();
   }

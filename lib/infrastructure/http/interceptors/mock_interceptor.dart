@@ -11,14 +11,17 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 /// Must be added to the interceptor chain AFTER [AuthInterceptor] so that
 /// the Authorization header is present when this interceptor checks it.
 class MockInterceptor extends Interceptor {
+  MockInterceptor({this.appConfig = const AppConfig.dev()});
+
   static final _log = AppLogger.getLogger('MockInterceptor');
+  final AppConfig appConfig;
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     _log.debug('Mock request: {} {}', [options.method, options.path]);
 
     // Simulate network latency in dev (not in tests)
-    if (!ProfileConstants.isTest) {
+    if (!appConfig.isTest) {
       await Future.delayed(const Duration(milliseconds: 500));
     }
 

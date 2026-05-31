@@ -96,7 +96,7 @@ void main() {
     late _StubInterceptor stub;
 
     setUp(() {
-      ProfileConstants.setEnvironment(Environment.prod);
+      ApiClient.appConfig = const AppConfig.prod();
       stub = _StubInterceptor();
       final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
       testDio.interceptors.add(stub);
@@ -239,8 +239,9 @@ void main() {
 
     group('Mock Requests', () {
       setUp(() {
-        ProfileConstants.setEnvironment(Environment.test);
+        ApiClient.appConfig = const AppConfig.test();
         ApiClient.reset();
+        ApiClient.appConfig = const AppConfig.test();
       });
 
       test('given test environment when GET request is made then should return mock data', () async {

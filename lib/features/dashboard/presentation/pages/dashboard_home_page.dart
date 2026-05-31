@@ -59,11 +59,11 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
       _ => null,
     };
 
-    final environment = ProfileConstants.isProduction
-        ? 'prod'
-        : ProfileConstants.isDevelopment
-        ? 'dev'
-        : 'test';
+    final environment = switch (context.read<AppConfig>().environment) {
+      Environment.prod => 'prod',
+      Environment.dev => 'dev',
+      Environment.test => 'test',
+    };
 
     context.read<SystemDashboardCubit>().updateAppConfig(
       AppConfigSummary(

@@ -28,6 +28,7 @@ import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dar
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class AppScope extends StatelessWidget {
@@ -51,6 +52,7 @@ class AppScope extends StatelessWidget {
           RepositoryProvider<ISecureStorage>.value(value: secure)
         else
           RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
+        RepositoryProvider<AppConfig>.value(value: dependencies.appConfig),
         RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
         RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
         RepositoryProvider<IAuthRepository>(
@@ -67,7 +69,9 @@ class AppScope extends StatelessWidget {
         providers: [
           BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()..monitor()),
           BlocProvider<SessionCubit>(
-            create: (context) => SessionCubit(secureStorage: context.read<ISecureStorage>())..restore(),
+            create: (context) =>
+                SessionCubit(secureStorage: context.read<ISecureStorage>(), appConfig: context.read<AppConfig>())
+                  ..restore(),
           ),
           BlocProvider<LoginBloc>(
             create: (context) => LoginBloc(

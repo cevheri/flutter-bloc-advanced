@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -122,15 +123,15 @@ void main() {
 
     blocTest<SessionCubit, SessionState>(
       'restore emits SessionUnauthenticated(expired) for an expired token in prod',
-      setUp: () => ProfileConstants.setEnvironment(Environment.prod),
+      setUp: () => ApiClient.appConfig = const AppConfig.prod(),
       build: () {
         final secure = _MemorySecureStorage();
         secure._store[SecureStorageKeys.jwtToken.key] = _expiredJwt;
-        return SessionCubit(secureStorage: secure);
+        return SessionCubit(secureStorage: secure, appConfig: const AppConfig.prod());
       },
       act: (cubit) => cubit.restore(),
       expect: () => [const SessionUnauthenticated(reason: SessionExpiredReason.expired)],
-      tearDown: () => ProfileConstants.setEnvironment(Environment.test),
+      tearDown: () => ApiClient.appConfig = const AppConfig.test(),
     );
 
     blocTest<SessionCubit, SessionState>(

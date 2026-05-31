@@ -54,6 +54,7 @@ class ApiClient {
   static Dio? _dio;
   static Dio? _testDio;
   static List<InterceptorChainEntry> _interceptorChainSnapshot = const [];
+  static AppConfig _appConfig = const AppConfig.dev();
 
   /// Snapshot of the active interceptor chain, in order. Populated the
   /// first time [instance] is read (i.e. when Dio is built).
@@ -69,6 +70,14 @@ class ApiClient {
   /// Set this before the first API call (typically in app initialization) so
   /// that the [TokenRefreshInterceptor] can notify the app layer to log out.
   static OnSessionExpired? onSessionExpired;
+
+  static AppConfig get appConfig => _appConfig;
+  static set appConfig(AppConfig value) {
+    _appConfig = value;
+    _dio?.close();
+    _dio = null;
+    _interceptorChainSnapshot = const [];
+  }
 
   /// Secure storage instance threaded into [AuthInterceptor] and
   /// [TokenRefreshInterceptor] when Dio is built. Bootstrap sets this
@@ -100,6 +109,8 @@ class ApiClient {
     _testDio = null;
     secureStorage = null;
     onSessionExpired = null;
+    _appConfig = const AppConfig.dev();
+    _interceptorChainSnapshot = const [];
   }
 
   /// The active Dio instance.
@@ -109,7 +120,7 @@ class ApiClient {
   }
 
   static Dio _createDio() {
-    _log.debug('Creating Dio instance (production: {})', [ProfileConstants.isProduction]);
+    _log.debug('Creating Dio instance (production: {})', [_appConfig.isProduction]);
     if (secureStorage == null) {
       // Loud warning when Dio is built without a shared secureStorage.
       // Production code paths through AppBootstrap always set this
@@ -127,7 +138,7 @@ class ApiClient {
 
     final dio = Dio(
       BaseOptions(
-        baseUrl: ProfileConstants.isProduction ? (ProfileConstants.api as String) : '',
+        baseUrl: _appConfig.apiBaseUrl ?? '',
         connectTimeout: const Duration(seconds: _timeoutSeconds),
         receiveTimeout: const Duration(seconds: _timeoutSeconds),
         responseType: ResponseType.plain,
@@ -136,10 +147,10 @@ class ApiClient {
     );
 
     // Certificate pinning. Empty pin list (default) keeps the system
-    // adapter; populating ProfileConstants.certificatePins swaps in a
+    // adapter; populating appConfig.certificatePins swaps in a
     // pinning adapter that fails closed on any non-matching cert. Web
     // is a hard no-op — see buildPinnedAdapter docs.
-    final pins = ProfileConstants.certificatePins;
+    final pins = _appConfig.certificatePins;
     if (pins.isNotEmpty) {
       _log.info('Installing certificate pinning adapter ({} pin(s))', [pins.length]);
       dio.httpClientAdapter = buildPinnedAdapter(pins);
@@ -185,9 +196,9 @@ class ApiClient {
         interceptor: ResilienceInterceptor.instance,
         meta: const InterceptorChainEntry(name: 'ResilienceInterceptor', detail: 'Retry + circuit breaker'),
       ),
-      if (!ProfileConstants.isProduction)
+      if (!_appConfig.isProduction)
         (
-          interceptor: MockInterceptor(),
+          interceptor: MockInterceptor(appConfig: _appConfig),
           meta: const InterceptorChainEntry(
             name: 'MockInterceptor',
             active: false,
