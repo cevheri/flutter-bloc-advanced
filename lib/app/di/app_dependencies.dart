@@ -11,6 +11,9 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dy
 import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
+import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
+import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
@@ -18,6 +21,17 @@ class AppDependencies {
   const AppDependencies({this.environment = Environment.dev});
 
   final Environment environment;
+
+  /// Returns the analytics implementation appropriate for the active
+  /// environment. Production + non-empty DSN → [SentryAnalyticsService]
+  /// (Sentry SDK assumed already-initialized by bootstrap); any other
+  /// case → [LogAnalyticsService] (local-only, no network egress).
+  IAnalyticsService createAnalyticsService() {
+    if (ProfileConstants.sentryDsn != null) {
+      return SentryAnalyticsService();
+    }
+    return LogAnalyticsService();
+  }
 
   IAccountRepository createAccountRepository() => AccountRepository();
 

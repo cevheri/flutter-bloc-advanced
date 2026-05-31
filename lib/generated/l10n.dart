@@ -743,6 +743,21 @@ class S {
   String get forbidden_back_home {
     return Intl.message('Back to home', name: 'forbidden_back_home', desc: '', args: []);
   }
+
+  /// `Could not verify the server's identity. Connection blocked.`
+  String get error_network_cert_invalid {
+    return Intl.message(
+      'Could not verify the server\'s identity. Connection blocked.',
+      name: 'error_network_cert_invalid',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You were signed out due to inactivity.`
+  String get idle_timeout_signed_out {
+    return Intl.message('You were signed out due to inactivity.', name: 'idle_timeout_signed_out', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

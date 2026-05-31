@@ -78,6 +78,11 @@ enum SessionExpiredReason {
   /// [SessionUnknown] forever.
   storageError,
 
+  /// User was inactive past the configured idle threshold and the
+  /// session was forcibly ended. Surfaced to the UI as a localized
+  /// notice so the user understands why they were signed out.
+  idleTimeout,
+
   /// Initial or otherwise uncategorized — e.g. an explicit logout
   /// flow that does not need to distinguish further.
   unknown,
