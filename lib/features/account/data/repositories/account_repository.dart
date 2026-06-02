@@ -9,6 +9,10 @@ import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
 class AccountRepository implements IAccountRepository {
+  AccountRepository(this._apiClient);
+
+  final ApiClient _apiClient;
+
   static final _log = AppLogger.getLogger('AccountRepository');
 
   static const _resource = 'account';
@@ -29,7 +33,7 @@ class AccountRepository implements IAccountRepository {
         user = user.copyWith(langKey: 'en');
       }
       user = user.copyWith(authorities: ['ROLE_USER']);
-      final response = await ApiClient.post<User>('/register', User.fromEntity(user));
+      final response = await _apiClient.post<User>('/register', User.fromEntity(user));
       final decoded = ApiClient.decodeUTF8(response.data!);
       final result = User.fromJsonString(decoded);
       if (result == null) {
@@ -59,7 +63,7 @@ class AccountRepository implements IAccountRepository {
           passwordChangeDTO.newPassword!.isEmpty) {
         return const Failure(ValidationError('Current password and new password are required'));
       }
-      final response = await ApiClient.post<PasswordChangeDTO>('/$_resource/change-password', passwordChangeDTO);
+      final response = await _apiClient.post<PasswordChangeDTO>('/$_resource/change-password', passwordChangeDTO);
       if ((response.statusCode ?? 0) < 400) {
         _log.debug('END:changePassword successful');
         return const Success(null);
@@ -87,7 +91,7 @@ class AccountRepository implements IAccountRepository {
       if (!mailAddress.contains('@') || !mailAddress.contains('.')) {
         return const Failure(ValidationError('Mail address is invalid'));
       }
-      final response = await ApiClient.post<String>(
+      final response = await _apiClient.post<String>(
         '/$_resource/reset-password/init',
         mailAddress,
         headers: {'Accept': 'application/json, text/plain, */*'},
@@ -114,7 +118,7 @@ class AccountRepository implements IAccountRepository {
   Future<Result<UserEntity>> getAccount() async {
     _log.debug('BEGIN:getAccount repository start');
     try {
-      final response = await ApiClient.get('/$_resource');
+      final response = await _apiClient.get('/$_resource');
       final decoded = ApiClient.decodeUTF8(response.data!);
       final parsed = User.fromJsonString(decoded);
       if (parsed == null) {
@@ -141,7 +145,7 @@ class AccountRepository implements IAccountRepository {
         return const Failure(ValidationError(userIdNotNull));
       }
       final updatedUser = user.copyWith(langKey: user.langKey ?? 'en');
-      final response = await ApiClient.post<User>('/$_resource', User.fromEntity(updatedUser));
+      final response = await _apiClient.post<User>('/$_resource', User.fromEntity(updatedUser));
       final decoded = ApiClient.decodeUTF8(response.data!);
       final parsed = User.fromJsonString(decoded);
       if (parsed == null) {
@@ -169,7 +173,7 @@ class AccountRepository implements IAccountRepository {
       if (id.isEmpty) {
         return const Failure(ValidationError(userIdNotNull));
       }
-      final response = await ApiClient.delete('/$_resource/$id');
+      final response = await _apiClient.delete('/$_resource/$id');
       _log.debug('END:deleteAccount successful - response.status: {}', [response.statusCode]);
       if (response.statusCode == 204) {
         return const Success(null);

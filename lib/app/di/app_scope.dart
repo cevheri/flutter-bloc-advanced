@@ -24,6 +24,7 @@ import 'package:flutter_bloc_advance/features/users/application/authority_bloc.d
 import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
@@ -53,17 +54,29 @@ class AppScope extends StatelessWidget {
         else
           RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
         RepositoryProvider<AppConfig>.value(value: dependencies.appConfig),
-        RepositoryProvider<IAccountRepository>(create: (_) => dependencies.createAccountRepository()),
-        RepositoryProvider<IAuthorityRepository>(create: (_) => dependencies.createAuthorityRepository()),
+        RepositoryProvider<ApiClient>(
+          create: (context) => dependencies.createApiClient(context.read<ISecureStorage>()),
+        ),
+        RepositoryProvider<IAccountRepository>(
+          create: (context) => dependencies.createAccountRepository(context.read<ApiClient>()),
+        ),
+        RepositoryProvider<IAuthorityRepository>(
+          create: (context) => dependencies.createAuthorityRepository(context.read<ApiClient>()),
+        ),
         RepositoryProvider<IAuthRepository>(
-          create: (context) => dependencies.createAuthRepository(context.read<ISecureStorage>()),
+          create: (context) =>
+              dependencies.createAuthRepository(context.read<ISecureStorage>(), context.read<ApiClient>()),
         ),
         RepositoryProvider<IAuthSessionRepository>(
           create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
         ),
-        RepositoryProvider<IDynamicFormRepository>(create: (_) => dependencies.createDynamicFormRepository()),
+        RepositoryProvider<IDynamicFormRepository>(
+          create: (context) => dependencies.createDynamicFormRepository(context.read<ApiClient>()),
+        ),
         RepositoryProvider<MenuRepository>(create: (_) => dependencies.createMenuRepository()),
-        RepositoryProvider<IUserRepository>(create: (_) => dependencies.createUserRepository()),
+        RepositoryProvider<IUserRepository>(
+          create: (context) => dependencies.createUserRepository(context.read<ApiClient>()),
+        ),
       ],
       child: MultiBlocProvider(
         providers: [
@@ -101,11 +114,12 @@ class AppScope extends StatelessWidget {
           ),
           BlocProvider<SidebarBloc>(create: (_) => SidebarBloc()),
           BlocProvider<SystemDashboardCubit>(
-            create: (_) => SystemDashboardCubit(
+            create: (context) => SystemDashboardCubit(
               connectivityService: ConnectivityService.instance,
               featureFlagService: FeatureFlagService.instance,
               resilienceInterceptor: ResilienceInterceptor.instance,
               cacheStorage: SharedPrefsCacheStorage.instance,
+              apiClient: context.read<ApiClient>(),
             ),
           ),
         ],

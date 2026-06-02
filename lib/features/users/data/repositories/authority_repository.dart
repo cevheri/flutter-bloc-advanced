@@ -7,9 +7,11 @@ import 'package:flutter_bloc_advance/features/users/domain/repositories/authorit
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 
 class AuthorityRepositoryImpl implements IAuthorityRepository {
-  static final _log = AppLogger.getLogger('AuthorityRepository');
+  AuthorityRepositoryImpl(this._apiClient);
 
-  AuthorityRepositoryImpl();
+  final ApiClient _apiClient;
+
+  static final _log = AppLogger.getLogger('AuthorityRepository');
 
   final String _resource = 'authorities';
 
@@ -20,7 +22,7 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
       return const Failure(ValidationError('Authority name null'));
     }
     try {
-      final response = await ApiClient.post<Authority>('/$_resource', authority);
+      final response = await _apiClient.post<Authority>('/$_resource', authority);
       final result = Authority.fromJsonString(response.data!);
       _log.debug('END:createAuthority successful');
       if (result == null) {
@@ -47,7 +49,7 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
     _log.debug('BEGIN:getAuthorities repository start');
     try {
       final queryParams = {'sort': 'name'};
-      final response = await ApiClient.get('/$_resource', queryParams: queryParams);
+      final response = await _apiClient.get('/$_resource', queryParams: queryParams);
       final result = Authority.fromJsonStringList(response.data!);
       final nonNullList = result.whereType<String>().toList();
       _log.debug('END:getAuthorities successful - response list size: {}', [nonNullList.length]);
@@ -74,7 +76,7 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
       return const Failure(ValidationError('Authority id null'));
     }
     try {
-      final response = await ApiClient.get('/$_resource', pathParams: id);
+      final response = await _apiClient.get('/$_resource', pathParams: id);
       final result = Authority.fromJsonString(response.data!);
       _log.debug('END:getAuthority successful - response.body: {}', [result.toString()]);
       if (result == null) {
@@ -103,7 +105,7 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
       return const Failure(ValidationError('Authority id null'));
     }
     try {
-      final response = await ApiClient.delete('/$_resource', pathParams: id);
+      final response = await _apiClient.delete('/$_resource', pathParams: id);
       _log.debug('END:deleteAuthority successful - response status code: {}', [response.statusCode]);
       return const Success(null);
     } on UnauthorizedException catch (e) {

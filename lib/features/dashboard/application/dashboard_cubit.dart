@@ -22,6 +22,7 @@ class SystemDashboardCubit extends Cubit<SystemDashboardState> {
     required this._featureFlagService,
     required this._resilienceInterceptor,
     required this._cacheStorage,
+    required this._apiClient,
   }) : super(const SystemDashboardState()) {
     _connectivitySubscription = _connectivityService.statusStream.listen(_onConnectivityChanged);
     _featureFlagService.addListener(_onFeatureFlagsChanged);
@@ -33,6 +34,7 @@ class SystemDashboardCubit extends Cubit<SystemDashboardState> {
   final FeatureFlagService _featureFlagService;
   final ResilienceInterceptor _resilienceInterceptor;
   final SharedPrefsCacheStorage _cacheStorage;
+  final ApiClient _apiClient;
 
   StreamSubscription<ConnectivityStatus>? _connectivitySubscription;
 
@@ -152,11 +154,11 @@ class SystemDashboardCubit extends Cubit<SystemDashboardState> {
   // ---------------------------------------------------------------------------
 
   /// Snapshot of the live interceptor chain. Pulled from
-  /// [ApiClient.interceptorChainSnapshot] so the dashboard cannot drift
-  /// out of sync when interceptors are added, removed, or conditionally
-  /// included (fixes #64).
+  /// [ApiClient.interceptorChainSnapshot] (instance getter) so the
+  /// dashboard cannot drift out of sync when interceptors are added,
+  /// removed, or conditionally included (fixes #64).
   List<InterceptorInfo> _buildInterceptorList() {
-    final snapshot = ApiClient.interceptorChainSnapshot;
+    final snapshot = _apiClient.interceptorChainSnapshot;
     return [
       for (var i = 0; i < snapshot.length; i++)
         InterceptorInfo(name: snapshot[i].name, order: i + 1, active: snapshot[i].active, detail: snapshot[i].detail),

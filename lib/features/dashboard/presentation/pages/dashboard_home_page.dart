@@ -59,10 +59,16 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
       _ => null,
     };
 
-    final environment = switch (context.read<AppConfig>().environment) {
+    AppConfig? appConfig;
+    try {
+      appConfig = context.read<AppConfig>();
+    } catch (_) {
+      // AppConfig not provided (standalone/partial-DI pump) — fall back to dev label.
+    }
+    final environment = switch (appConfig?.environment) {
       Environment.prod => 'prod',
-      Environment.dev => 'dev',
       Environment.test => 'test',
+      Environment.dev || null => 'dev',
     };
 
     context.read<SystemDashboardCubit>().updateAppConfig(
