@@ -248,40 +248,49 @@ git commit -m "test: convert TestUtils to thin TestEnv shim during migration (#1
 
 ---
 
-## Task 4: Opt out the channel-override files
+## Task 4: Opt out the conflicting self-mocking file
 
-These files install their own secure-storage MethodChannel handler and must skip the global reset.
+**Corrected after Task 3 full-suite run:** the only file that actually conflicts
+with the global reset is `test/infrastructure/storage/local_storage_test.dart`
+(4 failures). Its groups install their own `MockSharedPreferences` via
+`localStorage.setPreferencesInstance(...)`, and the global `tearDown`'s
+`SharedPreferences.setMockInitialValues({})` tramples them. The originally
+predicted files (`secure_storage_test.dart`, `screen_capture_protection_test.dart`)
+**pass without opt-out** (verified in Task 3) — do NOT opt them out (that would
+strip a useful reset for no reason).
 
 **Files:**
-- Modify: `test/infrastructure/storage/secure_storage_test.dart`
-- Modify: `test/core/security/screen_capture_protection_test.dart`
+- Modify: `test/infrastructure/storage/local_storage_test.dart`
 
-- [ ] **Step 1: Add opt-out to each file**
+- [ ] **Step 1: Add opt-out**
 
-In each file, ensure this import is present:
+Ensure this import is present (file is at `test/infrastructure/storage/`):
 
 ```dart
 import '../../support/test_env.dart';
 ```
 
-(Adjust the relative `../` depth to the file: `secure_storage_test.dart` is at `test/infrastructure/storage/` → `../../support/test_env.dart`; `screen_capture_protection_test.dart` is at `test/core/security/` → `../../support/test_env.dart`.)
-
-Then add at the very top of `main()`'s `setUpAll` (create one if absent, as the first `setUpAll`):
+Add as the FIRST `setUpAll` in `main()` (create one if the file has none):
 
 ```dart
 setUpAll(() => TestEnv.autoReset = false);
 ```
 
-- [ ] **Step 2: Run both files**
+Because this file opts out of the global reset, it must keep managing its own
+environment. Leave its existing `setUp`/`tearDown` (including any
+`TestUtils().setupUnitTest()` / `tearDownUnitTest()` calls) intact for now —
+they will be converted to explicit `TestEnv` calls in Task 6, NOT stripped.
 
-Run: `fvm flutter test test/infrastructure/storage/secure_storage_test.dart test/core/security/screen_capture_protection_test.dart -r compact 2>&1 | tail -3`
+- [ ] **Step 2: Run the file**
+
+Run: `fvm flutter test test/infrastructure/storage/local_storage_test.dart -r compact 2>&1 | tail -3`
 Expected: `All tests passed!`
 
 - [ ] **Step 3: Commit**
 
 ```bash
-git add test/infrastructure/storage/secure_storage_test.dart test/core/security/screen_capture_protection_test.dart
-git commit -m "test: opt channel-override tests out of global auto-reset (#150)"
+git add test/infrastructure/storage/local_storage_test.dart
+git commit -m "test: opt local_storage_test out of global auto-reset (self-mocks prefs) (#150)"
 ```
 
 ---
@@ -379,7 +388,7 @@ git add -A && git commit -m "test: migrate bloc/cubit/usecase tests to TestEnv b
 - `test/infrastructure/storage/session_migration_test.dart`
 - `test/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl_test.dart`
 
-- [ ] **Step 1:** Apply the transform pattern. NOTE `local_storage_test.dart` also calls `AppLogger.configure` — leave that line for Task 8.
+- [ ] **Step 1:** Apply the transform pattern. TWO exceptions for `local_storage_test.dart`: (a) it was opted out of auto-reset in Task 4, so DO NOT strip its `setupUnitTest`/`tearDownUnitTest` calls — instead convert `TestUtils().setupUnitTest()`/`tearDownUnitTest()` → `TestEnv.reset()` and keep them (the file manages its own reset); (b) it also calls `AppLogger.configure` — leave that line for Task 8.
 - [ ] **Step 2:** Run the group.
 
 Run: `fvm flutter test test/app/connectivity test/app/router test/core/feature_flags test/core/security/idle_timeout_observer_test.dart test/core/security/security_utils_test.dart test/features/account/data test/features/auth/data test/features/users/data test/infrastructure/connectivity test/infrastructure/http test/infrastructure/storage test/shared/dynamic_forms/data -r compact 2>&1 | tail -3`
