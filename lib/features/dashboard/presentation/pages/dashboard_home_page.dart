@@ -62,7 +62,7 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
     AppConfig? appConfig;
     try {
       appConfig = context.read<AppConfig>();
-    } catch (_) {
+    } on ProviderNotFoundException {
       // AppConfig not provided (standalone/partial-DI pump) — fall back to dev label.
     }
     final environment = switch (appConfig?.environment) {

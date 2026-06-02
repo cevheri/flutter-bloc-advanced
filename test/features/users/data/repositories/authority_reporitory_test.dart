@@ -8,9 +8,15 @@ import '../../../../mocks/fake_data.dart';
 import '../../../../test_utils.dart';
 
 void main() {
+  late AuthorityRepositoryImpl repository;
+
   //region setup
   setUpAll(() async {
     await TestUtils().setupUnitTest();
+  });
+
+  setUp(() {
+    repository = AuthorityRepositoryImpl(TestUtils.apiClient());
   });
 
   tearDown(() async {
@@ -23,24 +29,24 @@ void main() {
     test("Given valid authority when create then return authority successfully", () async {
       TestUtils().setupAuthentication();
       const entity = mockAuthorityPayload;
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).create(entity);
+      final result = await repository.create(entity);
 
       expect(result, isA<Success<Authority>>());
       expect((result as Success<Authority>).data.name, "ROLE_USER");
     });
     test("Given valid authority without AccessToken when create then return failure", () async {
       const entity = mockAuthorityPayload;
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).create(entity);
+      final result = await repository.create(entity);
       expect(result, isA<Failure<Authority>>());
     });
 
     test("Given null authority when create then return validation failure", () async {
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).create(const Authority());
+      final result = await repository.create(const Authority());
       expect(result, isA<Failure<Authority>>());
       expect((result as Failure<Authority>).error, isA<ValidationError>());
     });
     test("Given empty authority when create then return validation failure", () async {
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).create(const Authority(name: ""));
+      final result = await repository.create(const Authority(name: ""));
       expect(result, isA<Failure<Authority>>());
       expect((result as Failure<Authority>).error, isA<ValidationError>());
     });
@@ -50,7 +56,7 @@ void main() {
   group("AuthorityRepository Get success", () {
     test("Given valid when getAuthorities then return authorities successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).list();
+      final result = await repository.list();
 
       expect(result, isA<Success<List<String>>>());
       final data = (result as Success<List<String>>).data;
@@ -59,7 +65,7 @@ void main() {
       expect(data[1], "ROLE_ADMIN");
     });
     test("Given valid without AccessToken when getAuthorities then return failure", () async {
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).list();
+      final result = await repository.list();
       expect(result, isA<Failure<List<String>>>());
     });
   });
@@ -68,18 +74,18 @@ void main() {
   group("AuthorityRepository Get success", () {
     test("Given valid id when getAuthority then return authority successfully", () async {
       TestUtils().setupAuthentication();
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).retrieve("1");
+      final result = await repository.retrieve("1");
 
       expect(result, isA<Success<Authority>>());
       expect((result as Success<Authority>).data.name, "ROLE_USER");
     });
     test("Given valid id without AccessToken when getAuthority then return failure", () async {
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).retrieve("1");
+      final result = await repository.retrieve("1");
       expect(result, isA<Failure<Authority>>());
     });
 
     test("Given null id when getAuthority then return validation failure", () async {
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).retrieve("");
+      final result = await repository.retrieve("");
       expect(result, isA<Failure<Authority>>());
       expect((result as Failure<Authority>).error, isA<ValidationError>());
     });
@@ -89,16 +95,16 @@ void main() {
   group("AuthorityRepository Delete success", () {
     test("Given valid id when deleteAuthority then return successful", () async {
       TestUtils().setupAuthentication();
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).delete("1");
+      final result = await repository.delete("1");
       expect(result, isA<Success<void>>());
     });
     test("Given valid id without AccessToken when deleteAuthority then return failure", () async {
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).delete("1");
+      final result = await repository.delete("1");
       expect(result, isA<Failure<void>>());
     });
 
     test("Given null id when deleteAuthority then return validation failure", () async {
-      final result = await AuthorityRepositoryImpl(TestUtils.apiClient()).delete("");
+      final result = await repository.delete("");
       expect(result, isA<Failure<void>>());
       expect((result as Failure<void>).error, isA<ValidationError>());
     });
