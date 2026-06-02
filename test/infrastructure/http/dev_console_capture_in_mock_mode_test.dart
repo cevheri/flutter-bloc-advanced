@@ -1,6 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -25,8 +23,6 @@ void main() {
   });
 
   setUp(() {
-    ApiClient.reset();
-    ApiClient.appConfig = const AppConfig.test();
     DevConsoleStore.instance.clearNetwork();
   });
 
@@ -53,7 +49,7 @@ void main() {
     test('a mock-served GET appears in DevConsoleStore AND is marked complete', () async {
       TestUtils().setupAuthentication();
 
-      await ApiClient.get('/test');
+      await TestUtils.apiClient().get('/test');
 
       final entries = DevConsoleStore.instance.networkEntries;
       expect(entries, isNotEmpty, reason: 'DevConsoleInterceptor.onRequest must run before the mock short-circuits');

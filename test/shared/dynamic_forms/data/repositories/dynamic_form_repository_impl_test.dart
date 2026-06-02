@@ -6,7 +6,6 @@ import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_bundle_entity.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../test_utils.dart';
@@ -83,21 +82,20 @@ void main() {
     await TestUtils().setupUnitTest();
   });
 
+  late DynamicFormRepository repo;
+
   setUp(() {
     stub = _StubInterceptor();
     final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
     testDio.interceptors.add(stub);
-    ApiClient.setTestInstance(testDio);
+    repo = DynamicFormRepository(TestUtils.apiClient(dio: testDio));
   });
 
   tearDown(() async {
-    ApiClient.reset();
     await TestUtils().tearDownUnitTest();
   });
 
   group('DynamicFormRepository input validation', () {
-    final repo = DynamicFormRepository();
-
     test('fetchSchema returns ValidationError when formId is empty', () async {
       final result = await repo.fetchSchema('');
 
@@ -127,8 +125,6 @@ void main() {
   });
 
   group('fetchBundle', () {
-    final repo = DynamicFormRepository();
-
     test('returns Failure<FormBundleEntity> with ValidationError when endpoint is empty', () async {
       final result = await repo.fetchBundle('');
 

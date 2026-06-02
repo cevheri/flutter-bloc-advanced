@@ -65,7 +65,6 @@ void main() {
   });
 
   tearDown(() async {
-    ApiClient.reset();
     await TestUtils().tearDownUnitTest();
   });
 
@@ -94,30 +93,26 @@ void main() {
 
   group('ApiClient Tests', () {
     late _StubInterceptor stub;
+    late ApiClient client;
 
     setUp(() {
-      ApiClient.appConfig = const AppConfig.prod();
       stub = _StubInterceptor();
       final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
       testDio.interceptors.add(stub);
-      ApiClient.setTestInstance(testDio);
-    });
-
-    tearDown(() {
-      ApiClient.reset();
+      client = ApiClient(appConfig: const AppConfig.prod(), dio: testDio);
     });
 
     group('HTTP Requests', () {
       test('given valid data when post request is made then should return success response', () async {
         stub.stubSuccess(data: '{"success": true}', statusCode: 200);
-        final response = await ApiClient.post('/test', {'data': 'test'});
+        final response = await client.post('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
 
       test('given socket exception when post request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.connectionError, message: 'Connection failed');
         await expectLater(
-          ApiClient.post('/test', {'data': 'test'}),
+          client.post('/test', {'data': 'test'}),
           throwsA(
             allOf([isA<FetchDataException>(), predicate((e) => e.toString().contains('No Internet connection'))]),
           ),
@@ -127,21 +122,21 @@ void main() {
       test('given timeout when post request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.connectionTimeout, message: 'Timeout');
         await expectLater(
-          ApiClient.post('/test', {'data': 'test'}),
+          client.post('/test', {'data': 'test'}),
           throwsA(allOf([isA<FetchDataException>(), predicate((e) => e.toString().contains('TimeoutException'))])),
         );
       });
 
       test('given valid data when get request is made then should return success 200', () async {
         stub.stubSuccess(data: '{"success": true}', statusCode: 200);
-        final response = await ApiClient.get('/test');
+        final response = await client.get('/test');
         expect(response.statusCode, lessThan(300));
       });
 
       test('given connection error when get request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.connectionError, message: 'Connection failed');
         await expectLater(
-          ApiClient.get('/test'),
+          client.get('/test'),
           throwsA(
             allOf([isA<FetchDataException>(), predicate((e) => e.toString().contains('No Internet connection'))]),
           ),
@@ -151,7 +146,7 @@ void main() {
       test('given 401 response when get request is made then should throw UnauthorizedException', () async {
         stub.stubDioError(DioExceptionType.badResponse, statusCode: 401, data: 'Unauthorized');
         await expectLater(
-          ApiClient.get('/test'),
+          client.get('/test'),
           throwsA(allOf([isA<UnauthorizedException>(), predicate((e) => e.toString().contains('Unauthorized'))])),
         );
       });
@@ -159,26 +154,26 @@ void main() {
       test('given timeout when get request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.receiveTimeout, message: 'Timeout');
         await expectLater(
-          ApiClient.get('/test'),
+          client.get('/test'),
           throwsA(allOf([isA<FetchDataException>(), predicate((e) => e.toString().contains('TimeoutException'))])),
         );
       });
 
       test('given valid data when put request is made then should return success 200', () async {
         stub.stubSuccess(data: '{"success": true}', statusCode: 200);
-        final response = await ApiClient.put('/test', {'data': 'test'});
+        final response = await client.put('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
 
       test('given connection error when put request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.connectionError, message: 'Connection failed');
-        await expectLater(ApiClient.put('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
+        await expectLater(client.put('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
       });
 
       test('given timeout when put request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.sendTimeout, message: 'Timeout');
         await expectLater(
-          ApiClient.put('/test', {'data': 'test'}),
+          client.put('/test', {'data': 'test'}),
           throwsA(allOf([isA<FetchDataException>(), predicate((e) => e.toString().contains('TimeoutException'))])),
         );
       });
@@ -186,19 +181,19 @@ void main() {
       group('PATCH', () {
         test('given valid data when patch request is made then should return success 200', () async {
           stub.stubSuccess(data: '{"success": true}', statusCode: 200);
-          final response = await ApiClient.patch('/test', {'data': 'test'});
+          final response = await client.patch('/test', {'data': 'test'});
           expect(response.statusCode, lessThan(300));
         });
 
         test('given connection error when patch request is made then should throw FetchDataException', () async {
           stub.stubDioError(DioExceptionType.connectionError, message: 'Connection failed');
-          await expectLater(ApiClient.patch('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
+          await expectLater(client.patch('/test', {'data': 'test'}), throwsA(isA<FetchDataException>()));
         });
 
         test('given timeout when patch request is made then should throw FetchDataException', () async {
           stub.stubDioError(DioExceptionType.receiveTimeout, message: 'Timeout');
           await expectLater(
-            ApiClient.patch('/test', {'data': 'test'}),
+            client.patch('/test', {'data': 'test'}),
             throwsA(allOf([isA<FetchDataException>(), predicate((e) => e.toString().contains('TimeoutException'))])),
           );
         });
@@ -206,81 +201,83 @@ void main() {
 
       test('given valid data when delete request is made then should return success 204', () async {
         stub.stubSuccess(data: '{"success": true}', statusCode: 204);
-        final response = await ApiClient.delete('/test');
+        final response = await client.delete('/test');
         expect(response.statusCode, lessThan(300));
       });
 
       test('given 401 when delete request is made then should throw UnauthorizedException', () async {
         stub.stubDioError(DioExceptionType.badResponse, statusCode: 401, data: 'Unauthorized');
         await expectLater(
-          ApiClient.delete('/test'),
+          client.delete('/test'),
           throwsA(allOf([isA<UnauthorizedException>(), predicate((e) => e.toString().contains('Unauthorized'))])),
         );
       });
 
       test('given connection error when delete request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.connectionError, message: 'Connection failed');
-        await expectLater(ApiClient.delete('/test'), throwsA(isA<FetchDataException>()));
+        await expectLater(client.delete('/test'), throwsA(isA<FetchDataException>()));
       });
 
       test('given timeout when delete request is made then should throw FetchDataException', () async {
         stub.stubDioError(DioExceptionType.receiveTimeout, message: 'Timeout');
-        await expectLater(ApiClient.delete('/test'), throwsA(isA<FetchDataException>()));
+        await expectLater(client.delete('/test'), throwsA(isA<FetchDataException>()));
       });
 
       test('given 400 when request is made then should throw BadRequestException', () async {
         stub.stubDioError(DioExceptionType.badResponse, statusCode: 400, data: 'Bad Request');
         await expectLater(
-          ApiClient.post('/test', {'data': 'test'}),
+          client.post('/test', {'data': 'test'}),
           throwsA(allOf([isA<BadRequestException>(), predicate((e) => e.toString().contains('Bad Request'))])),
         );
       });
     });
 
     group('Mock Requests', () {
+      late ApiClient mockClient;
+
       setUp(() {
-        ApiClient.reset();
-        ApiClient.appConfig = const AppConfig.test();
+        // Build a fresh test-env client so the MockInterceptor is in the chain.
+        mockClient = TestUtils.apiClient();
       });
 
       test('given test environment when GET request is made then should return mock data', () async {
         TestUtils().setupAuthentication();
-        final response = await ApiClient.get('/test');
+        final response = await mockClient.get('/test');
         expect(response.statusCode, lessThan(300));
       });
 
       test('given test environment without token when GET request is made then should throw', () async {
-        expect(() => ApiClient.get('/test'), throwsA(isA<UnauthorizedException>()));
+        expect(() => mockClient.get('/test'), throwsA(isA<UnauthorizedException>()));
       });
 
       test('given test environment when POST request is made then should return mock data', () async {
         TestUtils().setupAuthentication();
-        final response = await ApiClient.post('/test', {'data': 'test'});
+        final response = await mockClient.post('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
 
       test('given test environment without token when POST request is made then should throw', () async {
-        expect(() => ApiClient.post('/test', {'data': 'test'}), throwsA(isA<UnauthorizedException>()));
+        expect(() => mockClient.post('/test', {'data': 'test'}), throwsA(isA<UnauthorizedException>()));
       });
 
       test('given test environment when PUT request is made then should return mock data', () async {
         TestUtils().setupAuthentication();
-        final response = await ApiClient.put('/test', {'data': 'test'});
+        final response = await mockClient.put('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
 
       test('given test environment without token when PUT request is made then should throw', () async {
-        expect(() => ApiClient.put('/test', {'data': 'test'}), throwsA(isA<UnauthorizedException>()));
+        expect(() => mockClient.put('/test', {'data': 'test'}), throwsA(isA<UnauthorizedException>()));
       });
 
       test('given test environment when DELETE request is made then should return 204', () async {
         TestUtils().setupAuthentication();
-        final response = await ApiClient.delete('/test');
+        final response = await mockClient.delete('/test');
         expect(response.statusCode, lessThan(300));
       });
 
       test('given test environment without token when DELETE request is made then should throw', () async {
-        expect(() => ApiClient.delete('/test'), throwsA(isA<UnauthorizedException>()));
+        expect(() => mockClient.delete('/test'), throwsA(isA<UnauthorizedException>()));
       });
     });
   });
@@ -304,19 +301,17 @@ void main() {
   // what gets registered with Dio. Pin the order + names so future
   // chain edits surface as a deliberate test update.
   group('ApiClient.interceptorChainSnapshot (#63, #64)', () {
-    setUp(() {
-      ApiClient.reset();
-    });
-
     test('is populated after the Dio instance is built', () {
-      // Force lazy build.
-      ApiClient.instance;
-      expect(ApiClient.interceptorChainSnapshot, isNotEmpty);
+      // Build a test-env client and force lazy Dio construction.
+      final client = TestUtils.apiClient();
+      client.instance;
+      expect(client.interceptorChainSnapshot, isNotEmpty);
     });
 
     test('lists every interceptor in declared order (non-production includes MockInterceptor)', () {
-      ApiClient.instance;
-      final names = ApiClient.interceptorChainSnapshot.map((e) => e.name).toList();
+      final client = TestUtils.apiClient();
+      client.instance;
+      final names = client.interceptorChainSnapshot.map((e) => e.name).toList();
 
       expect(names, [
         'ConnectivityInterceptor',
@@ -335,36 +330,37 @@ void main() {
     });
 
     test('MockInterceptor entry is flagged active=false (dev/test fallback)', () {
-      ApiClient.instance;
-      final mock = ApiClient.interceptorChainSnapshot.firstWhere((e) => e.name == 'MockInterceptor');
+      final client = TestUtils.apiClient();
+      client.instance;
+      final mock = client.interceptorChainSnapshot.firstWhere((e) => e.name == 'MockInterceptor');
       expect(mock.active, isFalse);
     });
 
     test('snapshot is returned as an unmodifiable view', () {
-      ApiClient.instance;
+      final client = TestUtils.apiClient();
+      client.instance;
       expect(
-        () => ApiClient.interceptorChainSnapshot..add(const InterceptorChainEntry(name: 'X', detail: 'X')),
+        () => client.interceptorChainSnapshot..add(const InterceptorChainEntry(name: 'X', detail: 'X')),
         throwsUnsupportedError,
       );
     });
 
-    // Guard for the test-ordering hazard called out in the independent
-    // review (I3): when ApiClient.secureStorage is null at Dio creation
-    // time, the interceptors fall back to a private adapter instance
-    // that diverges from the repository layer's adapter. test_utils
-    // wires the shared adapter in setupUnitTest. Drives a fresh
-    // setupUnitTest inside the test so this assertion survives the
-    // group's pre-test ApiClient.reset() (which deliberately clears
-    // the static — see C-C / [ApiClient.reset]).
-    test('ApiClient.secureStorage is wired by setupUnitTest — no silent divergence', () async {
-      await TestUtils().setupUnitTest();
-      expect(
-        ApiClient.secureStorage,
-        isNotNull,
-        reason:
-            'If this fires, setupUnitTest is being bypassed or someone reset the static. '
-            'See ApiClient._createDio warn log and lib/infrastructure/http/api_client.dart:76.',
-      );
+    // The old static-divergence hazard (review I3) is eliminated by the
+    // instance/DI model: secureStorage is a constructor dependency of the
+    // single shared ApiClient, so the interceptors and the repository layer
+    // can no longer use different adapters. This test pins the remaining
+    // observable contract — even when built WITHOUT a secureStorage (the
+    // documented `_secureStorage == null` fallback branch), the client still
+    // assembles its full interceptor chain. The secureStorage → Authorization
+    // header wiring itself is covered by auth_interceptor_test.dart.
+    test('assembles the full interceptor chain even without an injected secureStorage', () {
+      // No secureStorage passed → exercises the documented `_secureStorage == null`
+      // fallback branch in _createDio. AppConfig.test() keeps baseUrl empty (valid)
+      // and forces the real chain (no injected Dio).
+      final client = ApiClient(appConfig: const AppConfig.test());
+      client.instance; // force Dio + chain construction
+      final names = client.interceptorChainSnapshot.map((e) => e.name);
+      expect(names, containsAll(<String>['AuthInterceptor', 'TokenRefreshInterceptor']));
     });
   });
 }
