@@ -38,21 +38,15 @@ void main() {
       //Then:
 
       // ResponsiveScaffold and shell layout test
-      debugPrint("Shell layout Testing");
       expect(find.byType(ResponsiveScaffold), findsOneWidget);
       expect(find.byType(TopBarWidget), findsOneWidget);
       expect(find.byType(SidebarWidget), findsOneWidget);
-      debugPrint("Shell layout Tested");
 
       // Dashboard content should be rendered
-      debugPrint("Dashboard content Testing");
       expect(find.text('Dashboard'), findsWidgets);
-      debugPrint("Dashboard content Tested");
 
       // Sidebar has logout icon (collapsed sidebar hides labels)
-      debugPrint("Sidebar Logout Icon Testing");
       expect(find.byIcon(Icons.logout), findsWidgets);
-      debugPrint("Sidebar Logout Icon Tested");
     });
 
     testWidgets("Given an invalid AccessToken when HomeScreen is opened then navigate to loginScreen", (tester) async {

@@ -38,9 +38,6 @@ analyzer:
   exclude:
     - "**/*.g.dart"
     - "**/*.mocks.dart"
-    - "test/presentation/screen/account/**"
-    - "test/presentation/screen/register/**"
-    - "test/presentation/screen/user/**"
     - "**/*.p.dart"
     - "**/*.r.dart"
     - "**/*.reflectable.dart"

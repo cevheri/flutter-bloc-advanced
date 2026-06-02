@@ -196,15 +196,10 @@ void main() {
       //When:
       await tester.pumpAndSettle();
 
-      final screenFinder = find.byType(ForgotPasswordScreen);
-      debugPrint("screenFinder: $screenFinder");
-
       final emailFinder = find.byKey(forgotPasswordTextFieldEmailKey);
-      debugPrint("emailFinder: $emailFinder");
       await tester.enterText(emailFinder, "test@test.com");
 
       final submitButtonFinder = find.byKey(forgotPasswordButtonSubmitKey);
-      debugPrint("submitButtonFinder: $submitButtonFinder");
       await tester.tap(submitButtonFinder);
       await tester.pumpAndSettle(const Duration(seconds: 1));
 
