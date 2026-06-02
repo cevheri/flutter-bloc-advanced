@@ -14,6 +14,18 @@
 
 ---
 
+## ⚠️ PLAN CORRECTION (during execution, after Task 1)
+
+The original Task 2 "expand" phase below is **not Dart-legal**: a class cannot declare a `static` member and an instance member with the same name (`get`, `instance`, `interceptorChainSnapshot`, …). So the member-level expand→migrate→contract for `ApiClient` cannot compile. Tasks 2–5 below are **superseded** by this convert-then-sweep flow (same end state, identical final diff):
+
+- **Task 2 (convert lib):** In ONE commit, convert `ApiClient` to a pure instance class (drop ALL mutable statics incl. the temporary `appConfig` from Task 1; keep only the pure-util statics `decodeUTF8`/`_serializeData`/`_mapDioException`/`_mapBadResponse`/`_mapUnknown`). Add ctor `ApiClient({required AppConfig appConfig, ISecureStorage? secureStorage, OnSessionExpired? onSessionExpired, Dio? dio})` storing private `_config`/`_secureStorage`/`_dio`; instance `instance`, `interceptorChainSnapshot`, `get/post/put/patch/delete`, `_createDio`. In the SAME commit update all *lib* consumers — the 6 repos (ctor `(this._apiClient)` + `ApiClient.<verb>` → `_apiClient.<verb>`; keep `ApiClient.decodeUTF8` static), `AppDependencies` (`createApiClient` + repo factories take `ApiClient`), `AppScope` (`RepositoryProvider<ApiClient>` after `ISecureStorage`; thread into repos + `SystemDashboardCubit`), `dashboard_cubit` (instance `interceptorChainSnapshot`), `dashboard_home_page` (Finding #3 guard), `app_bootstrap` (build `AppConfig`, NO `ApiClient` statics) — AND `test/test_utils.dart` (remove `ApiClient.appConfig/secureStorage/reset`; add `static ApiClient apiClient({Dio? dio})`). Outcome: `fvm dart analyze` clean (lib + test_utils compile); full `fvm flutter test` RED only for test files still constructing repos arg-lessly or using `ApiClient` statics.
+- **Task 3 (sweep tests):** Per feature, inject `TestUtils.apiClient()` into concrete repo/cubit constructions and switch `setTestInstance` → `dio:`; rewrite `api_client_test.dart` to instance form; delete dead `ApiClient.reset()`/`setTestInstance` lines. Each commit runs its touched files green; final commit = full suite green + zero-globals grep.
+- **Tasks 4 & 5 are folded into Task 2** (dashboard guard + global deletion happen in the single lib conversion). **Task 6 (PR) is unchanged.**
+
+The collision is why the facade in the original Task 2 below is struck; ignore the `_facade`/`_default`/`interceptorChainSnapshotStatic` mechanism — it cannot compile.
+
+---
+
 ## File Structure
 
 **Created:** none (design doc + this plan already exist).
