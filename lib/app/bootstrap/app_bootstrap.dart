@@ -12,7 +12,6 @@ import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_scrub.dart'
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
@@ -28,17 +27,9 @@ class AppBootstrap {
     AppLogger.configure(isProduction: config.isProduction);
     final log = AppLogger.getLogger('AppBootstrap');
 
-    ProfileConstants.setEnvironment(config.environment);
-
-    final dependencies = AppDependencies(environment: config.environment);
+    final appConfig = AppConfig.fromEnvironment(config.environment);
+    final dependencies = AppDependencies(appConfig: appConfig);
     final secureStorage = dependencies.createSecureStorage();
-    // Publish the same adapter instance into the static [ApiClient]
-    // hook so AuthInterceptor and TokenRefreshInterceptor share it
-    // with the repository layer and SessionCubit. Invariant: this
-    // must run before [ApiClient.instance] is touched anywhere —
-    // Dio is built lazily on first access. Any code path that may
-    // issue HTTP requests must come below this line.
-    ApiClient.secureStorage = secureStorage;
 
     // One-shot migration of legacy plaintext tokens (jwtToken/refreshToken).
     // Must run BEFORE any consumer reads the secure store (SessionCubit
@@ -72,7 +63,7 @@ class AppBootstrap {
     // twice. With Sentry off, forwarding to the local logging analytics is the
     // only sink, so it stays enabled.
     final analytics = dependencies.createAnalyticsService();
-    final sentryActive = ProfileConstants.sentryDsn != null;
+    final sentryActive = appConfig.sentryDsn != null;
     CrashReporter.install(analytics, forwardToAnalytics: !sentryActive);
 
     Bloc.observer = kDebugMode ? TimeTravelBlocObserver() : AppBlocObserver();
@@ -92,7 +83,7 @@ class AppBootstrap {
     // the entire widget tree shares one adapter instance — no config
     // drift between migration and runtime consumers, and overriding
     // for tests / alternate environments is a single hand-off.
-    final dsn = ProfileConstants.sentryDsn;
+    final dsn = appConfig.sentryDsn;
     if (dsn != null) {
       log.info('Initializing Sentry (release: {}+{})', [AppConstants.appVersion, AppConstants.appBuildNumber]);
       await SentryFlutter.init(

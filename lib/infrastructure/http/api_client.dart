@@ -49,13 +49,17 @@ class InterceptorChainEntry {
 /// which catch [DioException] and rethrow as [AppException] types so that
 /// repository catch blocks work without Dio coupling.
 class ApiClient {
+  ApiClient({required this._appConfig, this._secureStorage, this._onSessionExpired, this._dio});
+
   static final _log = AppLogger.getLogger('ApiClient');
 
   static const int _timeoutSeconds = 30;
 
-  static Dio? _dio;
-  static Dio? _testDio;
-  static List<InterceptorChainEntry> _interceptorChainSnapshot = const [];
+  final AppConfig _appConfig;
+  final ISecureStorage? _secureStorage;
+  final OnSessionExpired? _onSessionExpired;
+  Dio? _dio;
+  List<InterceptorChainEntry> _chainSnapshot = const [];
 
   /// Snapshot of the active interceptor chain, in order. Populated the
   /// first time [instance] is read (i.e. when Dio is built).
@@ -64,72 +68,29 @@ class ApiClient {
   /// hard-coding names — keeps the dashboard in sync with the chain
   /// even when interceptors are added, removed, or conditionally
   /// included (e.g. [MockInterceptor] outside production).
-  static List<InterceptorChainEntry> get interceptorChainSnapshot => List.unmodifiable(_interceptorChainSnapshot);
-
-  /// Callback invoked when the session has expired (token refresh failed).
-  ///
-  /// Set this before the first API call (typically in app initialization) so
-  /// that the [TokenRefreshInterceptor] can notify the app layer to log out.
-  static OnSessionExpired? onSessionExpired;
-
-  /// Secure storage instance threaded into [AuthInterceptor] and
-  /// [TokenRefreshInterceptor] when Dio is built. Bootstrap sets this
-  /// to the same [ISecureStorage] adapter it uses for migration and
-  /// the widget tree, so the HTTP interceptors and the repository
-  /// layer share one source of truth. Falls back to a default
-  /// [FlutterSecureStorageAdapter] when unset (tests that don't go
-  /// through bootstrap).
-  static ISecureStorage? secureStorage;
-
-  /// Inject a custom Dio instance for testing.
-  static void setTestInstance(Dio dio) => _testDio = dio;
-
-  /// Reset the test instance.
-  static void resetTestInstance() => _testDio = null;
-
-  /// Reset the production singleton (useful in tests).
-  ///
-  /// Clears every static hook the class owns so a re-init path
-  /// (hot reload, test tearDown, multi-test runs in one process)
-  /// cannot leak a previous adapter/callback into the next Dio
-  /// construction. Without resetting [secureStorage] / [onSessionExpired]
-  /// here, a test that sets them and a later test that builds a fresh
-  /// Dio would inherit those — silently re-binding the new interceptors
-  /// to the previous run's instances.
-  static void reset() {
-    _dio?.close();
-    _dio = null;
-    _testDio = null;
-    secureStorage = null;
-    onSessionExpired = null;
-  }
+  List<InterceptorChainEntry> get interceptorChainSnapshot => List.unmodifiable(_chainSnapshot);
 
   /// The active Dio instance.
-  static Dio get instance {
-    if (_testDio != null) return _testDio!;
-    return _dio ??= _createDio();
-  }
+  Dio get instance => _dio ??= _createDio();
 
-  static Dio _createDio() {
-    _log.debug('Creating Dio instance (production: {})', [ProfileConstants.isProduction]);
-    if (secureStorage == null) {
-      // Loud warning when Dio is built without a shared secureStorage.
-      // Production code paths through AppBootstrap always set this
-      // before the first HTTP call; if you see this in test or app
-      // logs it means HTTP interceptors are about to construct their
-      // own FlutterSecureStorageAdapter instance, which will diverge
-      // from whatever the repository layer / SessionCubit are using.
-      // Set ApiClient.secureStorage before touching ApiClient.instance
-      // (test setup helpers do this — see test/test_utils.dart).
+  Dio _createDio() {
+    _log.debug('Creating Dio instance (production: {})', [_appConfig.isProduction]);
+    if (_secureStorage == null) {
+      // Loud warning when this ApiClient was built without an injected
+      // secureStorage. Production wiring (AppDependencies.createApiClient)
+      // always supplies the shared adapter; if you see this in test or app
+      // logs it means the interceptors are about to construct their own
+      // FlutterSecureStorageAdapter instance, which will diverge from
+      // whatever the repository layer / SessionCubit are using.
       _log.warn(
-        'ApiClient.secureStorage is null at Dio creation — interceptors will fall back '
+        'ApiClient was constructed without a secureStorage — interceptors will fall back '
         'to a private FlutterSecureStorageAdapter and diverge from the repository layer.',
       );
     }
 
     final dio = Dio(
       BaseOptions(
-        baseUrl: ProfileConstants.isProduction ? (ProfileConstants.api as String) : '',
+        baseUrl: _appConfig.apiBaseUrl ?? '',
         connectTimeout: const Duration(seconds: _timeoutSeconds),
         receiveTimeout: const Duration(seconds: _timeoutSeconds),
         responseType: ResponseType.plain,
@@ -138,10 +99,10 @@ class ApiClient {
     );
 
     // Certificate pinning. Empty pin list (default) keeps the system
-    // adapter; populating ProfileConstants.certificatePins swaps in a
+    // adapter; populating appConfig.certificatePins swaps in a
     // pinning adapter that fails closed on any non-matching cert. Web
     // is a hard no-op — see buildPinnedAdapter docs.
-    final pins = ProfileConstants.certificatePins;
+    final pins = _appConfig.certificatePins;
     if (pins.isNotEmpty) {
       _log.info('Installing certificate pinning adapter ({} pin(s))', [pins.length]);
       dio.httpClientAdapter = buildPinnedAdapter(pins);
@@ -157,14 +118,14 @@ class ApiClient {
         meta: const InterceptorChainEntry(name: 'ConnectivityInterceptor', detail: 'Rejects requests when offline'),
       ),
       (
-        interceptor: AuthInterceptor(secureStorage: secureStorage),
+        interceptor: AuthInterceptor(secureStorage: _secureStorage),
         meta: const InterceptorChainEntry(name: 'AuthInterceptor', detail: 'Attaches JWT token to requests'),
       ),
       (
         interceptor: TokenRefreshInterceptor(
           dio: dio,
-          onSessionExpired: onSessionExpired,
-          secureStorage: secureStorage,
+          onSessionExpired: _onSessionExpired,
+          secureStorage: _secureStorage,
         ),
         meta: const InterceptorChainEntry(name: 'TokenRefreshInterceptor', detail: 'Refreshes expired access tokens'),
       ),
@@ -203,9 +164,9 @@ class ApiClient {
       // must travel back up through the observability interceptors above
       // (DevConsole capture + verbose logging). It resolves with
       // callFollowing:true to make that happen.
-      if (!ProfileConstants.isProduction)
+      if (!_appConfig.isProduction)
         (
-          interceptor: MockInterceptor(),
+          interceptor: MockInterceptor(appConfig: _appConfig),
           meta: const InterceptorChainEntry(
             name: 'MockInterceptor',
             active: false,
@@ -215,7 +176,7 @@ class ApiClient {
     ];
 
     dio.interceptors.addAll(chain.map((e) => e.interceptor));
-    _interceptorChainSnapshot = chain.map((e) => e.meta).toList(growable: false);
+    _chainSnapshot = chain.map((e) => e.meta).toList(growable: false);
 
     return dio;
   }
@@ -224,7 +185,7 @@ class ApiClient {
   // Convenience methods matching the old HttpUtils API surface
   // ---------------------------------------------------------------------------
 
-  static Future<Response<String>> get(String path, {String? pathParams, Map<String, dynamic>? queryParams}) async {
+  Future<Response<String>> get(String path, {String? pathParams, Map<String, dynamic>? queryParams}) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     try {
       return await instance.get<String>(
@@ -237,7 +198,7 @@ class ApiClient {
     }
   }
 
-  static Future<Response<String>> post<T>(
+  Future<Response<String>> post<T>(
     String path,
     T data, {
     Map<String, String>? headers,
@@ -259,7 +220,7 @@ class ApiClient {
     }
   }
 
-  static Future<Response<String>> put<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
+  Future<Response<String>> put<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
@@ -279,7 +240,7 @@ class ApiClient {
     }
   }
 
-  static Future<Response<String>> patch<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
+  Future<Response<String>> patch<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
@@ -299,7 +260,7 @@ class ApiClient {
     }
   }
 
-  static Future<Response<String>> delete(String path, {String? pathParams, Map<String, dynamic>? queryParams}) async {
+  Future<Response<String>> delete(String path, {String? pathParams, Map<String, dynamic>? queryParams}) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     try {
       return await instance.delete<String>(

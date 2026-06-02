@@ -8,13 +8,17 @@ import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/life
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 
 class LifecycleRepository implements ILifecycleRepository {
+  LifecycleRepository(this._apiClient);
+
+  final ApiClient _apiClient;
+
   static final _log = AppLogger.getLogger('LifecycleRepository');
 
   @override
   Future<Result<AppConfigEntity>> fetchAppConfig() async {
     _log.debug('Fetching app config');
     try {
-      final response = await ApiClient.get('/app/config');
+      final response = await _apiClient.get('/app/config');
       final model = AppConfigModel.fromJsonString(response.data!);
       return Success(model);
     } on UnauthorizedException catch (e) {

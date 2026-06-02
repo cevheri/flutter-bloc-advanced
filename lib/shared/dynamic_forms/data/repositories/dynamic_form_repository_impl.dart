@@ -15,6 +15,10 @@ import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 /// pattern that the rest of the codebase uses, removing the
 /// `try/catch` dialect from the application layer.
 class DynamicFormRepository implements IDynamicFormRepository {
+  DynamicFormRepository(this._apiClient);
+
+  final ApiClient _apiClient;
+
   static final _log = AppLogger.getLogger('DynamicFormRepository');
   static const String _resource = '/dynamic_forms';
   static const String formIdRequired = 'Form id is required';
@@ -29,7 +33,7 @@ class DynamicFormRepository implements IDynamicFormRepository {
       return const Failure(ValidationError(formIdRequired));
     }
     try {
-      final response = await ApiClient.get(_resource, pathParams: formId);
+      final response = await _apiClient.get(_resource, pathParams: formId);
       final schema = FormSchemaModel.fromJsonString(response.data!);
       _log.debug('END:fetchSchema successful: {}', [schema.id]);
       return Success(schema);
@@ -55,7 +59,7 @@ class DynamicFormRepository implements IDynamicFormRepository {
       return const Failure(ValidationError(endpointRequired));
     }
     try {
-      final response = await ApiClient.get(basePath, pathParams: pathParams);
+      final response = await _apiClient.get(basePath, pathParams: pathParams);
       final bundle = FormBundleModel.fromJsonString(response.data!);
       _log.debug('END:fetchBundle successful: {}', [bundle.schema.id]);
       return Success(bundle);
@@ -85,10 +89,10 @@ class DynamicFormRepository implements IDynamicFormRepository {
     }
     try {
       final response = switch (action.method.toUpperCase()) {
-        'POST' => await ApiClient.post(action.endpoint, data, pathParams: pathParams),
-        'PUT' => await ApiClient.put(action.endpoint, data, pathParams: pathParams),
-        'PATCH' => await ApiClient.patch(action.endpoint, data, pathParams: pathParams),
-        'DELETE' => await ApiClient.delete(action.endpoint, pathParams: pathParams),
+        'POST' => await _apiClient.post(action.endpoint, data, pathParams: pathParams),
+        'PUT' => await _apiClient.put(action.endpoint, data, pathParams: pathParams),
+        'PATCH' => await _apiClient.patch(action.endpoint, data, pathParams: pathParams),
+        'DELETE' => await _apiClient.delete(action.endpoint, pathParams: pathParams),
         _ => throw UnsupportedError('Unsupported HTTP method: ${action.method}'),
       };
       _log.debug('END:submit successful', []);

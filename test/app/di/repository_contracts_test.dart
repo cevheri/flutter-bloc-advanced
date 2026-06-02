@@ -6,6 +6,8 @@ import 'package:flutter_bloc_advance/features/users/domain/repositories/user_rep
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../test_utils.dart';
+
 class _StubSecureStorage implements ISecureStorage {
   @override
   Future<String?> read(String key) async => null;
@@ -25,14 +27,14 @@ void main() {
   const dependencies = AppDependencies();
 
   test('app dependencies expose account repository contract', () {
-    expect(dependencies.createAccountRepository(), isA<IAccountRepository>());
+    expect(dependencies.createAccountRepository(TestUtils.apiClient()), isA<IAccountRepository>());
   });
 
   test('app dependencies expose auth repository contract', () {
-    expect(dependencies.createAuthRepository(_StubSecureStorage()), isA<IAuthRepository>());
+    expect(dependencies.createAuthRepository(_StubSecureStorage(), TestUtils.apiClient()), isA<IAuthRepository>());
   });
 
   test('app dependencies expose user repository contract', () {
-    expect(dependencies.createUserRepository(), isA<IUserRepository>());
+    expect(dependencies.createUserRepository(TestUtils.apiClient()), isA<IUserRepository>());
   });
 }

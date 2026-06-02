@@ -8,6 +8,10 @@ import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 
 class UserRepository implements IUserRepository {
+  UserRepository(this._apiClient);
+
+  final ApiClient _apiClient;
+
   static final _log = AppLogger.getLogger('UserRepository');
   static const String _resource = 'users';
   static const String userIdRequired = 'User id is required';
@@ -19,7 +23,7 @@ class UserRepository implements IUserRepository {
       return const Failure(ValidationError(userIdRequired));
     }
     try {
-      final response = await ApiClient.get('/admin/$_resource', pathParams: id);
+      final response = await _apiClient.get('/admin/$_resource', pathParams: id);
       final result = User.fromJsonString(response.data!)!;
       _log.debug('END:getUser successful - response.body: {}', [result.toString()]);
       return Success(result);
@@ -45,7 +49,7 @@ class UserRepository implements IUserRepository {
       return const Failure(ValidationError('User login is required'));
     }
     try {
-      final response = await ApiClient.get('/admin/$_resource', pathParams: login);
+      final response = await _apiClient.get('/admin/$_resource', pathParams: login);
       final result = User.fromJsonString(response.data!)!;
       _log.debug('END:getUserByLogin successful - response.body: {}', [result.toString()]);
       return Success(result);
@@ -74,7 +78,7 @@ class UserRepository implements IUserRepository {
       return const Failure(ValidationError('User email is required'));
     }
     try {
-      final response = await ApiClient.post<User>('/admin/$_resource', User.fromEntity(user), idempotent: true);
+      final response = await _apiClient.post<User>('/admin/$_resource', User.fromEntity(user), idempotent: true);
       final result = User.fromJsonString(response.data!);
       _log.debug('END:createUser successful');
       if (result == null) {
@@ -103,7 +107,7 @@ class UserRepository implements IUserRepository {
       return const Failure(ValidationError(userIdRequired));
     }
     try {
-      final response = await ApiClient.put<User>('/admin/$_resource', User.fromEntity(user));
+      final response = await _apiClient.put<User>('/admin/$_resource', User.fromEntity(user));
       final result = User.fromJsonString(response.data!);
       _log.debug('END:updateUser successful');
       if (result == null) {
@@ -130,7 +134,7 @@ class UserRepository implements IUserRepository {
     _log.debug('BEGIN:getUsers repository start - page: {}, size: {}, sort: {}', [page, size, sort]);
     try {
       final queryParams = {'page': page.toString(), 'size': size.toString(), 'sort': sort.join('&sort=')};
-      final response = await ApiClient.get('/admin/$_resource', queryParams: queryParams);
+      final response = await _apiClient.get('/admin/$_resource', queryParams: queryParams);
       final result = User.fromJsonStringList(response.data!);
       _log.debug('END:getUsers successful - response list size: {}', [result.length]);
       return Success(result);
@@ -158,7 +162,7 @@ class UserRepository implements IUserRepository {
     ]);
     try {
       final queryParams = {'page': page.toString(), 'size': size.toString()};
-      final response = await ApiClient.get(
+      final response = await _apiClient.get(
         '/admin/$_resource/authorities',
         pathParams: authority,
         queryParams: queryParams,
@@ -191,7 +195,7 @@ class UserRepository implements IUserRepository {
     ]);
     try {
       final queryParams = {'page': page.toString(), 'size': size.toString(), 'name': name, 'authority': authority};
-      final response = await ApiClient.get('/admin/$_resource/filter', queryParams: queryParams);
+      final response = await _apiClient.get('/admin/$_resource/filter', queryParams: queryParams);
       final result = User.fromJsonStringList(response.data!);
       _log.debug('END:findUserByName successful - response list size: {}', [result.length]);
       return Success(result);
@@ -217,7 +221,7 @@ class UserRepository implements IUserRepository {
       return const Failure(ValidationError(userIdRequired));
     }
     try {
-      final response = await ApiClient.delete('/admin/$_resource', pathParams: id);
+      final response = await _apiClient.delete('/admin/$_resource', pathParams: id);
       _log.debug('END:deleteUser successful - response status code: {}', [response.statusCode]);
       return const Success(null);
     } on UnauthorizedException catch (e) {

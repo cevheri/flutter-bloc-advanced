@@ -15,38 +15,43 @@ import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class AppDependencies {
-  const AppDependencies({this.environment = Environment.dev});
+  const AppDependencies({this.appConfig = const AppConfig.dev()});
 
-  final Environment environment;
+  final AppConfig appConfig;
 
   /// Returns the analytics implementation appropriate for the active
   /// environment. Production + non-empty DSN → [SentryAnalyticsService]
   /// (Sentry SDK assumed already-initialized by bootstrap); any other
   /// case → [LogAnalyticsService] (local-only, no network egress).
   IAnalyticsService createAnalyticsService() {
-    if (ProfileConstants.sentryDsn != null) {
+    if (appConfig.sentryDsn != null) {
       return SentryAnalyticsService();
     }
     return LogAnalyticsService();
   }
 
-  IAccountRepository createAccountRepository() => AccountRepository();
+  ApiClient createApiClient(ISecureStorage secureStorage) =>
+      ApiClient(appConfig: appConfig, secureStorage: secureStorage);
 
-  IAuthRepository createAuthRepository(ISecureStorage secureStorage) => LoginRepository(secureStorage: secureStorage);
+  IAccountRepository createAccountRepository(ApiClient apiClient) => AccountRepository(apiClient);
+
+  IAuthRepository createAuthRepository(ISecureStorage secureStorage, ApiClient apiClient) =>
+      LoginRepository(secureStorage: secureStorage, apiClient: apiClient);
 
   IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) =>
       AuthSessionRepository(secureStorage: secureStorage);
 
-  IAuthorityRepository createAuthorityRepository() => AuthorityRepositoryImpl();
+  IAuthorityRepository createAuthorityRepository(ApiClient apiClient) => AuthorityRepositoryImpl(apiClient);
 
-  IDynamicFormRepository createDynamicFormRepository() => DynamicFormRepository();
+  IDynamicFormRepository createDynamicFormRepository(ApiClient apiClient) => DynamicFormRepository(apiClient);
 
   MenuRepository createMenuRepository() => MenuRepository();
 
   ISecureStorage createSecureStorage() => FlutterSecureStorageAdapter();
 
-  IUserRepository createUserRepository() => UserRepository();
+  IUserRepository createUserRepository(ApiClient apiClient) => UserRepository(apiClient);
 }

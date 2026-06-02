@@ -17,6 +17,10 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 /// that flag the response short-circuits and those handlers never fire,
 /// leaving the dev console Network tab empty in mock mode.
 class MockInterceptor extends Interceptor {
+  MockInterceptor({this.appConfig = const AppConfig.dev()});
+
+  final AppConfig appConfig;
+
   static final _log = AppLogger.getLogger('MockInterceptor');
 
   @override
@@ -24,7 +28,7 @@ class MockInterceptor extends Interceptor {
     _log.debug('Mock request: {} {}', [options.method, options.path]);
 
     // Simulate network latency in dev (not in tests)
-    if (!ProfileConstants.isTest) {
+    if (!appConfig.isTest) {
       await Future.delayed(const Duration(milliseconds: 500));
     }
 

@@ -62,6 +62,7 @@ void main() {
       featureFlagService: featureFlagService,
       resilienceInterceptor: resilienceInterceptor,
       cacheStorage: cacheStorage,
+      apiClient: TestUtils.apiClient(),
     );
   }
 

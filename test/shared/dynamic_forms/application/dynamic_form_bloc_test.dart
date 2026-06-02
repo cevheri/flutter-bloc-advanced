@@ -9,7 +9,6 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/l
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/load_form_schema_usecase.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/submit_form_usecase.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../test_utils.dart';
@@ -120,18 +119,16 @@ void main() {
 
   setUp(() {
     stub = _StubInterceptor();
-    final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
-    testDio.interceptors.add(stub);
-    ApiClient.setTestInstance(testDio);
   });
 
   tearDown(() async {
-    ApiClient.reset();
     await TestUtils().tearDownUnitTest();
   });
 
   DynamicFormBloc buildBloc() {
-    final repo = DynamicFormRepository();
+    final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
+    testDio.interceptors.add(stub);
+    final repo = DynamicFormRepository(TestUtils.apiClient(dio: testDio));
     return DynamicFormBloc(
       loadFormSchemaUseCase: LoadFormSchemaUseCase(repo),
       submitFormUseCase: SubmitFormUseCase(repo),

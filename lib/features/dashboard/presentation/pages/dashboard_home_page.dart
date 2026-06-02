@@ -59,11 +59,17 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
       _ => null,
     };
 
-    final environment = ProfileConstants.isProduction
-        ? 'prod'
-        : ProfileConstants.isDevelopment
-        ? 'dev'
-        : 'test';
+    AppConfig? appConfig;
+    try {
+      appConfig = context.read<AppConfig>();
+    } on ProviderNotFoundException {
+      // AppConfig not provided (standalone/partial-DI pump) — fall back to dev label.
+    }
+    final environment = switch (appConfig?.environment) {
+      Environment.prod => 'prod',
+      Environment.test => 'test',
+      Environment.dev || null => 'dev',
+    };
 
     context.read<SystemDashboardCubit>().updateAppConfig(
       AppConfigSummary(

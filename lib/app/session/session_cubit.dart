@@ -95,13 +95,14 @@ enum SessionExpiredReason {
 /// Consumers (router redirect, UI guards) pattern-match on [state];
 /// callers that want to re-evaluate trigger [refresh].
 class SessionCubit extends Cubit<SessionState> {
-  SessionCubit({ISecureStorage? secureStorage})
+  SessionCubit({ISecureStorage? secureStorage, this._appConfig = const AppConfig.dev()})
     : _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
       super(const SessionUnknown());
 
   static final _log = AppLogger.getLogger('SessionCubit');
 
   final ISecureStorage _secureStorage;
+  final AppConfig _appConfig;
 
   Future<void> restore() async {
     // ISecureStorage.read can throw on platform / decryption failure.
@@ -121,7 +122,7 @@ class SessionCubit extends Cubit<SessionState> {
       // In production we additionally reject expired tokens. In non-prod
       // (mocks/dev) we stay lenient so a static MOCK_TOKEN without an
       // `exp` claim does not log the user out on every restart.
-      if (ProfileConstants.isProduction) {
+      if (_appConfig.isProduction) {
         final expired = SecurityUtils.isTokenExpired(token);
         _log.info('restore: token found, expired={} → authenticated={}', [expired, !expired]);
         if (expired) {

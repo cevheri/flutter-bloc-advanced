@@ -14,9 +14,11 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 class LoginRepository implements IAuthRepository {
   static final _log = AppLogger.getLogger("LoginRepository");
 
-  LoginRepository({ISecureStorage? secureStorage, IAuthSessionRepository? sessionRepository})
+  LoginRepository({required this._apiClient, ISecureStorage? secureStorage, IAuthSessionRepository? sessionRepository})
     : _sessionRepository =
           sessionRepository ?? AuthSessionRepository(secureStorage: secureStorage ?? FlutterSecureStorageAdapter());
+
+  final ApiClient _apiClient;
 
   final IAuthSessionRepository _sessionRepository;
 
@@ -29,7 +31,7 @@ class LoginRepository implements IAuthRepository {
       }
 
       final request = AuthMapper.toUserJwt(userJWT);
-      final response = await ApiClient.post("/authenticate", request);
+      final response = await _apiClient.post("/authenticate", request);
       final result = JWTToken.fromJsonString(response.data!);
       _log.debug("END:authenticate successful - response.body: {}", [result.toString()]);
       final entity = AuthMapper.toTokenEntity(result);
@@ -77,7 +79,7 @@ class LoginRepository implements IAuthRepository {
       if (request.email.isEmpty) {
         return const Failure(ValidationError("Invalid email"));
       }
-      final response = await ApiClient.post(
+      final response = await _apiClient.post(
         "/authenticate/send-otp",
         AuthMapper.toSendOtpRequest(request),
         headers: {"Content-Type": "application/json"},
@@ -115,7 +117,7 @@ class LoginRepository implements IAuthRepository {
         return const Failure(ValidationError("Invalid OTP"));
       }
 
-      final response = await ApiClient.post(
+      final response = await _apiClient.post(
         "/authenticate/verify-otp",
         AuthMapper.toVerifyOtpRequest(request),
         headers: {"Content-Type": "application/json"},

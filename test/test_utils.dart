@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
@@ -26,6 +27,12 @@ class TestUtils {
   static final Map<String, String> _secureStore = {};
 
   static const _secureChannel = MethodChannel('plugins.it_nomads.com/flutter_secure_storage');
+
+  /// Mock-backed client for tests: test AppConfig → MockInterceptor serves
+  /// assets/mock/*.json; shared secure adapter → same MethodChannel mock the
+  /// repo layer reads. Pass [dio] to inject a stub.
+  static ApiClient apiClient({Dio? dio}) =>
+      ApiClient(appConfig: const AppConfig.test(), secureStorage: FlutterSecureStorageAdapter(), dio: dio);
 
   /// Always re-installs the handler. Previously short-circuited via
   /// a `_secureMockInstalled` flag, but `secure_storage_test.dart`
@@ -66,18 +73,9 @@ class TestUtils {
 
   Future<void> setupUnitTest() async {
     AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-    ProfileConstants.setEnvironment(Environment.test);
     TestWidgetsFlutterBinding.ensureInitialized();
     EquatableConfig.stringify = true;
     _installSecureStorageMock();
-    // Wire ApiClient to a shared FlutterSecureStorageAdapter so the
-    // HTTP interceptors read from the same MethodChannel-mocked store
-    // as the repository layer. Without this, tests touching both
-    // ApiClient.instance and a repository would silently use two
-    // different adapter instances — both backed by the same mock so
-    // tests pass, but the test harness would not catch a future
-    // production refactor that breaks SoT.
-    ApiClient.secureStorage = FlutterSecureStorageAdapter();
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.key, "en");
     AppRouter().setRouter(RouterType.goRouter);
@@ -85,29 +83,18 @@ class TestUtils {
 
   Future<void> setupRepositoryUnitTest() async {
     AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-    ProfileConstants.setEnvironment(Environment.test);
     // Binding must be initialized BEFORE installing the MethodChannel
     // mock — `TestDefaultBinaryMessengerBinding.instance` throws
     // otherwise. setupUnitTest does the same.
     TestWidgetsFlutterBinding.ensureInitialized();
     _installSecureStorageMock();
-    ApiClient.secureStorage = FlutterSecureStorageAdapter();
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.key, "en");
     AppRouter().setRouter(RouterType.goRouter);
   }
 
   Future<void> tearDownUnitTest() async {
-    ApiClient.reset();
-    // [ApiClient.reset] now also clears `secureStorage` and
-    // `onSessionExpired` (Copilot finding: hot-reload / multi-test
-    // leakage). Test files that rely on `setUpAll` + per-test
-    // `tearDown` (instead of per-test `setUp`) would otherwise see a
-    // null `secureStorage` after the first teardown. Re-wire the
-    // shared adapter here so the next test in the same file starts
-    // with the same SoT invariants `setupUnitTest` established.
     _installSecureStorageMock();
-    ApiClient.secureStorage = FlutterSecureStorageAdapter();
     return await _clearStorage();
   }
 
