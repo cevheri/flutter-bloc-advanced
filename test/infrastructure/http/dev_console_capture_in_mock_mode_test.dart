@@ -25,8 +25,8 @@ void main() {
   });
 
   setUp(() {
-    ProfileConstants.setEnvironment(Environment.test);
     ApiClient.reset();
+    ApiClient.appConfig = const AppConfig.test();
     DevConsoleStore.instance.clearNetwork();
   });
 

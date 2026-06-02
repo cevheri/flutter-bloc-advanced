@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/dev_console/tabs/environment_tab.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
@@ -11,10 +12,6 @@ import 'package:go_router/go_router.dart';
 /// builder — so [GoRouterState.of] has no scope to resolve. The fix reads
 /// the current location from the router itself (`GoRouter.of(c).state`).
 void main() {
-  setUp(() {
-    ProfileConstants.setEnvironment(Environment.test);
-  });
-
   GoRouter buildRouter() {
     return GoRouter(
       routes: [
@@ -39,7 +36,12 @@ void main() {
   }
 
   testWidgets('EnvironmentTab renders inside a modal bottom sheet without a GoRouterState error', (tester) async {
-    await tester.pumpWidget(MaterialApp.router(theme: AppTheme.light(), routerConfig: buildRouter()));
+    await tester.pumpWidget(
+      RepositoryProvider<AppConfig>.value(
+        value: const AppConfig.test(),
+        child: MaterialApp.router(theme: AppTheme.light(), routerConfig: buildRouter()),
+      ),
+    );
 
     await tester.tap(find.text('open'));
     await tester.pumpAndSettle();

@@ -4,24 +4,27 @@ import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart'
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  group('ProfileConstants', () {
-    test('setEnvironment sets dev environment', () {
-      ProfileConstants.setEnvironment(Environment.dev);
-      expect(ProfileConstants.isDevelopment, true);
-      expect(ProfileConstants.api, "mock");
+  group('AppConfig', () {
+    test('dev config sets development environment', () {
+      const config = AppConfig.dev();
+      expect(config.isDevelopment, true);
+      expect(config.apiBaseUrl, isNull);
     });
-
-    test('setEnvironment sets test environment', () {
-      ProfileConstants.setEnvironment(Environment.test);
-      expect(ProfileConstants.isDevelopment, false);
-      expect(ProfileConstants.isProduction, false);
-      expect(ProfileConstants.api, "mock");
+    test('test config sets test environment', () {
+      const config = AppConfig.test();
+      expect(config.isDevelopment, false);
+      expect(config.isProduction, false);
+      expect(config.apiBaseUrl, isNull);
     });
-
-    test('setEnvironment sets prod environment', () {
-      ProfileConstants.setEnvironment(Environment.prod);
-      expect(ProfileConstants.isProduction, true);
-      expect(ProfileConstants.api, TemplateConfig.prodApiUrl);
+    test('prod config sets production environment', () {
+      const config = AppConfig.prod();
+      expect(config.isProduction, true);
+      expect(config.apiBaseUrl, TemplateConfig.prodApiUrl);
+    });
+    test('fromEnvironment maps each enum value', () {
+      expect(AppConfig.fromEnvironment(Environment.dev).isDevelopment, true);
+      expect(AppConfig.fromEnvironment(Environment.test).isTest, true);
+      expect(AppConfig.fromEnvironment(Environment.prod).isProduction, true);
     });
   });
   test("allowed paths", () {

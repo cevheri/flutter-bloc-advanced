@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
@@ -15,7 +16,7 @@ class EnvironmentTab extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final semantic = context.semanticColors;
 
-    final envInfo = _buildEnvironmentInfo();
+    final envInfo = _buildEnvironmentInfo(context.read<AppConfig>());
     // Read everything from the router itself, not from GoRouterState.of(context):
     // the dev console is shown in a modal bottom sheet whose subtree is not
     // under any GoRoute.builder, so GoRouterState.of has no scope to resolve
@@ -44,10 +45,10 @@ class EnvironmentTab extends StatelessWidget {
     );
   }
 
-  Map<String, String> _buildEnvironmentInfo() {
+  Map<String, String> _buildEnvironmentInfo(AppConfig appConfig) {
     return {
-      'Environment': ProfileConstants.isProduction ? 'Production' : (ProfileConstants.isTest ? 'Test' : 'Development'),
-      'API Endpoint': ProfileConstants.isProduction ? (ProfileConstants.api?.toString() ?? 'N/A') : 'Mock',
+      'Environment': appConfig.isProduction ? 'Production' : (appConfig.isTest ? 'Test' : 'Development'),
+      'API Endpoint': appConfig.apiBaseUrl ?? 'Mock',
       'App Version': AppConstants.appVersion.isNotEmpty ? AppConstants.appVersion : 'N/A',
       'Build Number': AppConstants.appBuildNumber.isNotEmpty ? AppConstants.appBuildNumber : 'N/A',
       'App Name': AppConstants.appName.isNotEmpty ? AppConstants.appName : 'N/A',

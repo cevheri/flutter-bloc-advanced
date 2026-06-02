@@ -28,9 +28,9 @@ class AppBootstrap {
     AppLogger.configure(isProduction: config.isProduction);
     final log = AppLogger.getLogger('AppBootstrap');
 
-    ProfileConstants.setEnvironment(config.environment);
-
-    final dependencies = AppDependencies(environment: config.environment);
+    final appConfig = AppConfig.fromEnvironment(config.environment);
+    final dependencies = AppDependencies(appConfig: appConfig);
+    ApiClient.appConfig = appConfig;
     final secureStorage = dependencies.createSecureStorage();
     // Publish the same adapter instance into the static [ApiClient]
     // hook so AuthInterceptor and TokenRefreshInterceptor share it
@@ -72,7 +72,7 @@ class AppBootstrap {
     // twice. With Sentry off, forwarding to the local logging analytics is the
     // only sink, so it stays enabled.
     final analytics = dependencies.createAnalyticsService();
-    final sentryActive = ProfileConstants.sentryDsn != null;
+    final sentryActive = appConfig.sentryDsn != null;
     CrashReporter.install(analytics, forwardToAnalytics: !sentryActive);
 
     Bloc.observer = kDebugMode ? TimeTravelBlocObserver() : AppBlocObserver();
@@ -92,7 +92,7 @@ class AppBootstrap {
     // the entire widget tree shares one adapter instance — no config
     // drift between migration and runtime consumers, and overriding
     // for tests / alternate environments is a single hand-off.
-    final dsn = ProfileConstants.sentryDsn;
+    final dsn = appConfig.sentryDsn;
     if (dsn != null) {
       log.info('Initializing Sentry (release: {}+{})', [AppConstants.appVersion, AppConstants.appBuildNumber]);
       await SentryFlutter.init(
