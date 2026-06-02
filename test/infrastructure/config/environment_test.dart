@@ -14,12 +14,15 @@ void main() {
       const config = AppConfig.test();
       expect(config.isDevelopment, false);
       expect(config.isProduction, false);
+      expect(config.isTest, true);
       expect(config.apiBaseUrl, isNull);
     });
     test('prod config sets production environment', () {
       const config = AppConfig.prod();
       expect(config.isProduction, true);
       expect(config.apiBaseUrl, TemplateConfig.prodApiUrl);
+      expect(config.idleTimeout, const Duration(minutes: 15));
+      expect(config.certificatePins, isEmpty);
     });
     test('fromEnvironment maps each enum value', () {
       expect(AppConfig.fromEnvironment(Environment.dev).isDevelopment, true);

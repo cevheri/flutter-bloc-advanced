@@ -6,7 +6,7 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 ///
 /// Pre-condition: `SentryFlutter.init(...)` has already run with a
 /// configured DSN. The bootstrap layer gates that on
-/// `AppConfig.sentryDsn != null` and only swaps this service
+/// `appConfig.sentryDsn != null` and only swaps this service
 /// in when the SDK is live; tests + non-prod builds keep
 /// `LogAnalyticsService` so this file is not even constructed
 /// without a DSN.
