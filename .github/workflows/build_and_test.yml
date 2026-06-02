@@ -66,19 +66,8 @@ jobs:
         run: flutter test --coverage --timeout=30s --concurrency=4 --reporter=compact
 
       - name: Check coverage threshold
-        run: |
-          if [ -f coverage/lcov.info ]; then
-            total_lines=$(grep -c "DA:" coverage/lcov.info || echo "0")
-            hit_lines=$(grep "DA:" coverage/lcov.info | grep -cv ",0$" || echo "0")
-            if [ "$total_lines" -gt 0 ]; then
-              coverage=$((hit_lines * 100 / total_lines))
-              echo "Coverage: ${coverage}%"
-              if [ "$coverage" -lt 65 ]; then
-                echo "::error::Coverage ${coverage}% is below 65% threshold"
-                exit 1
-              fi
-            fi
-          fi
+        # Excludes generated/bootstrap code from the metric (see scripts/check_coverage.sh, issue #149).
+        run: scripts/check_coverage.sh coverage/lcov.info 65
 
   build:
     name: Build Android
