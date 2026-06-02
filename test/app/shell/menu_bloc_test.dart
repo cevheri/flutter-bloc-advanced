@@ -10,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../mocks/mock_classes.dart';
-import '../../test_utils.dart';
 
 /// BLoc Test for MenuBloc
 ///
@@ -23,14 +22,9 @@ void main() {
   late LoginRepository loginRepository;
   late MenuRepository menuRepository;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
+  setUpAll(() {
     loginRepository = MockLoginRepository();
     menuRepository = MockMenuRepository();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
   //endregion setup
 

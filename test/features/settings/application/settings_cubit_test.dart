@@ -4,17 +4,7 @@ import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/features/settings/application/settings_cubit.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
-
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-
   //region state
   group("SettingsState Test", () {
     test("settings_cubit.dart export test", () {

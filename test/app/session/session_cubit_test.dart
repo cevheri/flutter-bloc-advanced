@@ -4,8 +4,6 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
-
 class _MemorySecureStorage implements ISecureStorage {
   final Map<String, String> _store = {};
   @override
@@ -34,16 +32,6 @@ class _ReadThrowsSecureStorage implements ISecureStorage {
 const _expiredJwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1IiwiZXhwIjoxfQ.signature';
 
 void main() {
-  final testUtils = TestUtils();
-
-  setUp(() async {
-    await testUtils.setupUnitTest();
-  });
-
-  tearDown(() async {
-    await testUtils.tearDownUnitTest();
-  });
-
   group('SessionState — sealed hierarchy', () {
     test('SessionUnknown is the initial state, distinct from unauthenticated', () {
       const unknown = SessionUnknown();

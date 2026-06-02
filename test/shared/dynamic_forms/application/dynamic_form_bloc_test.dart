@@ -11,7 +11,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/s
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
+import '../../../support/test_env.dart';
 
 /// Interceptor that stubs responses before any real HTTP call.
 class _StubInterceptor extends Interceptor {
@@ -113,22 +113,14 @@ final _formSchemaPutAction = jsonEncode({
 void main() {
   late _StubInterceptor stub;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
     stub = _StubInterceptor();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
 
   DynamicFormBloc buildBloc() {
     final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
     testDio.interceptors.add(stub);
-    final repo = DynamicFormRepository(TestUtils.apiClient(dio: testDio));
+    final repo = DynamicFormRepository(TestEnv.apiClient(dio: testDio));
     return DynamicFormBloc(
       loadFormSchemaUseCase: LoadFormSchemaUseCase(repo),
       submitFormUseCase: SubmitFormUseCase(repo),

@@ -2,17 +2,7 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
-
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-
   group('SidebarEvent', () {
     group('ToggleSidebarCollapse', () {
       test('supports value equality', () {

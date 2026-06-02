@@ -9,7 +9,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../mocks/mock_classes.dart';
-import '../../../test_utils.dart';
 
 /// BLoc Test for AuthorityBloc
 ///
@@ -22,14 +21,9 @@ void main() {
   late IAuthorityRepository repository;
   late ListAuthoritiesUseCase useCase;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
+  setUpAll(() {
     repository = MockAuthorityRepository();
     useCase = ListAuthoritiesUseCase(repository);
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
   //endregion setup
 

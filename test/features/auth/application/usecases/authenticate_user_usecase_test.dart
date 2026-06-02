@@ -11,8 +11,6 @@ void main() {
   late MockIAuthRepository mockRepo;
   late AuthenticateUserUseCase useCase;
 
-  setUpAll(() => registerAllFallbackValues());
-
   setUp(() {
     mockRepo = MockIAuthRepository();
     useCase = AuthenticateUserUseCase(mockRepo);

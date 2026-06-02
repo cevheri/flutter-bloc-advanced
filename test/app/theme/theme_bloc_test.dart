@@ -5,19 +5,7 @@ import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme_palette.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
-
 void main() {
-  final testUtils = TestUtils();
-
-  setUp(() async {
-    await testUtils.setupUnitTest();
-  });
-
-  tearDown(() async {
-    await testUtils.tearDownUnitTest();
-  });
-
   group('ThemeState', () {
     test('default state has classic palette and system theme mode', () {
       const state = ThemeState();

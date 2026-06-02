@@ -10,7 +10,6 @@ import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../mocks/fake_data.dart';
-import '../../../test_utils.dart';
 
 /// BLoc Test for AccountBloc
 ///
@@ -55,14 +54,6 @@ class _FakeAccountRepository implements IAccountRepository {
 }
 
 void main() {
-  //region main setup
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-  //endregion main setup
 
   //region state
   /// Account State Tests
