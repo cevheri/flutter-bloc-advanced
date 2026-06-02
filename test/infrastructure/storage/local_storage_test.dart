@@ -5,9 +5,12 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../mocks/mock_classes.dart';
+import '../../support/test_env.dart';
 import '../../test_utils.dart';
 
 void main() {
+  setUpAll(() => TestEnv.autoReset = false);
+
   group('AppLocalStorage', () {
     late AppLocalStorage localStorage;
 
