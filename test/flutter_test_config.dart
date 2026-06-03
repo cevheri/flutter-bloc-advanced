@@ -1,7 +1,9 @@
 import 'dart:async';
 
+import 'package:alchemist/alchemist.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'mocks/mock_classes.dart';
@@ -26,5 +28,10 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
     if (TestEnv.autoReset) await TestEnv.reset();
   });
 
-  await testMain();
+  // Golden tests (alchemist) render under the project light theme by default;
+  // dark-theme scenarios wrap their child in AppTheme.dark() explicitly.
+  return AlchemistConfig.runWithConfig(
+    config: AlchemistConfig(theme: AppTheme.light()),
+    run: testMain,
+  );
 }
