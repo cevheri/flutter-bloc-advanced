@@ -25,8 +25,9 @@ void main() {
   group("HomeScreen Test Most critical APP UnitTest ***** ", () {
     testWidgets("Given valid AccessToken when open home then load ResponsiveScaffold successfully", (tester) async {
       // Use a wider surface to avoid overflow on the new dashboard header.
-      await tester.binding.setSurfaceSize(const Size(1280, 800));
-      addTearDown(() => tester.binding.setSurfaceSize(null));
+      tester.view.physicalSize = const Size(1280, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
       TestEnv.authenticate();
 

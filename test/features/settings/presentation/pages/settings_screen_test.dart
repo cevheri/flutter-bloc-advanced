@@ -65,6 +65,9 @@ void main() {
       await tester.tap(find.byKey(settingsChangePasswordButtonKey));
       await tester.pumpAndSettle();
 
+      // Assert we navigated TO the change-password route (its content renders),
+      // not merely that the settings screen disappeared.
+      expect(find.byType(Placeholder), findsOneWidget);
       expect(find.byType(SettingsScreen), findsNothing);
     });
   });
