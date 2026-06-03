@@ -3,17 +3,7 @@ import 'dart:convert';
 import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
-
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-
   group('SecurityUtils', () {
     group('hasToken', () {
       test('returns false for null', () {

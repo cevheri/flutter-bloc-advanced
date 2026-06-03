@@ -6,24 +6,14 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../test_utils.dart';
+import '../../support/test_env.dart';
 
 void main() {
-  final testUtils = TestUtils();
-
   void setDesktopViewport(WidgetTester tester) {
     addTearDown(tester.view.reset);
     tester.view.physicalSize = const Size(1600, 1600);
     tester.view.devicePixelRatio = 1.0;
   }
-
-  setUp(() async {
-    await testUtils.setupUnitTest();
-  });
-
-  tearDown(() async {
-    await testUtils.tearDownUnitTest();
-  });
 
   GoRouter routerFromApp(WidgetTester tester) {
     final materialApp = tester.widget<MaterialApp>(find.byType(MaterialApp));
@@ -45,7 +35,7 @@ void main() {
 
     testWidgets('allows authenticated users to open settings', (tester) async {
       setDesktopViewport(tester);
-      testUtils.setupAuthentication();
+      TestEnv.authenticate();
       await tester.pumpWidget(const App(language: 'en'));
       await tester.pumpAndSettle();
 

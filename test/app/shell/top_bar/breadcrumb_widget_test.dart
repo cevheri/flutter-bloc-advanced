@@ -3,17 +3,7 @@ import 'package:flutter_bloc_advance/app/shell/top_bar/breadcrumb_widget.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../test_utils.dart';
-
 void main() {
-  setUp(() async {
-    await TestUtils().setupUnitTest();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-
   Widget buildTestableWidget({required String initialLocation}) {
     final router = GoRouter(
       initialLocation: initialLocation,

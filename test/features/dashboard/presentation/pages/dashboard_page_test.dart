@@ -11,8 +11,6 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../../test_utils.dart';
-
 // ---------------------------------------------------------------------------
 // Mock
 // ---------------------------------------------------------------------------
@@ -46,16 +44,8 @@ Widget _buildTestWidget(SystemDashboardCubit cubit) {
 void main() {
   late MockSystemDashboardCubit cubit;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
     cubit = MockSystemDashboardCubit();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
 
   group('DashboardPage', () {

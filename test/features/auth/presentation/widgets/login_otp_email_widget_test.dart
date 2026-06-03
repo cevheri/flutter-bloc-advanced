@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
@@ -16,24 +15,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
-import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../../mocks/mock_classes.dart';
-import '../../../../test_utils.dart';
 
 void main() {
   late MockLoginBloc mockLoginBloc;
   late Widget testWidget;
   late GoRouter mockGoRouter;
 
-  setUpAll(() {
-    registerAllFallbackValues();
-  });
-
   setUp(() {
-    SharedPreferences.setMockInitialValues({});
-    SharedPreferencesAsyncPlatform.instance = InMemorySharedPreferencesAsync.empty();
     mockLoginBloc = MockLoginBloc();
 
     // Set basic state for login bloc
@@ -126,8 +116,6 @@ void main() {
     });
 
     testWidgets('should navigate to verify screen when OTP sent successfully', (tester) async {
-      TestUtils().setupUnitTest();
-
       final loginStateController = StreamController<LoginState>.broadcast();
       when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
       when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());
@@ -155,7 +143,6 @@ void main() {
     });
 
     testWidgets('should handle back button press', (tester) async {
-      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       SharedPreferences.setMockInitialValues({});
       await AppLocalStorage().save(StorageKeys.language.key, "en");
 

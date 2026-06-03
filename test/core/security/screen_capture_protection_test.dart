@@ -2,17 +2,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/core/security/screen_capture_protection.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   const channel = MethodChannel('screen_protector');
 
   final List<MethodCall> calls = <MethodCall>[];
-
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
 
   setUp(() {
     calls.clear();
@@ -28,7 +22,6 @@ void main() {
   tearDown(() async {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger.setMockMethodCallHandler(channel, null);
     ScreenCaptureProtection.resetForTesting();
-    await TestUtils().tearDownUnitTest();
   });
 
   group('ScreenCaptureProtection', () {

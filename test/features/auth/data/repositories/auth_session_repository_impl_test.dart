@@ -6,8 +6,6 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../../../test_utils.dart';
-
 /// In-memory ISecureStorage for tests.
 class _MemorySecureStorage implements ISecureStorage {
   final Map<String, String> _store = {};
@@ -84,19 +82,11 @@ void main() {
   late AppLocalStorage storage;
   late _MemorySecureStorage secure;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
     storage = AppLocalStorage();
     storage.setPreferencesInstance(await SharedPreferences.getInstance());
     secure = _MemorySecureStorage();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
 
   group('AuthSessionRepository', () {

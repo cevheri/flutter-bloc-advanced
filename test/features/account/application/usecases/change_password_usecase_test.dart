@@ -11,8 +11,6 @@ void main() {
   late MockIAccountRepository mockRepo;
   late ChangePasswordUseCase useCase;
 
-  setUpAll(() => registerAllFallbackValues());
-
   setUp(() {
     mockRepo = MockIAccountRepository();
     useCase = ChangePasswordUseCase(mockRepo);

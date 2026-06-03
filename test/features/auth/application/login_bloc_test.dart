@@ -19,7 +19,7 @@ import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../mocks/fake_data.dart';
-import '../../../test_utils.dart';
+import '../../../support/test_env.dart';
 
 class _FakeAuthRepository implements IAuthRepository {
   Result<AuthTokenEntity>? authenticateResult;
@@ -145,17 +145,9 @@ void main() {
   late _FakeAuthRepository repository;
   late _FakeAccountRepository accountRepository;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
     repository = _FakeAuthRepository();
     accountRepository = _FakeAccountRepository()..account = mockUserFullPayload;
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
 
   //endregion main setup
@@ -319,7 +311,7 @@ void main() {
       blocTest<LoginBloc, LoginState>(
         'given valid credentials when submitted then emits [loading, success]',
         setUp: () async {
-          TestUtils().setupAuthentication();
+          TestEnv.authenticate();
           await AppLocalStorage().save(StorageKeys.username.key, "username");
           await AppLocalStorage().save(StorageKeys.roles.key, ["ROLE_USER"]);
           repository.authenticateResult = const Success(AuthTokenEntity(idToken: 'MOCK_TOKEN'));

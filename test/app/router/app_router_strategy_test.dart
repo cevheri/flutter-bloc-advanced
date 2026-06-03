@@ -3,19 +3,7 @@ import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../test_utils.dart';
-
 void main() {
-  final testUtils = TestUtils();
-
-  setUp(() async {
-    await testUtils.setupUnitTest();
-  });
-
-  tearDown(() async {
-    await testUtils.tearDownUnitTest();
-  });
-
   group('RouterType enum', () {
     test('has navigator value', () {
       expect(RouterType.navigator, isNotNull);

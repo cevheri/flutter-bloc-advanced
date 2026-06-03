@@ -38,10 +38,6 @@ const _testSchema = FormSchemaEntity(
 void main() {
   late MockDynamicFormBloc mockBloc;
 
-  setUpAll(() {
-    registerAllFallbackValues();
-  });
-
   setUp(() {
     mockBloc = MockDynamicFormBloc();
   });

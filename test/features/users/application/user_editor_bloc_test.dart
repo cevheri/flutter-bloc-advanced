@@ -8,8 +8,6 @@ import 'package:flutter_bloc_advance/features/users/domain/repositories/user_rep
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
-
 class _FakeUserRepository implements IUserRepository {
   UserEntity? retrieveResult;
   AppError? failure;
@@ -57,17 +55,12 @@ void main() {
 
   const sampleUser = UserEntity(id: '1', firstName: 'Test', lastName: 'User');
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
     repository = _FakeUserRepository();
     bloc = UserEditorBloc(fetchUserUseCase: FetchUserUseCase(repository), saveUserUseCase: SaveUserUseCase(repository));
   });
 
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
+  tearDown(() {
     bloc.close();
   });
 

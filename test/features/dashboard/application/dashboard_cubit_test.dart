@@ -10,7 +10,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../test_utils.dart';
+import '../../../support/test_env.dart';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -31,10 +31,6 @@ void main() {
   late MockSharedPrefsCacheStorage cacheStorage;
   late StreamController<ConnectivityStatus> connectivityController;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
     connectivityService = MockConnectivityService();
     featureFlagService = MockFeatureFlagService();
@@ -53,7 +49,6 @@ void main() {
 
   tearDown(() async {
     await connectivityController.close();
-    await TestUtils().tearDownUnitTest();
   });
 
   SystemDashboardCubit buildCubit() {
@@ -62,7 +57,7 @@ void main() {
       featureFlagService: featureFlagService,
       resilienceInterceptor: resilienceInterceptor,
       cacheStorage: cacheStorage,
-      apiClient: TestUtils.apiClient(),
+      apiClient: TestEnv.apiClient(),
     );
   }
 

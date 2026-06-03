@@ -1,12 +1,11 @@
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
+import '../../support/test_env.dart';
 
 class _StubSecureStorage implements ISecureStorage {
   @override
@@ -20,21 +19,17 @@ class _StubSecureStorage implements ISecureStorage {
 }
 
 void main() {
-  setUpAll(() {
-    AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-  });
-
   const dependencies = AppDependencies();
 
   test('app dependencies expose account repository contract', () {
-    expect(dependencies.createAccountRepository(TestUtils.apiClient()), isA<IAccountRepository>());
+    expect(dependencies.createAccountRepository(TestEnv.apiClient()), isA<IAccountRepository>());
   });
 
   test('app dependencies expose auth repository contract', () {
-    expect(dependencies.createAuthRepository(_StubSecureStorage(), TestUtils.apiClient()), isA<IAuthRepository>());
+    expect(dependencies.createAuthRepository(_StubSecureStorage(), TestEnv.apiClient()), isA<IAuthRepository>());
   });
 
   test('app dependencies expose user repository contract', () {
-    expect(dependencies.createUserRepository(TestUtils.apiClient()), isA<IUserRepository>());
+    expect(dependencies.createUserRepository(TestEnv.apiClient()), isA<IUserRepository>());
   });
 }

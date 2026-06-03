@@ -4,18 +4,11 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../test_utils.dart';
-
 void main() {
   late AppRouter router;
 
-  setUp(() async {
-    await TestUtils().setupUnitTest();
+  setUp(() {
     router = AppRouter();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
 
   Widget buildTestableWidget({required Widget child}) {

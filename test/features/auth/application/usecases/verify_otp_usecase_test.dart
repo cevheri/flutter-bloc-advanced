@@ -11,8 +11,6 @@ void main() {
   late MockIAuthRepository mockRepo;
   late VerifyOtpUseCase useCase;
 
-  setUpAll(() => registerAllFallbackValues());
-
   setUp(() {
     mockRepo = MockIAuthRepository();
     useCase = VerifyOtpUseCase(mockRepo);

@@ -9,7 +9,6 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../mocks/fake_data.dart';
 import '../../../mocks/mock_classes.dart';
-import '../../../test_utils.dart';
 
 /// BLoc Test for ChangePasswordBloc
 ///
@@ -22,13 +21,8 @@ void main() {
   //region main setup
   late AccountRepository repository;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
+  setUpAll(() {
     repository = MockAccountRepository();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
   //endregion main setup
 

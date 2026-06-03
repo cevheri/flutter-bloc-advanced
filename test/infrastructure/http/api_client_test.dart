@@ -4,7 +4,7 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
+import '../../support/test_env.dart';
 
 /// Interceptor that stubs responses before any real HTTP call.
 class _StubInterceptor extends Interceptor {
@@ -60,14 +60,6 @@ class _StubInterceptor extends Interceptor {
 }
 
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-
   group('Api Exceptions', () {
     test('given FetchDataException when created then should return message', () {
       final exception = FetchDataException('Test Fetch Data Exception');
@@ -237,11 +229,11 @@ void main() {
 
       setUp(() {
         // Build a fresh test-env client so the MockInterceptor is in the chain.
-        mockClient = TestUtils.apiClient();
+        mockClient = TestEnv.apiClient();
       });
 
       test('given test environment when GET request is made then should return mock data', () async {
-        TestUtils().setupAuthentication();
+        TestEnv.authenticate();
         final response = await mockClient.get('/test');
         expect(response.statusCode, lessThan(300));
       });
@@ -251,7 +243,7 @@ void main() {
       });
 
       test('given test environment when POST request is made then should return mock data', () async {
-        TestUtils().setupAuthentication();
+        TestEnv.authenticate();
         final response = await mockClient.post('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
@@ -261,7 +253,7 @@ void main() {
       });
 
       test('given test environment when PUT request is made then should return mock data', () async {
-        TestUtils().setupAuthentication();
+        TestEnv.authenticate();
         final response = await mockClient.put('/test', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
@@ -271,7 +263,7 @@ void main() {
       });
 
       test('given test environment when DELETE request is made then should return 204', () async {
-        TestUtils().setupAuthentication();
+        TestEnv.authenticate();
         final response = await mockClient.delete('/test');
         expect(response.statusCode, lessThan(300));
       });
@@ -303,13 +295,13 @@ void main() {
   group('ApiClient.interceptorChainSnapshot (#63, #64)', () {
     test('is populated after the Dio instance is built', () {
       // Build a test-env client and force lazy Dio construction.
-      final client = TestUtils.apiClient();
+      final client = TestEnv.apiClient();
       client.instance;
       expect(client.interceptorChainSnapshot, isNotEmpty);
     });
 
     test('lists every interceptor in declared order (non-production includes MockInterceptor)', () {
-      final client = TestUtils.apiClient();
+      final client = TestEnv.apiClient();
       client.instance;
       final names = client.interceptorChainSnapshot.map((e) => e.name).toList();
 
@@ -330,14 +322,14 @@ void main() {
     });
 
     test('MockInterceptor entry is flagged active=false (dev/test fallback)', () {
-      final client = TestUtils.apiClient();
+      final client = TestEnv.apiClient();
       client.instance;
       final mock = client.interceptorChainSnapshot.firstWhere((e) => e.name == 'MockInterceptor');
       expect(mock.active, isFalse);
     });
 
     test('snapshot is returned as an unmodifiable view', () {
-      final client = TestUtils.apiClient();
+      final client = TestEnv.apiClient();
       client.instance;
       expect(
         () => client.interceptorChainSnapshot..add(const InterceptorChainEntry(name: 'X', detail: 'X')),

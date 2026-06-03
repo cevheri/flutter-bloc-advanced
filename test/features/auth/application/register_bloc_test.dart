@@ -8,8 +8,6 @@ import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dar
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
-
 /// BLoc Test for RegisterBloc
 ///
 /// Tests: <p>
@@ -47,16 +45,8 @@ void main() {
   //region main setup
   late _FakeAccountRepository repository;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
     repository = _FakeAccountRepository();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
   });
 
   //endregion main setup

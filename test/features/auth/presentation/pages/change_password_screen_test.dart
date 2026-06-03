@@ -15,7 +15,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
-import '../../../../test_utils.dart';
+import '../../../../support/test_env.dart';
 
 final _log = AppLogger.getLogger("AccountsScreenTest");
 
@@ -26,14 +26,8 @@ void main() {
   late MockChangePasswordBloc changePasswordBloc;
   late StreamController<ChangePasswordState> stateController;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-    registerAllFallbackValues();
-  });
-
   tearDown(() async {
     await stateController.close();
-    await TestUtils().tearDownUnitTest();
   });
 
   setUp(() {
@@ -127,7 +121,7 @@ void main() {
   group("ChangePasswordScreen FormFieldsTest", () {
     testWidgets("Render Screen Validate Field Type Successful", (tester) async {
       _log.debug("begin Validate Field Type");
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       // Given:
       await tester.pumpWidget(getWidget());
       //When:

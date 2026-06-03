@@ -11,8 +11,6 @@ void main() {
   late MockIUserRepository mockRepo;
   late SaveUserUseCase useCase;
 
-  setUpAll(() => registerAllFallbackValues());
-
   setUp(() {
     mockRepo = MockIUserRepository();
     useCase = SaveUserUseCase(mockRepo);

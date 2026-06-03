@@ -3,8 +3,6 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refr
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
-
 /// ISecureStorage whose jwtToken read throws (refresh token is normal).
 /// Exercises the stale-header check's graceful-fallback path.
 class _ReadThrowsOnJwtSecureStorage implements ISecureStorage {
@@ -46,10 +44,6 @@ void main() {
   late Dio dio;
   late _MemorySecureStorage secureStorage;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() async {
     secureStorage = _MemorySecureStorage();
     dio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
@@ -57,7 +51,6 @@ void main() {
 
   tearDown(() async {
     dio.close();
-    await TestUtils().tearDownUnitTest();
   });
 
   group('TokenRefreshInterceptor', () {

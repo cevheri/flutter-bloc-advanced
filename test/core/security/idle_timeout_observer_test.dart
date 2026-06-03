@@ -3,18 +3,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
-
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
-  tearDownAll(() async {
-    await TestUtils().tearDownUnitTest();
-  });
 
   group('IdleTimeoutObserver', () {
     test('disabled (null threshold): timeout never fires regardless of inactivity', () {

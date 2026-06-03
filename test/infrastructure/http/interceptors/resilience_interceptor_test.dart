@@ -1,15 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  setUpAll(() {
-    AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-  });
-
   group('ResilienceInterceptor', () {
     group('constructor defaults', () {
       test('should have default maxRetries of 3', () {

@@ -5,8 +5,6 @@ import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_se
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../test_utils.dart';
-
 class MockConnectivity extends Mock implements Connectivity {}
 
 /// A testable subclass of [ConnectivityService] that allows injecting
@@ -61,10 +59,6 @@ void main() {
   late MockConnectivity mockConnectivity;
   late TestableConnectivityService service;
   late StreamController<List<ConnectivityResult>> connectivityStreamController;
-
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
 
   setUp(() {
     mockConnectivity = MockConnectivity();

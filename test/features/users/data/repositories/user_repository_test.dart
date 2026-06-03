@@ -6,26 +6,18 @@ import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../mocks/fake_data.dart';
-import '../../../../test_utils.dart';
+import '../../../../support/test_env.dart';
 
 void main() {
   late UserRepository repository;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
-    repository = UserRepository(TestUtils.apiClient());
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
+    repository = UserRepository(TestEnv.apiClient());
   });
 
   group("User Repository getUsers", () {
     test("Given valid user when getUsers then return user list successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.list();
       expect(result, isA<Success<List<UserEntity>>>());
       expect((result as Success<List<UserEntity>>).data.length, 4);
@@ -39,7 +31,7 @@ void main() {
 
   group("User Repository getUser", () {
     test("Given valid userId when getUser then return user successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.retrieve("user-1");
 
       expect(result, isA<Success<UserEntity>>());
@@ -64,7 +56,7 @@ void main() {
     });
 
     test("Given null userId when getUser then return validation failure", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.retrieve("");
       expect(result, isA<Failure<UserEntity>>());
       expect((result as Failure<UserEntity>).error, isA<ValidationError>());
@@ -73,7 +65,7 @@ void main() {
 
   group("User Repository getUserByLogin", () {
     test("Given valid login when getUserByLogin then return user successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.retrieveByLogin("username");
 
       expect(result, isA<Success<UserEntity>>());
@@ -98,7 +90,7 @@ void main() {
     });
 
     test("Given null login when getUserByLogin then return validation failure", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.retrieveByLogin("");
       expect(result, isA<Failure<UserEntity>>());
       expect((result as Failure<UserEntity>).error, isA<ValidationError>());
@@ -107,7 +99,7 @@ void main() {
 
   group("User Repository createUser", () {
     test("Given valid user when createUser then return user successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final entity = mockUserFullPayload;
       final result = await repository.create(entity);
 
@@ -133,14 +125,14 @@ void main() {
     });
 
     test("Given null user when createUser then return validation failure", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.create(const User());
       expect(result, isA<Failure<UserEntity>>());
       expect((result as Failure<UserEntity>).error, isA<ValidationError>());
     });
 
     test("Given null username when createUser then return validation failure", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.create(const User(login: "admin"));
       expect(result, isA<Failure<UserEntity>>());
       expect((result as Failure<UserEntity>).error, isA<ValidationError>());
@@ -149,7 +141,7 @@ void main() {
 
   group("User Repository listUser", () {
     test("Given valid range when listUser then return user list successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.list(page: 0, size: 10);
 
       expect(result, isA<Success<List<UserEntity>>>());
@@ -164,7 +156,7 @@ void main() {
 
   group("User Repository findUserByAuthority", () {
     test("Given valid range and authority when findUserByAuthority then return user list successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.listByAuthority(0, 10, "ROLE_ADMIN");
 
       expect(result, isA<Success<List<UserEntity>>>());
@@ -179,7 +171,7 @@ void main() {
 
   group("User Repository findUserByName", () {
     test("Given valid range, name and authority when findUserByName then return user list successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.listByNameAndRole(0, 10, "admin", "ROLE_ADMIN");
 
       expect(result, isA<Success<List<UserEntity>>>());
@@ -194,7 +186,7 @@ void main() {
 
   group("User Repository updateUser", () {
     test("Given valid user when updateUser then return user successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final entity = mockUserFullPayload;
       final result = await repository.update(entity);
 
@@ -220,7 +212,7 @@ void main() {
     });
 
     test("Given null user when updateUser then return validation failure", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.update(const User());
       expect(result, isA<Failure<UserEntity>>());
       expect((result as Failure<UserEntity>).error, isA<ValidationError>());
@@ -229,7 +221,7 @@ void main() {
 
   group("User Repository deleteUser", () {
     test("Given valid userId when deleteUser then return success", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.delete("user-1");
       expect(result, isA<Success<void>>());
     });
@@ -240,7 +232,7 @@ void main() {
     });
 
     test("Given null userId when deleteUser then return validation failure", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.delete("");
       expect(result, isA<Failure<void>>());
       expect((result as Failure<void>).error, isA<ValidationError>());

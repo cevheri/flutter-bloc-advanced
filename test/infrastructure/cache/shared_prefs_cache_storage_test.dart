@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,10 +8,6 @@ import 'package:shared_preferences_platform_interface/shared_preferences_async_p
 
 void main() {
   late SharedPrefsCacheStorage storage;
-
-  setUpAll(() {
-    AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-  });
 
   setUp(() {
     TestWidgetsFlutterBinding.ensureInitialized();
