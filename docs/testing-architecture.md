@@ -296,8 +296,13 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   platform goldens**, so only the CI (Ahem-rendered) variant runs — identical on
   macOS/Linux/CI, no font flake. Golden files set `setUpAll(() => TestEnv.autoReset
   = false)` and use `pumpBeforeTest: pumpOnce` for animated widgets. Regenerate with
-  `flutter test --tags golden --update-goldens`. Phase 1 covers the harness +
-  `AppButton`; components, widgets, and screens land in later phases.
+  `flutter test --tags golden --update-goldens`. Coverage: all design-system
+  components (`test/goldens/components/`), shared widgets (`test/goldens/widgets/`),
+  and key screens (`test/goldens/screens/`, rendered with mocked BLoCs via the
+  `goldenScreen` helper) — 60 goldens, light + dark. The responsive **shell /
+  home screen is intentionally not goldened** (it boots via real DI in
+  `App().buildHomeApp()` rather than mockable to a single deterministic frame; its
+  sub-widgets are already covered by the component/widget goldens).
 - **Tags:** `dart_test.yaml` declares `widget` (applied to all `testWidgets`
   files via `@Tags(['widget'])`), plus `golden` and `integration` reserved for
   #135/#152. Slice the suite with `flutter test --tags widget` /
