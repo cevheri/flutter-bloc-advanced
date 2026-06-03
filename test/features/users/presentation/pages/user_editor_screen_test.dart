@@ -276,20 +276,31 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
       await tester.pumpAndSettle();
 
+      // Fill all required text fields.
       await tester.enterText(find.byKey(const Key('userEditorLoginFieldKey')), 'newuser');
       await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'New');
       await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'User');
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'new@example.com');
+      // Allow onChanged callbacks to propagate before selecting the authority.
+      await tester.pumpAndSettle();
+
+      // The AuthoritiesDropdown (isRequired: true) must have a non-empty value or
+      // saveAndValidate() returns false and UserEditorSubmit is never dispatched.
+      // Tap the dropdown to open the popup menu, then select 'ROLE_USER'.
+      await tester.ensureVisible(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ROLE_USER').last);
+      await tester.pumpAndSettle();
 
       await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
 
-      // ASSERT
-      // TODO(#168): UserEditorSubmit is never dispatched — the loose verify was masking a real bug.
-      // Tracked in issue #168. Re-tighten once the screen wires up the submit event correctly.
-      verify(() => mockUserBloc.add(any())).called(greaterThan(0));
+      // ASSERT — UserEditorSubmit must be dispatched exactly once for a fully valid form.
+      verify(() => mockUserBloc.add(any(that: isA<UserEditorSubmit>()))).called(1);
 
       await userStateController.close();
       await tester.binding.setSurfaceSize(null);
