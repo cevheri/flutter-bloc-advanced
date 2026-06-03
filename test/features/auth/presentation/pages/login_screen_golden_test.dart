@@ -3,27 +3,27 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
-import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
-import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
+import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_classes.dart';
-import '../../support/test_env.dart';
-import '../support/golden_app.dart';
+import '../../../../mocks/mock_classes.dart';
+import '../../../../support/test_env.dart';
+import '../../../../support/golden_app.dart';
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
 
-  late MockRegisterBloc registerBloc;
+  late MockLoginBloc loginBloc;
   late MockAccountBloc accountBloc;
 
   setUp(() {
-    registerBloc = MockRegisterBloc();
+    loginBloc = MockLoginBloc();
     accountBloc = MockAccountBloc();
 
-    whenListen(registerBloc, Stream<RegisterState>.empty(), initialState: const RegisterInitialState());
-    when(() => registerBloc.state).thenReturn(const RegisterInitialState());
+    whenListen(loginBloc, Stream<LoginState>.empty(), initialState: const LoginInitialState());
+    when(() => loginBloc.state).thenReturn(const LoginInitialState());
 
     whenListen(accountBloc, Stream<AccountState>.empty(), initialState: const AccountState());
     when(() => accountBloc.state).thenReturn(const AccountState());
@@ -32,17 +32,17 @@ void main() {
   Widget buildScreen({bool dark = false}) {
     final screen = MultiBlocProvider(
       providers: [
-        BlocProvider<RegisterBloc>.value(value: registerBloc),
+        BlocProvider<LoginBloc>.value(value: loginBloc),
         BlocProvider<AccountBloc>.value(value: accountBloc),
       ],
-      child: RegisterScreen(),
+      child: const LoginScreen(),
     );
     return goldenScreen(screen, dark: dark);
   }
 
   goldenTest(
-    'RegisterScreen — light',
-    fileName: 'register_screen_light',
+    'LoginScreen — light',
+    fileName: 'login_screen_light',
     pumpBeforeTest: pumpOnce,
     builder: () => GoldenTestGroup(
       columns: 1,
@@ -56,8 +56,8 @@ void main() {
   );
 
   goldenTest(
-    'RegisterScreen — dark',
-    fileName: 'register_screen_dark',
+    'LoginScreen — dark',
+    fileName: 'login_screen_dark',
     pumpBeforeTest: pumpOnce,
     builder: () => GoldenTestGroup(
       columns: 1,

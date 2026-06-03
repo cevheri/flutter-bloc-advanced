@@ -4,7 +4,7 @@ import 'package:flutter_bloc_advance/shared/design_system/components/app_status_
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../support/test_env.dart';
+import '../../../support/test_env.dart';
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);

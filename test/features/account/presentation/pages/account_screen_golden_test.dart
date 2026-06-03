@@ -12,9 +12,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_classes.dart';
-import '../../support/test_env.dart';
-import '../support/golden_app.dart' show kGoldenScreenSize;
+import '../../../../mocks/mock_classes.dart';
+import '../../../../support/test_env.dart';
+import '../../../../support/golden_app.dart' show kGoldenScreenSize;
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);

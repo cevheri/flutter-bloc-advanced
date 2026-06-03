@@ -291,16 +291,20 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   with `await bloc.stream.firstWhere((s) => s is <State>)`, not a millisecond delay.
 - **Fixtures:** use the fixed `kTestInstant` (`test/mocks/fake_data.dart`) for any
   fixture timestamp whose exact value no assertion depends on — never `DateTime.now()`.
-- **Goldens:** golden / visual-regression tests use `alchemist` (`test/goldens/`).
-  The bootstrap sets a default `AlchemistConfig` (light theme) and **disables
-  platform goldens**, so only the CI (Ahem-rendered) variant runs — identical on
+- **Goldens:** golden / visual-regression tests use `alchemist`. Each golden test
+  lives **next to the code it covers** (feature-first, mirroring `lib/` — same as
+  every other test), with its images in a sibling `goldens/ci/` dir; e.g.
+  `test/shared/design_system/components/app_button_golden_test.dart`,
+  `test/features/users/presentation/pages/user_list_screen_golden_test.dart`. The
+  bootstrap sets a default `AlchemistConfig` (light theme) and **disables platform
+  goldens**, so only the CI (Ahem-rendered) variant runs — identical on
   macOS/Linux/CI, no font flake. Golden files set `setUpAll(() => TestEnv.autoReset
   = false)` and use `pumpBeforeTest: pumpOnce` for animated widgets. Regenerate with
   `flutter test --tags golden --update-goldens`. Coverage: all design-system
-  components (`test/goldens/components/`), shared widgets (`test/goldens/widgets/`),
-  and key screens (`test/goldens/screens/`, rendered with mocked BLoCs via the
-  `goldenScreen` helper) — 60 goldens, light + dark. The responsive **shell /
-  home screen is intentionally not goldened** (it boots via real DI in
+  components, shared widgets, and key screens (rendered with mocked BLoCs via the
+  `test/support/golden_app.dart` `goldenScreen` helper) — 60 goldens, light + dark.
+  The responsive **shell / home screen is intentionally not goldened** (it boots
+  via real DI in
   `App().buildHomeApp()` rather than mockable to a single deterministic frame; its
   sub-widgets are already covered by the component/widget goldens).
 - **Tags:** `dart_test.yaml` declares `widget` (applied to all `testWidgets`

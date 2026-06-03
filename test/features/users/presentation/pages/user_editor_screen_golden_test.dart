@@ -3,92 +3,75 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
-import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
+import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/widgets/editor_form_mode.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_classes.dart';
-import '../../support/test_env.dart';
-import '../support/golden_app.dart' show kGoldenScreenSize;
+import '../../../../mocks/mock_classes.dart';
+import '../../../../support/test_env.dart';
+import '../../../../support/golden_app.dart' show kGoldenScreenSize;
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
 
-  late MockUserListBloc userListBloc;
+  late MockUserEditorBloc userEditorBloc;
   late MockAuthorityBloc authorityBloc;
 
-  const sampleUsers = [
-    UserEntity(
-      id: '1',
-      login: 'john.doe',
-      firstName: 'John',
-      lastName: 'Doe',
-      email: 'john.doe@example.com',
-      activated: true,
-      authorities: ['ROLE_ADMIN'],
-    ),
-    UserEntity(
-      id: '2',
-      login: 'jane.smith',
-      firstName: 'Jane',
-      lastName: 'Smith',
-      email: 'jane.smith@example.com',
-      activated: true,
-      authorities: ['ROLE_USER'],
-    ),
-    UserEntity(
-      id: '3',
-      login: 'bob.inactive',
-      firstName: 'Bob',
-      lastName: 'Inactive',
-      email: 'bob@example.com',
-      activated: false,
-      authorities: ['ROLE_USER'],
-    ),
-  ];
+  const sampleUser = UserEntity(
+    id: 'test-user-1',
+    login: 'testuser',
+    firstName: 'Test',
+    lastName: 'User',
+    email: 'test@example.com',
+    activated: true,
+    authorities: ['ROLE_USER'],
+  );
 
-  const loadedState = UserListLoaded(users: sampleUsers);
+  final loadedState = UserEditorLoaded(data: sampleUser);
   const authorityState = AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']);
 
   setUp(() {
-    userListBloc = MockUserListBloc();
+    userEditorBloc = MockUserEditorBloc();
     authorityBloc = MockAuthorityBloc();
 
-    whenListen(userListBloc, Stream<UserListState>.empty(), initialState: loadedState);
-    when(() => userListBloc.state).thenReturn(loadedState);
+    whenListen(userEditorBloc, Stream<UserEditorState>.empty(), initialState: loadedState);
+    when(() => userEditorBloc.state).thenReturn(loadedState);
 
     whenListen(authorityBloc, Stream<AuthorityState>.empty(), initialState: authorityState);
     when(() => authorityBloc.state).thenReturn(authorityState);
   });
 
   Widget buildScreen({bool dark = false}) {
+    const userId = 'test-user-1';
+
     final router = GoRouter(
-      initialLocation: '/user',
+      initialLocation: '/user/$userId/edit',
       routes: [
         GoRoute(
-          name: 'userList',
-          path: '/user',
-          builder: (context, state) => const Scaffold(body: UserListPage()),
-        ),
-        GoRoute(
-          name: 'userCreate',
-          path: '/user/new',
-          builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
-        ),
-        GoRoute(
-          name: 'userEdit',
           path: '/user/:id/edit',
-          builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
+          builder: (context, state) => Scaffold(
+            body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.edit),
+          ),
         ),
         GoRoute(
-          name: 'userView',
           path: '/user/:id/view',
+          builder: (context, state) => Scaffold(
+            body: UserEditorPage(id: state.pathParameters['id']!, mode: EditorFormMode.view),
+          ),
+        ),
+        GoRoute(
+          path: '/user/new',
+          builder: (context, state) => const Scaffold(body: UserEditorPage(mode: EditorFormMode.create)),
+        ),
+        GoRoute(
+          path: '/',
           builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
         ),
       ],
@@ -96,7 +79,7 @@ void main() {
 
     return MultiBlocProvider(
       providers: [
-        BlocProvider<UserListBloc>.value(value: userListBloc),
+        BlocProvider<UserEditorBloc>.value(value: userEditorBloc),
         BlocProvider<AuthorityBloc>.value(value: authorityBloc),
       ],
       child: MaterialApp.router(
@@ -116,8 +99,8 @@ void main() {
   }
 
   goldenTest(
-    'UserListScreen — light',
-    fileName: 'user_list_screen_light',
+    'UserEditorScreen — light',
+    fileName: 'user_editor_screen_light',
     pumpBeforeTest: pumpOnce,
     builder: () => GoldenTestGroup(
       columns: 1,
@@ -131,8 +114,8 @@ void main() {
   );
 
   goldenTest(
-    'UserListScreen — dark',
-    fileName: 'user_list_screen_dark',
+    'UserEditorScreen — dark',
+    fileName: 'user_editor_screen_dark',
     pumpBeforeTest: pumpOnce,
     builder: () => GoldenTestGroup(
       columns: 1,

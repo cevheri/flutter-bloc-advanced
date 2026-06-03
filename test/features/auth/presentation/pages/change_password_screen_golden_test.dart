@@ -8,9 +8,9 @@ import 'package:flutter_bloc_advance/features/users/application/authority_bloc.d
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_classes.dart';
-import '../../support/test_env.dart';
-import '../support/golden_app.dart';
+import '../../../../mocks/mock_classes.dart';
+import '../../../../support/test_env.dart';
+import '../../../../support/golden_app.dart';
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
