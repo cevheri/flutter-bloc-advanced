@@ -384,7 +384,14 @@ fvm flutter test --coverage
 
 # Useful for debugging order-dependent issues
 fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random
+
+# Run only widget tests / everything except widget tests (fast unit loop)
+fvm flutter test --tags widget
+fvm flutter test --exclude-tags widget
 ```
+
+Tags are declared in `dart_test.yaml` (`widget`, plus `golden`/`integration`
+reserved for upcoming visual-regression and end-to-end suites).
 
 See [`docs/testing-architecture.md`](docs/testing-architecture.md) for the test
 structure, global bootstrap, and how to write tests for each layer.
