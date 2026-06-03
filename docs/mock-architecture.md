@@ -352,33 +352,35 @@ blocTest<UserBloc, UserState>(
 
 ### ApiClient Tests
 
-Use a custom `_StubInterceptor` injected via `ApiClient.setTestInstance()`:
+`ApiClient` is constructed via dependency injection — there is no global
+singleton or `setTestInstance`. Inject a custom `_StubInterceptor` through the
+`dio` parameter to simulate transport errors:
 
 ```dart
 setUp(() {
-  ProfileConstants.setEnvironment(Environment.prod);
-  final testDio = Dio(BaseOptions(baseUrl: 'https://test.api'));
+  stub = _StubInterceptor();
+  final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
   testDio.interceptors.add(stub);
-  ApiClient.setTestInstance(testDio);
+  client = ApiClient(appConfig: const AppConfig.prod(), dio: testDio);
 });
 
-test('maps 401 to UnauthorizedException', () {
+test('maps 401 to UnauthorizedException', () async {
   stub.stubDioError(DioExceptionType.badResponse, statusCode: 401);
-  expect(() => ApiClient.get('/endpoint'), throwsA(isA<UnauthorizedException>()));
+  expect(() => client.get('/endpoint'), throwsA(isA<UnauthorizedException>()));
 });
 ```
 
 ### Test Bootstrap
 
-`test/test_utils.dart` provides shared setup:
+Cross-cutting test setup is centralized in `test/flutter_test_config.dart`
+(auto-discovered by `flutter test`), which runs once-per-isolate config and an
+automatic per-test environment reset via `TestEnv` (`test/support/test_env.dart`).
+Individual test files need no manual storage/router/secure-storage setup; use
+`TestEnv.authenticate()` (in `setUp`/test body) for auth-dependent tests and
+`TestEnv.apiClient({Dio? dio})` for the mock-backed client.
 
-```dart
-Future<void> setupUnitTest() async {
-  SharedPreferences.setMockInitialValues({});
-  ProfileConstants.setEnvironment(Environment.test);
-  await AppLocalStorage().save(StorageKeys.jwtToken.name, 'MOCK_TOKEN');
-}
-```
+See [`testing-architecture.md`](testing-architecture.md) for the full test
+structure, bootstrap, opt-out mechanism, and per-layer test patterns.
 
 ## Adding a New Mock Endpoint
 

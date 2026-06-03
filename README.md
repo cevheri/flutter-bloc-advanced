@@ -386,6 +386,9 @@ fvm flutter test --coverage
 fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random
 ```
 
+See [`docs/testing-architecture.md`](docs/testing-architecture.md) for the test
+structure, global bootstrap, and how to write tests for each layer.
+
 ### Analyze and Format
 
 ```shell
