@@ -242,10 +242,27 @@ All shared doubles live in `test/mocks/`:
 - **`fake_data.dart`** — shared fixtures (`mockUserFullPayload`,
   `mockAuthorityPayload`, ...). Prefer these over building entities inline.
 
-> **mocktail mock vs. hand-written fake:** most tests use `mocktail` mocks from
-> `mock_classes.dart`. A few use a small hand-written `_FakeXRepository` when
-> stateful, return-value-driven behavior makes a mock awkward (e.g.
-> `user_list_bloc_test.dart`). Both are valid; reach for a mock first.
+### Choosing a test double
+
+Three categories — **reach for a mocktail mock first**; drop to a hand-fake only
+for genuine stateful behavior; Dio handlers are always hand-written:
+
+1. **mocktail mock (default)** — the `Mock*` classes in `mock_classes.dart`. Use
+   for interface doubles where the test only configures return values
+   (`when(...).thenReturn` / `thenAnswer`) and verifies calls (`verify`). This is
+   the default for repository / use-case / BLoC doubles.
+2. **hand-written fake** — a private `_Fake*` / `_Memory*` class next to the test,
+   when the double needs real stateful or behavioral logic that mocktail makes
+   awkward: in-memory stores, throw-on-Nth-call, selective/sequenced failures,
+   return-driven branching (e.g. `_FakeUserRepository` in `user_list_bloc_test.dart`,
+   `_MemorySecureStorage`). These are **purpose-built per test** — two same-named
+   fakes in different files implement different surfaces and are *not* duplication;
+   do not consolidate them into a shared "god" fake.
+3. **Dio handler / interceptor stub** — a private `_Test*Handler` / `_StubInterceptor`
+   extending Dio's `Interceptor` / `RequestInterceptorHandler` /
+   `ResponseInterceptorHandler` / `ErrorInterceptorHandler`. Used to test
+   interceptors at the Dio layer; they can't be mocked cleanly, and each records
+   the signals its test asserts on.
 
 ---
 
