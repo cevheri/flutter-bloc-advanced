@@ -161,3 +161,4 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
   - `TestEnv.authenticate()` for auth-dependent tests — call it in `setUp` or the test body, **never** in `setUpAll` (the global reset clears the secure store before each test).
   - `TestEnv.apiClient()` for the mock-backed `ApiClient`.
 - A test file that installs its own `MethodChannel` / `SharedPreferences` mock opts out of the global reset with `setUpAll(() => TestEnv.autoReset = false);` (isolated per file). Example: `test/infrastructure/storage/local_storage_test.dart`.
+- Full test structure, per-layer patterns, and guard tests: see `docs/testing-architecture.md`.
