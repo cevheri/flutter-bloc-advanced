@@ -456,7 +456,12 @@ git add -A && git commit -m "test: migrate presentation/widget tests to TestEnv 
 - `test/infrastructure/http/interceptors/logging_interceptor_verbose_test.dart`
 - `test/infrastructure/storage/secure_storage_test.dart` (opted out; configure may be intentional — keep unless clearly redundant default in an otherwise-empty block)
 
-- [ ] **Step 1:** For each file in the REMOVE list, delete the redundant `AppLogger.configure(...)` line; if its block becomes empty, remove the block and any now-unused `app_logger` import.
+**Also migrate leftover `TestUtils` in 3 files not covered by groups A–C** (they use `TestUtils` but were not in the `setupUnitTest` migration lists):
+- `test/infrastructure/http/interceptors/logging_interceptor_test.dart` — remove `await TestUtils().setupUnitTest();` (global handles) and the `'../../../test_utils.dart'` import; KEEP its `AppLogger.configure` (logging-behavior test).
+- `test/infrastructure/http/interceptors/logging_interceptor_verbose_test.dart` — same as above.
+- `test/app/di/repository_contracts_test.dart` — replace `TestUtils.apiClient()` (3 call sites) → `TestEnv.apiClient()`, swap import `'../../test_utils.dart'` → `'../../support/test_env.dart'`; this file is also in the REMOVE list below for its redundant `AppLogger.configure`.
+
+- [ ] **Step 1:** For each file in the REMOVE list, delete the redundant `AppLogger.configure(...)` line; if its block becomes empty, remove the block and any now-unused `app_logger` import. Also apply the 3-file `TestUtils` cleanup above.
 - [ ] **Step 2:** Run the affected files.
 
 Run: `fvm flutter test test/app/di/repository_contracts_test.dart test/features/auth/data/mappers/auth_mapper_test.dart test/infrastructure/cache/shared_prefs_cache_storage_test.dart test/infrastructure/http/interceptors test/infrastructure/storage/local_storage_test.dart test/features/auth/presentation/widgets/login_otp_email_widget_test.dart -r compact 2>&1 | tail -3`
