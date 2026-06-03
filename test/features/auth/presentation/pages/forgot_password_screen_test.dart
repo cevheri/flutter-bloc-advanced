@@ -141,8 +141,6 @@ void main() {
       await tester.pump(); //AndSettle(const Duration(milliseconds: 1000));
 
       //Then:
-      //expect(find.text("Success"), findsOneWidget);
-      //expect(find.byType(ForgotPasswordScreen), findsNothing);
       verifyNever(() => forgotPasswordBloc.add(any()));
     });
 

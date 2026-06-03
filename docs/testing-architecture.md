@@ -221,7 +221,10 @@ invalid — a required field unfilled — so no submit ever dispatched. Tighteni
 **Other screen-test rules:** don't keep a repository mock that isn't injected (the
 screen is driven through its mock BLoC); prefer `whenListen` + a seeded state over
 re-implementing the bloc's state machine inside an `add` stub; use unique fixture
-values so `findsOneWidget` is unambiguous (avoid common tokens like `'User'`).
+values so `findsOneWidget` is unambiguous (avoid common tokens like `'User'`); size
+the test surface with `tester.view.physicalSize` + `addTearDown(tester.view.reset)`
+(one consistent API — not `binding.setSurfaceSize`); and assert navigation by what
+the destination renders, not just that the source screen disappeared.
 
 ### ApiClient tests — stub Dio at the wire
 
