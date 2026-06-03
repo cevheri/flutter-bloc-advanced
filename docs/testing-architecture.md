@@ -311,6 +311,15 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   files via `@Tags(['widget'])`), plus `golden` and `integration` reserved for
   #135/#152. Slice the suite with `flutter test --tags widget` /
   `--exclude-tags widget`. The per-test timeout (30s) lives in `dart_test.yaml`.
+- **Pumping:** use `pumpAndSettle()` only when all animations are expected to
+  **finish** (route/page transitions, one-shot reveals). Its `Duration` argument
+  is the **per-pump interval, not a timeout** (the timeout is a separate, later
+  parameter) — prefer the bare form. For **continuous / indeterminate
+  animations** (spinner, shimmer, looping) never `pumpAndSettle` (it pumps until
+  the test times out — 30s here per `dart_test.yaml`, or `pumpAndSettle`'s own
+  10-minute default, whichever is first) — assert the spinner with `pump()` and use
+  `pump(const Duration(...))` for a fixed frame; in goldens use
+  `pumpBeforeTest: pumpOnce`.
 
 These are documented so newcomers know what is intentional vs. not-yet-done.
 
