@@ -203,6 +203,26 @@ testWidgets('renders dashboard when authenticated', (tester) async {
 Provide BLoC state with a `MockBloc` so the UI renders deterministically without
 real business logic.
 
+**Verifying actions — by event type, not `any()`.** Assert the dispatched event
+with a type matcher and an explicit count:
+
+```dart
+verify(() => bloc.add(any(that: isA<UserEditorSubmit>()))).called(1);   // action fired
+verifyNever(() => bloc.add(any(that: isA<UserEditorSubmit>())));        // must NOT fire (e.g. invalid form)
+```
+
+Do **not** use `verify(() => bloc.add(any())).called(...)` or `.called(greaterThan(0))`:
+screens add an init event on mount (a load/`Reset`), so a loose verify is satisfied
+even if the action under test never fired — a false-confidence test. (A real case:
+a "submit valid form" test passed under `add(any())` while the form was actually
+invalid — a required field unfilled — so no submit ever dispatched. Tightening to
+`isA<…Submit>()` exposed it; the fix was to make the test fill a genuinely valid form.)
+
+**Other screen-test rules:** don't keep a repository mock that isn't injected (the
+screen is driven through its mock BLoC); prefer `whenListen` + a seeded state over
+re-implementing the bloc's state machine inside an `add` stub; use unique fixture
+values so `findsOneWidget` is unambiguous (avoid common tokens like `'User'`).
+
 ### ApiClient tests — stub Dio at the wire
 
 Inject a custom interceptor through the `dio` parameter to simulate transport
