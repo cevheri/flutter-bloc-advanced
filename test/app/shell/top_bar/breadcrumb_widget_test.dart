@@ -1,3 +1,6 @@
+@Tags(['widget'])
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/shell/top_bar/breadcrumb_widget.dart';
 import 'package:flutter_test/flutter_test.dart';

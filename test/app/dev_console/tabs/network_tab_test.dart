@@ -1,3 +1,6 @@
+@Tags(['widget'])
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/dev_console/tabs/network_tab.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
