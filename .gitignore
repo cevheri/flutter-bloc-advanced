@@ -61,3 +61,6 @@ app.*.map.json
 Oracle_JDK-24/
 
 test_results/
+
+# Alchemist golden failure diffs
+test/**/failures/

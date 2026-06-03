@@ -393,6 +393,16 @@ fvm flutter test --exclude-tags widget
 Tags are declared in `dart_test.yaml` (`widget`, plus `golden`/`integration`
 reserved for upcoming visual-regression and end-to-end suites).
 
+```shell
+# Golden / visual-regression tests (alchemist, CI/Ahem-rendered)
+fvm flutter test --tags golden                  # run goldens
+fvm flutter test --tags golden --update-goldens # regenerate after intentional UI changes
+```
+
+Golden images live under `test/goldens/` and use alchemist's CI (Ahem-rendered)
+variant so they're identical across macOS/Linux/CI. Regenerate with
+`--update-goldens` after an intentional visual change.
+
 See [`docs/testing-architecture.md`](docs/testing-architecture.md) for the test
 structure, global bootstrap, and how to write tests for each layer.
 

@@ -1,7 +1,7 @@
 name: flutter_bloc_advance
 description: "Flutter Bloc Advance Template"
 publish_to: 'none'
-version: 0.21.44+1
+version: 0.21.45+1
 
 # ➜  flutter_bloc_advance git:(main) ✗ flutter --version
 # Flutter 3.44.0 • channel stable • https://github.com/flutter/flutter.git
@@ -54,6 +54,7 @@ dev_dependencies:
   fake_async: 1.3.3
   shared_preferences_platform_interface: 2.4.2
   device_preview: 1.3.1
+  alchemist: ^0.14.0
 
 flutter_secure_storage:
   enabled: true
