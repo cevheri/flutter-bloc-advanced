@@ -8,7 +8,6 @@ import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dar
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 /// BLoc Test for RegisterBloc
 ///
 /// Tests: <p>

@@ -54,7 +54,6 @@ class _FakeAccountRepository implements IAccountRepository {
 }
 
 void main() {
-
   //region state
   /// Account State Tests
   group("AccountState", () {

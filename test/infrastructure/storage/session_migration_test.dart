@@ -4,7 +4,6 @@ import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.da
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 class _MemorySecureStorage implements ISecureStorage {
   _MemorySecureStorage({this.failOnWrite = false, this.silentlyDropWrites = false});
   final Map<String, String> _store = {};
@@ -38,7 +37,6 @@ void main() {
     local.setPreferencesInstance(await SharedPreferences.getInstance());
     secure = _MemorySecureStorage();
   });
-
 
   group('runSessionMigration', () {
     test('migrates jwtToken and refreshToken from local to secure', () async {

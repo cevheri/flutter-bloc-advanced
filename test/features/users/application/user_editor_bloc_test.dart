@@ -8,7 +8,6 @@ import 'package:flutter_bloc_advance/features/users/domain/repositories/user_rep
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-
 class _FakeUserRepository implements IUserRepository {
   UserEntity? retrieveResult;
   AppError? failure;

@@ -6,7 +6,6 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-
 /// In-memory ISecureStorage for tests.
 class _MemorySecureStorage implements ISecureStorage {
   final Map<String, String> _store = {};
