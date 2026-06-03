@@ -131,7 +131,7 @@ void main() {
           login: 'user-1',
           email: 'admin@example.com',
           firstName: 'Admin',
-          lastName: 'User',
+          lastName: 'Tester',
           activated: true,
           langKey: 'en',
           createdBy: 'system',
@@ -152,7 +152,7 @@ void main() {
 
       // ASSERT
       expect(find.text('admin@example.com'), findsOneWidget);
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Tester'), findsOneWidget);
       expect(find.text('Active'), findsNWidgets(2)); // header + data badge
 
       // Clean up
@@ -182,7 +182,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // ASSERT
-      verify(() => mockUserBloc.add(any())).called(greaterThan(0));
+      verify(() => mockUserBloc.add(any(that: isA<UserListSearch>()))).called(1);
 
       // Clean up
       await userStateController.close();

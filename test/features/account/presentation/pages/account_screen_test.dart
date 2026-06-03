@@ -198,7 +198,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify AccountSubmitEvent was called with correct data
-      verify(() => mockAccountBloc.add(any())).called(2);
+      verify(() => mockAccountBloc.add(any(that: isA<AccountSubmitEvent>()))).called(1);
     });
 
     testWidgets('Given form submission When server returns error Then should display failure message', (tester) async {

@@ -5,7 +5,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
@@ -22,12 +21,10 @@ import 'package:mocktail/mocktail.dart';
 import '../../../../mocks/mock_classes.dart';
 
 void main() {
-  late MockUserRepository mockUserRepository;
   late MockAuthorityBloc mockAuthorityBloc;
   late MockUserEditorBloc mockUserBloc;
 
   setUp(() async {
-    mockUserRepository = MockUserRepository();
     mockUserBloc = MockUserEditorBloc();
     mockAuthorityBloc = MockAuthorityBloc();
 
@@ -115,8 +112,6 @@ void main() {
       expect(find.byKey(const Key('userEditorActivatedFieldKey')), findsOneWidget);
       expect(find.byType(AuthoritiesDropdown), findsOneWidget);
 
-      verify(() => mockUserBloc.add(any())).called(1);
-
       await userStateController.close();
     });
 
@@ -127,13 +122,12 @@ void main() {
         id: userId,
         login: 'testuser',
         firstName: 'Test',
-        lastName: 'User',
+        lastName: 'Tester',
         email: 'test@example.com',
         activated: true,
         authorities: ['ROLE_USER'],
       );
 
-      when(() => mockUserRepository.retrieve(userId)).thenAnswer((_) async => const Success(mockUser));
       when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
 
       final userStateController = StreamController<UserEditorState>.broadcast();
@@ -155,10 +149,10 @@ void main() {
       // ASSERT
       expect(find.text('testuser'), findsOneWidget);
       expect(find.text('Test'), findsOneWidget);
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Tester'), findsOneWidget);
       expect(find.text('test@example.com'), findsOneWidget);
 
-      verify(() => mockUserBloc.add(any())).called(1);
+      verify(() => mockUserBloc.add(any(that: isA<UserEditorFetch>()))).called(1);
 
       await userStateController.close();
     });
@@ -170,7 +164,7 @@ void main() {
         id: userId,
         login: 'testuser',
         firstName: 'Test',
-        lastName: 'User',
+        lastName: 'Tester',
         email: 'test@example.com',
         activated: true,
         authorities: ['ROLE_USER'],
@@ -206,7 +200,7 @@ void main() {
 
       expect(find.text('testuser'), findsOneWidget);
       expect(find.text('Test'), findsOneWidget);
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Tester'), findsOneWidget);
       expect(find.text('test@example.com'), findsOneWidget);
 
       await userStateController.close();
@@ -250,7 +244,7 @@ void main() {
       final loginField = tester.widget<FormBuilderTextField>(find.byKey(const Key('userEditorLoginFieldKey')));
       expect(loginField.validator, isNotNull);
 
-      verify(() => mockUserBloc.add(any())).called(1);
+      verifyNever(() => mockUserBloc.add(any(that: isA<UserEditorSubmit>())));
 
       await userStateController.close();
     });
@@ -282,18 +276,31 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
       await tester.pumpAndSettle();
 
+      // Fill all required text fields.
       await tester.enterText(find.byKey(const Key('userEditorLoginFieldKey')), 'newuser');
       await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'New');
       await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'User');
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'new@example.com');
+      // Allow onChanged callbacks to propagate before selecting the authority.
+      await tester.pumpAndSettle();
+
+      // The AuthoritiesDropdown (isRequired: true) must have a non-empty value or
+      // saveAndValidate() returns false and UserEditorSubmit is never dispatched.
+      // Tap the dropdown to open the popup menu, then select 'ROLE_USER'.
+      await tester.ensureVisible(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('ROLE_USER').last);
+      await tester.pumpAndSettle();
 
       await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
       await tester.pumpAndSettle();
 
-      // ASSERT
-      verify(() => mockUserBloc.add(any())).called(greaterThan(0));
+      // ASSERT — UserEditorSubmit must be dispatched exactly once for a fully valid form.
+      verify(() => mockUserBloc.add(any(that: isA<UserEditorSubmit>()))).called(1);
 
       await userStateController.close();
       await tester.binding.setSurfaceSize(null);
