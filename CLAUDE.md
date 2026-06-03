@@ -153,3 +153,11 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
 6. Register the feature routes in `lib/app/router/app_router.dart`.
 7. Add translations to `lib/l10n/` and run `fvm dart run intl_utils:generate`.
 8. Write tests mirroring the feature structure under `test/features/<feature_name>/`.
+
+## Testing
+
+- `test/flutter_test_config.dart` is the global bootstrap (auto-discovered by `flutter test`). It runs once per isolate — binding init, `AppLogger.configure`, `EquatableConfig.stringify`, mocktail `registerAllFallbackValues()` — and registers a global per-test `setUp`/`tearDown` that calls `TestEnv.reset()`.
+- Tests need **no** manual setup for storage/router/secure-storage. Use `TestEnv` (`test/support/test_env.dart`):
+  - `TestEnv.authenticate()` for auth-dependent tests — call it in `setUp` or the test body, **never** in `setUpAll` (the global reset clears the secure store before each test).
+  - `TestEnv.apiClient()` for the mock-backed `ApiClient`.
+- A test file that installs its own `MethodChannel` / `SharedPreferences` mock opts out of the global reset with `setUpAll(() => TestEnv.autoReset = false);` (isolated per file). Example: `test/infrastructure/storage/local_storage_test.dart`.
