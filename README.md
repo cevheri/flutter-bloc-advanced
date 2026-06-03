@@ -390,8 +390,10 @@ fvm flutter test --tags widget
 fvm flutter test --exclude-tags widget
 ```
 
-Tags are declared in `dart_test.yaml` (`widget`, plus `golden`/`integration`
-reserved for upcoming visual-regression and end-to-end suites).
+Tags are declared in `dart_test.yaml` (`widget`, `golden`; `integration` is
+reserved for a possible future on-device suite). The end-to-end smoke
+(`test/integration/app_smoke_test.dart`) boots the whole app in mock mode and
+drives login → dashboard; it runs headless as part of the normal `flutter test`.
 
 ```shell
 # Golden / visual-regression tests (alchemist, CI/Ahem-rendered)
