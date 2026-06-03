@@ -63,7 +63,7 @@ jobs:
 
       - name: Run tests
         timeout-minutes: 15
-        run: flutter test --coverage --timeout=30s --concurrency=4 --reporter=compact
+        run: flutter test --coverage --concurrency=4 --reporter=compact
 
       - name: Check coverage threshold
         # Excludes generated/bootstrap code from the metric (see scripts/check_coverage.sh, issue #149).
