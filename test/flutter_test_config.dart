@@ -30,8 +30,13 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
 
   // Golden tests (alchemist) render under the project light theme by default;
   // dark-theme scenarios wrap their child in AppTheme.dark() explicitly.
+  // Platform goldens are disabled so only the CI (Ahem-rendered) variant runs —
+  // identical output on macOS/Linux/CI, no font-rendering flake.
   return AlchemistConfig.runWithConfig(
-    config: AlchemistConfig(theme: AppTheme.light()),
+    config: AlchemistConfig(
+      theme: AppTheme.light(),
+      platformGoldensConfig: const PlatformGoldensConfig(enabled: false),
+    ),
     run: testMain,
   );
 }

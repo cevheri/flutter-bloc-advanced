@@ -291,8 +291,13 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   with `await bloc.stream.firstWhere((s) => s is <State>)`, not a millisecond delay.
 - **Fixtures:** use the fixed `kTestInstant` (`test/mocks/fake_data.dart`) for any
   fixture timestamp whose exact value no assertion depends on — never `DateTime.now()`.
-- **Goldens:** there are no golden/visual-regression tests yet (issue #135). The
-  bootstrap is where font loading will be wired when they land.
+- **Goldens:** golden / visual-regression tests use `alchemist` (`test/goldens/`).
+  The bootstrap sets a default `AlchemistConfig` (light theme) and **disables
+  platform goldens**, so only the CI (Ahem-rendered) variant runs — identical on
+  macOS/Linux/CI, no font flake. Golden files set `setUpAll(() => TestEnv.autoReset
+  = false)` and use `pumpBeforeTest: pumpOnce` for animated widgets. Regenerate with
+  `flutter test --tags golden --update-goldens`. Phase 1 covers the harness +
+  `AppButton`; components, widgets, and screens land in later phases.
 - **Tags:** `dart_test.yaml` declares `widget` (applied to all `testWidgets`
   files via `@Tags(['widget'])`), plus `golden` and `integration` reserved for
   #135/#152. Slice the suite with `flutter test --tags widget` /
