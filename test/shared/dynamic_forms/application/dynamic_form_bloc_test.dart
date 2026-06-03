@@ -370,6 +370,7 @@ void main() {
           bloc.add(const DynamicFormLoadEvent('no_action_form'));
           await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           bloc.add(const DynamicFormSubmitEvent({'name': 'John'}));
+          await bloc.stream.firstWhere((s) => s is DynamicFormSubmitted);
         },
         expect: () => [
           // Load events
@@ -451,6 +452,7 @@ void main() {
           bloc.add(const DynamicFormLoadEvent('test_form'));
           await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           bloc.add(const DynamicFormResetEvent());
+          await bloc.stream.firstWhere((s) => s is DynamicFormInitial);
         },
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormLoaded>(), isA<DynamicFormInitial>()],
       );
