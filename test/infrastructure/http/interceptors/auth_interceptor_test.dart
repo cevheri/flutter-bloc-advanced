@@ -1,5 +1,4 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -16,10 +15,6 @@ import 'package:flutter_test/flutter_test.dart';
 /// with a synthetic handler keeps the assertions tight to behavior
 /// and free of Dio/HTTP plumbing.
 void main() {
-  setUpAll(() {
-    AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
-  });
-
   group('AuthInterceptor.onRequest', () {
     test('attaches Bearer header when secure storage returns a token', () async {
       final interceptor = AuthInterceptor(secureStorage: _FixedSecureStorage('jwt-value'));

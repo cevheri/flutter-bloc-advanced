@@ -2,8 +2,6 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
-
 /// Behaviour of the opt-in verbose request/response body logging.
 ///
 /// The interceptor's [LoggingInterceptor.formatRequest] /
@@ -12,10 +10,6 @@ import '../../../test_utils.dart';
 /// output. `onRequest`/`onResponse` are thin wrappers that feed these to
 /// AppLogger.
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   tearDown(() {
     // Static flag must never leak across tests.
     LoggingInterceptor.verbose = false;

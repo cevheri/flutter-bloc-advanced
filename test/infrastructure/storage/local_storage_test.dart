@@ -1,4 +1,3 @@
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -18,7 +17,6 @@ void main() {
     });
 
     setUp(() {
-      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       localStorage = AppLocalStorage();
       SharedPreferences.setMockInitialValues({});
     });
@@ -92,7 +90,6 @@ void main() {
     late SharedPreferences mockPrefs;
 
     setUp(() {
-      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       localStorage = AppLocalStorage();
       mockPrefs = MockSharedPreferences();
       SharedPreferences.setMockInitialValues({});
@@ -115,7 +112,6 @@ void main() {
     late SharedPreferences mockPrefs;
 
     setUp(() {
-      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       localStorage = AppLocalStorage();
       mockPrefs = MockSharedPreferences();
       SharedPreferences.setMockInitialValues({});
@@ -154,7 +150,6 @@ void main() {
     late SharedPreferences mockPrefs;
 
     setUp(() {
-      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       localStorage = AppLocalStorage();
       mockPrefs = MockSharedPreferences();
       SharedPreferences.setMockInitialValues({});

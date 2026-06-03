@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
@@ -148,7 +147,6 @@ void main() {
     });
 
     testWidgets('should handle back button press', (tester) async {
-      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
       SharedPreferences.setMockInitialValues({});
       await AppLocalStorage().save(StorageKeys.language.key, "en");
 

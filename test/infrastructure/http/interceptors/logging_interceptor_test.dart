@@ -2,14 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../test_utils.dart';
-
 void main() {
   late LoggingInterceptor interceptor;
-
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
 
   setUp(() {
     interceptor = LoggingInterceptor();
