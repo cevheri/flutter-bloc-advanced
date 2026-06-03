@@ -161,4 +161,8 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
   - `TestEnv.authenticate()` for auth-dependent tests — call it in `setUp` or the test body, **never** in `setUpAll` (the global reset clears the secure store before each test).
   - `TestEnv.apiClient()` for the mock-backed `ApiClient`.
 - A test file that installs its own `MethodChannel` / `SharedPreferences` mock opts out of the global reset with `setUpAll(() => TestEnv.autoReset = false);` (isolated per file). Example: `test/infrastructure/storage/local_storage_test.dart`.
+- **Test doubles** — reach for a `mocktail` mock first; drop to a hand-fake only for genuine stateful behavior; Dio handlers are always hand-written:
+  - **mocktail mock (default):** the `Mock*` classes in `test/mocks/mock_classes.dart`, for interface doubles configured with `when(...)` / `verify(...)` (repository / use-case / BLoC).
+  - **hand-written fake:** a private `_Fake*` / `_Memory*` class next to the test when it needs real stateful behavior (in-memory store, throw-on-Nth-call, selective/sequenced failures, return-driven branching). These are **purpose-built per test** — same-named fakes in different files are not duplication; do not force them into shared "god" fakes.
+  - **Dio handler stub:** a private `_Test*Handler` / `_StubInterceptor` extending Dio's `Interceptor` / `RequestInterceptorHandler` / `ResponseInterceptorHandler` / `ErrorInterceptorHandler`, to test interceptors at the Dio layer (can't be mocked cleanly).
 - Full test structure, per-layer patterns, and guard tests: see `docs/testing-architecture.md`.
