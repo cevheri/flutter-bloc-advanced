@@ -276,7 +276,10 @@ All shared doubles live in `test/mocks/`:
   fixture timestamp whose exact value no assertion depends on — never `DateTime.now()`.
 - **Goldens:** there are no golden/visual-regression tests yet (issue #135). The
   bootstrap is where font loading will be wired when they land.
-- **Tags/presets:** there is no `dart_test.yaml` tagging scheme yet (issue #154).
+- **Tags:** `dart_test.yaml` declares `widget` (applied to all `testWidgets`
+  files via `@Tags(['widget'])`), plus `golden` and `integration` reserved for
+  #135/#152. Slice the suite with `flutter test --tags widget` /
+  `--exclude-tags widget`. The per-test timeout (30s) lives in `dart_test.yaml`.
 
 These are documented so newcomers know what is intentional vs. not-yet-done.
 

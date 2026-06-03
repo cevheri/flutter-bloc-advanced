@@ -1,3 +1,6 @@
+@Tags(['widget'])
+library;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/generated/intl/messages_all.dart';
 import 'package:flutter_bloc_advance/generated/intl/messages_en.dart' as message_en;

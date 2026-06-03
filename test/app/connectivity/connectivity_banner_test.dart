@@ -1,3 +1,6 @@
+@Tags(['widget'])
+library;
+
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
