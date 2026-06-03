@@ -150,7 +150,7 @@ void main() {
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.edit, id: userId));
       await tester.pump();
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
 
       // ASSERT
       expect(find.text('testuser'), findsOneWidget);

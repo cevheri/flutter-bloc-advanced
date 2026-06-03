@@ -158,7 +158,7 @@ void main() {
       await tester.pumpWidget(getWidget());
 
       //When:
-      await tester.pumpAndSettle(const Duration(milliseconds: 1000));
+      await tester.pumpAndSettle();
 
       //Then:
       //expect(find.text("Failed"), findsOneWidget);
@@ -177,7 +177,7 @@ void main() {
       await tester.pumpAndSettle();
       final submitButtonFinder = find.byKey(forgotPasswordButtonSubmitKey);
       await tester.tap(submitButtonFinder);
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
       //Then:
       expect(find.text(S.current.required_field), findsOneWidget);
       expect(find.byType(ForgotPasswordScreen), findsOneWidget);
@@ -195,7 +195,7 @@ void main() {
 
       final submitButtonFinder = find.byKey(forgotPasswordButtonSubmitKey);
       await tester.tap(submitButtonFinder);
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
 
       //Then:
       verify(() => forgotPasswordBloc.add(any())).called(1);
@@ -216,7 +216,7 @@ void main() {
 
       final submitButtonFinder = find.byKey(forgotPasswordButtonSubmitKey);
       await tester.tap(submitButtonFinder);
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
 
       //Then:
       expect(find.byType(ForgotPasswordScreen), findsOneWidget);
@@ -235,7 +235,7 @@ void main() {
 
       final submitButtonFinder = find.byKey(forgotPasswordButtonSubmitKey);
       await tester.tap(submitButtonFinder);
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
 
       //Then:
       expect(find.byType(ForgotPasswordScreen), findsOneWidget);

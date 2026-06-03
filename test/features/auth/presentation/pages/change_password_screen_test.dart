@@ -277,7 +277,7 @@ void main() {
       expect(find.text('newPassword'), findsOneWidget);
 
       await tester.tap(submitButton);
-      await tester.pumpAndSettle(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
     });
     testWidgets('given same password when submit button clicked then change password', (tester) async {
       // Given

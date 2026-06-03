@@ -33,7 +33,7 @@ void main() {
       // Given:
       await tester.pumpWidget(const App(language: language).buildHomeApp());
       //When:
-      await tester.pumpAndSettle(const Duration(seconds: 5));
+      await tester.pumpAndSettle();
       //Then:
 
       // ResponsiveScaffold and shell layout test
