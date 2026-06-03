@@ -48,7 +48,7 @@ void main() {
       GoRoute(
         name: 'userCreate',
         path: '/user/new',
-        builder: (context, state) => const Scaffold(body: SizedBox.shrink()),
+        builder: (context, state) => const Scaffold(body: Text('create-route')),
       ),
       GoRoute(
         name: 'userEdit',
@@ -82,8 +82,8 @@ void main() {
     );
   }
 
-  group('ListUserScreen Tests', () {
-    testWidgets('renders ListUserScreen correctly', (tester) async {
+  group('UserListScreen Tests', () {
+    testWidgets('renders the user list correctly', (tester) async {
       // ARRANGE
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
@@ -208,7 +208,7 @@ void main() {
 
       // ASSERT
       // Verify navigation occurred (router should handle the actual navigation)
-      expect(find.byType(ListUserScreen), findsNothing);
+      expect(find.text('create-route'), findsOneWidget);
 
       // Clean up
       await userStateController.close();
@@ -223,6 +223,7 @@ void main() {
       // Test large screen
       tester.view.physicalSize = const Size(1200, 800);
       tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
 
       // ACT & ASSERT for large screen
       await tester.pumpWidget(buildTestableWidget());
@@ -237,7 +238,6 @@ void main() {
 
       // Clean up
       await userStateController.close();
-      addTearDown(tester.view.reset);
     });
   });
 }
