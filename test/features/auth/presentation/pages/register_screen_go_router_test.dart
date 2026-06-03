@@ -24,10 +24,6 @@ void main() {
   // Test user data
   const testUser = UserEntity(firstName: 'John', lastName: 'Doe', email: 'john.doe@example.com');
 
-  setUpAll(() {
-    registerAllFallbackValues();
-  });
-
   setUp(() {
     mockRegisterBloc = MockRegisterBloc();
     mockAccountBloc = MockAccountBloc();

@@ -20,16 +20,11 @@ import 'package:shared_preferences_platform_interface/in_memory_shared_preferenc
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../../mocks/mock_classes.dart';
-import '../../../../test_utils.dart';
 
 void main() {
   late MockLoginBloc mockLoginBloc;
   late Widget testWidget;
   late GoRouter mockGoRouter;
-
-  setUpAll(() {
-    registerAllFallbackValues();
-  });
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -126,8 +121,6 @@ void main() {
     });
 
     testWidgets('should navigate to verify screen when OTP sent successfully', (tester) async {
-      TestUtils().setupUnitTest();
-
       final loginStateController = StreamController<LoginState>.broadcast();
       when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
       when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());

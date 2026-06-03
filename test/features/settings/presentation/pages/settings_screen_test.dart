@@ -7,20 +7,9 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../../test_utils.dart';
+import '../../../../support/test_env.dart';
 
 void main() {
-  late TestUtils testUtils;
-
-  setUp(() async {
-    testUtils = TestUtils();
-    await testUtils.setupUnitTest();
-  });
-
-  tearDown(() async {
-    await testUtils.tearDownUnitTest();
-  });
-
   Widget buildTestableWidget() {
     final router = GoRouter(
       initialLocation: ApplicationRoutesConstants.settings,
@@ -50,7 +39,7 @@ void main() {
 
   group('SettingsScreen Tests', () {
     testWidgets('renders all settings tiles', (WidgetTester tester) async {
-      testUtils.setupAuthentication();
+      TestEnv.authenticate();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 
@@ -66,7 +55,7 @@ void main() {
     });
 
     testWidgets('navigates to change password screen when button is pressed', (WidgetTester tester) async {
-      testUtils.setupAuthentication();
+      TestEnv.authenticate();
       await tester.pumpWidget(buildTestableWidget());
       await tester.pumpAndSettle();
 

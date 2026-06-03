@@ -6,15 +6,11 @@ import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_widget.dart';
 import 'package:flutter_bloc_advance/app/shell/top_bar/top_bar_widget.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../../test_utils.dart';
+import '../../../../support/test_env.dart';
 
 void main() {
   //region setup
-  setUp(() async {
-    await TestUtils().setupUnitTest();
-  });
   tearDown(() async {
-    await TestUtils().tearDownUnitTest();
     TestWidgetsFlutterBinding.instance.reset();
   });
 
@@ -29,7 +25,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(1280, 800));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
 
       // Given:
       await tester.pumpWidget(const App(language: language).buildHomeApp());

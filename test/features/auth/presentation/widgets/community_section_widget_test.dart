@@ -5,17 +5,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../../test_utils.dart';
-
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-
   Widget buildWidget({required bool isDesktop}) {
     return MaterialApp(
       localizationsDelegates: [

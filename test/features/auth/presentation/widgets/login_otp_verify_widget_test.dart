@@ -20,16 +20,12 @@ import 'package:shared_preferences_platform_interface/in_memory_shared_preferenc
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 
 import '../../../../mocks/mock_classes.dart';
-import '../../../../test_utils.dart';
+import '../../../../support/test_env.dart';
 
 void main() {
   late MockLoginBloc mockLoginBloc;
   late Widget testWidget;
   late GoRouter mockGoRouter;
-
-  setUpAll(() {
-    registerAllFallbackValues();
-  });
 
   setUp(() {
     SharedPreferences.setMockInitialValues({});
@@ -178,7 +174,6 @@ void main() {
     });
 
     testWidgets('should call LoginOtpVerify event when otp code is valid', (tester) async {
-      TestUtils().setupUnitTest();
       final loginStateController = StreamController<LoginState>.broadcast();
       when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
       when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());
@@ -194,7 +189,7 @@ void main() {
       loginStateController.add(const LoginLoadingState(username: "test@example.com", loginMethod: LoginMethod.otp));
       await tester.pump();
 
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       await AppLocalStorage().save(StorageKeys.username.key, "mock");
       await AppLocalStorage().save(StorageKeys.roles.key, ["ROLE_USER"]);
       loginStateController.add(const LoginLoadedState(username: "test@example.com"));
@@ -209,7 +204,6 @@ void main() {
     });
 
     testWidgets('should show error message when otp code is invalid', (tester) async {
-      TestUtils().setupUnitTest();
       final loginStateController = StreamController<LoginState>.broadcast();
       when(() => mockLoginBloc.stream).thenAnswer((_) => loginStateController.stream);
       when(() => mockLoginBloc.state).thenReturn(const LoginInitialState());

@@ -12,28 +12,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../../../test_utils.dart';
-
 class _MockBloc extends MockBloc<DynamicFormEvent, DynamicFormState> implements DynamicFormBloc {}
 
-class _FakeEvent extends Fake implements DynamicFormEvent {}
-
 void main() {
-  late TestUtils testUtils;
-
-  setUpAll(() {
-    registerFallbackValue(_FakeEvent());
-  });
-
-  setUp(() async {
-    testUtils = TestUtils();
-    await testUtils.setupUnitTest();
-  });
-
-  tearDown(() async {
-    await testUtils.tearDownUnitTest();
-  });
-
   Widget host(Widget child, DynamicFormBloc bloc) => MaterialApp(
     localizationsDelegates: const [
       S.delegate,

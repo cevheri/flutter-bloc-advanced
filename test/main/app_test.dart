@@ -3,22 +3,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../test_utils.dart';
+import '../support/test_env.dart';
 
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   group('App Widget Tests', () {
     late App app;
 
     setUp(() {
       app = const App(language: 'tr');
-    });
-
-    tearDown(() async {
-      await TestUtils().tearDownUnitTest();
     });
 
     testWidgets('App should build without errors', (WidgetTester tester) async {
@@ -42,7 +34,7 @@ void main() {
     });
 
     testWidgets('App should handle different languages', (WidgetTester tester) async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       app = const App(language: 'en');
       await tester.pumpWidget(app);
       await tester.pumpAndSettle();

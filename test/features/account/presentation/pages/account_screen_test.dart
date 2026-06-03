@@ -14,11 +14,9 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
-import '../../../../test_utils.dart';
 
 void main() {
   late MockAccountBloc mockAccountBloc;
-  late TestUtils testUtils;
   late StreamController<AccountState> accountStateController;
 
   // Mock user data for testing
@@ -31,14 +29,7 @@ void main() {
     activated: true,
   );
 
-  setUpAll(() {
-    registerAllFallbackValues();
-  });
-
   setUp(() async {
-    testUtils = TestUtils();
-    await testUtils.setupUnitTest();
-
     // Initialize mock blocs and controllers
     mockAccountBloc = MockAccountBloc();
 
@@ -49,7 +40,6 @@ void main() {
   });
 
   tearDown(() async {
-    await testUtils.tearDownUnitTest();
     await accountStateController.close();
   });
 

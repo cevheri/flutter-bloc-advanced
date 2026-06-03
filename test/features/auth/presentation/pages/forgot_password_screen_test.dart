@@ -10,7 +10,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
-import '../../../../test_utils.dart';
 
 ///Forgot Password Screen Test
 ///class ForgotPasswordScreen extends
@@ -19,14 +18,6 @@ void main() {
   late MockAccountBloc accountBloc;
 
   //region setup
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-    registerAllFallbackValues();
-  });
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
-  });
-
   setUp(() {
     forgotPasswordBloc = MockForgotPasswordBloc();
     accountBloc = MockAccountBloc();

@@ -17,22 +17,13 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
-import '../../../../test_utils.dart';
 
 void main() {
   late MockUserRepository mockUserRepository;
   late MockAuthorityBloc mockAuthorityBloc;
   late MockUserEditorBloc mockUserBloc;
-  late TestUtils testUtils;
-
-  setUpAll(() {
-    registerAllFallbackValues();
-  });
 
   setUp(() async {
-    testUtils = TestUtils();
-    await testUtils.setupUnitTest();
-
     mockUserRepository = MockUserRepository();
     mockUserBloc = MockUserEditorBloc();
     mockAuthorityBloc = MockAuthorityBloc();
@@ -45,10 +36,6 @@ void main() {
     when(
       () => mockAuthorityBloc.state,
     ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-  });
-
-  tearDown(() async {
-    await testUtils.tearDownUnitTest();
   });
 
   Widget buildTestableWidget({required EditorFormMode mode, String? id}) {
