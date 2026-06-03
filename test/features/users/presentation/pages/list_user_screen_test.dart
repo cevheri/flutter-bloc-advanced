@@ -13,6 +13,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
+import '../../../../mocks/fake_data.dart';
 import '../../../../mocks/mock_classes.dart';
 
 void main() {
@@ -131,9 +132,9 @@ void main() {
           activated: true,
           langKey: 'en',
           createdBy: 'system',
-          createdDate: DateTime.now(),
+          createdDate: kTestInstant,
           lastModifiedBy: "system",
-          lastModifiedDate: DateTime.now(),
+          lastModifiedDate: kTestInstant,
           authorities: const ['ROLE_ADMIN'],
         ),
       ];
