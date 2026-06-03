@@ -29,7 +29,7 @@ that settles on its own — no real-time delay to wait for).
 - `test/features/dashboard/presentation/pages/home_screen_test.dart:36` — `pumpAndSettle(const Duration(seconds: 5))` → `pumpAndSettle()` (after `buildHomeApp()`; shell settles).
 - `test/features/auth/presentation/pages/change_password_screen_test.dart:280` — `pumpAndSettle(const Duration(seconds: 1))` → `pumpAndSettle()` (after submit tap).
 - `test/features/users/presentation/pages/user_editor_screen_test.dart:153` — `pumpAndSettle(const Duration(seconds: 1))` → `pumpAndSettle()` (edit-mode load; mock resolves on a `Future.delayed(Duration.zero)`).
-- `test/features/auth/presentation/pages/forgot_password_screen_test.dart` — four sites: `:161` `(ms: 1000)`, `:180` `(seconds: 5)`, `:198` `(seconds: 1)`, `:219` `(seconds: 1)`, `:238` `(seconds: 1)` → all `pumpAndSettle()`.
+- `test/features/auth/presentation/pages/forgot_password_screen_test.dart` — five sites: `:161` `(ms: 1000)`, `:180` `(seconds: 5)`, `:198` `(seconds: 1)`, `:219` `(seconds: 1)`, `:238` `(seconds: 1)` → all `pumpAndSettle()`.
 
 - [ ] **Step 1:** In each file, replace every `pumpAndSettle(const Duration(...))` with `pumpAndSettle()`. (Locate by content; line numbers may drift.) Confirm none remain:
   `grep -rnE "pumpAndSettle\(const Duration" test/ --include='*_test.dart' | grep -v golden` → empty.

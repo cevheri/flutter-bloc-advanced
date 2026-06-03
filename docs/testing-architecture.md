@@ -312,7 +312,8 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   is the **per-pump interval, not a timeout** (the timeout is a separate, later
   parameter) — prefer the bare form. For **continuous / indeterminate
   animations** (spinner, shimmer, looping) never `pumpAndSettle` (it pumps until
-  the 10-minute timeout) — assert the spinner with `pump()` and use
+  the test times out — 30s here per `dart_test.yaml`, or `pumpAndSettle`'s own
+  10-minute default, whichever is first) — assert the spinner with `pump()` and use
   `pump(const Duration(...))` for a fixed frame; in goldens use
   `pumpBeforeTest: pumpOnce`.
 
