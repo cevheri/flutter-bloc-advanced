@@ -34,10 +34,11 @@ document is about the **test suite** itself.
 | `bloc_test` | `blocTest(...)` + `MockBloc` for BLoC/Cubit state assertions |
 | `mocktail` | Mocks/fakes without code generation (`Mock`, `Fake`, `when`, `verify`, `any`) |
 | `fake_async` | Virtual time for timer/timeout logic |
-| `integration_test` | (declared) on-device end-to-end harness |
 
 No `mockito`, no `build_runner` for mocks — `mocktail` is the single mocking
-library.
+library. The end-to-end smoke is a full-app widget test under `test/integration/`
+(see below) — it runs headless under `flutter test`, so the `integration_test`
+package is not a dependency.
 
 ---
 
@@ -227,6 +228,19 @@ test('maps 401 to UnauthorizedException', () async {
 `ApiClient` is constructed via dependency injection — there is no global
 singleton or `setTestInstance`.
 
+### End-to-end smoke
+
+`test/integration/app_smoke_test.dart` boots the **whole app** in mock mode
+(`App`'s default `AppDependencies` = `AppConfig.dev()`, which serves
+`assets/mock/*.json`) and drives cold-start → login → dashboard, exercising
+routing + DI + BLoCs + the mock HTTP layer together. It is a full-app widget test
+(`TestWidgetsFlutterBinding`), so it runs headless under the normal
+`flutter test` — no device, no `integration_test` package, no CI changes. The
+global bootstrap supplies the secure-storage mock + a clean storage reset, so the
+app starts unauthenticated and lands on login. Scope is one happy-path smoke — not
+multi-flow e2e. (For real on-device e2e later, add `integration_test` back and a
+device-targeted CI job.)
+
 ---
 
 ## Mocks and fakes
@@ -308,8 +322,10 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   `App().buildHomeApp()` rather than mockable to a single deterministic frame; its
   sub-widgets are already covered by the component/widget goldens).
 - **Tags:** `dart_test.yaml` declares `widget` (applied to all `testWidgets`
-  files via `@Tags(['widget'])`), plus `golden` and `integration` reserved for
-  #135/#152. Slice the suite with `flutter test --tags widget` /
+  files via `@Tags(['widget'])`) and `golden` (auto-applied by alchemist). An
+  `integration` tag is declared but reserved for a possible future on-device
+  (`flutter drive`) suite — the current e2e smoke is a `test/integration/` widget
+  test (tagged `widget`). Slice the suite with `flutter test --tags widget` /
   `--exclude-tags widget`. The per-test timeout (30s) lives in `dart_test.yaml`.
 - **Pumping:** use `pumpAndSettle()` only when all animations are expected to
   **finish** (route/page transitions, one-shot reveals). Its `Duration` argument
