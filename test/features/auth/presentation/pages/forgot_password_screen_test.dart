@@ -198,7 +198,7 @@ void main() {
       await tester.pumpAndSettle();
 
       //Then:
-      verify(() => forgotPasswordBloc.add(any())).called(1);
+      verify(() => forgotPasswordBloc.add(any(that: isA<ForgotPasswordEmailChanged>()))).called(1);
     });
 
     // Send Email  Button Test Success
