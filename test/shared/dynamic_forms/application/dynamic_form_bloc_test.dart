@@ -304,8 +304,10 @@ void main() {
         'emits [loading, loaded] when API returns valid form schema',
         setUp: () => stub.stubSuccess(data: _validFormSchemaJson),
         build: () => buildBloc(),
-        act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
-        wait: const Duration(milliseconds: 300),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadEvent('test_form'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
+        },
         expect: () => [
           isA<DynamicFormLoading>(),
           isA<DynamicFormLoaded>()
@@ -319,8 +321,10 @@ void main() {
         'emits [loading, failure] when API returns connection error',
         setUp: () => stub.stubDioError(DioExceptionType.connectionError, message: 'Connection failed'),
         build: () => buildBloc(),
-        act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
-        wait: const Duration(milliseconds: 300),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadEvent('test_form'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormFailure);
+        },
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>().having((s) => s.error, 'error', isNotNull)],
       );
 
@@ -328,8 +332,10 @@ void main() {
         'emits [loading, failure] when API returns 404',
         setUp: () => stub.stubDioError(DioExceptionType.badResponse, statusCode: 404, data: 'Not found'),
         build: () => buildBloc(),
-        act: (bloc) => bloc.add(const DynamicFormLoadEvent('unknown')),
-        wait: const Duration(milliseconds: 300),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadEvent('unknown'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormFailure);
+        },
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>().having((s) => s.error, 'error', isNotNull)],
       );
 
@@ -337,8 +343,10 @@ void main() {
         'emits [loading, failure] when API returns timeout',
         setUp: () => stub.stubDioError(DioExceptionType.connectionTimeout, message: 'Timeout'),
         build: () => buildBloc(),
-        act: (bloc) => bloc.add(const DynamicFormLoadEvent('test_form')),
-        wait: const Duration(milliseconds: 300),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadEvent('test_form'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormFailure);
+        },
         expect: () => [
           isA<DynamicFormLoading>(),
           isA<DynamicFormFailure>().having((s) => s.error, 'error', contains('Timeout')),
@@ -360,10 +368,10 @@ void main() {
         build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('no_action_form'));
-          await Future<void>.delayed(const Duration(milliseconds: 100));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           bloc.add(const DynamicFormSubmitEvent({'name': 'John'}));
+          await bloc.stream.firstWhere((s) => s is DynamicFormSubmitted);
         },
-        wait: const Duration(milliseconds: 300),
         expect: () => [
           // Load events
           isA<DynamicFormLoading>(),
@@ -380,12 +388,12 @@ void main() {
         build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('test_form'));
-          await Future<void>.delayed(const Duration(milliseconds: 100));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           // After loading, stub the submit response
           stub.stubSuccess(data: '{"id": "lead_1"}');
           bloc.add(const DynamicFormSubmitEvent({'name': 'John', 'email': 'john@test.com'}));
+          await bloc.stream.firstWhere((s) => s is DynamicFormSubmitted);
         },
-        wait: const Duration(milliseconds: 300),
         expect: () => [
           // Load events
           isA<DynamicFormLoading>(),
@@ -402,11 +410,11 @@ void main() {
         build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('put_form'));
-          await Future<void>.delayed(const Duration(milliseconds: 100));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           stub.stubSuccess(data: '{"updated": true}');
           bloc.add(const DynamicFormSubmitEvent({'name': 'Jane'}));
+          await bloc.stream.firstWhere((s) => s is DynamicFormSubmitted);
         },
-        wait: const Duration(milliseconds: 300),
         expect: () => [
           isA<DynamicFormLoading>(),
           isA<DynamicFormLoaded>(),
@@ -421,11 +429,11 @@ void main() {
         build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('test_form'));
-          await Future<void>.delayed(const Duration(milliseconds: 100));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           stub.stubDioError(DioExceptionType.badResponse, statusCode: 500, data: 'Internal Server Error');
           bloc.add(const DynamicFormSubmitEvent({'name': 'John'}));
+          await bloc.stream.firstWhere((s) => s is DynamicFormFailure);
         },
-        wait: const Duration(milliseconds: 300),
         expect: () => [
           isA<DynamicFormLoading>(),
           isA<DynamicFormLoaded>(),
@@ -442,10 +450,10 @@ void main() {
         build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadEvent('test_form'));
-          await Future<void>.delayed(const Duration(milliseconds: 100));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           bloc.add(const DynamicFormResetEvent());
+          await bloc.stream.firstWhere((s) => s is DynamicFormInitial);
         },
-        wait: const Duration(milliseconds: 300),
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormLoaded>(), isA<DynamicFormInitial>()],
       );
 
@@ -467,8 +475,10 @@ void main() {
           }),
         ),
         build: () => buildBloc(),
-        act: (bloc) => bloc.add(const DynamicFormLoadBundleEvent('/admin/users/1/extended')),
-        wait: const Duration(milliseconds: 300),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadBundleEvent('/admin/users/1/extended'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
+        },
         expect: () => [
           isA<DynamicFormLoading>(),
           isA<DynamicFormLoaded>().having((s) => s.schema.id, 'schema.id', 'test_form').having(
@@ -483,8 +493,10 @@ void main() {
         'emits [loading, failure] when API returns connection timeout',
         setUp: () => stub.stubDioError(DioExceptionType.connectionTimeout, message: 'Timeout'),
         build: () => buildBloc(),
-        act: (bloc) => bloc.add(const DynamicFormLoadBundleEvent('/admin/users/1/extended')),
-        wait: const Duration(milliseconds: 300),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadBundleEvent('/admin/users/1/extended'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormFailure);
+        },
         expect: () => [isA<DynamicFormLoading>(), isA<DynamicFormFailure>()],
       );
 
@@ -497,8 +509,10 @@ void main() {
           }),
         ),
         build: () => buildBloc(),
-        act: (bloc) => bloc.add(const DynamicFormLoadBundleEvent('/admin/users/extended', pathParams: 'user-1')),
-        wait: const Duration(milliseconds: 300),
+        act: (bloc) async {
+          bloc.add(const DynamicFormLoadBundleEvent('/admin/users/extended', pathParams: 'user-1'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
+        },
         expect: () => [
           isA<DynamicFormLoading>(),
           isA<DynamicFormLoaded>().having((s) => s.submitPathParams, 'submitPathParams', 'user-1'),
@@ -519,12 +533,12 @@ void main() {
         build: () => buildBloc(),
         act: (bloc) async {
           bloc.add(const DynamicFormLoadBundleEvent('/admin/users/extended', pathParams: 'user-1'));
-          await Future<void>.delayed(const Duration(milliseconds: 150));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
           // 2) First submit fails — bloc must emit Failure(submitPathParams: 'user-1').
           stub.stubDioError(DioExceptionType.connectionTimeout, message: 'Timeout');
           bloc.add(const DynamicFormSubmitEvent({'name': 'Alice'}));
+          await bloc.stream.firstWhere((s) => s is DynamicFormFailure);
         },
-        wait: const Duration(milliseconds: 500),
         expect: () => [
           isA<DynamicFormLoading>(),
           isA<DynamicFormLoaded>().having((s) => s.submitPathParams, 'submitPathParams', 'user-1'),

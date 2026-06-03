@@ -265,13 +265,18 @@ All shared doubles live in `test/mocks/`:
 
 ## Determinism & known gaps
 
-- **Time:** prefer `fake_async` for timer/timeout logic (see
-  `idle_timeout_observer_test.dart`). Some debounce tests still use real-time
-  `blocTest(wait:)` — tracked for migration in issue #148.
+- **Time:** use `fakeAsync` for time-based logic (timers, debounce, timeouts).
+  `event_transformers_test.dart` is the reference — it drives the bloc inside
+  `fakeAsync` and advances virtual time with `async.elapse(...)`, with no
+  wall-clock dependency. `idle_timeout_observer_test.dart` uses the same approach.
+- **Mocked async:** do not use real-time `blocTest(wait:)` to "let a mock settle"
+  — `blocTest` already awaits the bloc's state stream. Sequence dependent events
+  with `await bloc.stream.firstWhere((s) => s is <State>)`, not a millisecond delay.
+- **Fixtures:** use the fixed `kTestInstant` (`test/mocks/fake_data.dart`) for any
+  fixture timestamp whose exact value no assertion depends on — never `DateTime.now()`.
 - **Goldens:** there are no golden/visual-regression tests yet (issue #135). The
-  bootstrap is the place font loading will be wired when they land.
-- **Tags/presets:** there is no `dart_test.yaml` tagging scheme yet (issue
-  #154).
+  bootstrap is where font loading will be wired when they land.
+- **Tags/presets:** there is no `dart_test.yaml` tagging scheme yet (issue #154).
 
 These are documented so newcomers know what is intentional vs. not-yet-done.
 

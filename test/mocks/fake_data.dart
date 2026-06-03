@@ -7,6 +7,10 @@ import 'package:flutter_bloc_advance/features/auth/data/models/user_jwt.dart';
 
 final DateTime createdDate = DateTime(2024, 1, 1);
 
+/// Fixed instant for fixtures whose timestamp value is arbitrary. Use this
+/// instead of DateTime.now() so a fixture never depends on wall-clock time.
+final DateTime kTestInstant = DateTime.utc(2024, 1, 1, 12);
+
 /// User fake data with full payload
 final mockUserFullPayload = User(
   id: '1',

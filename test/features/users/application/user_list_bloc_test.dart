@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
@@ -65,9 +66,6 @@ void main() {
     bloc.close();
   });
 
-  // UserListBloc applies a 300ms debounce to UserListSearch.
-  const debounceWait = Duration(milliseconds: 400);
-
   group('UserListState', () {
     test('UserListInitial equality and props', () {
       expect(const UserListInitial(), const UserListInitial());
@@ -117,36 +115,67 @@ void main() {
         UserEntity(id: '2', firstName: 'Test2', lastName: 'User2'),
       ];
 
-      blocTest<UserListBloc, UserListState>(
-        'emits [loading, loaded] when search succeeds',
-        setUp: () => repository.listResult = users,
-        build: () => bloc,
-        act: (b) => b.add(const UserListSearch(authorities: 'ROLE_USER')),
-        wait: debounceWait,
-        expect: () => [const UserListLoading(), const UserListLoaded(users: users)],
-      );
+      test('emits [loading, loaded] when search succeeds', () {
+        fakeAsync((async) {
+          repository.listResult = users;
+          final searchBloc = UserListBloc(
+            searchUsersUseCase: SearchUsersUseCase(repository),
+            deleteUserUseCase: DeleteUserUseCase(repository),
+          );
+          final states = <UserListState>[];
+          final sub = searchBloc.stream.listen(states.add);
 
-      blocTest<UserListBloc, UserListState>(
-        'emits [loading, failure] when search fails',
-        setUp: () => repository.failure = const UnknownError('Search failed'),
-        build: () => bloc,
-        act: (b) => b.add(const UserListSearch(authorities: 'ROLE_USER')),
-        wait: debounceWait,
-        expect: () => [const UserListLoading(), const UserListFailure(error: 'Search failed')],
-      );
+          searchBloc.add(const UserListSearch(authorities: 'ROLE_USER'));
+          async.elapse(const Duration(seconds: 1));
 
-      blocTest<UserListBloc, UserListState>(
-        'rapid bursts collapse to a single emission pair (debounceRestartable)',
-        setUp: () => repository.listResult = users,
-        build: () => bloc,
-        act: (b) {
-          b.add(const UserListSearch(authorities: 'ROLE_A'));
-          b.add(const UserListSearch(authorities: 'ROLE_B'));
-          b.add(const UserListSearch(authorities: 'ROLE_USER'));
-        },
-        wait: debounceWait,
-        expect: () => [const UserListLoading(), const UserListLoaded(users: users)],
-      );
+          expect(states, [const UserListLoading(), const UserListLoaded(users: users)]);
+
+          sub.cancel();
+          searchBloc.close();
+        });
+      });
+
+      test('emits [loading, failure] when search fails', () {
+        fakeAsync((async) {
+          repository.failure = const UnknownError('Search failed');
+          final searchBloc = UserListBloc(
+            searchUsersUseCase: SearchUsersUseCase(repository),
+            deleteUserUseCase: DeleteUserUseCase(repository),
+          );
+          final states = <UserListState>[];
+          final sub = searchBloc.stream.listen(states.add);
+
+          searchBloc.add(const UserListSearch(authorities: 'ROLE_USER'));
+          async.elapse(const Duration(seconds: 1));
+
+          expect(states, [const UserListLoading(), const UserListFailure(error: 'Search failed')]);
+
+          sub.cancel();
+          searchBloc.close();
+        });
+      });
+
+      test('rapid bursts collapse to a single emission pair (debounceRestartable)', () {
+        fakeAsync((async) {
+          repository.listResult = users;
+          final searchBloc = UserListBloc(
+            searchUsersUseCase: SearchUsersUseCase(repository),
+            deleteUserUseCase: DeleteUserUseCase(repository),
+          );
+          final states = <UserListState>[];
+          final sub = searchBloc.stream.listen(states.add);
+
+          searchBloc.add(const UserListSearch(authorities: 'ROLE_A'));
+          searchBloc.add(const UserListSearch(authorities: 'ROLE_B'));
+          searchBloc.add(const UserListSearch(authorities: 'ROLE_USER'));
+          async.elapse(const Duration(seconds: 1));
+
+          expect(states, [const UserListLoading(), const UserListLoaded(users: users)]);
+
+          sub.cancel();
+          searchBloc.close();
+        });
+      });
     });
 
     group('UserListDelete', () {

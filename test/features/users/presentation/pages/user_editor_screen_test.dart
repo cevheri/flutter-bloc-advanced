@@ -139,7 +139,7 @@ void main() {
       when(() => mockUserBloc.add(any())).thenAnswer((invocation) async {
         if (invocation.positionalArguments[0] is UserEditorFetch) {
           userStateController.add(const UserEditorLoading());
-          await Future.delayed(const Duration(milliseconds: 100));
+          await Future<void>.delayed(Duration.zero);
           userStateController.add(UserEditorLoaded(data: mockUser));
         }
       });
