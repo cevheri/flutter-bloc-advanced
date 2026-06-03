@@ -2,11 +2,23 @@
 
 **Date:** 2026-06-03
 **Issue:** #152 (test-infrastructure audit follow-up)
-**Status:** Approved (design)
+**Status:** Superseded by re-scope during implementation — see note below.
+
+> **⚠️ Re-scoped during the spike (what actually shipped):** the `integration_test`
+> package turned out to require a device (local `flutter test integration_test/`
+> errors "more than one device"; it only ran via `-d linux` with heavy native
+> deps), so "headless CI" was not achievable cheaply. **The implemented solution
+> is a full-app *widget* smoke at `test/integration/app_smoke_test.dart`**
+> (`TestWidgetsFlutterBinding`) that boots the app in mock mode and drives
+> login → dashboard, runs headless under the existing `flutter test` (no CI
+> changes), and the unused `integration_test` dev dependency was **removed**. The
+> sections below describe the original `integration_test/`-based design and are
+> kept only as the record of intent — they do NOT match the shipped code. See
+> `docs/testing-architecture.md` → "End-to-end smoke" for the actual approach.
 
 ## Problem
 
-`integration_test` is a declared dev dependency but there is **no `integration_test/`
+`integration_test` was a declared dev dependency but there was **no `integration_test/`
 directory** — an unused dependency and a missing e2e layer. The suite has strong
 unit/widget/golden coverage but nothing that boots the whole app and exercises
 routing + DI + BLoCs + storage + the mock HTTP layer together. A template
