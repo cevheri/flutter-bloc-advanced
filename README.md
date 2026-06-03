@@ -399,7 +399,8 @@ fvm flutter test --tags golden                  # run goldens
 fvm flutter test --tags golden --update-goldens # regenerate after intentional UI changes
 ```
 
-Golden images live under `test/goldens/` and use alchemist's CI (Ahem-rendered)
+Golden tests live next to the code they cover (feature-first, mirroring `lib/`;
+images in a sibling `goldens/ci/` dir) and use alchemist's CI (Ahem-rendered)
 variant so they're identical across macOS/Linux/CI. Regenerate with
 `--update-goldens` after an intentional visual change.
 

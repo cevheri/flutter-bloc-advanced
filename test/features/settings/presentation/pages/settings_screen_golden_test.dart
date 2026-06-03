@@ -7,8 +7,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../support/test_env.dart';
-import '../support/golden_app.dart' show kGoldenScreenSize;
+import '../../../../support/test_env.dart';
+import '../../../../support/golden_app.dart' show kGoldenScreenSize;
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);

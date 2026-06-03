@@ -9,9 +9,9 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/pages/dyn
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../mocks/mock_classes.dart';
-import '../../support/test_env.dart';
-import '../support/golden_app.dart';
+import '../../../../mocks/mock_classes.dart';
+import '../../../../support/test_env.dart';
+import '../../../../support/golden_app.dart';
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
