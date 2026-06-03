@@ -6,7 +6,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../mocks/mock_classes.dart';
 import '../../support/test_env.dart';
-import '../../test_utils.dart';
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
@@ -15,7 +14,7 @@ void main() {
     late AppLocalStorage localStorage;
 
     setUpAll(() async {
-      await TestUtils().setupUnitTest();
+      await TestEnv.reset();
     });
 
     setUp(() {

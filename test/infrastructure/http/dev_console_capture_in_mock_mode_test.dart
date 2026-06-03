@@ -3,7 +3,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart'
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../test_utils.dart';
+import '../../support/test_env.dart';
 
 /// Records whether its onResponse fired — stands in for the observability
 /// interceptors (DevConsole / Logging) that must see mock-served responses.
@@ -18,10 +18,6 @@ class _ResponseRecorder extends Interceptor {
 }
 
 void main() {
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
     DevConsoleStore.instance.clearNetwork();
   });
@@ -47,9 +43,9 @@ void main() {
 
   group('DevConsole captures requests in dev/test (mock) mode', () {
     test('a mock-served GET appears in DevConsoleStore AND is marked complete', () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
 
-      await TestUtils.apiClient().get('/test');
+      await TestEnv.apiClient().get('/test');
 
       final entries = DevConsoleStore.instance.networkEntries;
       expect(entries, isNotEmpty, reason: 'DevConsoleInterceptor.onRequest must run before the mock short-circuits');

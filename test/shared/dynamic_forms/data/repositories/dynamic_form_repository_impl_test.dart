@@ -8,7 +8,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_b
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-import '../../../../test_utils.dart';
+import '../../../../support/test_env.dart';
 
 /// Interceptor that stubs responses before any real HTTP call.
 class _StubInterceptor extends Interceptor {
@@ -78,21 +78,13 @@ final _validBundleJson = jsonEncode({
 void main() {
   late _StubInterceptor stub;
 
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   late DynamicFormRepository repo;
 
   setUp(() {
     stub = _StubInterceptor();
     final testDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
     testDio.interceptors.add(stub);
-    repo = DynamicFormRepository(TestUtils.apiClient(dio: testDio));
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
+    repo = DynamicFormRepository(TestEnv.apiClient(dio: testDio));
   });
 
   group('DynamicFormRepository input validation', () {

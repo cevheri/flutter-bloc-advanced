@@ -9,16 +9,10 @@ import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_se
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-import '../../test_utils.dart';
-
 class MockConnectivityCubit extends MockCubit<ConnectivityState> implements ConnectivityCubit {}
 
 void main() {
   late MockConnectivityCubit mockCubit;
-
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
 
   setUp(() {
     mockCubit = MockConnectivityCubit();

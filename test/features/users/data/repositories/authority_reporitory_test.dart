@@ -5,29 +5,21 @@ import 'package:flutter_bloc_advance/features/users/data/repositories/authority_
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../mocks/fake_data.dart';
-import '../../../../test_utils.dart';
+import '../../../../support/test_env.dart';
 
 void main() {
   late AuthorityRepositoryImpl repository;
 
   //region setup
-  setUpAll(() async {
-    await TestUtils().setupUnitTest();
-  });
-
   setUp(() {
-    repository = AuthorityRepositoryImpl(TestUtils.apiClient());
-  });
-
-  tearDown(() async {
-    await TestUtils().tearDownUnitTest();
+    repository = AuthorityRepositoryImpl(TestEnv.apiClient());
   });
   //endregion setup
 
   //createAuthority
   group("AuthorityRepository Create success", () {
     test("Given valid authority when create then return authority successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       const entity = mockAuthorityPayload;
       final result = await repository.create(entity);
 
@@ -55,7 +47,7 @@ void main() {
   //getAuthorities
   group("AuthorityRepository Get success", () {
     test("Given valid when getAuthorities then return authorities successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.list();
 
       expect(result, isA<Success<List<String>>>());
@@ -73,7 +65,7 @@ void main() {
   //getAuthority
   group("AuthorityRepository Get success", () {
     test("Given valid id when getAuthority then return authority successfully", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.retrieve("1");
 
       expect(result, isA<Success<Authority>>());
@@ -94,7 +86,7 @@ void main() {
   //deleteAuthority
   group("AuthorityRepository Delete success", () {
     test("Given valid id when deleteAuthority then return successful", () async {
-      TestUtils().setupAuthentication();
+      TestEnv.authenticate();
       final result = await repository.delete("1");
       expect(result, isA<Success<void>>());
     });
