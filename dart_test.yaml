@@ -1,0 +1,19 @@
+# Test configuration (package:test / flutter test).
+#
+# All tags used with `flutter test --tags` / `--exclude-tags` must be declared
+# here, otherwise the runner warns about unrecognized tags. Declaring a tag
+# needs no body.
+tags:
+  # Widget tests (use `testWidgets`) — need a binding + pump; heavier than pure
+  # unit tests. Applied via a file-level `@Tags(['widget'])` annotation.
+  widget:
+  # Golden / visual-regression tests — platform-sensitive, run in isolation.
+  # Reserved for #135 (the alchemist golden package auto-applies this tag).
+  golden:
+  # On-device end-to-end tests. Reserved for #152.
+  integration:
+    timeout: 2x
+
+# Per-test timeout. package:test's default is 30s; this mirrors the previous CI
+# `--timeout=30s` flag so behavior is unchanged. Slow categories override via tag.
+timeout: 30s
