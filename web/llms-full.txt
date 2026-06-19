@@ -1,6 +1,6 @@
 # Flutter BLoC Advance Template
 
-> A production-ready, open-source Flutter starter template using BLoC pattern for state management with Feature-First Clean Architecture. Supports Android, iOS, Web, macOS, Linux, and Windows. Built with Flutter 3.44.2, Dart 3.12.0, flutter_bloc 9.1.1, and go_router 17.1.0.
+> A production-ready, open-source Flutter starter template using BLoC pattern for state management with Feature-First Clean Architecture. Supports Android, iOS, Web, macOS, Linux, and Windows. Built with Flutter 3.44.2, Dart 3.12.2, flutter_bloc 9.1.1, and go_router 17.3.0.
 
 This project provides a complete foundation for building enterprise-grade Flutter applications. It includes authentication (login, register, forgot password, OTP verification), user management (CRUD operations), role-based access control (Admin/User roles), a responsive design system, dark/light theming, English/Turkish localization, and multi-environment support (local mock data and production API).
 
@@ -243,14 +243,14 @@ All BLoCs and Cubits are provided to the widget tree from here.
 | Category | Technology |
 |----------|-----------|
 | Flutter | 3.44.2 |
-| Dart SDK | 3.12.0 |
+| Dart SDK | 3.12.2 |
 | State Management | flutter_bloc 9.1.1 |
-| Routing | go_router 17.1.0 |
+| Routing | go_router 17.3.0 |
 | HTTP | dio 5.7.0 (interceptor chain: auth, logging, mock) |
 | Error Handling | Dart 3 sealed Result<T> type with typed AppError hierarchy |
 | Forms | flutter_form_builder 10.3.0+2 |
 | Form Validation | form_builder_validators 11.3.0 |
-| Localization | intl 0.20.2, intl_utils 2.8.14 |
+| Localization | intl 0.20.2, intl_utils 2.8.15 |
 | Storage | shared_preferences 2.5.4 |
 | Charts | fl_chart 1.1.1 |
 | Loading Effects | shimmer |
@@ -262,7 +262,7 @@ All BLoCs and Cubits are provided to the widget tree from here.
 
 ### Prerequisites
 
-- Flutter 3.44.2 and Dart 3.12.0
+- Flutter 3.44.2 and Dart 3.12.2
 - FVM (Flutter Version Management) recommended
 - Android SDK for Android builds
 - Xcode for iOS and macOS builds
