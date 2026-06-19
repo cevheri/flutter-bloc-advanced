@@ -496,6 +496,7 @@ If you are unsure where to start, documentation improvements, screenshot refresh
 | [Transformation Log](docs/clean-modernize-strengthen.md) | What changed, why, before/after comparison |
 | [Architecture Migration](docs/architecture-migration_en.md) | Feature-first migration guide |
 | [Feature-First Boundaries](docs/feature-first-clean-boundaries.md) | Clean architecture design document |
+| [Upgrade Guide — Flutter 3.44.0](docs/upgrade_flutter_3.44.0.md) | Flutter 3.41.8 → 3.44.0 upgrade notes (v0.21.0) |
 
 ## References
 

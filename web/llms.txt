@@ -22,13 +22,13 @@ Dependency flow: `app` → `features` → `shared` → `core`. Features cannot i
 
 - **State Management:** flutter_bloc 9.1.1 with Equatable for state equality
 - **Routing:** go_router 17.3.0 with feature-based route composition
-- **HTTP:** dio 5.7.0 with interceptor chain (auth token injection, mock data, structured logging)
+- **HTTP:** dio 5.9.2 with interceptor chain (auth token injection, mock data, structured logging)
 - **Error Handling:** Dart 3 sealed Result<T> type with typed AppError hierarchy (no raw exceptions)
 - **Forms:** flutter_form_builder 10.3.0+2 with form_builder_validators
 - **Localization:** intl 0.20.2 with ARB files and intl_utils code generation
-- **Storage:** shared_preferences 2.5.4
+- **Storage:** shared_preferences 2.5.5
 - **Charts:** fl_chart for dashboard visualizations
-- **Testing:** flutter_test, bloc_test, mocktail (568+ tests, architecture guard tests)
+- **Testing:** flutter_test, bloc_test, mocktail (1600+ tests, architecture guard tests)
 - **CI/CD:** GitHub Actions (build, test, web deploy, SonarQube)
 
 ## Quick Start
