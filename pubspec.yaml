@@ -39,7 +39,7 @@ dependencies:
   flutter_secure_storage: 10.3.1
   crypto: 3.0.7
   uuid: 4.5.3
-  screen_protector: 1.5.2
+  screen_protector: 1.5.1 # pinned: 1.5.2 dropped its Kotlin jvmTarget pin → Java/Kotlin JVM-target mismatch on Android release builds (JDK 21+)
   sentry_flutter: 9.22.0
 
 dev_dependencies:
