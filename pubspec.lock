@@ -5,10 +5,10 @@ packages:
     dependency: transitive
     description:
       name: _fe_analyzer_shared
-      sha256: "3b19a47f6ea7c2632760777c78174f47f6aec1e05f0cd611380d4593b8af1dbc"
+      sha256: "1dd467c7e56541bea70bbd35d537e3aa12dfba81f39e2a75bb6a61fc5595985b"
       url: "https://pub.dev"
     source: hosted
-    version: "96.0.0"
+    version: "97.0.0"
   alchemist:
     dependency: "direct dev"
     description:
@@ -21,10 +21,10 @@ packages:
     dependency: transitive
     description:
       name: analyzer
-      sha256: "0c516bc4ad36a1a75759e54d5047cb9d15cded4459df01aa35a0b5ec7db2c2a0"
+      sha256: "041602214e3ec5a02ba85c08fe8e381aa25ac5367db17d03fbb6d22d851d4bba"
       url: "https://pub.dev"
     source: hosted
-    version: "10.2.0"
+    version: "11.0.0"
   archive:
     dependency: transitive
     description:
@@ -351,26 +351,26 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_secure_storage
-      sha256: "6848263f9744072d0977347c383fb8b57d9780319a6bf5238b5a2866a029de62"
+      sha256: "7686b1d6a29985dcbb808c59518226e603e3bfa7c0ddfd1a0d00e4cda77c868e"
       url: "https://pub.dev"
     source: hosted
-    version: "10.2.0"
+    version: "10.3.1"
   flutter_secure_storage_darwin:
     dependency: transitive
     description:
       name: flutter_secure_storage_darwin
-      sha256: "67cd1ff671add31dc13e45194398187a04bb63804b37fa47866afae296d73fcb"
+      sha256: "82329fa5cdf343773b1b6897dea959105a29f092454259edff92f9f6637e8149"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.1"
+    version: "0.3.2"
   flutter_secure_storage_linux:
     dependency: transitive
     description:
       name: flutter_secure_storage_linux
-      sha256: "2b5c76dce569ab752d55a1cee6a2242bcc11fdba927078fb88c503f150767cda"
+      sha256: a5f35ddab43cf5c8215d2feb4ce1957851f28c5c37e6f04335066a0602087bf5
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.0"
+    version: "3.0.1"
   flutter_secure_storage_platform_interface:
     dependency: transitive
     description:
@@ -441,10 +441,10 @@ packages:
     dependency: "direct main"
     description:
       name: go_router
-      sha256: "92d8cee7c57dff0a6c409c05597b460002434eccf7424a712283225b3962d03f"
+      sha256: "5922b2861e2235a3504896f0d6fa07d84141b480cf52eecd2f42cd25585a9e8a"
       url: "https://pub.dev"
     source: hosted
-    version: "17.2.3"
+    version: "17.3.0"
   hooks:
     dependency: transitive
     description:
@@ -489,10 +489,10 @@ packages:
     dependency: "direct main"
     description:
       name: intl_utils
-      sha256: "07469a81dcb011ab3708ed4a324403f0f556f2e3663b769006f92c9e62a0066a"
+      sha256: d6bc24bad6fa8b76b6bdb5d44de561b7a8088f375852f305b60b72cb608b27ce
       url: "https://pub.dev"
     source: hosted
-    version: "2.8.14"
+    version: "2.8.15"
   io:
     dependency: transitive
     description:
@@ -809,26 +809,26 @@ packages:
     dependency: "direct main"
     description:
       name: screen_protector
-      sha256: "7f53d7a0c238a62dc970841fd13053f2b79f14b7f8d2c82a11fef65b066f42cd"
+      sha256: "0b526fd945c2e9e405288a124bdca3012589d31c30f19bc15247e8826d6ff094"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.1"
+    version: "1.5.2"
   sentry:
     dependency: transitive
     description:
       name: sentry
-      sha256: f04095a25ff02b202a914174c73ec309570aa93d61098cb4a0a9e715b4aaa465
+      sha256: "3311f89e0c964c4df5f65670348c8a11744c94ae2b57032c947cfb26bfd03ef0"
       url: "https://pub.dev"
     source: hosted
-    version: "9.20.0"
+    version: "9.22.0"
   sentry_flutter:
     dependency: "direct main"
     description:
       name: sentry_flutter
-      sha256: "4f0a914d8c37e5015d7b86dd42b92dd265948fd31875b43e62ddfc2e7bea0e41"
+      sha256: efd3bebd7962438d0ecbe5c7b530de012e2e8efe14ef838b89195d7c2bb3f66c
       url: "https://pub.dev"
     source: hosted
-    version: "9.20.0"
+    version: "9.22.0"
   shared_preferences:
     dependency: "direct main"
     description:
@@ -1235,5 +1235,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.12.0 <4.0.0"
-  flutter: "3.44.0"
+  dart: ">=3.12.2 <4.0.0"
+  flutter: "3.44.2"

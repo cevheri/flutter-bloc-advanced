@@ -1,8 +1,8 @@
 # Advanced Flutter BLoC Template
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Flutter](https://img.shields.io/badge/Flutter-3.44.0-02569B?logo=flutter)
-![Dart](https://img.shields.io/badge/Dart-3.12.0-0175C2?logo=dart)
+![Flutter](https://img.shields.io/badge/Flutter-3.44.2-02569B?logo=flutter)
+![Dart](https://img.shields.io/badge/Dart-3.12.2-0175C2?logo=dart)
 ![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows-2E7D32)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Community%20Template-black)
 
@@ -217,7 +217,7 @@ When not to enable: screens with content the user is expected to capture (QR cod
 
 ### Prerequisites
 
-- Flutter `3.44.0` and Dart `3.12.0`
+- Flutter `3.44.2` and Dart `3.12.2`
 - [FVM](https://fvm.app/documentation/getting-started/installation) recommended for version consistency
 - Android SDK for Android builds
 - Xcode for iOS and macOS builds
@@ -239,8 +239,8 @@ choco install fvm
 git clone https://github.com/cevheri/flutter-bloc-advanced.git
 cd flutter-bloc-advanced
 
-fvm install 3.44.0
-fvm use 3.44.0
+fvm install 3.44.2
+fvm use 3.44.2
 fvm flutter pub get
 ```
 
@@ -282,14 +282,14 @@ The production environment is configured in `lib/infrastructure/config/environme
 
 | Category | Technology |
 | --- | --- |
-| Flutter | 3.44.0 |
-| Dart | 3.12.0 |
+| Flutter | 3.44.2 |
+| Dart | 3.12.2 |
 | State Management | flutter_bloc 9.1.1, bloc_concurrency 0.3.0, stream_transform 2.1.1 |
-| Routing | go_router 17.2.3 |
+| Routing | go_router 17.3.0 |
 | HTTP | dio 5.9.2 (interceptor chain: connectivity, auth, token-refresh, resilience, mock, cache, dev-console, logging) |
 | Forms | flutter_form_builder 10.3.0+2 |
-| Localization | intl 0.20.2, intl_utils 2.8.14 |
-| Storage | shared_preferences 2.5.5, flutter_secure_storage 10.2.0 |
+| Localization | intl 0.20.2, intl_utils 2.8.15 |
+| Storage | shared_preferences 2.5.5, flutter_secure_storage 10.3.1 |
 | Charts | fl_chart 1.2.0 |
 | Testing | flutter_test, bloc_test, mocktail, test 1.31.0 |
 
@@ -496,8 +496,6 @@ If you are unsure where to start, documentation improvements, screenshot refresh
 | [Transformation Log](docs/clean-modernize-strengthen.md) | What changed, why, before/after comparison |
 | [Architecture Migration](docs/architecture-migration_en.md) | Feature-first migration guide |
 | [Feature-First Boundaries](docs/feature-first-clean-boundaries.md) | Clean architecture design document |
-| [Upgrade Guide — Flutter 3.44.0](docs/upgrade_flutter_3.44.0.md) | Flutter 3.41.8 → 3.44.0 upgrade notes (v0.21.0) |
-| [Upgrade Guide — Flutter 3.41.4](docs/upgrade_flutter_3.41.4.md) | Historical: Flutter 3.41.4 upgrade notes (v0.18.0) |
 
 ## References
 

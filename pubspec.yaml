@@ -4,13 +4,13 @@ publish_to: 'none'
 version: 0.21.49+1
 
 # ➜  flutter_bloc_advance git:(main) ✗ flutter --version
-# Flutter 3.44.0 • channel stable • https://github.com/flutter/flutter.git
-# Framework • revision 02085feb3f (5 days ago) • 2026-04-24 13:54:45 -0700
-# Engine • hash 7a53c052bc4b472cf780b199087e1368e4a9aa8c (revision 59aa584fdf) (14 days ago) • 2026-04-16 02:32:16.000Z
-# Tools • Dart 3.12.0 • DevTools 2.54.2
+# Flutter 3.44.2 • channel stable • https://github.com/flutter/flutter.git
+# Framework • revision c9a6c48423 (8 days ago) • 2026-06-10 15:52:41 -0700
+# Engine • hash 04efd7c093d4e9281d5526ebcad6ecc60ba8badf (revision 77e2e94772) (8 days ago) • 2026-06-10 19:59:06.000Z
+# Tools • Dart 3.12.2 • DevTools 2.57.0
 environment:
-  sdk: ^3.12.0
-  flutter: '3.44.0'
+  sdk: ^3.12.2
+  flutter: '3.44.2'
 
 dependencies:
   flutter:
@@ -19,12 +19,12 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   flutter_bloc: 9.1.1
-  go_router: 17.2.3
+  go_router: 17.3.0
   equatable: 2.0.8
   intl: 0.20.2
   flutter_form_builder: 10.3.0+2
   form_builder_validators: 11.3.0
-  intl_utils: 2.8.14
+  intl_utils: 2.8.15 # pinned: 2.8.16 needs analyzer ^13 but test 1.31.0 caps analyzer <13
   bloc_concurrency: 0.3.0
   stream_transform: 2.1.1
   shared_preferences: 2.5.5
@@ -36,17 +36,17 @@ dependencies:
   url_launcher: 6.3.2
   package_info_plus: 10.1.0
   connectivity_plus: 7.1.1
-  flutter_secure_storage: 10.2.0
+  flutter_secure_storage: 10.3.1
   crypto: 3.0.7
   uuid: 4.5.3
-  screen_protector: 1.5.1
-  sentry_flutter: 9.20.0
+  screen_protector: 1.5.2
+  sentry_flutter: 9.22.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: 6.0.0
-  test: 1.31.0
+  test: 1.31.0 # pinned: 1.31.1 needs test_api 0.7.12 but flutter_test SDK pins 0.7.11
   bloc_test: 10.0.0
   mocktail: 1.0.5
   fake_async: 1.3.3
