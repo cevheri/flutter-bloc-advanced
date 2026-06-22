@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Flutter BLoC Advance Template - a production-ready Flutter application using BLoC pattern for state management. Supports Android, iOS, Web, macOS, Linux, and Windows.
 
-- **Flutter:** 3.44.2 | **Dart SDK:** ^3.12.2 | **FVM** is used for Flutter version management
+- **Flutter:** 3.44.3 | **Dart SDK:** ^3.12.2 | **FVM** is used for Flutter version management
 - **Line width:** 120 characters (configured in `analysis_options.yaml`)
 
 ## Common Commands

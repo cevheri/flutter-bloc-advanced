@@ -5,6 +5,6 @@ Location: __AUTHOR_LOCATION__
 
 /* SITE */
 Standards: HTML5, CSS3, JavaScript
-Software: Flutter 3.44.2, Dart 3.12.2
+Software: Flutter 3.44.3, Dart 3.12.2
 Components: flutter_bloc, go_router, equatable
 Architecture: Feature-First Clean Boundaries
