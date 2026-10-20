@@ -113,7 +113,8 @@ class AppFormSection extends StatelessWidget {
   }
 }
 
-/// Action row for form footer buttons.
+/// Action row for form footer buttons, aligned to the end. On a screen too narrow for both buttons the primary
+/// action moves under the secondary one.
 class AppFormActions extends StatelessWidget {
   final Widget secondaryAction;
   final Widget? primaryAction;
@@ -122,12 +123,15 @@ class AppFormActions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        secondaryAction,
-        if (primaryAction != null) ...[const SizedBox(width: AppSpacing.sm), primaryAction!],
-      ],
+    // A Wrap is only as wide as its widest run, so Align carries the buttons to the end of a wider parent.
+    return Align(
+      alignment: AlignmentDirectional.centerEnd,
+      child: Wrap(
+        alignment: WrapAlignment.end,
+        spacing: AppSpacing.sm,
+        runSpacing: AppSpacing.sm,
+        children: [secondaryAction, ?primaryAction],
+      ),
     );
   }
 }

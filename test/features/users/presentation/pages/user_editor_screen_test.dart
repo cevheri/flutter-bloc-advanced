@@ -117,7 +117,7 @@ void main() {
       expect(find.byType(AuthoritiesDropdown), findsOneWidget);
     });
 
-    for (final width in [412.0]) {
+    for (final width in [320.0, 412.0]) {
       testWidgets('Create Mode - fits the title and subtitle on a ${width.toInt()} px wide phone', (tester) async {
         tester.view.physicalSize = Size(width, 915);
         tester.view.devicePixelRatio = 1.0;
