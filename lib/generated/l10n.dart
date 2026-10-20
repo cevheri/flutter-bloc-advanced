@@ -1400,6 +1400,11 @@ class S {
   String get user_list_empty {
     return Intl.message('No users to show', name: 'user_list_empty', desc: '', args: []);
   }
+
+  /// `Flutter BLoC Advance Template`
+  String get app_title {
+    return Intl.message('Flutter BLoC Advance Template', name: 'app_title', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

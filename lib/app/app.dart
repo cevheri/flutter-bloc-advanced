@@ -127,6 +127,8 @@ class _AppViewState extends State<_AppView> {
         builder: (context, themeState) {
           return MaterialApp.router(
             scaffoldMessengerKey: widget.scaffoldMessengerKey,
+            // The name the task switcher and the browser tab show, in the app language.
+            onGenerateTitle: (context) => S.of(context).app_title,
             theme: AppTheme.light(themeState.palette),
             darkTheme: AppTheme.dark(themeState.palette),
             themeMode: themeState.themeMode,

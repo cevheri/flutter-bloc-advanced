@@ -207,6 +207,16 @@ void main() {
       expect(find.text('Şifremi unuttum'), findsOneWidget);
       expect(find.text('Forgot Password'), findsNothing);
     });
+
+    // The task switcher and the browser tab show this title.
+    for (final (language, title) in [('en', 'Flutter BLoC Advance Template'), ('tr', 'Flutter BLoC Advance Şablonu')]) {
+      testWidgets('names the app in the task switcher in the app language ($language)', (tester) async {
+        await tester.pumpWidget(App(language: language));
+        await tester.pumpAndSettle();
+
+        expect(tester.widget<Title>(find.byType(Title)).title, title);
+      });
+    }
   });
 
   // The gate sits in the MaterialApp builder, around the session restore and the router. These tests replace the

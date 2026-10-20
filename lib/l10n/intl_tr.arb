@@ -483,5 +483,7 @@
   "password_hide": "Şifreyi gizle",
   "@password_hide": {},
   "user_list_empty": "Gösterilecek kullanıcı yok",
-  "@user_list_empty": {}
+  "@user_list_empty": {},
+  "app_title": "Flutter BLoC Advance Şablonu",
+  "@app_title": {}
 }

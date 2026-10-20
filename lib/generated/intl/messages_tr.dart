@@ -60,6 +60,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "account": MessageLookupByLibrary.simpleMessage("Hesabım"),
     "active": MessageLookupByLibrary.simpleMessage("Aktif"),
     "admin": MessageLookupByLibrary.simpleMessage("Admin"),
+    "app_title": MessageLookupByLibrary.simpleMessage("Flutter BLoC Advance Şablonu"),
     "apply": MessageLookupByLibrary.simpleMessage("Uygula"),
     "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
     "authorities_load_failed": MessageLookupByLibrary.simpleMessage("Roller alınamadı"),

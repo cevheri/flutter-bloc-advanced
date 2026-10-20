@@ -483,5 +483,7 @@
   "password_hide": "Hide password",
   "@password_hide": {},
   "user_list_empty": "No users to show",
-  "@user_list_empty": {}
+  "@user_list_empty": {},
+  "app_title": "Flutter BLoC Advance Template",
+  "@app_title": {}
 }
