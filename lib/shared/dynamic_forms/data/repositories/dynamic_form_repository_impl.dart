@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/models/form_bundle_model.dart';
@@ -45,7 +46,7 @@ class DynamicFormRepository implements IDynamicFormRepository {
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
       _log.error('END:fetchSchema network error: {}', [e]);
-      return Failure(NetworkError(e.toString()));
+      return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:fetchSchema unknown error: {}', [e]);
       return Failure(UnknownError(e.toString()));
@@ -71,7 +72,7 @@ class DynamicFormRepository implements IDynamicFormRepository {
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
       _log.error('END:fetchBundle network error: {}', [e]);
-      return Failure(NetworkError(e.toString()));
+      return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:fetchBundle unknown error: {}', [e]);
       return Failure(UnknownError(e.toString()));
@@ -108,10 +109,19 @@ class DynamicFormRepository implements IDynamicFormRepository {
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
       _log.error('END:submit network error: {}', [e]);
-      return Failure(NetworkError(e.toString()));
+      return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:submit unknown error: {}', [e]);
       return Failure(UnknownError(e.toString()));
     }
+  }
+
+  /// An untrusted certificate carries [AppErrorCode.networkCertInvalid], so the UI shows a translated message
+  /// instead of the exception text, which names the host and port.
+  static AppError _mapFetchDataException(FetchDataException e) {
+    if (e is UntrustedCertificateException) {
+      return NetworkError(e.toString(), code: AppErrorCode.networkCertInvalid.key);
+    }
+    return NetworkError(e.toString());
   }
 }

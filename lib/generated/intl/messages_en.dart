@@ -79,7 +79,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_generic": MessageLookupByLibrary.simpleMessage("Something went wrong"),
     "error_link_open_failed": m0,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
-      "Could not verify the server\'s identity. Connection blocked.",
+      "The connection could not be verified as secure, so it was blocked. Try again later or on another network.",
     ),
     "error_settings_change_language_failed": MessageLookupByLibrary.simpleMessage("Could not change the language"),
     "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage("Admin user cannot be deleted"),

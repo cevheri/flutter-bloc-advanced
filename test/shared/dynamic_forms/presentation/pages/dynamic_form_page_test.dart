@@ -1,19 +1,54 @@
 @Tags(['widget'])
 library;
 
+import 'dart:typed_data';
+
 import 'package:bloc_test/bloc_test.dart';
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/pages/dynamic_form_page.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_error_state.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
+
+/// Production chain (no MockInterceptor) with certificate pinning configured.
+const _pinnedProdConfig = AppConfig(
+  environment: Environment.prod,
+  apiBaseUrl: 'https://api.example.test',
+  certificatePins: ['test-pin'],
+  idleTimeout: null,
+);
+
+/// Fails every request as the pinning adapter fails a server whose certificate matches no configured pin.
+class _PinMismatchAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    throw const CertificatePinningException('api.example.test', 443);
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
 
 Widget _buildTestWidget(MockDynamicFormBloc bloc) {
   return MaterialApp(
@@ -89,6 +124,47 @@ void main() {
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
         expect(find.text('Retry'), findsOneWidget);
+      });
+
+      // Regression: the error state showed the exception text, host and port included.
+      testWidgets('shows the insecure-connection message, not the host and port, when a pin mismatch fails the load', (
+        tester,
+      ) async {
+        // The page wired as its route wires it, on the production ApiClient chain.
+        final apiClient = ApiClient(appConfig: _pinnedProdConfig, secureStorage: FlutterSecureStorageAdapter());
+        apiClient.instance.httpClientAdapter = _PinMismatchAdapter();
+
+        await tester.pumpWidget(
+          MaterialApp(
+            localizationsDelegates: const [
+              S.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: S.delegate.supportedLocales,
+            home: Scaffold(
+              body: RepositoryProvider<IDynamicFormRepository>.value(
+                value: DynamicFormRepository(apiClient),
+                child: Builder(
+                  builder: (context) =>
+                      DynamicFormsFeatureRoutes.withBloc(context, const DynamicFormPage(formId: 'test_form')),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(AppErrorState), findsOneWidget);
+        expect(
+          find.text(
+            'The connection could not be verified as secure, so it was blocked. Try again later or on another network.',
+          ),
+          findsOneWidget,
+        );
+        expect(find.textContaining('api.example.test'), findsNothing);
+        expect(find.textContaining('443'), findsNothing);
       });
     });
 

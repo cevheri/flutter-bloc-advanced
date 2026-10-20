@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 
 /// Sealed state for the dynamic-form flow.
@@ -67,12 +68,17 @@ final class DynamicFormSubmitted extends DynamicFormState {
 /// per-instance [submitPathParams] when present so a retry submit reuses
 /// the same URL.
 final class DynamicFormFailure extends DynamicFormState {
-  const DynamicFormFailure({required this.error, this.schema, this.submitPathParams});
+  const DynamicFormFailure({required this.error, this.errorCode, this.schema, this.submitPathParams});
 
   final String error;
+
+  /// Set when the failure has a translated message, which the UI shows
+  /// via `errorCode.resolve(context)` instead of [error].
+  final AppErrorCode? errorCode;
+
   final FormSchemaEntity? schema;
   final String? submitPathParams;
 
   @override
-  List<Object?> get props => [error, schema, submitPathParams];
+  List<Object?> get props => [error, errorCode, schema, submitPathParams];
 }

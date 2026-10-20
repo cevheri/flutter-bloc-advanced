@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinning_adapter.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
@@ -284,6 +285,9 @@ class ApiClient {
     // If the wrapped error is already an AppException (e.g. from MockInterceptor),
     // unwrap and rethrow it directly.
     if (e.error is AppException) return e.error as AppException;
+    // A pin mismatch gets its own type, so repositories can report AppErrorCode.networkCertInvalid instead of a
+    // generic communication error. Its message names the host and port for the log.
+    if (e.error is CertificatePinningException) return UntrustedCertificateException(e.error.toString());
 
     switch (e.type) {
       case DioExceptionType.connectionTimeout:

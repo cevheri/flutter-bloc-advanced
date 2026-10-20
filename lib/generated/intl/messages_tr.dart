@@ -75,7 +75,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_generic": MessageLookupByLibrary.simpleMessage("Bir şeyler ters gitti"),
     "error_link_open_failed": m0,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
-      "Sunucu kimliği doğrulanamadı. Bağlantı engellendi.",
+      "Bağlantının güvenli olduğu doğrulanamadığı için engellendi. Daha sonra ya da başka bir ağda tekrar deneyin.",
     ),
     "error_settings_change_language_failed": MessageLookupByLibrary.simpleMessage("Dil değiştirilemedi"),
     "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage("Yönetici kullanıcı silinemez"),

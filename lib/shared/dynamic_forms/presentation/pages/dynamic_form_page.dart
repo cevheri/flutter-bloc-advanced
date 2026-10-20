@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_s
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_error_state.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 
 /// Page that renders a dynamic form from a remote JSON schema.
@@ -40,9 +41,9 @@ class _DynamicFormPageState extends State<DynamicFormPage> {
       },
       builder: (context, state) => switch (state) {
         DynamicFormInitial() || DynamicFormLoading() => const Center(child: CircularProgressIndicator()),
-        DynamicFormFailure(:final error) => AppErrorState(
+        DynamicFormFailure(:final error, :final errorCode) => AppErrorState(
           title: 'Error',
-          description: error,
+          description: errorCode?.resolve(context) ?? error,
           onRetry: () => context.read<DynamicFormBloc>().add(DynamicFormLoadEvent(widget.formId)),
         ),
         DynamicFormLoaded(:final schema) ||

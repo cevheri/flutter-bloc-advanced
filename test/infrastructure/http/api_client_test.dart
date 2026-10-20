@@ -559,6 +559,22 @@ void main() {
       expect(adapter.requests, hasLength(2));
     });
 
+    // Regression: a pin mismatch reached the repositories as a plain FetchDataException, so a screen showed its text,
+    // host and port included, instead of a message the user can act on. The host and port stay in the log.
+    test('fails a pin mismatch with UntrustedCertificateException and logs the host and port', () async {
+      final errors = <String>[];
+      void recordError(OutputEvent event) {
+        if (event.level == Level.error) errors.addAll(event.lines);
+      }
+
+      Logger.addOutputListener(recordError);
+      addTearDown(() => Logger.removeOutputListener(recordError));
+      adapter.fail(const CertificatePinningException('api.example.test', 443));
+
+      await expectLater(client.get('/api/transport/untrusted'), throwsA(isA<UntrustedCertificateException>()));
+      expect(errors, contains(contains('api.example.test:443')));
+    });
+
     test('records failures on ResilienceInterceptor.instance, which the dashboard reads (#60)', () async {
       adapter.reply(500);
 

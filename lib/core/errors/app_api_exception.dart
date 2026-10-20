@@ -20,6 +20,17 @@ class FetchDataException extends AppException {
   FetchDataException(String message) : super(message, "Error During Communication: ");
 }
 
+/// Thrown when the server presents a certificate the app does not trust,
+/// such as one that matches none of the configured certificate pins. The
+/// connection may be intercepted.
+///
+/// A repository should report it with `AppErrorCode.networkCertInvalid` so
+/// the UI can show a translated message. The message of this exception names the
+/// host and port and is meant for the log.
+final class UntrustedCertificateException extends FetchDataException {
+  UntrustedCertificateException(super.message);
+}
+
 final class BadRequestException extends AppException {
   BadRequestException([String? message]) : super(message, "Invalid Request: ");
 }

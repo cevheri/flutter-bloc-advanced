@@ -745,10 +745,10 @@ class S {
     return Intl.message('Back to home', name: 'forbidden_back_home', desc: '', args: []);
   }
 
-  /// `Could not verify the server's identity. Connection blocked.`
+  /// `The connection could not be verified as secure, so it was blocked. Try again later or on another network.`
   String get error_network_cert_invalid {
     return Intl.message(
-      'Could not verify the server\'s identity. Connection blocked.',
+      'The connection could not be verified as secure, so it was blocked. Try again later or on another network.',
       name: 'error_network_cert_invalid',
       desc: '',
       args: [],

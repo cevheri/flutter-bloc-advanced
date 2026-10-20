@@ -107,7 +107,8 @@ How it works:
   `ResilienceInterceptor` does not retry it.
   `CacheInterceptor` never answers it from cache: the connection may be intercepted, so the request fails instead of showing earlier data.
   Retries and the token-refresh call go through the same pinned adapter as the original request.
-  `AppErrorCode.networkCertInvalid` is available for repository-layer code paths that want to surface a typed error.
+  `ApiClient` throws it as an `UntrustedCertificateException` (`lib/core/errors/app_api_exception.dart`), a `FetchDataException` whose message names the host and port for the log.
+  So far only `DynamicFormRepository` reports it as an `AppError` with the `AppErrorCode.networkCertInvalid` key, so the dynamic form pages show a translated message instead of the exception text; the other repositories still return a generic error.
 - **Web platform is a hard no-op.** Browsers control TLS; from JS we cannot intercept the handshake. Use HSTS / CT pinning at the server side instead.
 
 Extract pins from your live backend:

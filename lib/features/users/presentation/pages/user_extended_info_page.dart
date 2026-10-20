@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_fo
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/widgets/dynamic_form_renderer.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
@@ -49,9 +50,10 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
               ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_saved)));
               if (context.canPop()) context.pop();
-            case DynamicFormFailure(:final error, :final schema) when schema != null:
+            case DynamicFormFailure(:final error, :final errorCode, :final schema) when schema != null:
+              final message = errorCode?.resolve(context) ?? error;
               ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_save_failed(error))));
+                  .showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_save_failed(message))));
             case _:
               break;
           }
@@ -61,8 +63,10 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
           DynamicFormLoaded(:final schema, :final initialValues) => _renderForm(schema, initialValues, readOnly: false),
           DynamicFormSubmitting(:final schema) => _renderForm(schema, const {}, readOnly: true),
           DynamicFormSubmitted(:final schema) => _renderForm(schema, const {}, readOnly: true),
-          DynamicFormFailure(:final error, :final schema) =>
-            schema == null ? Center(child: Text(error)) : _renderForm(schema, const {}, readOnly: false),
+          DynamicFormFailure(:final error, :final errorCode, :final schema) =>
+            schema == null
+                ? Center(child: Text(errorCode?.resolve(context) ?? error))
+                : _renderForm(schema, const {}, readOnly: false),
         },
       ),
     );

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
@@ -36,7 +37,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       case Success(:final data):
         emit(DynamicFormLoaded(schema: data));
       case Failure(:final error):
-        emit(DynamicFormFailure(error: error.message));
+        emit(DynamicFormFailure(error: error.message, errorCode: AppErrorCode.fromKey(error.code)));
     }
   }
 
@@ -67,7 +68,14 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       case Success(:final data):
         emit(DynamicFormSubmitted(schema: schema, submitResponse: data, submitPathParams: submitPathParams));
       case Failure(:final error):
-        emit(DynamicFormFailure(error: error.message, schema: schema, submitPathParams: submitPathParams));
+        emit(
+          DynamicFormFailure(
+            error: error.message,
+            errorCode: AppErrorCode.fromKey(error.code),
+            schema: schema,
+            submitPathParams: submitPathParams,
+          ),
+        );
     }
   }
 
@@ -83,7 +91,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       case Success(:final data):
         emit(DynamicFormLoaded(schema: data.schema, initialValues: data.values, submitPathParams: event.pathParams));
       case Failure(:final error):
-        emit(DynamicFormFailure(error: error.message));
+        emit(DynamicFormFailure(error: error.message, errorCode: AppErrorCode.fromKey(error.code)));
     }
   }
 }
