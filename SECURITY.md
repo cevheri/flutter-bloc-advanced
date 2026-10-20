@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Only the latest version of advanced-flutter-template-with-bloc is supported with security updates.
+Only the latest version of this project is supported with security updates.
 
 ## Reporting a Vulnerability
 

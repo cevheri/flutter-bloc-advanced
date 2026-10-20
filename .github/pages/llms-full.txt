@@ -99,8 +99,8 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - Session/auth state is app-level
 - Shell state is app-level
 - Feature state remains inside the feature module
-- BLoCs use Equatable for state equality, copyWith() for immutable updates
-- States use status enums: initial, loading, success, failure
+- BLoCs use Equatable for state equality
+- States default to sealed class hierarchies that the UI renders with exhaustive switch expressions; a few keep a single state with a status enum where CLAUDE.md allows it
 
 ### Routing Rules
 
@@ -111,7 +111,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 
 ## Features
 
-### Account (14 files)
+### Account
 
 - `application/`: AccountBloc + use cases for profile management
 - `data/models/`: ChangePassword model
@@ -120,7 +120,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - `navigation/`: AccountFeatureRoutes
 - `presentation/pages/`: AccountPage
 
-### Auth (30 files)
+### Auth
 
 - `application/`: LoginBloc, RegisterBloc, ForgotPasswordBloc, ChangePasswordBloc + use cases
 - `data/models/`: JWTToken, UserJwt, SendOtpRequest, VerifyOtpRequest
@@ -131,7 +131,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - `navigation/`: AuthFeatureRoutes
 - `presentation/pages/`: LoginPage, RegisterPage, ForgotPasswordPage, ChangePasswordPage
 
-### Dashboard (12 files)
+### Dashboard
 
 - `application/`: DashboardCubit + use cases
 - `data/models/`: DashboardModel
@@ -141,7 +141,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - `navigation/`: DashboardFeatureRoutes
 - `presentation/pages/`: DashboardPage, DashboardHomePage
 
-### Lifecycle (11 files)
+### Lifecycle
 
 - `application/`: LifecycleBloc, which checks the remote app configuration for a required update or maintenance mode
 - `data/models/`: AppConfigModel
@@ -150,13 +150,13 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - `domain/repositories/`: ILifecycleRepository
 - `presentation/pages/`: LifecycleGate, ForceUpdateScreen, MaintenanceScreen
 
-### Settings (10 files)
+### Settings
 
 - `application/`: SettingsBloc + use cases
 - `navigation/`: SettingsFeatureRoutes
 - `presentation/pages/`: SettingsPage, SettingsScreen
 
-### Users (24 files)
+### Users
 
 - `application/`: UserBloc, AuthorityBloc + use cases
 - `data/models/`: User, Authority, UserModel
@@ -310,7 +310,7 @@ fvm flutter build web --target lib/main/main_prod.dart              # Web
 ### Test
 
 ```bash
-fvm flutter test                    # Run all tests (1600+)
+fvm flutter test                    # Run all tests
 fvm flutter test --coverage         # With coverage
 fvm dart analyze                    # Static analysis
 fvm dart format . --line-length=120 # Format code
@@ -318,7 +318,7 @@ fvm dart format . --line-length=120 # Format code
 
 ## Testing Structure
 
-1600+ tests organized by feature:
+Tests are organized by feature:
 
 ```
 test/

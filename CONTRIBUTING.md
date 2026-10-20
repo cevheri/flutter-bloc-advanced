@@ -89,7 +89,8 @@ bash
 ## Code of Conduct
 
 By contributing to this project, you agree to adhere to our Code of Conduct.
-Contact
+
+## Contact
 
 If you have any questions, ask in this repository's Discussions or open an issue.
 
