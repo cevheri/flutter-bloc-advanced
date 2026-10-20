@@ -193,7 +193,10 @@ class _KpiCard extends StatelessWidget {
             children: [
               Icon(icon, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text(label, style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant)),
+              // Four KPI columns leave a narrow card, so a long label wraps instead of overflowing.
+              Flexible(
+                child: Text(label, style: textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant)),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -244,7 +247,12 @@ class _CircuitBreakerHealthSection extends StatelessWidget {
             children: [
               Icon(Icons.monitor_heart_outlined, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text('Circuit Breaker Health', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Flexible(
+                child: Text(
+                  'Circuit Breaker Health',
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -343,7 +351,9 @@ class _FeatureFlagsSection extends StatelessWidget {
             children: [
               Icon(Icons.flag_outlined, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text('Feature Flags', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Flexible(
+                child: Text('Feature Flags', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -402,7 +412,9 @@ class _AppConfigSection extends StatelessWidget {
             children: [
               Icon(Icons.settings_applications_outlined, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text('App Configuration', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Flexible(
+                child: Text('App Configuration', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -470,7 +482,9 @@ class _InterceptorChainSection extends StatelessWidget {
             children: [
               Icon(Icons.layers_outlined, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text('Interceptor Chain', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Flexible(
+                child: Text('Interceptor Chain', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
@@ -540,7 +554,9 @@ class _QuickActionsSection extends StatelessWidget {
             children: [
               Icon(Icons.bolt, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
-              Text('Quick Actions', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              Flexible(
+                child: Text('Quick Actions', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+              ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),

@@ -128,5 +128,29 @@ void main() {
       expect(find.text('Clear Cache'), findsOneWidget);
       expect(find.text('Reset Circuit Breakers'), findsOneWidget);
     });
+
+    // The test font is wider than the real one, so with a larger text scale every card title is wider than a phone's
+    // card.
+    testWidgets('wraps the card titles instead of overflowing on a phone with larger text', (tester) async {
+      tester.view.physicalSize = const Size(360, 800);
+      tester.view.devicePixelRatio = 1.0;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      when(() => cubit.state).thenReturn(
+        SystemDashboardState(
+          status: SystemDashboardStatus.loaded,
+          endpointHealthList: const [EndpointHealth(endpoint: '/api/users', state: CircuitBreakerState.closed)],
+          featureFlags: const {'darkMode': true},
+          interceptors: const [InterceptorInfo(name: 'AuthInterceptor', order: 1, detail: 'Attaches JWT')],
+        ),
+      );
+
+      await tester.pumpWidget(_buildTestWidget(cubit));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Quick Actions'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
   });
 }
