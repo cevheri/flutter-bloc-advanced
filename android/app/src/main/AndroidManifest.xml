@@ -1,8 +1,19 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Required for network access in release builds, see
+         https://docs.flutter.dev/data-and-backend/networking. The debug and profile manifests declare
+         it only for the Flutter tool, so release builds must not depend on a plugin merging it in. -->
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Backup is disabled, as the flutter_secure_storage README recommends: the session tokens are
+         encrypted with an Android Keystore key that is never backed up, so a restored copy cannot be
+         decrypted. Device-to-device transfers can ignore allowBackup on Android 12 and higher, so the rules in
+         res/xml keep shared preferences out of them, and out of backups if backup is ever turned on. -->
     <application
         android:label="flutter_bloc_advance"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:allowBackup="false"
+        android:fullBackupContent="@xml/backup_rules"
+        android:dataExtractionRules="@xml/data_extraction_rules">
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -40,6 +51,13 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- url_launcher's canLaunchUrl returns false on Android 11 and higher for any scheme not listed
+             here, see https://pub.dev/packages/url_launcher#android. The app only launches https links
+             (documentation, community and store URLs); add an intent for each new scheme. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

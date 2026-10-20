@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backup rules for Android 12 (API 31) and higher, see
+     https://developer.android.com/identity/data/autobackup. Cloud backup is already off through
+     android:allowBackup="false", but device-to-device transfers can ignore that attribute for apps targeting
+     Android 12 and higher (AOSP does for apps targeting API 31+, and Android's docs say so for some
+     manufacturers' devices), so these rules are what keep the excluded files out of a transfer.
+
+     flutter_secure_storage keeps the encrypted session tokens and their wrapped key in shared preferences,
+     while the Android Keystore key that unwraps them never leaves the device. A restored copy fails with
+     "Failed to unwrap key" and the plugin deletes it. The whole directory is excluded because the plugin's
+     file names differ between versions and with AndroidOptions.storageNamespace. This also leaves out the
+     language and theme settings, and the cached username and roles, which are only valid together with
+     the session. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="."/>
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="."/>
+    </device-transfer>
+</data-extraction-rules>

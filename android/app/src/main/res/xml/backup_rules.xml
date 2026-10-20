@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Backup rules for Android 11 (API 30) and lower, see data_extraction_rules.xml for the reasons.
+     They only take effect if android:allowBackup is turned back on. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="."/>
+</full-backup-content>
