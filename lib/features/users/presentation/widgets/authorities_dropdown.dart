@@ -34,9 +34,43 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
   Widget build(BuildContext context) {
     return BlocBuilder<AuthorityBloc, AuthorityState>(
       builder: (context, state) => switch (state) {
-        AuthorityInitialState() || AuthorityLoadingState() => const SizedBox.shrink(),
+        AuthorityInitialState() || AuthorityLoadingState() => _buildLoading(context),
         AuthorityLoadSuccessState(:final authorities) => _buildField(context, authorities),
         AuthorityLoadFailureState() => _buildLoadFailure(context),
+      },
+    );
+  }
+
+  /// Shown while the roles load. It keeps the field in the form with the initial role, so a user saved in the
+  /// meantime keeps that role, and a required role still stops a user from being saved without one.
+  Widget _buildLoading(BuildContext context) {
+    return FormBuilderField<String>(
+      name: 'authorities',
+      initialValue: widget.initialValue ?? '',
+      validator: widget.isRequired ? FormBuilderValidators.required(errorText: S.of(context).required_field) : null,
+      builder: (field) {
+        final cs = Theme.of(context).colorScheme;
+        final tt = Theme.of(context).textTheme;
+        final selectedValue = field.value ?? '';
+
+        return InputDecorator(
+          isEmpty: selectedValue.isEmpty,
+          decoration: InputDecoration(
+            hintText: widget.hintText ?? S.of(context).authorities,
+            errorText: field.errorText,
+            enabled: widget.enabled,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            suffixIcon: const Padding(
+              padding: EdgeInsets.all(12),
+              child: SizedBox.square(dimension: 16, child: CircularProgressIndicator(strokeWidth: 2)),
+            ),
+          ),
+          child: Text(
+            selectedValue,
+            overflow: TextOverflow.ellipsis,
+            style: tt.bodyMedium?.copyWith(color: cs.onSurface),
+          ),
+        );
       },
     );
   }
