@@ -151,6 +151,7 @@ if (isPublicEndpoint(options)) {
   handler.next(options);
   return;
 }
+options.extra[sessionGenerationKey] = SessionGeneration.current;
 String? jwtToken;
 try {
   jwtToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
@@ -192,6 +193,10 @@ Always runs, in every mode.
 That Dio skips the `MockInterceptor` at the end of the chain, so outside production `ApiClient` gives it a `MockInterceptor` of its own (`_mockRefreshDio`).
 The mock answers the refresh from `POST_api_token_refresh.json`, the request that got the 401 is sent again with the new token, and the session continues, as it does against the server.
 In production the refresh Dio has no interceptors and uses the adapter of the client's Dio, so the refresh token keeps the certificate pinning.
+
+`AuthInterceptor` records on each request the session generation it goes out under, before it reads the token (`SessionGeneration` in `lib/infrastructure/storage/session_generation.dart`).
+A logout or the end of the session wipes the stored session inside `SessionGeneration.wipe`.
+So a 401 for a request whose session has been wiped since, or is being wiped, gets no refresh, and a refresh still on its way drops the rotated tokens instead of storing a session that a relaunch would restore.
 
 ## Mock File Naming Convention
 

@@ -1,6 +1,7 @@
 @Tags(['widget'])
 library;
 
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -10,6 +11,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/di/app_scope.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
@@ -154,6 +156,65 @@ Future<BuildContext> _pumpExpiredSession(WidgetTester tester, AppDependencies de
   await tester.pumpAndSettle();
   expect(session.state, const SessionUnauthenticated(reason: SessionExpiredReason.expired));
   return scope;
+}
+
+/// Answers like the server while a token refresh races the end of the session: a request with [staleJwt] gets 401, the
+/// refresh waits for [releaseRefresh] and then rotates the tokens to [freshJwt], and a request with [freshJwt] gets the
+/// account. Records each request with its Authorization header.
+class _RefreshRaceServer implements HttpClientAdapter {
+  _RefreshRaceServer({required this.staleJwt, required this.freshJwt});
+
+  final String staleJwt;
+  final String freshJwt;
+  final requests = <String>[];
+  final refreshReceived = Completer<void>();
+  final releaseRefresh = Completer<void>();
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    final route = '${options.method} ${options.path}';
+    final authorization = switch (options.headers['Authorization']) {
+      final String header when header == 'Bearer $staleJwt' => 'Bearer stale',
+      final String header when header == 'Bearer $freshJwt' => 'Bearer fresh',
+      final other => '$other',
+    };
+    requests.add('$route $authorization');
+    ResponseBody json(int statusCode, Object body) => ResponseBody.fromString(
+      jsonEncode(body),
+      statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+    if (route == 'POST /api/token/refresh') {
+      refreshReceived.complete();
+      await releaseRefresh.future;
+      return json(200, {'id_token': freshJwt, 'refresh_token': 'rotated-refresh-token'});
+    }
+    if (authorization == 'Bearer fresh') {
+      return json(200, {
+        'id': 'user-1',
+        'login': 'admin',
+        'authorities': ['ROLE_ADMIN'],
+      });
+    }
+    return json(401, {'title': 'Unauthorized'});
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// Pumps until [done] holds, so a test can run a request, a token refresh and the end of the session in a fixed order.
+Future<void> _pumpUntil(WidgetTester tester, bool Function() done) async {
+  for (var i = 0; i < 50 && !done(); i++) {
+    await tester.pump(const Duration(milliseconds: 100));
+  }
+  expect(done(), isTrue);
 }
 
 /// The server's answer to a refresh, which a sign-in must never ask for.
@@ -351,5 +412,75 @@ void main() {
 
       expect(sessionRepository.clears, 1);
     });
+
+    // Regression: a token refresh still on its way when the session ended stored the rotated tokens after the wipe.
+    // The request it sent again then succeeded, so nothing ended the session a second time, and a relaunch signed the
+    // user back in.
+    for (final (name, endSession) in <(String, Future<void> Function(BuildContext scope))>[
+      (
+        'the user logs out',
+        (scope) async {
+          final menu = scope.read<MenuBloc>();
+          menu.add(const Logout());
+          await menu.stream.firstWhere((state) => state.isLogout);
+        },
+      ),
+      (
+        'the idle timeout fires',
+        (scope) => scope.read<SessionCubit>().endSession(reason: SessionExpiredReason.idleTimeout),
+      ),
+    ]) {
+      testWidgets('leaves no session for a relaunch to restore when $name during a token refresh', (tester) async {
+        final staleJwt = _unexpiredJwt();
+        final freshJwt = _jwt(exp: 4102444801);
+        await FlutterSecureStorageAdapter().write(SecureStorageKeys.jwtToken.key, staleJwt);
+        await FlutterSecureStorageAdapter().write(SecureStorageKeys.refreshToken.key, 'stored-refresh-token');
+        await AppLocalStorage().save(StorageKeys.roles.key, <String>['ROLE_ADMIN']);
+        final dependencies = _CountingDependencies();
+        late BuildContext scope;
+        await tester.pumpWidget(
+          AppScope(
+            dependencies: dependencies,
+            defaultLocale: const Locale('en'),
+            child: Builder(
+              builder: (context) {
+                scope = context;
+                return const SizedBox();
+              },
+            ),
+          ),
+        );
+        final session = scope.read<SessionCubit>();
+        await tester.pumpAndSettle();
+        expect(session.state, isA<SessionAuthenticated>());
+        final server = _RefreshRaceServer(staleJwt: staleJwt, freshJwt: freshJwt);
+        final apiClient = scope.read<ApiClient>();
+        apiClient.instance.httpClientAdapter = server;
+
+        // The stored token is rejected, so the request starts a refresh, and the session ends before the server
+        // answers the refresh.
+        Object? outcome;
+        apiClient
+            .get('/account')
+            .then<void>((response) => outcome = response, onError: (Object error) => outcome = error);
+        await _pumpUntil(tester, () => server.refreshReceived.isCompleted);
+        var ended = false;
+        endSession(scope).then((_) => ended = true);
+        await _pumpUntil(tester, () => ended);
+        server.releaseRefresh.complete();
+        await _pumpUntil(tester, () => outcome != null);
+
+        expect(outcome, isA<UnauthorizedException>());
+        expect(server.requests, ['GET /account Bearer stale', 'POST /api/token/refresh null']);
+        expect(dependencies.sessionExpiredCalls, 0);
+        expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), isNull);
+        expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), isNull);
+        // A relaunch restores the session from secure storage, as AppScope does on launch.
+        final relaunched = SessionCubit(secureStorage: FlutterSecureStorageAdapter(), appConfig: _prodConfig);
+        addTearDown(relaunched.close);
+        await relaunched.restore();
+        expect(relaunched.state, const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
+      });
+    }
   });
 }

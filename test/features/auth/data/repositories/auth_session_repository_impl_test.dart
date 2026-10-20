@@ -1,10 +1,14 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -337,5 +341,220 @@ void main() {
       expect(await storage.read('jwtToken'), isNull);
       expect(await cache.read('GET_/account'), isNull);
     });
+
+    // A token refresh drops its rotated tokens once the session it was asked for has ended. Unless the wipe counts as
+    // that end from its first storage call until it finishes, and a generation read while it ran counts as ended once
+    // it finishes, a refresh can store its tokens during or after the wipe, and a relaunch restores the session.
+    test('clear ends the session generation for the whole wipe and again when it finishes', () async {
+      final before = SessionGeneration.current;
+      final recording = _GenerationRecordingSecureStorage();
+      final cache = _GenerationRecordingCacheStorage();
+      await recording.write(SecureStorageKeys.jwtToken.key, 'TOKEN');
+      recording.calls.clear();
+
+      await AuthSessionRepository(secureStorage: recording, storage: storage, cacheStorage: cache).clear();
+
+      expect(SessionGeneration.hasEnded(before), isTrue);
+      // The token deletes and the cache clear, the first and the last storage calls of the wipe.
+      expect(recording.calls, hasLength(2));
+      expect(recording.calls.map((call) => call.ended), everyElement(isTrue));
+      expect(cache.endedWhenCleared, isTrue);
+      expect(SessionGeneration.hasEnded(recording.calls.first.generation), isTrue);
+    });
   });
+
+  // A logout or the end of the session wipes the stored session while requests may still get 401 and ask for a token
+  // refresh. TokenRefreshInterceptor must not store the rotated tokens of a session the wipe ended, or a relaunch
+  // restores it.
+  group('AuthSessionRepository.clear during a token refresh', () {
+    late Dio dio;
+    late _RefreshStub refreshStub;
+    late int sessionExpiredCalls;
+
+    setUp(() {
+      dio = Dio(BaseOptions(baseUrl: 'https://api.example.test'))..interceptors.add(_OkStub());
+      refreshStub = _RefreshStub();
+      sessionExpiredCalls = 0;
+    });
+
+    tearDown(() => dio.close());
+
+    TokenRefreshInterceptor refreshInterceptor(ISecureStorage secureStorage) => TokenRefreshInterceptor(
+      dio: dio,
+      secureStorage: secureStorage,
+      onSessionExpired: () => sessionExpiredCalls++,
+      refreshDioFactory: (source) => Dio(BaseOptions(baseUrl: source.options.baseUrl))..interceptors.add(refreshStub),
+    );
+
+    // Regression: a logout that started while the 401 read the stored token let the refresh read the refresh token
+    // before the wipe deleted it, and the refresh stored the rotated tokens after the wipe, so a relaunch restored the
+    // session the user ended.
+    test('stores no tokens when the wipe starts while the 401 reads the stored token', () async {
+      final inOrder = _InOrderSecureStorage()
+        ..store[SecureStorageKeys.jwtToken.key] = 'old-jwt'
+        ..store[SecureStorageKeys.refreshToken.key] = 'old-refresh';
+      final sent = await _send(AuthInterceptor(secureStorage: inOrder), RequestOptions(path: '/account'));
+      final unauthorized = DioException(
+        requestOptions: sent,
+        response: Response(requestOptions: sent, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      final handled = refreshInterceptor(inOrder).onError(unauthorized, handler);
+      // The user logs out while the 401 reads the stored token.
+      final cleared = AuthSessionRepository(secureStorage: inOrder, storage: storage).clear();
+      await Future.wait([handled, cleared]);
+
+      expect(inOrder.store, isEmpty, reason: 'a relaunch restores the tokens that are stored');
+      expect(refreshStub.requests, 0, reason: 'the session the logout ended is not refreshed');
+      expect(handler.passedOn, same(unauthorized), reason: 'the request fails with its 401');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    // The refresh token stored after a logout belongs to the session the user signed in to since, not to the request.
+    test('does not refresh the next session for a request sent before the logout', () async {
+      await secure.write(SecureStorageKeys.refreshToken.key, 'old-refresh');
+      // No token is stored, so the request goes out without one.
+      final sent = await _send(AuthInterceptor(secureStorage: secure), RequestOptions(path: '/account'));
+      await AuthSessionRepository(secureStorage: secure, storage: storage).clear();
+      await secure.write(SecureStorageKeys.jwtToken.key, 'signed-in-jwt');
+      await secure.write(SecureStorageKeys.refreshToken.key, 'signed-in-refresh');
+      final unauthorized = DioException(
+        requestOptions: sent,
+        response: Response(requestOptions: sent, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await refreshInterceptor(secure).onError(unauthorized, handler);
+
+      expect(refreshStub.requests, 0);
+      expect(handler.passedOn, same(unauthorized), reason: 'the request fails with its 401');
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'signed-in-jwt');
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), 'signed-in-refresh');
+      expect(sessionExpiredCalls, 0);
+    });
+  });
+}
+
+/// In-memory ISecureStorage that records, at each call, the session generation and whether it counts as ended.
+class _GenerationRecordingSecureStorage extends _MemorySecureStorage {
+  final calls = <({int generation, bool ended})>[];
+
+  void _record() {
+    final generation = SessionGeneration.current;
+    calls.add((generation: generation, ended: SessionGeneration.hasEnded(generation)));
+  }
+
+  @override
+  Future<String?> read(String key) {
+    _record();
+    return super.read(key);
+  }
+
+  @override
+  Future<void> write(String key, String value) {
+    _record();
+    return super.write(key, value);
+  }
+
+  @override
+  Future<void> delete(String key) {
+    _record();
+    return super.delete(key);
+  }
+}
+
+/// Cache that records whether the session generation counted as ended when it was cleared.
+class _GenerationRecordingCacheStorage implements ICacheStorage {
+  bool? endedWhenCleared;
+
+  @override
+  Future<CacheEntry?> read(String key) async => null;
+  @override
+  Future<void> write(String key, String data, {Duration? ttl}) async {}
+  @override
+  Future<void> remove(String key) async {}
+  @override
+  Future<void> clear() async => endedWhenCleared = SessionGeneration.hasEnded(SessionGeneration.current);
+}
+
+/// ISecureStorage that answers like the platform store: each call takes effect when it is made, and the answers come
+/// back in the order of the calls, each a moment after the one before.
+class _InOrderSecureStorage implements ISecureStorage {
+  final store = <String, String>{};
+  Future<void> _lastAnswer = Future<void>.value();
+
+  Future<T> _answer<T>(T value) {
+    final answer = _lastAnswer.then((_) => Future<void>.delayed(const Duration(milliseconds: 1)));
+    _lastAnswer = answer;
+    return answer.then((_) => value);
+  }
+
+  @override
+  Future<String?> read(String key) => _answer(store[key]);
+
+  @override
+  Future<void> write(String key, String value) {
+    store[key] = value;
+    return _answer<void>(null);
+  }
+
+  @override
+  Future<void> delete(String key) {
+    store.remove(key);
+    return _answer<void>(null);
+  }
+
+  @override
+  Future<void> deleteAll() {
+    store.clear();
+    return _answer<void>(null);
+  }
+}
+
+/// Sends [options] through [interceptor], as the client sends every request, and returns them as they leave it.
+Future<RequestOptions> _send(AuthInterceptor interceptor, RequestOptions options) async {
+  final handler = _TestRequestHandler();
+  await interceptor.onRequest(options, handler);
+  return handler.sent!;
+}
+
+class _TestRequestHandler extends RequestInterceptorHandler {
+  RequestOptions? sent;
+
+  @override
+  void next(RequestOptions requestOptions) => sent = requestOptions;
+}
+
+class _TestErrorHandler extends ErrorInterceptorHandler {
+  DioException? passedOn;
+
+  @override
+  void next(DioException err) => passedOn = err;
+
+  @override
+  void resolve(Response<dynamic> response) {}
+
+  @override
+  void reject(DioException error, [bool callFollowingErrorInterceptor = false]) {}
+}
+
+/// Answers the token refresh with rotated tokens and counts the refresh requests.
+class _RefreshStub extends Interceptor {
+  int requests = 0;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    requests++;
+    handler.resolve(
+      Response(requestOptions: options, statusCode: 200, data: '{"id_token":"new-jwt","refresh_token":"new-refresh"}'),
+    );
+  }
+}
+
+/// Answers every request with 200, as the server answers a request sent again with a fresh token.
+class _OkStub extends Interceptor {
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) =>
+      handler.resolve(Response(requestOptions: options, statusCode: 200, data: '{}'));
 }

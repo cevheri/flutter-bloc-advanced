@@ -269,9 +269,11 @@ class SessionCubit extends Cubit<SessionState> {
   /// The wipe depends on what is stored, not on [state]. It is skipped
   /// when no token is stored, so a 401 from a request still in flight when
   /// the user signed out leaves storage alone. A stored token is
-  /// wiped even when the cubit is signed out: a token refresh still in
-  /// flight when the session ended can store a session that a restart
-  /// would restore.
+  /// wiped even when the cubit is signed out, so no session the app has
+  /// ended stays stored for a restart to restore. The wipe ends the
+  /// session generation, so a token refresh still on its way does not
+  /// leave its rotated tokens stored: it drops them, or takes back what
+  /// it stored when the wipe ran meanwhile.
   ///
   /// A failed wipe is logged at error level with the storage error, which
   /// names each step that failed, and the in-memory session still ends:

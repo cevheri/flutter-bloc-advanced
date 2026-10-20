@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 
 /// Persistence-layer implementation of [IAuthSessionRepository].
 ///
@@ -98,8 +99,12 @@ class AuthSessionRepository implements IAuthSessionRepository {
     }
   }
 
+  /// The whole wipe runs inside [SessionGeneration.wipe], so a token refresh on its way when the session ends does not
+  /// leave the rotated tokens stored: it drops them, or takes back what it stored when the wipe ran meanwhile.
   @override
-  Future<Result<void>> clear() async {
+  Future<Result<void>> clear() => SessionGeneration.wipe(_clear);
+
+  Future<Result<void>> _clear() async {
     // Best-effort across BOTH backends: a throw on the first secure
     // delete must not skip the second key or the local clear. Any
     // leftover token would let AuthInterceptor re-attach it on the

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Covers the four behaviors of [AuthInterceptor] that every outgoing
@@ -11,6 +12,8 @@ import 'package:flutter_test/flutter_test.dart';
 ///    no `Authorization` header, whatever is stored.
 /// 4. Secure read throws → request proceeds anonymously (does NOT
 ///    crash the interceptor chain).
+/// 5. Any other request records the session generation it goes out
+///    under, read before the token.
 ///
 /// The interceptor is the single most-called piece of code in the
 /// project; running the chain through `Interceptor.onRequest` directly
@@ -84,7 +87,40 @@ void main() {
       expect(handler.passedOptions, isNotNull, reason: 'handler.next must still be called');
       expect(handler.passedOptions!.headers.containsKey('Authorization'), isFalse);
     });
+
+    // A logout can start and finish while the token is read, and the read still answers with the token of the session
+    // that ended. The request has to count as sent under that session, so its 401 refreshes nothing.
+    test('records the session generation before it reads the token', () async {
+      final interceptor = AuthInterceptor(secureStorage: _WipeWhileReadingSecureStorage('jwt-value'));
+      final handler = _CapturingRequestHandler();
+
+      await interceptor.onRequest(RequestOptions(path: '/api/account'), handler);
+
+      expect(handler.passedOptions!.headers['Authorization'], 'Bearer jwt-value');
+      final sentUnder = AuthInterceptor.sessionGenerationOf(handler.passedOptions!);
+      expect(sentUnder, isNotNull);
+      expect(SessionGeneration.hasEnded(sentUnder!), isTrue);
+    });
   });
+}
+
+/// Answers a read with [_token] only after a whole wipe of the stored session ran, as a read can when a logout starts
+/// and finishes while the read is on its way.
+class _WipeWhileReadingSecureStorage implements ISecureStorage {
+  _WipeWhileReadingSecureStorage(this._token);
+  final String _token;
+  @override
+  Future<String?> read(String key) async {
+    await SessionGeneration.wipe(() async {});
+    return _token;
+  }
+
+  @override
+  Future<void> write(String key, String value) async {}
+  @override
+  Future<void> delete(String key) async {}
+  @override
+  Future<void> deleteAll() async {}
 }
 
 class _FixedSecureStorage implements ISecureStorage {

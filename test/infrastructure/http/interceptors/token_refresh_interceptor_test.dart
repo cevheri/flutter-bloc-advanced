@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 
@@ -43,6 +46,13 @@ class _MemorySecureStorage implements ISecureStorage {
   @override
   Future<void> deleteAll() async => _store.clear();
 }
+
+/// A request to [path] as AuthInterceptor sends it, which records the session generation the request goes out under.
+RequestOptions _sentRequest(String path, {Map<String, dynamic>? headers}) => RequestOptions(
+  path: path,
+  headers: headers,
+  extra: {AuthInterceptor.sessionGenerationKey: SessionGeneration.current},
+);
 
 /// The endpoints the app calls before sign-in: sign-in, OTP send and verify, registration and password reset.
 const _publicEndpoints = [
@@ -263,7 +273,7 @@ void main() {
       var sessionExpiredCalled = false;
       final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
       final handler = _TestErrorHandler();
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
 
       final error = DioException(
         requestOptions: requestOptions,
@@ -287,7 +297,7 @@ void main() {
         secureStorage: secureStorage,
       );
       final handler = _TestErrorHandler();
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
 
       final error = DioException(
         requestOptions: requestOptions,
@@ -313,7 +323,7 @@ void main() {
         secureStorage: secureStorage,
       );
       final handler = _TestErrorHandler();
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
 
       final error = DioException(
         requestOptions: requestOptions,
@@ -340,7 +350,7 @@ void main() {
 
       final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
       DioException makeErr() {
-        final ro = RequestOptions(path: '/api/users');
+        final ro = _sentRequest('/api/users');
         return DioException(
           requestOptions: ro,
           response: Response(requestOptions: ro, statusCode: 401),
@@ -415,7 +425,7 @@ void main() {
       await flaky.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
 
       final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: flaky);
-      final ro = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
+      final ro = _sentRequest('/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
       final error = DioException(
         requestOptions: ro,
         response: Response(requestOptions: ro, statusCode: 401),
@@ -457,7 +467,7 @@ void main() {
       await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
       final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
       DioException makeErr() {
-        final ro = RequestOptions(path: '/api/users');
+        final ro = _sentRequest('/api/users');
         return DioException(
           requestOptions: ro,
           response: Response(requestOptions: ro, statusCode: 401),
@@ -497,7 +507,7 @@ void main() {
     test('should not crash when onSessionExpired is null with no refresh token', () async {
       final interceptor = TokenRefreshInterceptor(dio: dio);
       final handler = _TestErrorHandler();
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
 
       final error = DioException(
         requestOptions: requestOptions,
@@ -561,6 +571,7 @@ void main() {
       final server = _UnauthorizedServerStub();
 
       dio.interceptors.addAll([
+        AuthInterceptor(secureStorage: secureStorage),
         TokenRefreshInterceptor(
           dio: dio,
           secureStorage: secureStorage,
@@ -613,7 +624,7 @@ void main() {
         },
       );
 
-      final requestOptions = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
       final error = DioException(
         requestOptions: requestOptions,
         response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -651,7 +662,7 @@ void main() {
         },
       );
 
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
       final error = DioException(
         requestOptions: requestOptions,
         response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -691,7 +702,7 @@ void main() {
           return refreshDio;
         },
       );
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
 
       await interceptor.onError(
         DioException(
@@ -725,7 +736,7 @@ void main() {
         secureStorage: secureStorage,
         onSessionExpired: () => logoutCount++,
       );
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
 
       await interceptor.onError(
         DioException(
@@ -756,7 +767,7 @@ void main() {
         },
       );
 
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
       final error = DioException(
         requestOptions: requestOptions,
         response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -787,7 +798,7 @@ void main() {
         },
       );
 
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
       final error = DioException(
         requestOptions: requestOptions,
         response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -818,7 +829,7 @@ void main() {
         },
       );
 
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
       final error = DioException(
         requestOptions: requestOptions,
         response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -853,7 +864,7 @@ void main() {
         },
       );
 
-      final requestOptions = RequestOptions(path: '/api/users');
+      final requestOptions = _sentRequest('/api/users');
       final error = DioException(
         requestOptions: requestOptions,
         response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -872,6 +883,246 @@ void main() {
       expect(await torn.read(SecureStorageKeys.refreshToken.key), 'prior-refresh');
     });
   });
+
+  // A logout or the idle timeout wipes the stored session and starts a new session generation. A refresh that was on
+  // its way stored the rotated tokens after the wipe, so a relaunch restored the session the user had ended.
+  // AuthInterceptor records on each request the session generation it is sent under. A refresh for a request whose
+  // session a logout or the end of the session wiped, or is wiping, would spend a refresh token on a session that is
+  // over, or on the one the user signed in to since.
+  group('TokenRefreshInterceptor - the session a request was sent under', () {
+    test('does not refresh while the session the request was sent under is being wiped', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      // The wipe has started but not yet deleted the stored tokens when the request goes out.
+      final releaseWipe = Completer<void>();
+      final wipe = SessionGeneration.wipe(() => releaseWipe.future);
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+      releaseWipe.complete();
+      await wipe;
+
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(secureStorage.refreshTokenReadCount, 0, reason: 'the refresh-token read is the proxy for a refresh');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('fails a 401 for a request without a session generation and spends no refresh token', () async {
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      // Not sent through AuthInterceptor, so nothing shows which session it belongs to.
+      final requestOptions = RequestOptions(path: '/api/users');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(secureStorage.refreshTokenReadCount, 0, reason: 'the refresh-token read is the proxy for a refresh');
+      expect(sessionExpiredCalls, 0);
+    });
+  });
+
+  group('TokenRefreshInterceptor - session ended during the refresh', () {
+    /// What the session wipe does: it deletes the stored tokens inside [SessionGeneration.wipe].
+    Future<void> endSession(ISecureStorage storage) => SessionGeneration.wipe(() async {
+      await storage.delete(SecureStorageKeys.jwtToken.key);
+      await storage.delete(SecureStorageKeys.refreshToken.key);
+    });
+
+    DioException unauthorized() {
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      return DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+    }
+
+    test('drops the rotated tokens and fails the request when the session ends before the refresh answers', () async {
+      final storage = _InterleavingSecureStorage();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: storage,
+        onSessionExpired: () => sessionExpiredCalls++,
+        refreshDioFactory: (source) => Dio(BaseOptions(baseUrl: source.options.baseUrl))
+          ..interceptors.add(
+            _RefreshInFlightStub(
+              body: '{"id_token":"new-jwt","refresh_token":"new-refresh"}',
+              whileInFlight: () => endSession(storage),
+            ),
+          ),
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(handler.resolveCalled, isFalse);
+      expect(retryStub.lastAuthorization, isNull, reason: 'the request is not sent again with the dropped token');
+      // Never stored, not even for a moment: an app closed right then would keep them.
+      expect(storage.writes, ['jwtToken=old-jwt', 'refreshToken=valid-refresh']);
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), isNull);
+      // The session already ended, and a new one may have started since: ending it again would sign that one out.
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('takes back the rotated tokens when the session ends while they are being stored', () async {
+      final storage = _InterleavingSecureStorage();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      // The wipe runs while the rotated JWT is being written, so the rotated refresh token lands after it.
+      storage.onWrite = (key) async {
+        if (key == SecureStorageKeys.jwtToken.key) await endSession(storage);
+      };
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: storage,
+        onSessionExpired: () => sessionExpiredCalls++,
+        refreshDioFactory: (source) => Dio(BaseOptions(baseUrl: source.options.baseUrl))
+          ..interceptors.add(
+            _StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt","refresh_token":"new-refresh"}'),
+          ),
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull);
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), isNull);
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('ends the session when the rotated tokens cannot be taken back', () async {
+      final storage = _InterleavingSecureStorage();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      storage.onWrite = (key) async {
+        if (key != SecureStorageKeys.jwtToken.key) return;
+        await endSession(storage);
+        storage.failDeletes = true;
+      };
+      dio.interceptors.add(_CapturingSuccessStub());
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: storage,
+        onSessionExpired: () => sessionExpiredCalls++,
+        refreshDioFactory: (source) => Dio(BaseOptions(baseUrl: source.options.baseUrl))
+          ..interceptors.add(
+            _StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt","refresh_token":"new-refresh"}'),
+          ),
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      // The rotated refresh token is still stored, so the session is ended again, which wipes it.
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), 'new-refresh');
+      expect(sessionExpiredCalls, 1);
+      expect(handler.nextError, same(error));
+    });
+
+    test('leaves the tokens of a session stored after the end alone', () async {
+      final storage = _InterleavingSecureStorage();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      // The session ends while the rotated JWT is being written, and the user signs in again before the refresh
+      // token is written.
+      storage.onWrite = (key) async {
+        if (key != SecureStorageKeys.jwtToken.key) return;
+        await endSession(storage);
+        await storage.write(SecureStorageKeys.jwtToken.key, 'signed-in-jwt');
+        await storage.write(SecureStorageKeys.refreshToken.key, 'signed-in-refresh');
+      };
+      dio.interceptors.add(_CapturingSuccessStub());
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: storage,
+        refreshDioFactory: (source) =>
+            Dio(BaseOptions(baseUrl: source.options.baseUrl))
+              ..interceptors.add(_StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}')),
+      );
+
+      await interceptor.onError(unauthorized(), _TestErrorHandler());
+
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), 'signed-in-jwt');
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), 'signed-in-refresh');
+    });
+  });
+}
+
+/// In-memory ISecureStorage that records its writes as `key=value` and runs [onWrite], once, after it applies a write
+/// and before the write completes, as a call that runs while the write is still on its way does. With [failDeletes]
+/// set, its deletes throw.
+class _InterleavingSecureStorage extends _MemorySecureStorage {
+  Future<void> Function(String key)? onWrite;
+  final writes = <String>[];
+
+  /// When true, every delete throws, as a store that fails does.
+  bool failDeletes = false;
+
+  @override
+  Future<void> delete(String key) async {
+    if (failDeletes) throw StateError('boom on delete $key');
+    await super.delete(key);
+  }
+
+  @override
+  Future<void> write(String key, String value) async {
+    writes.add('$key=$value');
+    await super.write(key, value);
+    final hook = onWrite;
+    onWrite = null;
+    if (hook != null) await hook(key);
+  }
+}
+
+/// Answers the refresh request with [body] once [whileInFlight] has run, which stands for what the app does while the
+/// refresh request is on its way.
+class _RefreshInFlightStub extends Interceptor {
+  _RefreshInFlightStub({required this.body, required this.whileInFlight});
+
+  final String body;
+  final Future<void> Function() whileInFlight;
+
+  @override
+  Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    await whileInFlight();
+    handler.resolve(Response(requestOptions: options, statusCode: 200, data: body));
+  }
 }
 
 /// ISecureStorage that lets the jwtToken write succeed but throws on
