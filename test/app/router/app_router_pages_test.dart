@@ -30,13 +30,6 @@ void main() {
   // The first Navigator in the tree is go_router's root navigator.
   List<Page<Object?>> rootPages(WidgetTester tester) => tester.widget<Navigator>(find.byType(Navigator).first).pages;
 
-  // The authenticated shell keeps animating (dashboard skeletons), so pumpAndSettle would time out there.
-  Future<void> pumpShell(WidgetTester tester) async {
-    for (var i = 0; i < 30; i++) {
-      await tester.pump(const Duration(milliseconds: 100));
-    }
-  }
-
   group('AppRouterFactory pages', () {
     testWidgets('builds public routes as Material pages', (tester) async {
       setDesktopViewport(tester);
@@ -99,7 +92,7 @@ void main() {
       setDesktopViewport(tester);
       TestEnv.authenticate();
       await tester.pumpWidget(const App(language: 'en'));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       expect(routerFromApp(tester).state.uri.path, ApplicationRoutesConstants.home);
       expect(rootPages(tester).last, isA<MaterialPage<void>>());
@@ -109,10 +102,10 @@ void main() {
       setDesktopViewport(tester);
       TestEnv.authenticate();
       await tester.pumpWidget(const App(language: 'en'));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       routerFromApp(tester).go(ApplicationRoutesConstants.userList);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       expect(find.byType(ForbiddenPage), findsOneWidget);
       expect(rootPages(tester).last, isA<MaterialPage<void>>());
@@ -122,16 +115,16 @@ void main() {
       setDesktopViewport(tester);
       TestEnv.authenticate();
       await tester.pumpWidget(const App(language: 'en'));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       routerFromApp(tester).go('/does-not-exist');
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       expect(rootPages(tester).last, isA<MaterialPage<void>>());
       expect(find.ancestor(of: find.text('Page Not Found'), matching: find.byType(Scaffold)), findsOneWidget);
 
       await tester.tap(find.widgetWithText(TextButton, 'Home'));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       expect(routerFromApp(tester).state.uri.path, ApplicationRoutesConstants.home);
     });

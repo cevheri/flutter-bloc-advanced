@@ -86,6 +86,9 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   EquatableConfig.stringify = true;
   registerAllFallbackValues();
 
+  // Per-test in every file, opted out or not (see "The asset cache" below).
+  setUp(rootBundle.clear);
+
   // Per-test, unless a file opts out.
   setUp(() async { if (TestEnv.autoReset) await TestEnv.reset(); });
   tearDown(() async { if (TestEnv.autoReset) await TestEnv.reset(); });
@@ -135,6 +138,15 @@ Real example: `test/infrastructure/storage/local_storage_test.dart` installs a
 
 A mock on a channel the reset never touches needs no opt-out.
 `test/support/url_launcher_stub.dart` installs one for url_launcher in the test body and removes it when the test ends, so its tests keep the reset and `TestEnv.authenticate()`.
+
+### The asset cache
+
+`rootBundle` caches the `Future` of every string asset it loads, including the `assets/mock/*.json` files behind `MockInterceptor` and `MenuRepository`.
+Code that awaits a cached `Future` is resumed by a microtask of the zone that created it.
+Each `testWidgets` body runs in its own `FakeAsync` zone, and nothing runs that zone's microtasks once the test ends.
+So once a `testWidgets` had loaded an asset, every later `testWidgets` in the same file that needed it waited forever: only the first test of a file got its mock responses, and the others hung until they timed out.
+The bootstrap therefore empties the cache with `rootBundle.clear()` before and after every test, in every file, including files that opt out of `TestEnv.reset()`, so no test's cached `Future` outlives it, not even into a later group's `setUpAll`.
+`test/support/test_env_test.dart` and `test/flutter_test_config_test.dart` guard this.
 
 ---
 

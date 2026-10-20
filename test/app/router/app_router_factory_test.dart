@@ -34,7 +34,7 @@ void main() {
   }
 
   // Pumps the authenticated shell frame by frame and returns the frames that built the login page, offstage ones
-  // included. The shell keeps animating (dashboard skeletons), so pumpAndSettle would time out there.
+  // included. A fixed number of frames, instead of pumpAndSettle, so every frame is inspected.
   Future<List<int>> pumpShellRecordingLogin(WidgetTester tester) async {
     final loginFrames = <int>[];
     for (var frame = 0; frame < 30; frame++) {

@@ -118,18 +118,11 @@ void main() {
       return materialApp.routerConfig! as GoRouter;
     }
 
-    // The authenticated shell keeps animating (dashboard skeletons), so pumpAndSettle would time out there.
-    Future<void> pumpShell(WidgetTester tester) async {
-      for (var i = 0; i < 30; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-    }
-
     Future<GoRouter> startAuthenticated(WidgetTester tester) async {
       setDesktopViewport(tester);
       TestEnv.authenticate();
       await tester.pumpWidget(App(language: 'en', analytics: analytics));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       return routerFromApp(tester);
     }
 
@@ -158,7 +151,7 @@ void main() {
         clearInteractions(analytics);
 
         router.go(location);
-        await pumpShell(tester);
+        await tester.pumpAndSettle();
 
         expect(loggedScreens(), [screenName]);
       });
@@ -167,30 +160,30 @@ void main() {
     testWidgets('logs the revealed shell route once when a pushed route pops', (tester) async {
       final router = await startAuthenticated(tester);
       router.go(ApplicationRoutesConstants.settings);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       clearInteractions(analytics);
 
       router.push(ApplicationRoutesConstants.account);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       expect(loggedScreens(), ['/account']);
 
       router.pop();
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       expect(loggedScreens(), ['settings']);
     });
 
     testWidgets('logs the revealed shell route once when a root route pops', (tester) async {
       final router = await startAuthenticated(tester);
       router.go(ApplicationRoutesConstants.settings);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       clearInteractions(analytics);
 
       router.push(ApplicationRoutesConstants.forbidden);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       expect(loggedScreens(), [ApplicationRoutesConstants.forbidden]);
 
       router.pop();
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       expect(loggedScreens(), ['settings']);
     });
 
@@ -199,14 +192,14 @@ void main() {
     ) async {
       final router = await startAuthenticated(tester);
       router.go(ApplicationRoutesConstants.settings);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       router.push(ApplicationRoutesConstants.forbidden);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       clearInteractions(analytics);
 
       router.pop();
       router.push(ApplicationRoutesConstants.forbidden);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       expect(loggedScreens(), [ApplicationRoutesConstants.forbidden]);
     });
@@ -219,13 +212,13 @@ void main() {
       testWidgets('logs only $screenName when a root route over settings goes to $location', (tester) async {
         final router = await startAuthenticated(tester);
         router.go(ApplicationRoutesConstants.settings);
-        await pumpShell(tester);
+        await tester.pumpAndSettle();
         router.push(ApplicationRoutesConstants.forbidden);
-        await pumpShell(tester);
+        await tester.pumpAndSettle();
         clearInteractions(analytics);
 
         router.go(location);
-        await pumpShell(tester);
+        await tester.pumpAndSettle();
 
         expect(loggedScreens(), [screenName]);
       });
@@ -236,7 +229,7 @@ void main() {
       clearInteractions(analytics);
 
       router.go('/does-not-exist');
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       expect(loggedScreens(), ['/not-found']);
     });

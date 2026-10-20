@@ -312,13 +312,6 @@ void main() {
       ).thenAnswer((_) async => result);
     }
 
-    // The authenticated shell keeps animating (dashboard skeletons), so pumpAndSettle would time out there.
-    Future<void> pumpShell(WidgetTester tester) async {
-      for (var i = 0; i < 30; i++) {
-        await tester.pump(const Duration(milliseconds: 100));
-      }
-    }
-
     // What an admin does: open the user list and press List with the default filters.
     Future<void> searchUsers(WidgetTester tester) async {
       tester.view.physicalSize = const Size(1600, 1600);
@@ -326,13 +319,13 @@ void main() {
       addTearDown(tester.view.reset);
 
       await tester.pumpWidget(App(language: 'en', dependencies: _UserRepositoryDependencies(userRepository)));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
       final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
       router.go(ApplicationRoutesConstants.userList);
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
     }
 
     testWidgets('shows the error instead of an empty list when the search fails', (tester) async {
@@ -363,7 +356,7 @@ void main() {
         ]),
       );
       await tester.tap(find.text(S.current.refresh));
-      await pumpShell(tester);
+      await tester.pumpAndSettle();
 
       expect(find.text('grace.hopper@example.com'), findsOneWidget);
       expect(find.text(S.current.error_generic), findsNothing);
