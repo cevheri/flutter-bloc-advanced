@@ -53,17 +53,41 @@ abstract interface class ISecureStorage {
 ///   key storage. No extra options are needed beyond accepting the
 ///   library defaults — flagged here so an audit reader does not
 ///   wonder whether plaintext fallback is possible.
-/// - **iOS / macOS:** Keychain accessibility is pinned to
+/// - **iOS:** Keychain accessibility is pinned to
 ///   [KeychainAccessibility.first_unlock_this_device] so secrets are
 ///   readable after first unlock (e.g. background refresh) but are
 ///   NOT synced to iCloud Keychain across devices. This is stricter
 ///   than the library default of [KeychainAccessibility.first_unlock]
 ///   (which permits iCloud backup) — appropriate for session tokens.
+/// - **macOS:** `usesDataProtectionKeychain: false` keeps secrets in the
+///   login keychain (the file-based keychain). The data protection
+///   keychain needs a `keychain-access-groups` entitlement authorized by
+///   a provisioning profile, and the template's build is signed ad hoc
+///   with no team, so storing the session there fails with
+///   errSecMissingEntitlement (-34018) and sign-in would roll back.
+///   No accessibility level is set. Apple applies kSecAttrAccessible on
+///   macOS only when kSecUseDataProtectionKeychain or
+///   kSecAttrSynchronizable is true, and with a level set,
+///   flutter_secure_storage_darwin retries a lookup that found nothing
+///   with a kSecAttrAccessControl query, which macOS sends to the data
+///   protection keychain only.
+///   A login keychain item is protected by an access control list that
+///   names the app that created it. An ad-hoc signature names the app by
+///   its code hash, which a rebuild changes, so after a rebuild macOS
+///   asks for the login keychain password the first time the app reads
+///   the stored session.
+///   A fork with an Apple Developer team and a provisioning profile can
+///   move to the data protection keychain, which Apple recommends
+///   (TN3137): add `keychain-access-groups` to both
+///   `macos/Runner/*.entitlements` files, then set
+///   `usesDataProtectionKeychain: true` and the same `accessibility` as
+///   on iOS. The data protection keychain does not see login keychain
+///   items, so users sign in once more.
 class FlutterSecureStorageAdapter implements ISecureStorage {
   static final _log = AppLogger.getLogger('FlutterSecureStorageAdapter');
 
   static const _iosOptions = IOSOptions(accessibility: KeychainAccessibility.first_unlock_this_device);
-  static const _macosOptions = MacOsOptions(accessibility: KeychainAccessibility.first_unlock_this_device);
+  static const _macosOptions = MacOsOptions(accessibility: null, usesDataProtectionKeychain: false);
 
   final FlutterSecureStorage _storage;
 

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
@@ -90,6 +91,51 @@ void main() {
       final adapter = FlutterSecureStorageAdapter();
 
       expect(await adapter.read('jwtToken'), isNull);
+    });
+  });
+
+  /// The darwin plugin builds each keychain query from the `options` map
+  /// sent with the call, so these maps are what the adapter applies on
+  /// iOS and macOS.
+  group('FlutterSecureStorageAdapter keychain options', () {
+    /// Runs every adapter operation as if on [platform] and returns the
+    /// `options` map that each call sent.
+    Future<List<Map<Object?, Object?>>> optionsSentOn(TargetPlatform platform) async {
+      debugDefaultTargetPlatformOverride = platform;
+      addTearDown(() => debugDefaultTargetPlatformOverride = null);
+      final sent = <Map<Object?, Object?>>[];
+      mockChannel((call) async {
+        sent.add((call.arguments as Map<Object?, Object?>)['options']! as Map<Object?, Object?>);
+        return null;
+      });
+
+      final adapter = FlutterSecureStorageAdapter();
+      await adapter.write('jwtToken', 'some-token');
+      await adapter.read('jwtToken');
+      await adapter.delete('jwtToken');
+      await adapter.deleteAll();
+
+      return sent;
+    }
+
+    // The template's macOS build is signed ad hoc, without the provisioning
+    // profile that the data protection keychain's entitlement needs, so a
+    // query that only that keychain can answer fails with
+    // errSecMissingEntitlement (-34018). With an accessibility level set,
+    // the plugin retries a lookup that found nothing with such a query.
+    test('on macOS every call uses the login keychain and sends no accessibility level', () async {
+      final sent = await optionsSentOn(TargetPlatform.macOS);
+
+      expect(sent, hasLength(4));
+      expect(sent, everyElement(containsPair('usesDataProtectionKeychain', 'false')));
+      expect(sent, everyElement(isNot(contains('accessibility'))));
+    });
+
+    test('on iOS every call keeps accessibility first_unlock_this_device', () async {
+      final sent = await optionsSentOn(TargetPlatform.iOS);
+
+      expect(sent, hasLength(4));
+      expect(sent, everyElement(containsPair('accessibility', 'first_unlock_this_device')));
     });
   });
 }
