@@ -37,12 +37,16 @@ class AppRouterFactory {
       debugLogDiagnostics: true,
       refreshListenable: refreshNotifier,
       observers: _observers,
-      errorPageBuilder: (context, state) => appPlatformPage(
-        state: state,
-        // An error state has no route name or path, and an unnamed page is invisible to analytics.
-        name: ApplicationRoutesConstants.notFound,
-        child: NotFoundPage(error: state.error),
-      ),
+      errorPageBuilder: (context, state) {
+        // The page tells the user in the app language; the router's own error, in English, goes to the log.
+        _log.warn('No page for location {}: {}', [state.uri, state.error]);
+        return appPlatformPage(
+          state: state,
+          // An error state has no route name or path, and an unnamed page is invisible to analytics.
+          name: ApplicationRoutesConstants.notFound,
+          child: const NotFoundPage(),
+        );
+      },
       routes: [
         ShellRoute(
           pageBuilder: (context, state, child) => appPlatformPage(

@@ -3,12 +3,11 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:go_router/go_router.dart';
 
-/// Shown for locations that match no route. Mirrors go_router 17's default Material error screen, which go_router 18
-/// no longer renders under the SDK MaterialApp.
+/// Shown for locations that match no route. Mirrors the layout of go_router 17's default Material error screen, which
+/// go_router 18 no longer renders under the SDK MaterialApp, with a message in the app language in place of the
+/// router's error, which the router logs.
 class NotFoundPage extends StatelessWidget {
-  const NotFoundPage({super.key, this.error});
-
-  final Exception? error;
+  const NotFoundPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +17,7 @@ class NotFoundPage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SelectableText(error?.toString() ?? S.of(context).not_found_message),
+            SelectableText(S.of(context).not_found_message),
             TextButton(onPressed: () => context.go(ApplicationRoutesConstants.home), child: Text(S.of(context).home)),
           ],
         ),

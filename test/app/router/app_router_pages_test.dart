@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 
 import '../../support/test_env.dart';
 
@@ -140,6 +141,29 @@ void main() {
 
       expect(find.text('Sayfa Bulunamadı'), findsOneWidget);
       expect(find.widgetWithText(TextButton, 'Ana Sayfa'), findsOneWidget);
+    });
+
+    // The page showed go_router's error text, such as "GoException: no routes for location: /does-not-exist", in
+    // English in every language.
+    testWidgets('says that the page was not found and logs the location that matched no route', (tester) async {
+      final warnings = <String>[];
+      void record(OutputEvent event) {
+        if (event.level == Level.warning) warnings.addAll(event.lines);
+      }
+
+      Logger.addOutputListener(record);
+      addTearDown(() => Logger.removeOutputListener(record));
+      setDesktopViewport(tester);
+      TestEnv.authenticate();
+      await tester.pumpWidget(const App(language: 'tr'));
+      await tester.pumpAndSettle();
+
+      routerFromApp(tester).go('/does-not-exist');
+      await tester.pumpAndSettle();
+
+      expect(find.text('İstediğiniz sayfa bulunamadı.'), findsOneWidget);
+      expect(find.textContaining('GoException'), findsNothing);
+      expect(warnings, contains(allOf(contains('/does-not-exist'), contains('no routes for location'))));
     });
 
     testWidgets('declares every route with a pageBuilder', (tester) async {
