@@ -6,11 +6,14 @@ import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
+import 'package:flutter_bloc_advance/main/app.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../support/test_env.dart';
+import '../../../../support/url_launcher_stub.dart';
 
 void main() {
   Widget buildTestableWidget() {
@@ -38,6 +41,23 @@ void main() {
       ],
       supportedLocales: S.delegate.supportedLocales,
     );
+  }
+
+  // The real app, signed in, on settings. The shell shows the account name in the top bar once the mock API answers
+  // after its 500 ms delay, so let that land before the screen is compared.
+  Future<void> pumpAppOnSettings(WidgetTester tester) async {
+    addTearDown(tester.view.reset);
+    tester.view.physicalSize = const Size(1600, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    TestEnv.authenticate();
+
+    await tester.pumpWidget(const App(language: 'en'));
+    await tester.pump();
+    (tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter).go(
+      ApplicationRoutesConstants.settings,
+    );
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
   }
 
   group('SettingsScreen Tests', () {
@@ -70,5 +90,31 @@ void main() {
       expect(find.byType(Placeholder), findsOneWidget);
       expect(find.byType(SettingsScreen), findsNothing);
     });
+  });
+
+  group('SettingsScreen - website link that does not open', () {
+    for (final failure in UrlLauncherFailure.values) {
+      testWidgets('tapping Website shows a message when ${failure.description}', (WidgetTester tester) async {
+        final calls = stubFailingUrlLauncher(failure);
+        await pumpAppOnSettings(tester);
+
+        await expectTapShowsMessage(tester, find.byKey(settingsWebsiteButtonKey));
+        expect(calls.requestedUrls, contains(TemplateConfig.docsUrl));
+      });
+    }
+  });
+
+  group('SettingsScreen - website link that opens', () {
+    for (final canLaunch in [true, false]) {
+      testWidgets('tapping Website opens it and shows no message when canLaunchUrl answers $canLaunch', (
+        WidgetTester tester,
+      ) async {
+        final calls = stubOpeningUrlLauncher(canLaunch: canLaunch);
+        await pumpAppOnSettings(tester);
+
+        await expectTapShowsNoMessage(tester, find.byKey(settingsWebsiteButtonKey));
+        expect(calls.launchedUrls, [TemplateConfig.docsUrl]);
+      });
+    }
   });
 }

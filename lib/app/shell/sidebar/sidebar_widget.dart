@@ -9,13 +9,13 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/shared/utils/external_link.dart';
 import 'package:flutter_bloc_advance/shared/utils/icon_utils.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_durations.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import 'sidebar_nav_item.dart';
 import 'sidebar_sub_menu.dart';
@@ -183,17 +183,18 @@ class _SidebarContent extends StatelessWidget {
     );
   }
 
-  void _closeMobileDrawer(BuildContext context) {
-    final scaffold = Scaffold.maybeOf(context);
-    if (scaffold?.isDrawerOpen == true) {
-      scaffold?.closeDrawer();
-    }
-  }
-
   bool _hasAccess(Menu menu, List<String>? userRoles) {
     if (userRoles == null) return false;
     final menuAuthorities = menu.authorities ?? [];
     return menuAuthorities.any((authority) => userRoles.contains(authority));
+  }
+}
+
+/// Closes the drawer that holds the sidebar on narrow screens, if it is open.
+void _closeMobileDrawer(BuildContext context) {
+  final scaffold = Scaffold.maybeOf(context);
+  if (scaffold?.isDrawerOpen == true) {
+    scaffold?.closeDrawer();
   }
 }
 
@@ -227,7 +228,11 @@ class _SidebarFooter extends StatelessWidget {
             icon: Icons.language,
             label: S.of(context).website,
             isCollapsed: isCollapsed,
-            onTap: () => _launchWebsite(),
+            onTap: () {
+              // A link that does not open is reported in a snack bar, which an open drawer would cover.
+              _closeMobileDrawer(context);
+              openExternalLink(context, Uri.parse(TemplateConfig.docsUrl));
+            },
           ),
           // Collapse toggle
           SidebarNavItem(
@@ -246,13 +251,6 @@ class _SidebarFooter extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Future<void> _launchWebsite() async {
-    final uri = Uri.parse(TemplateConfig.docsUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
   }
 
   Future<void> _handleLogout(BuildContext context) async {

@@ -148,5 +148,34 @@
   "error_network_cert_invalid": "Could not verify the server's identity. Connection blocked.",
   "@error_network_cert_invalid": {},
   "idle_timeout_signed_out": "You were signed out due to inactivity.",
-  "@idle_timeout_signed_out": {}
+  "@idle_timeout_signed_out": {},
+  "error_link_open_failed": "Could not open {url}",
+  "@error_link_open_failed": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "force_update_title": "Update Required",
+  "@force_update_title": {},
+  "force_update_message": "A new version is available. Please update to continue using the app.",
+  "@force_update_message": {},
+  "force_update_versions": "Current: {currentVersion}  •  Required: {minimumVersion}",
+  "@force_update_versions": {
+    "placeholders": {
+      "currentVersion": {
+        "type": "String"
+      },
+      "minimumVersion": {
+        "type": "String"
+      }
+    }
+  },
+  "force_update_button": "Update Now",
+  "@force_update_button": {},
+  "force_update_no_store_link": "Open your app store to install the latest version.",
+  "@force_update_no_store_link": {},
+  "force_update_store_link_invalid": "The update link is not valid. Open your app store to install the latest version.",
+  "@force_update_store_link_invalid": {}
 }

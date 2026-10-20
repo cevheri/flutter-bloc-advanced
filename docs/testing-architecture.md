@@ -55,8 +55,8 @@ test/
 │   ├── mock_classes.dart      # Mock*/Fake* classes + registerAllFallbackValues()
 │   └── fake_data.dart         # Shared fixtures (mockUserFullPayload, ...)
 ├── architecture/              # Meta-tests enforcing rules (see below)
-│   ├── android_manifest_test.dart    # Android INTERNET, https queries, backup off
-│   ├── import_guard_test.dart        # layer dependency rules
+│   ├── android_manifest_test.dart    # Android INTERNET, backup off
+│   ├── import_guard_test.dart        # layer dependency rules, url_launcher only in external_link.dart
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
 │   ├── test_file_naming_test.dart    # forbids *.test.dart (dot) files
@@ -132,6 +132,9 @@ void main() {
 
 Real example: `test/infrastructure/storage/local_storage_test.dart` installs a
 `MockSharedPreferences` per group, so it opts out and resets explicitly.
+
+A mock on a channel the reset never touches needs no opt-out.
+`test/support/url_launcher_stub.dart` installs one for url_launcher in the test body and removes it when the test ends, so its tests keep the reset and `TestEnv.authenticate()`.
 
 ---
 
@@ -315,13 +318,15 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   (`core → nothing`, `shared → core`, `features → shared/infra/core`, no
   cross-feature internals). Known exceptions are listed explicitly and should
   shrink over time, not grow.
+  It also fails if a file other than `lib/shared/utils/external_link.dart` imports `url_launcher`.
+  Links go through `openExternalLink`, which tells the user when a link does not open and never asks `canLaunchUrl`, so the Android manifest needs no `<queries>` intent for them.
 - **`test_file_naming_test.dart`** fails if any file is named `*.test.dart`
   (a dot instead of `_test.dart`) — such files compile and pass `analyze` but
   are silently never executed by `flutter test`.
 - **`macos_entitlements_test.dart`** fails if either macOS entitlement file drops `com.apple.security.network.client`.
   The sandboxed macOS app cannot make outgoing requests without it, the `flutter create` template omits it, and no CI job builds macOS.
-- **`android_manifest_test.dart`** fails if `AndroidManifest.xml` drops the `INTERNET` permission, the `<queries>` intent that lets `url_launcher` open https links, `android:allowBackup="false"`, or the references to the two backup rule files, or if either rule file stops excluding shared preferences.
-  Release builds need the permission to reach the API, `canLaunchUrl` returns false for https links on Android 11 and higher without the query, and a restored backup or device transfer brings back session tokens that no longer decrypt.
+- **`android_manifest_test.dart`** fails if `AndroidManifest.xml` drops the `INTERNET` permission, `android:allowBackup="false"`, or the references to the two backup rule files, or if either rule file stops excluding shared preferences.
+  Release builds need the permission to reach the API, and a restored backup or device transfer brings back session tokens that no longer decrypt.
   CI builds the release APK, but that build succeeds without any of these.
 - **`mock_asset_naming_test.dart`** fails if a file under `assets/mock/` has a `-` in its name.
   `MockInterceptor` maps `-` in request paths to `_`, so such a file is never served and the request falls back to a generic response.

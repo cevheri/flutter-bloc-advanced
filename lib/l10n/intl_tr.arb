@@ -148,5 +148,34 @@
   "error_network_cert_invalid": "Sunucu kimliği doğrulanamadı. Bağlantı engellendi.",
   "@error_network_cert_invalid": {},
   "idle_timeout_signed_out": "Hareketsizlik nedeniyle oturumunuz kapatıldı.",
-  "@idle_timeout_signed_out": {}
+  "@idle_timeout_signed_out": {},
+  "error_link_open_failed": "{url} açılamadı",
+  "@error_link_open_failed": {
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "force_update_title": "Güncelleme Gerekli",
+  "@force_update_title": {},
+  "force_update_message": "Yeni bir sürüm mevcut. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.",
+  "@force_update_message": {},
+  "force_update_versions": "Mevcut: {currentVersion}  •  Gerekli: {minimumVersion}",
+  "@force_update_versions": {
+    "placeholders": {
+      "currentVersion": {
+        "type": "String"
+      },
+      "minimumVersion": {
+        "type": "String"
+      }
+    }
+  },
+  "force_update_button": "Şimdi Güncelle",
+  "@force_update_button": {},
+  "force_update_no_store_link": "En son sürümü yüklemek için uygulama mağazanızı açın.",
+  "@force_update_no_store_link": {},
+  "force_update_store_link_invalid": "Güncelleme bağlantısı geçersiz. En son sürümü yüklemek için uygulama mağazanızı açın.",
+  "@force_update_store_link_invalid": {}
 }

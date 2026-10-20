@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/widgets/community_section_widget.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/main/app.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../../../support/url_launcher_stub.dart';
 
 void main() {
   Widget buildWidget({required bool isDesktop}) {
@@ -22,6 +25,18 @@ void main() {
         body: SingleChildScrollView(child: CommunitySectionWidget(isDesktop: isDesktop)),
       ),
     );
+  }
+
+  // The real app on the login page at phone size, scrolled to the Documentation link.
+  Future<void> pumpAppOnLogin(WidgetTester tester) async {
+    addTearDown(tester.view.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+
+    await tester.pumpWidget(const App(language: 'en'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(communityDocsKey));
+    await tester.pumpAndSettle();
   }
 
   group('CommunitySectionWidget - Desktop', () {
@@ -127,5 +142,32 @@ void main() {
       expect(CommunityUrls.translate, 'https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/l10n');
       expect(CommunityUrls.sponsor, 'https://github.com/sponsors/cevheri');
     });
+  });
+
+  group('CommunitySectionWidget - link that does not open', () {
+    for (final failure in UrlLauncherFailure.values) {
+      testWidgets('tapping Documentation on the login page shows a message when ${failure.description}', (
+        tester,
+      ) async {
+        final calls = stubFailingUrlLauncher(failure);
+        await pumpAppOnLogin(tester);
+
+        await expectTapShowsMessage(tester, find.byKey(communityDocsKey));
+        expect(calls.requestedUrls, contains(CommunityUrls.docs));
+      });
+    }
+  });
+
+  group('CommunitySectionWidget - link that opens', () {
+    for (final canLaunch in [true, false]) {
+      testWidgets('tapping Documentation on the login page opens it and shows no message when canLaunchUrl answers '
+          '$canLaunch', (tester) async {
+        final calls = stubOpeningUrlLauncher(canLaunch: canLaunch);
+        await pumpAppOnLogin(tester);
+
+        await expectTapShowsNoMessage(tester, find.byKey(communityDocsKey));
+        expect(calls.launchedUrls, [CommunityUrls.docs]);
+      });
+    }
   });
 }

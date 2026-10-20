@@ -20,10 +20,14 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'tr';
 
-  static String m0(translate) =>
+  static String m0(url) => "${url} açılamadı";
+
+  static String m1(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
+
+  static String m2(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
-  static String m1(error) => "Kaydedilemedi: ${error}";
+  static String m3(error) => "Kaydedilemedi: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -68,6 +72,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("OTP kodu gönderilemedi"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Oturum kaydedilemedi"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Bir şeyler ters gitti"),
+    "error_link_open_failed": m0,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
       "Sunucu kimliği doğrulanamadı. Bağlantı engellendi.",
     ),
@@ -80,6 +85,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "forbidden_back_home": MessageLookupByLibrary.simpleMessage("Ana sayfaya dön"),
     "forbidden_message": MessageLookupByLibrary.simpleMessage("Bu sayfayı görüntüleme yetkiniz yok."),
     "forbidden_title": MessageLookupByLibrary.simpleMessage("Erişim engellendi"),
+    "force_update_button": MessageLookupByLibrary.simpleMessage("Şimdi Güncelle"),
+    "force_update_message": MessageLookupByLibrary.simpleMessage(
+      "Yeni bir sürüm mevcut. Uygulamayı kullanmaya devam etmek için lütfen güncelleyin.",
+    ),
+    "force_update_no_store_link": MessageLookupByLibrary.simpleMessage(
+      "En son sürümü yüklemek için uygulama mağazanızı açın.",
+    ),
+    "force_update_store_link_invalid": MessageLookupByLibrary.simpleMessage(
+      "Güncelleme bağlantısı geçersiz. En son sürümü yüklemek için uygulama mağazanızı açın.",
+    ),
+    "force_update_title": MessageLookupByLibrary.simpleMessage("Güncelleme Gerekli"),
+    "force_update_versions": m1,
     "guest": MessageLookupByLibrary.simpleMessage("Kullanıcı"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Yardım ve Kaynaklar"),
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage(
@@ -152,13 +169,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskPrice": MessageLookupByLibrary.simpleMessage("Görev Fiyatı"),
     "taskSaveScreenTitle": MessageLookupByLibrary.simpleMessage("Görev Kaydet"),
     "theme": MessageLookupByLibrary.simpleMessage("Tema"),
-    "translate_menu_title": m0,
+    "translate_menu_title": m2,
     "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
     ),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
-    "user_extended_info_save_failed": m1,
+    "user_extended_info_save_failed": m3,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Doğrula"),

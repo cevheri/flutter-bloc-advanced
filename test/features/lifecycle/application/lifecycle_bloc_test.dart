@@ -6,18 +6,17 @@ import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bl
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_event.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_state.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
-import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MockLifecycleRepository extends Mock implements ILifecycleRepository {}
+import '../../../mocks/mock_classes.dart';
 
 void main() {
-  late MockLifecycleRepository mockRepository;
+  late MockILifecycleRepository mockRepository;
 
   setUp(() {
-    mockRepository = MockLifecycleRepository();
+    mockRepository = MockILifecycleRepository();
     FeatureFlagService.instance.clear();
     // Set a known appVersion for testing
     AppConstants.appVersion = '1.0.0';

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
+import 'package:flutter_bloc_advance/shared/utils/external_link.dart';
 import 'package:flutter_bloc_advance/shared/widgets/theme_selection_dialog.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../generated/l10n.dart';
 import '../../../../infrastructure/config/template_config.dart';
@@ -85,7 +85,7 @@ class SettingsScreen extends StatelessWidget {
                     icon: Icons.language,
                     title: S.of(context).website,
                     subtitle: S.of(context).help_resources_subtitle,
-                    onTap: () => _launchWebsite(),
+                    onTap: () => openExternalLink(context, Uri.parse(TemplateConfig.docsUrl)),
                   ),
                 ],
               ),
@@ -100,13 +100,6 @@ class SettingsScreen extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  Future<void> _launchWebsite() async {
-    final uri = Uri.parse(TemplateConfig.docsUrl);
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    }
   }
 }
 

@@ -6,8 +6,6 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// - The main manifest declares `android.permission.INTERNET`. The debug and profile manifests declare it only for
 ///   the Flutter tool, so release builds must not depend on a plugin merging it in.
-/// - A `<queries>` intent for the `VIEW` action with the `https` scheme. Without it url_launcher's `canLaunchUrl`
-///   returns false on Android 11 and higher, see https://pub.dev/packages/url_launcher#android.
 /// - Backup is off and both rule files exclude shared preferences, where flutter_secure_storage keeps the session
 ///   tokens encrypted with an Android Keystore key that is never backed up, so a restored copy cannot be decrypted.
 ///   On some devices running Android 12 and higher, device-to-device transfers ignore `android:allowBackup`, see
@@ -28,21 +26,6 @@ void main() {
       RegExp(r'<uses-permission\s+android:name="android\.permission\.INTERNET"\s*/>').hasMatch(manifest),
       isTrue,
       reason: '$manifestPath does not declare android.permission.INTERNET, which release builds need to reach the API',
-    );
-  });
-
-  test('the main manifest lets url_launcher query https links', () {
-    final manifest = _readWithoutXmlComments(manifestPath);
-    final viewAction = RegExp(r'<action\s+android:name="android\.intent\.action\.VIEW"\s*/>');
-    final httpsData = RegExp(r'<data\s+android:scheme="https"\s*/>');
-    final intents = _contentsOf('queries', manifest).expand((queries) => _contentsOf('intent', queries));
-
-    expect(
-      intents.any((intent) => viewAction.hasMatch(intent) && httpsData.hasMatch(intent)),
-      isTrue,
-      reason:
-          '$manifestPath has no <queries> intent for the VIEW action with the https scheme, '
-          'so canLaunchUrl returns false for https links on Android 11 and higher',
     );
   });
 

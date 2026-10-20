@@ -20,10 +20,14 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(translate) =>
+  static String m0(url) => "Could not open ${url}";
+
+  static String m1(currentVersion, minimumVersion) => "Current: ${currentVersion}  •  Required: ${minimumVersion}";
+
+  static String m2(translate) =>
       "${Intl.select(translate, {'account': 'Account', 'userManagement': 'User Management', 'settings': 'Settings', 'logout': 'Logout', 'info': 'Info', 'language': 'Language', 'theme': 'Theme', 'new_user': 'New', 'list_user': 'List', 'other': 'Other'})}";
 
-  static String m1(error) => "Save failed: ${error}";
+  static String m3(error) => "Save failed: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -72,6 +76,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("Could not send the OTP code"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Could not save the session"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Something went wrong"),
+    "error_link_open_failed": m0,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
       "Could not verify the server\'s identity. Connection blocked.",
     ),
@@ -84,6 +89,18 @@ class MessageLookup extends MessageLookupByLibrary {
     "forbidden_back_home": MessageLookupByLibrary.simpleMessage("Back to home"),
     "forbidden_message": MessageLookupByLibrary.simpleMessage("You do not have permission to view this page."),
     "forbidden_title": MessageLookupByLibrary.simpleMessage("Access denied"),
+    "force_update_button": MessageLookupByLibrary.simpleMessage("Update Now"),
+    "force_update_message": MessageLookupByLibrary.simpleMessage(
+      "A new version is available. Please update to continue using the app.",
+    ),
+    "force_update_no_store_link": MessageLookupByLibrary.simpleMessage(
+      "Open your app store to install the latest version.",
+    ),
+    "force_update_store_link_invalid": MessageLookupByLibrary.simpleMessage(
+      "The update link is not valid. Open your app store to install the latest version.",
+    ),
+    "force_update_title": MessageLookupByLibrary.simpleMessage("Update Required"),
+    "force_update_versions": m1,
     "guest": MessageLookupByLibrary.simpleMessage("Guest"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Help & Resources"),
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage("Visit our website for documentation and guides"),
@@ -154,13 +171,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "taskPrice": MessageLookupByLibrary.simpleMessage("Task Price"),
     "taskSaveScreenTitle": MessageLookupByLibrary.simpleMessage("Task Save"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
-    "translate_menu_title": m0,
+    "translate_menu_title": m2,
     "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
     ),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
-    "user_extended_info_save_failed": m1,
+    "user_extended_info_save_failed": m3,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("Verify OTP Code"),

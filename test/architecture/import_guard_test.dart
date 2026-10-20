@@ -9,6 +9,9 @@ import 'package:flutter_test/flutter_test.dart';
 /// - `shared/` → core only (NO features or infrastructure imports)
 /// - `core/` → nothing (NO shared, features, or infrastructure imports)
 ///
+/// It also keeps url_launcher behind `shared/utils/external_link.dart`, so every link tells the user when it does not
+/// open.
+///
 /// Pre-existing violations are documented as known exceptions below.
 /// These should be fixed incrementally; adding NEW exceptions is discouraged.
 
@@ -181,6 +184,24 @@ void main() {
         violations,
         isEmpty,
         reason: 'infrastructure/ must not import from features/ or app/:\n${violations.join('\n')}',
+      );
+    });
+
+    test('only shared/utils/external_link.dart imports url_launcher', () {
+      final urlLauncherImport = RegExp(r'''^import\s+['"]package:url_launcher/''');
+      final violations = dartFiles
+          .where((f) => _relative(f.path) != 'lib/shared/utils/external_link.dart')
+          .where((f) => f.readAsLinesSync().any(urlLauncherImport.hasMatch))
+          .map((f) => _relative(f.path))
+          .toList();
+
+      expect(
+        violations,
+        isEmpty,
+        reason:
+            'Open links with openExternalLink, which tells the user when a link does not open. A direct url_launcher '
+            'call can fail without a word, and canLaunchUrl answers false for https links on Android 11 and higher, '
+            'because the manifest declares no <queries> intent for them:\n${violations.join('\n')}',
       );
     });
   });

@@ -1,11 +1,11 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../../../../core/testing/app_key_constants.dart';
 import '../../../../generated/l10n.dart';
 import '../../../../infrastructure/config/template_config.dart';
+import '../../../../shared/utils/external_link.dart';
 
 class CommunityUrls {
   static const repo = 'https://github.com/cevheri/flutter-bloc-advanced';
@@ -93,13 +93,6 @@ final List<_CommunityAction> _communityActions = [
     url: CommunityUrls.docs,
   ),
 ];
-
-Future<void> _launchCommunityUrl(String url) async {
-  final uri = Uri.parse(url);
-  if (await canLaunchUrl(uri)) {
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
-  }
-}
 
 class CommunitySectionWidget extends StatelessWidget {
   final bool isDesktop;
@@ -210,7 +203,7 @@ class _DesktopCommunityCardState extends State<_DesktopCommunityCard> {
             onEnter: (_) => setState(() => _isHovered = true),
             onExit: (_) => setState(() => _isHovered = false),
             child: GestureDetector(
-              onTap: () => _launchCommunityUrl(action.url),
+              onTap: () => openExternalLink(context, Uri.parse(action.url)),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 150),
                 curve: Curves.easeOut,
@@ -297,7 +290,7 @@ class _MobileCommunityChip extends StatelessWidget {
     final l10n = S.of(context);
 
     return GestureDetector(
-      onTap: () => _launchCommunityUrl(action.url),
+      onTap: () => openExternalLink(context, Uri.parse(action.url)),
       child: Container(
         key: action.key,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),

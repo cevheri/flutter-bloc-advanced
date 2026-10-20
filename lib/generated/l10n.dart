@@ -759,6 +759,61 @@ class S {
   String get idle_timeout_signed_out {
     return Intl.message('You were signed out due to inactivity.', name: 'idle_timeout_signed_out', desc: '', args: []);
   }
+
+  /// `Could not open {url}`
+  String error_link_open_failed(String url) {
+    return Intl.message('Could not open $url', name: 'error_link_open_failed', desc: '', args: [url]);
+  }
+
+  /// `Update Required`
+  String get force_update_title {
+    return Intl.message('Update Required', name: 'force_update_title', desc: '', args: []);
+  }
+
+  /// `A new version is available. Please update to continue using the app.`
+  String get force_update_message {
+    return Intl.message(
+      'A new version is available. Please update to continue using the app.',
+      name: 'force_update_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Current: {currentVersion}  •  Required: {minimumVersion}`
+  String force_update_versions(String currentVersion, String minimumVersion) {
+    return Intl.message(
+      'Current: $currentVersion  •  Required: $minimumVersion',
+      name: 'force_update_versions',
+      desc: '',
+      args: [currentVersion, minimumVersion],
+    );
+  }
+
+  /// `Update Now`
+  String get force_update_button {
+    return Intl.message('Update Now', name: 'force_update_button', desc: '', args: []);
+  }
+
+  /// `Open your app store to install the latest version.`
+  String get force_update_no_store_link {
+    return Intl.message(
+      'Open your app store to install the latest version.',
+      name: 'force_update_no_store_link',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The update link is not valid. Open your app store to install the latest version.`
+  String get force_update_store_link_invalid {
+    return Intl.message(
+      'The update link is not valid. Open your app store to install the latest version.',
+      name: 'force_update_store_link_invalid',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
