@@ -225,7 +225,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _statsRow() {
-    return Row(
+    // Wraps instead of overflowing when the brand panel is narrow or the text is scaled up.
+    return Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      runSpacing: 8,
       children: [
         _statItem('7+', 'Platforms'),
         _statDot(),

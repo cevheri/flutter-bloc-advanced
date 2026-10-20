@@ -41,4 +41,15 @@ void main() {
       expect(tester.widget<CommunitySectionWidget>(find.byType(CommunitySectionWidget)).isDesktop, isFalse);
     });
   });
+
+  group('LoginScreen brand panel', () {
+    // 1024 px is the narrowest width that shows the brand panel. The test font is wider than the real one, which
+    // stands in for a larger text scale.
+    testWidgets('lays out without overflow at the desktop breakpoint', (tester) async {
+      setViewport(tester, const Size(1024, 1600));
+      await pumpLogin(tester);
+
+      expect(tester.takeException(), isNull);
+    });
+  });
 }
