@@ -12,6 +12,4 @@ abstract class IAccountRepository {
   Future<Result<UserEntity>> getAccount();
 
   Future<Result<UserEntity>> update(UserEntity user);
-
-  Future<Result<void>> delete(String id);
 }

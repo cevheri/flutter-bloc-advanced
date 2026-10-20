@@ -57,9 +57,6 @@ class _FakeUserRepository implements IUserRepository {
   Future<Result<UserEntity>> retrieve(String id) async => throw UnimplementedError();
 
   @override
-  Future<Result<UserEntity>> retrieveByLogin(String login) async => throw UnimplementedError();
-
-  @override
   Future<Result<UserEntity>> update(UserEntity user) async => throw UnimplementedError();
 }
 

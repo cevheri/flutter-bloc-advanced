@@ -4,8 +4,6 @@ import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 abstract class IUserRepository {
   Future<Result<UserEntity>> retrieve(String id);
 
-  Future<Result<UserEntity>> retrieveByLogin(String login);
-
   Future<Result<UserEntity>> create(UserEntity user);
 
   Future<Result<UserEntity>> update(UserEntity user);

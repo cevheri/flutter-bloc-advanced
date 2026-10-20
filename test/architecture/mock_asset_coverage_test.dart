@@ -6,7 +6,6 @@ import 'package:flutter_bloc_advance/features/account/data/repositories/account_
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/data/repositories/lifecycle_repository.dart';
-import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_extended_info_page.dart';
@@ -40,7 +39,6 @@ void main() {
     'IAccountRepository.getAccount': (client) => AccountRepository(client).getAccount(),
     'IAccountRepository.update': (client) =>
         AccountRepository(client).update(const UserEntity(id: 'user-1', login: 'admin', email: 'admin@sample.tech')),
-    'IAccountRepository.delete': (client) => AccountRepository(client).delete('user-1'),
     'IAuthRepository.authenticate': (client) =>
         LoginRepository(apiClient: client)
             .authenticate(const AuthCredentialsEntity(username: 'admin', password: 'admin')),
@@ -49,13 +47,8 @@ void main() {
         LoginRepository(apiClient: client).sendOtp(const SendOtpEntity(email: 'admin@sample.tech')),
     'IAuthRepository.verifyOtp': (client) =>
         LoginRepository(apiClient: client).verifyOtp(const VerifyOtpEntity(email: 'admin@sample.tech', otp: '123456')),
-    'IAuthorityRepository.create': (client) =>
-        AuthorityRepositoryImpl(client).create(const Authority(name: 'ROLE_USER')),
     'IAuthorityRepository.list': (client) => AuthorityRepositoryImpl(client).list(),
-    'IAuthorityRepository.retrieve': (client) => AuthorityRepositoryImpl(client).retrieve('ROLE_ADMIN'),
-    'IAuthorityRepository.delete': (client) => AuthorityRepositoryImpl(client).delete('ROLE_USER'),
     'IUserRepository.retrieve': (client) => UserRepository(client).retrieve('user-1'),
-    'IUserRepository.retrieveByLogin': (client) => UserRepository(client).retrieveByLogin('admin'),
     'IUserRepository.create': (client) =>
         UserRepository(client).create(const UserEntity(login: 'new_user', email: 'new_user@sample.tech')),
     'IUserRepository.update': (client) =>

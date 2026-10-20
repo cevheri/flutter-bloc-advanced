@@ -64,40 +64,6 @@ void main() {
     });
   });
 
-  group("User Repository getUserByLogin", () {
-    test("Given valid login when getUserByLogin then return user successfully", () async {
-      TestEnv.authenticate();
-      final result = await repository.retrieveByLogin("username");
-
-      expect(result, isA<Success<UserEntity>>());
-      final data = (result as Success<UserEntity>).data;
-      expect(data.id, "user-1");
-      expect(data.login, "admin");
-      expect(data.firstName, "Admin");
-      expect(data.lastName, "User");
-      expect(data.email, "admin@sample.tech");
-      expect(data.activated, true);
-      expect(data.langKey, "en");
-      expect(data.createdBy, "system");
-      expect(data.createdDate?.toIso8601String(), "2024-01-04T06:02:47.757Z");
-      expect(data.lastModifiedBy, "admin");
-      expect(data.lastModifiedDate?.toIso8601String(), "2024-01-04T06:02:47.757Z");
-      expect(data.authorities, ["ROLE_ADMIN", "ROLE_USER"]);
-    });
-
-    test("Given valid login without accessToken when getUserByLogin then return failure", () async {
-      final result = await repository.retrieveByLogin("admin");
-      expect(result, isA<Failure<UserEntity>>());
-    });
-
-    test("Given null login when getUserByLogin then return validation failure", () async {
-      TestEnv.authenticate();
-      final result = await repository.retrieveByLogin("");
-      expect(result, isA<Failure<UserEntity>>());
-      expect((result as Failure<UserEntity>).error, isA<ValidationError>());
-    });
-  });
-
   group("User Repository createUser", () {
     test("Given valid user when createUser then return user successfully", () async {
       TestEnv.authenticate();

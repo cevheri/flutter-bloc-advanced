@@ -214,28 +214,4 @@ void main() {
       expect((result as Failure<UserEntity>).error, isA<ValidationError>());
     });
   });
-
-  //test deleteAccount
-  group("AccountRepository Delete Account", () {
-    //success
-    test("Given valid id when deleteAccount then return Success", () async {
-      TestEnv.authenticate();
-      final result = await repository.delete("id");
-      expect(result, isA<Success<void>>());
-    });
-
-    //fail: without AccessToken
-    test("Given valid id when deleteAccount without AccessToken then return Failure with AuthError", () async {
-      final result = await repository.delete("id");
-      expect(result, isA<Failure<void>>());
-      expect((result as Failure<void>).error, isA<AuthError>());
-    });
-
-    test("Given empty id when deleteAccount then return Failure with ValidationError", () async {
-      TestEnv.authenticate();
-      final result = await repository.delete("");
-      expect(result, isA<Failure<void>>());
-      expect((result as Failure<void>).error, isA<ValidationError>());
-    });
-  });
 }

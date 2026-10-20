@@ -43,32 +43,6 @@ class UserRepository implements IUserRepository {
   }
 
   @override
-  Future<Result<UserEntity>> retrieveByLogin(String login) async {
-    _log.debug('BEGIN:getUserByLogin repository start - login: {}', [login]);
-    if (login.isEmpty) {
-      return const Failure(ValidationError('User login is required'));
-    }
-    try {
-      final response = await _apiClient.get('/admin/$_resource', pathParams: login);
-      final result = User.fromJsonString(response.data!)!;
-      _log.debug('END:getUserByLogin successful - response.body: {}', [result.toString()]);
-      return Success(result);
-    } on UnauthorizedException catch (e) {
-      _log.error('END:getUserByLogin auth error: {}', [e.toString()]);
-      return Failure(AuthError(e.toString()));
-    } on BadRequestException catch (e) {
-      _log.error('END:getUserByLogin validation error: {}', [e.toString()]);
-      return Failure(ValidationError(e.toString()));
-    } on FetchDataException catch (e) {
-      _log.error('END:getUserByLogin network error: {}', [e.toString()]);
-      return Failure(_mapFetchDataException(e));
-    } catch (e) {
-      _log.error('END:getUserByLogin unknown error: {}', [e.toString()]);
-      return Failure(UnknownError(e.toString()));
-    }
-  }
-
-  @override
   Future<Result<UserEntity>> create(UserEntity user) async {
     _log.debug('BEGIN:createUser repository start : {}', [user.toString()]);
     if (user.login == null || user.login!.isEmpty) {

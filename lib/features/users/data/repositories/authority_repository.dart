@@ -16,35 +16,6 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
   final String _resource = 'authorities';
 
   @override
-  Future<Result<Authority>> create(Authority authority) async {
-    _log.debug('BEGIN:createAuthority repository start : {}', [authority.toString()]);
-    if (authority.name == null || authority.name!.isEmpty) {
-      return const Failure(ValidationError('Authority name null'));
-    }
-    try {
-      final response = await _apiClient.post<Authority>('/$_resource', authority);
-      final result = Authority.fromJsonString(response.data!);
-      _log.debug('END:createAuthority successful');
-      if (result == null) {
-        return const Failure(UnknownError('Failed to parse authority response'));
-      }
-      return Success(result);
-    } on UnauthorizedException catch (e) {
-      _log.error('END:createAuthority auth error: {}', [e.toString()]);
-      return Failure(AuthError(e.toString()));
-    } on BadRequestException catch (e) {
-      _log.error('END:createAuthority validation error: {}', [e.toString()]);
-      return Failure(ValidationError(e.toString()));
-    } on FetchDataException catch (e) {
-      _log.error('END:createAuthority network error: {}', [e.toString()]);
-      return Failure(_mapFetchDataException(e));
-    } catch (e) {
-      _log.error('END:createAuthority unknown error: {}', [e.toString()]);
-      return Failure(UnknownError(e.toString()));
-    }
-  }
-
-  @override
   Future<Result<List<String>>> list() async {
     _log.debug('BEGIN:getAuthorities repository start');
     try {
@@ -65,60 +36,6 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:getAuthorities unknown error: {}', [e.toString()]);
-      return Failure(UnknownError(e.toString()));
-    }
-  }
-
-  @override
-  Future<Result<Authority>> retrieve(String id) async {
-    _log.debug('BEGIN:getAuthority repository start - id: {}', [id]);
-    if (id.isEmpty) {
-      return const Failure(ValidationError('Authority id null'));
-    }
-    try {
-      final response = await _apiClient.get('/$_resource', pathParams: id);
-      final result = Authority.fromJsonString(response.data!);
-      _log.debug('END:getAuthority successful - response.body: {}', [result.toString()]);
-      if (result == null) {
-        return const Failure(NotFoundError('Authority not found'));
-      }
-      return Success(result);
-    } on UnauthorizedException catch (e) {
-      _log.error('END:getAuthority auth error: {}', [e.toString()]);
-      return Failure(AuthError(e.toString()));
-    } on BadRequestException catch (e) {
-      _log.error('END:getAuthority validation error: {}', [e.toString()]);
-      return Failure(ValidationError(e.toString()));
-    } on FetchDataException catch (e) {
-      _log.error('END:getAuthority network error: {}', [e.toString()]);
-      return Failure(_mapFetchDataException(e));
-    } catch (e) {
-      _log.error('END:getAuthority unknown error: {}', [e.toString()]);
-      return Failure(UnknownError(e.toString()));
-    }
-  }
-
-  @override
-  Future<Result<void>> delete(String id) async {
-    _log.debug('BEGIN:deleteAuthority repository start - id: {}', [id]);
-    if (id.isEmpty) {
-      return const Failure(ValidationError('Authority id null'));
-    }
-    try {
-      final response = await _apiClient.delete('/$_resource', pathParams: id);
-      _log.debug('END:deleteAuthority successful - response status code: {}', [response.statusCode]);
-      return const Success(null);
-    } on UnauthorizedException catch (e) {
-      _log.error('END:deleteAuthority auth error: {}', [e.toString()]);
-      return Failure(AuthError(e.toString()));
-    } on BadRequestException catch (e) {
-      _log.error('END:deleteAuthority validation error: {}', [e.toString()]);
-      return Failure(ValidationError(e.toString()));
-    } on FetchDataException catch (e) {
-      _log.error('END:deleteAuthority network error: {}', [e.toString()]);
-      return Failure(_mapFetchDataException(e));
-    } catch (e) {
-      _log.error('END:deleteAuthority unknown error: {}', [e.toString()]);
       return Failure(UnknownError(e.toString()));
     }
   }

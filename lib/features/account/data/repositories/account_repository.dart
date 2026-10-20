@@ -166,29 +166,6 @@ class AccountRepository implements IAccountRepository {
     }
   }
 
-  @override
-  Future<Result<void>> delete(String id) async {
-    _log.debug('BEGIN:deleteAccount repository start : {}', [id]);
-    try {
-      if (id.isEmpty) {
-        return const Failure(ValidationError(userIdNotNull));
-      }
-      final response = await _apiClient.delete('/$_resource/$id');
-      _log.debug('END:deleteAccount successful - response.status: {}', [response.statusCode]);
-      if (response.statusCode == 204) {
-        return const Success(null);
-      }
-      return Failure(ServerError('Delete account failed with status: ${response.statusCode}'));
-    } on UnauthorizedException catch (e) {
-      return Failure(AuthError(e.toString()));
-    } on FetchDataException catch (e) {
-      return Failure(_mapFetchDataException(e));
-    } catch (e, st) {
-      _log.error('delete error: {}', [e.toString()]);
-      return Failure(UnknownError(e.toString()), stackTrace: st);
-    }
-  }
-
   AppError _mapFetchDataException(FetchDataException e) {
     final message = e.toString().toLowerCase();
     if (message.contains('no internet')) return NetworkError(e.toString());

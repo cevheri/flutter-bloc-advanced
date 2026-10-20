@@ -93,9 +93,6 @@ class _FakeAccountRepository implements IAccountRepository {
   Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async => const Success(null);
 
   @override
-  Future<Result<void>> delete(String id) async => const Success(null);
-
-  @override
   Future<Result<UserEntity>> getAccount() async => Success(account ?? mockUserFullPayload);
 
   @override

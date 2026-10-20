@@ -54,7 +54,7 @@ flowchart TB
         RESOLVE["Resolve mock file name<br/><code>assets/mock/{METHOD}_{path}.json</code>"]
         RESOLVE --> ASSET
 
-        ASSET[("assets/mock/*.json<br/><i>24 JSON files</i>")]
+        ASSET[("assets/mock/*.json<br/><i>22 JSON files</i>")]
         ASSET --> RESPONSE
 
         NETWORK["Real HTTP Request"]
@@ -478,7 +478,7 @@ A GET, POST, PUT or PATCH whose file is missing fails with 501 and the name of t
 | Logging interceptor | `lib/infrastructure/http/interceptors/logging_interceptor.dart` |
 | Public path definitions | `lib/core/security/allowed_paths.dart` |
 | Template config (API URL) | `lib/infrastructure/config/template_config.dart` |
-| Mock JSON files | `assets/mock/*.json` (24 files) |
+| Mock JSON files | `assets/mock/*.json` (22 files) |
 | DI (ApiClient + repository factories) | `lib/app/di/app_dependencies.dart` |
 | Test utilities | `test/support/test_env.dart` |
 | Mock classes | `test/mocks/mock_classes.dart` |
