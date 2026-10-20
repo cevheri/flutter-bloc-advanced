@@ -37,11 +37,23 @@ final class UserListDeleteSuccess extends UserListState {
   List<Object?> get props => const [];
 }
 
-final class UserListFailure extends UserListState {
-  const UserListFailure({required this.error});
+/// A request failed. The UI shows [errorCode] translated via `errorCode.resolve(context)`; the raw error
+/// message only goes to the log.
+sealed class UserListFailure extends UserListState {
+  const UserListFailure({required this.errorCode});
 
-  final String error;
+  final AppErrorCode errorCode;
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => [errorCode];
+}
+
+/// Searching for users failed, so there is no list to show.
+final class UserListLoadFailure extends UserListFailure {
+  const UserListLoadFailure({required super.errorCode});
+}
+
+/// Deleting a user failed.
+final class UserListDeleteFailure extends UserListFailure {
+  const UserListDeleteFailure({required super.errorCode});
 }

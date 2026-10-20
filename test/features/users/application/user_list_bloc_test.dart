@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/search_users_usecase.dart';
@@ -85,8 +86,18 @@ void main() {
       expect(const UserListDeleteSuccess(), const UserListDeleteSuccess());
     });
 
-    test('UserListFailure props', () {
-      expect(const UserListFailure(error: 'boom').props, const <Object?>['boom']);
+    test('UserListLoadFailure and UserListDeleteFailure carry the error code', () {
+      expect(const UserListLoadFailure(errorCode: AppErrorCode.generic).props, const <Object?>[AppErrorCode.generic]);
+      expect(const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin).props, const <Object?>[
+        AppErrorCode.userCannotDeleteAdmin,
+      ]);
+    });
+
+    test('a load failure is not equal to a delete failure with the same code', () {
+      expect(
+        const UserListLoadFailure(errorCode: AppErrorCode.generic),
+        isNot(const UserListDeleteFailure(errorCode: AppErrorCode.generic)),
+      );
     });
   });
 
@@ -148,7 +159,7 @@ void main() {
           searchBloc.add(const UserListSearch(authorities: 'ROLE_USER'));
           async.elapse(const Duration(seconds: 1));
 
-          expect(states, [const UserListLoading(), const UserListFailure(error: 'Search failed')]);
+          expect(states, [const UserListLoading(), const UserListLoadFailure(errorCode: AppErrorCode.generic)]);
 
           sub.cancel();
           searchBloc.close();
@@ -191,16 +202,19 @@ void main() {
         setUp: () => repository.failure = const UnknownError('Delete failed'),
         build: () => bloc,
         act: (b) => b.add(const UserListDelete('2')),
-        expect: () => [const UserListLoading(), const UserListFailure(error: 'Delete failed')],
+        expect: () => [const UserListLoading(), const UserListDeleteFailure(errorCode: AppErrorCode.generic)],
       );
 
-      // Admin-protection rule lives in DeleteUserUseCase (#73). Verify the
-      // failure surfaces through the bloc unchanged.
+      // Admin-protection rule lives in DeleteUserUseCase (#73). Verify its
+      // error code surfaces through the bloc, so the UI can translate it.
       blocTest<UserListBloc, UserListState>(
-        'emits failure with the admin-protection message when deleting user-1',
+        'emits a delete failure with the admin-protection code when deleting user-1',
         build: () => bloc,
         act: (b) => b.add(const UserListDelete('user-1')),
-        expect: () => [const UserListLoading(), const UserListFailure(error: 'Admin user cannot be deleted')],
+        expect: () => [
+          const UserListLoading(),
+          const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin),
+        ],
       );
     });
   });

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/delete_user_usecase.dart';
@@ -41,8 +42,8 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
         emit(UserListLoaded(users: data));
         _log.debug('END:onSearch success - count: {}', [data.length]);
       case Failure(:final error):
-        emit(UserListFailure(error: error.message));
-        _log.error('END:onSearch error: {}', [error.message]);
+        emit(UserListLoadFailure(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
+        _log.error('END:onSearch error: {}', [error]);
     }
   }
 
@@ -55,8 +56,8 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
         emit(const UserListDeleteSuccess());
         _log.debug('END:onDelete success id: {}', [event.id]);
       case Failure(:final error):
-        emit(UserListFailure(error: error.message));
-        _log.error('END:onDelete error: {}', [error.message]);
+        emit(UserListDeleteFailure(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
+        _log.error('END:onDelete error: {}', [error]);
     }
   }
 }

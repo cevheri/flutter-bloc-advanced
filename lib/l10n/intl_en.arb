@@ -177,5 +177,9 @@
   "force_update_no_store_link": "Open your app store to install the latest version.",
   "@force_update_no_store_link": {},
   "force_update_store_link_invalid": "The update link is not valid. Open your app store to install the latest version.",
-  "@force_update_store_link_invalid": {}
+  "@force_update_store_link_invalid": {},
+  "user_list_load_failed": "Could not load the users",
+  "@user_list_load_failed": {},
+  "user_delete_failed": "Could not delete the user",
+  "@user_delete_failed": {}
 }

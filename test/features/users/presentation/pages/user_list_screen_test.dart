@@ -10,6 +10,7 @@ import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
@@ -286,10 +287,10 @@ void main() {
     });
 
     testWidgets('shows the error instead of the empty placeholder when a request fails', (tester) async {
-      await pumpPhone(tester, const UserListFailure(error: 'User service unavailable'));
+      await pumpPhone(tester, const UserListLoadFailure(errorCode: AppErrorCode.generic));
 
+      expect(find.text(S.current.user_list_load_failed), findsOneWidget);
       expect(find.text(S.current.error_generic), findsOneWidget);
-      expect(find.text('User service unavailable'), findsOneWidget);
       expect(find.byIcon(Icons.people_outline), findsNothing);
     });
   });
@@ -313,12 +314,12 @@ void main() {
     }
 
     // What an admin does: open the user list and press List with the default filters.
-    Future<void> searchUsers(WidgetTester tester) async {
+    Future<void> searchUsers(WidgetTester tester, {String language = 'en'}) async {
       tester.view.physicalSize = const Size(1600, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
-      await tester.pumpWidget(App(language: 'en', dependencies: _UserRepositoryDependencies(userRepository)));
+      await tester.pumpWidget(App(language: language, dependencies: _UserRepositoryDependencies(userRepository)));
       await tester.pumpAndSettle();
       final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
       router.go(ApplicationRoutesConstants.userList);
@@ -333,9 +334,37 @@ void main() {
 
       await searchUsers(tester);
 
+      expect(find.text(S.current.user_list_load_failed), findsOneWidget);
       expect(find.text(S.current.error_generic), findsOneWidget);
-      expect(find.text('User service unavailable'), findsOneWidget);
+      expect(find.text('User service unavailable'), findsNothing);
       expect(find.text('0 row(s) listed.'), findsNothing);
+    });
+
+    testWidgets('shows why a delete was refused in the app language', (tester) async {
+      // The list deletes a user by login, and DeleteUserUseCase refuses 'user-1'.
+      stubSearch(
+        const Success([
+          UserEntity(
+            id: '1',
+            login: 'user-1',
+            firstName: 'Admin',
+            lastName: 'User',
+            email: 'admin@example.com',
+            activated: true,
+            authorities: ['ROLE_ADMIN'],
+          ),
+        ]),
+      );
+      await searchUsers(tester, language: 'tr');
+
+      await tester.tap(find.byIcon(Icons.delete));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Evet'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kullanıcı silinemedi'), findsOneWidget);
+      expect(find.text('Yönetici kullanıcı silinemez'), findsOneWidget);
+      expect(find.text('Admin user cannot be deleted'), findsNothing);
     });
 
     testWidgets('loads the users again from the error state', (tester) async {

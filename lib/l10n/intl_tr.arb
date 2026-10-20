@@ -177,5 +177,9 @@
   "force_update_no_store_link": "En son sürümü yüklemek için uygulama mağazanızı açın.",
   "@force_update_no_store_link": {},
   "force_update_store_link_invalid": "Güncelleme bağlantısı geçersiz. En son sürümü yüklemek için uygulama mağazanızı açın.",
-  "@force_update_store_link_invalid": {}
+  "@force_update_store_link_invalid": {},
+  "user_list_load_failed": "Kullanıcılar yüklenemedi",
+  "@user_list_load_failed": {},
+  "user_delete_failed": "Kullanıcı silinemedi",
+  "@user_delete_failed": {}
 }

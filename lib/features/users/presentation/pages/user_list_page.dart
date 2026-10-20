@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_error_state.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_status_badge.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/semantic_colors.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_data_table.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_responsive_list_view.dart';
@@ -82,16 +84,21 @@ class UserListView extends StatelessWidget {
         UserListInitial() || UserListDeleteSuccess() => _buildList(context),
         UserListLoading() => _buildList(context, isLoading: true),
         UserListLoaded(:final users) => _buildList(context, items: users),
-        UserListFailure(:final error) => _buildList(
-          context,
-          errorWidget: AppErrorState(
-            title: S.of(context).error_generic,
-            description: error,
-            retryLabel: S.of(context).refresh,
-            onRetry: onRefresh,
-          ),
-        ),
+        UserListLoadFailure(:final errorCode) => _buildFailure(context, S.of(context).user_list_load_failed, errorCode),
+        UserListDeleteFailure(:final errorCode) => _buildFailure(context, S.of(context).user_delete_failed, errorCode),
       },
+    );
+  }
+
+  Widget _buildFailure(BuildContext context, String title, AppErrorCode errorCode) {
+    return _buildList(
+      context,
+      errorWidget: AppErrorState(
+        title: title,
+        description: errorCode.resolve(context),
+        retryLabel: S.of(context).refresh,
+        onRetry: onRefresh,
+      ),
     );
   }
 

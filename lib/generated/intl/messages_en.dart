@@ -176,10 +176,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
     ),
+    "user_delete_failed": MessageLookupByLibrary.simpleMessage("Could not delete the user"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
     "user_extended_info_save_failed": m3,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
+    "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Could not load the users"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("Verify OTP Code"),
     "view_user": MessageLookupByLibrary.simpleMessage("View User"),
     "warning": MessageLookupByLibrary.simpleMessage("Warning"),

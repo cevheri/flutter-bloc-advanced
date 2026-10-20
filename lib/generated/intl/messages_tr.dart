@@ -174,10 +174,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
     ),
+    "user_delete_failed": MessageLookupByLibrary.simpleMessage("Kullanıcı silinemedi"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
     "user_extended_info_save_failed": m3,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
+    "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Kullanıcılar yüklenemedi"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Doğrula"),
     "view_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Görüntüle"),
     "warning": MessageLookupByLibrary.simpleMessage("Uyarı"),
