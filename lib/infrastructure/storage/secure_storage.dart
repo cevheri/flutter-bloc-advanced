@@ -54,11 +54,14 @@ abstract interface class ISecureStorage {
 ///   library defaults — flagged here so an audit reader does not
 ///   wonder whether plaintext fallback is possible.
 /// - **iOS:** Keychain accessibility is pinned to
-///   [KeychainAccessibility.first_unlock_this_device] so secrets are
-///   readable after first unlock (e.g. background refresh) but are
-///   NOT synced to iCloud Keychain across devices. This is stricter
-///   than the library default of [KeychainAccessibility.first_unlock]
-///   (which permits iCloud backup) — appropriate for session tokens.
+///   [KeychainAccessibility.first_unlock_this_device]: secrets are
+///   readable after the first unlock until a restart, so a background
+///   refresh can read them while the device is locked, and they never
+///   move to another device through a backup or iCloud Keychain. The
+///   library default, [KeychainAccessibility.unlocked], reads only while
+///   the device is unlocked and lets an item move to a new device in an
+///   encrypted backup; keeping session tokens on this device is the part
+///   that matters for them.
 /// - **macOS:** `usesDataProtectionKeychain: false` keeps secrets in the
 ///   login keychain (the file-based keychain). The data protection
 ///   keychain needs a `keychain-access-groups` entitlement authorized by
