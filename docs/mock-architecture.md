@@ -26,7 +26,7 @@ flowchart TB
     LOCAL --> ENV
     PROD --> ENV
 
-    ENV["ProfileConstants.setEnvironment()"]
+    ENV["AppConfig.fromEnvironment()"]
     ENV --> REPO
 
     subgraph REPO["Repository Layer"]
@@ -121,7 +121,7 @@ The Dio HTTP client is created in `lib/infrastructure/http/api_client.dart`:
 ```dart
 dio.interceptors.addAll([
   AuthInterceptor(),                              // always
-  if (!ProfileConstants.isProduction) MockInterceptor(),  // dev + test only
+  if (!appConfig.isProduction) MockInterceptor(appConfig: appConfig),  // dev + test only
   LoggingInterceptor(),                           // always
 ]);
 ```

@@ -125,7 +125,7 @@ This avoids a window where in-flight users with the old app version cannot reach
 
 `IdleTimeoutObserver` (`lib/core/security/`) signs the user out after a configurable window of pointer inactivity. Default threshold is **15 minutes** in production, **disabled** in dev/test (where hot-reload + mocked sessions would make a 15-minute kick out hostile).
 
-- Configured via `ProfileConstants.idleTimeout`. Override per environment in `lib/infrastructure/config/environment.dart` by editing the `IDLE_TIMEOUT_SECONDS` entry (an int in seconds) of the env map (e.g. `_Config.prodConstants`). Set to `null` to disable.
+- Configured via `AppConfig.idleTimeout` in `lib/infrastructure/config/environment.dart`: `AppConfig.prod()` sets 15 minutes, `AppConfig.dev()` and `AppConfig.test()` set `null`, which disables it.
 - Background-aware: on iOS the Dart `Timer` pauses while the app is suspended, so the observer also captures wall-clock `DateTime.now()` on lifecycle transitions; resumes past the threshold fire immediately.
 - Surfacing: when the timer fires, the user sees a localized snackbar ("You were signed out due to inactivity.") and the router redirects to login. The reason is tagged `SessionExpiredReason.idleTimeout` so logs and UI can distinguish it from a manual sign-out.
 - Activity scope: pointer down / pointer move events on the `MaterialApp.router` subtree reset the timer. Scroll-only sessions (a long-form reading view) do extend, since scroll causes pointer move events.
