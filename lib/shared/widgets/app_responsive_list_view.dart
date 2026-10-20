@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/shared/design_system/components/app_skeleton.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
+import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_data_table.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_mobile_card_list.dart';
 
@@ -46,6 +48,9 @@ class AppResponsiveListView<T> extends StatelessWidget {
   final String title;
   final String? subtitle;
   final List<T>? items;
+
+  /// While a request runs: placeholder rows in place of the table (desktop) or a progress indicator in place
+  /// of the card list (mobile), so it does not look like an empty list.
   final bool isLoading;
   final VoidCallback? onCreateNew;
   final Key? createNewKey;
@@ -116,13 +121,15 @@ class AppResponsiveListView<T> extends StatelessWidget {
             if (desktopSearchWidget != null) ...[const SizedBox(height: 20), desktopSearchWidget!],
             const SizedBox(height: 16),
             errorWidget ??
-                AppDataTable<T>(
-                  columns: columns,
-                  items: items ?? [],
-                  showCheckbox: showCheckbox,
-                  onPrevious: onPrevious,
-                  onNext: onNext,
-                ),
+                (isLoading
+                    ? const _LoadingRows()
+                    : AppDataTable<T>(
+                        columns: columns,
+                        items: items ?? [],
+                        showCheckbox: showCheckbox,
+                        onPrevious: onPrevious,
+                        onNext: onNext,
+                      )),
           ],
         ),
       ),
@@ -164,6 +171,26 @@ class AppResponsiveListView<T> extends StatelessWidget {
                 emptyText: emptyText,
               ),
         ),
+      ],
+    );
+  }
+}
+
+/// Placeholder rows shown in place of the desktop table while a request runs.
+class _LoadingRows extends StatelessWidget {
+  const _LoadingRows();
+
+  static const _rowCount = 5;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < _rowCount; i++) ...[
+          if (i > 0) const SizedBox(height: AppSpacing.sm),
+          const AppSkeleton(height: 40),
+        ],
       ],
     );
   }

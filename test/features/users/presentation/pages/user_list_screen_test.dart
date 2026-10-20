@@ -20,7 +20,9 @@ import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.d
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/shared/design_system/components/app_skeleton.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/widgets/app_responsive_list_view.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -417,6 +419,31 @@ void main() {
       expect(find.text('Kullanıcı silinemedi'), findsOneWidget);
       expect(find.text('Yönetici kullanıcı silinemez'), findsOneWidget);
       expect(find.text('Admin user cannot be deleted'), findsNothing);
+    });
+
+    testWidgets('shows that the users are loading instead of an empty table on a desktop', (tester) async {
+      final response = Completer<Result<List<UserEntity>>>();
+      when(
+        () => userRepository.list(
+          page: any(named: 'page'),
+          size: any(named: 'size'),
+        ),
+      ).thenAnswer((_) => response.future);
+
+      await openUserList(tester);
+      await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));
+      // The skeleton rows shimmer until the request completes, so pump a few frames instead of settling.
+      await tester.pump(const Duration(milliseconds: 500));
+
+      final userList = find.byType(AppResponsiveListView<UserEntity>);
+      expect(find.descendant(of: userList, matching: find.byType(AppSkeleton)), findsWidgets);
+      expect(find.text('0 row(s) listed.'), findsNothing);
+
+      response.complete(const Success([grace]));
+      await tester.pumpAndSettle();
+
+      expect(find.text('grace.hopper@example.com'), findsOneWidget);
+      expect(find.descendant(of: userList, matching: find.byType(AppSkeleton)), findsNothing);
     });
 
     testWidgets('loads the users again from the error state', (tester) async {
