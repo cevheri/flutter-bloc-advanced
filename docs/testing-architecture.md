@@ -91,6 +91,7 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
 
   // Per-test in every file, opted out or not (see "The asset cache" below).
   setUp(rootBundle.clear);
+  tearDown(rootBundle.clear);
 
   // Per-test, unless a file opts out.
   setUp(() async { if (TestEnv.autoReset) await TestEnv.reset(); });
@@ -254,6 +255,29 @@ values so `findsOneWidget` is unambiguous (avoid common tokens like `'User'`); s
 the test surface with `tester.view.physicalSize` + `addTearDown(tester.view.reset)`
 (one consistent API — not `binding.setSurfaceSize`); and assert navigation by what
 the destination renders, not just that the source screen disappeared.
+
+### Widget tests that send a request
+
+A `testWidgets` body runs in fake time, and `tester.pump()` without a duration does not move it: it runs microtasks and draws a scheduled frame, but it fires no timer, not even one of zero length.
+Dio runs each interceptor step in a `Future`, which starts on a zero-length `Timer`, so a request through `ApiClient`, whether the test sends it through `TestEnv.apiClient()` or the pumped app sends it, stays where it is however often the test calls `pump()`.
+A test that ends there fails with `A Timer is still pending even after the widget tree was disposed` and a stack through `DioMixin.fetch`.
+Awaiting the request in the test body is worse: nothing pumps while the body waits, so the test hangs until it times out.
+
+Start the request without awaiting it, pump with a duration, then check or await the result:
+
+```dart
+TestEnv.authenticate(); // the secure store is empty at the start of every test, and /account needs a token
+Response<String>? response;
+unawaited(TestEnv.apiClient().get('/account').then((value) => response = value));
+await tester.pump(Duration.zero); // any duration fires the timers that are due, Duration.zero included
+
+expect(response, isNotNull, reason: 'the mock request never completed');
+```
+
+`pumpAndSettle()` completes such a request as well, because its first pump advances 100 ms, but it stops as soon as no frame is scheduled.
+So it does not wait out the 500 ms that `MockInterceptor` adds under `AppConfig.dev()`, which `App` uses unless the test passes other dependencies: pump at least that long before settling, as `pumpAppOnSettings` in `test/features/settings/presentation/pages/settings_screen_test.dart` does.
+Do not use `tester.runAsync` to let a mock request finish: it runs the request in real time, and it is meant for real I/O.
+`test/support/test_env_test.dart` shows the pattern.
 
 ### ApiClient tests — stub Dio at the wire
 
