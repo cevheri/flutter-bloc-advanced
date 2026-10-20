@@ -480,23 +480,12 @@ void main() {
       });
 
       test('should consider 504 as retryable', () async {
-        final interceptor = ResilienceInterceptor(
-          failureThreshold: 100,
-          cooldownDuration: const Duration(hours: 1),
-          maxRetries: 0,
-        );
-        final options = RequestOptions(path: '/api/test');
-        final err = DioException(
-          requestOptions: options,
-          type: DioExceptionType.badResponse,
-          response: Response(requestOptions: options, statusCode: 504),
-        );
+        final adapter = _FakeHttpClientAdapter([504, 200]);
 
-        // maxRetries=0, so it records failure and passes through
-        _fireOnError(interceptor, err);
+        final response = await _retryingDio(adapter).get<String>('/api/test');
 
-        // Verify the failure was recorded (retryable path records failure)
-        // We'd need the threshold hit to confirm, but we can verify it doesn't crash
+        expect(response.statusCode, 200);
+        expect(adapter.requestCount, 2);
       });
 
       test('should consider sendTimeout as retryable', () async {
