@@ -234,7 +234,11 @@ class TokenRefreshInterceptor extends Interceptor {
       final retryResponse = await _dio.fetch(retryOptions);
       handler.resolve(retryResponse);
     } on DioException catch (retryErr) {
-      _log.error('Retry after refresh failed (Dio): {}', [retryErr.message]);
+      _log.error('Retry after refresh failed (type: {}, message: {}, error: {})', [
+        retryErr.type.name,
+        retryErr.message,
+        retryErr.error,
+      ]);
       // The retry's error has already been through every error
       // interceptor of the client's Dio. Reject so the rest of this
       // chain skips it; passing it on would handle it twice (e.g.
@@ -338,7 +342,9 @@ class TokenRefreshInterceptor extends Interceptor {
       _log.info('Token refresh successful');
       return newIdToken;
     } on DioException catch (e) {
-      _log.error('Token refresh request failed: {}', [e.message]);
+      // A failure that dio only wraps, such as a certificate pin mismatch, has no message: its cause is the wrapped
+      // error. The refresh request skips the client's interceptors, so nothing else logs it.
+      _log.error('Token refresh request failed (type: {}, message: {}, error: {})', [e.type.name, e.message, e.error]);
       return null;
     } catch (e) {
       _log.error('Unexpected error during token refresh: {}', [e]);

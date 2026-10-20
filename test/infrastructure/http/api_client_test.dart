@@ -735,6 +735,55 @@ void main() {
       );
     });
 
+    // Regression: a refresh request that failed in transport, such as on a certificate pin mismatch, was logged as
+    // "Token refresh request failed: null", because a DioException that only wraps the transport error has no message.
+    // The refresh request skips the client's interceptors, so this line is the only record of why the session ended.
+    test('logs the type and the cause when the refresh request fails in transport', () async {
+      adapter
+        ..reply(401)
+        ..fail(const CertificatePinningException('api.example.test', 443));
+      final lines = _capturePrintedLines();
+
+      await expectLater(client.get('/api/refresh/pin-mismatch').timeout(bound), throwsA(isA<UnauthorizedException>()));
+
+      expect(sessionExpiredCalls, 1);
+      expect(
+        lines,
+        anyElement(
+          endsWith(
+            'TokenRefreshInterceptor : Token refresh request failed (type: unknown, message: null, error: '
+            'CertificatePinningException: the certificate of api.example.test:443 matches no configured pin)',
+          ),
+        ),
+      );
+    });
+
+    // Regression: when the retry that follows a successful refresh failed in transport, the line read
+    // "Retry after refresh failed (Dio): null", for the same reason.
+    test('logs the type and the cause when the retry after a refresh fails in transport', () async {
+      adapter
+        ..reply(401)
+        ..reply(200, rotatedTokens)
+        ..fail(const CertificatePinningException('api.example.test', 443));
+      final lines = _capturePrintedLines();
+
+      await expectLater(
+        client.get('/api/refresh/retry-pin-mismatch').timeout(bound),
+        throwsA(isA<UntrustedCertificateException>()),
+      );
+
+      expect(sessionExpiredCalls, 0);
+      expect(
+        lines,
+        anyElement(
+          endsWith(
+            'TokenRefreshInterceptor : Retry after refresh failed (type: unknown, message: null, error: '
+            'CertificatePinningException: the certificate of api.example.test:443 matches no configured pin)',
+          ),
+        ),
+      );
+    });
+
     test('refreshes once when several requests get 401 at the same time', () async {
       final routing = _RoutingHttpClientAdapter(
         (options) => switch ((options.method, options.headers['Authorization'])) {
