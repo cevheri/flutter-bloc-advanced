@@ -285,7 +285,8 @@ void main() {
           cooldownDuration: const Duration(hours: 1),
           maxRetries: 3,
         );
-        final options = RequestOptions(path: '/api/users', method: 'POST');
+        // GET, because a POST without an Idempotency-Key is never retried anyway.
+        final options = RequestOptions(path: '/api/users', method: 'GET');
         // Built the way dio 5.10+ reports it (io_adapter.dart); dio 5.9 reported it as unknown.
         const closed = HttpException('Connection closed before full header was received');
         final err = DioException.connectionError(requestOptions: options, reason: closed.message, error: closed);
@@ -301,13 +302,89 @@ void main() {
             cooldownDuration: const Duration(hours: 1),
             maxRetries: 3,
           ).forDio(Dio());
-          final options = RequestOptions(path: '/api/users', method: 'POST');
+          final options = RequestOptions(path: '/api/users', method: 'GET');
           const refused = SocketException('Connection refused');
           final err = DioException.connectionError(requestOptions: options, reason: refused.message, error: refused);
 
           // The retry waits for its backoff delay, which never elapses in fake time.
           final result = _captureOnErrorSync(interceptor, err);
           expect(result.passed, isFalse);
+        });
+      });
+    });
+
+    // A retry sends the request again, so it is safe only when a second copy cannot change anything on the
+    // server: an idempotent method, or a POST or PATCH whose Idempotency-Key the retry sends again.
+    group('retry by HTTP method', () {
+      for (final method in ['GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE']) {
+        test('retries $method requests after a 503', () async {
+          final adapter = _FakeHttpClientAdapter([503, 200]);
+
+          final response = await _retryingDio(adapter).request<String>('/api/users', options: Options(method: method));
+
+          expect(response.statusCode, 200);
+          expect(adapter.requestCount, 2);
+        });
+      }
+
+      for (final method in ['POST', 'PATCH']) {
+        test('does not retry $method requests without an Idempotency-Key after a 503', () async {
+          final adapter = _FakeHttpClientAdapter([503, 200]);
+
+          await expectLater(
+            _retryingDio(adapter).request<String>('/api/users', options: Options(method: method)),
+            throwsA(isA<DioException>().having((e) => e.response?.statusCode, 'statusCode', 503)),
+          );
+          expect(adapter.requestCount, 1);
+        });
+
+        test('retries $method requests that carry an Idempotency-Key after a 503', () async {
+          final adapter = _FakeHttpClientAdapter([503, 200]);
+
+          final response = await _retryingDio(adapter).request<String>(
+            '/api/users',
+            options: Options(method: method, headers: {'Idempotency-Key': 'order-42'}),
+          );
+
+          expect(response.statusCode, 200);
+          expect(adapter.requestCount, 2);
+        });
+      }
+
+      test('does not retry a POST without an Idempotency-Key after a receive timeout', () {
+        fakeAsync((async) {
+          final interceptor = ResilienceInterceptor(
+            failureThreshold: 10,
+            cooldownDuration: const Duration(hours: 1),
+            maxRetries: 3,
+          ).forDio(Dio());
+          final err = DioException.receiveTimeout(
+            timeout: const Duration(seconds: 30),
+            requestOptions: RequestOptions(path: '/api/users', method: 'POST'),
+          );
+
+          // Passed on at once instead of waiting for a retry's backoff delay.
+          final result = _captureOnErrorSync(interceptor, err);
+          expect(result.passed, isTrue);
+        });
+      });
+
+      // A refused connection on dart:io proves the POST was never sent, but on web dio reports every XMLHttpRequest
+      // network failure, including one after the server received the request, as the same connection error. One
+      // rule applies on every platform, so a POST without an Idempotency-Key is not retried here either.
+      test('does not retry a POST without an Idempotency-Key after a connection error', () {
+        fakeAsync((async) {
+          final interceptor = ResilienceInterceptor(
+            failureThreshold: 10,
+            cooldownDuration: const Duration(hours: 1),
+            maxRetries: 3,
+          ).forDio(Dio());
+          final options = RequestOptions(path: '/api/users', method: 'POST');
+          const refused = SocketException('Connection refused');
+          final err = DioException.connectionError(requestOptions: options, reason: refused.message, error: refused);
+
+          final result = _captureOnErrorSync(interceptor, err);
+          expect(result.passed, isTrue);
         });
       });
     });
@@ -720,6 +797,21 @@ _InterceptorErrorResult _captureOnErrorSync(ResilienceInterceptor interceptor, D
 void _fireOnError(ResilienceInterceptor interceptor, DioException err) {
   final handler = _TestErrorHandler();
   interceptor.onError(err, handler);
+}
+
+/// A Dio that retries once through [adapter], without a backoff delay.
+Dio _retryingDio(_FakeHttpClientAdapter adapter) {
+  final dio = Dio(BaseOptions(baseUrl: 'https://test.api'))..httpClientAdapter = adapter;
+  dio.interceptors.add(
+    ResilienceInterceptor(
+      maxRetries: 1,
+      baseDelay: Duration.zero,
+      maxJitter: Duration.zero,
+      failureThreshold: 10,
+      cooldownDuration: const Duration(hours: 1),
+    ).forDio(dio),
+  );
+  return dio;
 }
 
 class _InterceptorResult {

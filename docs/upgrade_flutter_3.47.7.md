@@ -136,6 +136,7 @@ go_router 18.0.2 also wraps shell navigators in `Semantics(container: true)`, so
   The server may already have processed that request, and `ResilienceInterceptor` retries connection errors for every HTTP method, so a sign-in or any other POST was sent four times.
   `ResilienceInterceptor` now keeps the dio 5.9 outcome and does not retry this case; other connection errors are still retried.
   On web the browser reports the same failure as a generic network error, which was retried before the upgrade and still is.
+  A follow-up fix stopped retrying a `POST` or `PATCH` without an `Idempotency-Key` on every platform and for every transient error (README, Idempotent Mutations).
 - Behavior note, no action needed: async interceptor exceptions now reject the request instead of hanging it.
 
 ### 5.3 sentry_flutter 10

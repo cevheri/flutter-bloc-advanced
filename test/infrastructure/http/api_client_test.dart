@@ -70,6 +70,7 @@ class _StubInterceptor extends Interceptor {
 /// adapter, it shows which requests travel through that transport.
 class _FakeHttpClientAdapter implements HttpClientAdapter {
   final requests = <({String method, String path, String? authorization, String? body})>[];
+  final idempotencyKeys = <String?>[];
   final _replies = <Object>[];
   bool closed = false;
 
@@ -90,6 +91,7 @@ class _FakeHttpClientAdapter implements HttpClientAdapter {
       authorization: options.headers['Authorization'] as String?,
       body: body,
     ));
+    idempotencyKeys.add(options.headers['Idempotency-Key'] as String?);
     if (_replies.isEmpty) throw StateError('No reply queued for ${options.method} ${options.path}');
     return switch (_replies.removeAt(0)) {
       (final int statusCode, final String body) => ResponseBody.fromString(
@@ -470,7 +472,7 @@ void main() {
         ..reply(503)
         ..reply(200, '{"saved":true}');
 
-      final response = await client.post('/api/transport/retry', {'name': 'test'});
+      final response = await client.post('/api/transport/retry', {'name': 'test'}, idempotent: true);
 
       expect(response.statusCode, 200);
       const sent = (
@@ -507,8 +509,13 @@ void main() {
       // HandshakeException and dio wraps it in DioExceptionType.unknown, not badCertificate.
       adapter.fail(const HandshakeException('Handshake error in client (OS Error: CERTIFICATE_VERIFY_FAILED)'));
 
+      // The Idempotency-Key makes the POST safe to send twice, so only the error type decides against a retry.
       await expectLater(
-        client.instance.post<String>('/api/transport/pin-mismatch', data: {'name': 'test'}),
+        client.instance.post<String>(
+          '/api/transport/pin-mismatch',
+          data: {'name': 'test'},
+          options: Options(headers: {'Idempotency-Key': 'pin-1'}),
+        ),
         throwsA(
           isA<DioException>()
               .having((e) => e.type, 'type', DioExceptionType.unknown)
@@ -524,6 +531,56 @@ void main() {
       await expectLater(client.post('/api/transport/breaker', {'name': 'test'}), throwsA(isA<FetchDataException>()));
 
       expect(ResilienceInterceptor.instance.circuitBreakers['/api/transport/breaker']?.failureCount, 1);
+    });
+  });
+
+  // Regression: a 503 or a timeout was retried for every HTTP method, so a POST the server had already processed
+  // ran again (a second registration, a double submission). A retry is sent only when repeating the request is
+  // safe: an idempotent method, or a POST or PATCH whose Idempotency-Key the retry sends again.
+  group('ApiClient retry by HTTP method', () {
+    late ApiClient client;
+    late _FakeHttpClientAdapter adapter;
+
+    setUp(() {
+      client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      adapter = _FakeHttpClientAdapter()
+        ..reply(503, 'unavailable')
+        ..reply(200, '{"ok":true}');
+      client.instance.httpClientAdapter = adapter;
+      TestEnv.authenticate();
+    });
+
+    test('does not retry a POST without an Idempotency-Key and fails with the 503', () async {
+      await expectLater(
+        client.post('/api/retry/plain-post', {'name': 'test'}),
+        throwsA(isA<FetchDataException>().having((e) => e.toString(), 'message', contains('Server error (503)'))),
+      );
+
+      expect(adapter.requests, hasLength(1), reason: 'the POST must reach the server once');
+    });
+
+    test('retries a POST that carries an Idempotency-Key and sends the same key again', () async {
+      final response = await client.post('/api/retry/keyed-post', {'name': 'test'}, idempotent: true);
+
+      expect(response.statusCode, 200);
+      expect(adapter.idempotencyKeys, hasLength(2));
+      expect(adapter.idempotencyKeys.first, isNotNull);
+      expect(adapter.idempotencyKeys.last, adapter.idempotencyKeys.first, reason: 'the retry must reuse the key');
+    });
+
+    test('still retries a GET', () async {
+      final response = await client.get('/api/retry/get');
+
+      expect(response.statusCode, 200);
+      expect(adapter.requests, hasLength(2));
     });
   });
 

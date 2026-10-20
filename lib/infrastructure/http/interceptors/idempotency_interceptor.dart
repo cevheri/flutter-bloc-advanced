@@ -11,7 +11,9 @@ import 'package:uuid/uuid.dart';
 /// **Backend dependency.** The header is meaningless unless the server is
 /// configured to deduplicate by it (see IETF draft `idempotency-key-header`,
 /// Stripe's worked example). The client side of the contract is in this file;
-/// the server side is the template user's responsibility.
+/// the server side is the template user's responsibility. The key is also what
+/// lets `ResilienceInterceptor` retry a POST or PATCH after a transient failure,
+/// so against a server that ignores it, opting in creates duplicates.
 ///
 /// **Retry stability.** The key is stamped onto the [RequestOptions] (both the
 /// `Idempotency-Key` header and `extra['_idempotency_key']`) on the initial

@@ -137,9 +137,15 @@ Compliance baselines that expect inactivity timeouts: SOC2 CC6.1, ISO 27001 A.9.
 
 ### Idempotent Mutations (opt-in)
 
-`POST` / `PUT` / `PATCH` retries can create duplicate records when the client retries on a transient failure. The template ships an opt-in `IdempotencyInterceptor` that attaches an `Idempotency-Key: <uuid-v4>` header so a properly configured backend can deduplicate.
+`ResilienceInterceptor` retries a transient failure (timeout, connection error, 502/503/504) only when the request is safe to send twice.
+`GET`, `HEAD`, `OPTIONS`, `PUT` and `DELETE` are idempotent by HTTP semantics and are retried.
+A `POST` or `PATCH` may already have been processed by the server, so it is retried only when it carries an `Idempotency-Key` header; without one, the caller gets the error.
+The template ships an opt-in `IdempotencyInterceptor` that attaches an `Idempotency-Key: <uuid-v4>` header so a properly configured backend can deduplicate.
 
-**The header is a contract, not a guarantee.** The server must be configured to deduplicate by this header (see Stripe's worked example, IETF draft `idempotency-key-header`). If the backend ignores it, this feature is theatre — the duplicate is still created server-side. Confirm support before opting in production call sites.
+**The header is a contract, not a guarantee.**
+The server must be configured to deduplicate by this header (see Stripe's worked example, IETF draft `idempotency-key-header`).
+If the backend ignores it, opting in is worse than leaving it off: the key is what lets `ResilienceInterceptor` retry a `POST` or `PATCH`, and every retry the server processes creates another record.
+Confirm support before opting in production call sites.
 
 Opt in per call:
 

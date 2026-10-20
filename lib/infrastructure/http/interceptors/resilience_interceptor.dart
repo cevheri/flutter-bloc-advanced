@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotency_interceptor.dart';
 
 /// Dio interceptor that combines **smart retry** with a **circuit breaker**
 /// to improve resilience against transient failures.
@@ -12,6 +13,10 @@ import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 /// - Retryable errors: timeout, connection error, HTTP 502/503/504.
 ///   On dart:io, a connection that closed before a full response header arrived is not retried. On web the
 ///   browser reports it as a generic network error, which is retried like any other connection error.
+/// - Only requests that are safe to send twice are retried: GET, HEAD, OPTIONS, PUT and DELETE, and any other
+///   method, POST and PATCH included, only when it carries an `Idempotency-Key` header (see
+///   [IdempotencyInterceptor]). Otherwise the error passes through, because the server may already have
+///   processed the request.
 /// - Non-retryable: 400, 401, 403, 404, 422 pass through immediately.
 /// - Max retries: 3, exponential backoff with jitter (200ms base).
 /// - Respects the `Retry-After` header when present.
@@ -33,6 +38,10 @@ class ResilienceInterceptor extends Interceptor {
 
   static final ResilienceInterceptor _instance = ResilienceInterceptor();
   static ResilienceInterceptor get instance => _instance;
+
+  /// Methods that HTTP defines as idempotent (RFC 9110, section 9.2.2): sending one twice has the same effect
+  /// on the server as sending it once.
+  static const _idempotentMethods = {'GET', 'HEAD', 'OPTIONS', 'PUT', 'DELETE'};
 
   /// Maximum number of retry attempts for retryable errors.
   final int maxRetries;
@@ -149,6 +158,12 @@ class ResilienceInterceptor extends Interceptor {
 
     // Non-retryable errors: record failure and pass through immediately.
     if (!_isRetryable(err)) {
+      if (_isTransient(err)) {
+        _log.debug('Not retrying {} {}: the method is not idempotent and the request has no Idempotency-Key', [
+          err.requestOptions.method,
+          err.requestOptions.path,
+        ]);
+      }
       // Client errors (4xx) should not trip the circuit breaker.
       if (!_isClientError(err)) {
         breaker.recordFailure();
@@ -310,8 +325,11 @@ class ResilienceInterceptor extends Interceptor {
     );
   }
 
-  /// Whether an error is retryable (transient).
-  bool _isRetryable(DioException err) {
+  /// Whether an error is retryable: transient, and its request is safe to send again.
+  bool _isRetryable(DioException err) => _isTransient(err) && _isSafeToRepeat(err.requestOptions);
+
+  /// Whether an error is transient, so the same request may succeed when it is sent again.
+  bool _isTransient(DioException err) {
     switch (err.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
@@ -339,6 +357,20 @@ class ResilienceInterceptor extends Interceptor {
   /// import. The web adapter reports the same failure as a connection error without an error object.
   bool _isClosedAfterRequestSent(DioException err) =>
       err.error?.toString().contains('Connection closed before full header was received') ?? false;
+
+  /// Whether sending [options] a second time cannot apply the request twice on the server.
+  ///
+  /// One rule covers every error type and platform. On dart:io a refused connection or a connect timeout
+  /// does prove that the request was never sent, but dio's web adapter reports every XMLHttpRequest network
+  /// failure as a connection error, and a request that was sent but got no response header in time as a
+  /// connection timeout; dio has also moved a failure after sending into connection errors before (5.10).
+  /// So a POST or PATCH is repeated only with an `Idempotency-Key`: a retry sends this same [RequestOptions],
+  /// so the server sees the same key again and can drop the duplicate.
+  bool _isSafeToRepeat(RequestOptions options) {
+    if (_idempotentMethods.contains(options.method.toUpperCase())) return true;
+    final key = options.headers[IdempotencyInterceptor.headerName]?.toString();
+    return key != null && key.isNotEmpty;
+  }
 
   /// Whether an error is a client error (4xx) that should NOT trip the breaker.
   bool _isClientError(DioException err) {
