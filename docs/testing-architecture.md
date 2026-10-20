@@ -58,6 +58,7 @@ test/
 │   ├── android_manifest_test.dart    # Android INTERNET, https queries, backup off
 │   ├── import_guard_test.dart        # layer dependency rules
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
+│   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
 │   └── test_file_naming_test.dart    # forbids *.test.dart (dot) files
 ├── app/                       # app/ layer tests (router, shell, theme, di, ...)
 ├── core/                      # core/ tests (errors, logging, security, result, ...)
@@ -321,6 +322,8 @@ for genuine stateful behavior; Dio handlers are always hand-written:
 - **`android_manifest_test.dart`** fails if `AndroidManifest.xml` drops the `INTERNET` permission, the `<queries>` intent that lets `url_launcher` open https links, `android:allowBackup="false"`, or the references to the two backup rule files, or if either rule file stops excluding shared preferences.
   Release builds need the permission to reach the API, `canLaunchUrl` returns false for https links on Android 11 and higher without the query, and a restored backup or device transfer brings back session tokens that no longer decrypt.
   CI builds the release APK, but that build succeeds without any of these.
+- **`mock_asset_naming_test.dart`** fails if a file under `assets/mock/` has a `-` in its name.
+  `MockInterceptor` maps `-` in request paths to `_`, so such a file is never served and the request falls back to a generic response.
 
 ---
 
@@ -428,6 +431,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Test-file naming guard | `test/architecture/test_file_naming_test.dart` |
 | macOS network entitlement guard | `test/architecture/macos_entitlements_test.dart` |
 | Android manifest guard | `test/architecture/android_manifest_test.dart` |
+| Mock asset naming guard | `test/architecture/mock_asset_naming_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |
