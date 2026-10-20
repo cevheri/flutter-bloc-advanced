@@ -313,9 +313,8 @@ void main() {
       ).thenAnswer((_) async => result);
     }
 
-    // What an admin does: open the user list and press List with the default filters.
-    Future<void> searchUsers(WidgetTester tester, {String language = 'en'}) async {
-      tester.view.physicalSize = const Size(1600, 1600);
+    Future<void> openUserList(WidgetTester tester, {String language = 'en', Size size = const Size(1600, 1600)}) async {
+      tester.view.physicalSize = size;
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
@@ -324,10 +323,63 @@ void main() {
       final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
       router.go(ApplicationRoutesConstants.userList);
       await tester.pumpAndSettle();
+    }
+
+    // What an admin does: open the user list and press List with the default filters.
+    Future<void> searchUsers(WidgetTester tester, {String language = 'en'}) async {
+      await openUserList(tester, language: language);
 
       await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));
       await tester.pumpAndSettle();
     }
+
+    final nameField = find.byWidgetPredicate((widget) => widget is FormBuilderTextField && widget.name == 'name');
+
+    const grace = UserEntity(
+      id: '7',
+      login: 'grace.hopper',
+      firstName: 'Grace',
+      lastName: 'Hopper',
+      email: 'grace.hopper@example.com',
+      activated: true,
+      authorities: ['ROLE_USER'],
+    );
+
+    testWidgets('lists the users whose name matches when no role is selected', (tester) async {
+      when(() => userRepository.listByName(0, 100, 'grace')).thenAnswer((_) async => const Success([grace]));
+      await openUserList(tester);
+
+      await tester.enterText(nameField, 'grace');
+      await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('grace.hopper@example.com'), findsOneWidget);
+    });
+
+    testWidgets('lists the users whose name matches on a phone, which has no role filter', (tester) async {
+      when(() => userRepository.listByName(0, 100, 'grace')).thenAnswer((_) async => const Success([grace]));
+      await openUserList(tester, size: const Size(400, 800));
+
+      await tester.enterText(nameField, 'grace');
+      await tester.tap(find.ancestor(of: find.text(S.current.list), matching: find.byType(OutlinedButton)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('grace.hopper@example.com'), findsOneWidget);
+    });
+
+    testWidgets('shows the error instead of loading forever when the search throws', (tester) async {
+      when(
+        () => userRepository.list(
+          page: any(named: 'page'),
+          size: any(named: 'size'),
+        ),
+      ).thenThrow(StateError('Unexpected response'));
+
+      await searchUsers(tester);
+
+      expect(find.text(S.current.user_list_load_failed), findsOneWidget);
+      expect(find.text(S.current.error_generic), findsOneWidget);
+    });
 
     testWidgets('shows the error instead of an empty list when the search fails', (tester) async {
       stubSearch(const Failure(NetworkError('User service unavailable')));

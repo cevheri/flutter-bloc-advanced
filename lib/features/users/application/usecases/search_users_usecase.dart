@@ -16,18 +16,20 @@ class SearchUsersUseCase {
 
   final IUserRepository _repository;
 
+  /// Picks the repository search for the filters given; an empty name or role counts as not given.
   Future<Result<List<UserEntity>>> call(SearchUsersParams params) {
-    if ((params.name == null || params.name!.isEmpty) && (params.authorities == null || params.authorities!.isEmpty)) {
-      return _repository.list(page: params.page, size: params.size);
-    }
-
-    if (params.name != null &&
-        params.name!.isNotEmpty &&
-        params.authorities != null &&
-        params.authorities!.isNotEmpty) {
-      return _repository.listByNameAndRole(params.page, params.size, params.name!, params.authorities!);
-    }
-
-    return _repository.listByAuthority(params.page, params.size, params.authorities!);
+    return switch ((_nonEmpty(params.name), _nonEmpty(params.authorities))) {
+      (null, null) => _repository.list(page: params.page, size: params.size),
+      (final String name, null) => _repository.listByName(params.page, params.size, name),
+      (null, final String authority) => _repository.listByAuthority(params.page, params.size, authority),
+      (final String name, final String authority) => _repository.listByNameAndRole(
+        params.page,
+        params.size,
+        name,
+        authority,
+      ),
+    };
   }
+
+  static String? _nonEmpty(String? value) => value == null || value.isEmpty ? null : value;
 }

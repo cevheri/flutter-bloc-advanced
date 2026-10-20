@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:fake_async/fake_async.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
@@ -14,23 +15,34 @@ class _FakeUserRepository implements IUserRepository {
   List<UserEntity> listResult = const [];
   AppError? failure;
 
+  /// Thrown instead of returning a result, like a repository bug would.
+  Object? thrown;
+
   @override
   Future<Result<UserEntity>> create(UserEntity user) async => throw UnimplementedError();
 
   @override
   Future<Result<void>> delete(String id) async {
+    if (thrown != null) throw thrown!;
     if (failure != null) return Failure(failure!);
     return const Success(null);
   }
 
   @override
   Future<Result<List<UserEntity>>> list({int page = 0, int size = 10, List<String> sort = const ['id,desc']}) async {
+    if (thrown != null) throw thrown!;
     if (failure != null) return Failure(failure!);
     return Success(listResult);
   }
 
   @override
   Future<Result<List<UserEntity>>> listByAuthority(int page, int size, String authority) async {
+    if (failure != null) return Failure(failure!);
+    return Success(listResult);
+  }
+
+  @override
+  Future<Result<List<UserEntity>>> listByName(int page, int size, String name) async {
     if (failure != null) return Failure(failure!);
     return Success(listResult);
   }
@@ -166,6 +178,32 @@ void main() {
         });
       });
 
+      test('emits [loading, load failure] and reports the error when the search throws', () {
+        final observer = _RecordingBlocObserver();
+        final previousObserver = Bloc.observer;
+        Bloc.observer = observer;
+        addTearDown(() => Bloc.observer = previousObserver);
+
+        fakeAsync((async) {
+          repository.thrown = StateError('Unexpected response');
+          final searchBloc = UserListBloc(
+            searchUsersUseCase: SearchUsersUseCase(repository),
+            deleteUserUseCase: DeleteUserUseCase(repository),
+          );
+          final states = <UserListState>[];
+          final sub = searchBloc.stream.listen(states.add);
+
+          searchBloc.add(const UserListSearch());
+          async.elapse(const Duration(seconds: 1));
+
+          expect(states, [const UserListLoading(), const UserListLoadFailure(errorCode: AppErrorCode.generic)]);
+          expect(observer.errors, [isA<StateError>()]);
+
+          sub.cancel();
+          searchBloc.close();
+        });
+      });
+
       test('rapid bursts collapse to a single emission pair (debounceRestartable)', () {
         fakeAsync((async) {
           repository.listResult = users;
@@ -205,6 +243,32 @@ void main() {
         expect: () => [const UserListLoading(), const UserListDeleteFailure(errorCode: AppErrorCode.generic)],
       );
 
+      test('emits [loading, delete failure] and reports the error when the delete throws', () {
+        final observer = _RecordingBlocObserver();
+        final previousObserver = Bloc.observer;
+        Bloc.observer = observer;
+        addTearDown(() => Bloc.observer = previousObserver);
+
+        fakeAsync((async) {
+          repository.thrown = StateError('Unexpected response');
+          final deleteBloc = UserListBloc(
+            searchUsersUseCase: SearchUsersUseCase(repository),
+            deleteUserUseCase: DeleteUserUseCase(repository),
+          );
+          final states = <UserListState>[];
+          final sub = deleteBloc.stream.listen(states.add);
+
+          deleteBloc.add(const UserListDelete('2'));
+          async.flushMicrotasks();
+
+          expect(states, [const UserListLoading(), const UserListDeleteFailure(errorCode: AppErrorCode.generic)]);
+          expect(observer.errors, [isA<StateError>()]);
+
+          sub.cancel();
+          deleteBloc.close();
+        });
+      });
+
       // Admin-protection rule lives in DeleteUserUseCase (#73). Verify its
       // error code surfaces through the bloc, so the UI can translate it.
       blocTest<UserListBloc, UserListState>(
@@ -218,4 +282,15 @@ void main() {
       );
     });
   });
+}
+
+/// Records the errors blocs report to [BlocObserver.onError].
+class _RecordingBlocObserver extends BlocObserver {
+  final errors = <Object>[];
+
+  @override
+  void onError(BlocBase<dynamic> bloc, Object error, StackTrace stackTrace) {
+    errors.add(error);
+    super.onError(bloc, error, stackTrace);
+  }
 }

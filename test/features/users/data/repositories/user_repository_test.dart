@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
@@ -169,6 +170,32 @@ void main() {
     });
   });
 
+  group("User Repository listByName", () {
+    test("Given valid range and name when listByName then return user list successfully", () async {
+      TestEnv.authenticate();
+      final result = await repository.listByName(0, 10, "admin");
+
+      expect(result, isA<Success<List<UserEntity>>>());
+      expect((result as Success<List<UserEntity>>).data.length, 4);
+    });
+
+    test("Given valid range and name without accessToken when listByName then return failure", () async {
+      final result = await repository.listByName(0, 10, "admin");
+      expect(result, isA<Failure<List<UserEntity>>>());
+    });
+
+    test("Given a name when listByName then filter by the name only", () async {
+      final stub = _StubInterceptor();
+      final dio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
+      dio.interceptors.add(stub);
+
+      await UserRepository(TestEnv.apiClient(dio: dio)).listByName(0, 10, "grace");
+
+      expect(stub.requests.single.path, '/admin/users/filter');
+      expect(stub.requests.single.queryParameters, {'page': '0', 'size': '10', 'name': 'grace'});
+    });
+  });
+
   group("User Repository findUserByName", () {
     test("Given valid range, name and authority when findUserByName then return user list successfully", () async {
       TestEnv.authenticate();
@@ -238,4 +265,15 @@ void main() {
       expect((result as Failure<void>).error, isA<ValidationError>());
     });
   });
+}
+
+/// Answers every request with an empty user list and records what was requested.
+class _StubInterceptor extends Interceptor {
+  final requests = <RequestOptions>[];
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    requests.add(options);
+    handler.resolve(Response(requestOptions: options, data: '[]', statusCode: 200));
+  }
 }

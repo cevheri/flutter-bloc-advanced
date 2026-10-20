@@ -186,6 +186,30 @@ class UserRepository implements IUserRepository {
   }
 
   @override
+  Future<Result<List<UserEntity>>> listByName(int page, int size, String name) async {
+    _log.debug('BEGIN:listByName repository start - page: {}, size: {}, name: {}', [page, size, name]);
+    try {
+      final queryParams = {'page': page.toString(), 'size': size.toString(), 'name': name};
+      final response = await _apiClient.get('/admin/$_resource/filter', queryParams: queryParams);
+      final result = User.fromJsonStringList(response.data!);
+      _log.debug('END:listByName successful - response list size: {}', [result.length]);
+      return Success(result);
+    } on UnauthorizedException catch (e) {
+      _log.error('END:listByName auth error: {}', [e.toString()]);
+      return Failure(AuthError(e.toString()));
+    } on BadRequestException catch (e) {
+      _log.error('END:listByName validation error: {}', [e.toString()]);
+      return Failure(ValidationError(e.toString()));
+    } on FetchDataException catch (e) {
+      _log.error('END:listByName network error: {}', [e.toString()]);
+      return Failure(_mapFetchDataException(e));
+    } catch (e) {
+      _log.error('END:listByName unknown error: {}', [e.toString()]);
+      return Failure(UnknownError(e.toString()));
+    }
+  }
+
+  @override
   Future<Result<List<UserEntity>>> listByNameAndRole(int page, int size, String name, String authority) async {
     _log.debug('BEGIN:findUserByName repository start - page: {}, size: {}, name: {}, authority: {}', [
       page,

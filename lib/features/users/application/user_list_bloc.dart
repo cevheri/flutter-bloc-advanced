@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
@@ -34,8 +35,10 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
   FutureOr<void> _onSearch(UserListSearch event, Emitter<UserListState> emit) async {
     _log.debug('BEGIN: onSearch name:{} authorities:{}', [event.name, event.authorities]);
     emit(const UserListLoading());
-    final result = await _searchUsersUseCase(
-      SearchUsersParams(page: event.page, size: event.size, name: event.name, authorities: event.authorities),
+    final result = await _guard(
+      () => _searchUsersUseCase(
+        SearchUsersParams(page: event.page, size: event.size, name: event.name, authorities: event.authorities),
+      ),
     );
     switch (result) {
       case Success(:final data):
@@ -50,7 +53,7 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
   FutureOr<void> _onDelete(UserListDelete event, Emitter<UserListState> emit) async {
     _log.debug('BEGIN: onDelete id: {}', [event.id]);
     emit(const UserListLoading());
-    final result = await _deleteUserUseCase(event.id);
+    final result = await _guard(() => _deleteUserUseCase(event.id));
     switch (result) {
       case Success():
         emit(const UserListDeleteSuccess());
@@ -58,6 +61,19 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
       case Failure(:final error):
         emit(UserListDeleteFailure(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
         _log.error('END:onDelete error: {}', [error]);
+    }
+  }
+
+  /// Awaits [request] and turns anything it throws into a [Failure], so the handler ends in a failure
+  /// state instead of leaving the list loading. The error is logged and still reported to [onError],
+  /// where the bloc observers see it.
+  Future<Result<T>> _guard<T>(Future<Result<T>> Function() request) async {
+    try {
+      return await request();
+    } catch (error, stackTrace) {
+      _log.error('unexpected error: {}\n{}', [error, stackTrace]);
+      addError(error, stackTrace);
+      return Failure(UnknownError(error.toString()));
     }
   }
 }

@@ -54,6 +54,34 @@ void main() {
     verify(() => mockRepo.listByAuthority(0, 10, 'ROLE_ADMIN')).called(1);
   });
 
+  test('calls listByName() when only name provided', () async {
+    when(() => mockRepo.listByName(0, 10, 'John')).thenAnswer((_) async => const Success(users));
+
+    final result = await useCase.call(const SearchUsersParams(name: 'John'));
+
+    expect(result, isA<Success<List<UserEntity>>>());
+    verify(() => mockRepo.listByName(0, 10, 'John')).called(1);
+  });
+
+  test('calls listByName() when authority is an empty string', () async {
+    when(() => mockRepo.listByName(0, 10, 'John')).thenAnswer((_) async => const Success(users));
+
+    final result = await useCase.call(const SearchUsersParams(name: 'John', authorities: ''));
+
+    expect(result, isA<Success<List<UserEntity>>>());
+    verify(() => mockRepo.listByName(0, 10, 'John')).called(1);
+    verifyNever(() => mockRepo.listByAuthority(any(), any(), any()));
+  });
+
+  test('calls listByAuthority() when name is an empty string', () async {
+    when(() => mockRepo.listByAuthority(0, 10, 'ROLE_ADMIN')).thenAnswer((_) async => const Success(users));
+
+    final result = await useCase.call(const SearchUsersParams(name: '', authorities: 'ROLE_ADMIN'));
+
+    expect(result, isA<Success<List<UserEntity>>>());
+    verify(() => mockRepo.listByAuthority(0, 10, 'ROLE_ADMIN')).called(1);
+  });
+
   test('passes custom page and size', () async {
     when(() => mockRepo.list(page: 2, size: 20)).thenAnswer((_) async => const Success(users));
 

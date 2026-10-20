@@ -30,6 +30,9 @@ class _FakeUserRepository implements IUserRepository {
       throw UnimplementedError();
 
   @override
+  Future<Result<List<UserEntity>>> listByName(int page, int size, String name) async => throw UnimplementedError();
+
+  @override
   Future<Result<List<UserEntity>>> listByNameAndRole(int page, int size, String name, String authority) async =>
       throw UnimplementedError();
 
