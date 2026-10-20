@@ -10,6 +10,7 @@ class _FakeRepo implements IDynamicFormRepository {
   Result<String?>? submitResult;
   FormSubmitAction? lastAction;
   Map<String, dynamic>? lastData;
+  Set<String>? lastSensitiveKeys;
 
   @override
   Future<Result<FormSchemaEntity>> fetchSchema(String formId) async => const Failure(UnknownError('not used'));
@@ -19,9 +20,15 @@ class _FakeRepo implements IDynamicFormRepository {
       const Failure(UnknownError('not used'));
 
   @override
-  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams}) async {
+  Future<Result<String?>> submit(
+    FormSubmitAction action,
+    Map<String, dynamic> data, {
+    String? pathParams,
+    Set<String> sensitiveKeys = const {},
+  }) async {
     lastAction = action;
     lastData = data;
+    lastSensitiveKeys = sensitiveKeys;
     return submitResult ?? const Failure(UnknownError('not configured'));
   }
 }
@@ -37,6 +44,16 @@ void main() {
     expect(result, isA<Success<String?>>());
     expect(repo.lastAction, action);
     expect(repo.lastData, const {'name': 'Alice'});
+    expect(repo.lastSensitiveKeys, isEmpty);
+  });
+
+  test('forwards the sensitive keys to the repository', () async {
+    final repo = _FakeRepo()..submitResult = const Success(null);
+    const action = FormSubmitAction(method: 'PUT', endpoint: '/pins');
+
+    await SubmitFormUseCase(repo)(action, const {'pin': 'S3cret!pw'}, sensitiveKeys: {'pin'});
+
+    expect(repo.lastSensitiveKeys, {'pin'});
   });
 
   test('propagates a repository Failure unchanged', () async {

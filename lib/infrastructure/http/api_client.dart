@@ -16,6 +16,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotenc
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Metadata describing one entry in the [ApiClient] interceptor chain.
@@ -52,6 +53,11 @@ class InterceptorChainEntry {
 /// Error mapping happens in the convenience methods ([get], [post], etc.)
 /// which catch [DioException] and rethrow as [AppException] types so that
 /// repository catch blocks work without Dio coupling.
+///
+/// [post], [put] and [patch] take `sensitiveKeys`, the keys of their data
+/// whose values are secrets though their names hold no credential word. The
+/// request carries them in its extra ([sensitiveKeysOf]), so the dev
+/// console, the verbose log and the error text mask those values too.
 class ApiClient {
   ApiClient({required this._appConfig, this._secureStorage, this._onSessionExpired, this._dio});
 
@@ -221,11 +227,17 @@ class ApiClient {
     String? contentType,
     String? pathParams,
     bool idempotent = false,
+    Set<String> sensitiveKeys = const {},
   }) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     final options = Options(
-      extra: {'_basePath': path, '_pathParams': pathParams, if (idempotent) IdempotencyInterceptor.optInExtraKey: true},
+      extra: {
+        '_basePath': path,
+        '_pathParams': pathParams,
+        if (idempotent) IdempotencyInterceptor.optInExtraKey: true,
+        if (sensitiveKeys.isNotEmpty) sensitiveKeysExtra: sensitiveKeys,
+      },
       headers: headers,
       contentType: contentType,
     );
@@ -236,7 +248,13 @@ class ApiClient {
     }
   }
 
-  Future<Response<String>> put<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
+  Future<Response<String>> put<T>(
+    String path,
+    T data, {
+    String? pathParams,
+    bool idempotent = false,
+    Set<String> sensitiveKeys = const {},
+  }) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
@@ -248,6 +266,7 @@ class ApiClient {
             '_basePath': path,
             '_pathParams': pathParams,
             if (idempotent) IdempotencyInterceptor.optInExtraKey: true,
+            if (sensitiveKeys.isNotEmpty) sensitiveKeysExtra: sensitiveKeys,
           },
         ),
       );
@@ -256,7 +275,13 @@ class ApiClient {
     }
   }
 
-  Future<Response<String>> patch<T>(String path, T data, {String? pathParams, bool idempotent = false}) async {
+  Future<Response<String>> patch<T>(
+    String path,
+    T data, {
+    String? pathParams,
+    bool idempotent = false,
+    Set<String> sensitiveKeys = const {},
+  }) async {
     final fullPath = pathParams != null ? '$path/$pathParams' : path;
     final serialized = _serializeData(data);
     try {
@@ -268,6 +293,7 @@ class ApiClient {
             '_basePath': path,
             '_pathParams': pathParams,
             if (idempotent) IdempotencyInterceptor.optInExtraKey: true,
+            if (sensitiveKeys.isNotEmpty) sensitiveKeysExtra: sensitiveKeys,
           },
         ),
       );
@@ -324,7 +350,11 @@ class ApiClient {
     final statusCode = e.response?.statusCode ?? 0;
     // The body becomes the text of the exception, which the log, the dev console and Sentry receive, and a validation
     // error can repeat the password or the code the request sent.
-    final body = scrubErrorBody(e.response?.data, requestBody: e.requestOptions.data);
+    final body = scrubErrorBody(
+      e.response?.data,
+      requestBody: e.requestOptions.data,
+      sensitiveKeys: sensitiveKeysOf(e.requestOptions),
+    );
     switch (statusCode) {
       case 400:
         return BadRequestException(body);

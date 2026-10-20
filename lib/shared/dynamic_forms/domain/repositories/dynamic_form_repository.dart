@@ -24,5 +24,14 @@ abstract class IDynamicFormRepository {
   /// trailing URL segment (matching the per-instance routing used by
   /// [fetchBundle]). Returns the server response body as a string, or
   /// `null` if the response had no body.
-  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams});
+  ///
+  /// [sensitiveKeys] names the keys of [data] whose values are secrets,
+  /// such as the keys of the password fields. Whatever logs or shows the
+  /// request masks their values, whatever the keys are called.
+  Future<Result<String?>> submit(
+    FormSubmitAction action,
+    Map<String, dynamic> data, {
+    String? pathParams,
+    Set<String> sensitiveKeys = const {},
+  });
 }

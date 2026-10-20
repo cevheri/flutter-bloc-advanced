@@ -80,7 +80,12 @@ class DynamicFormRepository implements IDynamicFormRepository {
   }
 
   @override
-  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams}) async {
+  Future<Result<String?>> submit(
+    FormSubmitAction action,
+    Map<String, dynamic> data, {
+    String? pathParams,
+    Set<String> sensitiveKeys = const {},
+  }) async {
     _log.debug('BEGIN:submit {} {} pathParams: {}', [action.method, action.endpoint, pathParams]);
     if (action.endpoint.isEmpty) {
       return const Failure(ValidationError(submitEndpointRequired));
@@ -90,9 +95,9 @@ class DynamicFormRepository implements IDynamicFormRepository {
     }
     try {
       final response = switch (action.method.toUpperCase()) {
-        'POST' => await _apiClient.post(action.endpoint, data, pathParams: pathParams),
-        'PUT' => await _apiClient.put(action.endpoint, data, pathParams: pathParams),
-        'PATCH' => await _apiClient.patch(action.endpoint, data, pathParams: pathParams),
+        'POST' => await _apiClient.post(action.endpoint, data, pathParams: pathParams, sensitiveKeys: sensitiveKeys),
+        'PUT' => await _apiClient.put(action.endpoint, data, pathParams: pathParams, sensitiveKeys: sensitiveKeys),
+        'PATCH' => await _apiClient.patch(action.endpoint, data, pathParams: pathParams, sensitiveKeys: sensitiveKeys),
         'DELETE' => await _apiClient.delete(action.endpoint, pathParams: pathParams),
         _ => throw UnsupportedError('Unsupported HTTP method: ${action.method}'),
       };

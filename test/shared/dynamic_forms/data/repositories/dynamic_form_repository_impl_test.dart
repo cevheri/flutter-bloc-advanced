@@ -145,6 +145,28 @@ void main() {
     });
   });
 
+  group('submit', () {
+    // A server-driven form chooses the keys of its fields, so the key of a password field may name no credential.
+    for (final method in ['POST', 'PUT', 'PATCH']) {
+      test('$method keeps the value of a sensitive key out of an error that repeats it', () async {
+        stub.stubDioError(
+          DioExceptionType.badResponse,
+          statusCode: 400,
+          data: '{"detail":"PIN S3cret!pw was used before"}',
+        );
+
+        final result = await repo.submit(
+          FormSubmitAction(method: method, endpoint: '/pins'),
+          const {'login': 'admin', 'pin': 'S3cret!pw'},
+          sensitiveKeys: {'pin'},
+        );
+
+        final message = (result as Failure<String?>).error.message;
+        expect(message, allOf(contains('PIN [REDACTED] was used before'), isNot(contains('S3cret!pw'))));
+      });
+    }
+  });
+
   group('fetchBundle', () {
     test('returns Failure<FormBundleEntity> with ValidationError when endpoint is empty', () async {
       final result = await repo.fetchBundle('');

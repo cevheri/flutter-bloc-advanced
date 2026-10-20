@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 
@@ -129,6 +130,23 @@ void main() {
         }
       },
     );
+
+    // A server-driven form chooses the keys of its fields, so the key of a password field may name no credential.
+    test('verbose mode masks the values of the keys the request names as sensitive', () {
+      LoggingInterceptor.verbose = true;
+      final options = RequestOptions(
+        path: '/api/pins',
+        method: 'PUT',
+        data: {'login': 'admin', 'pin': 'S3cret!pw'},
+        extra: {
+          sensitiveKeysExtra: {'pin'},
+        },
+      );
+      final response = Response(requestOptions: options, statusCode: 200, data: '{"login":"admin","pin":"S3cret!pw"}');
+
+      expect(LoggingInterceptor.formatRequest(options), endsWith('body: {login: admin, pin: [REDACTED]}'));
+      expect(LoggingInterceptor.formatResponse(response), endsWith('body: {"login":"admin","pin":"[REDACTED]"}'));
+    });
 
     test('verbose mode includes the body and masks a JWT in it', () {
       LoggingInterceptor.verbose = true;

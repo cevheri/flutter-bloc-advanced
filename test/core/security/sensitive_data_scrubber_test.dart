@@ -158,6 +158,15 @@ void main() {
     test('masks the credentials of a Map body and prints it as a Map', () {
       expect(scrubBodyText({'username': 'admin', 'password': 'S3cret!pw'}), '{username: admin, password: [REDACTED]}');
     });
+
+    // A server-driven form chooses the keys of its fields, so the key of a password field may name no credential.
+    test('masks the values of the sensitive keys the caller names, compared whole and lower-cased', () {
+      expect(
+        scrubBodyText({'login': 'admin', 'pin': 'S3cret!pw', 'pinned': true}, sensitiveKeys: {'PIN'}),
+        '{login: admin, pin: [REDACTED], pinned: true}',
+      );
+      expect(scrubBodyText('{"pin":"S3cret!pw"}', sensitiveKeys: {'pin'}), '{"pin":"[REDACTED]"}');
+    });
   });
 
   group('scrubBodyKeys', () {
@@ -234,6 +243,17 @@ void main() {
       expect(
         scrubErrorBody('Password S3cret!pw is too weak', requestBody: '{"username":"admin","password":"S3cret!pw"}'),
         'Password [REDACTED] is too weak',
+      );
+    });
+
+    test('masks a value of the request under a sensitive key the caller names wherever the body repeats it', () {
+      expect(
+        scrubErrorBody(
+          '{"detail":"PIN S3cret!pw was used before","pin":"S3cret!pw"}',
+          requestBody: {'login': 'admin', 'pin': 'S3cret!pw'},
+          sensitiveKeys: {'pin'},
+        ),
+        '{"detail":"PIN [REDACTED] was used before","pin":"[REDACTED]"}',
       );
     });
 

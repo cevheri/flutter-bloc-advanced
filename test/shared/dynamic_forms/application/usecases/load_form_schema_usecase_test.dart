@@ -21,8 +21,12 @@ class _FakeRepo implements IDynamicFormRepository {
       const Failure(UnknownError('not used'));
 
   @override
-  Future<Result<String?>> submit(FormSubmitAction action, Map<String, dynamic> data, {String? pathParams}) async =>
-      const Success(null);
+  Future<Result<String?>> submit(
+    FormSubmitAction action,
+    Map<String, dynamic> data, {
+    String? pathParams,
+    Set<String> sensitiveKeys = const {},
+  }) async => const Success(null);
 }
 
 void main() {

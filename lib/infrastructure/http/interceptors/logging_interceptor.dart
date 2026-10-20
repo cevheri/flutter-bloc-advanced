@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
 
 /// Structured request/response logging via AppLogger.
 ///
@@ -59,7 +60,7 @@ class LoggingInterceptor extends Interceptor {
     if (!verbose) return concise;
 
     final headers = scrubHeaders(options.headers);
-    return '$concise headers: $headers body: ${_renderBody(options.data)}';
+    return '$concise headers: $headers body: ${_renderBody(options.data, sensitiveKeysOf(options))}';
   }
 
   /// Build the response log line. Concise unless [verbose] is set.
@@ -69,15 +70,17 @@ class LoggingInterceptor extends Interceptor {
     final concise = '$method $path -> ${response.statusCode} (length: ${response.data?.toString().length ?? 0})';
     if (!verbose) return concise;
 
-    return '$concise body: ${_renderBody(response.data)}';
+    return '$concise body: ${_renderBody(response.data, sensitiveKeysOf(response.requestOptions))}';
   }
 
   /// Render a redacted, length-bounded representation of a request or
   /// response body. [scrubBodyText] masks the secret values of a Map, a List
   /// or a JSON string, which is how ApiClient receives every response, and
-  /// then every JWT, so a token held in a non-secret-named field (or a raw
-  /// string body) still never reaches the log.
-  static String _renderBody(Object? body) => _truncate(scrubBodyText(body));
+  /// the values of the request's [sensitiveKeys], and then every JWT, so a
+  /// token held in a non-secret-named field (or a raw string body) still
+  /// never reaches the log.
+  static String _renderBody(Object? body, Set<String> sensitiveKeys) =>
+      _truncate(scrubBodyText(body, sensitiveKeys: sensitiveKeys));
 
   static String _truncate(String value) {
     return value.length > _maxBodyChars ? '${value.substring(0, _maxBodyChars)}...[truncated]' : value;

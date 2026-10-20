@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
@@ -101,6 +103,17 @@ final _formSchemaNoAction = jsonEncode({
     {'type': 'text', 'key': 'name', 'label': 'Name'},
   ],
 });
+
+/// Form schema with a password field whose key names no credential, as the server may choose for a form it drives.
+final _pinFormSchema = {
+  'id': 'pin_reset',
+  'title': 'Reset PIN',
+  'fields': [
+    {'type': 'text', 'key': 'login', 'label': 'Login'},
+    {'type': 'password', 'key': 'pin', 'label': 'New PIN'},
+  ],
+  'submitAction': {'method': 'PUT', 'endpoint': '/admin/users/extended'},
+};
 
 /// Form schema with PUT submitAction.
 final _formSchemaPutAction = jsonEncode({
@@ -424,6 +437,72 @@ void main() {
 
         expect(lines, everyElement(allOf(isNot(contains('S3cret!pw')), isNot(contains('admin')))));
         expect(lines, anyElement(allOf(contains('pin_reset'), contains('login, pin'))));
+      });
+
+      // Regression: the HTTP layer found a credential only by the name of its key, so the value of a password field
+      // keyed `pin` was recorded in clear in the Network tab of the dev console, whose Copy button puts it on the
+      // clipboard, and printed by the verbose HTTP log.
+      test(
+        'keeps the value of a password field out of the dev console and the verbose log, whatever its key',
+        () async {
+          TestEnv.authenticate();
+          LoggingInterceptor.verbose = true;
+          addTearDown(() => LoggingInterceptor.verbose = false);
+          DevConsoleStore.instance.clearNetwork();
+          addTearDown(DevConsoleStore.instance.clearNetwork);
+          stub.stubSuccess(data: jsonEncode({'schema': _pinFormSchema, 'values': {}}));
+          final stubDio = Dio(BaseOptions(baseUrl: 'https://test.api', responseType: ResponseType.plain));
+          stubDio.interceptors.add(stub);
+          final loadRepo = DynamicFormRepository(TestEnv.apiClient(dio: stubDio));
+          // The submit goes through the mock-backed client, whose chain records and logs a request as the app's does.
+          final bloc = DynamicFormBloc(
+            loadFormSchemaUseCase: LoadFormSchemaUseCase(loadRepo),
+            submitFormUseCase: SubmitFormUseCase(DynamicFormRepository(TestEnv.apiClient())),
+            loadFormBundleUseCase: LoadFormBundleUseCase(loadRepo),
+          );
+          addTearDown(bloc.close);
+          bloc.add(const DynamicFormLoadBundleEvent('/admin/users/extended', pathParams: 'user-2'));
+          await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
+          final lines = <String>[];
+          void collect(OutputEvent event) => lines.addAll(event.lines);
+          Logger.addOutputListener(collect);
+          addTearDown(() => Logger.removeOutputListener(collect));
+
+          bloc.add(const DynamicFormSubmitEvent({'login': 'admin', 'pin': 'S3cret!pw'}));
+          await bloc.stream.firstWhere((s) => s is DynamicFormSubmitted);
+
+          expect(DevConsoleStore.instance.networkEntries.single.requestBody, '{login: admin, pin: [REDACTED]}');
+          expect(lines, anyElement(contains('body: {login: admin, pin: [REDACTED]}')));
+          expect(lines, everyElement(isNot(contains('S3cret!pw'))));
+        },
+      );
+
+      // Regression: an error body that repeats the value of such a field became the text of the error, which the
+      // repository logs at error level, which every build of main_prod prints, and the form shows.
+      test('keeps the value of a password field out of an error that repeats it, whatever its key', () async {
+        AppLogger.configure(isProduction: true);
+        addTearDown(() => AppLogger.configure(isProduction: false));
+        stub.stubSuccess(data: jsonEncode(_pinFormSchema));
+        final bloc = buildBloc();
+        addTearDown(bloc.close);
+        bloc.add(const DynamicFormLoadEvent('pin_reset'));
+        await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
+        stub.stubDioError(
+          DioExceptionType.badResponse,
+          statusCode: 400,
+          data: '{"detail":"PIN S3cret!pw was used before"}',
+        );
+        final lines = <String>[];
+        void collect(OutputEvent event) => lines.addAll(event.lines);
+        Logger.addOutputListener(collect);
+        addTearDown(() => Logger.removeOutputListener(collect));
+
+        bloc.add(const DynamicFormSubmitEvent({'login': 'admin', 'pin': 'S3cret!pw'}));
+        final failure = await bloc.stream.firstWhere((s) => s is DynamicFormFailure) as DynamicFormFailure;
+
+        expect(failure.error, allOf(contains('PIN [REDACTED] was used before'), isNot(contains('S3cret!pw'))));
+        expect(lines, anyElement(contains('END:submit validation error')));
+        expect(lines, everyElement(isNot(contains('S3cret!pw'))));
       });
 
       blocTest<DynamicFormBloc, DynamicFormState>(

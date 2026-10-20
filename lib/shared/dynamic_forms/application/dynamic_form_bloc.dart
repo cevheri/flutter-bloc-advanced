@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_fo
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/load_form_bundle_usecase.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/load_form_schema_usecase.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/submit_form_usecase.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
@@ -64,7 +65,18 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
       return;
     }
 
-    final result = await _submitFormUseCase(action, event.data, pathParams: submitPathParams);
+    // A password field's key comes from the schema and may name no credential, so the HTTP layer, which finds a
+    // secret by the name of its key, is told which keys hold one.
+    final sensitiveKeys = {
+      for (final field in schema.fields)
+        if (field.type == FormFieldType.password) field.key,
+    };
+    final result = await _submitFormUseCase(
+      action,
+      event.data,
+      pathParams: submitPathParams,
+      sensitiveKeys: sensitiveKeys,
+    );
     switch (result) {
       case Success(:final data):
         emit(DynamicFormSubmitted(schema: schema, submitResponse: data, submitPathParams: submitPathParams));

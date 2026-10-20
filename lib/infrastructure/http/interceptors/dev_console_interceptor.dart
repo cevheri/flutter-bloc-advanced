@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
 
 /// Dio interceptor that records HTTP requests/responses to [DevConsoleStore].
 ///
@@ -10,7 +11,8 @@ import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart'
 /// Headers and bodies are recorded through
 /// `core/security/sensitive_data_scrubber.dart`, so the Network tab, and its
 /// Copy buttons, never hold the Authorization header, a password, an OTP or
-/// a token.
+/// a token. The values of the keys a request names as sensitive
+/// ([sensitiveKeysOf]) are masked too.
 class DevConsoleInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -37,7 +39,11 @@ class DevConsoleInterceptor extends Interceptor {
         (entry) => entry.copyWith(
           statusCode: response.statusCode,
           responseHeaders: maskHeaders(response.headers.map.map((k, v) => MapEntry(k, v.join(', ')))),
-          responseBody: _truncate(response.data == null ? null : scrubBodyText(response.data)),
+          responseBody: _truncate(
+            response.data == null
+                ? null
+                : scrubBodyText(response.data, sensitiveKeys: sensitiveKeysOf(response.requestOptions)),
+          ),
           endTime: DateTime.now(),
         ),
       );
@@ -60,7 +66,13 @@ class DevConsoleInterceptor extends Interceptor {
       (entry) => entry.copyWith(
         statusCode: err.response?.statusCode,
         responseBody: _truncate(
-          err.response?.data == null ? null : scrubErrorBody(err.response?.data, requestBody: err.requestOptions.data),
+          err.response?.data == null
+              ? null
+              : scrubErrorBody(
+                  err.response?.data,
+                  requestBody: err.requestOptions.data,
+                  sensitiveKeys: sensitiveKeysOf(err.requestOptions),
+                ),
         ),
         endTime: DateTime.now(),
         error: '${err.type.name}: ${err.message ?? 'Unknown error'}',
@@ -80,7 +92,7 @@ class DevConsoleInterceptor extends Interceptor {
       url: options.uri.toString(),
       startTime: DateTime.now(),
       requestHeaders: maskHeaders(options.headers),
-      requestBody: options.data == null ? null : scrubBodyText(options.data),
+      requestBody: options.data == null ? null : scrubBodyText(options.data, sensitiveKeys: sensitiveKeysOf(options)),
     );
 
     DevConsoleStore.instance.addNetworkEntry(entry);

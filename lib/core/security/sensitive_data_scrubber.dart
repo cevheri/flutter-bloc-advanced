@@ -147,19 +147,26 @@ Object? scrubBodyKeys(Object? body) => _scrubKeys(body, _isSensitiveKey);
 /// string, a Map or a List has its values masked as [scrubBodyKeys] masks
 /// them, and every JWT is masked last. A body with nothing to mask keeps
 /// its text, the formatting of a JSON string included.
-String scrubBodyText(Object? body) => _scrubBodyText(body, _isSensitiveKey, const []);
+///
+/// The values of [sensitiveKeys] are masked too, for a secret whose key
+/// names no credential, such as the key a server-driven form gives its
+/// password field. They are compared whole and lower-cased.
+String scrubBodyText(Object? body, {Set<String> sensitiveKeys = const {}}) =>
+    _scrubBodyText(body, _sensitiveKeyTest(sensitiveKeys), const []);
 
 /// Returns [body], the body of an error response, as text without the
 /// credentials it may hold. ApiClient puts it into the exception it throws,
 /// whose text reaches the log, the dev console and Sentry.
 ///
-/// It is scrubbed as [scrubBodyText] scrubs a body, and the values under
-/// [echoedValueKeys] are masked too. Every value of [requestBody] that
-/// [scrubBodyKeys] would mask is masked wherever the body repeats it, so a
-/// free-text detail that names the OTP is caught too.
-String scrubErrorBody(Object? body, {Object? requestBody}) {
-  final secrets = _secretValues(_decoded(requestBody)).toSet().toList()..sort((a, b) => b.length - a.length);
-  bool isSecret(Object? key) => _isSensitiveKey(key) || echoedValueKeys.contains('$key'.toLowerCase());
+/// It is scrubbed as [scrubBodyText] scrubs a body with [sensitiveKeys],
+/// and the values under [echoedValueKeys] are masked too. Every value of
+/// [requestBody] that such a scrub would mask is masked wherever the body
+/// repeats it, so a free-text detail that names the OTP is caught too.
+String scrubErrorBody(Object? body, {Object? requestBody, Set<String> sensitiveKeys = const {}}) {
+  final isSensitive = _sensitiveKeyTest(sensitiveKeys);
+  final secrets = _secretValues(_decoded(requestBody), isSensitive).toSet().toList()
+    ..sort((a, b) => b.length - a.length);
+  bool isSecret(Object? key) => isSensitive(key) || echoedValueKeys.contains('$key'.toLowerCase());
   return _scrubBodyText(body, isSecret, secrets);
 }
 
@@ -189,6 +196,14 @@ bool _isSensitiveKey(Object? key) {
   return sensitiveBodyKeySubstrings.any(lower.contains);
 }
 
+/// [_isSensitiveKey], which also matches each of [sensitiveKeys], compared
+/// whole and lower-cased.
+bool Function(Object? key) _sensitiveKeyTest(Set<String> sensitiveKeys) {
+  if (sensitiveKeys.isEmpty) return _isSensitiveKey;
+  final names = {for (final key in sensitiveKeys) key.toLowerCase()};
+  return (key) => _isSensitiveKey(key) || names.contains('$key'.toLowerCase());
+}
+
 Object? _scrubKeys(Object? body, bool Function(Object? key) isSecret) => switch (body) {
   Map() => <String, dynamic>{
     for (final MapEntry(:key, :value) in body.entries)
@@ -208,16 +223,16 @@ Object? _decoded(Object? body) {
   }
 }
 
-/// The values [node] holds under a key that [_isSensitiveKey] matches, in
+/// The values [node] holds under a key that [isSensitive] matches, in
 /// nested maps and lists too, as text.
-Iterable<String> _secretValues(Object? node) sync* {
+Iterable<String> _secretValues(Object? node, bool Function(Object? key) isSensitive) sync* {
   if (node is Map) {
     for (final MapEntry(:key, :value) in node.entries) {
-      yield* _isSensitiveKey(key) ? _scalars(value) : _secretValues(value);
+      yield* isSensitive(key) ? _scalars(value) : _secretValues(value, isSensitive);
     }
   } else if (node is List) {
     for (final item in node) {
-      yield* _secretValues(item);
+      yield* _secretValues(item, isSensitive);
     }
   }
 }

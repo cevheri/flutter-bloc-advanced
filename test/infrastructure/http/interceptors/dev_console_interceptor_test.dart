@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_console_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -127,6 +128,28 @@ void main() {
         expect(entries.first.responseHeaders, containsPair('x-custom', 'value1'));
       });
 
+      // A server-driven form chooses the keys of its fields, so the key of a password field may name no credential.
+      test('should mask the values of the keys the request names as sensitive in both bodies', () {
+        final options = RequestOptions(
+          path: '/api/pins',
+          method: 'PUT',
+          data: {'login': 'admin', 'pin': 'S3cret!pw'},
+          extra: {
+            sensitiveKeysExtra: {'pin'},
+          },
+        );
+        interceptor.onRequest(options, _TestRequestHandler());
+
+        interceptor.onResponse(
+          Response(requestOptions: options, statusCode: 200, data: '{"login":"admin","pin":"S3cret!pw"}'),
+          _TestResponseHandler(),
+        );
+
+        final entry = DevConsoleStore.instance.networkEntries.single;
+        expect(entry.requestBody, '{login: admin, pin: [REDACTED]}');
+        expect(entry.responseBody, '{"login":"admin","pin":"[REDACTED]"}');
+      });
+
       test('should handle response without prior request entry gracefully', () {
         final options = RequestOptions(path: '/api/test', method: 'GET');
         // No onRequest was called, so no _devConsoleId in extra
@@ -219,6 +242,36 @@ void main() {
         final entry = DevConsoleStore.instance.networkEntries.single;
         expect(entry.responseBody, allOf(isNot(contains('NewPass#2')), contains('is too short')));
         expect(entry.requestBody, allOf(isNot(contains('OldPass#1')), isNot(contains('NewPass#2'))));
+      });
+
+      test('should keep a value of a key the request names as sensitive out of the recorded error', () {
+        final options = RequestOptions(
+          path: '/api/pins',
+          method: 'PUT',
+          data: {'login': 'admin', 'pin': 'S3cret!pw'},
+          extra: {
+            sensitiveKeysExtra: {'pin'},
+          },
+        );
+        interceptor.onRequest(options, _TestRequestHandler());
+
+        interceptor.onError(
+          DioException(
+            requestOptions: options,
+            type: DioExceptionType.badResponse,
+            response: Response(
+              requestOptions: options,
+              statusCode: 400,
+              data: '{"detail":"PIN S3cret!pw was used before"}',
+            ),
+          ),
+          _TestErrorHandler(),
+        );
+
+        expect(
+          DevConsoleStore.instance.networkEntries.single.responseBody,
+          '{"detail":"PIN [REDACTED] was used before"}',
+        );
       });
 
       test('should handle error with null message', () {
