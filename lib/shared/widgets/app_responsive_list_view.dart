@@ -32,6 +32,7 @@ class AppResponsiveListView<T> extends StatelessWidget {
     this.createLabel,
     this.emptyIcon = Icons.inbox_outlined,
     this.emptyText,
+    this.errorWidget,
     required this.columns,
     this.desktopSearchWidget,
     this.onPrevious,
@@ -51,6 +52,10 @@ class AppResponsiveListView<T> extends StatelessWidget {
   final String? createLabel;
   final IconData emptyIcon;
   final String? emptyText;
+
+  /// Shown in place of the table (desktop) or the card list (mobile), so a
+  /// failed request does not look like an empty list.
+  final Widget? errorWidget;
 
   // Desktop
   final List<AppTableColumn<T>> columns;
@@ -110,13 +115,14 @@ class AppResponsiveListView<T> extends StatelessWidget {
             ),
             if (desktopSearchWidget != null) ...[const SizedBox(height: 20), desktopSearchWidget!],
             const SizedBox(height: 16),
-            AppDataTable<T>(
-              columns: columns,
-              items: items ?? [],
-              showCheckbox: showCheckbox,
-              onPrevious: onPrevious,
-              onNext: onNext,
-            ),
+            errorWidget ??
+                AppDataTable<T>(
+                  columns: columns,
+                  items: items ?? [],
+                  showCheckbox: showCheckbox,
+                  onPrevious: onPrevious,
+                  onNext: onNext,
+                ),
           ],
         ),
       ),
@@ -148,13 +154,15 @@ class AppResponsiveListView<T> extends StatelessWidget {
         if (mobileSearchWidget != null)
           Padding(padding: const EdgeInsets.fromLTRB(16, 12, 16, 8), child: mobileSearchWidget!),
         Expanded(
-          child: AppMobileCardList<T>(
-            items: items,
-            cardBuilder: mobileCardBuilder,
-            isLoading: isLoading,
-            emptyIcon: emptyIcon,
-            emptyText: emptyText,
-          ),
+          child:
+              errorWidget ??
+              AppMobileCardList<T>(
+                items: items,
+                cardBuilder: mobileCardBuilder,
+                isLoading: isLoading,
+                emptyIcon: emptyIcon,
+                emptyText: emptyText,
+              ),
         ),
       ],
     );

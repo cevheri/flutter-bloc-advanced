@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/shared/design_system/components/app_error_state.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_status_badge.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/semantic_colors.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
@@ -48,7 +49,7 @@ class _ListUserScreenState extends State<ListUserScreen> {
     return BlocListener<UserListBloc, UserListState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: _handleUserStateChanges,
-      child: UserListView(formKey: _formKey),
+      child: UserListView(formKey: _formKey, onRefresh: () => _refreshUserList(context)),
     );
   }
 
@@ -67,34 +68,50 @@ class _ListUserScreenState extends State<ListUserScreen> {
 }
 
 class UserListView extends StatelessWidget {
-  const UserListView({super.key, required this.formKey});
+  const UserListView({super.key, required this.formKey, required this.onRefresh});
 
   final GlobalKey<FormBuilderState> formKey;
+
+  /// Searches again with the current filters; offered when a request fails.
+  final VoidCallback onRefresh;
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<UserListBloc, UserListState>(
-      builder: (context, state) {
-        final items = state is UserListLoaded ? state.users : null;
-        final isLoading = state is UserListLoading;
-
-        return AppResponsiveListView<UserEntity>(
-          title: S.of(context).list_user,
-          subtitle: 'Browse and manage users in a table view.',
-          items: items,
-          isLoading: isLoading,
-          onCreateNew: () => context.goNamed('userCreate', extra: {'fromRoute': ApplicationRoutesConstants.userList}),
-          createNewKey: const Key('listUserCreateButtonKey'),
-          createLabel: S.of(context).new_user,
-          emptyIcon: Icons.people_outline,
-          emptyText: S.of(context).list_user,
-          showCheckbox: true,
-          columns: _buildColumns(context),
-          desktopSearchWidget: UserSearchSection(formKey: formKey),
-          mobileSearchWidget: _MobileSearchBar(formKey: formKey),
-          mobileCardBuilder: (context, user) => _MobileUserCard(user: user),
-        );
+      builder: (context, state) => switch (state) {
+        UserListInitial() || UserListDeleteSuccess() => _buildList(context),
+        UserListLoading() => _buildList(context, isLoading: true),
+        UserListLoaded(:final users) => _buildList(context, items: users),
+        UserListFailure(:final error) => _buildList(
+          context,
+          errorWidget: AppErrorState(
+            title: S.of(context).error_generic,
+            description: error,
+            retryLabel: S.of(context).refresh,
+            onRetry: onRefresh,
+          ),
+        ),
       },
+    );
+  }
+
+  Widget _buildList(BuildContext context, {List<UserEntity>? items, bool isLoading = false, Widget? errorWidget}) {
+    return AppResponsiveListView<UserEntity>(
+      title: S.of(context).list_user,
+      subtitle: 'Browse and manage users in a table view.',
+      items: items,
+      isLoading: isLoading,
+      errorWidget: errorWidget,
+      onCreateNew: () => context.goNamed('userCreate', extra: {'fromRoute': ApplicationRoutesConstants.userList}),
+      createNewKey: const Key('listUserCreateButtonKey'),
+      createLabel: S.of(context).new_user,
+      emptyIcon: Icons.people_outline,
+      emptyText: S.of(context).list_user,
+      showCheckbox: true,
+      columns: _buildColumns(context),
+      desktopSearchWidget: UserSearchSection(formKey: formKey),
+      mobileSearchWidget: _MobileSearchBar(formKey: formKey),
+      mobileCardBuilder: (context, user) => _MobileUserCard(user: user),
     );
   }
 
