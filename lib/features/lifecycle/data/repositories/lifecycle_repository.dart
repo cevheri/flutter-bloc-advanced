@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/data/models/app_config_model.dart';
@@ -24,11 +25,20 @@ class LifecycleRepository implements ILifecycleRepository {
     } on UnauthorizedException catch (e) {
       return Failure(AuthError(e.toString()));
     } on FetchDataException catch (e) {
-      final message = e.toString().toLowerCase();
-      if (message.contains('timeout')) return Failure(TimeoutError(e.toString()));
-      return Failure(NetworkError(e.toString()));
+      return Failure(_mapFetchDataException(e));
     } catch (e) {
       return Failure(UnknownError(e.toString()));
     }
+  }
+
+  /// An untrusted certificate carries [AppErrorCode.networkCertInvalid], as in DynamicFormRepository, so it can be told
+  /// apart from a dropped connection.
+  static AppError _mapFetchDataException(FetchDataException e) {
+    if (e is UntrustedCertificateException) {
+      return NetworkError(e.toString(), code: AppErrorCode.networkCertInvalid.key);
+    }
+    final message = e.toString().toLowerCase();
+    if (message.contains('timeout')) return TimeoutError(e.toString());
+    return NetworkError(e.toString());
   }
 }
