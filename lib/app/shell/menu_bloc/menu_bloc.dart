@@ -1,16 +1,13 @@
 import 'dart:async';
 
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_list_cache.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
-import 'package:flutter_bloc_advance/generated/l10n.dart';
 
 part 'menu_event.dart';
 part 'menu_state.dart';
@@ -20,26 +17,12 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     on<LoadMenus>(_loadMenus);
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
-    on<ChangeLanguageEvent>(_onChangeLanguage);
   }
 
   static final _log = AppLogger.getLogger('MenuBloc');
 
   final IAuthRepository _loginRepository;
   final MenuRepository _menuRepository;
-
-  FutureOr<void> _onChangeLanguage(ChangeLanguageEvent event, Emitter<MenuState> emit) async {
-    emit(state.copyWith(language: event.language, status: MenuStateStatus.loading));
-    try {
-      await AppLocalStorage().save(StorageKeys.language.key, event.language);
-      AppLocalStorageCached.language = event.language;
-      emit(state.copyWith(language: event.language, status: MenuStateStatus.success));
-      await S.load(Locale(event.language));
-    } catch (e) {
-      emit(state.copyWith(language: event.language, status: MenuStateStatus.error));
-      _log.error('END:onChangeLanguage ChangeLanguageEvent event error: {}', [e.toString()]);
-    }
-  }
 
   /// Signs out even when the logout cannot clear all that the session stored, as SessionCubit.endSession does: the
   /// user asked to leave, and staying signed in would keep the session open on this device. The error status then
@@ -70,9 +53,9 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
         return;
       }
       MenuListCache.menus = menus;
-      emit(state.copyWith(menus: menus, status: MenuStateStatus.success, language: event.language));
+      emit(state.copyWith(menus: menus, status: MenuStateStatus.success));
     } catch (e) {
-      emit(state.copyWith(menus: [], status: MenuStateStatus.error, language: event.language));
+      emit(state.copyWith(menus: [], status: MenuStateStatus.error));
       _log.error('END:loadMenus LoadMenus event error: {}', [e.toString()]);
     }
   }

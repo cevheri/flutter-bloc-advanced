@@ -49,12 +49,12 @@ void main() {
   /// Menu Event Tests
   group("MenuEvent", () {
     test("supports value comparisons", () {
-      expect(const LoadMenus(language: "en"), const LoadMenus(language: "en"));
+      expect(const LoadMenus(), const LoadMenus());
       expect(RefreshMenus(), RefreshMenus());
       expect(Logout(), Logout());
     });
     test("props", () {
-      expect(const LoadMenus(language: "en").props, ['en']);
+      expect(const LoadMenus().props, []);
       expect(RefreshMenus().props, []);
       expect(Logout().props, []);
     });
@@ -70,10 +70,10 @@ void main() {
       });
       const input = [Menu(id: "test", name: "test")];
       final output = Future.value(input);
-      const event = LoadMenus(language: "en");
+      const event = LoadMenus();
       const loadingState = MenuState(menus: [], status: MenuStateStatus.loading);
-      const successState = MenuState(menus: input, status: MenuStateStatus.success, language: 'en');
-      const failureState = MenuState(menus: [], status: MenuStateStatus.error, language: 'en');
+      const successState = MenuState(menus: input, status: MenuStateStatus.success);
+      const failureState = MenuState(menus: [], status: MenuStateStatus.error);
       blocTest<MenuBloc, MenuState>(
         "emits [loading, success] when LoadMenus is added",
         setUp: () {

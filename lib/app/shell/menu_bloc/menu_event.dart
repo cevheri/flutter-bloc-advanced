@@ -12,23 +12,9 @@ class Logout extends MenuEvent {
 }
 
 class LoadMenus extends MenuEvent {
-  const LoadMenus({required this.language});
-
-  final String language;
-
-  @override
-  List<Object> get props => [language];
+  const LoadMenus();
 }
 
 class RefreshMenus extends MenuEvent {
   const RefreshMenus();
-}
-
-class ChangeLanguageEvent extends MenuEvent {
-  const ChangeLanguageEvent({required this.language});
-
-  final String language;
-
-  @override
-  List<Object> get props => [language];
 }

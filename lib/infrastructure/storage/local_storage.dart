@@ -14,7 +14,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AppLocalStorageCached {
   static final _log = AppLogger.getLogger("AppLocalStorageCached");
   static List<String>? roles;
-  static String? language;
   static String? username;
   static String? theme;
   static String? brightness;
@@ -22,14 +21,12 @@ class AppLocalStorageCached {
   static Future<void> loadCache() async {
     _log.trace("Loading cache");
     roles = await AppLocalStorage().read(StorageKeys.roles.key);
-    language = await AppLocalStorage().read(StorageKeys.language.key) ?? "en";
     username = await AppLocalStorage().read(StorageKeys.username.key);
     theme = await AppLocalStorage().read(StorageKeys.theme.key) ?? "classic";
     brightness = await AppLocalStorage().read(StorageKeys.brightness.key) ?? "light";
-    _log.trace("Loaded cache with username:{}, roles:{}, language:{}, theme:{}, brightness:{}", [
+    _log.trace("Loaded cache with username:{}, roles:{}, theme:{}, brightness:{}", [
       username,
       roles,
-      language,
       theme,
       brightness,
     ]);
