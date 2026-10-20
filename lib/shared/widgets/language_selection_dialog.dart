@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/localization/locale_cubit.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/app/localization/language_notifier.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
+import 'package:flutter_bloc_advance/shared/l10n/locale_l10n.dart';
 
+/// Lets the user pick the language of the app among the languages it supports, each named in its own language. A pick
+/// shows the app in that language at once, is stored for the next start, and closes the dialog. When it cannot be
+/// stored, the dialog closes, the app keeps its language and a snack bar says so.
 class LanguageSelectionDialog extends StatelessWidget {
   const LanguageSelectionDialog({super.key});
 
@@ -13,33 +17,40 @@ class LanguageSelectionDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final l10n = S.of(context);
-
-    return AlertDialog(
-      title: Text(l10n.language_select, style: theme.textTheme.titleLarge, textAlign: TextAlign.center),
-      actionsAlignment: MainAxisAlignment.center,
-      actions: [
-        TextButton(
-          style: TextButton.styleFrom(backgroundColor: theme.colorScheme.primary),
-          onPressed: () => _setLanguage(context, 'tr'),
-          child: Text(l10n.turkish, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
+    return BlocConsumer<LocaleCubit, LocaleState>(
+      // A pick has settled once the state leaves LocaleChanging.
+      listenWhen: (previous, current) => previous is LocaleChanging,
+      listener: _onPickSettled,
+      // While a pick is being stored neither a tap outside nor back closes the dialog: it closes itself once the pick
+      // settles, and says so when the pick fails.
+      builder: (context, state) => PopScope(
+        canPop: state is! LocaleChanging,
+        child: RadioGroup<Locale>(
+          groupValue: state.locale,
+          onChanged: (locale) => context.read<LocaleCubit>().changeLocale(locale!),
+          child: SimpleDialog(
+            title: Text(S.of(context).language_select),
+            children: [
+              for (final locale in S.delegate.supportedLocales)
+                RadioListTile<Locale>(value: locale, title: Text(locale.endonym), enabled: state is! LocaleChanging),
+            ],
+          ),
         ),
-        TextButton(
-          style: TextButton.styleFrom(backgroundColor: theme.colorScheme.primary),
-          onPressed: () => _setLanguage(context, 'en'),
-          child: Text(l10n.english, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.onPrimary)),
-        ),
-      ],
+      ),
     );
   }
 
-  Future<void> _setLanguage(BuildContext context, String langCode) async {
-    await AppLocalStorage().save(StorageKeys.language.key, langCode);
-    await S.load(Locale(langCode));
-    LanguageNotifier.current.value = langCode;
-    if (context.mounted) {
-      context.pop();
+  void _onPickSettled(BuildContext context, LocaleState state) {
+    switch (state) {
+      case LocaleReady():
+        Navigator.of(context).pop();
+      case LocaleChangeFailure(:final errorCode):
+        final messenger = ScaffoldMessenger.of(context);
+        final message = errorCode.resolve(context);
+        Navigator.of(context).pop();
+        messenger.showSnackBar(SnackBar(content: Text(message)));
+      case LocaleRestoring() || LocaleChanging():
+        break;
     }
   }
 }

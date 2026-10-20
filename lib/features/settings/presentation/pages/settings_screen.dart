@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
+import 'package:flutter_bloc_advance/shared/l10n/locale_l10n.dart';
 import 'package:flutter_bloc_advance/shared/utils/external_link.dart';
+import 'package:flutter_bloc_advance/shared/widgets/language_selection_dialog.dart';
 import 'package:flutter_bloc_advance/shared/widgets/theme_selection_dialog.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
@@ -72,6 +74,13 @@ class SettingsScreen extends StatelessWidget {
                     title: 'Theme',
                     subtitle: 'Choose your preferred theme style',
                     onTap: () => ThemeSelectionDialog.show(context),
+                  ),
+                  _SettingsTile(
+                    key: settingsChangeLanguageButtonKey,
+                    icon: Icons.translate,
+                    title: S.of(context).language,
+                    subtitle: Localizations.localeOf(context).displayName(context),
+                    onTap: () => LanguageSelectionDialog.show(context),
                   ),
                 ],
               ),

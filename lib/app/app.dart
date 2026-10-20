@@ -146,7 +146,7 @@ class _AppViewState extends State<_AppView> {
                 SessionUnknown() => const _RestoreView(),
                 SessionAuthenticated() || SessionUnauthenticated() => switch (localeState) {
                   LocaleRestoring() => const _RestoreView(),
-                  LocaleReady() => router!,
+                  LocaleReady() || LocaleChanging() || LocaleChangeFailure() => router!,
                 },
               },
             ),

@@ -20,3 +20,25 @@ final class LocaleRestoring extends LocaleState {
 final class LocaleReady extends LocaleState {
   const LocaleReady({required super.locale});
 }
+
+/// [requested], the language the user picked, is being stored. The app shows [locale] until it is.
+final class LocaleChanging extends LocaleState {
+  const LocaleChanging({required super.locale, required this.requested});
+
+  final Locale requested;
+
+  @override
+  List<Object?> get props => [locale, requested];
+}
+
+/// [requested] could not be stored, so the app still shows [locale]. The UI shows [errorCode] translated via
+/// `errorCode.resolve(context)`.
+final class LocaleChangeFailure extends LocaleState {
+  const LocaleChangeFailure({required super.locale, required this.requested, required this.errorCode});
+
+  final Locale requested;
+  final AppErrorCode errorCode;
+
+  @override
+  List<Object?> get props => [locale, requested, errorCode];
+}

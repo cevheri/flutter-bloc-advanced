@@ -1,6 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
@@ -10,7 +11,11 @@ part 'locale_state.dart';
 /// Owns the language the app shows. `App` builds its `MaterialApp` with [LocaleState.locale].
 ///
 /// The language the user picked is stored on the device under [StorageKeys.language], a device preference that is
-/// not part of the session. Without a stored language the app shows the configured default.
+/// not part of the session: a sign-out keeps it, and the next start shows it. Without a stored language the app shows
+/// the configured default.
+///
+/// A Cubit, not a Bloc: restoring and changing the language are single calls with nothing to debounce, and the
+/// language dialog offers no new pick while one is being stored.
 class LocaleCubit extends Cubit<LocaleState> {
   LocaleCubit({required this._storage, required Locale defaultLocale}) : super(LocaleRestoring(locale: defaultLocale));
 
@@ -44,5 +49,31 @@ class LocaleCubit extends Cubit<LocaleState> {
     }
     _log.debug('restore: showing the stored language {}', [stored]);
     emit(LocaleReady(locale: Locale(stored)));
+  }
+
+  /// Stores [locale] and then shows the app in it, so the next start uses it too. When it cannot be stored, the app
+  /// keeps its language and [LocaleChangeFailure] says so.
+  Future<void> changeLocale(Locale locale) async {
+    final shown = state.locale;
+    emit(LocaleChanging(locale: shown, requested: locale));
+    if (await _store(locale)) {
+      _log.info('changeLocale: {} -> {}', [shown, locale]);
+      emit(LocaleReady(locale: locale));
+    } else {
+      emit(LocaleChangeFailure(locale: shown, requested: locale, errorCode: AppErrorCode.settingsChangeLanguageFailed));
+    }
+  }
+
+  /// Whether [locale] was stored. A refused or failed write is logged as an error.
+  Future<bool> _store(Locale locale) async {
+    try {
+      final stored = await _storage.save(StorageKeys.language.key, locale.languageCode);
+      if (!stored) _log.error('changeLocale: the device refused to store {}', [locale]);
+      return stored;
+    } catch (error, stackTrace) {
+      _log.error('changeLocale: storing {} failed: {}', [locale, error]);
+      addError(error, stackTrace);
+      return false;
+    }
   }
 }
