@@ -145,6 +145,20 @@ void main() {
       expect(find.text('Role filter'), findsOneWidget);
     });
 
+    // The table has no way to hide a column, so a Columns button could only do nothing.
+    testWidgets('offers no Columns button', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      whenListen(mockUserBloc, const Stream<UserListState>.empty(), initialState: const UserListInitial());
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Columns'), findsNothing);
+      expect(find.byIcon(Icons.view_column_outlined), findsNothing);
+    });
+
     testWidgets('displays user list when search is successful', (tester) async {
       // ARRANGE
       tester.view.physicalSize = const Size(1200, 800);

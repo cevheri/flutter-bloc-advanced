@@ -205,8 +205,6 @@ class UserSearchSection extends StatelessWidget {
                     const SizedBox(width: 170, height: 40, child: PaginationControls()),
                     const Spacer(),
                     SearchActionButtons(formKey: formKey),
-                    const SizedBox(width: 8),
-                    const _ColumnsButton(),
                   ],
                 ),
               ],
@@ -223,8 +221,6 @@ class UserSearchSection extends StatelessWidget {
               const SizedBox(width: 170, height: 40, child: PaginationControls()),
               const SizedBox(width: 8),
               SearchActionButtons(formKey: formKey),
-              const SizedBox(width: 8),
-              const _ColumnsButton(),
             ],
           );
         },
@@ -312,20 +308,6 @@ class SearchActionButtons extends StatelessWidget {
     if (formKey.currentState!.saveAndValidate()) {
       context.read<UserListBloc>().add(_buildSearchEventFromForm(formKey.currentState));
     }
-  }
-}
-
-class _ColumnsButton extends StatelessWidget {
-  const _ColumnsButton();
-
-  @override
-  Widget build(BuildContext context) {
-    return OutlinedButton.icon(
-      onPressed: () {},
-      icon: const Icon(Icons.view_column_outlined, size: 16),
-      label: const Text('Columns'),
-      style: OutlinedButton.styleFrom(minimumSize: const Size(104, 40), maximumSize: const Size(130, 40)),
-    );
   }
 }
 
