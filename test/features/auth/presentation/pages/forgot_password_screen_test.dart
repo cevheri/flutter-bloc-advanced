@@ -10,9 +10,11 @@ import 'package:flutter_bloc_advance/features/auth/application/forgot_password_b
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
+import '../../../../support/unsaved_changes_host.dart';
 
 ///Forgot Password Screen Test
 ///class ForgotPasswordScreen extends
@@ -39,16 +41,26 @@ void main() {
     GlobalCupertinoLocalizations.delegate,
   ];
 
-  MaterialApp getWidget() {
-    return MaterialApp(
-      localizationsDelegates: locales,
-      supportedLocales: S.delegate.supportedLocales,
-      home: MultiBlocProvider(
-        providers: [
-          BlocProvider<AccountBloc>(create: (context) => accountBloc),
-          BlocProvider<ForgotPasswordBloc>(create: (context) => forgotPasswordBloc),
-        ],
-        child: ForgotPasswordScreen(),
+  Widget getWidget() {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => MultiBlocProvider(
+            providers: [
+              BlocProvider<AccountBloc>(create: (context) => accountBloc),
+              BlocProvider<ForgotPasswordBloc>(create: (context) => forgotPasswordBloc),
+            ],
+            child: ForgotPasswordScreen(),
+          ),
+        ),
+      ],
+    );
+    return withUnsavedChangesRegistry(
+      MaterialApp.router(
+        localizationsDelegates: locales,
+        supportedLocales: S.delegate.supportedLocales,
+        routerConfig: router,
       ),
     );
   }

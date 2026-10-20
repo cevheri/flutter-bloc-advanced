@@ -14,7 +14,9 @@ import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_nav_item.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/account/presentation/pages/account_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/change_password_page.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/forgot_password_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
@@ -247,6 +249,55 @@ void main() {
     });
   });
 
+  group('A dirty register form', () {
+    testWidgets('asks before the browser back button returns to the login page', (tester) async {
+      final history = await _pumpApp(tester, signedIn: false);
+      await tester.tap(find.byKey(loginButtonRegisterKey));
+      await tester.pumpAndSettle();
+      expect(find.byType(RegisterScreen), findsOneWidget);
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'New');
+      await tester.pumpAndSettle();
+
+      await _browserMovesTo(tester, history, ApplicationRoutesConstants.login);
+      expect(_unsavedChangesDialog, findsOneWidget);
+
+      await _answer(tester, leave: false);
+      expect(find.byType(RegisterScreen), findsOneWidget);
+    });
+
+    testWidgets('holds the iOS back swipe', (tester) async {
+      await _pumpApp(tester, signedIn: false);
+      await tester.tap(find.byKey(loginButtonRegisterKey));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'New');
+      await tester.pumpAndSettle();
+
+      await tester.timedDragFrom(const Offset(5, 400), const Offset(1200, 0), const Duration(milliseconds: 150));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(RegisterScreen), findsOneWidget);
+      expect(tester.getTopLeft(find.byType(RegisterScreen)).dx, 0);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
+  });
+
+  group('A dirty forgot password form', () {
+    testWidgets('asks before the Android back button returns to the login page', (tester) async {
+      await _pumpApp(tester, signedIn: false);
+      await tester.tap(find.byKey(loginButtonForgotPasswordKey));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(forgotPasswordTextFieldEmailKey), 'someone@example.com');
+      await tester.pumpAndSettle();
+      _expectBackHeld(tester, find.byType(ForgotPasswordScreen));
+
+      await _androidBack(tester);
+      expect(_unsavedChangesDialog, findsOneWidget);
+
+      await _answer(tester, leave: true);
+      expect(find.byType(ForgotPasswordScreen), findsNothing);
+      expect(find.byType(LoginScreen), findsOneWidget);
+    });
+  });
+
   group('A clean account form', () {
     testWidgets('leaves through the sidebar without asking', (tester) async {
       await _pumpApp(tester);
@@ -272,7 +323,12 @@ void main() {
     }
 
     collect(_router(tester).configuration.routes);
-    for (final path in [ApplicationRoutesConstants.account, ApplicationRoutesConstants.changePassword]) {
+    for (final path in [
+      ApplicationRoutesConstants.account,
+      ApplicationRoutesConstants.changePassword,
+      ApplicationRoutesConstants.forgotPassword,
+      ApplicationRoutesConstants.register,
+    ]) {
       expect(routes[path]?.onExit, confirmLeavingUnsavedChanges, reason: path);
     }
   });

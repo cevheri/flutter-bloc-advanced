@@ -12,12 +12,14 @@ import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
+import '../../../../support/unsaved_changes_host.dart';
 
 void main() {
   late MockRegisterBloc mockRegisterBloc;
@@ -37,6 +39,7 @@ void main() {
       routes: [
         GoRoute(
           path: ApplicationRoutesConstants.register,
+          onExit: confirmLeavingUnsavedChanges,
           builder: (context, state) => MultiBlocProvider(
             providers: [
               BlocProvider<RegisterBloc>.value(value: mockRegisterBloc),
@@ -57,15 +60,17 @@ void main() {
   });
 
   Widget createWidgetUnderTest() {
-    return MaterialApp.router(
-      routerConfig: router,
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
+    return withUnsavedChangesRegistry(
+      MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+      ),
     );
   }
 

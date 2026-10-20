@@ -4,9 +4,9 @@ import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dar
 import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
-import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
@@ -22,7 +22,11 @@ class RegisterScreen extends StatelessWidget {
     return BlocListener<RegisterBloc, RegisterState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) => _handleStateChanges(context, state),
-      child: Scaffold(appBar: _buildAppBar(context), body: _buildBody(context)),
+      child: UnsavedChangesScope(
+        hasUnsavedChanges: () => _formKey.currentState?.isDirty ?? false,
+        onBack: () => _navigateBack(context),
+        child: Scaffold(appBar: _buildAppBar(context), body: _buildBody(context)),
+      ),
     );
   }
 
@@ -32,7 +36,7 @@ class RegisterScreen extends StatelessWidget {
       leading: IconButton(
         key: const Key('registerScreenAppBarBackButtonKey'),
         icon: const Icon(Icons.arrow_back),
-        onPressed: () => _handlePopScope(false, null, context),
+        onPressed: () => _navigateBack(context),
       ),
     );
   }
@@ -42,6 +46,7 @@ class RegisterScreen extends StatelessWidget {
       builder: (context, state) {
         return ResponsiveFormBuilder(
           formKey: _formKey,
+          onChanged: () => UnsavedChangesScope.formChanged(context),
           children: [
             Text(
               'Create your account',
@@ -116,23 +121,6 @@ class RegisterScreen extends StatelessWidget {
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
-  }
-
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
-    if (didPop) return;
-
-    final context = contextParam ?? data as BuildContext;
-    if (!context.mounted) return;
-
-    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      _navigateBack(context);
-      return;
-    }
-
-    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
-    if (shouldPop && context.mounted) {
-      _navigateBack(context);
-    }
   }
 
   void _navigateBack(BuildContext context) {

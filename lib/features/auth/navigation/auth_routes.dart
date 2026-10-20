@@ -43,6 +43,7 @@ class AuthFeatureRoutes {
     GoRoute(
       name: 'forgot-password',
       path: ApplicationRoutesConstants.forgotPassword,
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appPlatformPage(
         state: state,
         child: BlocProvider(
@@ -55,6 +56,7 @@ class AuthFeatureRoutes {
     GoRoute(
       name: 'register',
       path: ApplicationRoutesConstants.register,
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appPlatformPage(
         state: state,
         child: BlocProvider(

@@ -4,9 +4,9 @@ import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/auth/application/forgot_password_bloc.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
-import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
@@ -24,9 +24,9 @@ class ForgotPasswordScreen extends StatelessWidget {
     return BlocListener<ForgotPasswordBloc, ForgotPasswordState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) => _handleStateChanges(context, state),
-      child: PopScope(
-        canPop: !(_formKey.currentState?.isDirty ?? false),
-        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(didPop, data),
+      child: UnsavedChangesScope(
+        hasUnsavedChanges: () => _formKey.currentState?.isDirty ?? false,
+        onBack: () => _navigateBack(context),
         child: Scaffold(key: _scaffoldKey, appBar: _buildAppBar(context), body: _buildBody(context)),
       ),
     );
@@ -36,7 +36,7 @@ class ForgotPasswordScreen extends StatelessWidget {
     return AppBar(
       key: const Key('forgotPasswordScreenAppBarKey'),
       title: Text(S.of(context).password_forgot),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => _handlePopScope(false, null, context)),
+      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => _navigateBack(context)),
     );
   }
 
@@ -46,6 +46,7 @@ class ForgotPasswordScreen extends StatelessWidget {
       builder: (context, state) {
         return ResponsiveFormBuilder(
           formKey: _formKey,
+          onChanged: () => UnsavedChangesScope.formChanged(context),
           children: [
             const SizedBox(height: AppSpacing.lg),
             Card(
@@ -148,23 +149,6 @@ class ForgotPasswordScreen extends StatelessWidget {
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
-  }
-
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
-    if (didPop) return;
-
-    final context = contextParam ?? data as BuildContext;
-    if (!context.mounted) return;
-
-    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      _navigateBack(context);
-      return;
-    }
-
-    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
-    if (shouldPop && context.mounted) {
-      _navigateBack(context);
-    }
   }
 
   void _navigateBack(BuildContext context) {

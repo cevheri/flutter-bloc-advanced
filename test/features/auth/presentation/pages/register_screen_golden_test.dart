@@ -37,7 +37,7 @@ void main() {
       ],
       child: RegisterScreen(),
     );
-    return goldenScreen(screen, dark: dark);
+    return goldenRoutedScreen(screen, dark: dark);
   }
 
   goldenTest(
