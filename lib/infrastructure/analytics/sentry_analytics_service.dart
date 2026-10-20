@@ -14,9 +14,11 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// **PII contract.** Every outgoing event passes through
 /// [sentryBeforeSend] (wired in the SDK init), which drops
 /// Authorization / Cookie headers, redacts `password` / `otp` /
-/// `token` / `refreshToken` body keys, and masks JWT-shaped strings
-/// in exception values / message. See `sentry_scrub.dart` for the
-/// pure scrubber implementation that backs this guarantee.
+/// `token` / `refreshToken` body keys, masks JWT-shaped strings in
+/// exception values / message, and masks emails and JWTs in the request
+/// URL / query string / fragment and the transaction name. See
+/// `sentry_scrub.dart` for the pure scrubber implementation that backs
+/// this guarantee.
 class SentryAnalyticsService implements IAnalyticsService {
   static final _log = AppLogger.getLogger('SentryAnalyticsService');
 
@@ -36,7 +38,11 @@ class SentryAnalyticsService implements IAnalyticsService {
 
   @override
   void logScreenView({required String screenName, String? screenClass}) {
-    Sentry.addBreadcrumb(Breadcrumb(category: 'navigation', message: screenName, data: {'screenClass': screenClass}));
+    // No breadcrumb on purpose. `App` installs SentryNavigatorObserver
+    // whenever `sentryDsn` is set, the same condition that selects this
+    // service, and it already records every push, replace and pop with the
+    // from/to route names. A second breadcrumb per screen view would halve
+    // how many screens fit in Sentry's 100-breadcrumb buffer.
   }
 
   @override

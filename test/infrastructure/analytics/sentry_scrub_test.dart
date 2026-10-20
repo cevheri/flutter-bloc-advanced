@@ -94,6 +94,47 @@ void main() {
       final result = sentryBeforeSend(_eventWithExceptionValue('Server returned 500 with body {"error":"oops"}'));
       expect(result.exceptions?.first.value, 'Server returned 500 with body {"error":"oops"}');
     });
+
+    test('masks a JWT in the request query string and fragment', () {
+      final result = sentryBeforeSend(
+        SentryEvent(
+          request: SentryRequest(url: 'https://app.example/', queryString: 'token=$jwt', fragment: 'access_token=$jwt'),
+        ),
+      );
+      expect(result.request?.queryString, 'token=[REDACTED_JWT]');
+      expect(result.request?.fragment, 'access_token=[REDACTED_JWT]');
+    });
+  });
+
+  // On web the SDK attaches the page location to every error: it splits window.location into url, query string and
+  // fragment, and names the event after the path. go_router keeps the location in the fragment under the default hash
+  // URL strategy and in the path under the path strategy, so `/login-otp-verify/:email` exposes the user's email.
+  group('sentryBeforeSend - page location', () {
+    test('redacts an email in the fragment (hash URL strategy)', () {
+      final result = sentryBeforeSend(
+        SentryEvent(
+          request: SentryRequest(url: 'https://app.example/', fragment: '/login-otp-verify/jane.doe@example.com'),
+        ),
+      );
+      expect(result.toJson().toString(), isNot(contains('jane.doe')));
+      expect(result.request?.fragment, '/login-otp-verify/[REDACTED_EMAIL]');
+    });
+
+    test('redacts an email in the url, query string and transaction (path URL strategy)', () {
+      final result = sentryBeforeSend(
+        SentryEvent(
+          transaction: '/login-otp-verify/jane.doe@example.com',
+          request: SentryRequest(
+            url: 'https://app.example/login-otp-verify/jane.doe@example.com',
+            queryString: 'email=jane.doe%40example.com',
+          ),
+        ),
+      );
+      expect(result.toJson().toString(), isNot(contains('jane.doe')));
+      expect(result.request?.url, 'https://app.example/login-otp-verify/[REDACTED_EMAIL]');
+      expect(result.request?.queryString, 'email=[REDACTED_EMAIL]');
+      expect(result.transaction, '/login-otp-verify/[REDACTED_EMAIL]');
+    });
   });
 
   group('sentryBeforeSend — passthroughs', () {

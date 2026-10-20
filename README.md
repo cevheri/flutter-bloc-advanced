@@ -78,12 +78,15 @@ fvm flutter build apk --release --target lib/main/main_prod.dart \
 
 - **No DSN, or non-prod build:** `AppDependencies.createAnalyticsService()` returns `LogAnalyticsService`. Errors land in `AppLogger`. No network egress.
 - **DSN + prod build:** bootstrap calls `SentryFlutter.init(...)` and the analytics interface switches to the Sentry-backed implementation. `SentryNavigatorObserver` registers automatically so route changes become breadcrumbs.
+  Screen views add no breadcrumb of their own, so each navigation is recorded once.
 
 `sentryBeforeSend` (see `lib/infrastructure/analytics/sentry_scrub.dart`) drops the following before any event leaves the device:
 
 - `Authorization` / `Cookie` / `Set-Cookie` headers (case-insensitive)
 - Body keys whose names contain `password`, `otp`, `token`, `refreshToken` (case-insensitive substring)
 - JWT-shaped strings (3 base64url segments) in exception values + event message — replaced with `[REDACTED_JWT]`
+- Email addresses and JWTs in the page location (`request.url`, query string, fragment) and the transaction name, replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`.
+  On web the OTP route `/login-otp-verify/:email` puts the user's email there.
 
 The scrubber is unit-tested independently of the SDK; review it against your fork's PII surface before adopting in production. Adding new redaction rules is a single-file change.
 

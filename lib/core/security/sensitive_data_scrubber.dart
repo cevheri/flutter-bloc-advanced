@@ -29,6 +29,19 @@ final RegExp jwtPattern = RegExp(r'eyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Z
 /// Replace every JWT-shaped token inside [input] with [jwtMask].
 String maskJwts(String input) => input.replaceAll(jwtPattern, jwtMask);
 
+/// Replacement emitted in place of a matched email address.
+const String emailMask = '[REDACTED_EMAIL]';
+
+/// Email shape, with the `@` either raw or percent-encoded as `%40`, the
+/// way a URL query string carries it. The local part also accepts `%`, so
+/// an encoded character such as the `%2B` in `jane%2Btag%40example.com`
+/// is masked along with the rest of the address. Practical rather than
+/// RFC 5322 complete: it matches the addresses people actually use.
+final RegExp emailPattern = RegExp(r'[A-Za-z0-9._%+-]+(?:@|%40)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}');
+
+/// Replace every email address inside [input] with [emailMask].
+String maskEmails(String input) => input.replaceAll(emailPattern, emailMask);
+
 /// Return a copy of [headers] with [sensitiveHeaderNames] removed.
 /// Generic over value type so both `Map<String, String>` (Sentry) and
 /// `Map<String, dynamic>` (Dio request options) work.

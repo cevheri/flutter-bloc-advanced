@@ -11,10 +11,10 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// statement leaking a JWT to Sentry — is much worse than dropping a
 /// few extra fields you wanted to keep.
 ///
-/// The actual redaction policy (which headers/body keys/JWT shape count
-/// as sensitive) lives in `core/security/sensitive_data_scrubber.dart` so
-/// this crash-report exit and the debug-log exit share one definition and
-/// cannot drift apart.
+/// The actual redaction policy (which headers/body keys/JWT and email
+/// shapes count as sensitive) lives in
+/// `core/security/sensitive_data_scrubber.dart` so this crash-report exit
+/// and the debug-log exit share one definition and cannot drift apart.
 ///
 /// Deterministic and free of external side effects, but **mutates the
 /// passed-in [SentryEvent] in place** (replacing `event.request` / `event.message`
@@ -30,17 +30,21 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
     // preserving every other field so we don't drop URL/method/env
     // context that's harmless and useful for triage.
     event.request = SentryRequest(
-      url: request.url,
+      url: _scrubUrlPart(request.url),
       method: request.method,
-      queryString: request.queryString,
+      queryString: _scrubUrlPart(request.queryString),
       cookies: null, // drop entire Cookie field — covered by header scrub but doubled here
-      fragment: request.fragment,
+      fragment: _scrubUrlPart(request.fragment),
       apiTarget: request.apiTarget,
       data: scrubBodyKeys(request.data),
       headers: scrubHeaders(request.headers),
       env: request.env,
     );
   }
+
+  // On web the SDK names an unnamed event after the page path, which
+  // carries the route parameters under the path URL strategy.
+  event.transaction = _scrubUrlPart(event.transaction);
 
   final exceptions = event.exceptions;
   if (exceptions != null) {
@@ -61,3 +65,9 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
 
   return event;
 }
+
+/// Masks emails and JWTs in a URL or in one of its parts. Route and query
+/// parameters travel there: on web the SDK copies the page location into
+/// the request, so the email in `/login-otp-verify/:email` would reach
+/// Sentry, and a link such as `?token=` or `#access_token=` holds a JWT.
+String? _scrubUrlPart(String? value) => value == null ? null : maskEmails(maskJwts(value));

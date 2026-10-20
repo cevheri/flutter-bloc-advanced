@@ -23,6 +23,29 @@ void main() {
     });
   });
 
+  group('maskEmails', () {
+    test('masks an email in a route path', () {
+      expect(maskEmails('/login-otp-verify/jane.doe@example.com'), '/login-otp-verify/[REDACTED_EMAIL]');
+    });
+
+    test('masks an email whose @ is percent-encoded', () {
+      expect(maskEmails('email=jane.doe%40example.com&next=%2Fhome'), 'email=[REDACTED_EMAIL]&next=%2Fhome');
+    });
+
+    test('masks percent-encoded characters in the local part', () {
+      expect(maskEmails('email=jane%2Btag%40example.com'), 'email=[REDACTED_EMAIL]');
+    });
+
+    test('masks every email when several appear', () {
+      expect(maskEmails('to=a@example.com, cc=b@example.org'), 'to=[REDACTED_EMAIL], cc=[REDACTED_EMAIL]');
+    });
+
+    test('leaves content without an email untouched', () {
+      const input = 'https://app.example/login-otp-verify?step=2#top';
+      expect(maskEmails(input), input);
+    });
+  });
+
   group('scrubHeaders', () {
     test('drops Authorization / Cookie / Set-Cookie case-insensitively', () {
       final result = scrubHeaders({
