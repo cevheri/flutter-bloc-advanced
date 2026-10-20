@@ -11,8 +11,8 @@
 //   dart run tool/generate_feature.dart orders
 //
 // Generates:
-//   lib/features/{feature}/   domain, data, application (list and editor BLoCs over use cases), navigation,
-//                             presentation and the feature barrel
+//   lib/features/{feature}/   domain, data, application (list and editor BLoCs over use cases), navigation and
+//                             presentation
 //   test/features/{feature}/  BLoC, model, repository and route tests
 //   assets/mock/              the mock JSON that MockInterceptor serves for the generated repository's requests
 //
@@ -68,7 +68,6 @@ void main(List<String> args) {
   _generatePresentation(feature);
   _generateMockData(feature);
   _generateTests(feature);
-  _generateBarrelExport(feature);
   _formatGeneratedCode();
   _printNextSteps(feature);
 }
@@ -1663,24 +1662,5 @@ void main() {
     expect(find.byKey(const Key('${f.singularCamel}ListCreateButtonKey')), findsNothing);
   });
 }
-''');
-}
-
-// ---------------------------------------------------------------------------
-// Barrel Export
-// ---------------------------------------------------------------------------
-
-void _generateBarrelExport(_FeatureNames f) {
-  print('\nBarrel export:');
-
-  _writeFile('lib/features/${f.snake}/${f.snake}.dart', '''
-/// ${f.title} feature: public API.
-library;
-
-export 'application/${f.singularSnake}_editor_bloc.dart';
-export 'application/${f.singularSnake}_list_bloc.dart';
-export 'domain/entities/${f.singularSnake}_entity.dart';
-export 'domain/repositories/${f.singularSnake}_repository.dart';
-export 'navigation/${f.snake}_routes.dart';
 ''');
 }

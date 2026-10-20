@@ -47,8 +47,8 @@ void main() {
 
   // Generating over an existing feature, or over mock files another feature serves, used to overwrite them silently.
   test('refuses to overwrite a feature that already exists', () async {
-    final barrel = File('${project.path}/lib/features/$_feature/$_feature.dart');
-    final before = barrel.readAsStringSync();
+    final routes = File('${project.path}/lib/features/$_feature/navigation/${_feature}_routes.dart');
+    final before = routes.readAsStringSync();
 
     final result = await Process.run(
       _dart,
@@ -59,7 +59,7 @@ void main() {
 
     expect(result.exitCode, 1, reason: '${result.stdout}\n${result.stderr}');
     expect(result.stderr, contains('lib/features/$_feature'));
-    expect(barrel.readAsStringSync(), before);
+    expect(routes.readAsStringSync(), before);
   });
 }
 
