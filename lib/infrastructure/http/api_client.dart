@@ -44,7 +44,9 @@ class InterceptorChainEntry {
 /// 8. [LoggingInterceptor] — structured request/response logging
 /// 9. [MockInterceptor] — (dev/test only) simulates the network LAST, so its
 ///    response propagates back through the observability interceptors above
-///    just like a real round-trip (it resolves with callFollowing:true).
+///    just like a real round-trip (it resolves with callFollowing:true). It
+///    also answers the token refresh, which [TokenRefreshInterceptor] sends
+///    through its own Dio.
 ///
 /// Error mapping happens in the convenience methods ([get], [post], etc.)
 /// which catch [DioException] and rethrow as [AppException] types so that
@@ -130,6 +132,7 @@ class ApiClient {
           dio: dio,
           onSessionExpired: _onSessionExpired,
           secureStorage: _secureStorage,
+          refreshDioFactory: _appConfig.isProduction ? null : _mockRefreshDio,
         ),
         meta: const InterceptorChainEntry(name: 'TokenRefreshInterceptor', detail: 'Refreshes expired access tokens'),
       ),
@@ -184,6 +187,14 @@ class ApiClient {
 
     return dio;
   }
+
+  /// The refresh Dio outside production. [TokenRefreshInterceptor] sends the
+  /// token refresh through its own Dio, which skips the chain above and so
+  /// the [MockInterceptor] at its end. That Dio gets a [MockInterceptor] of
+  /// its own, so the mock answers the refresh as the server would instead of
+  /// the request going to the network.
+  Dio _mockRefreshDio(Dio source) =>
+      TokenRefreshInterceptor.defaultRefreshDio(source)..interceptors.add(MockInterceptor(appConfig: _appConfig));
 
   // ---------------------------------------------------------------------------
   // Convenience methods matching the old HttpUtils API surface

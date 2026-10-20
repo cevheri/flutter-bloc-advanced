@@ -203,6 +203,39 @@ void main() {
       expect(session.state, const SessionUnauthenticated(reason: SessionExpiredReason.expired));
     });
 
+    testWidgets('keeps the session in mock mode when a 401 can be fixed by a token refresh', (tester) async {
+      // A refresh token is stored, so the 401 starts a token refresh, as it does in production. The mock answers the
+      // refresh like the server would, the request is sent again with the new token, and the user stays signed in.
+      TestEnv.authenticate();
+      await FlutterSecureStorageAdapter().write(SecureStorageKeys.refreshToken.key, 'MOCK_REFRESH_TOKEN');
+      late BuildContext scope;
+      await tester.pumpWidget(
+        AppScope(
+          dependencies: const AppDependencies(appConfig: AppConfig.test()),
+          child: Builder(
+            builder: (context) {
+              scope = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      final session = scope.read<SessionCubit>();
+      await tester.pumpAndSettle();
+      expect(session.state, isA<SessionAuthenticated>());
+
+      await FlutterSecureStorageAdapter().delete(SecureStorageKeys.jwtToken.key);
+      final apiClient = scope.read<ApiClient>();
+      final response = await tester.runAsync(() => apiClient.get('/account'));
+
+      expect(response?.statusCode, 200);
+      expect(response?.data, contains('"login": "admin"'));
+      expect(session.state, isA<SessionAuthenticated>());
+      // The tokens from assets/mock/POST_api_token_refresh.json.
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), 'MOCK_REFRESHED_TOKEN');
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), 'MOCK_REFRESH_TOKEN_NEW');
+    });
+
     testWidgets('a wrong password neither refreshes nor ends the expired stored session', (tester) async {
       final dependencies = _CountingDependencies();
       final scope = await _pumpExpiredSession(tester, dependencies);

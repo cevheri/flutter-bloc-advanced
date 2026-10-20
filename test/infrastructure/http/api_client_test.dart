@@ -373,6 +373,23 @@ void main() {
       test('given test environment without token when DELETE request is made then should throw', () async {
         expect(() => mockClient.delete('/test'), throwsA(isA<UnauthorizedException>()));
       });
+
+      // Regression: the token refresh went through a Dio without MockInterceptor, so in mock mode it went to the
+      // transport instead of the mock, failed, and ended the session.
+      test('given test environment when a 401 is refreshed then the mock answers the refresh', () async {
+        await FlutterSecureStorageAdapter().write(SecureStorageKeys.refreshToken.key, 'MOCK_REFRESH_TOKEN');
+        final adapter = _FakeHttpClientAdapter();
+        mockClient.instance.httpClientAdapter = adapter;
+
+        final response = await mockClient.get('/account');
+
+        expect(response.statusCode, 200);
+        expect(
+          adapter.requests,
+          isEmpty,
+          reason: 'in mock mode no request may reach the network, the refresh included',
+        );
+      });
     });
   });
 

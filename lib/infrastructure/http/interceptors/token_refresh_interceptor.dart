@@ -37,7 +37,8 @@ typedef OnSessionExpired = void Function();
 /// request. A separate Dio is needed so the refresh call bypasses the
 /// production interceptor chain (otherwise a 401 on `/api/token/refresh`
 /// would re-enter this interceptor recursively). Pluggable so tests
-/// can short-circuit the POST without depending on `http_mock_adapter`.
+/// can short-circuit the POST without depending on `http_mock_adapter`,
+/// and so `ApiClient` can add `MockInterceptor` outside production.
 /// A factory that reaches the network must reuse the adapter of
 /// `sourceDio`, or the refresh token skips its certificate pinning.
 typedef RefreshDioFactory = Dio Function(Dio sourceDio);
@@ -88,12 +89,13 @@ class TokenRefreshInterceptor extends Interceptor {
        // ignore: prefer_initializing_formals
        _onSessionExpired = onSessionExpired,
        _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
-       _refreshDioFactory = refreshDioFactory ?? _defaultRefreshDio;
+       _refreshDioFactory = refreshDioFactory ?? defaultRefreshDio;
 
-  /// Shares [source]'s adapter, so the refresh token travels through the
+  /// The default [RefreshDioFactory]: a Dio without interceptors that
+  /// shares [source]'s adapter, so the refresh token travels through the
   /// same transport as every other request, certificate pinning included.
   /// Never close the returned Dio: that would close the shared adapter.
-  static Dio _defaultRefreshDio(Dio source) => Dio(
+  static Dio defaultRefreshDio(Dio source) => Dio(
     BaseOptions(
       baseUrl: source.options.baseUrl,
       connectTimeout: source.options.connectTimeout,

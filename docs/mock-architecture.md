@@ -123,6 +123,7 @@ dio.interceptors.addAll([
     dio: dio,
     onSessionExpired: _onSessionExpired,
     secureStorage: _secureStorage,
+    refreshDioFactory: _appConfig.isProduction ? null : _mockRefreshDio, // see "Token refresh" below
   ),
   IdempotencyInterceptor(),                       // opt-in Idempotency-Key for POST/PUT/PATCH
   ResilienceInterceptor.instance.forDio(dio),     // retry + circuit breaker
@@ -133,9 +134,9 @@ dio.interceptors.addAll([
 ]);
 ```
 
-Only `MockInterceptor` depends on the environment: it is added outside production, as the last entry.
+Only `MockInterceptor` depends on the environment: it is added outside production, as the last entry, and to the Dio that sends the token refresh.
 It sits last because it stands in for the server: it resolves with `callFollowingResponseInterceptor: true`, so its response still runs through the `onResponse` handlers of the interceptors above it (cache, dev console, logging), as a real response would.
-When it answers a protected request without a token with 401, it rejects with `callFollowingErrorInterceptor: true`, so the `onError` handlers run as they do for a server 401: `TokenRefreshInterceptor` ends the session when the token cannot be refreshed, and the dev console and logging record the failure.
+When it answers a protected request without a token with 401, it rejects with `callFollowingErrorInterceptor: true`, so the `onError` handlers run as they do for a server 401: `TokenRefreshInterceptor` refreshes the token, or ends the session when the token cannot be refreshed, and the dev console and logging record the failure.
 
 `ConnectivityInterceptor` rejects with `callFollowingErrorInterceptor: true` as well when `ConnectivityService` reports the device offline, so the `onError` handlers run as they do for a request that cannot connect: `CacheInterceptor` answers a GET from its cache with an `x-cache: stale` header, and the dev console and logging record a request it cannot answer.
 The error of that rejection is a `ConnectivityException`, so `ResilienceInterceptor` neither retries it nor counts it against the endpoint's circuit breaker: the request was never sent.
@@ -182,6 +183,13 @@ In dev/test mode it answers every request that reaches the end of the chain with
 
 Logs the method and URI of each request, and the status code and body length of each response, via `AppLogger`.
 Always runs, in every mode.
+
+### Token refresh
+
+`TokenRefreshInterceptor` sends the refresh, `POST /api/token/refresh`, through a Dio of its own, so a 401 on the refresh cannot come back into the chain.
+That Dio skips the `MockInterceptor` at the end of the chain, so outside production `ApiClient` gives it a `MockInterceptor` of its own (`_mockRefreshDio`).
+The mock answers the refresh from `POST_api_token_refresh.json`, the request that got the 401 is sent again with the new token, and the session continues, as it does against the server.
+In production the refresh Dio has no interceptors and uses the adapter of the client's Dio, so the refresh token keeps the certificate pinning.
 
 ## Mock File Naming Convention
 
@@ -263,6 +271,15 @@ Each file contains the exact JSON the real API would return.
 {
   "id_token": "MOCK_TOKEN",
   "refresh_token": "MOCK_REFRESH_TOKEN"
+}
+```
+
+**Refreshed token** (`POST_api_token_refresh.json`) has the same shape.
+`TokenRefreshInterceptor` stores `id_token` as the new JWT and, when present, `refresh_token` as the new refresh token:
+```json
+{
+  "id_token": "MOCK_REFRESHED_TOKEN",
+  "refresh_token": "MOCK_REFRESH_TOKEN_NEW"
 }
 ```
 
