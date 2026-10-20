@@ -6,7 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// `MockInterceptor` builds the asset name from the request path by replacing `/` and `-` with `_`, so
 /// `POST /account/change-password` looks for `POST_account_change_password.json`. A file whose name keeps a `-`
-/// can never be found: the interceptor logs an error and falls back to a generic response instead.
+/// can never be found: the interceptor fails the request with 501 instead.
 void main() {
   test('mock asset names use underscores instead of hyphens', () {
     final offenders = Directory('assets/mock')

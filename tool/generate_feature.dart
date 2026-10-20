@@ -17,7 +17,8 @@
 //   assets/mock/              the mock JSON that MockInterceptor serves for the generated repository's requests
 //
 // The generated Dart files are formatted with dart format. After generation, follow the printed steps to register
-// the repository, the routes, the menu entry and the translations.
+// the repository, the routes, the menu entry and the translations, and to add the repository methods to
+// test/architecture/mock_asset_coverage_test.dart.
 //
 // test/architecture/feature_generator_test.dart runs this generator and checks that its output is formatted,
 // analyzes cleanly and passes its own tests.
@@ -120,7 +121,10 @@ void _printNextSteps(_FeatureNames f) {
   print('   fvm dart run intl_utils:generate');
   print('   fvm dart format lib/generated --line-length=120');
   print('');
-  print('7. Check the feature:');
+  print('7. Add the repository methods to the table in test/architecture/mock_asset_coverage_test.dart:');
+  print('   I${f.singularPascal}Repository.retrieve, create, update, list and delete.');
+  print('');
+  print('8. Check the feature:');
   print('   fvm flutter analyze');
   print('   fvm flutter test test/features/${f.snake}');
   print('');

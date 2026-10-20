@@ -491,8 +491,9 @@ To enable SonarQube, add the `SONAR_TOKEN` secret to your repository or organiza
 8. Register the feature routes in `lib/app/router/app_router.dart`.
 9. Register DI in `lib/app/di/app_dependencies.dart` (repository) and `app_scope.dart` (BLoC).
 10. Add tests in `test/features/<feature>/` mirroring the feature structure.
+11. Add each new repository method that sends requests through `ApiClient` to the table in `test/architecture/mock_asset_coverage_test.dart`, with the mock files it needs under `assets/mock/`.
 
-For a CRUD feature, `fvm dart run tool/generate_feature.dart <feature>` does steps 1 to 7 and 10, writes the mock data, and prints the code for steps 8 and 9.
+For a CRUD feature, `fvm dart run tool/generate_feature.dart <feature>` does steps 1 to 7 and 10, writes the mock data, prints the code for steps 8 and 9, and names the methods to add in step 11.
 
 **Dependency rules** (enforced by architecture guard tests):
 - `core/` imports nothing from the project

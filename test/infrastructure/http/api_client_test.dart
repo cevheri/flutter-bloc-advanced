@@ -336,7 +336,7 @@ void main() {
 
       test('given test environment when GET request is made then should return mock data', () async {
         TestEnv.authenticate();
-        final response = await mockClient.get('/test');
+        final response = await mockClient.get('/account');
         expect(response.statusCode, lessThan(300));
       });
 
@@ -346,7 +346,7 @@ void main() {
 
       test('given test environment when POST request is made then should return mock data', () async {
         TestEnv.authenticate();
-        final response = await mockClient.post('/test', {'data': 'test'});
+        final response = await mockClient.post('/account', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
 
@@ -356,12 +356,28 @@ void main() {
 
       test('given test environment when PUT request is made then should return mock data', () async {
         TestEnv.authenticate();
-        final response = await mockClient.put('/test', {'data': 'test'});
+        final response = await mockClient.put('/admin/users', {'data': 'test'});
         expect(response.statusCode, lessThan(300));
       });
 
       test('given test environment without token when PUT request is made then should throw', () async {
         expect(() => mockClient.put('/test', {'data': 'test'}), throwsA(isA<UnauthorizedException>()));
+      });
+
+      // Regression: a request without a mock file was answered with "OK", so the demo reported success for a request
+      // it could not answer.
+      test('given test environment when no mock file exists then should fail naming the missing file', () async {
+        TestEnv.authenticate();
+        await expectLater(
+          mockClient.post('/test', {'data': 'test'}),
+          throwsA(
+            isA<FetchDataException>().having(
+              (e) => e.toString(),
+              'message',
+              allOf(contains('Server error (501)'), contains('assets/mock/POST_test.json')),
+            ),
+          ),
+        );
       });
 
       test('given test environment when DELETE request is made then should return 204', () async {

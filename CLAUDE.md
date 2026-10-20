@@ -155,6 +155,7 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
 6. Register the feature routes in `lib/app/router/app_router.dart`.
 7. Add translations to `lib/l10n/`, run `fvm dart run intl_utils:generate`, then `fvm dart format lib/generated --line-length=120`.
 8. Write tests mirroring the feature structure under `test/features/<feature_name>/`.
+9. Add each new repository method that sends requests through `ApiClient` to the table in `test/architecture/mock_asset_coverage_test.dart`, with the mock files it needs under `assets/mock/`.
 
 ## Testing
 

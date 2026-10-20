@@ -23,6 +23,12 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 /// session when the token cannot be refreshed, and the dev console and
 /// logging record the failure. Paths in [allowedPaths], login among them,
 /// are never rejected.
+///
+/// A request whose mock file is missing fails with 501 Not Implemented, also
+/// rejected with `callFollowingErrorInterceptor: true`, so the dev console
+/// and logging record it. The error names the missing file. The mock cannot
+/// answer that request, so the caller gets a failure, not a made-up success.
+/// A DELETE needs no file and always gets 204.
 class MockInterceptor extends Interceptor {
   MockInterceptor({this.appConfig = const AppConfig.dev()});
 
@@ -79,15 +85,27 @@ class MockInterceptor extends Interceptor {
       mockFileName = '${options.method}$filePath.json';
     }
 
+    final mockDataPath = 'assets/mock/$mockFileName';
+    _log.debug('Mock data path: {}', [mockDataPath]);
+    final String responseBody;
     try {
-      final mockDataPath = 'assets/mock/$mockFileName';
-      _log.debug('Mock data path: {}', [mockDataPath]);
-      final responseBody = await rootBundle.loadString(mockDataPath);
-      _log.debug('Mock data loaded: {} {} (body length: {})', [options.method, basePath, responseBody.length]);
-      handler.resolve(Response(requestOptions: options, data: responseBody, statusCode: statusCode), true);
+      responseBody = await rootBundle.loadString(mockDataPath);
     } catch (e) {
-      _log.error('Error loading mock data: {} {}, error: {}', [options.method, basePath, e]);
-      handler.resolve(Response(requestOptions: options, data: 'OK', statusCode: statusCode), true);
+      _log.error('No mock data for {} {}: {} could not be loaded: {}', [options.method, basePath, mockDataPath, e]);
+      final reason = 'No mock data for ${options.method} $basePath: $mockDataPath could not be loaded';
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.badResponse,
+          response: Response(requestOptions: options, statusCode: HttpStatus.notImplemented, data: reason),
+          error: e,
+          message: reason,
+        ),
+        true,
+      );
+      return;
     }
+    _log.debug('Mock data loaded: {} {} (body length: {})', [options.method, basePath, responseBody.length]);
+    handler.resolve(Response(requestOptions: options, data: responseBody, statusCode: statusCode), true);
   }
 }

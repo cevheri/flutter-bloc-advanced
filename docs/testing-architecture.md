@@ -59,6 +59,7 @@ test/
 │   ├── feature_generator_test.dart   # tool/generate_feature.dart output is clean and passes its tests
 │   ├── import_guard_test.dart        # layer dependency rules, url_launcher only in external_link.dart
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
+│   ├── mock_asset_coverage_test.dart # every repository method succeeds on the mock
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
 │   ├── test_file_naming_test.dart    # forbids *.test.dart (dot) files
 │   └── web_placeholders_test.dart    # demo values cover every web/ placeholder
@@ -342,7 +343,10 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   Release builds need the permission to reach the API, and a restored backup or device transfer brings back session tokens that no longer decrypt.
   CI builds the release APK, but that build succeeds without any of these.
 - **`mock_asset_naming_test.dart`** fails if a file under `assets/mock/` has a `-` in its name.
-  `MockInterceptor` maps `-` in request paths to `_`, so such a file is never served and the request falls back to a generic response.
+  `MockInterceptor` maps `-` in request paths to `_`, so such a file is never served and the request fails with 501.
+- **`mock_asset_coverage_test.dart`** drives every method of every repository that uses `ApiClient`, and submits each dynamic form the app opens, through `TestEnv.apiClient()`; it fails when one of them does not succeed.
+  `MockInterceptor` fails a GET, POST, PUT or PATCH whose mock file is missing with 501, so a missing file fails the test and the failure names it.
+  A last test reads the repository interfaces under `lib/` and fails when a method is not driven, so a new repository method needs an entry in the test, and its mock file, before the build passes.
 - **`web_placeholders_test.dart`** fails if a `__KEY__` placeholder in `web/index.html`, `manifest.json`, `sitemap.xml` or `humans.txt` has no value in `.github/pages/demo-values.env`, apart from `__KEYWORD__` and `__PROD_API_URL__`, which the hosted demo leaves on purpose.
   The GitHub Pages job fills these files in `build/web` from that file and then fails on any placeholder left (`scripts/check_web_placeholders.sh`).
   It runs only after a push to `main`, so without this test a missing value would surface as a failed deploy instead of in the pull request.
@@ -435,6 +439,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
    variants; mock the use case or repository.
 4. **Repository tests** (`data/repositories/`): `TestEnv.apiClient()` or a stub
    Dio.
+   Add each repository method that sends requests through `ApiClient` to the table in `test/architecture/mock_asset_coverage_test.dart`.
 5. **Widget tests** (`presentation/`): `MockBloc` for state; `TestEnv.authenticate()`
    in `setUp`/body for auth-gated screens.
 6. Add any new mocks/fakes to `test/mocks/mock_classes.dart` (and register
@@ -458,6 +463,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | macOS network entitlement guard | `test/architecture/macos_entitlements_test.dart` |
 | Android manifest guard | `test/architecture/android_manifest_test.dart` |
 | Mock asset naming guard | `test/architecture/mock_asset_naming_test.dart` |
+| Mock asset coverage guard | `test/architecture/mock_asset_coverage_test.dart` |
 | Web demo values guard | `test/architecture/web_placeholders_test.dart` |
 | Feature generator guard | `test/architecture/feature_generator_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |

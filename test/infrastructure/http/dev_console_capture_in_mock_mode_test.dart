@@ -46,7 +46,7 @@ void main() {
     test('a mock-served GET appears in DevConsoleStore AND is marked complete', () async {
       TestEnv.authenticate();
 
-      await TestEnv.apiClient().get('/test');
+      await TestEnv.apiClient().get('/account');
 
       final entries = DevConsoleStore.instance.networkEntries;
       expect(entries, isNotEmpty, reason: 'DevConsoleInterceptor.onRequest must run before the mock short-circuits');
@@ -68,6 +68,17 @@ void main() {
         reason: 'the mock must reject with callFollowing so onError completes the entry, as for a server 401',
       );
       expect(entry.statusCode, 401);
+    });
+
+    test('a request without a mock file is marked complete with 501 and names the missing file', () async {
+      TestEnv.authenticate();
+
+      await expectLater(TestEnv.apiClient().get('/test'), throwsA(isA<FetchDataException>()));
+
+      final entry = DevConsoleStore.instance.networkEntries.single;
+      expect(entry.isComplete, isTrue);
+      expect(entry.statusCode, 501);
+      expect(entry.error, contains('assets/mock/GET_test.json'));
     });
   });
 }

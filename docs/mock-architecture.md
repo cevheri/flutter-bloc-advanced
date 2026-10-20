@@ -177,7 +177,9 @@ In dev/test mode it answers every request that reaches the end of the chain with
 3. **Status code** — POST → 201, DELETE → 204 (early return), everything else → 200
 4. **File resolution** — Builds a file name from the request metadata (see next section)
 5. **Asset loading** — Reads the JSON file via `rootBundle.loadString()`
-6. **Fallback** — If the file does not exist, returns `"OK"` with the appropriate status code
+6. **Missing file**: if the file cannot be loaded, rejects with 501 Not Implemented and `callFollowingErrorInterceptor: true`, with an error that names the file, so the dev console, the log and the caller's error all show which file to add
+
+A GET, POST, PUT or PATCH the mock has no file for fails instead of getting a made-up success; DELETE needs no file and always answers 204.
 
 ### LoggingInterceptor
 
@@ -459,7 +461,11 @@ When you add a new API endpoint, follow these steps:
 
 4. **Call `ApiClient`** from your repository — the mock interceptor handles the rest automatically.
 
+5. **Drive the new repository method** in `test/architecture/mock_asset_coverage_test.dart`.
+   That test sends every repository method through the mock-backed client and fails when a method is not listed or its file is missing.
+
 No changes to `MockInterceptor` or `ApiClient` are needed.
+A GET, POST, PUT or PATCH whose file is missing fails with 501 and the name of the file, instead of getting a made-up success.
 
 ## File Reference
 
@@ -477,3 +483,4 @@ No changes to `MockInterceptor` or `ApiClient` are needed.
 | Test utilities | `test/support/test_env.dart` |
 | Mock classes | `test/mocks/mock_classes.dart` |
 | ApiClient tests | `test/infrastructure/http/api_client_test.dart` |
+| Mock asset coverage guard | `test/architecture/mock_asset_coverage_test.dart` |
