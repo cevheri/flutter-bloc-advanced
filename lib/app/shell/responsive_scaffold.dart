@@ -33,31 +33,33 @@ class ResponsiveScaffold extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      body: FocusTraversalGroup(
-        policy: OrderedTraversalPolicy(),
-        child: Row(
-          children: [
-            FocusTraversalOrder(
-              order: const NumericFocusOrder(1),
-              child: Container(
-                decoration: BoxDecoration(
-                  border: Border(right: BorderSide(color: colorScheme.outlineVariant, width: 1)),
-                ),
-                child: const SidebarWidget(),
-              ),
-            ),
-            Expanded(
-              child: Column(
-                children: [
-                  FocusTraversalOrder(order: const NumericFocusOrder(2), child: const TopBarWidget()),
-                  FocusTraversalOrder(
-                    order: const NumericFocusOrder(3),
-                    child: Expanded(child: child),
+      body: SafeArea(
+        child: FocusTraversalGroup(
+          policy: OrderedTraversalPolicy(),
+          child: Row(
+            children: [
+              FocusTraversalOrder(
+                order: const NumericFocusOrder(1),
+                child: Container(
+                  decoration: BoxDecoration(
+                    border: Border(right: BorderSide(color: colorScheme.outlineVariant, width: 1)),
                   ),
-                ],
+                  child: const SidebarWidget(),
+                ),
               ),
-            ),
-          ],
+              Expanded(
+                child: Column(
+                  children: [
+                    FocusTraversalOrder(order: const NumericFocusOrder(2), child: const TopBarWidget()),
+                    FocusTraversalOrder(
+                      order: const NumericFocusOrder(3),
+                      child: Expanded(child: child),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -74,23 +76,25 @@ class ResponsiveScaffold extends StatelessWidget {
     });
 
     return Scaffold(
-      body: Row(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              border: Border(right: BorderSide(color: colorScheme.outlineVariant, width: 1)),
+      body: SafeArea(
+        child: Row(
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                border: Border(right: BorderSide(color: colorScheme.outlineVariant, width: 1)),
+              ),
+              child: const SidebarWidget(),
             ),
-            child: const SidebarWidget(),
-          ),
-          Expanded(
-            child: Column(
-              children: [
-                const TopBarWidget(),
-                Expanded(child: child),
-              ],
+            Expanded(
+              child: Column(
+                children: [
+                  const TopBarWidget(),
+                  Expanded(child: child),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -99,18 +103,21 @@ class ResponsiveScaffold extends StatelessWidget {
     return Scaffold(
       body: Builder(
         builder: (scaffoldContext) {
-          return Column(
-            children: [
-              TopBarWidget(
-                title: _routeToTitle(activeRoute),
-                onMenuTap: () => Scaffold.of(scaffoldContext).openDrawer(),
-              ),
-              Expanded(child: child),
-            ],
+          // The Scaffold already keeps the body above the bottom navigation bar, which keeps clear of the bottom inset.
+          return SafeArea(
+            child: Column(
+              children: [
+                TopBarWidget(
+                  title: _routeToTitle(activeRoute),
+                  onMenuTap: () => Scaffold.of(scaffoldContext).openDrawer(),
+                ),
+                Expanded(child: child),
+              ],
+            ),
           );
         },
       ),
-      drawer: const Drawer(child: SidebarWidget()),
+      drawer: const Drawer(child: SafeArea(child: SidebarWidget())),
       bottomNavigationBar: BottomNavWidget(activeRoute: activeRoute),
     );
   }
