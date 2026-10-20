@@ -53,11 +53,6 @@ class S {
     return Localizations.of<S>(context, S);
   }
 
-  /// `Screen size is too small.`
-  String get screen_size_error {
-    return Intl.message('Screen size is too small.', name: 'screen_size_error', desc: '', args: []);
-  }
-
   /// `Admin`
   String get admin {
     return Intl.message('Admin', name: 'admin', desc: '', args: []);
@@ -86,11 +81,6 @@ class S {
   /// `Last Name`
   String get last_name {
     return Intl.message('Last Name', name: 'last_name', desc: '', args: []);
-  }
-
-  /// `Phone Number`
-  String get phone_number {
-    return Intl.message('Phone Number', name: 'phone_number', desc: '', args: []);
   }
 
   /// `Email`
@@ -133,24 +123,9 @@ class S {
     return Intl.message('Field must be at least 2 characters long', name: 'min_length_2', desc: '', args: []);
   }
 
-  /// `Field must be at least 3 characters long`
-  String get min_length_3 {
-    return Intl.message('Field must be at least 3 characters long', name: 'min_length_3', desc: '', args: []);
-  }
-
   /// `Field must be at least 4 characters long`
   String get min_length_4 {
     return Intl.message('Field must be at least 4 characters long', name: 'min_length_4', desc: '', args: []);
-  }
-
-  /// `Field must be at least 5 characters long`
-  String get min_length_5 {
-    return Intl.message('Field must be at least 5 characters long', name: 'min_length_5', desc: '', args: []);
-  }
-
-  /// `Field cannot be more than 10 characters long`
-  String get max_length_10 {
-    return Intl.message('Field cannot be more than 10 characters long', name: 'max_length_10', desc: '', args: []);
   }
 
   /// `Field cannot be more than 20 characters long`
@@ -158,34 +133,9 @@ class S {
     return Intl.message('Field cannot be more than 20 characters long', name: 'max_length_20', desc: '', args: []);
   }
 
-  /// `Field cannot be more than 50 characters long`
-  String get max_length_50 {
-    return Intl.message('Field cannot be more than 50 characters long', name: 'max_length_50', desc: '', args: []);
-  }
-
   /// `Field cannot be more than 100 characters long`
   String get max_length_100 {
     return Intl.message('Field cannot be more than 100 characters long', name: 'max_length_100', desc: '', args: []);
-  }
-
-  /// `Field cannot be more than 250 characters long`
-  String get max_length_250 {
-    return Intl.message('Field cannot be more than 250 characters long', name: 'max_length_250', desc: '', args: []);
-  }
-
-  /// `Field cannot be more than 500 characters long`
-  String get max_length_500 {
-    return Intl.message('Field cannot be more than 500 characters long', name: 'max_length_500', desc: '', args: []);
-  }
-
-  /// `Field cannot be more than 1000 characters long`
-  String get max_length_1000 {
-    return Intl.message('Field cannot be more than 1000 characters long', name: 'max_length_1000', desc: '', args: []);
-  }
-
-  /// `Field cannot be more than 4000 characters long`
-  String get max_length_4000 {
-    return Intl.message('Field cannot be more than 4000 characters long', name: 'max_length_4000', desc: '', args: []);
   }
 
   /// `Range is required`
@@ -196,11 +146,6 @@ class S {
   /// `List`
   String get list {
     return Intl.message('List', name: 'list', desc: '', args: []);
-  }
-
-  /// `Filter`
-  String get filter {
-    return Intl.message('Filter', name: 'filter', desc: '', args: []);
   }
 
   /// `List User`
@@ -465,21 +410,6 @@ class S {
     return Intl.message('OTP sent to', name: 'otp_sent_to', desc: '', args: []);
   }
 
-  /// `Task Save`
-  String get taskSaveScreenTitle {
-    return Intl.message('Task Save', name: 'taskSaveScreenTitle', desc: '', args: []);
-  }
-
-  /// `Task Name`
-  String get taskName {
-    return Intl.message('Task Name', name: 'taskName', desc: '', args: []);
-  }
-
-  /// `Task Price`
-  String get taskPrice {
-    return Intl.message('Task Price', name: 'taskPrice', desc: '', args: []);
-  }
-
   /// `Theme`
   String get theme {
     return Intl.message('Theme', name: 'theme', desc: '', args: []);
@@ -500,69 +430,9 @@ class S {
     return Intl.message('Refresh', name: 'refresh', desc: '', args: []);
   }
 
-  /// `Leads`
-  String get leads {
-    return Intl.message('Leads', name: 'leads', desc: '', args: []);
-  }
-
-  /// `Customers`
-  String get customers {
-    return Intl.message('Customers', name: 'customers', desc: '', args: []);
-  }
-
-  /// `Revenue`
-  String get revenue {
-    return Intl.message('Revenue', name: 'revenue', desc: '', args: []);
-  }
-
-  /// `Chart / KPI Placeholder`
-  String get chart_kpi_placeholder {
-    return Intl.message('Chart / KPI Placeholder', name: 'chart_kpi_placeholder', desc: '', args: []);
-  }
-
-  /// `Recent Activity`
-  String get recent_activity {
-    return Intl.message('Recent Activity', name: 'recent_activity', desc: '', args: []);
-  }
-
-  /// `Sample activity item`
-  String get sample_activity_item {
-    return Intl.message('Sample activity item', name: 'sample_activity_item', desc: '', args: []);
-  }
-
-  /// `Subtitle / Context`
-  String get subtitle_context {
-    return Intl.message('Subtitle / Context', name: 'subtitle_context', desc: '', args: []);
-  }
-
-  /// `just now`
-  String get just_now {
-    return Intl.message('just now', name: 'just_now', desc: '', args: []);
-  }
-
   /// `Quick Actions`
   String get quick_actions {
     return Intl.message('Quick Actions', name: 'quick_actions', desc: '', args: []);
-  }
-
-  /// `New Lead`
-  String get new_lead {
-    return Intl.message('New Lead', name: 'new_lead', desc: '', args: []);
-  }
-
-  /// `Add Task`
-  String get add_task {
-    return Intl.message('Add Task', name: 'add_task', desc: '', args: []);
-  }
-
-  /// `New Deal`
-  String get new_deal {
-    return Intl.message('New Deal', name: 'new_deal', desc: '', args: []);
-  }
-
-  /// `Send Email`
-  String get send_email_action {
-    return Intl.message('Send Email', name: 'send_email_action', desc: '', args: []);
   }
 
   /// `Join the Community`
@@ -633,11 +503,6 @@ class S {
   /// `Website`
   String get website {
     return Intl.message('Website', name: 'website', desc: '', args: []);
-  }
-
-  /// `More`
-  String get more {
-    return Intl.message('More', name: 'more', desc: '', args: []);
   }
 
   /// `Invalid access token`
