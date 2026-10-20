@@ -56,7 +56,7 @@ class AppScope extends StatelessWidget {
           RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
         RepositoryProvider<AppConfig>.value(value: dependencies.appConfig),
         RepositoryProvider<ProjectLinks>.value(value: dependencies.projectLinks),
-        // Provided above SessionCubit, which clears the stored session when it ends one.
+        // Provided above SessionCubit and IAuthRepository, which clear the stored session when they end one.
         RepositoryProvider<IAuthSessionRepository>(
           create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
         ),
@@ -85,7 +85,7 @@ class AppScope extends StatelessWidget {
         ),
         RepositoryProvider<IAuthRepository>(
           create: (context) =>
-              dependencies.createAuthRepository(context.read<ISecureStorage>(), context.read<ApiClient>()),
+              dependencies.createAuthRepository(context.read<IAuthSessionRepository>(), context.read<ApiClient>()),
         ),
         RepositoryProvider<IDynamicFormRepository>(
           create: (context) => dependencies.createDynamicFormRepository(context.read<ApiClient>()),

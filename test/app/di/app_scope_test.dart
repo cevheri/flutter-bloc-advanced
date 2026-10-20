@@ -11,7 +11,11 @@ import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/di/app_scope.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
@@ -85,6 +89,30 @@ class _ServerAdapter implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+/// Counts the clears that reach it.
+class _CountingSessionRepository implements IAuthSessionRepository {
+  int clears = 0;
+
+  @override
+  Future<Result<void>> persist(AuthSession session) async => const Success(null);
+
+  @override
+  Future<Result<void>> clear() async {
+    clears++;
+    return const Success(null);
+  }
+}
+
+/// The test config with [sessionRepository] in place of the one AppDependencies creates.
+class _SessionRepositoryDependencies extends AppDependencies {
+  const _SessionRepositoryDependencies(this.sessionRepository) : super(appConfig: const AppConfig.test());
+
+  final IAuthSessionRepository sessionRepository;
+
+  @override
+  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) => sessionRepository;
 }
 
 /// The production dependencies, counting how often the client reports a 401 that a token refresh could not fix.
@@ -295,6 +323,28 @@ void main() {
       addTearDown(relaunched.close);
       await relaunched.restore();
       expect(relaunched.state, const SessionAuthenticated(roles: {'ROLE_ADMIN'}));
+    });
+
+    // The logout, the idle timeout and an unrefreshable 401 must clear the same things, so they share one repository.
+    testWidgets('logs out through the session repository that AppDependencies creates', (tester) async {
+      final sessionRepository = _CountingSessionRepository();
+      late BuildContext scope;
+      await tester.pumpWidget(
+        AppScope(
+          dependencies: _SessionRepositoryDependencies(sessionRepository),
+          child: Builder(
+            builder: (context) {
+              scope = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(await scope.read<IAuthRepository>().logout(), isA<Success<void>>());
+
+      expect(sessionRepository.clears, 1);
     });
   });
 }

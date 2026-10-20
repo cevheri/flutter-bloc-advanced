@@ -264,26 +264,24 @@ class SessionCubit extends Cubit<SessionState> {
   ///
   /// The wipe depends on what is stored, not on [state]. It is skipped
   /// when no token is stored, so a 401 from a request still in flight when
-  /// the user signed out keeps the stored preferences. A stored token is
+  /// the user signed out leaves storage alone. A stored token is
   /// wiped even when the cubit is signed out: a token refresh still in
   /// flight when the session ended can store a session that a restart
   /// would restore.
   ///
-  /// A failed wipe is logged at error level, with the storage error, and
-  /// the in-memory session still ends: staying signed in would defeat the
-  /// idle timeout, and after an unrefreshable 401 the server has already
-  /// rejected the session. The log records that a token may be left for
-  /// the next launch to restore.
+  /// A failed wipe is logged at error level with the storage error, which
+  /// names each step that failed, and the in-memory session still ends:
+  /// staying signed in would defeat the idle timeout, and after an
+  /// unrefreshable 401 the server has already rejected the session. A
+  /// token left behind lets the next launch restore the session; a
+  /// session key or cached responses left behind do not.
   Future<void> endSession({required SessionExpiredReason reason}) async {
     if (await _hasStoredSession()) {
       switch (await _sessionRepository.clear()) {
         case Success():
           _log.info('endSession({}): stored session cleared', [reason.name]);
         case Failure(:final error):
-          _log.error('endSession({}): stored session not cleared, the next launch may restore it: {}', [
-            reason.name,
-            error,
-          ]);
+          _log.error('endSession({}): stored session not fully cleared: {}', [reason.name, error]);
       }
     } else {
       _log.debug('endSession({}): no stored session to clear', [reason.name]);

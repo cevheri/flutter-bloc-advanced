@@ -141,11 +141,11 @@ void main() {
   });
 
   group('clear method throw-on-refuse contract', () {
-    // Pins the contract that AuthSessionRepository.clear and
-    // LoginRepository.logout rely on: SharedPreferences.clear() returning
-    // false MUST surface as a thrown StateError so the aggregated logout
-    // result captures the failure instead of reporting Success(null) with
-    // a stale session lingering on disk.
+    // Pins the throw-on-refuse contract that keeps clear() symmetric with
+    // save and remove: SharedPreferences.clear() returning false MUST
+    // surface as a thrown StateError instead of a "Cleared all data" log
+    // over stale state. Only test setup calls clear(); ending a session
+    // removes the session keys through remove instead.
     late AppLocalStorage localStorage;
     late SharedPreferences mockPrefs;
 

@@ -145,8 +145,8 @@ class TopBarWidget extends StatelessWidget {
     final shouldLogout = await ConfirmationDialog.show(context: context, type: DialogType.logout) ?? false;
     if (!shouldLogout || !context.mounted) return;
     // Route through MenuBloc.Logout so the same code path that the
-    // sidebar uses fires — LoginRepository.logout wipes BOTH secure
-    // storage (JWT + refreshToken) and AppLocalStorage. Then AWAIT a
+    // sidebar uses fires: LoginRepository.logout clears the stored
+    // session, keeping the device preferences. Then AWAIT a
     // terminal state before navigating: navigating immediately would
     // race the async logout work and (with the router's
     // "authenticated user on public route → home" rule) momentarily

@@ -13,6 +13,9 @@ abstract class IAuthSessionRepository {
   /// session never lingers in storage on error.
   Future<Result<void>> persist(AuthSession session);
 
-  /// Clear all session keys.
+  /// Removes what the signed-in session stored: the tokens, the user's
+  /// keys and the cached responses. Device preferences, such as the
+  /// language and theme, stay. A step that fails does not stop the
+  /// others, and the failures come back as one [Failure].
   Future<Result<void>> clear();
 }

@@ -16,6 +16,7 @@ import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
@@ -48,11 +49,13 @@ class AppDependencies {
 
   IAccountRepository createAccountRepository(ApiClient apiClient) => AccountRepository(apiClient);
 
-  IAuthRepository createAuthRepository(ISecureStorage secureStorage, ApiClient apiClient) =>
-      LoginRepository(secureStorage: secureStorage, apiClient: apiClient);
+  /// The logout clears the session through [sessionRepository], as the idle timeout and an unrefreshable 401 do.
+  IAuthRepository createAuthRepository(IAuthSessionRepository sessionRepository, ApiClient apiClient) =>
+      LoginRepository(sessionRepository: sessionRepository, apiClient: apiClient);
 
+  /// Ending a session also clears the cache of GET responses that [ApiClient] keeps in SharedPreferences.
   IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) =>
-      AuthSessionRepository(secureStorage: secureStorage);
+      AuthSessionRepository(secureStorage: secureStorage, cacheStorage: SharedPrefsCacheStorage());
 
   IAuthorityRepository createAuthorityRepository(ApiClient apiClient) => AuthorityRepositoryImpl(apiClient);
 

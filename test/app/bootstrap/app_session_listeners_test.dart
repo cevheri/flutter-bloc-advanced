@@ -4,13 +4,17 @@ library;
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/bootstrap/app_session_listeners.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/di/app_scope.dart';
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
+import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
+import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_nav_item.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
@@ -30,6 +34,22 @@ const _app = App(
     ),
   ),
 );
+
+/// Stores the language, theme and sidebar state a user chose on this device earlier.
+Future<void> _choosePreferences() async {
+  await AppLocalStorage().save(StorageKeys.language.key, 'tr');
+  await AppLocalStorage().save(StorageKeys.theme.key, 'nature');
+  await AppLocalStorage().save(StorageKeys.brightness.key, 'dark');
+  await AppLocalStorage().save(StorageKeys.sidebarCollapsed.key, 'true');
+}
+
+/// Signs out as the user does: Logout in the sidebar, then Yes in the confirmation dialog.
+Future<void> _logOut(WidgetTester tester) async {
+  await tester.tap(find.widgetWithIcon(SidebarNavItem, Icons.logout));
+  await tester.pumpAndSettle();
+  await tester.tap(find.widgetWithText(FilledButton, 'Yes'));
+  await tester.pumpAndSettle();
+}
 
 void main() {
   group('AppSessionListeners', () {
@@ -114,6 +134,48 @@ void main() {
 
       expect(store.reads, 1);
       expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+    });
+
+    testWidgets('an idle timeout keeps the preferences and removes the cached responses', (tester) async {
+      TestEnv.authenticate();
+      await _choosePreferences();
+      await tester.pumpWidget(_app);
+      await tester.pumpAndSettle();
+      expect(await SharedPrefsCacheStorage().count(), isPositive, reason: 'the dashboard caches its account request');
+
+      await tester.pump(const Duration(minutes: 5));
+      await tester.pumpAndSettle();
+      expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+
+      expect(await AppLocalStorage().read(StorageKeys.language.key), 'tr');
+      expect(await AppLocalStorage().read(StorageKeys.theme.key), 'nature');
+      expect(await AppLocalStorage().read(StorageKeys.brightness.key), 'dark');
+      expect(await AppLocalStorage().read(StorageKeys.sidebarCollapsed.key), 'true');
+      expect(await SharedPrefsCacheStorage().count(), 0);
+    });
+
+    testWidgets('a logout keeps the preferences and removes the cached responses', (tester) async {
+      TestEnv.authenticate();
+      await _choosePreferences();
+      await tester.pumpWidget(_app);
+      await tester.pumpAndSettle();
+      expect(await SharedPrefsCacheStorage().count(), isPositive, reason: 'the dashboard caches its account request');
+
+      await _logOut(tester);
+      expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+
+      expect(await AppLocalStorage().read(StorageKeys.language.key), 'tr');
+      expect(await AppLocalStorage().read(StorageKeys.theme.key), 'nature');
+      expect(await AppLocalStorage().read(StorageKeys.brightness.key), 'dark');
+      expect(await AppLocalStorage().read(StorageKeys.sidebarCollapsed.key), 'true');
+      expect(await SharedPrefsCacheStorage().count(), 0);
+
+      // A relaunch mounts a new App, which loads the theme and the sidebar state from storage.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(_app);
+      await tester.pumpAndSettle();
+      expect(tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode, ThemeMode.dark);
+      expect(tester.element(find.byType(MaterialApp)).read<SidebarBloc>().state.isCollapsed, isTrue);
     });
   });
 }

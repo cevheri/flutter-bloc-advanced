@@ -1,6 +1,8 @@
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -76,6 +78,35 @@ class _FlakyStorage implements AppLocalStorage {
   Future<void> clear() => _inner.clear();
   @override
   void setPreferencesInstance(SharedPreferences prefs) => _inner.setPreferencesInstance(prefs);
+}
+
+/// Storage fake whose `remove` refuses one key, as SharedPreferences does when it cannot write.
+class _RemoveRefusingStorage implements AppLocalStorage {
+  _RemoveRefusingStorage(this._inner, this.refusedKey);
+  final AppLocalStorage _inner;
+  final String refusedKey;
+  @override
+  Future<bool> save(String key, dynamic value) => _inner.save(key, value);
+  @override
+  Future<bool> remove(String key) async => key == refusedKey ? false : _inner.remove(key);
+  @override
+  Future<dynamic> read(String key) => _inner.read(key);
+  @override
+  Future<void> clear() => _inner.clear();
+  @override
+  void setPreferencesInstance(SharedPreferences prefs) => _inner.setPreferencesInstance(prefs);
+}
+
+/// Cache whose `clear` fails, as SharedPrefsCacheStorage.clear does when SharedPreferences keeps an entry.
+class _FailingClearCacheStorage implements ICacheStorage {
+  @override
+  Future<CacheEntry?> read(String key) async => null;
+  @override
+  Future<void> write(String key, String data, {Duration? ttl}) async {}
+  @override
+  Future<void> remove(String key) async {}
+  @override
+  Future<void> clear() async => throw StateError('Cache clear left 1 of 2 entries');
 }
 
 void main() {
@@ -209,7 +240,7 @@ void main() {
       expect(await storage.read(StorageKeys.username.key), isNull, reason: 'local clear still ran');
     });
 
-    test('clear empties both backends', () async {
+    test('clear removes the session from both backends', () async {
       await secure.write(SecureStorageKeys.jwtToken.key, 'TOKEN');
       await storage.save(StorageKeys.username.key, 'alice');
       final repo = AuthSessionRepository(secureStorage: secure, storage: storage);
@@ -219,6 +250,92 @@ void main() {
       expect(result, isA<Success<void>>());
       expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
       expect(await storage.read(StorageKeys.username.key), isNull);
+    });
+
+    test('clear keeps the device preferences', () async {
+      await storage.save(StorageKeys.language.key, 'tr');
+      await storage.save(StorageKeys.theme.key, 'nature');
+      await storage.save(StorageKeys.brightness.key, 'dark');
+      await storage.save(StorageKeys.sidebarCollapsed.key, 'true');
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage);
+      await repo.persist(const AuthSession(idToken: 'TOKEN', username: 'alice', roles: ['ROLE_USER']));
+
+      final result = await repo.clear();
+
+      expect(result, isA<Success<void>>());
+      expect(await storage.read(StorageKeys.language.key), 'tr');
+      expect(await storage.read(StorageKeys.theme.key), 'nature');
+      expect(await storage.read(StorageKeys.brightness.key), 'dark');
+      expect(await storage.read(StorageKeys.sidebarCollapsed.key), 'true');
+    });
+
+    // Guards the switch from wiping everything to removing session keys: runSessionMigration copies back a kept token.
+    test('clear removes the session keys, also the plaintext tokens a failed migration left behind', () async {
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage);
+      await repo.persist(const AuthSession(idToken: 'TOKEN', refreshToken: 'REFRESH', username: 'alice', roles: ['R']));
+      // Releases before the move to secure storage kept the tokens here, and runSessionMigration leaves them when
+      // it cannot remove them.
+      await storage.save('jwtToken', 'PLAINTEXT_TOKEN');
+      await storage.save('refreshToken', 'PLAINTEXT_REFRESH');
+
+      final result = await repo.clear();
+
+      expect(result, isA<Success<void>>());
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), isNull);
+      expect(await storage.read(StorageKeys.username.key), isNull);
+      expect(await storage.read(StorageKeys.roles.key), isNull);
+      expect(await storage.read('jwtToken'), isNull);
+      expect(await storage.read('refreshToken'), isNull);
+    });
+
+    // Guards the switch from wiping everything to removing session keys: the cache is no longer wiped with them.
+    test('clear removes the cached responses', () async {
+      final cache = SharedPrefsCacheStorage();
+      await cache.write('GET_/account', '{"login":"alice"}');
+      await cache.write('GET_/admin/users', '[{"login":"bob"}]');
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage, cacheStorage: cache);
+
+      final result = await repo.clear();
+
+      expect(result, isA<Success<void>>());
+      expect(await cache.read('GET_/account'), isNull);
+      expect(await cache.read('GET_/admin/users'), isNull);
+    });
+
+    test('clear reports cached responses that stay behind and still removes the session', () async {
+      final repo = AuthSessionRepository(
+        secureStorage: secure,
+        storage: storage,
+        cacheStorage: _FailingClearCacheStorage(),
+      );
+      await repo.persist(const AuthSession(idToken: 'TOKEN', refreshToken: 'REFRESH', username: 'alice'));
+
+      final result = await repo.clear();
+
+      expect(result, isA<Failure<void>>());
+      expect((result as Failure<void>).error.message, contains('Cache clear left 1 of 2 entries'));
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), isNull);
+      expect(await storage.read(StorageKeys.username.key), isNull);
+    });
+
+    test('clear reports a session key it cannot remove and still removes the rest', () async {
+      final cache = SharedPrefsCacheStorage();
+      await cache.write('GET_/account', '{"login":"alice"}');
+      final refusing = _RemoveRefusingStorage(storage, StorageKeys.username.key);
+      final repo = AuthSessionRepository(secureStorage: secure, storage: refusing, cacheStorage: cache);
+      await repo.persist(const AuthSession(idToken: 'TOKEN', username: 'alice', roles: ['ROLE_USER']));
+      await storage.save('jwtToken', 'PLAINTEXT_TOKEN');
+
+      final result = await repo.clear();
+
+      expect(result, isA<Failure<void>>());
+      expect((result as Failure<void>).error.message, contains('username'));
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await storage.read(StorageKeys.roles.key), isNull);
+      expect(await storage.read('jwtToken'), isNull);
+      expect(await cache.read('GET_/account'), isNull);
     });
   });
 }

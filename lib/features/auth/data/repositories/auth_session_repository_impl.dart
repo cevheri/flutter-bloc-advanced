@@ -3,6 +3,8 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
@@ -18,16 +20,21 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 /// pre-call value (or deleted if there was none) — across both
 /// backends — before the failure is reported. Callers therefore never
 /// observe a half-written session.
+///
+/// [clear] removes what belongs to the session: both tokens, every [StorageKeys] value of [StorageScope.session]
+/// and the HTTP responses cached in [ICacheStorage]. Device preferences such as the language and theme stay.
 class AuthSessionRepository implements IAuthSessionRepository {
-  AuthSessionRepository({required ISecureStorage secureStorage, AppLocalStorage? storage})
+  AuthSessionRepository({required ISecureStorage secureStorage, AppLocalStorage? storage, ICacheStorage? cacheStorage})
     // ignore: prefer_initializing_formals
     : _secureStorage = secureStorage,
-      _storage = storage ?? AppLocalStorage();
+      _storage = storage ?? AppLocalStorage(),
+      _cacheStorage = cacheStorage ?? SharedPrefsCacheStorage();
 
   static final _log = AppLogger.getLogger('AuthSessionRepository');
 
   final ISecureStorage _secureStorage;
   final AppLocalStorage _storage;
+  final ICacheStorage _cacheStorage;
 
   @override
   Future<Result<void>> persist(AuthSession session) async {
@@ -108,17 +115,27 @@ class AuthSessionRepository implements IAuthSessionRepository {
     } catch (e) {
       errors.add('refresh: $e');
     }
+    // Only the session keys: the device preferences, such as the language and theme, stay for whoever signs in next.
+    final sessionKeys = StorageKeys.values.where((key) => key.scope == StorageScope.session).toList();
+    for (final key in sessionKeys) {
+      try {
+        if (!await _storage.remove(key.key)) errors.add('${key.key}: remove refused');
+      } catch (e) {
+        errors.add('${key.key}: $e');
+      }
+    }
+    // Cached GET responses, such as /account and /admin/users, are this user's data too.
     try {
-      await _storage.clear();
+      await _cacheStorage.clear();
     } catch (e) {
-      errors.add('local: $e');
+      errors.add('cache: $e');
     }
     if (errors.isNotEmpty) {
       final msg = errors.join('; ');
       _log.error('clear: partial failures: {}', [msg]);
       return Failure(UnknownError('Session clear failed: $msg'));
     }
-    _log.info('clear: session wiped from both backends');
+    _log.info('clear: tokens, {} session keys and cached responses removed', [sessionKeys.length]);
     return const Success(null);
   }
 
@@ -169,6 +186,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
         // so they cannot iterate here. Any future field this
         // repository persists must extend the snapshot/restore
         // signature, not silently land in the unreachable branches.
+        // The same holds for the legacy plaintext token keys.
         final prior = switch (key) {
           StorageKeys.username => priorUsername,
           StorageKeys.roles => priorRoles,
@@ -176,6 +194,8 @@ class AuthSessionRepository implements IAuthSessionRepository {
           StorageKeys.theme => null,
           StorageKeys.brightness => null,
           StorageKeys.sidebarCollapsed => null,
+          StorageKeys.legacyJwtToken => null,
+          StorageKeys.legacyRefreshToken => null,
         };
         // AppLocalStorage.save/remove can refuse a mutation by returning
         // false without throwing. Honor that signal so a rollback that

@@ -43,17 +43,48 @@ class AppLocalStorageCached {
 /// stored key, so user data survives refactors safely. Add new entries
 /// by appending — do not change existing [key] strings without a
 /// migration.
+///
+/// Each value also has a [scope], which decides whether ending a session removes it.
 enum StorageKeys {
   roles('roles'),
   language('language'),
   username('username'),
   theme('theme'),
   brightness('brightness'),
-  sidebarCollapsed('sidebarCollapsed');
+  sidebarCollapsed('sidebarCollapsed'),
+
+  /// The JWT in plaintext, where releases before the move to secure storage kept it. `runSessionMigration` moves it
+  /// to secure storage, and it stays here only when the migration cannot remove it.
+  legacyJwtToken('jwtToken'),
+
+  /// The refresh token in plaintext, left behind like [legacyJwtToken].
+  legacyRefreshToken('refreshToken');
 
   const StorageKeys(this.key);
 
   final String key;
+
+  /// Whether this key belongs to the signed-in user or to the device. The switch is exhaustive on purpose: a new key
+  /// does not compile until it is classified, so a logout neither leaves it for the next user nor drops a preference.
+  StorageScope get scope => switch (this) {
+    StorageKeys.roles => StorageScope.session,
+    StorageKeys.language => StorageScope.device,
+    StorageKeys.username => StorageScope.session,
+    StorageKeys.theme => StorageScope.device,
+    StorageKeys.brightness => StorageScope.device,
+    StorageKeys.sidebarCollapsed => StorageScope.device,
+    StorageKeys.legacyJwtToken => StorageScope.session,
+    StorageKeys.legacyRefreshToken => StorageScope.session,
+  };
+}
+
+/// Whom a [StorageKeys] value belongs to.
+enum StorageScope {
+  /// The signed-in user: ending the session removes the value, so the next user of the device never sees it.
+  session,
+
+  /// The device, like the chosen language and theme: the value outlives every session.
+  device,
 }
 
 /// Application Local Storage
@@ -165,19 +196,18 @@ class AppLocalStorage {
     final prefs = await _prefs;
     final ok = await prefs.clear();
     if (!ok) {
-      // Symmetric with [save] / [remove]: a refused mutation surfaces
-      // to callers via exception so Result/rollback paths
-      // (LoginRepository.logout, AuthSessionRepository.clear) treat it
-      // as a failure rather than logging "Cleared all data" and moving
-      // on with stale state.
+      // Symmetric with [save] / [remove]: a refused mutation surfaces to
+      // the caller as an exception instead of logging "Cleared all data"
+      // over stale state. clear() wipes every preference, so only test
+      // setup calls it; ending a session removes the session keys
+      // through [remove] instead.
       _log.error("SharedPreferences clear returned false");
       throw StateError('SharedPreferences clear returned false');
     }
     // Same cache-refresh-failure invariant as [save] / [remove]: the
     // clear() mutation already landed above. A loadCache failure
-    // means the in-memory cache is stale, NOT that the clear failed.
-    // Letting it throw would force callers (logout, AuthSessionRepository
-    // .clear) to surface Failure even though the on-disk wipe succeeded.
+    // means the in-memory cache is stale, NOT that the clear failed,
+    // so it is logged and the wipe still counts as done.
     try {
       await AppLocalStorageCached.loadCache();
     } catch (e) {

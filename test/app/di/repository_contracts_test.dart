@@ -26,7 +26,8 @@ void main() {
   });
 
   test('app dependencies expose auth repository contract', () {
-    expect(dependencies.createAuthRepository(_StubSecureStorage(), TestEnv.apiClient()), isA<IAuthRepository>());
+    final sessionRepository = dependencies.createAuthSessionRepository(_StubSecureStorage());
+    expect(dependencies.createAuthRepository(sessionRepository, TestEnv.apiClient()), isA<IAuthRepository>());
   });
 
   test('app dependencies expose user repository contract', () {
