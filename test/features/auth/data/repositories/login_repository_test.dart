@@ -160,6 +160,24 @@ void main() {
   });
 
   group("Login Repository sendOtp", () {
+    // Regression: the repository logged the body of the send-otp response, so a debug build printed the code when a
+    // backend returns it there.
+    test("Given a response that carries the code when sendOtp then the log leaves it out", () async {
+      final lines = <String>[];
+      void collect(OutputEvent event) => lines.addAll(event.lines);
+      Logger.addOutputListener(collect);
+      addTearDown(() => Logger.removeOutputListener(collect));
+      final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+        ..interceptors.add(_StubInterceptor('{"otp":"493817","expiresIn":300}'));
+
+      final result = await LoginRepository(apiClient: TestEnv.apiClient(dio: dio))
+          .sendOtp(const SendOtpEntity(email: "otp.user@example.com"));
+
+      expect(result, isA<Success<void>>());
+      expect(lines, anyElement(contains('LoginRepository : END:sendOtp successful')));
+      expect(lines, everyElement(isNot(contains('493817'))));
+    });
+
     test("Given valid email when sendOtp then return Success", () async {
       TestEnv.authenticate();
       const request = SendOtpEntity(email: "test@example.com");

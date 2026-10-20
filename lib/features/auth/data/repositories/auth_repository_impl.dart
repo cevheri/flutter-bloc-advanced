@@ -87,7 +87,6 @@ class LoginRepository implements IAuthRepository {
       if ((response.statusCode ?? 0) >= 400) {
         return Failure(ServerError(response.data ?? ''));
       }
-      _log.debug("successful response: {}", [response.data]);
       _log.debug("END:sendOtp successful");
       return const Success(null);
     } on UnauthorizedException catch (e) {
