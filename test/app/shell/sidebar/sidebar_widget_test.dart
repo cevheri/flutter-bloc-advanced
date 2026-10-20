@@ -14,6 +14,7 @@ import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
+import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -171,6 +172,66 @@ void main() {
       expect(routerOf(tester).state.uri.path, ApplicationRoutesConstants.login);
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(routerOf(tester).canPop(), isFalse);
+    });
+  });
+
+  group('SidebarWidget - collapse across launches', () {
+    double sidebarWidth(WidgetTester tester) => tester.getSize(find.byType(SidebarWidget)).width;
+
+    // A relaunch mounts a new App, which reads the stored preferences again. Returns the sidebar's width in the first
+    // frame that shows it.
+    Future<double> relaunchAndMeasureFirstFrame(WidgetTester tester) async {
+      await tester.pumpWidget(const SizedBox());
+      await tester.pumpWidget(const App(language: 'en'));
+      for (var frame = 0; frame < 100 && find.byType(SidebarWidget).evaluate().isEmpty; frame++) {
+        await tester.pump(const Duration(milliseconds: 16));
+      }
+      final width = sidebarWidth(tester);
+      await tester.pumpAndSettle();
+      return width;
+    }
+
+    testWidgets('a sidebar the user collapsed opens collapsed on the next launch', (tester) async {
+      await pumpAdminOnDashboard(tester);
+      await tester.tap(inSidebar('Collapse'));
+      await tester.pumpAndSettle();
+      expect(sidebarWidth(tester), AppBreakpoints.sidebarCollapsed);
+
+      final firstFrameWidth = await relaunchAndMeasureFirstFrame(tester);
+
+      expect(
+        firstFrameWidth,
+        AppBreakpoints.sidebarCollapsed,
+        reason: 'collapsed from the start, not animating closed',
+      );
+      expect(sidebarWidth(tester), AppBreakpoints.sidebarCollapsed);
+    });
+
+    testWidgets('a sidebar the user collapsed and expanded again opens expanded on the next launch', (tester) async {
+      await pumpAdminOnDashboard(tester);
+      await tester.tap(inSidebar('Collapse'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.descendant(of: find.byType(SidebarWidget), matching: find.byIcon(Icons.chevron_right)));
+      await tester.pumpAndSettle();
+      expect(sidebarWidth(tester), AppBreakpoints.sidebarExpanded);
+
+      final firstFrameWidth = await relaunchAndMeasureFirstFrame(tester);
+
+      expect(firstFrameWidth, AppBreakpoints.sidebarExpanded);
+      expect(sidebarWidth(tester), AppBreakpoints.sidebarExpanded);
+    });
+
+    testWidgets('a sidebar the tablet layout collapsed on its own opens expanded on a later desktop launch', (
+      tester,
+    ) async {
+      await pumpAdminOnDashboard(tester, size: const Size(900, 1600));
+      expect(sidebarWidth(tester), AppBreakpoints.sidebarCollapsed);
+
+      tester.view.physicalSize = const Size(1600, 1600);
+      final firstFrameWidth = await relaunchAndMeasureFirstFrame(tester);
+
+      expect(firstFrameWidth, AppBreakpoints.sidebarExpanded);
+      expect(sidebarWidth(tester), AppBreakpoints.sidebarExpanded);
     });
   });
 }

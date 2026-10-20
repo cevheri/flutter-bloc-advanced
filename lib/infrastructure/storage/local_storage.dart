@@ -48,7 +48,8 @@ enum StorageKeys {
   language('language'),
   username('username'),
   theme('theme'),
-  brightness('brightness');
+  brightness('brightness'),
+  sidebarCollapsed('sidebarCollapsed');
 
   const StorageKeys(this.key);
 

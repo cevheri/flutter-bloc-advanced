@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -70,6 +71,29 @@ void main() {
       test('toString contains class name', () {
         const event = ExpandSidebar();
         expect(event.toString(), contains('ExpandSidebar'));
+      });
+    });
+
+    group('RestoreSidebarCollapse', () {
+      test('supports value equality', () {
+        const event1 = RestoreSidebarCollapse();
+        const event2 = RestoreSidebarCollapse();
+        expect(event1, equals(event2));
+      });
+
+      test('props is empty list', () {
+        const event = RestoreSidebarCollapse();
+        expect(event.props, <Object?>[]);
+      });
+
+      test('is a subclass of SidebarEvent', () {
+        const event = RestoreSidebarCollapse();
+        expect(event, isA<SidebarEvent>());
+      });
+
+      test('toString contains class name', () {
+        const event = RestoreSidebarCollapse();
+        expect(event.toString(), contains('RestoreSidebarCollapse'));
       });
     });
 
@@ -252,6 +276,72 @@ void main() {
       act: (bloc) => bloc.add(const ExpandSidebar()),
       expect: () => [isA<SidebarState>().having((s) => s.isCollapsed, 'isCollapsed', false)],
     );
+
+    blocTest<SidebarBloc, SidebarState>(
+      'ToggleSidebarCollapse stores the collapsed state for the next launch',
+      build: () => SidebarBloc(),
+      act: (bloc) => bloc.add(const ToggleSidebarCollapse()),
+      verify: (_) async => expect(await AppLocalStorage().read(StorageKeys.sidebarCollapsed.key), 'true'),
+    );
+
+    blocTest<SidebarBloc, SidebarState>(
+      'ToggleSidebarCollapse stores the expanded state for the next launch',
+      build: () => SidebarBloc(),
+      seed: () => const SidebarState(isCollapsed: true, activeRoute: '/', expandedMenuIds: {}),
+      act: (bloc) => bloc.add(const ToggleSidebarCollapse()),
+      verify: (_) async => expect(await AppLocalStorage().read(StorageKeys.sidebarCollapsed.key), 'false'),
+    );
+
+    // The tablet layout collapses the sidebar on its own, which is not a choice of the user to keep for a later launch.
+    blocTest<SidebarBloc, SidebarState>(
+      'CollapseSidebar stores nothing',
+      build: () => SidebarBloc(),
+      act: (bloc) => bloc.add(const CollapseSidebar()),
+      verify: (_) async => expect(await AppLocalStorage().read(StorageKeys.sidebarCollapsed.key), isNull),
+    );
+
+    blocTest<SidebarBloc, SidebarState>(
+      'ExpandSidebar stores nothing',
+      build: () => SidebarBloc(),
+      seed: () => const SidebarState(isCollapsed: true, activeRoute: '/', expandedMenuIds: {}),
+      act: (bloc) => bloc.add(const ExpandSidebar()),
+      verify: (_) async => expect(await AppLocalStorage().read(StorageKeys.sidebarCollapsed.key), isNull),
+    );
+
+    group('RestoreSidebarCollapse', () {
+      blocTest<SidebarBloc, SidebarState>(
+        'collapses the sidebar when the user collapsed it last',
+        setUp: () => AppLocalStorage().save(StorageKeys.sidebarCollapsed.key, 'true'),
+        build: () => SidebarBloc(),
+        act: (bloc) => bloc.add(const RestoreSidebarCollapse()),
+        expect: () => [isA<SidebarState>().having((s) => s.isCollapsed, 'isCollapsed', true)],
+      );
+
+      blocTest<SidebarBloc, SidebarState>(
+        'keeps the sidebar expanded when the user expanded it last',
+        setUp: () => AppLocalStorage().save(StorageKeys.sidebarCollapsed.key, 'false'),
+        build: () => SidebarBloc(),
+        act: (bloc) => bloc.add(const RestoreSidebarCollapse()),
+        expect: () => [isA<SidebarState>().having((s) => s.isCollapsed, 'isCollapsed', false)],
+      );
+
+      blocTest<SidebarBloc, SidebarState>(
+        'keeps the sidebar expanded when the user never collapsed it',
+        build: () => SidebarBloc(),
+        act: (bloc) => bloc.add(const RestoreSidebarCollapse()),
+        expect: () => <SidebarState>[],
+        verify: (bloc) => expect(bloc.state.isCollapsed, isFalse),
+      );
+
+      blocTest<SidebarBloc, SidebarState>(
+        'raises an error for a stored value that is neither true nor false',
+        setUp: () => AppLocalStorage().save(StorageKeys.sidebarCollapsed.key, 'collapsed'),
+        build: () => SidebarBloc(),
+        act: (bloc) => bloc.add(const RestoreSidebarCollapse()),
+        expect: () => <SidebarState>[],
+        errors: () => [isA<FormatException>()],
+      );
+    });
 
     blocTest<SidebarBloc, SidebarState>(
       'SetActiveRoute updates activeRoute',

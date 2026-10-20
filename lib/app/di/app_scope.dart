@@ -124,7 +124,9 @@ class AppScope extends StatelessWidget {
               menuRepository: context.read<MenuRepository>(),
             ),
           ),
-          BlocProvider<SidebarBloc>(create: (_) => SidebarBloc()),
+          // Created with the app instead of on first use, so the stored collapse state is restored before the shell
+          // first shows the sidebar, which would otherwise open expanded and then animate closed.
+          BlocProvider<SidebarBloc>(lazy: false, create: (_) => SidebarBloc()..add(const RestoreSidebarCollapse())),
           BlocProvider<SystemDashboardCubit>(
             create: (context) => SystemDashboardCubit(
               connectivityService: ConnectivityService.instance,
