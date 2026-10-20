@@ -73,6 +73,8 @@ if fvm flutter build web \
     if [ "$demo_build" = true ]; then
         print_status "Filling the demo values into build/web..."
         scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
+        # The llms.txt files describe the template project itself, so only this repository publishes them.
+        cp .github/pages/llms.txt .github/pages/llms-full.txt build/web/
     fi
     scripts/check_web_placeholders.sh build/web
 

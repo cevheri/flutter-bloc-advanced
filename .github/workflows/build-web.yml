@@ -47,9 +47,12 @@ jobs:
 
       - name: Fill demo values
         # web/ keeps the template placeholders. Only this repository fills them with the hosted demo's values, so a
-        # copy of the template never publishes the demo's name, URLs, author or security contact.
+        # copy of the template never publishes the demo's name, URLs, author or security contact. The llms.txt files
+        # describe the template project itself, so only this repository publishes them too.
         if: github.repository == 'cevheri/flutter-bloc-advanced'
-        run: scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
+        run: |
+          scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
+          cp .github/pages/llms.txt .github/pages/llms-full.txt build/web/
 
       - name: Check for template placeholders
         # Runs in copies of the template too: until web/ and the build have their own values, the deploy fails and
@@ -59,9 +62,11 @@ jobs:
       - name: Verify web assets
         run: |
           echo "Checking required web assets..."
+          files=(robots.txt sitemap.xml 404.html browserconfig.xml .nojekyll .well-known/security.txt humans.txt)
+          # Only this repository publishes the llms.txt files (see "Fill demo values").
+          if [ "$GITHUB_REPOSITORY" = cevheri/flutter-bloc-advanced ]; then files+=(llms.txt llms-full.txt); fi
           missing=0
-          for f in robots.txt sitemap.xml 404.html browserconfig.xml .nojekyll .well-known/security.txt \
-            llms.txt llms-full.txt humans.txt; do
+          for f in "${files[@]}"; do
             if test -f "build/web/$f"; then echo "OK: $f"; else echo "::error::$f missing"; missing=1; fi
           done
           exit $missing
