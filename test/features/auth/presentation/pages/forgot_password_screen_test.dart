@@ -41,7 +41,7 @@ void main() {
     GlobalCupertinoLocalizations.delegate,
   ];
 
-  Widget getWidget() {
+  Widget getWidget({Locale locale = const Locale('en')}) {
     final router = GoRouter(
       routes: [
         GoRoute(
@@ -58,6 +58,7 @@ void main() {
     );
     return withUnsavedChangesRegistry(
       MaterialApp.router(
+        locale: locale,
         localizationsDelegates: locales,
         supportedLocales: S.delegate.supportedLocales,
         routerConfig: router,
@@ -246,6 +247,17 @@ void main() {
       //Then:
       expect(find.byType(ForgotPasswordScreen), findsOneWidget);
       verifyNever(() => forgotPasswordBloc.add(any()));
+    });
+  });
+  group('ForgotPasswordScreen - Turkish', () {
+    testWidgets('shows the description in Turkish', (tester) async {
+      await tester.pumpWidget(getWidget(locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('E-posta adresinizi girin, şifrenizi sıfırlamanız için size bir bağlantı gönderelim.'),
+        findsOneWidget,
+      );
     });
   });
 }

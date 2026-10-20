@@ -410,11 +410,6 @@ class S {
     return Intl.message('OTP Code', name: 'otp_code', desc: '', args: []);
   }
 
-  /// `OTP sent to`
-  String get otp_sent_to {
-    return Intl.message('OTP sent to', name: 'otp_sent_to', desc: '', args: []);
-  }
-
   /// `Theme`
   String get theme {
     return Intl.message('Theme', name: 'theme', desc: '', args: []);
@@ -813,6 +808,151 @@ class S {
   /// `Update password`
   String get command_palette_change_password_description {
     return Intl.message('Update password', name: 'command_palette_change_password_description', desc: '', args: []);
+  }
+
+  /// `Scale from prototype\nto production.`
+  String get login_brand_headline {
+    return Intl.message('Scale from prototype\nto production.', name: 'login_brand_headline', desc: '', args: []);
+  }
+
+  /// `Authentication, role-based access, user management,\ntheming, and multi-environment support in one robust starter.`
+  String get login_brand_description {
+    return Intl.message(
+      'Authentication, role-based access, user management,\ntheming, and multi-environment support in one robust starter.',
+      name: 'login_brand_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Platforms`
+  String get login_brand_stat_platforms {
+    return Intl.message('Platforms', name: 'login_brand_stat_platforms', desc: '', args: []);
+  }
+
+  /// `Core Layers`
+  String get login_brand_stat_layers {
+    return Intl.message('Core Layers', name: 'login_brand_stat_layers', desc: '', args: []);
+  }
+
+  /// `BLoC Ready`
+  String get login_brand_stat_bloc_ready {
+    return Intl.message('BLoC Ready', name: 'login_brand_stat_bloc_ready', desc: '', args: []);
+  }
+
+  /// `Authentication & Access Control`
+  String get login_feature_auth_title {
+    return Intl.message('Authentication & Access Control', name: 'login_feature_auth_title', desc: '', args: []);
+  }
+
+  /// `Password and OTP login flows with role-based routing guards.`
+  String get login_feature_auth_description {
+    return Intl.message(
+      'Password and OTP login flows with role-based routing guards.',
+      name: 'login_feature_auth_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Clean Architecture`
+  String get login_feature_architecture_title {
+    return Intl.message('Clean Architecture', name: 'login_feature_architecture_title', desc: '', args: []);
+  }
+
+  /// `BLoC + Repository pattern with clear separation of concerns.`
+  String get login_feature_architecture_description {
+    return Intl.message(
+      'BLoC + Repository pattern with clear separation of concerns.',
+      name: 'login_feature_architecture_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Mock to Real API`
+  String get login_feature_mock_api_title {
+    return Intl.message('Mock to Real API', name: 'login_feature_mock_api_title', desc: '', args: []);
+  }
+
+  /// `Develop locally with mock data and switch to production endpoints.`
+  String get login_feature_mock_api_description {
+    return Intl.message(
+      'Develop locally with mock data and switch to production endpoints.',
+      name: 'login_feature_mock_api_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Welcome back`
+  String get login_welcome_title {
+    return Intl.message('Welcome back', name: 'login_welcome_title', desc: '', args: []);
+  }
+
+  /// `Enter your credentials to access your account`
+  String get login_welcome_subtitle {
+    return Intl.message(
+      'Enter your credentials to access your account',
+      name: 'login_welcome_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `or`
+  String get login_or {
+    return Intl.message('or', name: 'login_or', desc: '', args: []);
+  }
+
+  /// `Don't have an account? `
+  String get login_no_account {
+    return Intl.message('Don\'t have an account? ', name: 'login_no_account', desc: '', args: []);
+  }
+
+  /// `Switch to light mode`
+  String get login_switch_to_light_mode {
+    return Intl.message('Switch to light mode', name: 'login_switch_to_light_mode', desc: '', args: []);
+  }
+
+  /// `Switch to dark mode`
+  String get login_switch_to_dark_mode {
+    return Intl.message('Switch to dark mode', name: 'login_switch_to_dark_mode', desc: '', args: []);
+  }
+
+  /// `Enter your email to receive OTP code`
+  String get login_otp_email_instructions {
+    return Intl.message(
+      'Enter your email to receive OTP code',
+      name: 'login_otp_email_instructions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `OTP sent to {email}`
+  String otp_sent_to_email(String email) {
+    return Intl.message('OTP sent to $email', name: 'otp_sent_to_email', desc: '', args: [email]);
+  }
+
+  /// `Open Source`
+  String get community_open_source {
+    return Intl.message('Open Source', name: 'community_open_source', desc: '', args: []);
+  }
+
+  /// `Create your account`
+  String get register_subtitle {
+    return Intl.message('Create your account', name: 'register_subtitle', desc: '', args: []);
+  }
+
+  /// `Enter your email address and we'll send you a link to reset your password.`
+  String get forgot_password_description {
+    return Intl.message(
+      'Enter your email address and we\'ll send you a link to reset your password.',
+      name: 'forgot_password_description',
+      desc: '',
+      args: [],
+    );
   }
 }
 

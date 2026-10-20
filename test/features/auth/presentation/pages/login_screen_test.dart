@@ -93,4 +93,40 @@ void main() {
       });
     }
   });
+
+  group('LoginScreen - Turkish', () {
+    testWidgets('shows the form and the brand panel in Turkish', (tester) async {
+      setViewport(tester, const Size(1440, 900));
+      await pumpLogin(tester, language: 'tr');
+
+      for (final text in [
+        'Tekrar hoş geldiniz',
+        'Hesabınıza erişmek için bilgilerinizi girin',
+        'veya',
+        'Hesabınız yok mu? ',
+        'Prototipten\nüretime ölçeklenin.',
+        'Platform',
+        'Temel Katman',
+        '%100',
+        'BLoC Hazır',
+        'Kimlik Doğrulama ve Erişim Kontrolü',
+        'Temiz Mimari',
+        "Sahte Veriden Gerçek API'ye",
+      ]) {
+        expect(find.text(text), findsOneWidget, reason: text);
+      }
+      expect(find.byTooltip('Koyu temaya geç'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('shows the OTP email instructions in Turkish', (tester) async {
+      setViewport(tester, const Size(390, 844));
+      await pumpLogin(tester, language: 'tr');
+
+      await tester.tap(find.byKey(const Key('loginButtonOtpKey')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('OTP kodunu almak için e-posta adresinizi girin'), findsOneWidget);
+    });
+  });
 }

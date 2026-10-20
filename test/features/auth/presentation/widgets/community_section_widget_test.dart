@@ -36,8 +36,9 @@ const _phone = Size(390, 844);
 const _desktop = Size(1600, 1000);
 
 void main() {
-  Widget buildWidget({required bool isDesktop, CommunityUrls urls = _allUrls}) {
+  Widget buildWidget({required bool isDesktop, CommunityUrls urls = _allUrls, Locale locale = const Locale('en')}) {
     return MaterialApp(
+      locale: locale,
       localizationsDelegates: [
         S.delegate,
         GlobalMaterialLocalizations.delegate,
@@ -273,5 +274,13 @@ void main() {
         expect(calls.launchedUrls, [_docs]);
       });
     }
+  });
+  group('CommunitySectionWidget - Turkish', () {
+    testWidgets('renders the Open Source pill badge in Turkish', (tester) async {
+      await tester.pumpWidget(buildWidget(isDesktop: true, locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Açık Kaynak'), findsOneWidget);
+    });
   });
 }

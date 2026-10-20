@@ -24,14 +24,16 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(currentVersion, minimumVersion) => "Current: ${currentVersion}  •  Required: ${minimumVersion}";
 
-  static String m2(max) => "Password cannot be more than ${max} characters long";
+  static String m2(email) => "OTP sent to ${email}";
 
-  static String m3(min) => "Password must be at least ${min} characters long";
+  static String m3(max) => "Password cannot be more than ${max} characters long";
 
-  static String m4(translate) =>
+  static String m4(min) => "Password must be at least ${min} characters long";
+
+  static String m5(translate) =>
       "${Intl.select(translate, {'account': 'Account', 'userManagement': 'User Management', 'settings': 'Settings', 'logout': 'Logout', 'info': 'Info', 'language': 'Language', 'theme': 'Theme', 'new_user': 'New', 'list_user': 'List', 'other': 'Other'})}";
 
-  static String m5(error) => "Save failed: ${error}";
+  static String m6(error) => "Save failed: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -57,6 +59,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "community_discussions": MessageLookupByLibrary.simpleMessage("Discussions"),
     "community_docs": MessageLookupByLibrary.simpleMessage("Documentation"),
     "community_issue": MessageLookupByLibrary.simpleMessage("Open an Issue"),
+    "community_open_source": MessageLookupByLibrary.simpleMessage("Open Source"),
     "community_sponsor": MessageLookupByLibrary.simpleMessage("Sponsor"),
     "community_star": MessageLookupByLibrary.simpleMessage("Star & Fork"),
     "community_subtitle": MessageLookupByLibrary.simpleMessage(
@@ -113,6 +116,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "force_update_title": MessageLookupByLibrary.simpleMessage("Update Required"),
     "force_update_versions": m1,
+    "forgot_password_description": MessageLookupByLibrary.simpleMessage(
+      "Enter your email address and we\'ll send you a link to reset your password.",
+    ),
     "guest": MessageLookupByLibrary.simpleMessage("Guest"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Help & Resources"),
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage("Visit our website for documentation and guides"),
@@ -126,9 +132,35 @@ class MessageLookup extends MessageLookupByLibrary {
     "list_user": MessageLookupByLibrary.simpleMessage("List User"),
     "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
     "login": MessageLookupByLibrary.simpleMessage("Login"),
+    "login_brand_description": MessageLookupByLibrary.simpleMessage(
+      "Authentication, role-based access, user management,\ntheming, and multi-environment support in one robust starter.",
+    ),
+    "login_brand_headline": MessageLookupByLibrary.simpleMessage("Scale from prototype\nto production."),
+    "login_brand_stat_bloc_ready": MessageLookupByLibrary.simpleMessage("BLoC Ready"),
+    "login_brand_stat_layers": MessageLookupByLibrary.simpleMessage("Core Layers"),
+    "login_brand_stat_platforms": MessageLookupByLibrary.simpleMessage("Platforms"),
     "login_button": MessageLookupByLibrary.simpleMessage("Login"),
+    "login_feature_architecture_description": MessageLookupByLibrary.simpleMessage(
+      "BLoC + Repository pattern with clear separation of concerns.",
+    ),
+    "login_feature_architecture_title": MessageLookupByLibrary.simpleMessage("Clean Architecture"),
+    "login_feature_auth_description": MessageLookupByLibrary.simpleMessage(
+      "Password and OTP login flows with role-based routing guards.",
+    ),
+    "login_feature_auth_title": MessageLookupByLibrary.simpleMessage("Authentication & Access Control"),
+    "login_feature_mock_api_description": MessageLookupByLibrary.simpleMessage(
+      "Develop locally with mock data and switch to production endpoints.",
+    ),
+    "login_feature_mock_api_title": MessageLookupByLibrary.simpleMessage("Mock to Real API"),
+    "login_no_account": MessageLookupByLibrary.simpleMessage("Don\'t have an account? "),
+    "login_or": MessageLookupByLibrary.simpleMessage("or"),
+    "login_otp_email_instructions": MessageLookupByLibrary.simpleMessage("Enter your email to receive OTP code"),
     "login_password": MessageLookupByLibrary.simpleMessage("Password"),
+    "login_switch_to_dark_mode": MessageLookupByLibrary.simpleMessage("Switch to dark mode"),
+    "login_switch_to_light_mode": MessageLookupByLibrary.simpleMessage("Switch to light mode"),
     "login_user_name": MessageLookupByLibrary.simpleMessage("Username"),
+    "login_welcome_subtitle": MessageLookupByLibrary.simpleMessage("Enter your credentials to access your account"),
+    "login_welcome_title": MessageLookupByLibrary.simpleMessage("Welcome back"),
     "login_with_email": MessageLookupByLibrary.simpleMessage("Login with Email"),
     "logout": MessageLookupByLibrary.simpleMessage("Logout"),
     "logout_stored_data_left": MessageLookupByLibrary.simpleMessage(
@@ -151,13 +183,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "only_numbers": MessageLookupByLibrary.simpleMessage("Only numbers are allowed"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Code"),
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP must be 6 characters long"),
-    "otp_sent_to": MessageLookupByLibrary.simpleMessage("OTP sent to"),
+    "otp_sent_to_email": m2,
     "password_forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
-    "password_max_length": m2,
-    "password_min_length": m3,
+    "password_max_length": m3,
+    "password_min_length": m4,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Quick Actions"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "register": MessageLookupByLibrary.simpleMessage("Register"),
+    "register_subtitle": MessageLookupByLibrary.simpleMessage("Create your account"),
     "required_field": MessageLookupByLibrary.simpleMessage("Required Field"),
     "required_range": MessageLookupByLibrary.simpleMessage("Range is required"),
     "resend_otp_code": MessageLookupByLibrary.simpleMessage("Resend OTP Code"),
@@ -171,14 +204,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Dark"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Light"),
-    "translate_menu_title": m4,
+    "translate_menu_title": m5,
     "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
     ),
     "user_delete_failed": MessageLookupByLibrary.simpleMessage("Could not delete the user"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
-    "user_extended_info_save_failed": m5,
+    "user_extended_info_save_failed": m6,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Could not load the users"),

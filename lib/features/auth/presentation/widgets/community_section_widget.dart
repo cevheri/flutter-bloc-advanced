@@ -159,7 +159,7 @@ class _DesktopCommunitySection extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 12),
-            _openSourcePill(),
+            _openSourcePill(l10n),
           ],
         ),
         const SizedBox(height: 16),
@@ -172,7 +172,7 @@ class _DesktopCommunitySection extends StatelessWidget {
     );
   }
 
-  Widget _openSourcePill() {
+  Widget _openSourcePill(S l10n) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
       decoration: BoxDecoration(
@@ -180,14 +180,19 @@ class _DesktopCommunitySection extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
       ),
-      child: const Row(
+      child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.lock_open_rounded, size: 13, color: Color(0xFF6EE7B7)),
-          SizedBox(width: 6),
+          const Icon(Icons.lock_open_rounded, size: 13, color: Color(0xFF6EE7B7)),
+          const SizedBox(width: 6),
           Text(
-            'Open Source',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6EE7B7), letterSpacing: -0.2),
+            l10n.community_open_source,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Color(0xFF6EE7B7),
+              letterSpacing: -0.2,
+            ),
           ),
         ],
       ),

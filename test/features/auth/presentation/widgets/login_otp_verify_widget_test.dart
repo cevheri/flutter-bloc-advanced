@@ -99,7 +99,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byType(ResponsiveFormBuilder), findsOneWidget);
-      expect(find.text("${S.current.otp_sent_to} test@example.com"), findsOneWidget);
+      expect(find.text(S.current.otp_sent_to_email('test@example.com')), findsOneWidget);
 
       expect(find.byType(FormBuilderTextField), findsOneWidget);
       expect(find.text(S.current.otp_code), findsOneWidget);
@@ -246,6 +246,32 @@ void main() {
       await tester.pumpAndSettle();
 
       verify(() => mockLoginBloc.add(const SendOtpRequested(email: "test@example.com"))).called(1);
+    });
+  });
+  group('OtpVerifyScreen - Turkish', () {
+    testWidgets('says where the code was sent in Turkish', (tester) async {
+      await tester.pumpWidget(
+        MultiBlocProvider(
+          providers: [
+            BlocProvider<LoginBloc>.value(value: mockLoginBloc),
+            RepositoryProvider<ProjectLinks>.value(value: const ProjectLinks()),
+          ],
+          child: MaterialApp.router(
+            localizationsDelegates: const [
+              S.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: S.delegate.supportedLocales,
+            locale: const Locale('tr'),
+            routerConfig: mockGoRouter,
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('OTP kodu test@example.com adresine gönderildi'), findsOneWidget);
     });
   });
 }

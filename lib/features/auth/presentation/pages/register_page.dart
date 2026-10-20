@@ -49,7 +49,7 @@ class RegisterScreen extends StatelessWidget {
           onChanged: () => UnsavedChangesScope.formChanged(context),
           children: [
             Text(
-              'Create your account',
+              S.of(context).register_subtitle,
               style: Theme.of(context).textTheme.bodyMedium
                   ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
@@ -77,6 +77,7 @@ class RegisterScreen extends StatelessWidget {
     final isLoading = state is RegisterLoadingState;
     return ResponsiveSubmitButton(
       key: const Key('registerSubmitButtonKey'),
+      buttonText: S.of(context).save,
       onPressed: () => isLoading ? null : _onSubmit(context, state),
       isLoading: isLoading,
     );

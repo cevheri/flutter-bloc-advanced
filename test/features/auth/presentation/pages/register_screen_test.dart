@@ -59,10 +59,11 @@ void main() {
     when(() => mockAccountBloc.state).thenReturn(const AccountState());
   });
 
-  Widget createWidgetUnderTest() {
+  Widget createWidgetUnderTest({Locale locale = const Locale('en')}) {
     return withUnsavedChangesRegistry(
       MaterialApp.router(
         routerConfig: router,
+        locale: locale,
         localizationsDelegates: const [
           S.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -262,6 +263,15 @@ void main() {
       verify(() => mockRegisterBloc.add(const RegisterFormSubmitted(data: testUser))).called(1);
       // Clean up
       await controller.close();
+    });
+  });
+  group('RegisterScreen - Turkish', () {
+    testWidgets('shows the subtitle and the save button in Turkish', (tester) async {
+      await tester.pumpWidget(createWidgetUnderTest(locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Hesabınızı oluşturun'), findsOneWidget);
+      expect(find.descendant(of: find.byType(ResponsiveSubmitButton), matching: find.text('Kaydet')), findsOneWidget);
     });
   });
 }

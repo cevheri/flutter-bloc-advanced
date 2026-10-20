@@ -15,6 +15,7 @@ import 'package:flutter_bloc_advance/core/security/safe_redirect.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart' show NumberFormat;
 import 'package:form_builder_validators/form_builder_validators.dart';
 
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
@@ -209,9 +210,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _heroText() {
-    return const Text(
-      'Scale from prototype\nto production.',
-      style: TextStyle(
+    return Text(
+      S.of(context).login_brand_headline,
+      style: const TextStyle(
         fontSize: 44,
         fontWeight: FontWeight.w700,
         color: Colors.white,
@@ -223,22 +224,24 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   Widget _heroSubtext() {
     return Text(
-      'Authentication, role-based access, user management,\ntheming, and multi-environment support in one robust starter.',
+      S.of(context).login_brand_description,
       style: TextStyle(fontSize: 15, color: Colors.white.withValues(alpha: 0.55), height: 1.65),
     );
   }
 
   Widget _statsRow() {
+    final l10n = S.of(context);
+    final percent = NumberFormat.percentPattern(Localizations.localeOf(context).toString()).format(1);
     // Wraps instead of overflowing when the brand panel is narrow or the text is scaled up.
     return Wrap(
       crossAxisAlignment: WrapCrossAlignment.center,
       runSpacing: 8,
       children: [
-        _statItem('7+', 'Platforms'),
+        _statItem('7+', l10n.login_brand_stat_platforms),
         _statDot(),
-        _statItem('5', 'Core Layers'),
+        _statItem('5', l10n.login_brand_stat_layers),
         _statDot(),
-        _statItem('100%', 'BLoC Ready'),
+        _statItem(percent, l10n.login_brand_stat_bloc_ready),
       ],
     );
   }
@@ -269,24 +272,21 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _featureCards() {
+    final l10n = S.of(context);
     return Column(
       children: [
-        _glassFeatureCard(
-          Icons.shield_outlined,
-          'Authentication & Access Control',
-          'Password and OTP login flows with role-based routing guards.',
-        ),
+        _glassFeatureCard(Icons.shield_outlined, l10n.login_feature_auth_title, l10n.login_feature_auth_description),
         const SizedBox(height: 10),
         _glassFeatureCard(
           Icons.layers_outlined,
-          'Clean Architecture',
-          'BLoC + Repository pattern with clear separation of concerns.',
+          l10n.login_feature_architecture_title,
+          l10n.login_feature_architecture_description,
         ),
         const SizedBox(height: 10),
         _glassFeatureCard(
           Icons.swap_horiz_outlined,
-          'Mock to Real API',
-          'Develop locally with mock data and switch to production endpoints.',
+          l10n.login_feature_mock_api_title,
+          l10n.login_feature_mock_api_description,
         ),
       ],
     );
@@ -395,14 +395,11 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Welcome back',
+          S.of(context).login_welcome_title,
           style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.8, color: cs.onSurface),
         ),
         const SizedBox(height: 8),
-        Text(
-          'Enter your credentials to access your account',
-          style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-        ),
+        Text(S.of(context).login_welcome_subtitle, style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
       ],
     );
   }
@@ -467,7 +464,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         Expanded(child: Divider(color: cs.outlineVariant)),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Text('or', style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
+          child: Text(S.of(context).login_or, style: TextStyle(fontSize: 13, color: cs.onSurfaceVariant)),
         ),
         Expanded(child: Divider(color: cs.outlineVariant)),
       ],
@@ -481,7 +478,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
         alignment: WrapAlignment.center,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: [
-          Text("Don't have an account? ", style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant)),
+          Text(S.of(context).login_no_account, style: TextStyle(fontSize: 14, color: cs.onSurfaceVariant)),
           TextButton(
             key: loginButtonRegisterKey,
             onPressed: () => context.push(ApplicationRoutesConstants.register),
@@ -518,7 +515,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     if (onToggle == null) return badge;
 
     return Tooltip(
-      message: isDark ? 'Switch to light mode' : 'Switch to dark mode',
+      message: isDark ? S.of(context).login_switch_to_light_mode : S.of(context).login_switch_to_dark_mode,
       child: Material(
         color: Colors.transparent,
         child: InkWell(onTap: onToggle, borderRadius: radius, child: badge),
@@ -709,7 +706,7 @@ class OtpEmailScreen extends StatelessWidget {
           formKey: _formKey,
           children: [
             Text(
-              'Enter your email to receive OTP code',
+              S.of(context).login_otp_email_instructions,
               style: Theme.of(context).textTheme.bodyMedium
                   ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
@@ -781,7 +778,7 @@ class OtpVerifyScreen extends StatelessWidget {
         child: ResponsiveFormBuilder(
           formKey: _formKey,
           children: [
-            Text('${S.of(context).otp_sent_to} $email'),
+            Text(S.of(context).otp_sent_to_email(email)),
             _otpField(context),
             _submitVerifyButton(context),
             _resendButton(context),

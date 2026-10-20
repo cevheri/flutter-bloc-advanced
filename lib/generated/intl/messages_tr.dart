@@ -24,14 +24,16 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
 
-  static String m2(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
+  static String m2(email) => "OTP kodu ${email} adresine gönderildi";
 
-  static String m3(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+  static String m3(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
 
-  static String m4(translate) =>
+  static String m4(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+
+  static String m5(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
-  static String m5(error) => "Kaydedilemedi: ${error}";
+  static String m6(error) => "Kaydedilemedi: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -57,6 +59,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "community_discussions": MessageLookupByLibrary.simpleMessage("Tartışmalar"),
     "community_docs": MessageLookupByLibrary.simpleMessage("Dokümantasyon"),
     "community_issue": MessageLookupByLibrary.simpleMessage("Sorun Bildir"),
+    "community_open_source": MessageLookupByLibrary.simpleMessage("Açık Kaynak"),
     "community_sponsor": MessageLookupByLibrary.simpleMessage("Sponsor Ol"),
     "community_star": MessageLookupByLibrary.simpleMessage("Yıldız & Fork"),
     "community_subtitle": MessageLookupByLibrary.simpleMessage(
@@ -109,6 +112,9 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "force_update_title": MessageLookupByLibrary.simpleMessage("Güncelleme Gerekli"),
     "force_update_versions": m1,
+    "forgot_password_description": MessageLookupByLibrary.simpleMessage(
+      "E-posta adresinizi girin, şifrenizi sıfırlamanız için size bir bağlantı gönderelim.",
+    ),
     "guest": MessageLookupByLibrary.simpleMessage("Kullanıcı"),
     "help_resources": MessageLookupByLibrary.simpleMessage("Yardım ve Kaynaklar"),
     "help_resources_subtitle": MessageLookupByLibrary.simpleMessage(
@@ -124,9 +130,37 @@ class MessageLookup extends MessageLookupByLibrary {
     "list_user": MessageLookupByLibrary.simpleMessage("Kullanıcılar"),
     "loading": MessageLookupByLibrary.simpleMessage("Yükleniyor..."),
     "login": MessageLookupByLibrary.simpleMessage("Kullanıcı Adı"),
+    "login_brand_description": MessageLookupByLibrary.simpleMessage(
+      "Kimlik doğrulama, rol tabanlı erişim, kullanıcı yönetimi,\ntema ve çoklu ortam desteği tek bir sağlam başlangıç projesinde.",
+    ),
+    "login_brand_headline": MessageLookupByLibrary.simpleMessage("Prototipten\nüretime ölçeklenin."),
+    "login_brand_stat_bloc_ready": MessageLookupByLibrary.simpleMessage("BLoC Hazır"),
+    "login_brand_stat_layers": MessageLookupByLibrary.simpleMessage("Temel Katman"),
+    "login_brand_stat_platforms": MessageLookupByLibrary.simpleMessage("Platform"),
     "login_button": MessageLookupByLibrary.simpleMessage("Giriş Yap"),
+    "login_feature_architecture_description": MessageLookupByLibrary.simpleMessage(
+      "Sorumlulukları net biçimde ayıran BLoC + Repository deseni.",
+    ),
+    "login_feature_architecture_title": MessageLookupByLibrary.simpleMessage("Temiz Mimari"),
+    "login_feature_auth_description": MessageLookupByLibrary.simpleMessage(
+      "Rol tabanlı yönlendirme korumalarıyla şifre ve OTP ile giriş akışları.",
+    ),
+    "login_feature_auth_title": MessageLookupByLibrary.simpleMessage("Kimlik Doğrulama ve Erişim Kontrolü"),
+    "login_feature_mock_api_description": MessageLookupByLibrary.simpleMessage(
+      "Yerelde sahte verilerle geliştirin, ardından üretim uç noktalarına geçin.",
+    ),
+    "login_feature_mock_api_title": MessageLookupByLibrary.simpleMessage("Sahte Veriden Gerçek API\'ye"),
+    "login_no_account": MessageLookupByLibrary.simpleMessage("Hesabınız yok mu? "),
+    "login_or": MessageLookupByLibrary.simpleMessage("veya"),
+    "login_otp_email_instructions": MessageLookupByLibrary.simpleMessage(
+      "OTP kodunu almak için e-posta adresinizi girin",
+    ),
     "login_password": MessageLookupByLibrary.simpleMessage("Şifre"),
+    "login_switch_to_dark_mode": MessageLookupByLibrary.simpleMessage("Koyu temaya geç"),
+    "login_switch_to_light_mode": MessageLookupByLibrary.simpleMessage("Açık temaya geç"),
     "login_user_name": MessageLookupByLibrary.simpleMessage("Kullanıcı adı"),
+    "login_welcome_subtitle": MessageLookupByLibrary.simpleMessage("Hesabınıza erişmek için bilgilerinizi girin"),
+    "login_welcome_title": MessageLookupByLibrary.simpleMessage("Tekrar hoş geldiniz"),
     "login_with_email": MessageLookupByLibrary.simpleMessage("E-posta ile Giriş"),
     "logout": MessageLookupByLibrary.simpleMessage("Çıkış Yap"),
     "logout_stored_data_left": MessageLookupByLibrary.simpleMessage(
@@ -149,13 +183,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "only_numbers": MessageLookupByLibrary.simpleMessage("Sadece sayılar kullanılabilir"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu"),
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP 6 haneli olmalıdır"),
-    "otp_sent_to": MessageLookupByLibrary.simpleMessage("OTP kodu gönderildi"),
+    "otp_sent_to_email": m2,
     "password_forgot": MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
-    "password_max_length": m2,
-    "password_min_length": m3,
+    "password_max_length": m3,
+    "password_min_length": m4,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Hızlı İşlemler"),
     "refresh": MessageLookupByLibrary.simpleMessage("Yenile"),
     "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
+    "register_subtitle": MessageLookupByLibrary.simpleMessage("Hesabınızı oluşturun"),
     "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan"),
     "required_range": MessageLookupByLibrary.simpleMessage("Aralık gereklidir"),
     "resend_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Tekrar Gönder"),
@@ -169,14 +204,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme": MessageLookupByLibrary.simpleMessage("Tema"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Koyu"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Açık"),
-    "translate_menu_title": m4,
+    "translate_menu_title": m5,
     "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
     ),
     "user_delete_failed": MessageLookupByLibrary.simpleMessage("Kullanıcı silinemedi"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
-    "user_extended_info_save_failed": m5,
+    "user_extended_info_save_failed": m6,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Kullanıcılar yüklenemedi"),
