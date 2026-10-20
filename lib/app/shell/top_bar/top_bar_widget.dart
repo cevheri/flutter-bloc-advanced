@@ -38,10 +38,17 @@ class TopBarWidget extends StatelessWidget {
             ),
           if (title != null) ...[
             const SizedBox(width: 8),
-            Text(title!, style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500)),
+            // Takes the width that the menu button and the user menu leave, and is shortened when that is too little.
+            Expanded(
+              child: Text(
+                title!,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ] else
             const Expanded(child: BreadcrumbWidget()),
-          if (title != null) const Spacer(),
           _buildUserMenu(context),
         ],
       ),
@@ -64,7 +71,17 @@ class TopBarWidget extends StatelessWidget {
             children: [
               AppAvatar(initials: initials, size: AppComponentSize.sm),
               const SizedBox(width: 8),
-              Text(name, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+              // Beside a page title, which only the phone layout shows, a long name is shortened so that it leaves
+              // room for the title. Beside the breadcrumb it is shown in full.
+              ConstrainedBox(
+                constraints: BoxConstraints(maxWidth: title != null ? 120 : double.infinity),
+                child: Text(
+                  name,
+                  style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               Icon(Icons.chevron_right, size: 14, color: cs.onSurfaceVariant),
             ],
           ),

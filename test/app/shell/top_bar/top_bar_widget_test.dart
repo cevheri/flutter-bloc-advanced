@@ -1,16 +1,22 @@
 @Tags(['widget'])
 library;
 
+import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/app/shell/top_bar/top_bar_widget.dart';
+import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/presentation/pages/account_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../mocks/mock_classes.dart';
 import '../../../support/test_env.dart';
 
 void main() {
@@ -18,9 +24,9 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
 
   // The real app, signed in, on the dashboard, after the mock API has answered.
-  Future<void> pumpSignedInOnDashboard(WidgetTester tester) async {
+  Future<void> pumpSignedInOnDashboard(WidgetTester tester, {Size size = const Size(1600, 1600)}) async {
     addTearDown(tester.view.reset);
-    tester.view.physicalSize = const Size(1600, 1600);
+    tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
     TestEnv.authenticate();
 
@@ -63,6 +69,91 @@ void main() {
       expect(routerOf(tester).state.uri.path, ApplicationRoutesConstants.login);
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(routerOf(tester).canPop(), isFalse);
+    });
+  });
+
+  group('TopBarWidget - phone width', () {
+    Finder userMenu() => find.descendant(of: find.byType(TopBarWidget), matching: find.byType(PopupMenuButton<String>));
+
+    // Small phones, narrowest first. At 320 px the bar overflowed by 4.3 px with the dashboard title and the mock
+    // account's name.
+    for (final size in const [Size(320, 568), Size(360, 640), Size(375, 667)]) {
+      testWidgets('the signed-in top bar fits a ${size.width.toInt()}x${size.height.toInt()} phone', (tester) async {
+        await pumpSignedInOnDashboard(tester, size: size);
+
+        expect(tester.takeException(), isNull);
+        expect(tester.getRect(userMenu()).right, lessThanOrEqualTo(tester.getRect(find.byType(TopBarWidget)).right));
+        expect(find.descendant(of: find.byType(TopBarWidget), matching: find.text('Admin')), findsOneWidget);
+      });
+    }
+
+    // A page title and a first name much longer than the dashboard's and the mock account's, on the narrowest phone.
+    testWidgets('a long page title and a long name are shortened instead of overflowing a 320 px bar', (tester) async {
+      addTearDown(tester.view.reset);
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      final accountBloc = MockAccountBloc();
+      whenListen(
+        accountBloc,
+        const Stream<AccountState>.empty(),
+        initialState: const AccountState(
+          data: UserEntity(firstName: 'Maximiliano Alejandro', lastName: 'Montgomery'),
+          status: AccountStatus.success,
+        ),
+      );
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: BlocProvider<AccountBloc>.value(
+            value: accountBloc,
+            child: Scaffold(
+              body: TopBarWidget(title: 'Change-password', onMenuTap: () {}),
+            ),
+          ),
+        ),
+      );
+
+      expect(tester.takeException(), isNull);
+      expect(tester.getRect(userMenu()).right, lessThanOrEqualTo(320));
+      expect(find.text('Change-password'), findsOneWidget);
+      expect(find.text('Maximiliano Alejandro'), findsOneWidget);
+    });
+  });
+
+  // Without a page title the bar shows the breadcrumb, as on tablets and desktops, and has room for the whole name.
+  group('TopBarWidget - user name beside the breadcrumb', () {
+    testWidgets('a long name is shown in full', (tester) async {
+      addTearDown(tester.view.reset);
+      tester.view.physicalSize = const Size(1600, 900);
+      tester.view.devicePixelRatio = 1.0;
+      final accountBloc = MockAccountBloc();
+      whenListen(
+        accountBloc,
+        const Stream<AccountState>.empty(),
+        initialState: const AccountState(
+          data: UserEntity(firstName: 'Maximiliano Alejandro', lastName: 'Montgomery'),
+          status: AccountStatus.success,
+        ),
+      );
+      final router = GoRouter(
+        routes: [
+          GoRoute(
+            path: '/',
+            builder: (context, state) => BlocProvider<AccountBloc>.value(
+              value: accountBloc,
+              child: const Scaffold(body: TopBarWidget()),
+            ),
+          ),
+        ],
+      );
+      addTearDown(router.dispose);
+
+      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpAndSettle();
+
+      final name = tester.renderObject<RenderParagraph>(find.text('Maximiliano Alejandro'));
+      expect(name.didExceedMaxLines, isFalse);
+      expect(name.size.width, greaterThan(120));
     });
   });
 }
