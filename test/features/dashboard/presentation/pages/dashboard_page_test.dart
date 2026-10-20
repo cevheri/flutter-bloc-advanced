@@ -243,5 +243,70 @@ void main() {
       expect(find.text('1 endpoint'), findsOneWidget);
       expect(find.text('1 item cached'), findsOneWidget);
     });
+
+    // The names of the circuit breaker states and the interceptor descriptions showed in English, as the code names
+    // them, in every language.
+    SystemDashboardState withChain() => loaded().copyWith(
+      endpointHealthList: const [
+        EndpointHealth(endpoint: '/api/users', state: CircuitBreakerState.closed),
+        EndpointHealth(endpoint: '/api/auth', state: CircuitBreakerState.halfOpen),
+        EndpointHealth(endpoint: '/api/files', state: CircuitBreakerState.open),
+      ],
+      interceptors: const [
+        InterceptorInfo(name: 'ConnectivityInterceptor', order: 1, detail: 'Rejects requests when offline'),
+        InterceptorInfo(name: 'AuthInterceptor', order: 2, detail: 'Attaches JWT token to requests'),
+        InterceptorInfo(name: 'TokenRefreshInterceptor', order: 3, detail: 'Refreshes expired access tokens'),
+        InterceptorInfo(name: 'IdempotencyInterceptor', order: 4, detail: 'Opt-in Idempotency-Key for POST/PUT/PATCH'),
+        InterceptorInfo(name: 'ResilienceInterceptor', order: 5, detail: 'Retry + circuit breaker'),
+        InterceptorInfo(name: 'CacheInterceptor', order: 6, detail: 'GET response caching with TTL'),
+        InterceptorInfo(name: 'DevConsoleInterceptor', order: 7, detail: 'Records requests in dev console'),
+        InterceptorInfo(name: 'LoggingInterceptor', order: 8, detail: 'Structured request/response logging'),
+        InterceptorInfo(name: 'MockInterceptor', order: 9, detail: 'Serves mock data in dev/test'),
+        InterceptorInfo(name: 'TracingInterceptor', order: 10, detail: 'Adds a trace header'),
+      ],
+    );
+
+    testWidgets('names the circuit breaker states and describes the interceptors in Turkish', (tester) async {
+      useTallDesktop(tester);
+      when(() => cubit.state).thenReturn(withChain());
+
+      await tester.pumpWidget(_buildTestWidget(cubit, locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      for (final text in [
+        'Kapalı',
+        'Yarı açık',
+        'Açık',
+        'Çevrimdışıyken istekleri reddeder',
+        'İsteklere JWT belirtecini ekler',
+        'Süresi dolan erişim belirteçlerini yeniler',
+        'POST/PUT/PATCH için isteğe bağlı Idempotency-Key',
+        'Yeniden deneme ve devre kesici',
+        'GET yanıtlarını süreli önbelleğe alır',
+        'İstekleri geliştirici konsoluna kaydeder',
+        'Yapılandırılmış istek ve yanıt günlüğü',
+        'Geliştirme ve testte sahte veri sunar',
+        // An interceptor the dashboard has no text for keeps the description the app gives it.
+        'Adds a trace header',
+      ]) {
+        expect(find.text(text), findsOneWidget, reason: text);
+      }
+      for (final raw in ['closed', 'halfOpen', 'open', 'Rejects requests when offline']) {
+        expect(find.text(raw), findsNothing, reason: raw);
+      }
+    });
+
+    testWidgets('names the circuit breaker states in English', (tester) async {
+      useTallDesktop(tester);
+      when(() => cubit.state).thenReturn(withChain());
+
+      await tester.pumpWidget(_buildTestWidget(cubit));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Closed'), findsOneWidget);
+      expect(find.text('Half-open'), findsOneWidget);
+      expect(find.text('Open'), findsOneWidget);
+      expect(find.text('Attaches JWT token to requests'), findsOneWidget);
+    });
   });
 }

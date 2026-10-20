@@ -1405,6 +1405,91 @@ class S {
   String get app_title {
     return Intl.message('Flutter BLoC Advance Template', name: 'app_title', desc: '', args: []);
   }
+
+  /// `Closed`
+  String get dashboard_circuit_state_closed {
+    return Intl.message('Closed', name: 'dashboard_circuit_state_closed', desc: '', args: []);
+  }
+
+  /// `Half-open`
+  String get dashboard_circuit_state_half_open {
+    return Intl.message('Half-open', name: 'dashboard_circuit_state_half_open', desc: '', args: []);
+  }
+
+  /// `Open`
+  String get dashboard_circuit_state_open {
+    return Intl.message('Open', name: 'dashboard_circuit_state_open', desc: '', args: []);
+  }
+
+  /// `Rejects requests when offline`
+  String get dashboard_interceptor_connectivity {
+    return Intl.message(
+      'Rejects requests when offline',
+      name: 'dashboard_interceptor_connectivity',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Attaches JWT token to requests`
+  String get dashboard_interceptor_auth {
+    return Intl.message('Attaches JWT token to requests', name: 'dashboard_interceptor_auth', desc: '', args: []);
+  }
+
+  /// `Refreshes expired access tokens`
+  String get dashboard_interceptor_token_refresh {
+    return Intl.message(
+      'Refreshes expired access tokens',
+      name: 'dashboard_interceptor_token_refresh',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Opt-in Idempotency-Key for POST/PUT/PATCH`
+  String get dashboard_interceptor_idempotency {
+    return Intl.message(
+      'Opt-in Idempotency-Key for POST/PUT/PATCH',
+      name: 'dashboard_interceptor_idempotency',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Retry + circuit breaker`
+  String get dashboard_interceptor_resilience {
+    return Intl.message('Retry + circuit breaker', name: 'dashboard_interceptor_resilience', desc: '', args: []);
+  }
+
+  /// `GET response caching with TTL`
+  String get dashboard_interceptor_cache {
+    return Intl.message('GET response caching with TTL', name: 'dashboard_interceptor_cache', desc: '', args: []);
+  }
+
+  /// `Records requests in dev console`
+  String get dashboard_interceptor_dev_console {
+    return Intl.message(
+      'Records requests in dev console',
+      name: 'dashboard_interceptor_dev_console',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Structured request/response logging`
+  String get dashboard_interceptor_logging {
+    return Intl.message(
+      'Structured request/response logging',
+      name: 'dashboard_interceptor_logging',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Serves mock data in dev/test`
+  String get dashboard_interceptor_mock {
+    return Intl.message('Serves mock data in dev/test', name: 'dashboard_interceptor_mock', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

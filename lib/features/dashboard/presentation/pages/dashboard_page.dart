@@ -296,6 +296,12 @@ class _EndpointHealthRow extends StatelessWidget {
     }
   }
 
+  String _stateLabel(S l10n) => switch (endpoint.state) {
+    CircuitBreakerState.closed => l10n.dashboard_circuit_state_closed,
+    CircuitBreakerState.halfOpen => l10n.dashboard_circuit_state_half_open,
+    CircuitBreakerState.open => l10n.dashboard_circuit_state_open,
+  };
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -319,7 +325,7 @@ class _EndpointHealthRow extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Text(
-              endpoint.state.name,
+              _stateLabel(S.of(context)),
               style: textTheme.bodySmall?.copyWith(color: color, fontWeight: FontWeight.w600),
             ),
           ),
@@ -516,6 +522,21 @@ class _InterceptorRow extends StatelessWidget {
   final InterceptorInfo info;
   const _InterceptorRow({required this.info});
 
+  /// What the interceptor does, in the app language. ApiClient describes each interceptor of its chain in English; an
+  /// interceptor this page has no text for keeps that description.
+  String _description(S l10n) => switch (info.name) {
+    'ConnectivityInterceptor' => l10n.dashboard_interceptor_connectivity,
+    'AuthInterceptor' => l10n.dashboard_interceptor_auth,
+    'TokenRefreshInterceptor' => l10n.dashboard_interceptor_token_refresh,
+    'IdempotencyInterceptor' => l10n.dashboard_interceptor_idempotency,
+    'ResilienceInterceptor' => l10n.dashboard_interceptor_resilience,
+    'CacheInterceptor' => l10n.dashboard_interceptor_cache,
+    'DevConsoleInterceptor' => l10n.dashboard_interceptor_dev_console,
+    'LoggingInterceptor' => l10n.dashboard_interceptor_logging,
+    'MockInterceptor' => l10n.dashboard_interceptor_mock,
+    _ => info.detail,
+  };
+
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
@@ -542,7 +563,10 @@ class _InterceptorRow extends StatelessWidget {
           ),
           Expanded(
             flex: 3,
-            child: Text(info.detail, style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant)),
+            child: Text(
+              _description(S.of(context)),
+              style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
+            ),
           ),
         ],
       ),
