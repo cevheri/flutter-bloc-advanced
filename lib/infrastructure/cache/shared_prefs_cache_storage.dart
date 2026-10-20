@@ -19,9 +19,10 @@ class SharedPrefsCacheStorage implements ICacheStorage {
 
   Future<SharedPreferences> get _instance async => _prefs ??= await SharedPreferences.getInstance();
 
-  /// Returns the number of cached entries.
+  /// Returns the number of cached entries in the platform store, which [clear] reads too.
   Future<int> count() async {
     final prefs = await _instance;
+    await prefs.reload();
     return prefs.getKeys().where((k) => k.startsWith(_prefix)).length;
   }
 
@@ -81,17 +82,26 @@ class SharedPrefsCacheStorage implements ICacheStorage {
     }
   }
 
+  /// Removes every entry, going on past one that cannot be removed. When any entry stays, it then throws a
+  /// [StateError] that says how many stayed and why, so the caller can report it.
   @override
   Future<void> clear() async {
-    try {
-      final prefs = await _instance;
-      final keys = prefs.getKeys().where((k) => k.startsWith(_prefix)).toList();
-      for (final key in keys) {
-        await prefs.remove(key);
+    final prefs = await _instance;
+    // The keys come from the platform store, not from the copy SharedPreferences keeps in memory: on web another tab
+    // may have cached entries since this tab loaded, and SharedPreferences forgets a key whose remove was refused.
+    await prefs.reload();
+    final keys = prefs.getKeys().where((k) => k.startsWith(_prefix)).toList();
+    final failures = <String>[];
+    for (final key in keys) {
+      try {
+        if (!await prefs.remove(key)) failures.add('SharedPreferences refused the remove');
+      } catch (e) {
+        failures.add('$e');
       }
-      _log.info('Cache cleared ({} entries)', [keys.length]);
-    } catch (e) {
-      _log.error('Cache clear error: {}', [e]);
     }
+    if (failures.isNotEmpty) {
+      throw StateError('Cache clear left ${failures.length} of ${keys.length} entries: ${failures.toSet().join('; ')}');
+    }
+    _log.info('Cache cleared ({} entries)', [keys.length]);
   }
 }

@@ -5,6 +5,23 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+
+/// A platform store that keeps the entry whose key ends with [kept] when asked to remove it, as a full or read-only
+/// disk does: [remove] answers false, or throws [error] when one is given.
+class _KeepingStore extends InMemorySharedPreferencesStore {
+  _KeepingStore({required this.kept, this.error}) : super.empty();
+
+  final String kept;
+  final Object? error;
+
+  @override
+  Future<bool> remove(String key) async {
+    if (!key.endsWith(kept)) return super.remove(key);
+    if (error != null) throw error!;
+    return false;
+  }
+}
 
 void main() {
   late SharedPrefsCacheStorage storage;
@@ -162,6 +179,48 @@ void main() {
       test('should complete without error when cache is already empty', () async {
         await expectLater(storage.clear(), completes);
       });
+
+      // Ending a session clears the cache so the next user cannot see this user's responses; it has to learn when
+      // an entry stays behind.
+      test('throws when SharedPreferences keeps an entry, after removing the others', () async {
+        final store = _KeepingStore(kept: 'GET_/account');
+        SharedPreferencesStorePlatform.instance = store;
+        await storage.write('GET_/account', '{"login":"admin"}');
+        await storage.write('GET_/admin/users', '[]');
+
+        await expectLater(storage.clear(), throwsA(isA<StateError>()));
+
+        expect((await store.getAll()).keys, ['flutter._cache_GET_/account']);
+      });
+
+      test('throws with the platform error when removing an entry fails', () async {
+        SharedPreferencesStorePlatform.instance = _KeepingStore(kept: 'GET_/account', error: Exception('disk I/O'));
+        await storage.write('GET_/account', '{"login":"admin"}');
+
+        await expectLater(storage.clear(), throwsA(predicate((Object e) => '$e'.contains('disk I/O'))));
+      });
+
+      // SharedPreferences forgets a key it was asked to remove even when the platform keeps the entry.
+      test('throws again when retried after SharedPreferences kept an entry', () async {
+        final store = _KeepingStore(kept: 'GET_/account');
+        SharedPreferencesStorePlatform.instance = store;
+        await storage.write('GET_/account', '{"login":"admin"}');
+        await expectLater(storage.clear(), throwsA(isA<StateError>()));
+
+        await expectLater(storage.clear(), throwsA(isA<StateError>()));
+
+        expect((await store.getAll()).keys, ['flutter._cache_GET_/account']);
+      });
+
+      // On web every browser tab writes to the same localStorage, which SharedPreferences reads once per tab.
+      test('removes an entry that another browser tab cached after this tab loaded', () async {
+        await storage.write('GET_/account', '{"login":"admin"}');
+        await SharedPreferencesStorePlatform.instance.setValue('String', 'flutter._cache_GET_/admin/users', '[]');
+
+        await storage.clear();
+
+        expect(await SharedPreferencesStorePlatform.instance.getAll(), isEmpty);
+      });
     });
 
     group('TTL expiry', () {
@@ -254,6 +313,14 @@ void main() {
 
         final result = await storage.count();
         expect(result, 1);
+      });
+
+      test('counts an entry that SharedPreferences refused to remove', () async {
+        SharedPreferencesStorePlatform.instance = _KeepingStore(kept: 'GET_/account');
+        await storage.write('GET_/account', '{"login":"admin"}');
+        await expectLater(storage.clear(), throwsA(isA<StateError>()));
+
+        expect(await storage.count(), 1);
       });
     });
 

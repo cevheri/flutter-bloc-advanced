@@ -27,7 +27,8 @@ abstract class ICacheStorage {
   /// Remove a cached value.
   Future<void> remove(String key);
 
-  /// Clear all cached data.
+  /// Clear all cached data. Throws when any entry stays behind: ending a session relies on it to keep one user's
+  /// cached responses from the next user.
   Future<void> clear();
 }
 

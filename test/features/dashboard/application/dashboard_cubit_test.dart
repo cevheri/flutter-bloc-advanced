@@ -195,6 +195,20 @@ void main() {
       },
     );
 
+    blocTest<SystemDashboardCubit, SystemDashboardState>(
+      'clearCache() shows the error when cached entries stay behind',
+      setUp: () {
+        when(() => cacheStorage.clear()).thenAnswer((_) async => throw StateError('1 of 2 cache entries stayed'));
+      },
+      build: buildCubit,
+      act: (cubit) => cubit.clearCache(),
+      expect: () => [
+        isA<SystemDashboardState>()
+            .having((s) => s.status, 'status', SystemDashboardStatus.error)
+            .having((s) => s.errorMessage, 'errorMessage', contains('1 of 2 cache entries stayed')),
+      ],
+    );
+
     // -----------------------------------------------------------------------
     // resetCircuitBreakers()
     // -----------------------------------------------------------------------

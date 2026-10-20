@@ -135,9 +135,15 @@ class SystemDashboardCubit extends Cubit<SystemDashboardState> {
     // The ChangeNotifier callback will update state reactively.
   }
 
-  /// Clear all cached data and reload.
+  /// Clear all cached data and reload. When entries stay behind, the dashboard shows the error instead.
   Future<void> clearCache() async {
-    await _cacheStorage.clear();
+    try {
+      await _cacheStorage.clear();
+    } catch (e) {
+      _log.error('Cache clear via dashboard action failed: {}', [e]);
+      emit(state.copyWith(status: SystemDashboardStatus.error, errorMessage: e.toString()));
+      return;
+    }
     _log.info('Cache cleared via dashboard action');
     await load();
   }
