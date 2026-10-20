@@ -9,7 +9,7 @@ fvm flutter clean
 echo "Running pub get"
 fvm flutter pub get
 
-echo "Running build_runner"
+echo "Running intl_utils"
 fvm dart run intl_utils:generate
 
 echo dart fix --apply

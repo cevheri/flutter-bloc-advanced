@@ -60,7 +60,6 @@ bash
     ```shell
         flutter clean
         flutter pub get
-        dart run build_runner build --delete-conflicting-outputs
         dart run intl_utils:generate
         dart format lib/generated --line-length=120
         flutter analyze

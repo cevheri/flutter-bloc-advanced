@@ -1,6 +1,0 @@
-targets:
-  $default:
-    builders:
-      flutter_localizations:
-        generate_for:
-          - lib/l10n/*.arb
