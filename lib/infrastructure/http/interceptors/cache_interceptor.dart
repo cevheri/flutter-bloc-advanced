@@ -36,6 +36,13 @@ class CacheInterceptor extends Interceptor {
   final ICacheStorage _storage;
   static const Duration _defaultTtl = Duration(minutes: 5);
 
+  /// Whether [options] is a GET that this interceptor answers from the cache alone ([CachePolicy.cacheOnly]).
+  ///
+  /// Such a request never reaches the network, so no network check applies to it: `ConnectivityInterceptor` lets it
+  /// through while the device is offline, and `ResilienceInterceptor` while the circuit of its endpoint is open.
+  static bool isCacheOnly(RequestOptions options) =>
+      options.method.toUpperCase() == 'GET' && _extractPolicy(options) == CachePolicy.cacheOnly;
+
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     // Only cache GET requests
@@ -159,7 +166,7 @@ class CacheInterceptor extends Interceptor {
     DioExceptionType.transformTimeout => false,
   };
 
-  CachePolicy _extractPolicy(RequestOptions options) {
+  static CachePolicy _extractPolicy(RequestOptions options) {
     final extra = options.extra['cachePolicy'];
     if (extra is CachePolicy) return extra;
     return CachePolicy.networkFirst; // Default

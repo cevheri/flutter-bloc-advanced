@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
@@ -1276,6 +1277,23 @@ void main() {
       expect(adapter.requests, hasLength(1));
     });
 
+    // Regression: a cacheOnly GET never reaches the network, but ConnectivityInterceptor rejected it before
+    // CacheInterceptor could answer it, so it failed with the no-connection error although its response was cached.
+    test('answers a cacheOnly GET from the cache', () async {
+      adapter.reply(200, cached);
+      await client.get('/api/offline/cache-only');
+      status = ConnectivityStatus.offline;
+
+      final response = await client.instance.get<String>(
+        '/api/offline/cache-only',
+        options: Options(extra: {'cachePolicy': CachePolicy.cacheOnly}),
+      );
+
+      expect(response.data, cached);
+      expect(response.headers.value('x-cache'), 'hit');
+      expect(adapter.requests, hasLength(1));
+    });
+
     // Repositories map this message to a NetworkError, which the screens show as a connection problem.
     test('fails a GET with nothing cached with the no-connection error', () async {
       status = ConnectivityStatus.offline;
@@ -1325,6 +1343,56 @@ void main() {
       expect(entry.isComplete, isTrue);
       expect(entry.error, startsWith('connectionError: '));
       expect(lines, contains(contains('Http : GET /api/offline/logged -> ERROR: connectionError')));
+    });
+  });
+
+  // ResilienceInterceptor rejects every request to an endpoint whose circuit is open, before it is sent.
+  group('ApiClient while the circuit of an endpoint is open', () {
+    const cached = '[{"login":"admin"}]';
+    late ApiClient client;
+    late _FakeHttpClientAdapter adapter;
+
+    setUp(() {
+      client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      adapter = _FakeHttpClientAdapter();
+      client.instance.httpClientAdapter = adapter;
+      TestEnv.authenticate();
+      // The circuit breakers are shared by every client in this isolate.
+      addTearDown(ResilienceInterceptor.instance.resetAll);
+    });
+
+    /// Caches the response of a GET to [path], then fails five more until the circuit of [path] opens.
+    Future<void> cacheThenOpenCircuit(String path) async {
+      adapter.reply(200, cached);
+      await client.get(path);
+      for (var failure = 0; failure < 5; failure++) {
+        adapter.reply(500, 'boom');
+        await expectLater(client.get(path), throwsA(isA<FetchDataException>()));
+      }
+      expect(ResilienceInterceptor.instance.circuitBreakers[path]?.state, CircuitBreakerState.open);
+    }
+
+    // Regression: a cacheOnly GET never reaches the network, but the open circuit rejected it before
+    // CacheInterceptor could answer it.
+    test('answers a cacheOnly GET from the cache', () async {
+      await cacheThenOpenCircuit('/api/circuit/cache-only');
+
+      final response = await client.instance.get<String>(
+        '/api/circuit/cache-only',
+        options: Options(extra: {'cachePolicy': CachePolicy.cacheOnly}),
+      );
+
+      expect(response.data, cached);
+      expect(response.headers.value('x-cache'), 'hit');
+      expect(adapter.requests, hasLength(6));
     });
   });
 }

@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -124,6 +125,34 @@ void main() {
 
         expect(recorder.errors.single.error, isA<ConnectivityException>());
       });
+    });
+
+    // Regression: a cacheOnly GET never reaches the network, but it was rejected while the device was offline, before
+    // CacheInterceptor could answer it from the cache.
+    test('should let a cacheOnly GET through while offline', () {
+      final offlineInterceptor = ConnectivityInterceptor(statusProvider: () => ConnectivityStatus.offline);
+      final handler = _TestRequestHandler();
+
+      offlineInterceptor.onRequest(
+        RequestOptions(path: '/test', method: 'GET', extra: {'cachePolicy': CachePolicy.cacheOnly}),
+        handler,
+      );
+
+      expect(handler.nextCalled, isTrue);
+      expect(handler.rejectCalled, isFalse);
+    });
+
+    // Guards that the exception covers a GET alone: CacheInterceptor answers no other method.
+    test('should reject a cacheOnly POST while offline, since only a GET is answered from the cache', () {
+      final offlineInterceptor = ConnectivityInterceptor(statusProvider: () => ConnectivityStatus.offline);
+      final handler = _TestRequestHandler();
+
+      offlineInterceptor.onRequest(
+        RequestOptions(path: '/test', method: 'POST', extra: {'cachePolicy': CachePolicy.cacheOnly}),
+        handler,
+      );
+
+      expect(handler.rejectCalled, isTrue);
     });
 
     group('integration with Dio', () {

@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
 
 /// Exception thrown when a request is attempted while offline.
 ///
@@ -27,6 +28,9 @@ class ConnectivityException implements Exception {
 /// [ConnectivityException], so `ResilienceInterceptor` neither retries it nor
 /// counts it against the endpoint's circuit breaker.
 ///
+/// A GET that [CacheInterceptor] answers from the cache alone
+/// (`CachePolicy.cacheOnly`) is let through: it never reaches the network.
+///
 /// The connectivity check is injected via [statusProvider] so tests can
 /// deterministically exercise the offline-rejection branch without
 /// mutating the global [ConnectivityService] singleton (fixes #65).
@@ -42,7 +46,7 @@ class ConnectivityInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     final status = _statusProvider();
 
-    if (status == ConnectivityStatus.offline) {
+    if (status == ConnectivityStatus.offline && !CacheInterceptor.isCacheOnly(options)) {
       _log.warn('Request blocked — device is offline: {} {}', [options.method, options.path]);
       handler.reject(
         DioException(

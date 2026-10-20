@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
@@ -68,6 +69,29 @@ void main() {
 
         expect(result.rejected, isTrue);
         expect(result.rejectError!.error, isA<CircuitBreakerOpenException>());
+      });
+
+      // Regression: a cacheOnly GET never reaches the network, but the open circuit rejected it before
+      // CacheInterceptor could answer it from the cache.
+      test('should let a cacheOnly GET through while the circuit is open', () async {
+        final interceptor = ResilienceInterceptor(failureThreshold: 1, cooldownDuration: const Duration(hours: 1));
+        final options = RequestOptions(path: '/api/users');
+        _fireOnError(
+          interceptor,
+          DioException(
+            requestOptions: options,
+            type: DioExceptionType.badResponse,
+            response: Response(requestOptions: options, statusCode: 500),
+          ),
+        );
+        expect((await _captureOnRequest(interceptor, RequestOptions(path: '/api/users'))).rejected, isTrue);
+
+        final result = await _captureOnRequest(
+          interceptor,
+          RequestOptions(path: '/api/users', method: 'GET', extra: {'cachePolicy': CachePolicy.cacheOnly}),
+        );
+
+        expect(result.passed, isTrue);
       });
     });
 

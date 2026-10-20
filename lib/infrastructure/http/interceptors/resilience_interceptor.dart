@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotency_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
@@ -35,7 +36,8 @@ import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 /// **Circuit breaker logic:**
 /// - Each endpoint (path prefix) gets its own [CircuitBreaker] instance.
 /// - Before a request: if the circuit is OPEN, rejects immediately with
-///   [CircuitBreakerOpenException].
+///   [CircuitBreakerOpenException]. A GET that [CacheInterceptor] answers from the cache alone
+///   (`CachePolicy.cacheOnly`) is let through: it never reaches the network.
 /// - After a response: records success or failure.
 ///
 /// Must be added to the interceptor chain AFTER [AuthInterceptor] so that
@@ -113,6 +115,11 @@ class ResilienceInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    if (CacheInterceptor.isCacheOnly(options)) {
+      handler.next(options);
+      return;
+    }
+
     final endpointKey = _extractEndpointKey(options.path);
     final breaker = _getBreaker(endpointKey);
 
