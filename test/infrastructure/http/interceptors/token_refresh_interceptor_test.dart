@@ -54,9 +54,13 @@ void main() {
   });
 
   group('TokenRefreshInterceptor', () {
-    test('should extend QueuedInterceptor', () {
+    // Not a QueuedInterceptor: the retry after a refresh goes back through the same Dio, and a queued
+    // onError would hold the retry's error behind the call waiting for it, so both would hang.
+    // Concurrent 401s share one refresh through the in-flight Future instead.
+    test('should be a plain Interceptor, not a QueuedInterceptor', () {
       final interceptor = TokenRefreshInterceptor(dio: dio);
-      expect(interceptor, isA<QueuedInterceptor>());
+      expect(interceptor, isA<Interceptor>());
+      expect(interceptor, isNot(isA<QueuedInterceptor>()));
     });
 
     test('should accept optional onSessionExpired callback', () {
@@ -502,6 +506,41 @@ void main() {
       expect(response.statusCode, 200);
       expect(response.data, '{"result":"ok"}');
     });
+
+    test('logs out without a second refresh when the retry is rejected with 401 again', () async {
+      // The retry comes back through this interceptor, where the retry marker ends the session. The call is
+      // bounded because a queued interceptor used to hang here.
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      final baselineRefreshReads = secureStorage.refreshTokenReadCount;
+      var sessionExpiredCalls = 0;
+      final server = _UnauthorizedServerStub();
+
+      dio.interceptors.addAll([
+        TokenRefreshInterceptor(
+          dio: dio,
+          secureStorage: secureStorage,
+          onSessionExpired: () => sessionExpiredCalls++,
+          refreshDioFactory: (source) {
+            final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+            refreshDio.interceptors.add(_StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}'));
+            return refreshDio;
+          },
+        ),
+        server,
+      ]);
+
+      await expectLater(
+        dio
+            .get<String>('/api/users', options: Options(headers: {'Authorization': 'Bearer old-jwt'}))
+            .timeout(const Duration(seconds: 5)),
+        throwsA(isA<DioException>().having((e) => e.response?.statusCode, 'statusCode', 401)),
+      );
+
+      expect(server.authorizations, ['Bearer old-jwt', 'Bearer new-jwt']);
+      expect(sessionExpiredCalls, 1);
+      expect(secureStorage.refreshTokenReadCount - baselineRefreshReads, 1, reason: 'exactly one refresh');
+    });
   });
 
   group('TokenRefreshInterceptor - 401 followed by successful refresh', () {
@@ -771,6 +810,25 @@ class _CapturingSuccessStub extends Interceptor {
   }
 }
 
+/// Answers every request with 401 the way a server response does: the rejection runs the error
+/// interceptors, so the 401 reaches [TokenRefreshInterceptor.onError]. Records each Authorization header.
+class _UnauthorizedServerStub extends Interceptor {
+  final authorizations = <String?>[];
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    authorizations.add(options.headers['Authorization'] as String?);
+    handler.reject(
+      DioException(
+        requestOptions: options,
+        type: DioExceptionType.badResponse,
+        response: Response(requestOptions: options, statusCode: 401),
+      ),
+      true,
+    );
+  }
+}
+
 /// Interceptor that stubs responses or errors before any real HTTP call.
 class _StubInterceptor extends Interceptor {
   int? _errorStatusCode;
@@ -794,12 +852,15 @@ class _StubInterceptor extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     if (_errorStatusCode != null) {
+      // true runs the error interceptors, as a server response does. Without it the error skips every onError,
+      // so the pass-through tests would never reach TokenRefreshInterceptor.
       handler.reject(
         DioException(
           requestOptions: options,
           type: DioExceptionType.badResponse,
           response: Response(requestOptions: options, statusCode: _errorStatusCode!, data: _errorData ?? ''),
         ),
+        true,
       );
       return;
     }

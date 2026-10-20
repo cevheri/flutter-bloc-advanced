@@ -107,6 +107,35 @@ class _FakeHttpClientAdapter implements HttpClientAdapter {
   void close({bool force = false}) => closed = true;
 }
 
+/// Answers each request by what it is instead of by arrival order, for requests sent concurrently.
+class _RoutingHttpClientAdapter implements HttpClientAdapter {
+  _RoutingHttpClientAdapter(this._route);
+
+  final (int, String) Function(RequestOptions options) _route;
+  final requests = <String>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    await requestStream?.drain<void>();
+    requests.add('${options.method} ${options.path} ${options.headers['Authorization']}');
+    final (statusCode, body) = _route(options);
+    return ResponseBody.fromString(
+      body,
+      statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
 void main() {
   group('Api Exceptions', () {
     test('given FetchDataException when created then should return message', () {
@@ -495,6 +524,95 @@ void main() {
       await expectLater(client.post('/api/transport/breaker', {'name': 'test'}), throwsA(isA<FetchDataException>()));
 
       expect(ResilienceInterceptor.instance.circuitBreakers['/api/transport/breaker']?.failureCount, 1);
+    });
+  });
+
+  // Regression: the retry after a token refresh used to hang when it failed, and so did every later failing
+  // request, because the retry's error queued behind the error handler that was waiting for it. Each call is
+  // bounded so a regression fails the test instead of hanging the suite.
+  group('ApiClient token refresh', () {
+    const bound = Duration(seconds: 5);
+    const rotatedTokens = '{"id_token":"NEW_JWT","refresh_token":"NEW_REFRESH"}';
+    late ApiClient client;
+    late _FakeHttpClientAdapter adapter;
+    late int sessionExpiredCalls;
+
+    setUp(() async {
+      sessionExpiredCalls = 0;
+      client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: ['test-pin'],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      adapter = _FakeHttpClientAdapter();
+      client.instance.httpClientAdapter = adapter;
+      TestEnv.authenticate();
+      await FlutterSecureStorageAdapter().write(SecureStorageKeys.refreshToken.key, 'REFRESH_TOKEN');
+    });
+
+    test('fails with UnauthorizedException and expires the session once when the retry gets 401 again', () async {
+      adapter
+        ..reply(401)
+        ..reply(200, rotatedTokens)
+        ..reply(401, 'Unauthorized');
+
+      await expectLater(client.get('/api/refresh/retry-401').timeout(bound), throwsA(isA<UnauthorizedException>()));
+
+      expect(sessionExpiredCalls, 1);
+      expect(adapter.requests.map((r) => '${r.method} ${r.path} ${r.authorization}'), [
+        'GET /api/refresh/retry-401 Bearer MOCK_TOKEN',
+        'POST /api/token/refresh null',
+        'GET /api/refresh/retry-401 Bearer NEW_JWT',
+      ], reason: 'a second 401 must not start another refresh');
+    });
+
+    test('fails with the server error when the retry gets 500, and later failures still complete', () async {
+      adapter
+        ..reply(401)
+        ..reply(200, rotatedTokens)
+        ..reply(500, 'boom');
+
+      await expectLater(
+        client.get('/api/refresh/retry-500').timeout(bound),
+        throwsA(isA<FetchDataException>().having((e) => e.toString(), 'message', contains('Server error (500)'))),
+      );
+      expect(sessionExpiredCalls, 0);
+      expect(
+        ResilienceInterceptor.instance.circuitBreakers['/api/refresh/retry-500']?.failureCount,
+        1,
+        reason: 'one failed retry is one breaker failure',
+      );
+
+      adapter.reply(404, 'missing');
+      await expectLater(
+        client.get('/api/refresh/later').timeout(bound),
+        throwsA(isA<FetchDataException>().having((e) => e.toString(), 'message', contains('Not found'))),
+      );
+    });
+
+    test('refreshes once when several requests get 401 at the same time', () async {
+      final routing = _RoutingHttpClientAdapter(
+        (options) => switch ((options.method, options.headers['Authorization'])) {
+          ('POST', _) => (200, rotatedTokens),
+          (_, 'Bearer NEW_JWT') => (200, '{"ok":true}'),
+          _ => (401, ''),
+        },
+      );
+      client.instance.httpClientAdapter = routing;
+
+      final responses = await Future.wait([
+        for (final path in ['/api/refresh/a', '/api/refresh/b', '/api/refresh/c']) client.get(path),
+      ]).timeout(bound);
+
+      expect(responses.map((r) => r.statusCode), [200, 200, 200]);
+      expect(routing.requests.where((r) => r.startsWith('POST /api/token/refresh')), hasLength(1));
+      expect(routing.requests.where((r) => r.endsWith('Bearer NEW_JWT')), hasLength(3));
+      expect(sessionExpiredCalls, 0);
     });
   });
 }

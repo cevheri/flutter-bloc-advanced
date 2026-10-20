@@ -43,18 +43,23 @@ typedef RefreshDioFactory = Dio Function(Dio sourceDio);
 
 /// Intercepts 401 responses and attempts a silent token refresh.
 ///
-/// Extends [QueuedInterceptor] so dio queues concurrent 401s, but the
-/// refresh request itself is also coalesced via a shared in-flight
-/// [Future]. When several requests fail with 401 around the same time
-/// the first one starts the refresh; the rest await the same Future
-/// and retry with the already-rotated token instead of triggering a
-/// refresh storm against the refresh endpoint.
+/// The refresh request is coalesced via a shared in-flight [Future].
+/// When several requests fail with 401 around the same time the first
+/// one starts the refresh; the rest await the same Future and retry
+/// with the already-rotated token instead of triggering a refresh
+/// storm against the refresh endpoint.
+///
+/// Deliberately not a [QueuedInterceptor]: the retry goes back through
+/// the client's [Dio], so a failed retry reaches [onError] while the
+/// call that sent it is still waiting for it. A queued [onError] would
+/// hold that error behind the waiting call, and both would hang along
+/// with every later failing request.
 ///
 /// Must be registered after [AuthInterceptor] in the chain — see
 /// `ApiClient._createDio` for the single source of truth on order
 /// (any inline ASCII diagram here would drift the next time the
 /// chain is edited).
-class TokenRefreshInterceptor extends QueuedInterceptor {
+class TokenRefreshInterceptor extends Interceptor {
   static final _log = AppLogger.getLogger('TokenRefreshInterceptor');
 
   final Dio _dio;
@@ -157,8 +162,8 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
     // Stale-header short-circuit: if the JWT has already been rotated
     // since this request was sent (e.g. a previous refresh completed
     // while this request was in flight), just retry with the current
-    // token. Avoids back-to-back refresh calls when a serialised wave
-    // of 401s arrives after the first refresh completes.
+    // token. Avoids a second refresh call for a 401 that arrives after
+    // the first refresh has completed.
     //
     // ISecureStorage.read can throw on platform / decryption failure
     // (contract from the secure-storage refactor). Treat that as
@@ -199,9 +204,9 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
   /// Retry the original request with [token]. Forwards retry failures
   /// (not the original 401) to the handler so the real cause surfaces.
   ///
-  /// Stamps [RequestOptions.extra] with [_retriedAfterRefresh] so a
-  /// second 401 on the same retried request short-circuits to logout
-  /// in [onError] — see the loop-prevention check there.
+  /// Marks the request with [_retriedAfterRefresh] so a second 401 on
+  /// the retry short-circuits to logout when it reaches [onError] (see
+  /// the loop-prevention check there).
   Future<void> _retryWithToken(DioException err, String token, ErrorInterceptorHandler handler) async {
     try {
       final retryOptions = err.requestOptions;
@@ -211,7 +216,11 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       handler.resolve(retryResponse);
     } on DioException catch (retryErr) {
       _log.error('Retry after refresh failed (Dio): {}', [retryErr.message]);
-      handler.next(retryErr);
+      // The retry's error has already been through every error
+      // interceptor of the client's Dio. Reject so the rest of this
+      // chain skips it; passing it on would handle it twice (e.g.
+      // ResilienceInterceptor would count two failures for one retry).
+      handler.reject(retryErr);
     } catch (e, st) {
       _log.error('Retry after refresh failed (non-Dio): {}', [e]);
       handler.next(
