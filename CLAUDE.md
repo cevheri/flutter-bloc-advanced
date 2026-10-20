@@ -81,7 +81,7 @@ Every feature follows: **Event → BLoC → State → UI**
 
 ### `Bloc` vs `Cubit`
 
-- Use **`Cubit`** when every interaction is an atomic, fire-and-forget call and the event stream adds no value (no debouncing, no concurrency policy, no historical event payload needed). Example: `SettingsCubit` (`changeLanguage`, `changeTheme`, `logout`).
+- Use **`Cubit`** when every interaction is an atomic, fire-and-forget call and the event stream adds no value (no debouncing, no concurrency policy, no historical event payload needed). Example: `LocaleCubit` (`restore`, `changeLocale`).
 - Use **`Bloc`** when events carry meaningful payload, when an `EventTransformer` (debounce, restartable, droppable) is needed, or when the event log itself is valuable for replay/observability. Examples: `UserListBloc` (search debounce + delete drop-concurrent), `UserEditorBloc` (fetch/save lifecycle), `LoginBloc` (multi-step auth flow).
 - Default to `Bloc` for any new feature touching network requests or user input streams; reach for `Cubit` only after confirming none of the above apply.
 
