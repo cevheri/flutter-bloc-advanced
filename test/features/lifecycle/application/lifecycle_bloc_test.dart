@@ -8,6 +8,7 @@ import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bloc.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_event.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_state.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/application/usecases/fetch_app_config_usecase.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,7 +30,10 @@ void main() {
 
   group('LifecycleBloc', () {
     test('initial state should be LifecycleInitial', () {
-      final bloc = LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+      final bloc = LifecycleBloc(
+        fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+        featureFlagService: FeatureFlagService.instance,
+      );
       expect(bloc.state, const LifecycleInitial());
       bloc.close();
     });
@@ -42,7 +46,10 @@ void main() {
             (_) async =>
                 const Success(AppConfigEntity(minimumVersion: '0.5.0', latestVersion: '1.0.0', maintenanceMode: false)),
           );
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleReady>().having((s) => s.config, 'config', isNotNull)],
@@ -54,7 +61,10 @@ void main() {
           when(() => mockRepository.fetchAppConfig()).thenAnswer(
             (_) async => const Success(AppConfigEntity(maintenanceMode: true, maintenanceMessage: 'Under maintenance')),
           );
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [
@@ -74,7 +84,10 @@ void main() {
             (_) async =>
                 const Success(AppConfigEntity(minimumVersion: '2.0.0', latestVersion: '2.0.0', maintenanceMode: false)),
           );
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [
@@ -91,7 +104,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Failure(NetworkError('No connection')));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), const LifecycleReady(error: NetworkError('No connection'))],
@@ -110,7 +126,10 @@ void main() {
               ),
             ),
           );
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleMaintenance>()],
@@ -121,7 +140,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0.0', maintenanceMode: false)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
@@ -132,7 +154,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '0.9.0', maintenanceMode: false)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
@@ -143,7 +168,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(maintenanceMode: false)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
@@ -157,7 +185,10 @@ void main() {
               AppConfigEntity(maintenanceMode: false, featureFlags: {'dark_mode': true, 'chat': false}),
             ),
           );
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         verify: (_) {
@@ -171,7 +202,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(maintenanceMode: false, featureFlags: {})));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         verify: (_) {
@@ -187,7 +221,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0.1', maintenanceMode: false)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleForceUpdate>()],
@@ -199,7 +236,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.1.0', maintenanceMode: false)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleForceUpdate>()],
@@ -211,7 +251,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '2.0.0', maintenanceMode: false)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleForceUpdate>()],
@@ -223,7 +266,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.9.9', maintenanceMode: false)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleReady>()],
@@ -241,7 +287,10 @@ void main() {
         setUp: () => errors = _recordErrors(),
         build: () {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(malformed));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [
@@ -258,7 +307,10 @@ void main() {
         setUp: () => errors = _recordErrors(),
         build: () {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(malformed));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleForceUpdate(config: AppConfigEntity(minimumVersion: '2.0.0')),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.resume)),
@@ -271,7 +323,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0,1', maintenanceMode: true)));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
         expect: () => [const LifecycleLoading(), isA<LifecycleMaintenance>()],
@@ -289,7 +344,10 @@ void main() {
         'a retry from the maintenance screen shows the check running on that screen, then opens the app',
         build: () {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(ready));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleMaintenance(config: maintenance),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.retry)),
@@ -303,7 +361,10 @@ void main() {
         'a retry that still finds maintenance stops showing the check running',
         build: () {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(maintenance));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleMaintenance(config: maintenance),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.retry)),
@@ -317,7 +378,10 @@ void main() {
         'a check on resume keeps the update screen until the answer arrives',
         build: () {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(ready));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleForceUpdate(config: updateRequired),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.resume)),
@@ -328,7 +392,10 @@ void main() {
         'a check on resume shows nothing until the answer arrives when the app is open',
         build: () {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(maintenance));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleReady(config: ready),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.resume)),
@@ -344,7 +411,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Failure(ServerError('Server error (503)')));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleMaintenance(config: maintenance),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.retry)),
@@ -361,7 +431,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Failure(NetworkError('No Internet connection')));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleForceUpdate(config: updateRequired),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.resume)),
@@ -374,7 +447,10 @@ void main() {
         build: () {
           when(() => mockRepository.fetchAppConfig())
               .thenAnswer((_) async => const Failure(NetworkError('No Internet connection')));
-          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          return LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
         },
         seed: () => const LifecycleReady(config: ready),
         act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.resume)),
@@ -387,7 +463,10 @@ void main() {
       test('checks again on resume only once the recheck interval has passed since the last check', () {
         fakeAsync((async) {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(AppConfigEntity()));
-          final bloc = LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          final bloc = LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
           bloc.add(const LifecycleCheckEvent());
           async.flushMicrotasks();
           verify(() => mockRepository.fetchAppConfig()).called(1);
@@ -410,7 +489,10 @@ void main() {
       test('a retry checks at once, however recent the last check', () {
         fakeAsync((async) {
           when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(AppConfigEntity()));
-          final bloc = LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+          final bloc = LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+            featureFlagService: FeatureFlagService.instance,
+          );
           bloc.add(const LifecycleCheckEvent());
           async.flushMicrotasks();
           bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.retry));
@@ -425,7 +507,10 @@ void main() {
       test('drops a check that arrives while another one is running', () async {
         final answer = Completer<Result<AppConfigEntity>>();
         when(() => mockRepository.fetchAppConfig()).thenAnswer((_) => answer.future);
-        final bloc = LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+        final bloc = LifecycleBloc(
+          fetchAppConfigUseCase: FetchAppConfigUseCase(mockRepository),
+          featureFlagService: FeatureFlagService.instance,
+        );
         addTearDown(bloc.close);
 
         bloc

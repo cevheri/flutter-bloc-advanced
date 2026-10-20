@@ -8,8 +8,8 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_event.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_state.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/application/usecases/fetch_app_config_usecase.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
-import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 import 'package:flutter_bloc_advance/shared/utils/semver.dart';
@@ -24,7 +24,7 @@ import 'package:flutter_bloc_advance/shared/utils/semver.dart';
 /// outdated app in.
 class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
   LifecycleBloc({
-    required this._repository,
+    required this._fetchAppConfigUseCase,
     required this._featureFlagService,
     this._recheckInterval = defaultRecheckInterval,
   }) : super(const LifecycleInitial()) {
@@ -36,7 +36,7 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
   /// How long after a check the app waits before it checks again when it comes back to the foreground.
   static const defaultRecheckInterval = Duration(minutes: 5);
 
-  final ILifecycleRepository _repository;
+  final FetchAppConfigUseCase _fetchAppConfigUseCase;
   final FeatureFlagService _featureFlagService;
   final Duration _recheckInterval;
 
@@ -67,7 +67,7 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
         break;
     }
 
-    final result = await _repository.fetchAppConfig();
+    final result = await _fetchAppConfigUseCase();
 
     switch (result) {
       case Success(:final data):

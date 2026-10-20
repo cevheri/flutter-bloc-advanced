@@ -6,6 +6,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bloc.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/application/usecases/fetch_app_config_usecase.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/presentation/pages/maintenance_screen.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
@@ -45,7 +46,10 @@ void main() {
         ],
         supportedLocales: S.delegate.supportedLocales,
         home: BlocProvider(
-          create: (_) => LifecycleBloc(repository: repository, featureFlagService: FeatureFlagService.instance),
+          create: (_) => LifecycleBloc(
+            fetchAppConfigUseCase: FetchAppConfigUseCase(repository),
+            featureFlagService: FeatureFlagService.instance,
+          ),
           child: MaintenanceScreen(message: message, estimatedEnd: estimatedEnd, checking: checking),
         ),
       ),

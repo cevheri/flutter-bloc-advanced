@@ -25,6 +25,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dy
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bloc.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_event.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/application/usecases/fetch_app_config_usecase.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';
@@ -138,7 +139,7 @@ class AppScope extends StatelessWidget {
           // Created, and the first check sent, when App's LifecycleGate first builds.
           BlocProvider<LifecycleBloc>(
             create: (context) => LifecycleBloc(
-              repository: context.read<ILifecycleRepository>(),
+              fetchAppConfigUseCase: FetchAppConfigUseCase(context.read<ILifecycleRepository>()),
               featureFlagService: FeatureFlagService.instance,
             )..add(const LifecycleCheckEvent()),
           ),
