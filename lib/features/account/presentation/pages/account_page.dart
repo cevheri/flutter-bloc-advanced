@@ -123,6 +123,7 @@ class AccountScreen extends StatelessWidget {
 
   Widget _submitButton(BuildContext context, AccountState state) {
     return ResponsiveSubmitButton(
+      buttonText: S.of(context).save,
       onPressed: () => state.status == AccountStatus.loading ? null : _onSubmit(context, state),
       isLoading: state.status == AccountStatus.loading,
     );

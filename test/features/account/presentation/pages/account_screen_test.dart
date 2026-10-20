@@ -526,7 +526,7 @@ void main() {
       TestEnv.authenticate();
     });
 
-    testWidgets('saving the account keeps its language', (tester) async {
+    testWidgets('saving the account keeps its language, with the save button in it', (tester) async {
       tester.view.physicalSize = const Size(1600, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
@@ -551,6 +551,8 @@ void main() {
       final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
       router.go(ApplicationRoutesConstants.account);
       await tester.pumpAndSettle();
+
+      expect(find.descendant(of: find.byType(ResponsiveSubmitButton), matching: find.text('Kaydet')), findsOneWidget);
 
       await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Ayşe Nur');
       await tester.tap(find.byType(ResponsiveSubmitButton));
