@@ -133,6 +133,18 @@ void main() {
       await userStateController.close();
     });
 
+    testWidgets('shows the role filter placeholder once while no role is chosen', (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      whenListen(mockUserBloc, const Stream<UserListState>.empty(), initialState: const UserListInitial());
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Role filter'), findsOneWidget);
+    });
+
     testWidgets('displays user list when search is successful', (tester) async {
       // ARRANGE
       tester.view.physicalSize = const Size(1200, 800);

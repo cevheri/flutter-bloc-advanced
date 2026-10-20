@@ -88,14 +88,13 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
         final cs = Theme.of(context).colorScheme;
         final tt = Theme.of(context).textTheme;
         final selectedValue = field.value ?? '';
-        final showPlaceholder = selectedValue.isEmpty;
-        final displayText = showPlaceholder ? (widget.hintText ?? S.of(context).authorities) : selectedValue;
 
         return InkWell(
           onTap: widget.enabled ? () => _openMenu(context, field, authorities) : null,
           borderRadius: BorderRadius.circular(8),
+          // With no role chosen, the decoration shows the hint text in place of the empty value.
           child: InputDecorator(
-            isEmpty: showPlaceholder,
+            isEmpty: selectedValue.isEmpty,
             isFocused: false,
             isHovering: false,
             decoration: InputDecoration(
@@ -106,9 +105,9 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
               suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
             ),
             child: Text(
-              displayText,
+              selectedValue,
               overflow: TextOverflow.ellipsis,
-              style: tt.bodyMedium?.copyWith(color: showPlaceholder ? cs.onSurfaceVariant : cs.onSurface),
+              style: tt.bodyMedium?.copyWith(color: cs.onSurface),
             ),
           ),
         );
