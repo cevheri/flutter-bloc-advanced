@@ -7,58 +7,48 @@ import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 /// every ShellRoute navigator (`notifyRootObserver`, on by default), so do not add this observer to a ShellRoute as
 /// well, or every shell screen is logged twice.
 ///
-/// Only named page routes are screens. Dialogs, menus and bottom sheets are popup routes: opening one is not a screen
-/// view, and closing one reveals a screen the user never left.
-///
-/// A ShellRoute's page on the root navigator has no name: the screen it shows is the top page of the shell navigator.
-/// So when a root page pops off the shell, the revealed screen is the one the shell navigator logged last.
+/// A screen view is logged whenever the screen the user sees changes. That screen is the top route of the observed
+/// navigator or, when that is a ShellRoute's page, which has no name, the top route of the shell navigator. Only named
+/// page routes are screens. Dialogs, menus and bottom sheets are popup routes: while one is on top no screen view is
+/// logged, and closing one logs the screen under it only if that is not the screen logged last, as when the user left
+/// it for a page pushed over the popup.
 class AnalyticsRouteObserver extends NavigatorObserver {
   AnalyticsRouteObserver(this._analytics);
 
   final IAnalyticsService _analytics;
 
-  // The screen last logged from a navigator nested in the observed one, such as a ShellRoute navigator.
-  Route? _shellScreen;
+  // The top routes of the observed navigator and of a navigator nested in it, such as a ShellRoute navigator.
+  Route? _top;
+  Route? _shellTop;
+
+  // The screen logged last.
+  Route? _screen;
 
   @override
-  void didPush(Route route, Route? previousRoute) {
-    super.didPush(route, previousRoute);
-    _logScreenView(route);
-  }
-
-  @override
-  void didReplace({Route? newRoute, Route? oldRoute}) {
-    super.didReplace(newRoute: newRoute, oldRoute: oldRoute);
-    if (newRoute != null) _logScreenView(newRoute);
-  }
-
-  @override
-  void didPop(Route route, Route? previousRoute) {
-    super.didPop(route, previousRoute);
-    if (route is! PageRoute || previousRoute == null) return;
-    if (previousRoute is PageRoute && previousRoute.settings.name == null) {
-      _logRevealedShellScreen(previousRoute);
+  void didChangeTop(Route topRoute, Route? previousTopRoute) {
+    super.didChangeTop(topRoute, previousTopRoute);
+    if (topRoute.navigator == navigator) {
+      _top = topRoute;
     } else {
-      _logScreenView(previousRoute);
+      _shellTop = topRoute;
     }
+    // A `go` changes the top route of the observed navigator first and of the shell navigator later in the same
+    // frame, so read the screen once the frame is done.
+    WidgetsBinding.instance.addPostFrameCallback((_) => _logScreenView());
   }
 
-  // A `go` that leaves the root page pops it here first and updates the shell navigator later in the same frame, and
-  // that navigator logs its new screen itself. So log the revealed screen once the frame is done, and only if the
-  // shell still shows it.
-  void _logRevealedShellScreen(Route shell) {
-    final screen = _shellScreen;
-    if (screen == null) return;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (shell.isCurrent && screen.isCurrent) _logScreenView(screen);
-    });
-  }
-
-  void _logScreenView(Route route) {
-    final name = route.settings.name;
-    if (route is PageRoute && name != null && name.isNotEmpty) {
-      _analytics.logScreenView(screenName: name, screenClass: route.runtimeType.toString());
-      if (route.navigator != navigator) _shellScreen = route;
+  void _logScreenView() {
+    final top = _top;
+    final shellTop = _shellTop;
+    // An unnamed page route is the ShellRoute's page only while the shell is still there: once the shell is gone, its
+    // last top route is no longer active and an unnamed page pushed over a root page is not a screen.
+    final screen = top is PageRoute && top.settings.name == null
+        ? (shellTop != null && shellTop.isActive ? shellTop : null)
+        : top;
+    final name = screen?.settings.name;
+    if (screen is PageRoute && screen != _screen && name != null && name.isNotEmpty) {
+      _screen = screen;
+      _analytics.logScreenView(screenName: name, screenClass: screen.runtimeType.toString());
     }
   }
 }

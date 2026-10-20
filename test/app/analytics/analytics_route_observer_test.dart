@@ -5,7 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/analytics/analytics_route_observer.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/app/router/forbidden_page.dart';
+import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_page_transition.dart';
+import 'package:flutter_bloc_advance/shared/widgets/theme_selection_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
@@ -223,6 +226,123 @@ void main() {
         expect(loggedScreens(), [screenName]);
       });
     }
+
+    // A dialog is not a screen, so popping a root route back to it logs nothing. Closing it reveals the shell route.
+    testWidgets('logs the shell route once when a root dialog closes after a root route over it pops', (tester) async {
+      final router = await startAuthenticated(tester);
+      router.go(ApplicationRoutesConstants.settings);
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Choose your preferred theme style'));
+      await tester.pumpAndSettle();
+      clearInteractions(analytics);
+
+      router.push(ApplicationRoutesConstants.forbidden);
+      await tester.pumpAndSettle();
+      expect(loggedScreens(), [ApplicationRoutesConstants.forbidden]);
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expectNoScreenView();
+
+      await tester.tap(find.descendant(of: find.byType(ThemeSelectionDialog), matching: find.byIcon(Icons.close)));
+      await tester.pumpAndSettle();
+      expect(loggedScreens(), ['settings']);
+    });
+
+    // A bottom sheet opened from a shell route stays on the shell navigator under a root route pushed over the shell.
+    testWidgets('logs the shell route once when a bottom sheet left open under a root route closes', (tester) async {
+      final router = await startAuthenticated(tester);
+      router.go(ApplicationRoutesConstants.settings);
+      await tester.pumpAndSettle();
+      showModalBottomSheet<void>(
+        context: tester.element(find.byType(SettingsScreen)),
+        builder: (_) => const Text('Sheet'),
+      );
+      await tester.pumpAndSettle();
+      clearInteractions(analytics);
+
+      router.push(ApplicationRoutesConstants.forbidden);
+      await tester.pumpAndSettle();
+      expect(loggedScreens(), [ApplicationRoutesConstants.forbidden]);
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expectNoScreenView();
+
+      router.pop();
+      await tester.pumpAndSettle();
+      expect(find.text('Sheet'), findsNothing);
+      expect(loggedScreens(), ['settings']);
+    });
+
+    // A guard rather than a reproduction: it passed before the rewrite too, and keeps the shell screen from being
+    // logged while a named root page still covers it.
+    testWidgets('does not log the shell route when a bottom sheet under a root route closes', (tester) async {
+      final router = await startAuthenticated(tester);
+      router.go(ApplicationRoutesConstants.settings);
+      await tester.pumpAndSettle();
+      showModalBottomSheet<void>(
+        context: tester.element(find.byType(SettingsScreen)),
+        builder: (_) => const Text('Sheet'),
+      );
+      await tester.pumpAndSettle();
+      router.push(ApplicationRoutesConstants.forbidden);
+      await tester.pumpAndSettle();
+      clearInteractions(analytics);
+
+      // The root route hides the shell, so the sheet is offstage and stays in the tree while it pops.
+      final sheet = ModalRoute.of(tester.element(find.text('Sheet', skipOffstage: false)))!;
+      sheet.navigator!.pop();
+      await tester.pumpAndSettle();
+
+      expect(sheet.isActive, isFalse);
+      expectNoScreenView();
+    });
+
+    // Going from a root route under a root dialog removes the root route and pops the dialog in the same frame. The
+    // settings case reproduces the gap; the home case passed before too and guards against logging settings and home.
+    for (final (location, screenName) in const [
+      (ApplicationRoutesConstants.settings, 'settings'),
+      (ApplicationRoutesConstants.home, 'home'),
+    ]) {
+      testWidgets('logs only $screenName when a root route under a root dialog goes to $location', (tester) async {
+        final router = await startAuthenticated(tester);
+        router.go(ApplicationRoutesConstants.settings);
+        await tester.pumpAndSettle();
+        router.push(ApplicationRoutesConstants.forbidden);
+        await tester.pumpAndSettle();
+        showDialog<void>(context: tester.element(find.byType(ForbiddenPage)), builder: (_) => const Text('Dialog'));
+        await tester.pumpAndSettle();
+        clearInteractions(analytics);
+
+        router.go(location);
+        await tester.pumpAndSettle();
+
+        expect(find.text('Dialog'), findsNothing);
+        expect(loggedScreens(), [screenName]);
+      });
+    }
+
+    // A page pushed without a name over a root page is not a screen. The shell is gone at that point, so its last
+    // screen must not be logged in the unnamed page's place, and popping the page returns to the screen logged last.
+    testWidgets('does not log a gone shell screen when an unnamed page is pushed over a root page', (tester) async {
+      final router = await startAuthenticated(tester);
+      router.go(ApplicationRoutesConstants.settings);
+      await tester.pumpAndSettle();
+      router.go(ApplicationRoutesConstants.forbidden);
+      await tester.pumpAndSettle();
+      expect(find.byType(SettingsScreen, skipOffstage: false), findsNothing);
+      clearInteractions(analytics);
+
+      Navigator.of(tester.element(find.byType(ForbiddenPage)))
+          .push(MaterialPageRoute<void>(builder: (_) => const Text('unnamed page')));
+      await tester.pumpAndSettle();
+      expectNoScreenView();
+
+      Navigator.of(tester.element(find.text('unnamed page'))).pop();
+      await tester.pumpAndSettle();
+      expectNoScreenView();
+    });
 
     testWidgets('logs the not-found page once', (tester) async {
       final router = await startAuthenticated(tester);
