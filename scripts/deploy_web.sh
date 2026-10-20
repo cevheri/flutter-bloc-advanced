@@ -60,6 +60,14 @@ if fvm flutter build web \
     --release; then
     print_success "Web build completed successfully!"
     
+    # web/ keeps the template placeholders. As in the GitHub Pages job, only this repository fills them with the
+    # hosted demo's values; a copy of the template puts its own values into web/, and the check names any left.
+    if git config --get remote.origin.url | grep -qE '[:/]cevheri/flutter-bloc-advanced(\.git)?$'; then
+        print_status "Filling the demo values into build/web..."
+        scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
+    fi
+    scripts/check_web_placeholders.sh build/web
+
     # Display build information
     print_status "Build information:"
     echo "  - Build directory: build/web/"
@@ -82,7 +90,7 @@ if fvm flutter build web \
     # Optional: Create a deployment package
     if [ "$1" = "--package" ]; then
         print_status "Creating deployment package..."
-        tar -czf flutter_web_deploy_$(date +%Y%m%d_%H%M%S).tar.gz -C build web/
+        tar -czf "flutter_web_deploy_$(date +%Y%m%d_%H%M%S).tar.gz" -C build web/
         print_success "Deployment package created!"
     fi
     

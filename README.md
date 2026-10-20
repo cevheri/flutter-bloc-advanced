@@ -8,7 +8,7 @@
 
 A production-ready, community-friendly Flutter starter built with BLoC, repository pattern, responsive UI, role-based access control, internationalization, and multi-environment support. It is designed to help you move from prototype to maintainable product faster across mobile, web, and desktop.
 
-**Useful links:** [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced) · [Transformation Log](docs/archived/clean-modernize-strengthen.md) · [Report an Issue](https://github.com/cevheri/flutter-bloc-advanced/issues) · [Contributing](#contributing)
+**Useful links:** [Live Demo](https://cevheri.github.io/flutter-bloc-advanced/) · [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced) · [Transformation Log](docs/archived/clean-modernize-strengthen.md) · [Report an Issue](https://github.com/cevheri/flutter-bloc-advanced/issues) · [Contributing](#contributing)
 
 ## Why This Template?
 
@@ -362,6 +362,8 @@ All template placeholders use `__KEYWORD__` naming. Run a **global search** for 
 | `__AUTHOR_EMAIL__` | Contact email | `dev@acme.com` | template_config.dart, CONTRIBUTING.md |
 | `__AUTHOR_URL__` | Author website / profile | `https://github.com/acme` | template_config.dart, index.html, humans.txt |
 | `__AUTHOR_LOCATION__` | Author location | `San Francisco, CA` | humans.txt |
+
+The hosted demo fills these placeholders only at deploy time, from `.github/pages/demo-values.env`, and `scripts/check_web_placeholders.sh` fails the GitHub Pages build of any repository that would still publish one, naming the file and keyword (`__PROD_API_URL__` is exempt because the mock-mode web build does not use it).
 
 Also update manually:
 

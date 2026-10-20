@@ -40,6 +40,16 @@ jobs:
         # Drop Flutter's incremental-build marker so include-hidden-files does not publish it.
         run: rm -f build/web/.last_build_id
 
+      - name: Fill demo values
+        # web/ keeps the template placeholders. Only this repository fills them with the hosted demo's values, so a
+        # copy of the template never publishes the demo's name, URLs or author.
+        if: github.repository == 'cevheri/flutter-bloc-advanced'
+        run: scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
+
+      - name: Check for template placeholders
+        # Runs in copies of the template too: until web/ has their own values, the deploy fails and names each one.
+        run: scripts/check_web_placeholders.sh build/web
+
       - name: Verify web assets
         run: |
           echo "Checking required web assets..."

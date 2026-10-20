@@ -59,7 +59,8 @@ test/
 │   ├── import_guard_test.dart        # layer dependency rules
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
-│   └── test_file_naming_test.dart    # forbids *.test.dart (dot) files
+│   ├── test_file_naming_test.dart    # forbids *.test.dart (dot) files
+│   └── web_placeholders_test.dart    # demo values cover every web/ placeholder
 ├── app/                       # app/ layer tests (router, shell, theme, di, ...)
 ├── core/                      # core/ tests (errors, logging, security, result, ...)
 ├── features/<feature>/        # application/ data/ domain/ navigation/ presentation/
@@ -324,6 +325,9 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   CI builds the release APK, but that build succeeds without any of these.
 - **`mock_asset_naming_test.dart`** fails if a file under `assets/mock/` has a `-` in its name.
   `MockInterceptor` maps `-` in request paths to `_`, so such a file is never served and the request falls back to a generic response.
+- **`web_placeholders_test.dart`** fails if a `__KEY__` placeholder in `web/index.html`, `manifest.json`, `sitemap.xml` or `humans.txt` has no value in `.github/pages/demo-values.env`, apart from `__KEYWORD__` and `__PROD_API_URL__`, which the hosted demo leaves on purpose.
+  The GitHub Pages job fills these files in `build/web` from that file and then fails on any placeholder left (`scripts/check_web_placeholders.sh`).
+  It runs only after a push to `main`, so without this test a missing value would surface as a failed deploy instead of in the pull request.
 
 ---
 
@@ -432,6 +436,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | macOS network entitlement guard | `test/architecture/macos_entitlements_test.dart` |
 | Android manifest guard | `test/architecture/android_manifest_test.dart` |
 | Mock asset naming guard | `test/architecture/mock_asset_naming_test.dart` |
+| Web demo values guard | `test/architecture/web_placeholders_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |
