@@ -66,7 +66,7 @@ Move every CI `flutter-version` pin in the same change.
 
 | Package | Before | After | Notes |
 | --- | --- | --- | --- |
-| `go_router` | 17.3.0 | 18.1.0 | major; needs explicit pages, see 5.1 |
+| `go_router` | 17.3.0 | 18.1.1 | major; needs explicit pages, see 5.1 |
 | `sentry_flutter` | 9.22.0 | 10.1.0 | major; Android minSdk 26, Apple builds use SwiftPM only, see 5.3 |
 | `flutter_secure_storage` | 10.3.1 | 11.2.0 | major; no code change, see 5.4 |
 | `equatable` | 2.0.8 | 3.0.0 | major; no code change |
@@ -125,6 +125,8 @@ The fix keeps the 17.x behavior:
 
 The only remaining difference is that go_router's internal `HeroController` uses a straight tween instead of the Material arc; the app has no `Hero` widgets.
 go_router 18.0.2 also wraps shell navigators in `Semantics(container: true)`, so the sidebar and top bar are now in the semantics tree on desktop.
+go_router 18.1.0 failed the Navigator assertion `'!keyReservation.contains(key)'` when a shell route was pushed over a root route that was itself pushed over the shell, for example `push('/forbidden')` and then `push('/settings')`, because both shell pages got the same page key (flutter/flutter#140586).
+18.1.1 gives the second shell page its own keys, and `app_router_pages_test.dart` covers that push.
 
 ### 5.2 dio 5.10 and later
 

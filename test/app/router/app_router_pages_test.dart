@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/app/router/forbidden_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
+import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
@@ -110,6 +111,25 @@ void main() {
 
       expect(find.byType(ForbiddenPage), findsOneWidget);
       expect(rootPages(tester).last, isA<MaterialPage<void>>());
+    });
+
+    // go_router 18.1.0 gave both shell pages the same page key and failed the Navigator assertion
+    // '!keyReservation.contains(key)' (flutter/flutter#140586, fixed in 18.1.1).
+    testWidgets('pushes a shell route over a root route pushed over the shell', (tester) async {
+      setDesktopViewport(tester);
+      TestEnv.authenticate();
+      await tester.pumpWidget(const App(language: 'en'));
+      await tester.pumpAndSettle();
+
+      routerFromApp(tester).push(ApplicationRoutesConstants.forbidden);
+      await tester.pumpAndSettle();
+      expect(find.byType(ForbiddenPage), findsOneWidget);
+
+      routerFromApp(tester).push(ApplicationRoutesConstants.settings);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(routerFromApp(tester).state.uri.path, ApplicationRoutesConstants.settings);
     });
 
     testWidgets('renders a Material not-found page for unknown locations', (tester) async {

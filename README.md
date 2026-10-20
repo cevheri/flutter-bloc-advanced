@@ -331,7 +331,7 @@ The production environment is configured in `lib/infrastructure/config/environme
 | Flutter | 3.47.7 |
 | Dart | 3.13.5 |
 | State Management | flutter_bloc 9.1.1, bloc_concurrency 0.3.0, stream_transform 2.1.2 |
-| Routing | go_router 18.1.0 |
+| Routing | go_router 18.1.1 |
 | HTTP | dio 5.11.1 (interceptor chain: connectivity, auth, token-refresh, idempotency, resilience, cache, dev-console, logging, mock (dev/test only)) |
 | Forms | flutter_form_builder 10.3.0+2 |
 | Localization | intl 0.20.3, intl_utils 2.8.17 |
