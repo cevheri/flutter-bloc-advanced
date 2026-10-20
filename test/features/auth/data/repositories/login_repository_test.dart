@@ -1,8 +1,11 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart';
 
 import '../../../../support/test_env.dart';
 
@@ -26,7 +29,60 @@ class _FlakyDeleteSecureStorage implements ISecureStorage {
   Future<void> deleteAll() async => _store.clear();
 }
 
+/// Answers every request with [body] and status 200 before it reaches the network.
+class _StubInterceptor extends Interceptor {
+  _StubInterceptor(this.body);
+
+  final String body;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    handler.resolve(Response(requestOptions: options, statusCode: 200, data: body));
+  }
+}
+
 void main() {
+  // Regression: a sign-in or OTP response that is not valid JSON, such as one a proxy cut short, failed to parse with a
+  // FormatException whose text quotes the body around the error, tokens included. The repository logged it at error
+  // level, which every build of main_prod prints, and put it into the error that LoginBloc logs again.
+  group("Login Repository malformed token response", () {
+    const accessToken = 'at-opaque-0a1b2c3d4e5f6a7b';
+    const refreshToken = 'rt-9f8e7d6c5b4a3f2e1d0c';
+    late List<String> lines;
+    late LoginRepository repository;
+
+    setUp(() {
+      AppLogger.configure(isProduction: true);
+      lines = [];
+      void collect(OutputEvent event) => lines.addAll(event.lines);
+      Logger.addOutputListener(collect);
+      addTearDown(() => Logger.removeOutputListener(collect));
+      final dio = Dio(BaseOptions(responseType: ResponseType.plain))
+        ..interceptors.add(_StubInterceptor('{"id_token":"$accessToken","refresh_token":"$refreshToken"'));
+      repository = LoginRepository(apiClient: TestEnv.apiClient(dio: dio));
+    });
+
+    tearDown(() => AppLogger.configure(isProduction: false));
+
+    test("authenticate fails without the tokens in its error or its log", () async {
+      final result = await repository.authenticate(
+        const AuthCredentialsEntity(username: 'admin', password: 'S3cret!pw'),
+      );
+
+      final message = (result as Failure<AuthTokenEntity>).error.message;
+      expect([message, ...lines], everyElement(allOf(isNot(contains(accessToken)), isNot(contains(refreshToken)))));
+      expect(message, contains('FormatException'));
+    });
+
+    test("verifyOtp fails without the tokens in its error or its log", () async {
+      final result = await repository.verifyOtp(const VerifyOtpEntity(email: 'otp.user@example.com', otp: '493817'));
+
+      final message = (result as Failure<AuthTokenEntity>).error.message;
+      expect([message, ...lines], everyElement(allOf(isNot(contains(accessToken)), isNot(contains(refreshToken)))));
+      expect(message, contains('FormatException'));
+    });
+  });
+
   group("Login Repository authenticate", () {
     // authenticate method can use with accessToken
     test("Given valid entity when authenticate then return Success with AuthTokenEntity", () async {

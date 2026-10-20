@@ -1,7 +1,6 @@
-import 'dart:convert';
-
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
+import 'package:flutter_bloc_advance/core/security/credential_json.dart';
 
 class JWTToken extends Equatable {
   final String? idToken;
@@ -17,7 +16,7 @@ class JWTToken extends Equatable {
     return JWTToken(idToken: json['id_token'], refreshToken: json['refresh_token']);
   }
 
-  static JWTToken fromJsonString(String json) => fromJson(jsonDecode(json));
+  static JWTToken fromJsonString(String json) => fromJson(decodeCredentialJson(json) as Map<String, dynamic>);
 
   Map<String, dynamic>? toJson() {
     final Map<String, dynamic> json = {};

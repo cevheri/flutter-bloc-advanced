@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/security/credential_json.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
@@ -95,11 +96,17 @@ class TokenRefreshInterceptor extends Interceptor {
   /// shares [source]'s adapter, so the refresh token travels through the
   /// same transport as every other request, certificate pinning included.
   /// Never close the returned Dio: that would close the shared adapter.
+  ///
+  /// It hands the body over as text, so [decodeCredentialJson] decodes it
+  /// whatever its content type. The error dio's own decoder throws for a
+  /// malformed body is the parser's, whose message on the web repeats the
+  /// characters around the error, tokens included.
   static Dio defaultRefreshDio(Dio source) => Dio(
     BaseOptions(
       baseUrl: source.options.baseUrl,
       connectTimeout: source.options.connectTimeout,
       receiveTimeout: source.options.receiveTimeout,
+      responseType: ResponseType.plain,
       headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
     ),
   )..httpClientAdapter = source.httpClientAdapter;
@@ -292,7 +299,7 @@ class TokenRefreshInterceptor extends Interceptor {
       // a NoSuchMethodError that the outer catch would swallow as
       // "Unexpected error during token refresh" — surfacing the body
       // shape explicitly makes the misconfiguration debuggable from logs.
-      final decoded = response.data is String ? jsonDecode(response.data as String) : response.data;
+      final decoded = response.data is String ? decodeCredentialJson(response.data as String) : response.data;
       if (decoded is! Map<String, dynamic>) {
         _log.error('Refresh response body is not a JSON object (was {}); session expired', [decoded.runtimeType]);
         return null;

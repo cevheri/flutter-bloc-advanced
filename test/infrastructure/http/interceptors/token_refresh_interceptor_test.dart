@@ -1,7 +1,11 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart';
 
 /// ISecureStorage whose jwtToken read throws (refresh token is normal).
 /// Exercises the stale-header check's graceful-fallback path.
@@ -662,6 +666,80 @@ void main() {
       );
     });
 
+    // Regression: a refresh response that is not valid JSON, such as one a proxy cut short and sent without a JSON
+    // content type, failed to decode with a FormatException whose text quotes the body around the error, so the error
+    // line, which every build of main_prod prints, carried the new access and refresh tokens.
+    test('logs out on a malformed refresh response without logging its tokens', () async {
+      AppLogger.configure(isProduction: true);
+      addTearDown(() => AppLogger.configure(isProduction: false));
+      final lines = <String>[];
+      void collect(OutputEvent event) => lines.addAll(event.lines);
+      Logger.addOutputListener(collect);
+      addTearDown(() => Logger.removeOutputListener(collect));
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      var logoutCount = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => logoutCount++,
+        refreshDioFactory: (source) {
+          final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
+          refreshDio.interceptors.add(
+            _StubInterceptor()..stubSuccess(data: '{"id_token":"at-new-opaque-1122","refresh_token":"rt-new-77aa88'),
+          );
+          return refreshDio;
+        },
+      );
+      final requestOptions = RequestOptions(path: '/api/users');
+
+      await interceptor.onError(
+        DioException(
+          requestOptions: requestOptions,
+          response: Response(requestOptions: requestOptions, statusCode: 401),
+        ),
+        _TestErrorHandler(),
+      );
+
+      expect(logoutCount, 1);
+      expect(lines, anyElement(contains('FormatException')));
+      expect(lines, everyElement(allOf(isNot(contains('at-new-opaque-1122')), isNot(contains('rt-new-77aa88')))));
+    });
+
+    // Regression: the refresh Dio decoded a response with a JSON content type itself, so a malformed one failed with
+    // the FormatException of the platform's parser instead of decodeCredentialJson's. On the web its message is the
+    // browser's text for the error, which repeats the characters around it, tokens included.
+    test('decodes a refresh response with a JSON content type through decodeCredentialJson', () async {
+      AppLogger.configure(isProduction: true);
+      addTearDown(() => AppLogger.configure(isProduction: false));
+      final lines = <String>[];
+      void collect(OutputEvent event) => lines.addAll(event.lines);
+      Logger.addOutputListener(collect);
+      addTearDown(() => Logger.removeOutputListener(collect));
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      dio.httpClientAdapter = _JsonBodyAdapter('{"id_token":at-new-opaque-1122,"refresh_token":"rt-new-77aa88"}');
+      var logoutCount = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => logoutCount++,
+      );
+      final requestOptions = RequestOptions(path: '/api/users');
+
+      await interceptor.onError(
+        DioException(
+          requestOptions: requestOptions,
+          response: Response(requestOptions: requestOptions, statusCode: 401),
+        ),
+        _TestErrorHandler(),
+      );
+
+      expect(logoutCount, 1);
+      expect(lines, anyElement(contains('FormatException: Malformed JSON (at offset 12)')));
+      expect(lines, everyElement(allOf(isNot(contains('at-new-opaque-1122')), isNot(contains('rt-new-77aa88')))));
+    });
+
     test('logs out when refresh response is missing id_token', () async {
       await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
       await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
@@ -867,6 +945,30 @@ class _UnauthorizedServerStub extends Interceptor {
       true,
     );
   }
+}
+
+/// Answers every request with [body], status 200 and a JSON content type. Unlike a stub interceptor's response, the
+/// body goes through the transformer of the Dio that sent the request.
+class _JsonBodyAdapter implements HttpClientAdapter {
+  _JsonBodyAdapter(this.body);
+
+  final String body;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async => ResponseBody.fromString(
+    body,
+    200,
+    headers: {
+      Headers.contentTypeHeader: [Headers.jsonContentType],
+    },
+  );
+
+  @override
+  void close({bool force = false}) {}
 }
 
 /// Interceptor that stubs responses or errors before any real HTTP call.
