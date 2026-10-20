@@ -8,7 +8,7 @@
 
 A production-ready, community-friendly Flutter starter built with BLoC, repository pattern, responsive UI, role-based access control, internationalization, and multi-environment support. It is designed to help you move from prototype to maintainable product faster across mobile, web, and desktop.
 
-**Useful links:** [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced) · [Transformation Log](docs/clean-modernize-strengthen.md) · [Report an Issue](https://github.com/cevheri/flutter-bloc-advanced/issues) · [Contributing](#contributing)
+**Useful links:** [Wiki](https://deepwiki.com/cevheri/flutter-bloc-advanced) · [Transformation Log](docs/archived/clean-modernize-strengthen.md) · [Report an Issue](https://github.com/cevheri/flutter-bloc-advanced/issues) · [Contributing](#contributing)
 
 ## Why This Template?
 
@@ -497,8 +497,8 @@ If you are unsure where to start, documentation improvements, screenshot refresh
 
 | Document | Description |
 | --- | --- |
-| [Transformation Log](docs/clean-modernize-strengthen.md) | What changed, why, before/after comparison |
-| [Architecture Migration](docs/architecture-migration_en.md) | Feature-first migration guide |
+| [Transformation Log](docs/archived/clean-modernize-strengthen.md) | What changed, why, before/after comparison |
+| [Architecture Migration](docs/archived/architecture-migration_en.md) | Feature-first migration guide |
 | [Feature-First Boundaries](docs/feature-first-clean-boundaries.md) | Clean architecture design document |
 | [Upgrade Guide — Flutter 3.44.0](docs/upgrade_flutter_3.44.0.md) | Flutter 3.41.8 → 3.44.0 upgrade notes (v0.21.0) |
 | [Upgrade Guide - Flutter 3.47.7](docs/upgrade_flutter_3.47.7.md) | Flutter 3.44.3 → 3.47.7 upgrade notes |

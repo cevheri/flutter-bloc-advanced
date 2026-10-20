@@ -46,7 +46,7 @@ Demo credentials: admin/admin (full access), user/user (limited access).
 
 - [README](https://github.com/cevheri/flutter-bloc-advanced/blob/main/README.md): Full project overview, quick start, tech stack, and contributing guide
 - [Architecture Design Document](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/feature-first-clean-boundaries.md): Dependency rules, feature structure, routing and state management rules
-- [Architecture Migration Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/architecture-migration_en.md): Detailed migration from layered to feature-first architecture
+- [Architecture Migration Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/archived/architecture-migration_en.md): Detailed migration from layered to feature-first architecture
 - [Flutter Upgrade Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/upgrade_flutter_3.47.7.md): Flutter 3.47.7 upgrade notes
 - [DeepWiki](https://deepwiki.com/cevheri/flutter-bloc-advanced): AI-powered project wiki
 
@@ -63,6 +63,6 @@ Demo credentials: admin/admin (full access), user/user (limited access).
 ## Optional
 
 - [CLAUDE.md](https://github.com/cevheri/flutter-bloc-advanced/blob/main/CLAUDE.md): AI coding assistant instructions for this project
-- [Release Notes](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/RELEASE_NOTES.md): Version history and changelog
-- [UI Design Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/flutter-modern-ui-design-guide.md): Modern UI design guidelines
+- [Release Notes](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/archived/RELEASE_NOTES.md): Version history and changelog
+- [UI Design Guide](https://github.com/cevheri/flutter-bloc-advanced/blob/main/docs/archived/flutter-modern-ui-design-guide.md): Modern UI design guidelines
 - [License (MIT)](https://github.com/cevheri/flutter-bloc-advanced/blob/main/LICENSE): Open source license
