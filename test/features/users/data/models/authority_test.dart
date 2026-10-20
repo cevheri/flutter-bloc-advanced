@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,45 +10,36 @@ void main() {
       expect(mockAuthorityPayload.name, 'ROLE_USER');
     });
 
-    test('should copy a Authority instance with new values (copyWith)', () {
-      final entityUpd = mockAuthorityPayload.copyWith();
-
-      expect(entityUpd == mockAuthorityPayload, true);
-    });
-
-    test('should copy a Authority instance with new values (copyWith)', () {
-      final entityUpd = mockAuthorityPayload.copyWith(name: 'ROLE_ADMIN');
-
-      expect(entityUpd.name, 'ROLE_ADMIN');
-    });
-
     test('should compare two Authorities instances', () {
-      const entity = mockAuthorityPayload;
-      final entityUpd = entity.copyWith(name: 'ROLE_ADMIN');
-
-      expect(entity == entityUpd, false);
+      expect(mockAuthorityPayload == const Authority(name: 'ROLE_USER'), true);
+      expect(mockAuthorityPayload == const Authority(name: 'ROLE_ADMIN'), false);
     });
   });
 
   group("Authority Model Json Test", () {
     test('should convert Authorities from Json', () {
-      final json = mockAuthorityPayload.toJson();
-      final entity = Authority.fromJson(json!);
+      final entity = Authority.fromJson({'name': 'ROLE_USER'});
 
-      expect(entity?.name, 'ROLE_USER');
+      expect(entity, mockAuthorityPayload);
     });
 
-    test('should convert Authorities from JsonString', () {
-      final jsonString = jsonEncode(mockAuthorityPayload.toJson());
-      final entity = Authority.fromJsonString(jsonString);
-
-      expect(entity?.name, 'ROLE_USER');
+    test('should return null from Json without a name', () {
+      expect(Authority.fromJson(<String, dynamic>{}), isNull);
     });
 
-    test('should convert Authorities to Json', () {
-      final json = mockAuthorityPayload.toJson()!;
+    test('should convert a Json list to authority names', () {
+      final names = Authority.fromJsonList([
+        {'name': 'ROLE_USER'},
+        {'name': 'ROLE_ADMIN'},
+      ]);
 
-      expect(json['name'], 'ROLE_USER');
+      expect(names, ['ROLE_USER', 'ROLE_ADMIN']);
+    });
+
+    test('should convert a Json string list to authority names', () {
+      final names = Authority.fromJsonStringList('[{"name": "ROLE_USER"}, {"name": "ROLE_ADMIN"}]');
+
+      expect(names, ['ROLE_USER', 'ROLE_ADMIN']);
     });
 
     test("to string method", () {
