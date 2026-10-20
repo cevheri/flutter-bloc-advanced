@@ -73,15 +73,11 @@ class LoggingInterceptor extends Interceptor {
   }
 
   /// Render a redacted, length-bounded representation of a request or
-  /// response body. Map bodies have their secret keys dropped first; then
-  /// every shape is stringified and run through [maskJwts] so a token held
-  /// in a non-secret-named field (or a raw string body) still never reaches
-  /// the log.
-  static String _renderBody(Object? body) {
-    if (body == null) return '';
-    final keyScrubbed = body is Map ? scrubBodyKeys(body) : body;
-    return _truncate(maskJwts(keyScrubbed.toString()));
-  }
+  /// response body. [scrubBodyText] masks the secret values of a Map, a List
+  /// or a JSON string, which is how ApiClient receives every response, and
+  /// then every JWT, so a token held in a non-secret-named field (or a raw
+  /// string body) still never reaches the log.
+  static String _renderBody(Object? body) => _truncate(scrubBodyText(body));
 
   static String _truncate(String value) {
     return value.length > _maxBodyChars ? '${value.substring(0, _maxBodyChars)}...[truncated]' : value;
