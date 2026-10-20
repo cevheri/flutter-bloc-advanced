@@ -1,8 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 
 class _MemorySecureStorage implements ISecureStorage {
   final Map<String, String> _store = {};
@@ -25,6 +27,18 @@ class _ReadThrowsSecureStorage implements ISecureStorage {
   Future<void> delete(String key) async {}
   @override
   Future<void> deleteAll() async {}
+}
+
+/// Holds a token for every key but cannot delete one.
+class _DeleteThrowsSecureStorage implements ISecureStorage {
+  @override
+  Future<String?> read(String key) async => 'stored-$key';
+  @override
+  Future<void> write(String key, String value) async {}
+  @override
+  Future<void> delete(String key) async => throw StateError('boom on delete $key');
+  @override
+  Future<void> deleteAll() async => throw StateError('boom on deleteAll');
 }
 
 /// JWT with `exp` claim already in the past. Built statically so tests
@@ -142,5 +156,49 @@ void main() {
       },
       expect: () => [const SessionAuthenticated(), const SessionUnauthenticated(reason: SessionExpiredReason.noToken)],
     );
+
+    test('endSession logs an error and still ends the session when the stored session cannot be cleared', () async {
+      final errors = <String>[];
+      void recordError(OutputEvent event) {
+        if (event.level == Level.error) errors.addAll(event.lines);
+      }
+
+      Logger.addOutputListener(recordError);
+      addTearDown(() => Logger.removeOutputListener(recordError));
+      final cubit = SessionCubit(secureStorage: _DeleteThrowsSecureStorage())..markAuthenticated();
+      addTearDown(cubit.close);
+
+      await cubit.endSession(reason: SessionExpiredReason.idleTimeout);
+
+      expect(cubit.state, const SessionUnauthenticated(reason: SessionExpiredReason.idleTimeout));
+      expect(errors, contains(allOf(contains('SessionCubit : endSession(idleTimeout)'), contains('boom on delete'))));
+    });
+
+    // A rejected sign-in also ends in a 401 that no refresh can fix, so endSession runs with no session to end.
+    blocTest<SessionCubit, SessionState>(
+      'endSession leaves storage and state alone when no session is stored',
+      setUp: () => AppLocalStorage().save(StorageKeys.language.key, 'tr'),
+      build: () => SessionCubit(secureStorage: _MemorySecureStorage()),
+      seed: () => const SessionUnauthenticated(reason: SessionExpiredReason.noToken),
+      act: (cubit) => cubit.endSession(reason: SessionExpiredReason.expired),
+      expect: () => const <SessionState>[],
+      verify: (_) async => expect(await AppLocalStorage().read(StorageKeys.language.key), 'tr'),
+    );
+
+    // A token refresh during a failed sign-in can store a fresh session while the cubit is signed out; a restart
+    // would restore it without the right password.
+    test('endSession clears a stored session even when the cubit is already signed out', () async {
+      final storage = _MemorySecureStorage();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'fresh-jwt');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'fresh-refresh');
+      final cubit = SessionCubit(secureStorage: storage)..markLoggedOut();
+      addTearDown(cubit.close);
+
+      await cubit.endSession(reason: SessionExpiredReason.expired);
+
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), isNull);
+      expect(cubit.state, const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
+    });
   });
 }

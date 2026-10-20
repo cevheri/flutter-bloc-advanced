@@ -46,7 +46,7 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
       idleThreshold: threshold,
       onTimeout: () {
         _log.info('idle timeout fired — signing out');
-        cubit.markLoggedOut(reason: SessionExpiredReason.idleTimeout);
+        cubit.endSession(reason: SessionExpiredReason.idleTimeout);
       },
     );
     observer.start();

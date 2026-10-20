@@ -54,18 +54,24 @@ class AppScope extends StatelessWidget {
         else
           RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
         RepositoryProvider<AppConfig>.value(value: dependencies.appConfig),
+        // Provided above SessionCubit, which clears the stored session when it ends one.
+        RepositoryProvider<IAuthSessionRepository>(
+          create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
+        ),
         // Provided above ApiClient so a failed token refresh can end the session.
         BlocProvider<SessionCubit>(
-          create: (context) =>
-              SessionCubit(secureStorage: context.read<ISecureStorage>(), appConfig: context.read<AppConfig>())
-                ..restore(),
+          create: (context) => SessionCubit(
+            secureStorage: context.read<ISecureStorage>(),
+            sessionRepository: context.read<IAuthSessionRepository>(),
+            appConfig: context.read<AppConfig>(),
+          )..restore(),
         ),
         RepositoryProvider<ApiClient>(
           create: (context) {
             final session = context.read<SessionCubit>();
             return dependencies.createApiClient(
               context.read<ISecureStorage>(),
-              onSessionExpired: () => session.markLoggedOut(reason: SessionExpiredReason.expired),
+              onSessionExpired: () => session.endSession(reason: SessionExpiredReason.expired),
             );
           },
         ),
@@ -78,9 +84,6 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<IAuthRepository>(
           create: (context) =>
               dependencies.createAuthRepository(context.read<ISecureStorage>(), context.read<ApiClient>()),
-        ),
-        RepositoryProvider<IAuthSessionRepository>(
-          create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
         ),
         RepositoryProvider<IDynamicFormRepository>(
           create: (context) => dependencies.createDynamicFormRepository(context.read<ApiClient>()),

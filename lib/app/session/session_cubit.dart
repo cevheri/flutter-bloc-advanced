@@ -1,7 +1,10 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/core/security/security_utils.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
@@ -69,7 +72,8 @@ enum SessionExpiredReason {
   /// No token in secure storage (clean logged-out state).
   noToken,
 
-  /// Token present but past its `exp` claim.
+  /// Token present but past its `exp` claim, or rejected with a 401
+  /// that a token refresh could not fix.
   expired,
 
   /// Secure storage read threw (platform / decryption failure).
@@ -95,13 +99,19 @@ enum SessionExpiredReason {
 /// Consumers (router redirect, UI guards) pattern-match on [state];
 /// callers that want to re-evaluate trigger [refresh].
 class SessionCubit extends Cubit<SessionState> {
-  SessionCubit({ISecureStorage? secureStorage, this._appConfig = const AppConfig.dev()})
-    : _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
-      super(const SessionUnknown());
+  SessionCubit({
+    ISecureStorage? secureStorage,
+    IAuthSessionRepository? sessionRepository,
+    this._appConfig = const AppConfig.dev(),
+  }) : _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
+       super(const SessionUnknown()) {
+    _sessionRepository = sessionRepository ?? AuthSessionRepository(secureStorage: _secureStorage);
+  }
 
   static final _log = AppLogger.getLogger('SessionCubit');
 
   final ISecureStorage _secureStorage;
+  late final IAuthSessionRepository _sessionRepository;
   final AppConfig _appConfig;
 
   Future<void> restore() async {
@@ -151,11 +161,63 @@ class SessionCubit extends Cubit<SessionState> {
     emit(SessionAuthenticated(roles: roles));
   }
 
-  /// Flips the cubit into [SessionUnauthenticated] with the supplied
-  /// [reason] (defaults to [SessionExpiredReason.noToken]). Caller-
-  /// trusted — used after a logout flow has wiped tokens.
-  void markLoggedOut({SessionExpiredReason reason = SessionExpiredReason.noToken}) {
-    emit(SessionUnauthenticated(reason: reason));
+  /// Flips the cubit into [SessionUnauthenticated] with
+  /// [SessionExpiredReason.noToken]. Caller-trusted: used after the explicit
+  /// logout flow (`LoginRepository.logout`) has already wiped the stored
+  /// session through [IAuthSessionRepository.clear]. Any other path that
+  /// ends a session calls [endSession] instead.
+  void markLoggedOut() {
+    emit(const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
+  }
+
+  /// Ends the session: wipes the stored session through
+  /// [IAuthSessionRepository.clear], the same cleanup the explicit logout
+  /// runs, then emits [SessionUnauthenticated] with [reason] unless the
+  /// cubit is already signed out. Used by the idle timeout and by a 401
+  /// that a token refresh cannot fix, so a restart cannot restore a
+  /// session they ended.
+  ///
+  /// The wipe depends on what is stored, not on [state]. It is skipped
+  /// when no token is stored, so a rejected sign-in, which also ends in an
+  /// unrefreshable 401, keeps the stored preferences. A stored token is
+  /// wiped even when the cubit is signed out: a token refresh during a
+  /// failed sign-in can store a session that a restart would restore.
+  ///
+  /// A failed wipe is logged at error level, with the storage error, and
+  /// the in-memory session still ends: staying signed in would defeat the
+  /// idle timeout, and after an unrefreshable 401 the server has already
+  /// rejected the session. The log records that a token may be left for
+  /// the next launch to restore.
+  Future<void> endSession({required SessionExpiredReason reason}) async {
+    if (await _hasStoredSession()) {
+      switch (await _sessionRepository.clear()) {
+        case Success():
+          _log.info('endSession({}): stored session cleared', [reason.name]);
+        case Failure(:final error):
+          _log.error('endSession({}): stored session not cleared, the next launch may restore it: {}', [
+            reason.name,
+            error,
+          ]);
+      }
+    } else {
+      _log.debug('endSession({}): no stored session to clear', [reason.name]);
+    }
+    if (state is! SessionUnauthenticated) emit(SessionUnauthenticated(reason: reason));
+  }
+
+  /// Whether secure storage holds a JWT or a refresh token. A failed read
+  /// counts as stored, so [endSession] wipes rather than leaves a session
+  /// it could not inspect.
+  Future<bool> _hasStoredSession() async {
+    try {
+      for (final key in [SecureStorageKeys.jwtToken, SecureStorageKeys.refreshToken]) {
+        if (await _secureStorage.read(key.key) != null) return true;
+      }
+      return false;
+    } catch (e) {
+      _log.error('endSession: reading the stored session failed, clearing it anyway: {}', [e]);
+      return true;
+    }
   }
 
   /// Re-run [restore] from current secure-storage state. Fire-and-
