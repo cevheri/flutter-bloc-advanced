@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/domain/user_roles.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -29,6 +30,14 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
     super.initState();
     context.read<AuthorityBloc>().add(const AuthorityLoad());
   }
+
+  /// The name of [role] that the user list shows: Admin for [adminRole] and Guest for [userRole]. Another role, which
+  /// the user list has no name for, shows as the server names it.
+  String _roleLabel(BuildContext context, String role) => switch (role) {
+    adminRole => S.of(context).admin,
+    userRole => S.of(context).guest,
+    _ => role,
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +75,7 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
             ),
           ),
           child: Text(
-            selectedValue,
+            _roleLabel(context, selectedValue),
             overflow: TextOverflow.ellipsis,
             style: tt.bodyMedium?.copyWith(color: cs.onSurface),
           ),
@@ -105,7 +114,7 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
               suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
             ),
             child: Text(
-              selectedValue,
+              _roleLabel(context, selectedValue),
               overflow: TextOverflow.ellipsis,
               style: tt.bodyMedium?.copyWith(color: cs.onSurface),
             ),
@@ -175,7 +184,7 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
       ),
       items: authorities.map((role) {
         final value = role ?? '';
-        final label = value.isEmpty ? (widget.hintText ?? S.of(context).authorities) : value;
+        final label = value.isEmpty ? (widget.hintText ?? S.of(context).authorities) : _roleLabel(context, value);
         return PopupMenuItem<String?>(
           value: value,
           child: Row(

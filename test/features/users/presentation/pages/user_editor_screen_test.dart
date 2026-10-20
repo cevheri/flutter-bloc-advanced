@@ -312,12 +312,12 @@ void main() {
 
       // The AuthoritiesDropdown (isRequired: true) must have a non-empty value or
       // saveAndValidate() returns false and UserEditorSubmit is never dispatched.
-      // Tap the dropdown to open the popup menu, then select 'ROLE_USER'.
+      // Tap the dropdown to open the popup menu, then select the user role, which it names Guest.
       await tester.ensureVisible(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('ROLE_USER').last);
+      await tester.tap(find.text('Guest').last);
       await tester.pumpAndSettle();
 
       await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
@@ -486,14 +486,19 @@ void main() {
     });
 
     // What an admin does: open a user from the list (here by going to its address) or the new user form.
-    Future<void> open(WidgetTester tester, String location, {Map<String, Object> answers = const {}}) async {
+    Future<void> open(
+      WidgetTester tester,
+      String location, {
+      Map<String, Object> answers = const {},
+      String language = 'en',
+    }) async {
       tester.view.physicalSize = const Size(1600, 1600);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.reset);
 
       await tester.pumpWidget(
         App(
-          language: 'en',
+          language: language,
           dependencies: _RecordingDependencies(requests, answers: answers),
         ),
       );
@@ -532,7 +537,7 @@ void main() {
     // Guards that picking a role other than the one shown replaces all of the user's roles with it.
     testWidgets('saving the admin with another role gives it that role', (tester) async {
       await open(tester, '/user/admin/edit');
-      await chooseRole(tester, 'ROLE_USER');
+      await chooseRole(tester, 'Guest');
 
       final update = await save(tester, 'PUT');
 
@@ -555,13 +560,28 @@ void main() {
       await open(tester, '/user/mixed.roles/edit', answers: {'/admin/users/mixed.roles': mixedRoles});
 
       final field = find.byKey(const Key('userEditorAuthoritiesFieldKey'));
-      expect(find.descendant(of: field, matching: find.text('ROLE_ADMIN')), findsOneWidget);
-      expect(find.descendant(of: field, matching: find.text('ROLE_USER')), findsNothing);
+      expect(find.descendant(of: field, matching: find.text('Admin')), findsOneWidget);
+      expect(find.descendant(of: field, matching: find.text('Guest')), findsNothing);
+    });
+
+    // The role field and its menu showed the role codes ROLE_ADMIN and ROLE_USER in every language.
+    testWidgets('names the roles the way the user list does, in Turkish', (tester) async {
+      await open(tester, '/user/admin/edit', language: 'tr');
+
+      final field = find.byKey(const Key('userEditorAuthoritiesFieldKey'));
+      expect(find.descendant(of: field, matching: find.text('Admin')), findsOneWidget);
+
+      await tester.tap(field);
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(PopupMenuItem<String?>, 'Kullanıcı'), findsOneWidget);
+      expect(find.widgetWithText(PopupMenuItem<String?>, 'Admin'), findsOneWidget);
+      expect(find.textContaining('ROLE_'), findsNothing);
     });
 
     testWidgets('picking ROLE_USER for a user whose roles arrive with ROLE_USER first saves that role', (tester) async {
       await open(tester, '/user/mixed.roles/edit', answers: {'/admin/users/mixed.roles': mixedRoles});
-      await chooseRole(tester, 'ROLE_USER');
+      await chooseRole(tester, 'Guest');
 
       final update = await save(tester, 'PUT');
 
@@ -576,7 +596,7 @@ void main() {
       await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Ada');
       await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'Lovelace');
       await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'ada.lovelace@example.com');
-      await chooseRole(tester, 'ROLE_USER');
+      await chooseRole(tester, 'Guest');
 
       final created = await save(tester, 'POST');
 
