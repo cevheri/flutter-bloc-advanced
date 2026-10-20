@@ -56,6 +56,7 @@ test/
 │   └── fake_data.dart         # Shared fixtures (mockUserFullPayload, ...)
 ├── architecture/              # Meta-tests enforcing rules (see below)
 │   ├── import_guard_test.dart        # layer dependency rules
+│   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   └── test_file_naming_test.dart    # forbids *.test.dart (dot) files
 ├── app/                       # app/ layer tests (router, shell, theme, di, ...)
 ├── core/                      # core/ tests (errors, logging, security, result, ...)
@@ -314,6 +315,10 @@ for genuine stateful behavior; Dio handlers are always hand-written:
 - **`test_file_naming_test.dart`** fails if any file is named `*.test.dart`
   (a dot instead of `_test.dart`) — such files compile and pass `analyze` but
   are silently never executed by `flutter test`.
+- **`macos_entitlements_test.dart`** fails if either macOS entitlement file
+  drops `com.apple.security.network.client`. The sandboxed macOS app cannot
+  make outgoing requests without it, the `flutter create` template omits it,
+  and no CI job builds macOS.
 
 ---
 
@@ -419,6 +424,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Shared mocks/fakes | `test/mocks/mock_classes.dart`, `test/mocks/fake_data.dart` |
 | Layer dependency guard | `test/architecture/import_guard_test.dart` |
 | Test-file naming guard | `test/architecture/test_file_naming_test.dart` |
+| macOS network entitlement guard | `test/architecture/macos_entitlements_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |
