@@ -16,6 +16,10 @@ enum LogFormat { simple, extended }
 /// List argument has the values of its credential keys masked by
 /// [scrubBodyKeys] first.
 ///
+/// An argument that is a closure with no parameter is called only when the
+/// line is printed, and its result is printed in its place, for a text that
+/// costs work to build, such as the first lines of a stack trace.
+///
 /// Each `{}` in the message takes the text of the next argument, from left
 /// to right. The message is scanned once, so an argument whose text contains
 /// `{}` is printed as it is and never takes the place of a later one. A `{}`
@@ -59,9 +63,12 @@ class AppLogger {
     return maskEmails(maskSecrets("$_name : $text"));
   }
 
-  /// [argument] as it is printed: a Map or a List with the values of its credential keys masked.
-  static Object? _printable(Object? argument) =>
-      argument is Map || argument is List ? scrubBodyKeys(argument) : argument;
+  /// [argument] as it is printed: what a closure returns, and a Map or a List with the values of its credential keys
+  /// masked.
+  static Object? _printable(Object? argument) {
+    final value = argument is Object? Function() ? argument() : argument;
+    return value is Map || value is List ? scrubBodyKeys(value) : value;
+  }
 
   // The printer calls the closure only after the filter has passed the level, so a dropped level never runs _msg.
   void trace(dynamic message, [List<Object?>? args]) => _logger.t(() => _msg(message, args));

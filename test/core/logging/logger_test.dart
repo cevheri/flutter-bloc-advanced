@@ -185,6 +185,32 @@ void main() {
 
       expect(argument.toStringCalls, 0);
     });
+
+    test('does not call a closure argument of a level the filter drops', () {
+      AppLogger.configure(isProduction: true, logFormat: LogFormat.simple);
+      var calls = 0;
+
+      AppLogger.getLogger('LazyTest').debug('trace: {}', [
+        () {
+          calls++;
+          return 'built';
+        },
+      ]);
+
+      expect(calls, 0);
+    });
+
+    test('prints what a closure argument returns, with the credential keys of a Map masked', () {
+      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
+      final lines = _capturePrintedLines();
+
+      AppLogger.getLogger('LazyTest').info('head: {} params: {}', [
+        () => 'line 1',
+        () => {'login': 'admin', 'password': 'Adm1nSet!Pw'},
+      ]);
+
+      expect(lines, anyElement(endsWith('LazyTest : head: line 1 params: {login: admin, password: [REDACTED]}')));
+    });
   });
 }
 

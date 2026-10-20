@@ -37,7 +37,7 @@ class LogAnalyticsService implements IAnalyticsService {
   void logError({required Object error, StackTrace? stackTrace, String? reason}) {
     _log.error('non_fatal_error: {} reason: {}', [error, reason ?? '-']);
     if (stackTrace != null) {
-      _log.error('stack_trace: {}', [stackTrace.toString().split('\n').take(5).join('\n')]);
+      _log.error('stack_trace: {}', [() => stackTrace.toString().split('\n').take(5).join('\n')]);
     }
   }
 }
