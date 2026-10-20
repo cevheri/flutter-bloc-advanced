@@ -3,8 +3,7 @@
 /// [sentryBeforeBreadcrumb] for each breadcrumb), to the local debug logs
 /// ([LoggingInterceptor] verbose mode), to the text of an HTTP error
 /// ([ApiClient], [scrubErrorBody]), or to the console through [AppLogger],
-/// which runs every line it prints through [maskEmails]. On web with a
-/// Sentry DSN each printed line also becomes a breadcrumb.
+/// which runs every line it prints through [maskEmails].
 ///
 /// Keeping one copy of the redaction policy is a security invariant, not
 /// just DRY: two divergent copies guarantee that one exit eventually

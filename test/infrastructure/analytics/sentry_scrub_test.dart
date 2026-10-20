@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_scrub.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -329,6 +331,38 @@ void main() {
         contains(r'"value":"Error During Communication: Not found: {\"path\":\"/api/admin/users/[REDACTED_EMAIL]\"}"'),
       );
     });
+  });
+
+  // Regression: on web SentryFlutter.init runs the app in the zone of sentryRunZonedGuarded, whose print hook turned
+  // every printed line into a console breadcrumb, and AppLogger prints each line it logs. beforeBreadcrumb masks only
+  // emails and JWTs, so a password or a code that an error line carried went out with the next error event.
+  // Sentry.init with an appRunner takes the same zone.
+  test('sends no line the app prints as a breadcrumb when the app runs in the Sentry zone', () async {
+    AppLogger.configure(isProduction: true);
+    addTearDown(() => AppLogger.configure(isProduction: false));
+    final sentEvents = <String>[];
+    final done = Completer<void>();
+
+    await Sentry.init(
+      (options) {
+        options.dsn = 'https://public@example.invalid/1';
+        options.transport = _CapturingTransport(sentEvents);
+        installSentryScrubbers(options);
+      },
+      appRunner: () async {
+        AppLogger.getLogger('BusinessException').error('Invalid Request: {}', [
+          '{"errors":[{"field":"newPassword","rejectedValue":"NewPass#2"}],"detail":"OTP 493817"}',
+        ]);
+        await Sentry.captureException(StateError('a later error'));
+        done.complete();
+      },
+    );
+    addTearDown(Sentry.close);
+    await done.future;
+
+    final sent = sentEvents.single;
+    expect(sent, contains('a later error'));
+    expect(sent, allOf(isNot(contains('NewPass#2')), isNot(contains('493817')), isNot(contains('Invalid Request'))));
   });
 }
 

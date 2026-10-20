@@ -93,9 +93,12 @@ fvm flutter build apk --release --target lib/main/main_prod.dart \
 - Email addresses and JWTs in the page location (`request.url`, query string, fragment) and the transaction name, replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`.
   On web the OTP route `/login-otp-verify/:email` puts the user's email there.
 
-`sentryBeforeBreadcrumb`, the `beforeBreadcrumb` hook, masks email addresses and JWTs in the message and the data of every breadcrumb when it is recorded: the breadcrumbs of `SentryAnalyticsService`, the navigation breadcrumbs, every `debugPrint` line of a release build, which on web includes the text of an uncaught error, and on web every other printed line.
+`sentryBeforeBreadcrumb`, the `beforeBreadcrumb` hook, masks email addresses and JWTs in the message and the data of every breadcrumb when it is recorded: the breadcrumbs of `SentryAnalyticsService` and the navigation breadcrumbs.
 It also covers the http and ui breadcrumbs a fork adds through `sentry_dio` or `SentryUserInteractionWidget`.
 `installSentryScrubbers` installs both hooks, and `AppBootstrap.run` calls it when it starts Sentry.
+It also turns print breadcrumbs off, so no printed line, and no `AppLogger` line, becomes a breadcrumb.
+On web the SDK runs the app in a zone that made a breadcrumb of every printed line, and a scrubber cannot find a password or a code in free text.
+Native builds never recorded `AppLogger` lines.
 
 The scrubber is unit-tested independently of the SDK; review it against your fork's PII surface before adopting in production. Adding new redaction rules is a single-file change.
 

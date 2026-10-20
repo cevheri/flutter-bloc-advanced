@@ -69,13 +69,11 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
 
 /// PII / token scrubber for Sentry breadcrumbs. Runs as the SDK's
 /// `beforeBreadcrumb` hook (see [installSentryScrubbers]) on every
-/// breadcrumb: those of `SentryAnalyticsService`, the navigation
-/// breadcrumbs, every `debugPrint` line of a release build, which on web
-/// includes the text of an uncaught error, and on web every other printed
-/// line, not only those of `AppLogger`, which masks emails in its own
-/// lines. It also covers the http and ui breadcrumbs a fork adds through
-/// `sentry_dio` or `SentryUserInteractionWidget`. Masks emails and JWTs in
-/// the message and in every string of the data, at any depth.
+/// breadcrumb: those of `SentryAnalyticsService` and the navigation
+/// breadcrumbs. It also covers the http and ui breadcrumbs a fork adds
+/// through `sentry_dio` or `SentryUserInteractionWidget`, and a printed line
+/// if a fork turns print breadcrumbs back on. Masks emails and JWTs in the
+/// message and in every string of the data, at any depth.
 ///
 /// The hook runs when a breadcrumb is added, before the scope keeps it and
 /// passes it on to the native SDK, so the copy the native SDK keeps for its
@@ -96,9 +94,17 @@ Breadcrumb? sentryBeforeBreadcrumb(Breadcrumb? breadcrumb) {
 /// `AppBootstrap` calls it when it starts Sentry. Both are needed: an
 /// error event takes its breadcrumbs from the scope, and only
 /// `beforeBreadcrumb` scrubs them there.
+///
+/// It also turns print breadcrumbs off. On web the SDK runs the app in a
+/// zone that made a breadcrumb of every printed line, so every line
+/// `AppLogger` logged, and a scrubber cannot find a password or a code in
+/// free text. Native builds never turned `AppLogger` lines into breadcrumbs,
+/// so web now matches them. In a release build this also stops recording
+/// `debugPrint` lines.
 void installSentryScrubbers(SentryOptions options) {
   options.beforeSend = (event, hint) => sentryBeforeSend(event);
   options.beforeBreadcrumb = (breadcrumb, hint) => sentryBeforeBreadcrumb(breadcrumb);
+  options.enablePrintBreadcrumbs = false;
 }
 
 /// Masks emails and JWTs in a URL or in one of its parts. Route and query
