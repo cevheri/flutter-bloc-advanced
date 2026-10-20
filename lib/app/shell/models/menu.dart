@@ -85,17 +85,6 @@ class Menu extends Equatable {
     );
   }
 
-  static List<Menu> fromJsonList(List<dynamic> json) {
-    List<Menu> result = [];
-    for (var item in json) {
-      var menu = Menu.fromJson(item as Map<String, dynamic>);
-      if (menu != null) {
-        result.add(menu);
-      }
-    }
-    return result;
-  }
-
   static Menu? fromJsonString(String json) => fromJson(jsonDecode(json));
 
   static List<Menu> fromJsonStringList(String json) {

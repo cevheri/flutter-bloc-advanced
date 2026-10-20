@@ -25,20 +25,6 @@ class AuthTokenEntity extends Equatable {
 
   bool get isValid => idToken != null && idToken!.isNotEmpty;
 
-  /// Returns true if the token has an expiration time and it has passed.
-  bool get isExpired {
-    if (expiresAt == null) return false;
-    return DateTime.now().isAfter(expiresAt!);
-  }
-
-  AuthTokenEntity copyWith({String? idToken, String? refreshToken, DateTime? expiresAt}) {
-    return AuthTokenEntity(
-      idToken: idToken ?? this.idToken,
-      refreshToken: refreshToken ?? this.refreshToken,
-      expiresAt: expiresAt ?? this.expiresAt,
-    );
-  }
-
   @override
   List<Object?> get props => [idToken, refreshToken, expiresAt];
 

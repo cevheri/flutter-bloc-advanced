@@ -12,7 +12,6 @@ class ConfirmationDialog extends StatelessWidget {
     required this.parentContext,
     this.confirmText,
     this.cancelText,
-    this.barrierDismissible = false,
   });
 
   final String title;
@@ -20,7 +19,6 @@ class ConfirmationDialog extends StatelessWidget {
   final String? confirmText;
   final String? cancelText;
   final BuildContext parentContext;
-  final bool barrierDismissible;
 
   static Future<bool?> show({
     required BuildContext context,

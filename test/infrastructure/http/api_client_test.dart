@@ -168,14 +168,6 @@ void main() {
       final exception = UnauthorizedException('Test access denied');
       expect(exception.toString(), equals('Unauthorized: Test access denied'));
     });
-    test('given InvalidInputException when created then should return message', () {
-      final exception = InvalidInputException('Test invalid data');
-      expect(exception.toString(), equals('Invalid Input: Test invalid data'));
-    });
-    test('given ApiBusinessException when created then should return message', () {
-      final exception = ApiBusinessException('Test Business Exception');
-      expect(exception.toString(), equals('Api Business Exception: Test Business Exception'));
-    });
   });
 
   group('ApiClient Tests', () {

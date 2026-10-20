@@ -11,7 +11,6 @@ class ResponsiveFormBuilder extends StatelessWidget {
     this.crossAxisAlignment = CrossAxisAlignment.start,
     this.autoValidateMode = false,
     this.onChanged,
-    this.shrinkWrap = false,
     this.initialValue = const <String, dynamic>{},
   });
 
@@ -21,7 +20,6 @@ class ResponsiveFormBuilder extends StatelessWidget {
   final CrossAxisAlignment crossAxisAlignment;
   final bool autoValidateMode;
   final VoidCallback? onChanged;
-  final bool shrinkWrap;
   final Map<String, dynamic> initialValue;
 
   @override

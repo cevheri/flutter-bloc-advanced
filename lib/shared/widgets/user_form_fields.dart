@@ -70,14 +70,4 @@ class UserFormFields {
     name: 'activated',
     title: showTitle ? Text(S.of(context).active) : const SizedBox.shrink(),
   );
-
-  static Widget authoritiesField(BuildContext context, List<String?>? initialValue, {bool enabled = true}) =>
-      FormBuilderDropdown<String>(
-        key: const Key('userEditorAuthoritiesFieldKey'),
-        name: 'authorities',
-        enabled: enabled,
-        decoration: InputDecoration(labelText: S.of(context).authorities),
-        items: initialValue?.map((e) => DropdownMenuItem(value: e, child: Text(e ?? ''))).toList() ?? [],
-        validator: FormBuilderValidators.compose([_requiredValidator(context)]),
-      );
 }

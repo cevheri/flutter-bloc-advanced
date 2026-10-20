@@ -39,14 +39,6 @@ final class UnauthorizedException extends AppException {
   UnauthorizedException([String? message]) : super(message, "Unauthorized: ");
 }
 
-class InvalidInputException extends AppException {
-  InvalidInputException(String message) : super(message, "Invalid Input: ");
-}
-
-class ApiBusinessException extends AppException {
-  ApiBusinessException(String message) : super(message, "Api Business Exception: ");
-}
-
 /// Thrown when a circuit breaker is in the OPEN state, rejecting requests
 /// to prevent cascading failures against an unhealthy endpoint.
 class CircuitBreakerOpenException extends AppException {

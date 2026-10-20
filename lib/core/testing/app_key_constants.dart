@@ -1,8 +1,5 @@
 import 'package:flutter/material.dart';
 
-const Key drawerButtonLogoutKey = Key("drawerButtonLogoutKey");
-const Key drawerButtonLogoutYesKey = Key("drawerButtonLogoutYesKey");
-const Key drawerButtonLogoutNoKey = Key("drawerButtonLogoutNoKey");
 const Key loginTextFieldUsernameKey = Key("loginTextFieldUsernameKey");
 const Key loginTextFieldPasswordKey = Key("loginTextFieldPasswordKey");
 const Key loginButtonSubmitKey = Key("loginButtonSubmitKey");
@@ -11,12 +8,6 @@ const Key loginButtonRegisterKey = Key("loginButtonRegisterKey");
 const Key loginButtonPasswordVisibilityKey = Key("loginButtonPasswordVisibilityKey");
 const Key forgotPasswordButtonSubmitKey = Key("forgotPasswordButtonSubmit");
 const Key forgotPasswordTextFieldEmailKey = Key("forgotPasswordTextFieldEmail");
-
-// register screen
-const Key registerSubmitButtonKey = Key("registerSubmitButtonKey");
-const Key registerFirstNameTextFieldKey = Key("registerFirstNameTextFieldKey");
-const Key registerLastNameTextFieldKey = Key("registerLastNameTextFieldKey");
-const Key registerEmailTextFieldKey = Key("registerEmailTextFieldKey");
 
 // settings screen
 const Key settingsChangePasswordButtonKey = Key("settingsChangePasswordButtonKey");
