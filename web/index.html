@@ -93,67 +93,6 @@
   }
   </script>
 
-  <!-- Disable browser back button for Flutter SPA -->
-  <script>
-    (function() {
-      let currentUrl = window.location.href;
-      let isDisabled = false;
-
-      window.addEventListener('popstate', function(event) {
-        event.preventDefault();
-        event.stopPropagation();
-        event.stopImmediatePropagation();
-
-        if (window.location.href !== currentUrl) {
-          window.history.pushState(null, '', currentUrl);
-        }
-
-        isDisabled = true;
-        return false;
-      }, true);
-
-      window.addEventListener('beforeunload', function(event) {
-        if (isDisabled) {
-          event.preventDefault();
-          event.returnValue = '';
-          return '';
-        }
-      });
-
-      const originalPushState = window.history.pushState;
-      const originalReplaceState = window.history.replaceState;
-      const originalGo = window.history.go;
-
-      window.history.pushState = function(state, title, url) {
-        currentUrl = url || window.location.href;
-        return originalPushState.call(this, state, title, url);
-      };
-
-      window.history.replaceState = function(state, title, url) {
-        currentUrl = url || window.location.href;
-        return originalReplaceState.call(this, state, title, url);
-      };
-
-      window.history.go = function(delta) {
-        if (delta < 0) return;
-        return originalGo.call(this, delta);
-      };
-
-      window.history.back = function() { return; };
-      window.history.forward = function() { return; };
-
-      window.history.pushState(null, '', currentUrl);
-
-      document.addEventListener('keydown', function(event) {
-        if (event.key === 'Backspace' && event.altKey) {
-          event.preventDefault();
-          event.stopPropagation();
-          return false;
-        }
-      }, true);
-    })();
-  </script>
-
   <!-- Loading spinner styles -->
   <style>
     #loading {

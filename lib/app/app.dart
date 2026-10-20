@@ -14,7 +14,6 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
-import 'package:flutter_bloc_advance/shared/widgets/web_back_button_disabler.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
@@ -116,34 +115,32 @@ class _AppViewState extends State<_AppView> {
   Widget build(BuildContext context) {
     return BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, themeState) {
-        return WebBackButtonDisabler(
-          child: MaterialApp.router(
-            scaffoldMessengerKey: widget.scaffoldMessengerKey,
-            theme: AppTheme.light(themeState.palette),
-            darkTheme: AppTheme.dark(themeState.palette),
-            themeMode: themeState.themeMode,
-            themeAnimationDuration: Duration.zero,
-            debugShowCheckedModeBanner: true,
-            localizationsDelegates: const [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: S.delegate.supportedLocales,
-            locale: Locale(widget.language),
-            routerConfig: _router!,
-            // The router's first redirect must see the restored session: while the session is unknown it treats a
-            // signed-in user as signed out, shows the login page and loses a deep link. So the router is mounted, and
-            // its first route parsed, only once restore has settled the session. Later sign-ins and sign-outs are left
-            // to its redirect.
-            builder: (context, router) => BlocBuilder<SessionCubit, SessionState>(
-              buildWhen: (previous, current) => previous is SessionUnknown,
-              builder: (context, session) => switch (session) {
-                SessionUnknown() => const _SessionRestoreView(),
-                SessionAuthenticated() || SessionUnauthenticated() => router!,
-              },
-            ),
+        return MaterialApp.router(
+          scaffoldMessengerKey: widget.scaffoldMessengerKey,
+          theme: AppTheme.light(themeState.palette),
+          darkTheme: AppTheme.dark(themeState.palette),
+          themeMode: themeState.themeMode,
+          themeAnimationDuration: Duration.zero,
+          debugShowCheckedModeBanner: true,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+          locale: Locale(widget.language),
+          routerConfig: _router!,
+          // The router's first redirect must see the restored session: while the session is unknown it treats a
+          // signed-in user as signed out, shows the login page and loses a deep link. So the router is mounted, and
+          // its first route parsed, only once restore has settled the session. Later sign-ins and sign-outs are left
+          // to its redirect.
+          builder: (context, router) => BlocBuilder<SessionCubit, SessionState>(
+            buildWhen: (previous, current) => previous is SessionUnknown,
+            builder: (context, session) => switch (session) {
+              SessionUnknown() => const _SessionRestoreView(),
+              SessionAuthenticated() || SessionUnauthenticated() => router!,
+            },
           ),
         );
       },

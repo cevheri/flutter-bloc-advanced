@@ -222,7 +222,6 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - LanguageSelectionDialog
 - EditorFormMode
 - UserFormFields
-- WebBackButtonDisabler
 
 ## Dependency Injection
 
