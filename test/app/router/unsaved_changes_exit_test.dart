@@ -18,6 +18,8 @@ import 'package:flutter_bloc_advance/features/auth/presentation/pages/forgot_pas
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
@@ -298,6 +300,42 @@ void main() {
     });
   });
 
+  group('A dirty user editor', () {
+    testWidgets('asks before the browser back button leaves it', (tester) async {
+      final history = await _pumpApp(tester);
+      _router(tester).go(ApplicationRoutesConstants.userList);
+      await tester.pumpAndSettle();
+      _router(tester).go(ApplicationRoutesConstants.userNew);
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'New');
+      await tester.pumpAndSettle();
+      _expectBackHeld(tester, find.byType(UserEditorScreen));
+
+      await _browserMovesTo(tester, history, ApplicationRoutesConstants.userList);
+      expect(_unsavedChangesDialog, findsOneWidget);
+      await _answer(tester, leave: false);
+      expect(find.byType(UserEditorScreen), findsOneWidget);
+    });
+
+    testWidgets('leaves for the user list without asking once the save succeeds', (tester) async {
+      await _pumpApp(tester);
+      _router(tester).go('/user/admin/edit');
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Renamed');
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      expect(_unsavedChangesDialog, findsNothing);
+      expect(find.byType(UserListPage), findsOneWidget);
+      // Lets the list's search request, delayed by the mock backend, finish before the test ends.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+    });
+  });
+
   group('A clean account form', () {
     testWidgets('leaves through the sidebar without asking', (tester) async {
       await _pumpApp(tester);
@@ -328,6 +366,9 @@ void main() {
       ApplicationRoutesConstants.changePassword,
       ApplicationRoutesConstants.forgotPassword,
       ApplicationRoutesConstants.register,
+      ApplicationRoutesConstants.userNew,
+      ApplicationRoutesConstants.userEdit,
+      ApplicationRoutesConstants.userView,
     ]) {
       expect(routes[path]?.onExit, confirmLeavingUnsavedChanges, reason: path);
     }

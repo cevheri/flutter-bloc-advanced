@@ -26,6 +26,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refr
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -34,6 +35,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
 import '../../../../support/test_env.dart';
+import '../../../../support/unsaved_changes_host.dart';
 
 void main() {
   late MockAuthorityBloc mockAuthorityBloc;
@@ -58,6 +60,7 @@ void main() {
       routes: [
         GoRoute(
           path: '/user/new',
+          onExit: confirmLeavingUnsavedChanges,
           builder: (context, state) => const Scaffold(body: UserEditorPage(mode: EditorFormMode.create)),
         ),
         GoRoute(
@@ -80,15 +83,17 @@ void main() {
         BlocProvider<UserEditorBloc>.value(value: mockUserBloc),
         BlocProvider<AuthorityBloc>.value(value: mockAuthorityBloc),
       ],
-      child: MaterialApp.router(
-        routerConfig: router,
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
+      child: withUnsavedChangesRegistry(
+        MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+        ),
       ),
     );
   }

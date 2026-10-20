@@ -13,6 +13,7 @@ import 'package:flutter_bloc_advance/features/users/presentation/pages/user_exte
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_page_transition.dart';
 import 'package:flutter_bloc_advance/shared/widgets/editor_form_mode.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:go_router/go_router.dart';
 
 class UsersFeatureRoutes {
@@ -46,6 +47,7 @@ class UsersFeatureRoutes {
     GoRoute(
       name: 'userCreate',
       path: '/user/new',
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,
@@ -55,6 +57,7 @@ class UsersFeatureRoutes {
     GoRoute(
       name: 'userEdit',
       path: '/user/:id/edit',
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,
@@ -64,6 +67,7 @@ class UsersFeatureRoutes {
     GoRoute(
       name: 'userView',
       path: '/user/:id/view',
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,

@@ -10,6 +10,7 @@ import 'package:flutter_bloc_advance/shared/design_system/components/components.
 import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
@@ -74,8 +75,22 @@ class _UserEditorViewState extends State<_UserEditorView> {
   /// Edit and view show the form only once the user is fetched; create starts from an empty form.
   bool get _fetchesUser => widget.mode != EditorFormMode.create;
 
+  /// The form holds unsaved changes until the save succeeds; the page then leaves for the list without asking.
+  bool _hasUnsavedChanges() => switch (context.read<UserEditorBloc>().state) {
+    UserEditorSaved() => false,
+    _ => _formKey.currentState?.isDirty ?? false,
+  };
+
   @override
   Widget build(BuildContext context) {
+    return UnsavedChangesScope(
+      hasUnsavedChanges: _hasUnsavedChanges,
+      onBack: () => _handleBack(context),
+      child: _buildEditor(context),
+    );
+  }
+
+  Widget _buildEditor(BuildContext context) {
     return BlocConsumer<UserEditorBloc, UserEditorState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) {
@@ -137,7 +152,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
                     IconButton(
                       key: const Key('userEditorAppBarBackButtonKey'),
                       icon: const Icon(Icons.arrow_back, size: 18),
-                      onPressed: () async => _handleBack(context),
+                      onPressed: () => _handleBack(context),
                       style: IconButton.styleFrom(
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
                       ),
@@ -210,6 +225,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
       ),
       child: FormBuilder(
         key: _formKey,
+        onChanged: () => UnsavedChangesScope.formChanged(context),
         initialValue: {
           'login': user?.login ?? '',
           'firstName': user?.firstName ?? '',
@@ -298,37 +314,13 @@ class _UserEditorViewState extends State<_UserEditorView> {
     ];
   }
 
-  Future<void> _handleBack(BuildContext context) async {
+  void _handleBack(BuildContext context) {
     if (widget.mode == EditorFormMode.view) {
       context.go(ApplicationRoutesConstants.userList);
       context.read<UserEditorBloc>().add(const UserEditorViewComplete());
       return;
     }
-
-    if (!context.mounted) return;
-
-    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      _navigateBack(context);
-      return;
-    }
-
-    final shouldPop =
-        await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: Text(S.of(ctx).warning),
-            content: Text(S.of(ctx).unsaved_changes),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(ctx).pop(true), child: Text(S.of(ctx).yes)),
-              TextButton(onPressed: () => Navigator.of(ctx).pop(false), child: Text(S.of(ctx).no)),
-            ],
-          ),
-        ) ??
-        false;
-
-    if (shouldPop && context.mounted) {
-      _navigateBack(context);
-    }
+    _navigateBack(context);
   }
 
   void _navigateBack(BuildContext context) {
