@@ -11,6 +11,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// which a project fills with its own values. A value written into `web/` or `lib/` instead ships in every copy of the
 /// template, so this test fails when a deployment-specific value appears verbatim in a file there (`lib/generated/`
 /// excepted), or in `SECURITY.md`, the policy that `web/.well-known/security.txt` sends every copy's reporters to.
+/// It searches the files git tracks or would add, so a file that git ignores, such as a developer's local tool
+/// settings, is not part of a copy and is not searched.
 ///
 /// The values that name the template itself (its name, short name and description) are not checked: `web/index.html`
 /// and the app still use that name until a project renames it by hand (README, "Customizing for Your Project").
@@ -29,10 +31,8 @@ void main() {
     expect(values, isNotEmpty, reason: '$valuesPath has no deployment-specific values to look for');
 
     final paths = [
-      for (final root in roots)
-        for (final entity in Directory(root).listSync(recursive: true))
-          if (entity is File && !entity.path.startsWith(skippedDirectory)) entity.path,
-      ...files,
+      for (final path in _filesGitTracksOrWouldAdd([...roots, ...files]))
+        if (!path.startsWith(skippedDirectory)) path,
     ]..sort();
 
     final found = [
@@ -49,6 +49,28 @@ void main() {
           'Use the __KEY__ placeholder, or a build-time value, instead:\n${found.join('\n')}',
     );
   });
+}
+
+/// The existing files under [pathspecs] that git tracks or would add: `git ls-files` with the standard ignore rules.
+List<String> _filesGitTracksOrWouldAdd(List<String> pathspecs) {
+  final result = Process.runSync('git', [
+    'ls-files',
+    '-z',
+    '--cached',
+    '--others',
+    '--exclude-standard',
+    '--',
+    ...pathspecs,
+  ]);
+  if (result.exitCode != 0) {
+    throw StateError(
+      'git ls-files failed with exit code ${result.exitCode}, and this guard needs a git checkout: ${result.stderr}',
+    );
+  }
+  return [
+    for (final path in (result.stdout as String).split('\u0000'))
+      if (path.isNotEmpty && File(path).existsSync()) path,
+  ];
 }
 
 /// Whether [bytes] contains [pattern]. Compares bytes, so binary files under `web/` are searched as they are.
