@@ -56,6 +56,7 @@ test/
 │   └── fake_data.dart         # Shared fixtures (mockUserFullPayload, ...)
 ├── architecture/              # Meta-tests enforcing rules (see below)
 │   ├── android_manifest_test.dart    # Android INTERNET, backup off
+│   ├── feature_generator_test.dart   # tool/generate_feature.dart output is clean and passes its tests
 │   ├── import_guard_test.dart        # layer dependency rules, url_launcher only in external_link.dart
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
@@ -345,6 +346,10 @@ for genuine stateful behavior; Dio handlers are always hand-written:
 - **`web_placeholders_test.dart`** fails if a `__KEY__` placeholder in `web/index.html`, `manifest.json`, `sitemap.xml` or `humans.txt` has no value in `.github/pages/demo-values.env`, apart from `__KEYWORD__` and `__PROD_API_URL__`, which the hosted demo leaves on purpose.
   The GitHub Pages job fills these files in `build/web` from that file and then fails on any placeholder left (`scripts/check_web_placeholders.sh`).
   It runs only after a push to `main`, so without this test a missing value would surface as a failed deploy instead of in the pull request.
+- **`feature_generator_test.dart`** runs `tool/generate_feature.dart` in a temporary copy of the project and fails if the generated feature is not formatted, does not analyze cleanly or fails its own tests.
+  Nothing else compiles the generator's templates, so they drift silently when an API they call changes.
+  The generated repository and route tests go through the real `ApiClient` and `MockInterceptor`, so a mock file named differently from the request it should answer fails the guard too.
+  It is the slowest guard, mostly because of the nested `flutter test` run.
 
 ---
 
@@ -454,6 +459,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Android manifest guard | `test/architecture/android_manifest_test.dart` |
 | Mock asset naming guard | `test/architecture/mock_asset_naming_test.dart` |
 | Web demo values guard | `test/architecture/web_placeholders_test.dart` |
+| Feature generator guard | `test/architecture/feature_generator_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |

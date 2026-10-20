@@ -151,9 +151,9 @@ Confirm support before opting in production call sites.
 Opt in per call:
 
 ```dart
-await ApiClient.post<User>('/admin/users', user, idempotent: true);
-await ApiClient.put<User>('/admin/users', user, pathParams: '42', idempotent: true);
-await ApiClient.patch<User>('/admin/users', user, pathParams: '42', idempotent: true);
+await apiClient.post<User>('/admin/users', user, idempotent: true);
+await apiClient.put<User>('/admin/users', user, pathParams: '42', idempotent: true);
+await apiClient.patch<User>('/admin/users', user, pathParams: '42', idempotent: true);
 ```
 
 Worked example: `UserRepository.create` opts in (see `lib/features/users/data/repositories/user_repository.dart`).
@@ -486,6 +486,8 @@ To enable SonarQube, add the `SONAR_TOKEN` secret to your repository or organiza
 8. Register the feature routes in `lib/app/router/app_router.dart`.
 9. Register DI in `lib/app/di/app_dependencies.dart` (repository) and `app_scope.dart` (BLoC).
 10. Add tests in `test/features/<feature>/` mirroring the feature structure.
+
+For a CRUD feature, `fvm dart run tool/generate_feature.dart <feature>` does steps 1 to 7 and 10, writes the mock data, and prints the code for steps 8 and 9.
 
 **Dependency rules** (enforced by architecture guard tests):
 - `core/` imports nothing from the project
