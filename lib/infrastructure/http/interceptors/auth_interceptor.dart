@@ -16,8 +16,8 @@ import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.d
 ///
 /// It records on every request that is not to a public endpoint the
 /// [SessionGeneration] the request goes out under, which
-/// `TokenRefreshInterceptor` checks before it refreshes the session for a
-/// 401.
+/// `TokenRefreshInterceptor` checks before it sends the request again or
+/// refreshes the session for a 401.
 class AuthInterceptor extends Interceptor {
   static final _log = AppLogger.getLogger('AuthInterceptor');
 

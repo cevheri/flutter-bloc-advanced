@@ -89,10 +89,12 @@ final class _SessionEnded extends _RefreshOutcome {
 /// storm against the refresh endpoint.
 ///
 /// A 401 for a request sent under a session that a logout or the end of
-/// the session has wiped since, or is wiping, gets no refresh, and a
-/// refresh still on its way when the wipe starts drops the rotated
-/// tokens, so a relaunch cannot restore the session the user ended. The
-/// requests fail with their 401 ([SessionGeneration]).
+/// the session has wiped since, or is wiping, is neither sent again nor
+/// refreshed, so within one app process, which on web is one browser tab,
+/// a request one user sent never goes out again with the token of a user
+/// who signed in since. A refresh still on its way when the wipe starts
+/// drops the rotated tokens, so a relaunch cannot restore the session the
+/// user ended. The requests fail with their 401 ([SessionGeneration]).
 ///
 /// Deliberately not a [QueuedInterceptor]: the retry goes back through
 /// the client's [Dio], so a failed retry reaches [onError] while the
@@ -212,6 +214,23 @@ class TokenRefreshInterceptor extends Interceptor {
       return;
     }
 
+    // The session generation the request was sent under, which AuthInterceptor records before it reads the token.
+    final sentUnder = AuthInterceptor.sessionGenerationOf(err.requestOptions);
+    if (sentUnder == null) {
+      // Every request of the client goes through AuthInterceptor first, so this one cannot show which session it was
+      // sent under. It is not sent again, spends no refresh token and ends no session.
+      _log.error('401 for {} without a session generation: AuthInterceptor must run before this interceptor', [
+        requestPath,
+      ]);
+      handler.next(err);
+      return;
+    }
+    // Checked before anything below acts on the 401, and again once the stored token has been read.
+    if (_sessionEnded(sentUnder, requestPath)) {
+      handler.next(err);
+      return;
+    }
+
     // Second 401 on the same request after a refresh+retry round
     // already happened — refusing to refresh again. The newly-rotated
     // token is being rejected; another refresh would just produce
@@ -242,6 +261,11 @@ class TokenRefreshInterceptor extends Interceptor {
     } catch (e) {
       _log.warn('Stale-header check skipped — secure read failed: {}', [e]);
     }
+    // A logout or the end of the session can start while the token is read.
+    if (_sessionEnded(sentUnder, requestPath)) {
+      handler.next(err);
+      return;
+    }
     // Dio headers are Map<String, dynamic>; defensive narrowing to
     // avoid a runtime crash if a non-String value ever lands on
     // [_AuthHeader.name] (interceptor would otherwise break the entire
@@ -257,25 +281,6 @@ class TokenRefreshInterceptor extends Interceptor {
       return;
     }
 
-    // The session generation the request was sent under, which AuthInterceptor records before it reads the token.
-    final sentUnder = AuthInterceptor.sessionGenerationOf(err.requestOptions);
-    if (sentUnder == null) {
-      // Every request of the client goes through AuthInterceptor first, so this one cannot show which session it was
-      // sent under. It spends no refresh token and ends no session.
-      _log.error('401 for {} without a session generation: AuthInterceptor must run before this interceptor', [
-        requestPath,
-      ]);
-      handler.next(err);
-      return;
-    }
-    // A logout or the end of the session wiped, or is wiping, the session the request was sent under. There is no
-    // session to refresh, and it is not ended again: the user may have signed in since.
-    if (SessionGeneration.hasEnded(sentUnder)) {
-      _log.warn('Session of {} ended since it was sent: no token refresh', [requestPath]);
-      handler.next(err);
-      return;
-    }
-
     switch (await _refreshOnce(sentUnder)) {
       case _Refreshed(:final idToken):
         await _retryWithToken(err, idToken, handler);
@@ -287,6 +292,16 @@ class TokenRefreshInterceptor extends Interceptor {
         // the user may have signed in since, and that session must stay.
         handler.next(err);
     }
+  }
+
+  /// Whether a logout or the end of the session wiped, or is wiping, the session that the request to [path] was sent
+  /// under, [sentUnder]. A token stored now is then of a session signed in to since, maybe by another user, so the
+  /// request is not sent again with it, there is no session to refresh, and the session is not ended again: the 401
+  /// is passed on.
+  bool _sessionEnded(int sentUnder, String path) {
+    if (!SessionGeneration.hasEnded(sentUnder)) return false;
+    _log.warn('Session of {} ended since it was sent: no retry and no token refresh', [path]);
+    return true;
   }
 
   /// Retry the original request with [token]. Forwards retry failures

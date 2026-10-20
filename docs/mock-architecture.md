@@ -199,7 +199,8 @@ In production the refresh Dio has no interceptors and uses the adapter of the cl
 
 `AuthInterceptor` records on each request the session generation it goes out under, before it reads the token (`SessionGeneration` in `lib/infrastructure/storage/session_generation.dart`).
 A logout or the end of the session wipes the stored session inside `SessionGeneration.wipe`.
-So a 401 for a request whose session has been wiped since, or is being wiped, gets no refresh, and a refresh still on its way drops the rotated tokens instead of storing a session that a relaunch would restore.
+So within one app process, which on web is one browser tab, a 401 for a request whose session has been wiped since, or is being wiped, is neither sent again nor refreshed: the token stored now may be that of another user who signed in since.
+A refresh still on its way drops the rotated tokens instead of storing a session that a relaunch would restore.
 `CacheInterceptor` checks the same generation before it stores a response, so a GET still on its way when the session ends does not put the data of the user who signed out back into the cache the wipe cleared.
 
 ## Mock File Naming Convention

@@ -48,8 +48,9 @@ class _MemorySecureStorage implements ISecureStorage {
 }
 
 /// A request to [path] as AuthInterceptor sends it, which records the session generation the request goes out under.
-RequestOptions _sentRequest(String path, {Map<String, dynamic>? headers}) => RequestOptions(
+RequestOptions _sentRequest(String path, {String? method, Map<String, dynamic>? headers}) => RequestOptions(
   path: path,
+  method: method,
   headers: headers,
   extra: {AuthInterceptor.sessionGenerationKey: SessionGeneration.current},
 );
@@ -421,7 +422,7 @@ void main() {
         secureStorage: secureStorage,
         onSessionExpired: () => sessionExpiredCalls++,
       );
-      final ro = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer SOME_JWT'});
+      final ro = _sentRequest('/api/users', headers: {'Authorization': 'Bearer SOME_JWT'});
       // Marker is an Expando keyed on RequestOptions (typed, per-
       // instance, no map collisions). debugMarkAsRetried is the
       // sanctioned test-only path to set it without driving a full
@@ -473,9 +474,11 @@ void main() {
       await secureStorage.write(SecureStorageKeys.jwtToken.key, 'NEW_JWT');
       await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
       final baselineRefreshReads = secureStorage.refreshTokenReadCount;
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
 
       final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
-      final requestOptions = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer OLD_JWT'});
       final error = DioException(
         requestOptions: requestOptions,
         response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -489,6 +492,7 @@ void main() {
         0,
         reason: 'stale header path must NOT call refresh; refresh-token read is the proxy for that',
       );
+      expect(retryStub.lastAuthorization, 'Bearer NEW_JWT');
     });
 
     test('clears in-flight Future so a later 401 starts a fresh refresh', () async {
@@ -967,6 +971,87 @@ void main() {
       expect(handler.nextError, same(error), reason: 'the request fails with its 401');
       expect(secureStorage.refreshTokenReadCount, 0, reason: 'the refresh-token read is the proxy for a refresh');
       expect(sessionExpiredCalls, 0);
+    });
+
+    // Regression: the stale-header check ran first, so the 401 of a request that one user sent, arriving after that
+    // user signed out and another signed in, sent the request again with the token of the user signed in now.
+    test('does not send a request again with the token of a user who signed in after its session ended', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'user-a-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'user-a-refresh');
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      final requestOptions = _sentRequest('/account', method: 'POST', headers: {'Authorization': 'Bearer user-a-jwt'});
+      // User A signs out while the request is on its way, and user B signs in.
+      await SessionGeneration.wipe(() async {
+        await secureStorage.delete(SecureStorageKeys.jwtToken.key);
+        await secureStorage.delete(SecureStorageKeys.refreshToken.key);
+      });
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'user-b-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'user-b-refresh');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull, reason: 'the action user A started must not run as user B');
+      expect(secureStorage.refreshTokenReadCount, 0, reason: 'the refresh-token read is the proxy for a refresh');
+      expect(sessionExpiredCalls, 0, reason: 'ending the session would sign out user B');
+    });
+
+    test('does not send a request without a session generation again with the token stored now', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'stored-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      // Not sent through AuthInterceptor, so nothing shows that the token stored now is of the session it was sent
+      // under.
+      final requestOptions = RequestOptions(path: '/api/users', headers: {'Authorization': 'Bearer sent-jwt'});
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull);
+    });
+
+    test('does not end the session signed in since when a request sent again after a refresh gets 401 again', () async {
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer refreshed-jwt'});
+      TokenRefreshInterceptor.debugMarkAsRetried(requestOptions);
+      // The session ends while the request is sent again, and the user signs in again.
+      await SessionGeneration.wipe(() async {});
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'signed-in-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'signed-in-refresh');
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(sessionExpiredCalls, 0, reason: 'ending the session would sign out the session signed in since');
     });
   });
 

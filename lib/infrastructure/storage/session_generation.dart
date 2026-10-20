@@ -2,10 +2,10 @@
 /// for it, that the session ended in the meantime.
 ///
 /// `AuthInterceptor` records the generation a request is sent under before it reads the token. When the request gets
-/// a 401, `TokenRefreshInterceptor` refreshes only while that generation has not ended, and checks it again before and
-/// after it stores the rotated tokens. A logout or the end of the session wipes the stored session through [wipe], so a
-/// refresh still on its way drops the rotated tokens instead of storing a session the user ended, which a relaunch
-/// would restore.
+/// a 401, `TokenRefreshInterceptor` sends it again or refreshes the session only while that generation has not ended,
+/// and checks it again before and after it stores the rotated tokens. A logout or the end of the session wipes the
+/// stored session through [wipe], so a refresh still on its way drops the rotated tokens instead of storing a session
+/// the user ended, which a relaunch would restore.
 ///
 /// The generation lives in memory, so the guard covers one app process, which on web is one browser tab: a logout in
 /// another tab does not end the generation of this one. Covering every tab is left to a cross-tab follow-up.

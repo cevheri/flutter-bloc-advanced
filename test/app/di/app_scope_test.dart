@@ -44,9 +44,9 @@ String _unexpiredJwt() => _jwt(exp: 4102444800);
 /// A JWT whose `exp` has passed, so a production [SessionCubit] restores it as signed out but leaves it stored.
 String _expiredJwt() => _jwt(exp: 946684800);
 
-String _jwt({required int exp}) {
+String _jwt({required int exp, String sub = 'admin'}) {
   String part(Map<String, Object> json) => base64Url.encode(utf8.encode(jsonEncode(json))).replaceAll('=', '');
-  return '${part({'alg': 'HS256', 'typ': 'JWT'})}.${part({'sub': 'admin', 'exp': exp})}.signature';
+  return '${part({'alg': 'HS256', 'typ': 'JWT'})}.${part({'sub': sub, 'exp': exp})}.signature';
 }
 
 /// Answers every request with 401, like a server that rejects the stored token.
@@ -203,6 +203,60 @@ class _RefreshRaceServer implements HttpClientAdapter {
         'login': 'admin',
         'authorities': ['ROLE_ADMIN'],
       });
+    }
+    return json(401, {'title': 'Unauthorized'});
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// Answers like the server while a request of one user is on its way and that user signs out and another signs in:
+/// the account save sent with [signedOutJwt] waits for [releaseSave] and is then rejected with 401, the sign-in answers
+/// with [signedInJwt], and every request with [signedInJwt] succeeds. Records each request with its Authorization
+/// header.
+class _SignInRaceServer implements HttpClientAdapter {
+  _SignInRaceServer({required this.signedOutJwt, required this.signedInJwt});
+
+  final String signedOutJwt;
+  final String signedInJwt;
+  final requests = <String>[];
+  final saveReceived = Completer<void>();
+  final releaseSave = Completer<void>();
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    final route = '${options.method} ${options.path}';
+    final authorization = switch (options.headers['Authorization']) {
+      final String header when header == 'Bearer $signedOutJwt' => 'Bearer signed-out-user',
+      final String header when header == 'Bearer $signedInJwt' => 'Bearer signed-in-user',
+      final other => '$other',
+    };
+    requests.add('$route $authorization');
+    ResponseBody json(int statusCode, Object body) => ResponseBody.fromString(
+      jsonEncode(body),
+      statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+    switch ((route, authorization)) {
+      case ('POST /authenticate', 'null'):
+        return json(200, {'id_token': signedInJwt, 'refresh_token': 'signed-in-refresh-token'});
+      case ('POST /account', 'Bearer signed-out-user'):
+        saveReceived.complete();
+        await releaseSave.future;
+        return json(401, {'title': 'Unauthorized'});
+      case (_, 'Bearer signed-in-user'):
+        return json(200, {
+          'id': 'user-2',
+          'login': 'user-two',
+          'authorities': ['ROLE_USER'],
+        });
     }
     return json(401, {'title': 'Unauthorized'});
   }
@@ -514,5 +568,62 @@ void main() {
         expect(relaunched.state, const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
       });
     }
+
+    // Regression: a request still on its way when the user signed out got its 401 after another user had signed in,
+    // and it was sent again with the token of that user, so the change the first user saved was made as the second.
+    testWidgets('does not send a request of the user who signed out again as the user who signed in since', (
+      tester,
+    ) async {
+      final signedOutJwt = _jwt(exp: 4102444800, sub: 'user-one');
+      final signedInJwt = _jwt(exp: 4102444800, sub: 'user-two');
+      await FlutterSecureStorageAdapter().write(SecureStorageKeys.jwtToken.key, signedOutJwt);
+      await FlutterSecureStorageAdapter().write(SecureStorageKeys.refreshToken.key, 'signed-out-refresh-token');
+      await AppLocalStorage().save(StorageKeys.roles.key, <String>['ROLE_ADMIN']);
+      final dependencies = _CountingDependencies();
+      late BuildContext scope;
+      await tester.pumpWidget(
+        AppScope(
+          dependencies: dependencies,
+          defaultLocale: const Locale('en'),
+          child: Builder(
+            builder: (context) {
+              scope = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      final session = scope.read<SessionCubit>();
+      await tester.pumpAndSettle();
+      expect(session.state, isA<SessionAuthenticated>());
+      final server = _SignInRaceServer(signedOutJwt: signedOutJwt, signedInJwt: signedInJwt);
+      final apiClient = scope.read<ApiClient>();
+      apiClient.instance.httpClientAdapter = server;
+
+      // The first user saves the account. Before the server answers, that user signs out and another signs in.
+      Object? outcome;
+      apiClient
+          .post('/account', {'login': 'user-one', 'firstName': 'One'})
+          .then<void>((response) => outcome = response, onError: (Object error) => outcome = error);
+      await _pumpUntil(tester, () => server.saveReceived.isCompleted);
+      final menu = scope.read<MenuBloc>();
+      menu.add(const Logout());
+      await _pumpUntil(tester, () => menu.state.isLogout);
+      final login = scope.read<LoginBloc>();
+      login.add(const LoginFormSubmitted(username: 'user-two', password: 'user-two-password'));
+      await _pumpUntil(tester, () => login.state is LoginLoadedState);
+      // The token of the first user expired on the way, so the server rejects the save.
+      server.releaseSave.complete();
+      await _pumpUntil(tester, () => outcome != null);
+
+      expect(outcome, isA<UnauthorizedException>());
+      expect(server.requests, [
+        'POST /account Bearer signed-out-user',
+        'POST /authenticate null',
+        'GET /account Bearer signed-in-user',
+      ]);
+      expect(dependencies.sessionExpiredCalls, 0, reason: 'ending the session would sign out the user signed in now');
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), signedInJwt);
+    });
   });
 }
