@@ -1,5 +1,8 @@
+import 'dart:io' show SocketException;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -391,6 +394,65 @@ void main() {
 
         expect(handler.resolveCalled, isTrue);
         expect(handler.resolvedResponse!.data, '{"fallback": true}');
+      });
+
+      test('should serve stale cache when the connection drops mid-request without a response', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.networkFirst},
+        );
+
+        final cacheEntry = CacheEntry(
+          key: 'GET_${options.uri}',
+          data: '{"stale_data": true}',
+          createdAt: DateTime.now(),
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer((_) async => cacheEntry);
+
+        // dio only maps a SocketException raised while connecting to connectionError; one raised later stays unknown.
+        final err = DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: const SocketException('Connection reset by peer'),
+        );
+
+        final handler = _TestErrorHandler();
+        await interceptor.onError(err, handler);
+
+        expect(handler.resolveCalled, isTrue);
+        expect(handler.resolvedResponse!.headers.value('x-cache'), 'stale');
+      });
+
+      // A pin mismatch means the connection may be intercepted, so it must fail closed, not look like being offline.
+      test('should pass a certificate pin mismatch through even when a cached entry exists', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.networkFirst},
+        );
+
+        final cacheEntry = CacheEntry(
+          key: 'GET_${options.uri}',
+          data: '{"stale_data": true}',
+          createdAt: DateTime.now(),
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer((_) async => cacheEntry);
+
+        // The pinned adapter's handshake failure, as dio wraps it: unknown type, no response.
+        final err = DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: const CertificatePinningException('example.com', 443),
+        );
+
+        final handler = _TestErrorHandler();
+        await interceptor.onError(err, handler);
+
+        expect(handler.nextCalled, isTrue);
+        expect(handler.resolveCalled, isFalse);
       });
 
       test('should pass error through when no cache available for networkFirst', () async {

@@ -43,3 +43,20 @@ class CertificatePinner {
     return base64.encode(sha256.convert(certDer).bytes);
   }
 }
+
+/// Thrown when the certificate a server presents matches none of the
+/// configured pins.
+///
+/// The pinning adapter throws it from the TLS bad-certificate callback and
+/// dart:io fails the handshake with it, so it reaches dio as the `error` of
+/// a `DioException`. A pin mismatch means the connection may be
+/// intercepted, so it must fail closed: it is never answered from cache.
+class CertificatePinningException implements Exception {
+  const CertificatePinningException(this.host, this.port);
+
+  final String host;
+  final int port;
+
+  @override
+  String toString() => 'CertificatePinningException: the certificate of $host:$port matches no configured pin';
+}

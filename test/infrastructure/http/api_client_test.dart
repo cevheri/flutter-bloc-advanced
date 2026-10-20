@@ -1,11 +1,11 @@
 import 'dart:convert';
-import 'dart:io' show HandshakeException;
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -505,9 +505,9 @@ void main() {
     });
 
     test('fails a pin mismatch as DioExceptionType.unknown and never retries it', () async {
-      // The pinned adapter rejects the certificate during the TLS handshake, so HttpClient throws a
-      // HandshakeException and dio wraps it in DioExceptionType.unknown, not badCertificate.
-      adapter.fail(const HandshakeException('Handshake error in client (OS Error: CERTIFICATE_VERIFY_FAILED)'));
+      // The pinned adapter's certificate callback throws CertificatePinningException during the TLS handshake,
+      // HttpClient fails with it, and dio wraps it in DioExceptionType.unknown, not badCertificate.
+      adapter.fail(const CertificatePinningException('api.example.test', 443));
 
       // The Idempotency-Key makes the POST safe to send twice, so only the error type decides against a retry.
       await expectLater(
@@ -519,10 +519,29 @@ void main() {
         throwsA(
           isA<DioException>()
               .having((e) => e.type, 'type', DioExceptionType.unknown)
-              .having((e) => e.error, 'error', isA<HandshakeException>()),
+              .having((e) => e.error, 'error', isA<CertificatePinningException>()),
         ),
       );
       expect(adapter.requests, hasLength(1));
+    });
+
+    // Regression: a pin mismatch on a GET was answered from the response cache as if the device were offline, so the
+    // user saw the earlier data although the connection may be intercepted.
+    test('fails a pin mismatch on a cached GET instead of answering it from the cache', () async {
+      TestEnv.authenticate();
+      adapter.reply(200, '[{"login":"admin"}]');
+      final first = await client.get('/api/transport/cached');
+      expect(first.data, '[{"login":"admin"}]');
+
+      adapter.fail(const CertificatePinningException('api.example.test', 443));
+
+      await expectLater(
+        client.get('/api/transport/cached'),
+        throwsA(
+          isA<FetchDataException>().having((e) => e.toString(), 'message', contains('CertificatePinningException')),
+        ),
+      );
+      expect(adapter.requests, hasLength(2));
     });
 
     test('records failures on ResilienceInterceptor.instance, which the dashboard reads (#60)', () async {

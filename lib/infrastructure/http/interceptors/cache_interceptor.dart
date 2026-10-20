@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 
 /// Dio interceptor that caches successful GET responses and serves them
 /// when offline or when a [CachePolicy] is specified.
@@ -94,7 +95,7 @@ class CacheInterceptor extends Interceptor {
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     // Only fall back to cache for connectivity/timeout failures on GET requests.
-    // Auth errors (401/403), server errors (5xx), etc. must propagate normally.
+    // Auth errors (401/403), server errors (5xx), certificate pin mismatches, etc. must propagate normally.
     if (err.requestOptions.method.toUpperCase() == 'GET' && _isConnectivityError(err)) {
       final policy = _extractPolicy(err.requestOptions);
       if (policy == CachePolicy.networkFirst || policy == CachePolicy.cacheFirst) {
@@ -119,6 +120,9 @@ class CacheInterceptor extends Interceptor {
   }
 
   bool _isConnectivityError(DioException err) {
+    // A pin mismatch arrives as unknown with no response, like a dropped connection, but it means the connection
+    // may be intercepted: fail closed instead of answering it from cache.
+    if (err.error is CertificatePinningException) return false;
     return err.type == DioExceptionType.connectionError ||
         err.type == DioExceptionType.connectionTimeout ||
         err.type == DioExceptionType.sendTimeout ||
