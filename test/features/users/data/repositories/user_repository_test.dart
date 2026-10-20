@@ -224,11 +224,10 @@ void main() {
       expect(result, isA<Failure<void>>());
     });
 
-    test("Given null userId when deleteUser then return validation failure", () async {
+    test("Given an empty login when deleteUser then return a validation failure that names the login", () async {
       TestEnv.authenticate();
       final result = await repository.delete("");
-      expect(result, isA<Failure<void>>());
-      expect((result as Failure<void>).error, isA<ValidationError>());
+      expect(result, const Failure<void>(ValidationError('User login is required')));
     });
   });
 }

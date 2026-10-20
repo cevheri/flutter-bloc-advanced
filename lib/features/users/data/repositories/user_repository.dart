@@ -15,6 +15,7 @@ class UserRepository implements IUserRepository {
   static final _log = AppLogger.getLogger('UserRepository');
   static const String _resource = 'users';
   static const String userIdRequired = 'User id is required';
+  static const String userLoginRequired = 'User login is required';
 
   @override
   Future<Result<UserEntity>> retrieve(String id) async {
@@ -46,7 +47,7 @@ class UserRepository implements IUserRepository {
   Future<Result<UserEntity>> create(UserEntity user) async {
     _log.debug('BEGIN:createUser repository start : {}', [user.toString()]);
     if (user.login == null || user.login!.isEmpty) {
-      return const Failure(ValidationError('User login is required'));
+      return const Failure(ValidationError(userLoginRequired));
     }
     if (user.email == null || user.email!.isEmpty) {
       return const Failure(ValidationError('User email is required'));
@@ -216,7 +217,7 @@ class UserRepository implements IUserRepository {
   Future<Result<void>> delete(String login) async {
     _log.debug('BEGIN:deleteUser repository start - login: {}', [login]);
     if (login.isEmpty) {
-      return const Failure(ValidationError(userIdRequired));
+      return const Failure(ValidationError(userLoginRequired));
     }
     try {
       final response = await _apiClient.delete('/admin/$_resource', pathParams: login);
