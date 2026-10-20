@@ -143,17 +143,22 @@ class AppResponsiveListView<T> extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+          // The title and the create button each get at most half the row and wrap beyond it, so a long label on a
+          // phone neither overflows nor squeezes the title out.
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              Flexible(
                 child: Text(title, style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
               ),
               if (onCreateNew != null)
-                FilledButton.icon(
-                  key: createNewKey,
-                  onPressed: onCreateNew,
-                  icon: const Icon(Icons.add, size: 16),
-                  label: Text(createLabel ?? 'New'),
+                Flexible(
+                  child: FilledButton.icon(
+                    key: createNewKey,
+                    onPressed: onCreateNew,
+                    icon: const Icon(Icons.add, size: 16),
+                    label: Text(createLabel ?? 'New'),
+                  ),
                 ),
             ],
           ),
