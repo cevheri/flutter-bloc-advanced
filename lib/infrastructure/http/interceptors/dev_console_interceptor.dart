@@ -13,19 +13,7 @@ class DevConsoleInterceptor extends Interceptor {
       return;
     }
 
-    final id = '${options.method}_${options.uri}_${DateTime.now().microsecondsSinceEpoch}';
-    options.extra['_devConsoleId'] = id;
-
-    final entry = NetworkEntry(
-      id: id,
-      method: options.method,
-      url: options.uri.toString(),
-      startTime: DateTime.now(),
-      requestHeaders: Map<String, dynamic>.from(options.headers),
-      requestBody: options.data?.toString(),
-    );
-
-    DevConsoleStore.instance.addNetworkEntry(entry);
+    _addEntry(options);
     handler.next(options);
   }
 
@@ -58,19 +46,37 @@ class DevConsoleInterceptor extends Interceptor {
       return;
     }
 
-    final id = err.requestOptions.extra['_devConsoleId'] as String?;
-    if (id != null) {
-      DevConsoleStore.instance.updateNetworkEntry(
-        id,
-        (entry) => entry.copyWith(
-          statusCode: err.response?.statusCode,
-          responseBody: _truncate(err.response?.data?.toString()),
-          endTime: DateTime.now(),
-          error: '${err.type.name}: ${err.message ?? 'Unknown error'}',
-        ),
-      );
-    }
+    // A request rejected before it reached onRequest, as ConnectivityInterceptor rejects one while the device is
+    // offline, has no entry yet: add it, so its failure is recorded like any other.
+    final id = err.requestOptions.extra['_devConsoleId'] as String? ?? _addEntry(err.requestOptions);
+    DevConsoleStore.instance.updateNetworkEntry(
+      id,
+      (entry) => entry.copyWith(
+        statusCode: err.response?.statusCode,
+        responseBody: _truncate(err.response?.data?.toString()),
+        endTime: DateTime.now(),
+        error: '${err.type.name}: ${err.message ?? 'Unknown error'}',
+      ),
+    );
     handler.next(err);
+  }
+
+  /// Records [options] in [DevConsoleStore] as a request in flight and returns the id of its entry.
+  String _addEntry(RequestOptions options) {
+    final id = '${options.method}_${options.uri}_${DateTime.now().microsecondsSinceEpoch}';
+    options.extra['_devConsoleId'] = id;
+
+    final entry = NetworkEntry(
+      id: id,
+      method: options.method,
+      url: options.uri.toString(),
+      startTime: DateTime.now(),
+      requestHeaders: Map<String, dynamic>.from(options.headers),
+      requestBody: options.data?.toString(),
+    );
+
+    DevConsoleStore.instance.addNetworkEntry(entry);
+    return id;
   }
 
   String? _truncate(String? value, [int maxLength = 10000]) {

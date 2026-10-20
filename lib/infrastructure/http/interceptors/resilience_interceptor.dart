@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotency_interceptor.dart';
 
 /// Dio interceptor that combines **smart retry** with a **circuit breaker**
@@ -19,6 +20,9 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotenc
 ///   [IdempotencyInterceptor]). Otherwise the error passes through, because the server may already have
 ///   processed the request.
 /// - Non-retryable: 400, 401, 403, 404, 422 pass through immediately.
+/// - A request that [ConnectivityInterceptor] rejected because the device is offline (its error is a
+///   [ConnectivityException]) passes through immediately and does not count against the circuit breaker: it was
+///   never sent.
 /// - Max retries: 3, exponential backoff with jitter (200ms base).
 /// - Respects the `Retry-After` header when present.
 /// - Retries go through the adapter of the Dio given to [forDio], so they keep its certificate
@@ -148,6 +152,14 @@ class ResilienceInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
+    // ConnectivityInterceptor rejected the request because the device is offline, so it was never sent: a retry would
+    // only delay the cached answer, and the endpoint did not fail. The request interceptors after it never ran either,
+    // so a retry would also go out without the Authorization header.
+    if (err.error is ConnectivityException) {
+      handler.next(err);
+      return;
+    }
+
     final endpointKey = _extractEndpointKey(err.requestOptions.path);
     final breaker = _getBreaker(endpointKey);
 

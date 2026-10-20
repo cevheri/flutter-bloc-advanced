@@ -4,9 +4,13 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -138,6 +142,15 @@ class _RoutingHttpClientAdapter implements HttpClientAdapter {
 
   @override
   void close({bool force = false}) {}
+}
+
+/// Replaces the [ConnectivityInterceptor] of [client], in its place in the chain, with one that reads [status], so a
+/// test can take the device offline without changing the [ConnectivityService] singleton.
+void _useConnectivityStatus(ApiClient client, ConnectivityStatus Function() status) {
+  final interceptors = client.instance.interceptors;
+  final index = interceptors.indexWhere((interceptor) => interceptor is ConnectivityInterceptor);
+  expect(index, isNonNegative, reason: 'the chain must contain a ConnectivityInterceptor');
+  interceptors[index] = ConnectivityInterceptor(statusProvider: status);
 }
 
 void main() {
@@ -739,6 +752,113 @@ void main() {
         );
         expect(lines, everyElement(isNot(contains('jane.doe'))));
       });
+    });
+  });
+
+  // Regression: while ConnectivityService reported the device offline, a GET failed with "No Internet connection"
+  // although its response was cached. ConnectivityInterceptor rejected it without running any onError handler, so
+  // CacheInterceptor never got the chance to answer it.
+  group('ApiClient while the device is offline', () {
+    const cached = '[{"login":"admin"}]';
+    late ApiClient client;
+    late _FakeHttpClientAdapter adapter;
+    late ConnectivityStatus status;
+    late int sessionExpiredCalls;
+
+    setUp(() {
+      status = ConnectivityStatus.online;
+      sessionExpiredCalls = 0;
+      client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+      adapter = _FakeHttpClientAdapter();
+      client.instance.httpClientAdapter = adapter;
+      _useConnectivityStatus(client, () => status);
+      TestEnv.authenticate();
+    });
+
+    test('answers a cached GET from the cache, marked stale, without sending it', () async {
+      adapter.reply(200, cached);
+      await client.get('/api/offline/cached');
+      status = ConnectivityStatus.offline;
+
+      final response = await client.get('/api/offline/cached');
+
+      expect(response.data, cached);
+      expect(response.headers.value('x-cache'), 'stale');
+      expect(adapter.requests, hasLength(1), reason: 'only the GET sent while online may reach the network');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('answers a cacheFirst GET from the cache', () async {
+      final cacheFirst = Options(extra: {'cachePolicy': CachePolicy.cacheFirst});
+      adapter.reply(200, cached);
+      await client.instance.get<String>('/api/offline/cache-first', options: cacheFirst);
+      status = ConnectivityStatus.offline;
+
+      final response = await client.instance.get<String>('/api/offline/cache-first', options: cacheFirst);
+
+      expect(response.data, cached);
+      expect(response.headers.value('x-cache'), 'stale');
+      expect(adapter.requests, hasLength(1));
+    });
+
+    // Repositories map this message to a NetworkError, which the screens show as a connection problem.
+    test('fails a GET with nothing cached with the no-connection error', () async {
+      status = ConnectivityStatus.offline;
+
+      await expectLater(
+        client.get('/api/offline/uncached'),
+        throwsA(isA<FetchDataException>().having((e) => e.toString(), 'message', contains('No Internet connection'))),
+      );
+      expect(adapter.requests, isEmpty);
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('fails a POST with the no-connection error', () async {
+      status = ConnectivityStatus.offline;
+
+      await expectLater(
+        client.post('/api/offline/post', {'name': 'test'}),
+        throwsA(isA<FetchDataException>().having((e) => e.toString(), 'message', contains('No Internet connection'))),
+      );
+      expect(adapter.requests, isEmpty);
+    });
+
+    // A retry sent while the device reports offline only delays the cached answer, and every failure it records
+    // brings the endpoint's circuit closer to opening, which would then reject the endpoint once the device is online.
+    test('neither retries an offline GET nor counts it against the circuit breaker', () async {
+      adapter.reply(200, cached);
+      await client.get('/api/offline/breaker');
+      status = ConnectivityStatus.offline;
+
+      await client.get('/api/offline/breaker');
+
+      expect(adapter.requests, hasLength(1), reason: 'no retry may be sent while the device is offline');
+      expect(ResilienceInterceptor.instance.circuitBreakers['/api/offline/breaker']?.failureCount, 0);
+    });
+
+    test('records a failed offline request in the dev console and the HTTP log', () async {
+      final lines = _capturePrintedLines();
+      DevConsoleStore.instance.clearNetwork();
+      addTearDown(DevConsoleStore.instance.clearNetwork);
+      status = ConnectivityStatus.offline;
+
+      await expectLater(client.get('/api/offline/logged'), throwsA(isA<FetchDataException>()));
+
+      final entry = DevConsoleStore.instance.networkEntries.single;
+      expect(entry.method, 'GET');
+      expect(entry.url, 'https://api.example.test/api/offline/logged');
+      expect(entry.isComplete, isTrue);
+      expect(entry.error, startsWith('connectionError: '));
+      expect(lines, contains(contains('Http : GET /api/offline/logged -> ERROR: connectionError')));
     });
   });
 }

@@ -109,6 +109,21 @@ void main() {
           ),
         );
       });
+
+      // Regression: the rejection skipped every onError handler, so CacheInterceptor could not answer a GET from its
+      // cache while the device was offline.
+      test('should pass the offline rejection to the onError handlers after it', () async {
+        final recorder = _ErrorRecorder();
+        final testDio = Dio(BaseOptions(baseUrl: 'https://test.api'));
+        testDio.interceptors.addAll([
+          ConnectivityInterceptor(statusProvider: () => ConnectivityStatus.offline),
+          recorder,
+        ]);
+
+        await expectLater(testDio.get('/test'), throwsA(isA<DioException>()));
+
+        expect(recorder.errors.single.error, isA<ConnectivityException>());
+      });
     });
 
     group('integration with Dio', () {
@@ -154,6 +169,17 @@ class _VerifyPassthroughInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     onRequestCallback(options);
     handler.next(options);
+  }
+}
+
+/// Interceptor that records every error its onError handler receives.
+class _ErrorRecorder extends Interceptor {
+  final errors = <DioException>[];
+
+  @override
+  void onError(DioException err, ErrorInterceptorHandler handler) {
+    errors.add(err);
+    handler.next(err);
   }
 }
 

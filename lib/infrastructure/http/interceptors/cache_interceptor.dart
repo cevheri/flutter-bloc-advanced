@@ -10,6 +10,12 @@ import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart
 /// Cache behavior is controlled via `options.extra['cachePolicy']`.
 /// Only GET requests are cached. POST/PUT/DELETE skip caching.
 ///
+/// When a GET cannot reach the server or times out, the networkFirst and
+/// cacheFirst policies answer it from the cache with an `x-cache: stale`
+/// header. That includes a GET sent while the device is offline:
+/// `ConnectivityInterceptor` rejects it as a connection error that still
+/// reaches [onError].
+///
 /// Default cache TTL: 5 minutes.
 class CacheInterceptor extends Interceptor {
   CacheInterceptor({ICacheStorage? storage}) : _storage = storage ?? SharedPrefsCacheStorage();

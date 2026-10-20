@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -309,6 +310,31 @@ void main() {
           // The retry waits for its backoff delay, which never elapses in fake time.
           final result = _captureOnErrorSync(interceptor, err);
           expect(result.passed, isFalse);
+        });
+      });
+
+      // ConnectivityInterceptor rejects a request while the device is offline, before it is sent. A retry would only
+      // delay the cached answer, and a recorded failure would count against an endpoint that never failed.
+      test('should pass an offline rejection through without retrying it or recording a failure', () {
+        fakeAsync((async) {
+          final shared = ResilienceInterceptor(
+            failureThreshold: 1,
+            cooldownDuration: const Duration(hours: 1),
+            maxRetries: 3,
+          );
+          final err = DioException(
+            requestOptions: RequestOptions(path: '/api/users', method: 'GET'),
+            type: DioExceptionType.connectionError,
+            error: const ConnectivityException(),
+          );
+
+          // Passed on at once instead of waiting for a retry's backoff delay.
+          final result = _captureOnErrorSync(shared.forDio(Dio()), err);
+          expect(result.passed, isTrue);
+
+          final next = _TestRequestHandler();
+          shared.onRequest(RequestOptions(path: '/api/users'), next);
+          expect(next.result.passed, isTrue, reason: 'one recorded failure would have opened the circuit');
         });
       });
     });

@@ -137,6 +137,9 @@ Only `MockInterceptor` depends on the environment: it is added outside productio
 It sits last because it stands in for the server: it resolves with `callFollowingResponseInterceptor: true`, so its response still runs through the `onResponse` handlers of the interceptors above it (cache, dev console, logging), as a real response would.
 When it answers a protected request without a token with 401, it rejects with `callFollowingErrorInterceptor: true`, so the `onError` handlers run as they do for a server 401: `TokenRefreshInterceptor` ends the session when the token cannot be refreshed, and the dev console and logging record the failure.
 
+`ConnectivityInterceptor` rejects with `callFollowingErrorInterceptor: true` as well when `ConnectivityService` reports the device offline, so the `onError` handlers run as they do for a request that cannot connect: `CacheInterceptor` answers a GET from its cache with an `x-cache: stale` header, and the dev console and logging record a request it cannot answer.
+The error of that rejection is a `ConnectivityException`, so `ResilienceInterceptor` neither retries it nor counts it against the endpoint's circuit breaker: the request was never sent.
+
 ### AuthInterceptor
 
 Reads the JWT from `ISecureStorage` on every request to a private path and adds it as a Bearer token when one is stored.

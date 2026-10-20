@@ -209,8 +209,10 @@ void main() {
         expect(entries.first.error, contains('Unknown error'));
       });
 
-      test('should handle error without prior request entry gracefully', () {
-        final options = RequestOptions(path: '/api/test', method: 'GET');
+      // ConnectivityInterceptor rejects a request while the device is offline before this interceptor's onRequest
+      // runs, so the error is the first this interceptor sees of the request.
+      test('should record an error for a request that never reached onRequest', () {
+        final options = RequestOptions(path: '/api/test', method: 'GET', baseUrl: 'https://example.com');
         final dioError = DioException(
           requestOptions: options,
           type: DioExceptionType.connectionError,
@@ -218,9 +220,14 @@ void main() {
         );
 
         final errorHandler = _TestErrorHandler();
-        // Should not throw
         interceptor.onError(dioError, errorHandler);
+
         expect(errorHandler.nextCalled, isTrue);
+        final entry = DevConsoleStore.instance.networkEntries.single;
+        expect(entry.method, 'GET');
+        expect(entry.url, 'https://example.com/api/test');
+        expect(entry.error, 'connectionError: Failed');
+        expect(entry.isComplete, isTrue);
       });
 
       test('should always call handler.next', () {
