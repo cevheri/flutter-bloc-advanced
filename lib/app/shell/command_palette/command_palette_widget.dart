@@ -6,6 +6,11 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:go_router/go_router.dart';
 
+/// [text] in lower case for a search in [language]. String.toLowerCase follows English, where I is the capital of i;
+/// in Turkish I is the capital of ı and İ that of i.
+String _foldCase(String text, String language) =>
+    language == 'tr' ? text.replaceAll('I', 'ı').replaceAll('İ', 'i').toLowerCase() : text.toLowerCase();
+
 /// Command palette entry.
 class _CommandEntry {
   final String label;
@@ -142,9 +147,11 @@ class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     // Filtered in build, so the search matches the commands in the language the user reads.
-    final lower = _query.toLowerCase();
+    final language = Localizations.localeOf(context).languageCode;
+    final query = _foldCase(_query, language);
     final filtered = _commands(S.of(context)).where((c) {
-      return c.label.toLowerCase().contains(lower) || (c.description?.toLowerCase().contains(lower) ?? false);
+      return _foldCase(c.label, language).contains(query) ||
+          (c.description != null && _foldCase(c.description!, language).contains(query));
     }).toList();
 
     return KeyboardListener(

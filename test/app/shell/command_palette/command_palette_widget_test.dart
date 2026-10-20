@@ -50,6 +50,23 @@ void main() {
       expect(find.widgetWithText(ListTile, 'Ayarlar'), findsOneWidget);
     });
 
+    // String.toLowerCase turns I into i and İ into i with a combining dot, so a search in capitals missed the
+    // Turkish commands.
+    testWidgets('finds the commands from a search in Turkish capitals', (tester) async {
+      await openPalette(tester, locale: const Locale('tr'));
+
+      await tester.enterText(find.byType(TextField), 'KULLANICI');
+      await tester.pumpAndSettle();
+
+      expect(find.widgetWithText(ListTile, 'Kullanıcılar'), findsOneWidget);
+
+      await tester.enterText(find.byType(TextField), 'ŞİFRE');
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ListTile), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Şifre Değiştir'), findsOneWidget);
+    });
+
     testWidgets('says that nothing matched in Turkish', (tester) async {
       await openPalette(tester, locale: const Locale('tr'));
 
@@ -69,6 +86,17 @@ void main() {
 
       expect(find.byType(ListTile), findsOneWidget);
       expect(find.widgetWithText(ListTile, 'Change Password'), findsOneWidget);
+    });
+
+    // Guards that the Turkish folding stays out of English, where I is the capital of i.
+    testWidgets('finds the commands from a search in English capitals', (tester) async {
+      await openPalette(tester);
+
+      await tester.enterText(find.byType(TextField), 'SETTINGS');
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ListTile), findsOneWidget);
+      expect(find.widgetWithText(ListTile, 'Settings'), findsOneWidget);
     });
   });
 }
