@@ -2,7 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 
 /// Dio interceptor that caches successful GET responses and serves them
 /// when offline or when a [CachePolicy] is specified.
@@ -10,11 +10,22 @@ import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart
 /// Cache behavior is controlled via `options.extra['cachePolicy']`.
 /// Only GET requests are cached. POST/PUT/DELETE skip caching.
 ///
-/// When a GET cannot reach the server or times out, the networkFirst and
-/// cacheFirst policies answer it from the cache with an `x-cache: stale`
-/// header. That includes a GET sent while the device is offline:
-/// `ConnectivityInterceptor` rejects it as a connection error that still
-/// reaches [onError].
+/// When a GET cannot reach the server, the networkFirst and cacheFirst
+/// policies answer it from the cache with an `x-cache: stale` header: after
+/// a connection error, a timeout, or a connection closed or reset before the
+/// whole response arrived. That includes a GET sent while the device is
+/// offline: `ConnectivityInterceptor` rejects it as a connection error that
+/// still reaches [onError].
+///
+/// A response that dart:io cannot parse is answered the same way: dart:io
+/// reports it as an `HttpException`, like a connection reset while the
+/// response is awaited. Every other error propagates. A TLS failure (an
+/// untrusted, expired or self-signed certificate, a hostname mismatch, a
+/// certificate pin mismatch, a handshake closed before it completed) means
+/// the connection may be intercepted, so it fails instead of showing earlier
+/// data. A handshake reset before it completed is a connection error, so it
+/// is answered. On web the browser reports a TLS failure as a connection
+/// error, which cannot be told apart from a lost connection.
 ///
 /// Default cache TTL: 5 minutes.
 class CacheInterceptor extends Interceptor {
@@ -100,9 +111,9 @@ class CacheInterceptor extends Interceptor {
 
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
-    // Only fall back to cache for connectivity/timeout failures on GET requests.
-    // Auth errors (401/403), server errors (5xx), certificate pin mismatches, etc. must propagate normally.
-    if (err.requestOptions.method.toUpperCase() == 'GET' && _isConnectivityError(err)) {
+    // Only a GET that could not reach the server falls back to the cache. Everything else propagates: a server
+    // answer (401, 403, 5xx), a TLS failure and an unexpected error.
+    if (err.requestOptions.method.toUpperCase() == 'GET' && _couldNotReachServer(err)) {
       final policy = _extractPolicy(err.requestOptions);
       if (policy == CachePolicy.networkFirst || policy == CachePolicy.cacheFirst) {
         final entry = await _storage.read(_cacheKey(err.requestOptions));
@@ -125,16 +136,28 @@ class CacheInterceptor extends Interceptor {
     handler.next(err);
   }
 
-  bool _isConnectivityError(DioException err) {
-    // A pin mismatch arrives as unknown with no response, like a dropped connection, but it means the connection
-    // may be intercepted: fail closed instead of answering it from cache.
-    if (err.error is CertificatePinningException) return false;
-    return err.type == DioExceptionType.connectionError ||
-        err.type == DioExceptionType.connectionTimeout ||
-        err.type == DioExceptionType.sendTimeout ||
-        err.type == DioExceptionType.receiveTimeout ||
-        (err.type == DioExceptionType.unknown && err.response == null);
-  }
+  /// Whether [err] means the GET could not reach the server, the only failure the cache answers.
+  ///
+  /// An allowlist: a connection error, a timeout, and an unknown error with the dart:io error of a connection closed
+  /// or reset before the whole response arrived, or of a response dart:io could not parse ([isLostConnection]).
+  /// Anything else propagates, every TLS failure included: dio reports one as unknown with a dart:io `TlsException`,
+  /// such as the `HandshakeException` of an untrusted, expired or self-signed certificate, a wrong device clock, a
+  /// hostname mismatch, a captive portal, an intercepting proxy or a handshake closed before it completed, or with a
+  /// `CertificatePinningException`. A handshake reset before it completed is a connection error, so it is answered.
+  ///
+  /// On web the browser reports a TLS failure as a connection error without saying why the connection failed, so
+  /// there it cannot be told apart from a lost connection and is answered from the cache.
+  bool _couldNotReachServer(DioException err) => switch (err.type) {
+    DioExceptionType.connectionError ||
+    DioExceptionType.connectionTimeout ||
+    DioExceptionType.sendTimeout ||
+    DioExceptionType.receiveTimeout => true,
+    DioExceptionType.unknown => isLostConnection(err.error),
+    DioExceptionType.badResponse ||
+    DioExceptionType.badCertificate ||
+    DioExceptionType.cancel ||
+    DioExceptionType.transformTimeout => false,
+  };
 
   CachePolicy _extractPolicy(RequestOptions options) {
     final extra = options.extra['cachePolicy'];

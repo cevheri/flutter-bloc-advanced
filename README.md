@@ -120,6 +120,11 @@ How it works:
   `LoginRepository`, `AccountRepository`, `UserRepository`, `AuthorityRepositoryImpl`, `DynamicFormRepository` and `LifecycleRepository` report it as an `AppError` with the `AppErrorCode.networkCertInvalid` key.
   The sign-in, OTP, registration, password reset, change password and account screens, the user list and editor, and the dynamic form pages show its translated message instead of the exception text.
   The roles field of the user list and editor still says "Roles unavailable" without the reason.
+- No other TLS failure is answered from cache either, pinning or not: a certificate the device does not trust (expired, self-signed, a wrong device clock, a captive portal or an intercepting proxy), a hostname mismatch, or a handshake closed before it completed ("Connection terminated during handshake") fails the request.
+  A dropped network can close a handshake too, but so can anything between the device and the server, so that case fails closed as well.
+  A handshake reset before it completed is a connection error instead, which the cache answers like a lost connection.
+  `CacheInterceptor` answers a GET from cache only when it cannot reach the server: a connection error, a timeout, or a connection closed or reset before the whole response arrived.
+  On web the browser reports a TLS failure as a connection error, so there it cannot be told apart from a lost connection.
 - **Web platform is a hard no-op.** Browsers control TLS; from JS we cannot intercept the handshake. Use HSTS / CT pinning at the server side instead.
 
 Extract pins from your live backend:

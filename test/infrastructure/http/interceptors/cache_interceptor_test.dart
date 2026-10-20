@@ -1,4 +1,4 @@
-import 'dart:io' show SocketException;
+import 'dart:io' show HandshakeException, HttpException, OSError, RedirectException, SocketException;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
@@ -396,33 +396,64 @@ void main() {
         expect(handler.resolvedResponse!.data, '{"fallback": true}');
       });
 
-      test('should serve stale cache when the connection drops mid-request without a response', () async {
+      // Guards the answers for a connection closed or reset after it was opened, which dio reports as unknown with the
+      // dart:io error. These are the errors loopback sockets gave for such a cut (see the cut connections in
+      // api_client_test.dart).
+      for (final (description, error) in <(String, Object)>[
+        ('a close while the body is read', const HttpException('Connection closed while receiving data')),
+        ('a reset while the response is awaited', const HttpException('Connection reset by peer')),
+        ('a reset as soon as the connection is accepted', const OSError('Connection reset by peer', 104)),
+        ('a reset while the request is written', const SocketException('Write failed')),
+      ]) {
+        test('should serve stale cache after $description', () async {
+          final options = RequestOptions(
+            path: '/api/users',
+            method: 'GET',
+            baseUrl: 'https://example.com',
+            extra: {'cachePolicy': CachePolicy.networkFirst},
+          );
+
+          final cacheEntry = CacheEntry(
+            key: 'GET_${options.uri}',
+            data: '{"stale_data": true}',
+            createdAt: DateTime.now(),
+          );
+          when(() => mockStorage.read('GET_${options.uri}')).thenAnswer((_) async => cacheEntry);
+
+          final err = DioException(requestOptions: options, type: DioExceptionType.unknown, error: error);
+
+          final handler = _TestErrorHandler();
+          await interceptor.onError(err, handler);
+
+          expect(handler.resolveCalled, isTrue);
+          expect(handler.resolvedResponse!.headers.value('x-cache'), 'stale');
+        });
+      }
+
+      // Unlike any other HttpException, a response dart:io cannot parse included, a RedirectException does not mean a
+      // lost connection: the server answered with a redirect loop, or with more redirects than dio follows.
+      test('should pass a RedirectException through even when a cached entry exists', () async {
         final options = RequestOptions(
           path: '/api/users',
           method: 'GET',
           baseUrl: 'https://example.com',
           extra: {'cachePolicy': CachePolicy.networkFirst},
         );
-
-        final cacheEntry = CacheEntry(
-          key: 'GET_${options.uri}',
-          data: '{"stale_data": true}',
-          createdAt: DateTime.now(),
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer(
+          (_) async => CacheEntry(key: 'GET_${options.uri}', data: '{"stale_data": true}', createdAt: DateTime.now()),
         );
-        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer((_) async => cacheEntry);
 
-        // dio only maps a SocketException raised while connecting to connectionError; one raised later stays unknown.
         final err = DioException(
           requestOptions: options,
           type: DioExceptionType.unknown,
-          error: const SocketException('Connection reset by peer'),
+          error: const RedirectException('Redirect limit exceeded', []),
         );
 
         final handler = _TestErrorHandler();
         await interceptor.onError(err, handler);
 
-        expect(handler.resolveCalled, isTrue);
-        expect(handler.resolvedResponse!.headers.value('x-cache'), 'stale');
+        expect(handler.nextCalled, isTrue);
+        expect(handler.resolveCalled, isFalse);
       });
 
       // A pin mismatch means the connection may be intercepted, so it must fail closed, not look like being offline.
@@ -447,6 +478,53 @@ void main() {
           type: DioExceptionType.unknown,
           error: const CertificatePinningException('example.com', 443),
         );
+
+        final handler = _TestErrorHandler();
+        await interceptor.onError(err, handler);
+
+        expect(handler.nextCalled, isTrue);
+        expect(handler.resolveCalled, isFalse);
+      });
+
+      // A TLS failure means the connection may be intercepted or the server cannot be trusted, so it must fail
+      // instead of looking like being offline. dio wraps it, like a dropped connection, as unknown without a response.
+      test('should pass a TLS handshake failure through even when a cached entry exists', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.networkFirst},
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer(
+          (_) async => CacheEntry(key: 'GET_${options.uri}', data: '{"stale_data": true}', createdAt: DateTime.now()),
+        );
+
+        final err = DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: const HandshakeException('Handshake error in client (OS Error: CERTIFICATE_VERIFY_FAILED)'),
+        );
+
+        final handler = _TestErrorHandler();
+        await interceptor.onError(err, handler);
+
+        expect(handler.nextCalled, isTrue);
+        expect(handler.resolveCalled, isFalse);
+      });
+
+      // Only a failure to reach the server may be answered from the cache; an error nobody expected must surface.
+      test('should pass any other unknown error through even when a cached entry exists', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.networkFirst},
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer(
+          (_) async => CacheEntry(key: 'GET_${options.uri}', data: '{"stale_data": true}', createdAt: DateTime.now()),
+        );
+
+        final err = DioException(requestOptions: options, type: DioExceptionType.unknown, error: StateError('bug'));
 
         final handler = _TestErrorHandler();
         await interceptor.onError(err, handler);

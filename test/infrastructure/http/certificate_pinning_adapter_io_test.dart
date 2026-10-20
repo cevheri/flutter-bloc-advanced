@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -7,6 +6,8 @@ import 'package:dio/io.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinning_adapter_io.dart';
 import 'package:flutter_test/flutter_test.dart';
+
+import '../../support/loopback_tls_server.dart';
 
 /// Stands in for the HttpClient the pinned adapter builds, to capture the bad-certificate callback that dart:io
 /// calls during the TLS handshake.
@@ -30,36 +31,6 @@ class _FakeCertificate extends Fake implements X509Certificate {
   @override
   String get subject => '/CN=api.example.test';
 }
-
-/// A self-signed certificate and its key, made for these tests only; they protect nothing. A loopback server presents
-/// them so that the pinned adapter's callback runs inside a real dart:io TLS handshake.
-const _testCertificatePem = '''
------BEGIN CERTIFICATE-----
-MIIBhTCCASugAwIBAgIUOWQcRYYdSodRYUZ7jqn+pFTihh4wCgYIKoZIzj0EAwIw
-HzEdMBsGA1UEAwwUcGlubmluZy10ZXN0LmludmFsaWQwIBcNMjYxMDIwMTMxOTA2
-WhgPMjEyNjA5MjYxMzE5MDZaMB8xHTAbBgNVBAMMFHBpbm5pbmctdGVzdC5pbnZh
-bGlkMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE+5JwWTEjFzlivbKN//2TLcDa
-ktzz1F2EoXtB5/NKOYv3otDSsmnZTakGPsTepiNf0YYTclwqkun14987oOmYMKND
-MEEwHQYDVR0OBBYEFJiCD9CbdhQIh+qtbyPvmiKhDTPNMA8GA1UdEwEB/wQFMAMB
-Af8wDwYDVR0RBAgwBocEfwAAATAKBggqhkjOPQQDAgNIADBFAiAXqRKitoVT/hRB
-Mqmqh0Hg3K5gcTJq7u0dNDpb9q16oAIhAMQQEPJ1bG+NltUGDn8PKUScDbWZ5H3r
-pZm7jeCoArXY
------END CERTIFICATE-----
-''';
-
-const _testPrivateKeyPem = '''
------BEGIN PRIVATE KEY-----
-MIGHAgEAMBMGByqGSM49AgEGCCqGSM49AwEHBG0wawIBAQQgqMEuR7Q80+a0o1Ss
-kCpq7gX+XdcByMJwRE/icoCUZvChRANCAAT7knBZMSMXOWK9so3//ZMtwNqS3PPU
-XYShe0Hn80o5i/ei0NKyadlNqQY+xN6mI1/RhhNyXCqS6fXj3zug6Zgw
------END PRIVATE KEY-----
-''';
-
-/// flutter_test answers every HttpClient request with a 400; the TLS tests need real sockets.
-class _RealHttpOverrides extends HttpOverrides {}
-
-Uint8List _derOf(String pem) =>
-    base64.decode(pem.split('\n').where((line) => line.isNotEmpty && !line.startsWith('-----')).join());
 
 void main() {
   final pinnedDer = Uint8List.fromList([1, 2, 3, 4]);
@@ -100,25 +71,15 @@ void main() {
     late HttpServer server;
 
     setUp(() async {
-      final context = SecurityContext()
-        ..useCertificateChainBytes(utf8.encode(_testCertificatePem))
-        ..usePrivateKeyBytes(utf8.encode(_testPrivateKeyPem));
-      server = await HttpServer.bindSecure(InternetAddress.loopbackIPv4, 0, context);
-      server.listen(
-        (request) => request.response
-          ..write('ok')
-          ..close(),
-      );
-      addTearDown(() => server.close(force: true));
+      server = await startLoopbackTlsServer();
     });
 
-    Future<Response<String>> getWithPins(List<String> pins) => HttpOverrides.runWithHttpOverrides(
+    Future<Response<String>> getWithPins(List<String> pins) => withRealSockets(
       () => (Dio()..httpClientAdapter = buildPinnedAdapter(pins)).get<String>('https://127.0.0.1:${server.port}/'),
-      _RealHttpOverrides(),
     );
 
     test('completes the request when the certificate matches a pin', () async {
-      final response = await getWithPins([CertificatePinner.computePin(_derOf(_testCertificatePem))]);
+      final response = await getWithPins([CertificatePinner.computePin(loopbackCertificateDer)]);
 
       expect(response.data, 'ok');
     });

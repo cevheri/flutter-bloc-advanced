@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io' show InternetAddress, Platform, RawSocketOption, SecureSocket, ServerSocket, Socket;
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -17,6 +18,7 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 
+import '../../support/loopback_tls_server.dart';
 import '../../support/test_env.dart';
 
 /// Interceptor that stubs responses before any real HTTP call.
@@ -152,6 +154,91 @@ void _useConnectivityStatus(ApiClient client, ConnectivityStatus Function() stat
   final index = interceptors.indexWhere((interceptor) => interceptor is ConnectivityInterceptor);
   expect(index, isNonNegative, reason: 'the chain must contain a ConnectivityInterceptor');
   interceptors[index] = ConnectivityInterceptor(statusProvider: status);
+}
+
+/// Where [_startCuttingServer] cuts a connection off.
+enum _Cut {
+  /// As soon as the connection is accepted: over HTTPS, before the TLS handshake.
+  beforeRequest('before the request arrives'),
+
+  /// Over HTTPS, once the client hello arrived, before the server answers it.
+  duringHandshake('during the TLS handshake'),
+
+  /// Once the request arrived, before any of the response is sent.
+  afterRequest('after the request'),
+
+  /// After the response header and the first bytes of the body.
+  midBody('while the body is read');
+
+  const _Cut(this.description);
+
+  final String description;
+}
+
+/// Starts a server on 127.0.0.1 that answers the first connection with [body] and cuts every later one off at [cut],
+/// with a RST when [reset] and a FIN otherwise. Over [tls] it presents [loopbackCertificatePem].
+Future<ServerSocket> _startCuttingServer({
+  required String body,
+  required _Cut cut,
+  required bool reset,
+  required bool tls,
+}) async {
+  final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  addTearDown(server.close);
+  var connections = 0;
+  server.listen((connection) async {
+    final cutOff = ++connections > 1;
+    if (cutOff && reset) _resetOnClose(connection);
+    if (cutOff && cut == _Cut.beforeRequest) {
+      connection.destroy();
+      return;
+    }
+    if (cutOff && cut == _Cut.duringHandshake) {
+      // Closed once the client hello is read: a socket closed with unread data ends with a RST even without
+      // SO_LINGER, and a FIN sent before the client hello arrives races it, so the client sees either the end of
+      // the handshake or a reset.
+      connection.listen((_) => connection.destroy());
+      return;
+    }
+    final socket = tls ? await SecureSocket.secureServer(connection, loopbackServerContext()) : connection;
+    final request = <int>[];
+    var answered = false;
+    socket.listen((data) async {
+      request.addAll(data);
+      if (answered || !latin1.decode(request).contains('\r\n\r\n')) return;
+      answered = true;
+      if (cutOff && cut == _Cut.afterRequest) {
+        socket.destroy();
+        return;
+      }
+      final bytes = utf8.encode(body);
+      final cutMidBody = cutOff && cut == _Cut.midBody;
+      socket
+        ..add(
+          latin1.encode(
+            'HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: ${bytes.length}\r\n'
+            'Connection: close\r\n\r\n',
+          ),
+        )
+        ..add(cutMidBody ? bytes.sublist(0, 5) : bytes);
+      await socket.flush();
+      if (cutMidBody && reset) {
+        socket.destroy();
+        return;
+      }
+      await socket.close();
+    });
+  });
+  return server;
+}
+
+/// Makes [socket] end with a RST instead of a FIN when it is closed: SO_LINGER on, with a timeout of zero.
+void _resetOnClose(Socket socket) {
+  // SO_LINGER is 13 on Linux and 0x80 on macOS; struct linger is two 32-bit ints on both.
+  final soLinger = Platform.isMacOS ? 0x80 : 13;
+  socket.setRawOption(
+    RawSocketOption(RawSocketOption.levelSocket, soLinger, Uint8List.fromList([1, 0, 0, 0, 0, 0, 0, 0])),
+  );
 }
 
 void main() {
@@ -607,6 +694,123 @@ void main() {
       await expectLater(client.post('/api/transport/breaker', {'name': 'test'}), throwsA(isA<FetchDataException>()));
 
       expect(ResilienceInterceptor.instance.circuitBreakers['/api/transport/breaker']?.failureCount, 1);
+    });
+  });
+
+  // Regression: CacheInterceptor took every unknown error without a response for a lost connection, so a TLS handshake
+  // the device does not trust (an expired or self-signed certificate, a wrong device clock, an intercepting proxy or a
+  // captive portal) was answered with the cached response, marked stale, as if the device were offline.
+  group('ApiClient when the device does not trust the server certificate', () {
+    const cached = '[{"login":"admin"}]';
+    late ApiClient client;
+
+    setUp(() async {
+      final server = await startLoopbackTlsServer(body: cached);
+      // Production chain on system trust, without pins.
+      client = ApiClient(
+        appConfig: AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://127.0.0.1:${server.port}',
+          certificatePins: const [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      TestEnv.authenticate();
+    });
+
+    test('fails a cached GET instead of answering it from the cache', () async {
+      await withRealSockets(() async {
+        final systemTrust = client.instance.httpClientAdapter;
+        client.instance.httpClientAdapter = loopbackTrustingAdapter();
+        final first = await client.get('/api/tls/cached');
+        expect(first.data, cached);
+
+        // The device stops trusting the certificate, as when the server certificate expires or a proxy presents its
+        // own.
+        client.instance.httpClientAdapter = systemTrust;
+
+        await expectLater(
+          client.get('/api/tls/cached'),
+          throwsA(isA<FetchDataException>().having((e) => e.toString(), 'message', contains('HandshakeException'))),
+        );
+      });
+    });
+  });
+
+  // A connection closed or reset before the whole response arrived reaches the client in a shape that depends on
+  // where it ends: a connection error, or an unknown error whose error is a dart:io HttpException, OSError or
+  // SocketException. Only real sockets give these shapes, so a loopback server cuts the connections here.
+  group('ApiClient when the server cuts the connection off', () {
+    const cached = '[{"login":"admin"}]';
+
+    tearDown(ResilienceInterceptor.instance.resetAll);
+
+    /// The production chain, without pins, to a server that answers the first connection and cuts every later one
+    /// off. Over HTTPS the client trusts the server's certificate, so only the cut can fail the handshake.
+    Future<ApiClient> clientOfCuttingServer({required bool tls, required _Cut cut, required bool reset}) async {
+      final server = await _startCuttingServer(body: cached, cut: cut, reset: reset, tls: tls);
+      final client = ApiClient(
+        appConfig: AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: '${tls ? 'https' : 'http'}://127.0.0.1:${server.port}',
+          certificatePins: const [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      if (tls) client.instance.httpClientAdapter = loopbackTrustingAdapter();
+      TestEnv.authenticate();
+      return client;
+    }
+
+    for (final tls in [false, true]) {
+      for (final cut in _Cut.values) {
+        for (final reset in [false, true]) {
+          // Only HTTPS has a handshake to cut, and a FIN during it is a TLS failure, tested below.
+          if (cut == _Cut.duringHandshake && (!tls || !reset)) continue;
+          // Over HTTPS a FIN as soon as the connection is accepted races the client hello, see _startCuttingServer.
+          if (cut == _Cut.beforeRequest && tls && !reset) continue;
+          // Guards the answers the cache gave before TLS failures were kept from it: the GET could not reach the
+          // server, and the connection never got to a TLS handshake, was reset during it, or had passed it.
+          final connection = '${tls ? 'HTTPS' : 'HTTP'} connection is ${reset ? 'reset' : 'closed'} ${cut.description}';
+          test('answers a cached GET from the cache when an $connection', () async {
+            final client = await clientOfCuttingServer(tls: tls, cut: cut, reset: reset);
+
+            await withRealSockets(() async {
+              final first = await client.get('/api/cut/users');
+              expect(first.headers.value('x-cache'), isNull);
+
+              final second = await client.get('/api/cut/users');
+
+              expect(second.data, cached);
+              expect(second.headers.value('x-cache'), 'stale');
+            });
+          }, skip: reset && !(Platform.isLinux || Platform.isMacOS) ? 'Needs the SO_LINGER of Linux or macOS' : false);
+        }
+      }
+    }
+
+    // Regression: a TLS handshake that ended before it completed was answered from the cache as a lost connection.
+    // A dropped network ends a handshake this way, but so can anything between the device and the server, so it fails
+    // closed like any other TLS failure.
+    test('fails a cached GET whose TLS handshake the server ends instead of answering it from the cache', () async {
+      final client = await clientOfCuttingServer(tls: true, cut: _Cut.duringHandshake, reset: false);
+
+      await withRealSockets(() async {
+        await client.get('/api/cut/users');
+
+        await expectLater(
+          client.get('/api/cut/users'),
+          throwsA(
+            isA<FetchDataException>().having(
+              (e) => '$e',
+              'message',
+              contains('Connection terminated during handshake'),
+            ),
+          ),
+        );
+      });
     });
   });
 
