@@ -5,7 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_banner.dart';
 import 'package:flutter_bloc_advance/app/shell/top_bar/top_bar_widget.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
-import 'package:flutter_bloc_advance/main/app.dart';
+import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/test_env.dart';

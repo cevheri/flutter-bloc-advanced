@@ -2,7 +2,7 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc_advance/main/app.dart';
+import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_widget.dart';
@@ -32,7 +32,7 @@ void main() {
       TestEnv.authenticate();
 
       // Given:
-      await tester.pumpWidget(const App(language: language).buildHomeApp());
+      await tester.pumpWidget(const App(language: language));
       //When:
       await tester.pumpAndSettle();
       //Then:
@@ -50,7 +50,7 @@ void main() {
     });
 
     testWidgets("Given an invalid AccessToken when HomeScreen is opened then navigate to loginScreen", (tester) async {
-      Widget getWidget() => const App(language: "en").buildHomeApp();
+      Widget getWidget() => const App(language: "en");
 
       // Given:
       await tester.pumpWidget(getWidget());
@@ -80,7 +80,7 @@ void main() {
         addTearDown(tester.view.reset);
         TestEnv.authenticate();
 
-        await tester.pumpWidget(const App(language: language).buildHomeApp());
+        await tester.pumpWidget(const App(language: language));
         await tester.pumpAndSettle();
 
         expect(find.text('Circuit Breaker'), findsOneWidget, reason: 'the loaded dashboard shows its KPI cards');

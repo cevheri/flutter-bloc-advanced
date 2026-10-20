@@ -3,7 +3,7 @@ library;
 
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
-import 'package:flutter_bloc_advance/main/app.dart';
+import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// End-to-end smoke: boots the full app in mock mode (`AppConfig.dev()` —

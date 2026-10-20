@@ -231,7 +231,7 @@ for failure paths.
 ```dart
 testWidgets('renders dashboard when authenticated', (tester) async {
   TestEnv.authenticate();                 // in the test body, AFTER global reset
-  await tester.pumpWidget(const App(language: 'en').buildHomeApp());
+  await tester.pumpWidget(const App(language: 'en'));
   await tester.pumpAndSettle();
   expect(find.byType(ResponsiveScaffold), findsOneWidget);
 });
@@ -437,7 +437,7 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   `test/support/golden_app.dart` `goldenScreen` helper) — 60 goldens, light + dark.
   The responsive **shell / home screen is intentionally not goldened** (it boots
   via real DI in
-  `App().buildHomeApp()` rather than mockable to a single deterministic frame; its
+  `App()` rather than mockable to a single deterministic frame; its
   sub-widgets are already covered by the component/widget goldens).
 - **Tags:** `dart_test.yaml` declares `widget` (applied to all `testWidgets`
   files via `@Tags(['widget'])`) and `golden` (auto-applied by alchemist). An
