@@ -94,7 +94,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "leads": MessageLookupByLibrary.simpleMessage("Adaylar"),
     "list": MessageLookupByLibrary.simpleMessage("Listele"),
     "list_user": MessageLookupByLibrary.simpleMessage("Kullanıcılar"),
-    "loading": MessageLookupByLibrary.simpleMessage("Loading..."),
+    "loading": MessageLookupByLibrary.simpleMessage("Yükleniyor..."),
     "login": MessageLookupByLibrary.simpleMessage("Kullanıcı Adı"),
     "login_button": MessageLookupByLibrary.simpleMessage("Giriş Yap"),
     "login_password": MessageLookupByLibrary.simpleMessage("Şifre"),

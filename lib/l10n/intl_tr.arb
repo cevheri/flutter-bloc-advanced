@@ -65,7 +65,7 @@
   "password_max_length": "Şifre en fazla 20 karakter uzunluğunda olmalıdır",
   "password_min_length": "Şifre en az 6 karakter uzunluğunda olmalıdır",
   "login_button": "Giriş Yap",
-  "loading": "Loading...",
+  "loading": "Yükleniyor...",
   "email_send": "E-posta Gönder",
   "translate_menu_title": "{translate, select, account{Hesabım}  userManagement{Kullanıcı Yönetimi} settings{Ayarlar}  logout{Çıkış}  info{Bilgiler}  language{Diller}  theme{Tema}  new_user{Yeni Kullanıcı Ekle}  list_user{Kullanıcılar} other{Diğer}}",
   "@translate_menu_title": {

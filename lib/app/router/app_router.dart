@@ -75,19 +75,19 @@ class AppRouterFactory {
         _log.debug('redirect - location: {}, session: {}', [location, sessionState.runtimeType]);
 
         // Authenticated user landing on a public route (login / register
-        // / forgot-password / OTP) should be sent to the home shell.
-        // Without this, async session restore would leave a logged-in
-        // user stuck on the login page after the first frame's redirect
-        // raced against the cubit emission.
+        // / forgot-password / OTP), for example by opening /login while
+        // signed in, should be sent to the home shell.
         if (isAuthenticated && isPublic) {
           return ApplicationRoutesConstants.home;
         }
 
-        // SessionUnknown is treated the same as SessionUnauthenticated
-        // for redirect purposes — we cannot route into protected pages
-        // without proof of session. Token validity (presence + `exp`)
-        // is owned by SessionCubit, which flips state to
-        // SessionUnauthenticated when the JWT is missing or expired.
+        // The router never sees SessionUnknown at startup: App mounts it
+        // only once SessionCubit.restore() has settled the session. Should
+        // a later SessionUnknown reach this redirect, it still counts as
+        // unauthenticated, the safe default, since we cannot route into
+        // protected pages without proof of session. Token validity
+        // (presence + `exp`) is owned by SessionCubit, which flips state
+        // to SessionUnauthenticated when the JWT is missing or expired.
         if (!isAuthenticated && !isPublic) {
           // Preserve the intended destination as `returnUrl` so login
           // success can land the user where they were going. The

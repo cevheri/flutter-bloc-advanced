@@ -144,8 +144,7 @@ void main() {
     testWidgets('logs the dashboard once when an authenticated session starts', (tester) async {
       await startAuthenticated(tester);
 
-      // The router shows the login page until the stored session is restored, so it may be logged first.
-      expect(loggedScreens().where((screen) => screen != 'login').toList(), ['home']);
+      expect(loggedScreens(), ['home']);
     });
 
     // Shell routes are named like root routes: the route name, else the path pattern, never parameter values.

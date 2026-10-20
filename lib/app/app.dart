@@ -100,9 +100,46 @@ class _AppViewState extends State<_AppView> {
             supportedLocales: S.delegate.supportedLocales,
             locale: Locale(widget.language),
             routerConfig: _router!,
+            // The router's first redirect must see the restored session: while the session is unknown it treats a
+            // signed-in user as signed out, shows the login page and loses a deep link. So the router is mounted, and
+            // its first route parsed, only once restore has settled the session. Later sign-ins and sign-outs are left
+            // to its redirect.
+            builder: (context, router) => BlocBuilder<SessionCubit, SessionState>(
+              buildWhen: (previous, current) => previous is SessionUnknown,
+              builder: (context, session) => switch (session) {
+                SessionUnknown() => const _SessionRestoreView(),
+                SessionAuthenticated() || SessionUnauthenticated() => router!,
+              },
+            ),
           ),
         );
       },
+    );
+  }
+}
+
+/// Shown while [SessionCubit.restore] reads the stored session. Continues the web startup screen (`#loading` in
+/// web/index.html): a 56 px ring spinner with a 4 px stroke, centered on the theme background.
+class _SessionRestoreView extends StatelessWidget {
+  const _SessionRestoreView();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return ColoredBox(
+      color: colorScheme.surface,
+      child: Center(
+        child: SizedBox.square(
+          dimension: 56,
+          child: CircularProgressIndicator(
+            strokeWidth: 4,
+            strokeAlign: CircularProgressIndicator.strokeAlignInside,
+            color: colorScheme.onSurfaceVariant,
+            backgroundColor: colorScheme.outline,
+            semanticsLabel: S.of(context).loading,
+          ),
+        ),
+      ),
     );
   }
 }

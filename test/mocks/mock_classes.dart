@@ -5,6 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 // Service imports
 import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 
+// Infrastructure imports
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+
 // BLoC imports
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
@@ -73,6 +76,8 @@ class MockAnalyticsService extends Mock implements IAnalyticsService {}
 
 // Infrastructure mocks
 class MockSharedPreferences extends Mock implements SharedPreferences {}
+
+class MockISecureStorage extends Mock implements ISecureStorage {}
 
 // Fake classes for fallback values
 class FakeUserEntity extends Fake implements UserEntity {}
