@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cu
 import 'package:flutter_bloc_advance/features/dashboard/presentation/pages/dashboard_page.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bloc.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_state.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 
@@ -37,27 +38,19 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
       context.read<SystemDashboardCubit>().load();
 
       // Bridge LifecycleBloc app config into the dashboard cubit.
-      _bridgeLifecycleConfig();
+      _updateAppConfigFromLifecycle(context.read<LifecycleBloc>().state);
     });
   }
 
-  void _bridgeLifecycleConfig() {
-    LifecycleState? lifecycleState;
-    try {
-      lifecycleState = context.read<LifecycleBloc>().state;
-    } catch (_) {
-      // LifecycleBloc not provided — still publish baseline (app version + env).
-    }
-    _updateAppConfigFromLifecycle(lifecycleState);
-  }
+  static AppConfigEntity? _configOf(LifecycleState lifecycleState) => switch (lifecycleState) {
+    LifecycleInitial() || LifecycleLoading() => null,
+    LifecycleReady(:final config) => config,
+    LifecycleMaintenance(:final config) => config,
+    LifecycleForceUpdate(:final config) => config,
+  };
 
-  void _updateAppConfigFromLifecycle(LifecycleState? lifecycleState) {
-    final config = switch (lifecycleState) {
-      LifecycleReady(:final config) => config,
-      LifecycleMaintenance(:final config) => config,
-      LifecycleForceUpdate(:final config) => config,
-      _ => null,
-    };
+  void _updateAppConfigFromLifecycle(LifecycleState lifecycleState) {
+    final config = _configOf(lifecycleState);
 
     AppConfig? appConfig;
     try {
@@ -83,33 +76,22 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget child = BlocBuilder<AccountBloc, AccountState>(
-      buildWhen: (previous, current) => previous.status != current.status,
-      builder: (context, accountState) {
-        if (accountState.status == AccountStatus.success) {
-          return const DashboardPage();
-        }
-        if (accountState.status == AccountStatus.loading || accountState.status == AccountStatus.initial) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        return const SizedBox.shrink();
-      },
-    );
-
-    // Wrap with LifecycleBloc listener only when the bloc is available in the tree.
-    try {
-      context.read<LifecycleBloc>();
-      child = BlocListener<LifecycleBloc, LifecycleState>(
-        listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
-        listener: (context, lifecycleState) {
-          _updateAppConfigFromLifecycle(lifecycleState);
+    // A re-check that finds a new config keeps the state type (Ready to Ready), so compare the config itself.
+    return BlocListener<LifecycleBloc, LifecycleState>(
+      listenWhen: (previous, current) => _configOf(previous) != _configOf(current),
+      listener: (context, lifecycleState) => _updateAppConfigFromLifecycle(lifecycleState),
+      child: BlocBuilder<AccountBloc, AccountState>(
+        buildWhen: (previous, current) => previous.status != current.status,
+        builder: (context, accountState) {
+          if (accountState.status == AccountStatus.success) {
+            return const DashboardPage();
+          }
+          if (accountState.status == AccountStatus.loading || accountState.status == AccountStatus.initial) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          return const SizedBox.shrink();
         },
-        child: child,
-      );
-    } catch (_) {
-      // LifecycleBloc not in the widget tree — skip the listener.
-    }
-
-    return child;
+      ),
+    );
   }
 }

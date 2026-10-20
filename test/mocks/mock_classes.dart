@@ -14,6 +14,7 @@ import 'package:flutter_bloc_advance/features/auth/application/change_password_b
 import 'package:flutter_bloc_advance/features/auth/application/forgot_password_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
+import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
@@ -70,6 +71,8 @@ class MockRegisterBloc extends MockBloc<RegisterEvent, RegisterState> implements
 class MockLoginBloc extends MockBloc<LoginEvent, LoginState> implements LoginBloc {}
 
 class MockDynamicFormBloc extends MockBloc<DynamicFormEvent, DynamicFormState> implements DynamicFormBloc {}
+
+class MockSystemDashboardCubit extends MockCubit<SystemDashboardState> implements SystemDashboardCubit {}
 
 // Service mocks
 class MockAnalyticsService extends Mock implements IAnalyticsService {}
