@@ -27,8 +27,7 @@ class ThemeSelectionDialog extends StatelessWidget {
                   children: [
                     const Icon(Icons.palette_outlined),
                     const SizedBox(width: 12),
-                    Text('Choose Theme', style: Theme.of(context).textTheme.titleLarge),
-                    const Spacer(),
+                    Expanded(child: Text('Choose Theme', style: Theme.of(context).textTheme.titleLarge)),
                     IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close)),
                   ],
                 ),
@@ -74,13 +73,17 @@ class ThemeSelectionDialog extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-                    const SizedBox(width: 12),
-                    FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Apply')),
-                  ],
+                Align(
+                  alignment: AlignmentDirectional.centerEnd,
+                  child: Wrap(
+                    alignment: WrapAlignment.end,
+                    spacing: 12,
+                    runSpacing: 8,
+                    children: [
+                      TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
+                      FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Apply')),
+                    ],
+                  ),
                 ),
               ],
             ),
