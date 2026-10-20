@@ -75,6 +75,13 @@ void main() {
       expect(items[2].isNavigable, false);
     });
 
+    // /user/{id} has no route of its own, so a link to it led to the not-found page.
+    test('/user/:id/extended-info links the id to the user view page', () {
+      final items = BreadcrumbRouteResolver.resolve('/user/john_doe/extended-info', l10n);
+      expect(items.map((item) => item.label), ['Users', 'John doe', 'Extended Information']);
+      expect(items.map((item) => item.route), ['/user', '/user/john_doe/view', null]);
+    });
+
     test('strips query parameters', () {
       final items = BreadcrumbRouteResolver.resolve('/user?page=1&size=10', l10n);
       expect(items.length, 1);

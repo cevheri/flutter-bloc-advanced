@@ -18,6 +18,10 @@ class BreadcrumbRouteResolver {
 
   static const _actionSuffixes = {'view', 'edit', 'new'};
 
+  /// Feature roots whose second segment is a record id with a view page at `/<root>/:id/view`, such as the login in
+  /// `/user/:id/extended-info`. `/<root>/:id` itself has no route, so the id links to that view page.
+  static const _recordRoots = {'user'};
+
   /// Feature roots whose second segment is a path parameter, such as the form id in `/dynamic-forms/:formId`.
   static const _parameterChildRoots = {'dynamic-forms'};
 
@@ -56,8 +60,9 @@ class BreadcrumbRouteResolver {
       return items;
     }
 
-    // Three segments with action suffix: e.g., /user/:id/edit, /user/:id/view
-    if (segments.length == 3 && isActionLast) {
+    // Three segments with action suffix, or a page of a record: e.g., /user/:id/edit, /user/:id/view,
+    // /user/:id/extended-info
+    if (segments.length == 3 && (isActionLast || _recordRoots.contains(featureRoot))) {
       final id = segments[1];
       if (lastSegment == 'view') {
         // Collapse ID + view into single breadcrumb: User > {name}
@@ -70,8 +75,8 @@ class BreadcrumbRouteResolver {
       return items;
     }
 
-    // Generic fallback: build cumulative paths. The inner segments are path parameters such as the login in
-    // /user/:id/extended-info, so only the last segment is a route word.
+    // Generic fallback: build cumulative paths. The inner segments are path parameters such as an id, so only the
+    // last segment is a route word.
     for (int i = 1; i < segments.length; i++) {
       final isLast = i == segments.length - 1;
       if (isLast) {
