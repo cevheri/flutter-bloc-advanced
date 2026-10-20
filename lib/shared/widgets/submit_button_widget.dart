@@ -5,7 +5,7 @@ import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dar
 class ResponsiveSubmitButton extends StatelessWidget {
   const ResponsiveSubmitButton({
     super.key,
-    this.buttonText = 'Save',
+    required this.buttonText,
     this.onPressed,
     this.isLoading = false,
     this.isWebPlatform,

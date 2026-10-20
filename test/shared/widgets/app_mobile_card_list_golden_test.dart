@@ -4,6 +4,7 @@ import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_mobile_card_list.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/golden_app.dart';
 import '../../support/test_env.dart';
 
 // ---------------------------------------------------------------------------
@@ -76,6 +77,7 @@ void main() {
   goldenTest(
     'AppMobileCardList — light',
     fileName: 'app_mobile_card_list_light',
+    pumpWidget: pumpWithLocalizations,
     pumpBeforeTest: pumpOnce,
     builder: _grid,
   );
@@ -83,6 +85,7 @@ void main() {
   goldenTest(
     'AppMobileCardList — dark',
     fileName: 'app_mobile_card_list_dark',
+    pumpWidget: pumpWithLocalizations,
     pumpBeforeTest: pumpOnce,
     builder: () => Theme(data: AppTheme.dark(), child: _grid()),
   );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 
 /// Column definition for [AppDataTable].
 class AppTableColumn<T> {
@@ -176,13 +177,13 @@ class _AppTableFooter extends StatelessWidget {
         children: [
           Expanded(
             child: Text(
-              '$itemCount row(s) listed.',
+              S.of(context).table_rows_listed(itemCount),
               style: Theme.of(context).textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
             ),
           ),
-          OutlinedButton(onPressed: onPrevious, child: const Text('Previous')),
+          OutlinedButton(onPressed: onPrevious, child: Text(S.of(context).previous)),
           const SizedBox(width: 8),
-          OutlinedButton(onPressed: onNext, child: const Text('Next')),
+          OutlinedButton(onPressed: onNext, child: Text(S.of(context).next)),
         ],
       ),
     );

@@ -46,16 +46,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m12(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
 
-  static String m13(translate) =>
+  static String m13(count) => "${Intl.plural(count, other: '${count} satır listelendi.')}";
+
+  static String m14(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
-  static String m14(error) => "Kaydedilemedi: ${error}";
+  static String m15(error) => "Kaydedilemedi: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "account": MessageLookupByLibrary.simpleMessage("Hesabım"),
     "active": MessageLookupByLibrary.simpleMessage("Aktif"),
     "admin": MessageLookupByLibrary.simpleMessage("Admin"),
+    "apply": MessageLookupByLibrary.simpleMessage("Uygula"),
     "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
     "authorities_load_failed": MessageLookupByLibrary.simpleMessage("Roller alınamadı"),
     "back": MessageLookupByLibrary.simpleMessage("Geri"),
@@ -226,6 +229,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "new_item": MessageLookupByLibrary.simpleMessage("Yeni"),
     "new_password": MessageLookupByLibrary.simpleMessage("Yeni Şifre"),
     "new_user": MessageLookupByLibrary.simpleMessage("Yeni Kullanıcı Ekle"),
+    "next": MessageLookupByLibrary.simpleMessage("Sonraki"),
     "no": MessageLookupByLibrary.simpleMessage("Hayır"),
     "no_changes_made": MessageLookupByLibrary.simpleMessage("Değişiklik yapılmadı"),
     "no_data": MessageLookupByLibrary.simpleMessage("Veri Yok"),
@@ -238,6 +242,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "password_forgot": MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
     "password_max_length": m11,
     "password_min_length": m12,
+    "previous": MessageLookupByLibrary.simpleMessage("Önceki"),
     "quick_actions": MessageLookupByLibrary.simpleMessage("Hızlı İşlemler"),
     "refresh": MessageLookupByLibrary.simpleMessage("Yenile"),
     "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
@@ -261,10 +266,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "sidebar_expand": MessageLookupByLibrary.simpleMessage("Genişlet"),
     "submit": MessageLookupByLibrary.simpleMessage("Gönder"),
     "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
+    "table_rows_listed": m13,
     "theme": MessageLookupByLibrary.simpleMessage("Tema"),
+    "theme_dialog_subtitle": MessageLookupByLibrary.simpleMessage("Tercih ettiğiniz tema stilini seçin"),
+    "theme_dialog_title": MessageLookupByLibrary.simpleMessage("Tema Seçin"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Koyu"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Açık"),
-    "translate_menu_title": m13,
+    "theme_palette_classic": MessageLookupByLibrary.simpleMessage("Klasik"),
+    "theme_palette_classic_description": MessageLookupByLibrary.simpleMessage("Nötr çinko, sade ve minimal"),
+    "theme_palette_nature": MessageLookupByLibrary.simpleMessage("Doğa"),
+    "theme_palette_nature_description": MessageLookupByLibrary.simpleMessage("Adaçayı yeşili, sakin ve doğal"),
+    "theme_palette_sunset": MessageLookupByLibrary.simpleMessage("Gün Batımı"),
+    "theme_palette_sunset_description": MessageLookupByLibrary.simpleMessage("Sıcak taş, zengin ve davetkâr"),
+    "translate_menu_title": m14,
     "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
@@ -286,7 +300,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_editor_info_title": MessageLookupByLibrary.simpleMessage("Kullanıcı Bilgileri"),
     "user_editor_view_subtitle": MessageLookupByLibrary.simpleMessage("Kullanıcı ayrıntılarını görüntüleyin."),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
-    "user_extended_info_save_failed": m14,
+    "user_extended_info_save_failed": m15,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "user_list_actions": MessageLookupByLibrary.simpleMessage("İşlemler"),

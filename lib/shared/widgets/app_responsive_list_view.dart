@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_skeleton.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
@@ -114,7 +115,7 @@ class AppResponsiveListView<T> extends StatelessWidget {
                     key: createNewKey,
                     onPressed: onCreateNew,
                     icon: const Icon(Icons.add, size: 16),
-                    label: Text(createLabel ?? 'New'),
+                    label: Text(createLabel ?? S.of(context).new_item),
                   ),
               ],
             ),
@@ -157,7 +158,7 @@ class AppResponsiveListView<T> extends StatelessWidget {
                     key: createNewKey,
                     onPressed: onCreateNew,
                     icon: const Icon(Icons.add, size: 16),
-                    label: Text(createLabel ?? 'New'),
+                    label: Text(createLabel ?? S.of(context).new_item),
                   ),
                 ),
             ],

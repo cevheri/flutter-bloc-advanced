@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 import 'unsaved_changes_host.dart';
@@ -45,3 +46,19 @@ Widget goldenRoutedScreen(Widget screen, {bool dark = false}) => withUnsavedChan
 
 /// Standard phone surface for screen goldens.
 const Size kGoldenScreenSize = Size(390, 844);
+
+/// Pumps [widget] for an alchemist golden with the app's localizations, for a widget that reads `S.of(context)`.
+/// Alchemist's own wrapper loads only the default Material, Widgets and Cupertino localizations. Pass it as
+/// `goldenTest(pumpWidget: pumpWithLocalizations)`.
+Future<void> pumpWithLocalizations(WidgetTester tester, Widget widget) => tester.pumpWidget(
+  Localizations(
+    locale: const Locale('en'),
+    delegates: const [
+      S.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    child: widget,
+  ),
+);

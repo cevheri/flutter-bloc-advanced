@@ -7,8 +7,12 @@ import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 
 void main() {
   group('ResponsiveSubmitButton Widget Tests', () {
-    testWidgets('should render with default props', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton())));
+    testWidgets('should render the given text', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: ResponsiveSubmitButton(buttonText: 'Save')),
+        ),
+      );
 
       expect(find.byType(FilledButton), findsOneWidget);
       expect(find.text('Save'), findsOneWidget);
@@ -16,7 +20,11 @@ void main() {
     });
 
     testWidgets('should show loading indicator when isLoading is true', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton(isLoading: true))));
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: ResponsiveSubmitButton(buttonText: 'Save', isLoading: true)),
+        ),
+      );
 
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(find.text('Save'), findsOneWidget);
@@ -31,7 +39,9 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(body: ResponsiveSubmitButton(onPressed: () => wasPressed = true)),
+          home: Scaffold(
+            body: ResponsiveSubmitButton(buttonText: 'Save', onPressed: () => wasPressed = true),
+          ),
         ),
       );
 
@@ -54,7 +64,11 @@ void main() {
     });
 
     testWidgets('should align right on web platform', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton(isWebPlatform: true))));
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: ResponsiveSubmitButton(buttonText: 'Save', isWebPlatform: true)),
+        ),
+      );
 
       final alignFinder = find.ancestor(of: find.byType(FilledButton), matching: find.byType(Align));
 
@@ -64,7 +78,11 @@ void main() {
     });
 
     testWidgets('should not align on mobile platform', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: ResponsiveSubmitButton(isWebPlatform: false))));
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: ResponsiveSubmitButton(buttonText: 'Save', isWebPlatform: false)),
+        ),
+      );
 
       // FilledButton'ı içeren Align widget'ını kontrol et
       final alignFinder = find.ancestor(of: find.byType(FilledButton), matching: find.byType(Align));

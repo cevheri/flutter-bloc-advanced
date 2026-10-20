@@ -433,5 +433,35 @@
     }
   },
   "dynamic_form_field_numeric": "Sayı olmalıdır",
-  "@dynamic_form_field_numeric": {}
+  "@dynamic_form_field_numeric": {},
+  "apply": "Uygula",
+  "@apply": {},
+  "previous": "Önceki",
+  "@previous": {},
+  "next": "Sonraki",
+  "@next": {},
+  "table_rows_listed": "{count, plural, other{{count} satır listelendi.}}",
+  "@table_rows_listed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "theme_dialog_title": "Tema Seçin",
+  "@theme_dialog_title": {},
+  "theme_dialog_subtitle": "Tercih ettiğiniz tema stilini seçin",
+  "@theme_dialog_subtitle": {},
+  "theme_palette_classic": "Klasik",
+  "@theme_palette_classic": {},
+  "theme_palette_classic_description": "Nötr çinko, sade ve minimal",
+  "@theme_palette_classic_description": {},
+  "theme_palette_nature": "Doğa",
+  "@theme_palette_nature": {},
+  "theme_palette_nature_description": "Adaçayı yeşili, sakin ve doğal",
+  "@theme_palette_nature_description": {},
+  "theme_palette_sunset": "Gün Batımı",
+  "@theme_palette_sunset": {},
+  "theme_palette_sunset_description": "Sıcak taş, zengin ve davetkâr",
+  "@theme_palette_sunset_description": {}
 }

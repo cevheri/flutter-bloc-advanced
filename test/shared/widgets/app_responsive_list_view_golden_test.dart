@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/shared/widgets/app_data_table.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_responsive_list_view.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/golden_app.dart';
 import '../../support/test_env.dart';
 
 // ---------------------------------------------------------------------------
@@ -114,11 +115,17 @@ GoldenTestGroup _grid() => GoldenTestGroup(
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
 
-  goldenTest('AppResponsiveListView — light', fileName: 'app_responsive_list_view_light', builder: _grid);
+  goldenTest(
+    'AppResponsiveListView — light',
+    fileName: 'app_responsive_list_view_light',
+    pumpWidget: pumpWithLocalizations,
+    builder: _grid,
+  );
 
   goldenTest(
     'AppResponsiveListView — dark',
     fileName: 'app_responsive_list_view_dark',
+    pumpWidget: pumpWithLocalizations,
     builder: () => Theme(data: AppTheme.dark(), child: _grid()),
   );
 }

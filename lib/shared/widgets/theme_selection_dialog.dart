@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme_palette.dart';
 
@@ -11,8 +12,21 @@ class ThemeSelectionDialog extends StatelessWidget {
     return showDialog(context: context, builder: (context) => const ThemeSelectionDialog());
   }
 
+  static String _title(S l10n, AppThemePalette palette) => switch (palette) {
+    AppThemePalette.classic => l10n.theme_palette_classic,
+    AppThemePalette.nature => l10n.theme_palette_nature,
+    AppThemePalette.sunset => l10n.theme_palette_sunset,
+  };
+
+  static String _description(S l10n, AppThemePalette palette) => switch (palette) {
+    AppThemePalette.classic => l10n.theme_palette_classic_description,
+    AppThemePalette.nature => l10n.theme_palette_nature_description,
+    AppThemePalette.sunset => l10n.theme_palette_sunset_description,
+  };
+
   @override
   Widget build(BuildContext context) {
+    final l10n = S.of(context);
     return BlocBuilder<ThemeBloc, ThemeState>(
       builder: (context, state) {
         return Dialog(
@@ -27,13 +41,13 @@ class ThemeSelectionDialog extends StatelessWidget {
                   children: [
                     const Icon(Icons.palette_outlined),
                     const SizedBox(width: 12),
-                    Expanded(child: Text('Choose Theme', style: Theme.of(context).textTheme.titleLarge)),
+                    Expanded(child: Text(l10n.theme_dialog_title, style: Theme.of(context).textTheme.titleLarge)),
                     IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close)),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  'Select your preferred theme style',
+                  l10n.theme_dialog_subtitle,
                   style: Theme.of(context).textTheme.bodyMedium
                       ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
@@ -44,8 +58,8 @@ class ThemeSelectionDialog extends StatelessWidget {
                       children: [
                         _buildThemeCard(
                           context,
-                          title: AppThemePalette.classic.title,
-                          description: AppThemePalette.classic.description,
+                          title: _title(l10n, AppThemePalette.classic),
+                          description: _description(l10n, AppThemePalette.classic),
                           icon: AppThemePalette.classic.icon,
                           palette: AppThemePalette.classic,
                           isSelected: state.palette == AppThemePalette.classic,
@@ -53,8 +67,8 @@ class ThemeSelectionDialog extends StatelessWidget {
                         const SizedBox(height: 16),
                         _buildThemeCard(
                           context,
-                          title: AppThemePalette.nature.title,
-                          description: AppThemePalette.nature.description,
+                          title: _title(l10n, AppThemePalette.nature),
+                          description: _description(l10n, AppThemePalette.nature),
                           icon: AppThemePalette.nature.icon,
                           palette: AppThemePalette.nature,
                           isSelected: state.palette == AppThemePalette.nature,
@@ -62,8 +76,8 @@ class ThemeSelectionDialog extends StatelessWidget {
                         const SizedBox(height: 16),
                         _buildThemeCard(
                           context,
-                          title: AppThemePalette.sunset.title,
-                          description: AppThemePalette.sunset.description,
+                          title: _title(l10n, AppThemePalette.sunset),
+                          description: _description(l10n, AppThemePalette.sunset),
                           icon: AppThemePalette.sunset.icon,
                           palette: AppThemePalette.sunset,
                           isSelected: state.palette == AppThemePalette.sunset,
@@ -80,8 +94,8 @@ class ThemeSelectionDialog extends StatelessWidget {
                     spacing: 12,
                     runSpacing: 8,
                     children: [
-                      TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Cancel')),
-                      FilledButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Apply')),
+                      TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.cancel)),
+                      FilledButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.apply)),
                     ],
                   ),
                 ),

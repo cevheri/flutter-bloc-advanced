@@ -12,10 +12,13 @@ void main() {
   GoldenTestGroup grid() => GoldenTestGroup(
     columns: 2,
     children: [
-      // defaults — title + retry button (uses all default params)
+      // title + retry button, with the other params at their defaults
       GoldenTestScenario(
         name: 'default',
-        child: SizedBox(width: 320, child: AppErrorState(onRetry: () {})),
+        child: SizedBox(
+          width: 320,
+          child: AppErrorState(title: 'Something went wrong', retryLabel: 'Retry', onRetry: () {}),
+        ),
       ),
       // full — custom title + description + custom icon + retry
       GoldenTestScenario(

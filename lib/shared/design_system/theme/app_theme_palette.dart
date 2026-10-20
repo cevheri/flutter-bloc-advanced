@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Enum for different theme palettes
+/// Enum for different theme palettes. Their names and descriptions are in the ARB files, see ThemeSelectionDialog.
 enum AppThemePalette {
-  classic('Classic', 'Neutral zinc — clean and minimal'),
-  nature('Nature', 'Sage green — calm and organic'),
-  sunset('Sunset', 'Warm stone — rich and inviting');
-
-  const AppThemePalette(this.title, this.description);
-  final String title;
-  final String description;
+  classic,
+  nature,
+  sunset;
 
   /// Get the icon for this palette
   IconData get icon {

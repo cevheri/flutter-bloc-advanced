@@ -1288,6 +1288,78 @@ class S {
   String get dynamic_form_field_numeric {
     return Intl.message('Must be a number', name: 'dynamic_form_field_numeric', desc: '', args: []);
   }
+
+  /// `Apply`
+  String get apply {
+    return Intl.message('Apply', name: 'apply', desc: '', args: []);
+  }
+
+  /// `Previous`
+  String get previous {
+    return Intl.message('Previous', name: 'previous', desc: '', args: []);
+  }
+
+  /// `Next`
+  String get next {
+    return Intl.message('Next', name: 'next', desc: '', args: []);
+  }
+
+  /// `{count, plural, =1{1 row listed.} other{{count} rows listed.}}`
+  String table_rows_listed(int count) {
+    return Intl.plural(
+      count,
+      one: '1 row listed.',
+      other: '$count rows listed.',
+      name: 'table_rows_listed',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Choose Theme`
+  String get theme_dialog_title {
+    return Intl.message('Choose Theme', name: 'theme_dialog_title', desc: '', args: []);
+  }
+
+  /// `Select your preferred theme style`
+  String get theme_dialog_subtitle {
+    return Intl.message('Select your preferred theme style', name: 'theme_dialog_subtitle', desc: '', args: []);
+  }
+
+  /// `Classic`
+  String get theme_palette_classic {
+    return Intl.message('Classic', name: 'theme_palette_classic', desc: '', args: []);
+  }
+
+  /// `Neutral zinc, clean and minimal`
+  String get theme_palette_classic_description {
+    return Intl.message(
+      'Neutral zinc, clean and minimal',
+      name: 'theme_palette_classic_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Nature`
+  String get theme_palette_nature {
+    return Intl.message('Nature', name: 'theme_palette_nature', desc: '', args: []);
+  }
+
+  /// `Sage green, calm and organic`
+  String get theme_palette_nature_description {
+    return Intl.message('Sage green, calm and organic', name: 'theme_palette_nature_description', desc: '', args: []);
+  }
+
+  /// `Sunset`
+  String get theme_palette_sunset {
+    return Intl.message('Sunset', name: 'theme_palette_sunset', desc: '', args: []);
+  }
+
+  /// `Warm stone, rich and inviting`
+  String get theme_palette_sunset_description {
+    return Intl.message('Warm stone, rich and inviting', name: 'theme_palette_sunset_description', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -433,5 +433,35 @@
     }
   },
   "dynamic_form_field_numeric": "Must be a number",
-  "@dynamic_form_field_numeric": {}
+  "@dynamic_form_field_numeric": {},
+  "apply": "Apply",
+  "@apply": {},
+  "previous": "Previous",
+  "@previous": {},
+  "next": "Next",
+  "@next": {},
+  "table_rows_listed": "{count, plural, =1{1 row listed.} other{{count} rows listed.}}",
+  "@table_rows_listed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "theme_dialog_title": "Choose Theme",
+  "@theme_dialog_title": {},
+  "theme_dialog_subtitle": "Select your preferred theme style",
+  "@theme_dialog_subtitle": {},
+  "theme_palette_classic": "Classic",
+  "@theme_palette_classic": {},
+  "theme_palette_classic_description": "Neutral zinc, clean and minimal",
+  "@theme_palette_classic_description": {},
+  "theme_palette_nature": "Nature",
+  "@theme_palette_nature": {},
+  "theme_palette_nature_description": "Sage green, calm and organic",
+  "@theme_palette_nature_description": {},
+  "theme_palette_sunset": "Sunset",
+  "@theme_palette_sunset": {},
+  "theme_palette_sunset_description": "Warm stone, rich and inviting",
+  "@theme_palette_sunset_description": {}
 }

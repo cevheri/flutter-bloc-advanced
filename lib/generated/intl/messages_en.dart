@@ -48,16 +48,19 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m12(min) => "Password must be at least ${min} characters long";
 
-  static String m13(translate) =>
+  static String m13(count) => "${Intl.plural(count, one: '1 row listed.', other: '${count} rows listed.')}";
+
+  static String m14(translate) =>
       "${Intl.select(translate, {'account': 'Account', 'userManagement': 'User Management', 'settings': 'Settings', 'logout': 'Logout', 'info': 'Info', 'language': 'Language', 'theme': 'Theme', 'new_user': 'New', 'list_user': 'List', 'other': 'Other'})}";
 
-  static String m14(error) => "Save failed: ${error}";
+  static String m15(error) => "Save failed: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "account": MessageLookupByLibrary.simpleMessage("Account"),
     "active": MessageLookupByLibrary.simpleMessage("Active"),
     "admin": MessageLookupByLibrary.simpleMessage("Admin"),
+    "apply": MessageLookupByLibrary.simpleMessage("Apply"),
     "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
     "authorities_load_failed": MessageLookupByLibrary.simpleMessage("Roles unavailable"),
     "back": MessageLookupByLibrary.simpleMessage("Back"),
@@ -228,6 +231,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "new_item": MessageLookupByLibrary.simpleMessage("New"),
     "new_password": MessageLookupByLibrary.simpleMessage("New Password"),
     "new_user": MessageLookupByLibrary.simpleMessage("New User"),
+    "next": MessageLookupByLibrary.simpleMessage("Next"),
     "no": MessageLookupByLibrary.simpleMessage("No"),
     "no_changes_made": MessageLookupByLibrary.simpleMessage("No changes made"),
     "no_data": MessageLookupByLibrary.simpleMessage("No Data"),
@@ -240,6 +244,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "password_forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
     "password_max_length": m11,
     "password_min_length": m12,
+    "previous": MessageLookupByLibrary.simpleMessage("Previous"),
     "quick_actions": MessageLookupByLibrary.simpleMessage("Quick Actions"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "register": MessageLookupByLibrary.simpleMessage("Register"),
@@ -261,10 +266,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "sidebar_expand": MessageLookupByLibrary.simpleMessage("Expand"),
     "submit": MessageLookupByLibrary.simpleMessage("Submit"),
     "success": MessageLookupByLibrary.simpleMessage("Success"),
+    "table_rows_listed": m13,
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
+    "theme_dialog_subtitle": MessageLookupByLibrary.simpleMessage("Select your preferred theme style"),
+    "theme_dialog_title": MessageLookupByLibrary.simpleMessage("Choose Theme"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Dark"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Light"),
-    "translate_menu_title": m13,
+    "theme_palette_classic": MessageLookupByLibrary.simpleMessage("Classic"),
+    "theme_palette_classic_description": MessageLookupByLibrary.simpleMessage("Neutral zinc, clean and minimal"),
+    "theme_palette_nature": MessageLookupByLibrary.simpleMessage("Nature"),
+    "theme_palette_nature_description": MessageLookupByLibrary.simpleMessage("Sage green, calm and organic"),
+    "theme_palette_sunset": MessageLookupByLibrary.simpleMessage("Sunset"),
+    "theme_palette_sunset_description": MessageLookupByLibrary.simpleMessage("Warm stone, rich and inviting"),
+    "translate_menu_title": m14,
     "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
@@ -284,7 +298,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_editor_info_title": MessageLookupByLibrary.simpleMessage("User Information"),
     "user_editor_view_subtitle": MessageLookupByLibrary.simpleMessage("View user details."),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
-    "user_extended_info_save_failed": m14,
+    "user_extended_info_save_failed": m15,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "user_list_actions": MessageLookupByLibrary.simpleMessage("Actions"),

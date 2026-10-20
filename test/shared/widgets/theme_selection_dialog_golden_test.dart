@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/widgets/theme_selection_dialog.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/golden_app.dart';
 import '../../support/test_env.dart';
 
 // ThemeSelectionDialog uses BlocBuilder<ThemeBloc, ThemeState>, so a ThemeBloc
@@ -28,11 +29,17 @@ void main() {
     ],
   );
 
-  goldenTest('ThemeSelectionDialog — light', fileName: 'theme_selection_dialog_light', builder: grid);
+  goldenTest(
+    'ThemeSelectionDialog — light',
+    fileName: 'theme_selection_dialog_light',
+    pumpWidget: pumpWithLocalizations,
+    builder: grid,
+  );
 
   goldenTest(
     'ThemeSelectionDialog — dark',
     fileName: 'theme_selection_dialog_dark',
+    pumpWidget: pumpWithLocalizations,
     builder: () => Theme(data: AppTheme.dark(), child: grid()),
   );
 }

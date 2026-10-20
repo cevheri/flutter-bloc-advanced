@@ -443,6 +443,9 @@ void main() {
       expect(find.text('İşlemler'), findsOneWidget);
       expect(find.text('Aktif'), findsWidgets);
       expect(find.text('Pasif'), findsOneWidget);
+      expect(find.text('2 satır listelendi.'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Önceki'), findsOneWidget);
+      expect(find.widgetWithText(OutlinedButton, 'Sonraki'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -479,7 +482,7 @@ void main() {
       expect(find.text(S.current.user_list_load_failed), findsOneWidget);
       expect(find.text(S.current.error_generic), findsOneWidget);
       expect(find.text('User service unavailable'), findsNothing);
-      expect(find.text('0 row(s) listed.'), findsNothing);
+      expect(find.text('0 rows listed.'), findsNothing);
     });
 
     testWidgets('shows why a delete was refused in the app language', (tester) async {
@@ -545,7 +548,7 @@ void main() {
 
       final userList = find.byType(AppResponsiveListView<UserEntity>);
       expect(find.descendant(of: userList, matching: find.byType(AppSkeleton)), findsWidgets);
-      expect(find.text('0 row(s) listed.'), findsNothing);
+      expect(find.text('0 rows listed.'), findsNothing);
 
       response.complete(const Success([grace]));
       await tester.pumpAndSettle();

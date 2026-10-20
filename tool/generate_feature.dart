@@ -1016,7 +1016,12 @@ class _${f.singularPascal}ListPageState extends State<${f.singularPascal}ListPag
                 ),
                 ${f.singularPascal}ListLoaded(:final items) when items.isEmpty => AppEmptyState(title: S.of(context).no_data),
                 ${f.singularPascal}ListLoaded(:final items) => _${f.singularPascal}ListView(items: items),
-                ${f.singularPascal}ListFailure(:final error) => AppErrorState(description: error, onRetry: _load),
+                ${f.singularPascal}ListFailure(:final error) => AppErrorState(
+                  title: S.of(context).error_generic,
+                  description: error,
+                  retryLabel: S.of(context).retry,
+                  onRetry: _load,
+                ),
               },
             ),
           ),
@@ -1136,7 +1141,12 @@ class _${f.singularPascal}EditorPageState extends State<${f.singularPascal}Edito
         ${f.singularPascal}EditorLoaded(:final data) => _buildForm(context, data, isSaving: false),
         ${f.singularPascal}EditorSaving(:final data) => _buildForm(context, data, isSaving: true),
         ${f.singularPascal}EditorSaved(:final data) => _buildForm(context, data, isSaving: false),
-        ${f.singularPascal}EditorLoadFailure(:final error) => AppErrorState(description: error, onRetry: _fetch),
+        ${f.singularPascal}EditorLoadFailure(:final error) => AppErrorState(
+          title: S.of(context).error_generic,
+          description: error,
+          retryLabel: S.of(context).retry,
+          onRetry: _fetch,
+        ),
         ${f.singularPascal}EditorSaveFailure(:final data) => _buildForm(context, data, isSaving: false),
       },
     );

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 
 /// A mobile-optimized card list that handles loading, empty, and populated states.
 ///
@@ -51,7 +52,10 @@ class AppMobileCardList<T> extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.all(12),
-            child: Text('${items!.length} row(s) listed.', style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+            child: Text(
+              S.of(context).table_rows_listed(items!.length),
+              style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+            ),
           ),
         ],
       );

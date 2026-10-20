@@ -4,6 +4,7 @@ import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_data_table.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/golden_app.dart';
 import '../../support/test_env.dart';
 
 // ---------------------------------------------------------------------------
@@ -68,11 +69,17 @@ GoldenTestGroup _grid() => GoldenTestGroup(
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
 
-  goldenTest('AppDataTable — light', fileName: 'app_data_table_light', builder: _grid);
+  goldenTest(
+    'AppDataTable — light',
+    fileName: 'app_data_table_light',
+    pumpWidget: pumpWithLocalizations,
+    builder: _grid,
+  );
 
   goldenTest(
     'AppDataTable — dark',
     fileName: 'app_data_table_dark',
+    pumpWidget: pumpWithLocalizations,
     builder: () => Theme(data: AppTheme.dark(), child: _grid()),
   );
 }
