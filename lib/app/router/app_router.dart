@@ -4,6 +4,7 @@ import 'package:flutter_bloc_advance/app/router/forbidden_page.dart';
 import 'package:flutter_bloc_advance/app/router/not_found_page.dart';
 import 'package:flutter_bloc_advance/app/router/route_role_requirements.dart';
 // safeRedirectTarget lives in core/ so features/ guards can consume it too.
+import 'package:flutter_bloc_advance/core/security/safe_redirect.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/shell/app_shell.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
@@ -76,9 +77,13 @@ class AppRouterFactory {
 
         // Authenticated user landing on a public route (login / register
         // / forgot-password / OTP), for example by opening /login while
-        // signed in, should be sent to the home shell.
+        // signed in, should be sent to the home shell, or to the returnUrl
+        // that the redirect below gives the login page, as the sign-in on
+        // that page does: SessionCubit signs the user in on that page when
+        // the stored session answers only after its restore time limit.
+        // Like the login screen, it honors only a local path.
         if (isAuthenticated && isPublic) {
-          return ApplicationRoutesConstants.home;
+          return safeRedirectTarget(state.uri.queryParameters['returnUrl'], fallback: ApplicationRoutesConstants.home);
         }
 
         // The router never sees SessionUnknown at startup: App mounts it

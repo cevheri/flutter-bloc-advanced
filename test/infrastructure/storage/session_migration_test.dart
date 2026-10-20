@@ -1,23 +1,36 @@
+import 'dart:async';
+
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/startup_storage_time_limit.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
+import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../mocks/mock_classes.dart';
+
 class _MemorySecureStorage implements ISecureStorage {
-  _MemorySecureStorage({this.failOnWrite = false, this.silentlyDropWrites = false});
+  _MemorySecureStorage({this.failOnWrite = false, this.silentlyDropWrites = false, this.writeAnswered});
   final Map<String, String> _store = {};
   final bool failOnWrite;
 
   /// Simulates a misbehaving adapter that returns successfully but never
   /// persists the value — exercises the read-after-write verification path.
   final bool silentlyDropWrites;
+
+  /// When given, a write lands and answers only once this completes, like a secure storage that answers late.
+  final Future<void>? writeAnswered;
   @override
   Future<String?> read(String key) async => _store[key];
   @override
   Future<void> write(String key, String value) async {
     if (failOnWrite) throw StateError('boom');
     if (silentlyDropWrites) return;
+    final answered = writeAnswered;
+    if (answered != null) await answered;
     _store[key] = value;
   }
 
@@ -123,6 +136,77 @@ void main() {
       // The legacy key is still there because remove returned false;
       // operators see a warn-level log so the leftover can be cleaned up.
       expect(await local.read('jwtToken'), 'JWT_VALUE');
+    });
+  });
+
+  // AppBootstrap.run awaits the migration before runApp, so a secure storage that never answers would keep the launch
+  // screen up for good.
+  group('runSessionMigration time limit', () {
+    test('gives up and logs an error when secure storage does not answer within the time limit', () {
+      final errors = <String>[];
+      void recordError(OutputEvent event) {
+        if (event.level == Level.error) errors.addAll(event.lines);
+      }
+
+      Logger.addOutputListener(recordError);
+      addTearDown(() => Logger.removeOutputListener(recordError));
+
+      fakeAsync((async) {
+        final secure = MockISecureStorage();
+        when(() => secure.read(any())).thenAnswer((_) => Completer<String?>().future);
+        var done = false;
+        unawaited(runSessionMigration(secureStorage: secure, localStorage: local).then((_) => done = true));
+
+        async.elapse(StartupStorageTimeLimit.defaultDuration - const Duration(milliseconds: 1));
+        expect(done, isFalse);
+        expect(errors, isEmpty);
+
+        async.elapse(const Duration(milliseconds: 1));
+        expect(done, isTrue);
+        expect(errors, contains(contains('SessionMigration')));
+      });
+    });
+
+    // By the time secure storage answers, the user may have signed in or out, and a late write of the legacy token would
+    // replace that session.
+    test('writes nothing when secure storage answers after the migration gave up', () async {
+      await local.save('jwtToken', 'JWT_VALUE');
+      final secure = MockISecureStorage();
+      when(() => secure.write(any(), any())).thenAnswer((_) async {});
+
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        when(() => secure.read(any())).thenAnswer((_) => storedToken.future);
+        unawaited(runSessionMigration(secureStorage: secure, localStorage: local));
+        async.elapse(StartupStorageTimeLimit.defaultDuration);
+
+        storedToken.complete(null);
+        async.flushMicrotasks();
+      });
+
+      verifyNever(() => secure.write(any(), any()));
+      verify(() => secure.read(any())).called(1);
+      expect(await local.read('jwtToken'), 'JWT_VALUE');
+    });
+
+    // A write sent before the migration gave up cannot be called back and may still land. The verify read and the
+    // remove that would follow it belong to a migration that the app has already started without.
+    test('removes no plaintext copy when its write answers after the migration gave up', () async {
+      await local.save('jwtToken', 'JWT_VALUE');
+
+      final secure = fakeAsync((async) {
+        final writeAnswered = Completer<void>();
+        final secure = _MemorySecureStorage(writeAnswered: writeAnswered.future);
+        unawaited(runSessionMigration(secureStorage: secure, localStorage: local));
+        async.elapse(StartupStorageTimeLimit.defaultDuration);
+
+        writeAnswered.complete();
+        async.flushMicrotasks();
+        return secure;
+      });
+
+      expect(await secure.read('jwtToken'), 'JWT_VALUE', reason: 'the write sent before the migration gave up landed');
+      expect(await local.read('jwtToken'), 'JWT_VALUE', reason: 'the plaintext copy is left for the next launch');
     });
   });
 }

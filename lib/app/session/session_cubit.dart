@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
@@ -8,6 +10,7 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_sess
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/startup_storage_time_limit.dart';
 
 /// Session state observed by router redirect and UI guards.
 ///
@@ -82,6 +85,12 @@ enum SessionExpiredReason {
   /// [SessionUnknown] forever.
   storageError,
 
+  /// The stored session was not read within the restore time limit, so
+  /// it could not be checked; see [SessionCubit.restore]. The login page
+  /// shows, and a valid session that the read finds later still opens
+  /// the app unless the user has signed in or out by then.
+  storageTimeout,
+
   /// User was inactive past the configured idle threshold and the
   /// session was forcibly ended. Surfaced to the UI as a localized
   /// notice so the user understands why they were signed out.
@@ -103,18 +112,89 @@ class SessionCubit extends Cubit<SessionState> {
     ISecureStorage? secureStorage,
     IAuthSessionRepository? sessionRepository,
     this._appConfig = const AppConfig.dev(),
+    this._restoreTimeLimit = defaultRestoreTimeLimit,
   }) : _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
        super(const SessionUnknown()) {
     _sessionRepository = sessionRepository ?? AuthSessionRepository(secureStorage: _secureStorage);
   }
+
+  /// How long [restore] waits for the stored session unless the
+  /// constructor is given another `restoreTimeLimit`: ten seconds, the
+  /// limit that the session migration before runApp has too, see
+  /// [StartupStorageTimeLimit.defaultDuration].
+  ///
+  /// An answer that comes after the limit still settles the session while
+  /// the user is signed out by it. On macOS a read waits while the login
+  /// keychain asks for its password, so a password entered after ten
+  /// seconds still opens the stored session.
+  static const defaultRestoreTimeLimit = StartupStorageTimeLimit.defaultDuration;
 
   static final _log = AppLogger.getLogger('SessionCubit');
 
   final ISecureStorage _secureStorage;
   late final IAuthSessionRepository _sessionRepository;
   final AppConfig _appConfig;
+  final Duration _restoreTimeLimit;
 
+  /// The time limits of the restores in flight, cancelled by [close].
+  final _restoreTimeLimits = <StartupStorageTimeLimit<SessionState>>{};
+
+  /// Reads the stored session and settles [state] from it.
+  ///
+  /// The read is bounded by the restore time limit
+  /// ([defaultRestoreTimeLimit] unless the constructor is given another).
+  /// Until restore settles the session, App shows a spinner instead of the
+  /// router, so a secure storage that never answers would keep the user
+  /// there forever. When the limit passes first, restore logs an error
+  /// and emits [SessionUnauthenticated] with
+  /// [SessionExpiredReason.storageTimeout], so the login page shows. This
+  /// is an explicit error path, not a silent fallback: the error log says
+  /// why the user is signed out. The stored session itself is left as it
+  /// is.
+  ///
+  /// A read that answers after the limit settles the session as an
+  /// in-time read would, as long as that storageTimeout sign-out is still
+  /// the state: a valid stored session opens the app, and no session or
+  /// an expired one keeps the login page. Once the user has signed in or
+  /// out, the late answer is logged and ignored, so it can neither sign
+  /// them back in nor replace the session they signed in to.
   Future<void> restore() async {
+    final storedSession = _readStoredSession();
+    final timeLimit = StartupStorageTimeLimit(storedSession, duration: _restoreTimeLimit);
+    _restoreTimeLimits.add(timeLimit);
+    final SessionState session;
+    try {
+      session = await timeLimit.result;
+    } on TimeoutException {
+      _log.error(
+        'restore: secure storage did not answer within {} ms → unauthenticated until it answers or the user signs in',
+        [_restoreTimeLimit.inMilliseconds],
+      );
+      // Not const: only this instance is the sign-out of this restore, so a
+      // late answer can tell that nobody has signed in or out since.
+      final timedOut = SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout);
+      emit(timedOut);
+      unawaited(storedSession.then((stored) => _settleLate(stored, timedOut)));
+      return;
+    } finally {
+      _restoreTimeLimits.remove(timeLimit);
+    }
+    emit(session);
+  }
+
+  /// Settles [state] from [stored], which [restore] read only after its
+  /// time limit had signed the user out with [timedOut].
+  void _settleLate(SessionState stored, SessionUnauthenticated timedOut) {
+    if (isClosed || !identical(state, timedOut)) {
+      _log.warn('restore: secure storage answered after the time limit, ignored: {}', [stored]);
+      return;
+    }
+    _log.info('restore: secure storage answered after the time limit, nobody signed in or out since → {}', [stored]);
+    emit(stored);
+  }
+
+  /// The session that the stored token proves, for [restore].
+  Future<SessionState> _readStoredSession() async {
     // ISecureStorage.read can throw on platform / decryption failure.
     // restore() is invoked fire-and-forget from BlocProvider, so any
     // escaping exception becomes an unhandled async error. Wrap the
@@ -126,8 +206,7 @@ class SessionCubit extends Cubit<SessionState> {
       final hasToken = SecurityUtils.hasToken(token);
       if (!hasToken) {
         _log.info('restore: no token in secure storage → unauthenticated');
-        emit(const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
-        return;
+        return const SessionUnauthenticated(reason: SessionExpiredReason.noToken);
       }
       // In production we additionally reject expired tokens. In non-prod
       // (mocks/dev) we stay lenient so a static MOCK_TOKEN without an
@@ -142,17 +221,17 @@ class SessionCubit extends Cubit<SessionState> {
         final expired = SecurityUtils.isTokenExpired(token);
         _log.info('restore: token found, expired={} → authenticated={}', [expired, !expired]);
         if (expired) {
-          emit(const SessionUnauthenticated(reason: SessionExpiredReason.expired));
+          return const SessionUnauthenticated(reason: SessionExpiredReason.expired);
         } else {
-          emit(SessionAuthenticated(roles: await _readRoles()));
+          return SessionAuthenticated(roles: await _readRoles());
         }
       } else {
         _log.info('restore: token found (dev/test lenient) → authenticated');
-        emit(SessionAuthenticated(roles: await _readRoles()));
+        return SessionAuthenticated(roles: await _readRoles());
       }
     } catch (e, st) {
       _log.error('restore: secure storage read failed → unauthenticated (safe default): {}\n{}', [e, st]);
-      emit(const SessionUnauthenticated(reason: SessionExpiredReason.storageError));
+      return const SessionUnauthenticated(reason: SessionExpiredReason.storageError);
     }
   }
 
@@ -230,6 +309,15 @@ class SessionCubit extends Cubit<SessionState> {
   /// Re-run [restore] from current secure-storage state. Fire-and-
   /// forget safe — see [restore] for the failure semantics.
   Future<void> refresh() => restore();
+
+  @override
+  Future<void> close() {
+    for (final timeLimit in _restoreTimeLimits) {
+      timeLimit.cancel();
+    }
+    _restoreTimeLimits.clear();
+    return super.close();
+  }
 
   /// Reads the persisted role list from [AppLocalStorage] and normalizes
   /// to a [Set]. Returns the empty set when the key is missing or the

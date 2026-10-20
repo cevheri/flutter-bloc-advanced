@@ -52,6 +52,7 @@ The screenshots below are included to help contributors and adopters understand 
 - **macOS keychain**: on macOS the tokens live in the login keychain, because the data protection keychain needs an Apple Developer team and a provisioning profile, and the default macOS build is signed ad hoc without them.
   The login keychain protects the tokens with an access control list that names the app, and keychain accessibility such as `first_unlock_this_device` does not apply there, so none is set on macOS.
   An ad-hoc signature names the app by its code hash, so after a rebuild macOS asks for the login keychain password before the app can read the stored session.
+  Startup waits at most 10 seconds for the keychain in the session migration, then at most 10 seconds more in the session restore, and shows the login page if the password has not been entered by then; the stored session still opens once it is.
   With a team and a provisioning profile you can move to the data protection keychain: add `keychain-access-groups` to both `macos/Runner/*.entitlements` files and set `usesDataProtectionKeychain: true` and `accessibility: KeychainAccessibility.first_unlock_this_device` in `FlutterSecureStorageAdapter` (`lib/infrastructure/storage/secure_storage.dart`); users then sign in once more.
 
 ### User Management

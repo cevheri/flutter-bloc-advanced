@@ -70,6 +70,19 @@ void main() {
       expect(find.byType(SettingsScreen), findsOneWidget);
     });
 
+    testWidgets('sends an authenticated user on the login page home when its returnUrl leaves the app', (tester) async {
+      setDesktopViewport(tester);
+      TestEnv.authenticate();
+      await tester.pumpWidget(const App(language: 'en'));
+      await tester.pumpAndSettle();
+
+      final returnUrl = Uri.encodeQueryComponent('https://evil.example/settings');
+      routerFromApp(tester).go('${ApplicationRoutesConstants.login}?returnUrl=$returnUrl');
+      await tester.pumpAndSettle();
+
+      expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.home);
+    });
+
     testWidgets('never builds the login page on an authenticated cold start', (tester) async {
       setDesktopViewport(tester);
       TestEnv.authenticate();

@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/startup_storage_time_limit.dart';
 
 final _log = AppLogger.getLogger('SessionMigration');
 
@@ -18,17 +21,52 @@ final _legacyKeys = <String>[SecureStorageKeys.jwtToken.key, SecureStorageKeys.r
 /// logs a warning and returns; worst case the user re-authenticates
 /// on the next launch.
 ///
+/// Bootstrap waits for it before runApp, so it gives up after [timeLimit]
+/// ([StartupStorageTimeLimit.defaultDuration] unless given another): it
+/// logs an error and returns, the app starts without it, and the next
+/// launch runs it again. A migration that gave up starts no write or
+/// remove when secure storage answers later, because the user may have
+/// signed in or out by then and a late write of the legacy token would
+/// replace that session. A write it sent before it gave up cannot be
+/// called back and may still land, also after the user has signed in;
+/// the plaintext copy then stays until a later launch finds a token in
+/// secure storage and removes the copy. The plaintext copy is removed
+/// only after a read of secure storage has found a token there.
+///
 /// Top-level function — there is no state, no polymorphism, no
 /// related helpers worth namespacing. The previous `SessionMigration`
 /// class wrapper carried zero information beyond what the function
 /// name already conveys.
-Future<void> runSessionMigration({required ISecureStorage secureStorage, required AppLocalStorage localStorage}) async {
-  for (final legacyKey in _legacyKeys) {
-    await _migrateOne(legacyKey, secureStorage, localStorage);
+Future<void> runSessionMigration({
+  required ISecureStorage secureStorage,
+  required AppLocalStorage localStorage,
+  Duration timeLimit = StartupStorageTimeLimit.defaultDuration,
+}) async {
+  var gaveUp = false;
+  Future<void> migrate() async {
+    for (final legacyKey in _legacyKeys) {
+      if (gaveUp) return;
+      await _migrateOne(legacyKey, secureStorage, localStorage, gaveUp: () => gaveUp);
+    }
+  }
+
+  try {
+    await StartupStorageTimeLimit(migrate(), duration: timeLimit).result;
+  } on TimeoutException {
+    gaveUp = true;
+    _log.error(
+      'Secure storage did not answer within {} ms; the app starts without the migration, the next launch retries',
+      [timeLimit.inMilliseconds],
+    );
   }
 }
 
-Future<void> _migrateOne(String legacyKey, ISecureStorage secureStorage, AppLocalStorage localStorage) async {
+Future<void> _migrateOne(
+  String legacyKey,
+  ISecureStorage secureStorage,
+  AppLocalStorage localStorage, {
+  required bool Function() gaveUp,
+}) async {
   try {
     final existing = await secureStorage.read(legacyKey);
     // AppLocalStorage.read returns Future<dynamic>; narrow to String
@@ -38,6 +76,11 @@ Future<void> _migrateOne(String legacyKey, ISecureStorage secureStorage, AppLoca
     final legacyRaw = await localStorage.read(legacyKey);
     final String? legacy = legacyRaw is String ? legacyRaw : null;
     final hasLegacyPlaintext = legacy != null && legacy.isNotEmpty;
+
+    if (gaveUp()) {
+      _log.warn('Secure storage answered after the migration gave up; {} is left for the next launch', [legacyKey]);
+      return;
+    }
 
     if (existing != null && existing.isNotEmpty) {
       // Already migrated. But if a plaintext copy is still lingering
@@ -64,6 +107,13 @@ Future<void> _migrateOne(String legacyKey, ISecureStorage secureStorage, AppLoca
     if (!hasLegacyPlaintext) return;
 
     await secureStorage.write(legacyKey, legacy);
+    if (gaveUp()) {
+      _log.warn(
+        'Secure storage answered the {} write after the migration gave up; its plaintext copy is left for the next launch',
+        [legacyKey],
+      );
+      return;
+    }
 
     // Verify the write actually landed before deleting the legacy copy.
     // The adapter throws on platform errors, but defense-in-depth: if a

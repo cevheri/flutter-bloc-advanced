@@ -1,10 +1,16 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
+import 'package:mocktail/mocktail.dart';
+
+import '../../mocks/mock_classes.dart';
 
 class _MemorySecureStorage implements ISecureStorage {
   final Map<String, String> _store = {};
@@ -202,4 +208,219 @@ void main() {
       expect(cubit.state, const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
     });
   });
+
+  // App shows a spinner instead of the router until restore settles the session, so storage that never answers would
+  // keep the user there.
+  group('SessionCubit.restore time limit', () {
+    const timeLimit = Duration(seconds: 3);
+
+    /// Secure storage whose reads answer only when [answer] completes.
+    MockISecureStorage storageAnswering(Future<String?> answer) {
+      final storage = MockISecureStorage();
+      when(() => storage.read(any())).thenAnswer((_) => answer);
+      return storage;
+    }
+
+    test('signs the user out with storageTimeout and logs an error when secure storage does not answer in time', () {
+      final errors = <String>[];
+      void recordError(OutputEvent event) {
+        if (event.level == Level.error) errors.addAll(event.lines);
+      }
+
+      Logger.addOutputListener(recordError);
+      addTearDown(() => Logger.removeOutputListener(recordError));
+
+      fakeAsync((async) {
+        final cubit = SessionCubit(
+          secureStorage: storageAnswering(Completer<String?>().future),
+          restoreTimeLimit: timeLimit,
+        );
+
+        unawaited(cubit.restore());
+        async.elapse(timeLimit - const Duration(milliseconds: 1));
+        expect(cubit.state, const SessionUnknown());
+        expect(errors, isEmpty);
+
+        async.elapse(const Duration(milliseconds: 1));
+        expect(cubit.state, const SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout));
+        expect(errors, contains(contains('SessionCubit : restore')));
+        unawaited(cubit.close());
+      });
+    });
+
+    // On macOS a read waits while the login keychain asks for its password, which the user may enter after the limit.
+    test('opens a stored session that secure storage answers after the time limit, and logs it', () {
+      final infos = _recordLogs(Level.info);
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        final cubit = SessionCubit(secureStorage: storageAnswering(storedToken.future), restoreTimeLimit: timeLimit);
+        final states = <SessionState>[];
+        cubit.stream.listen(states.add);
+
+        unawaited(cubit.restore());
+        async.elapse(timeLimit);
+        storedToken.complete('MOCK_TOKEN');
+        async.flushMicrotasks();
+
+        expect(states, [
+          const SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout),
+          const SessionAuthenticated(),
+        ]);
+        expect(infos, contains(allOf(contains('SessionCubit : restore'), contains('after the time limit'))));
+        unawaited(cubit.close());
+      });
+    });
+
+    test('keeps the user signed out when secure storage answers after the time limit with no stored session', () {
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        final cubit = SessionCubit(secureStorage: storageAnswering(storedToken.future), restoreTimeLimit: timeLimit);
+        final states = <SessionState>[];
+        cubit.stream.listen(states.add);
+
+        unawaited(cubit.restore());
+        async.elapse(timeLimit);
+        storedToken.complete(null);
+        async.flushMicrotasks();
+
+        expect(states, [
+          const SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout),
+          const SessionUnauthenticated(reason: SessionExpiredReason.noToken),
+        ]);
+        unawaited(cubit.close());
+      });
+    });
+
+    test('keeps the user signed out when secure storage answers after the time limit with an expired session', () {
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        final cubit = SessionCubit(
+          secureStorage: storageAnswering(storedToken.future),
+          appConfig: const AppConfig.prod(),
+          restoreTimeLimit: timeLimit,
+        );
+        final states = <SessionState>[];
+        cubit.stream.listen(states.add);
+
+        unawaited(cubit.restore());
+        async.elapse(timeLimit);
+        storedToken.complete(_expiredJwt);
+        async.flushMicrotasks();
+
+        expect(states, [
+          const SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout),
+          const SessionUnauthenticated(reason: SessionExpiredReason.expired),
+        ]);
+        unawaited(cubit.close());
+      });
+    });
+
+    test('ignores a session answered after the time limit, and logs it, once the user has signed in since', () {
+      final warnings = _recordLogs(Level.warning);
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        final cubit = SessionCubit(secureStorage: storageAnswering(storedToken.future), restoreTimeLimit: timeLimit);
+        final states = <SessionState>[];
+        cubit.stream.listen(states.add);
+
+        unawaited(cubit.restore());
+        async.elapse(timeLimit);
+        cubit.markAuthenticated(roles: {'ROLE_USER'});
+        storedToken.complete('MOCK_TOKEN');
+        async.flushMicrotasks();
+
+        expect(states, [
+          const SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout),
+          const SessionAuthenticated(roles: {'ROLE_USER'}),
+        ]);
+        expect(warnings, contains(allOf(contains('SessionCubit : restore'), contains('ignored'))));
+        unawaited(cubit.close());
+      });
+    });
+
+    test('does not sign back in a user who signed in and out after the time limit', () {
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        final cubit = SessionCubit(secureStorage: storageAnswering(storedToken.future), restoreTimeLimit: timeLimit);
+        final states = <SessionState>[];
+        cubit.stream.listen(states.add);
+
+        unawaited(cubit.restore());
+        async.elapse(timeLimit);
+        cubit
+          ..markAuthenticated()
+          ..markLoggedOut();
+        storedToken.complete('MOCK_TOKEN');
+        async.flushMicrotasks();
+
+        expect(states, [
+          const SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout),
+          const SessionAuthenticated(),
+          const SessionUnauthenticated(reason: SessionExpiredReason.noToken),
+        ]);
+        unawaited(cubit.close());
+      });
+    });
+
+    test('ignores a session answered after the time limit once the cubit is closed', () {
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        final cubit = SessionCubit(secureStorage: storageAnswering(storedToken.future), restoreTimeLimit: timeLimit);
+
+        unawaited(cubit.restore());
+        async.elapse(timeLimit);
+        unawaited(cubit.close());
+        async.flushMicrotasks();
+        // Emitting into the closed cubit would throw here.
+        storedToken.complete('MOCK_TOKEN');
+        async.flushMicrotasks();
+
+        expect(cubit.state, const SessionUnauthenticated(reason: SessionExpiredReason.storageTimeout));
+      });
+    });
+
+    test('a restore settled within the time limit is not signed out when the limit passes', () {
+      fakeAsync((async) {
+        final storedToken = Completer<String?>();
+        final cubit = SessionCubit(secureStorage: storageAnswering(storedToken.future), restoreTimeLimit: timeLimit);
+        final states = <SessionState>[];
+        cubit.stream.listen(states.add);
+
+        unawaited(cubit.restore());
+        async.elapse(const Duration(seconds: 1));
+        storedToken.complete('MOCK_TOKEN');
+        async.elapse(timeLimit * 2);
+
+        expect(states, [const SessionAuthenticated()]);
+        unawaited(cubit.close());
+      });
+    });
+
+    test('close stops the time limit of a restore in flight', () {
+      fakeAsync((async) {
+        final cubit = SessionCubit(
+          secureStorage: storageAnswering(Completer<String?>().future),
+          restoreTimeLimit: timeLimit,
+        );
+
+        unawaited(cubit.restore());
+        unawaited(cubit.close());
+
+        // A timer left running would emit into the closed cubit and, in a widget test, fail it as still pending.
+        expect(async.pendingTimers, isEmpty);
+      });
+    });
+  });
+}
+
+/// Collects the lines logged at [level] until the test ends.
+List<String> _recordLogs(Level level) {
+  final lines = <String>[];
+  void record(OutputEvent event) {
+    if (event.level == level) lines.addAll(event.lines);
+  }
+
+  Logger.addOutputListener(record);
+  addTearDown(() => Logger.removeOutputListener(record));
+  return lines;
 }
