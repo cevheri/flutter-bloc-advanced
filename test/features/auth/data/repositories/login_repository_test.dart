@@ -1,8 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
@@ -39,6 +46,29 @@ class _StubInterceptor extends Interceptor {
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
     handler.resolve(Response(requestOptions: options, statusCode: 200, data: body));
   }
+}
+
+/// Production chain (no MockInterceptor) with certificate pinning configured.
+const _pinnedProdConfig = AppConfig(
+  environment: Environment.prod,
+  apiBaseUrl: 'https://api.example.test',
+  certificatePins: ['test-pin'],
+  idleTimeout: null,
+);
+
+/// Fails every request as the pinning adapter fails a server whose certificate matches no configured pin.
+class _PinMismatchAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    throw const CertificatePinningException('api.example.test', 443);
+  }
+
+  @override
+  void close({bool force = false}) {}
 }
 
 void main() {
@@ -211,6 +241,41 @@ void main() {
 
       final result = await LoginRepository(apiClient: TestEnv.apiClient()).verifyOtp(request);
       expect(result, isA<Failure<AuthTokenEntity>>());
+    });
+  });
+
+  // Regression: a pin mismatch came back as a NetworkError without a code, so the login screen said "Login failed", as
+  // if the credentials were wrong, instead of telling the user that the connection was blocked.
+  group('Login Repository over a connection whose certificate matches no pin', () {
+    LoginRepository pinnedRepository() {
+      final apiClient = ApiClient(appConfig: _pinnedProdConfig, secureStorage: FlutterSecureStorageAdapter());
+      apiClient.instance.httpClientAdapter = _PinMismatchAdapter();
+      return LoginRepository(apiClient: apiClient);
+    }
+
+    void expectCertInvalid(Result<Object?> result) {
+      expect(
+        result,
+        isA<Failure<Object?>>()
+            .having((f) => f.error, 'error', isA<NetworkError>())
+            .having((f) => f.error.code, 'error.code', AppErrorCode.networkCertInvalid.key),
+      );
+    }
+
+    test('authenticate reports AppErrorCode.networkCertInvalid', () async {
+      expectCertInvalid(
+        await pinnedRepository().authenticate(const AuthCredentialsEntity(username: 'admin', password: 'admin')),
+      );
+    });
+
+    test('sendOtp reports AppErrorCode.networkCertInvalid', () async {
+      expectCertInvalid(await pinnedRepository().sendOtp(const SendOtpEntity(email: 'admin@sample.tech')));
+    });
+
+    test('verifyOtp reports AppErrorCode.networkCertInvalid', () async {
+      expectCertInvalid(
+        await pinnedRepository().verifyOtp(const VerifyOtpEntity(email: 'admin@sample.tech', otp: '123456')),
+      );
     });
   });
 }

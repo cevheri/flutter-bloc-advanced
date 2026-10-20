@@ -88,12 +88,13 @@ class _FakeAuthSessionRepository implements IAuthSessionRepository {
 
 class _FakeAccountRepository implements IAccountRepository {
   UserEntity? account;
+  Result<UserEntity>? getAccountResult;
 
   @override
   Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async => const Success(null);
 
   @override
-  Future<Result<UserEntity>> getAccount() async => Success(account ?? mockUserFullPayload);
+  Future<Result<UserEntity>> getAccount() async => getAccountResult ?? Success(account ?? mockUserFullPayload);
 
   @override
   Future<Result<UserEntity>> register(UserEntity newUser) async => Success(newUser);
@@ -475,5 +476,65 @@ void main() {
         ],
       );
     });
+  });
+
+  // Regression: every failed sign-in step reported its own generic code, so a certificate that matched no pin read
+  // "Login failed", as if the credentials were wrong. A code the failure carries now reaches the screen.
+  group('a failure that carries an AppErrorCode', () {
+    const certInvalid = NetworkError('pin mismatch', code: 'network.cert_invalid');
+
+    blocTest<LoginBloc, LoginState>(
+      'LoginFormSubmitted emits the code of a failed sign-in',
+      setUp: () => repository.authenticateResult = const Failure(certInvalid),
+      build: () => _buildBloc(repository),
+      act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
+      expect: () => [
+        const LoginLoadingState(username: 'username'),
+        const LoginErrorState(errorCode: AppErrorCode.networkCertInvalid, message: 'pin mismatch'),
+      ],
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'LoginFormSubmitted emits the code of a failed account fetch after the sign-in',
+      setUp: () {
+        repository.authenticateResult = const Success(AuthTokenEntity(idToken: 'MOCK_TOKEN'));
+        accountRepository.getAccountResult = const Failure(certInvalid);
+      },
+      build: () => _buildBloc(repository, accountRepository),
+      act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
+      expect: () => [
+        const LoginLoadingState(username: 'username'),
+        const LoginErrorState(errorCode: AppErrorCode.networkCertInvalid, message: 'pin mismatch'),
+      ],
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'SendOtpRequested emits the code of a failed send',
+      build: () => _buildBlocWithSendOtp(_FakeAuthRepositoryWithSendOtp()..sendOtpResult = const Failure(certInvalid)),
+      act: (bloc) => bloc.add(const SendOtpRequested(email: 'test@example.com')),
+      expect: () => [
+        const LoginLoadingState(username: 'test@example.com', loginMethod: LoginMethod.otp),
+        const LoginErrorState(
+          errorCode: AppErrorCode.networkCertInvalid,
+          message: 'pin mismatch',
+          loginMethod: LoginMethod.otp,
+        ),
+      ],
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'VerifyOtpSubmitted emits the code of a failed verification',
+      setUp: () => repository.verifyResult = const Failure(certInvalid),
+      build: () => _buildBloc(repository),
+      act: (bloc) => bloc.add(const VerifyOtpSubmitted(email: 'test@example.com', otpCode: '123456')),
+      expect: () => [
+        const LoginLoadingState(username: 'test@example.com', loginMethod: LoginMethod.otp),
+        const LoginErrorState(
+          errorCode: AppErrorCode.networkCertInvalid,
+          message: 'pin mismatch',
+          loginMethod: LoginMethod.otp,
+        ),
+      ],
+    );
   });
 }

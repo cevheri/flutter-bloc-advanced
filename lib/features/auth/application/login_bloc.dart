@@ -100,7 +100,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            errorCode: AppErrorCode.authLoginFailed,
+            errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.authLoginFailed,
             message: error.message,
             loginMethod: state.loginMethod,
             passwordVisible: state.passwordVisible,
@@ -133,7 +133,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            errorCode: AppErrorCode.authSendOtpFailed,
+            errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.authSendOtpFailed,
             message: error.message,
             loginMethod: LoginMethod.otp,
             passwordVisible: state.passwordVisible,
@@ -166,7 +166,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            errorCode: AppErrorCode.authOtpValidationError,
+            errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.authOtpValidationError,
             message: error.message,
             loginMethod: LoginMethod.otp,
             passwordVisible: state.passwordVisible,
@@ -245,7 +245,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       case Failure(:final error):
         emit(
           LoginErrorState(
-            errorCode: AppErrorCode.authLoginFailed,
+            errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.authLoginFailed,
             message: error.message,
             loginMethod: loginMethod,
             passwordVisible: state.passwordVisible,

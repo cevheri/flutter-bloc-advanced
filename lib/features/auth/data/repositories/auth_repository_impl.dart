@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/mappers/auth_mapper.dart';
@@ -141,7 +142,12 @@ class LoginRepository implements IAuthRepository {
     }
   }
 
+  /// An untrusted certificate carries [AppErrorCode.networkCertInvalid], so the login screen tells the user that the
+  /// connection was blocked instead of reporting a failed sign-in.
   static AppError _mapFetchDataException(FetchDataException e) {
+    if (e is UntrustedCertificateException) {
+      return NetworkError(e.toString(), code: AppErrorCode.networkCertInvalid.key);
+    }
     final message = e.toString().toLowerCase();
     if (message.contains('timeout')) return TimeoutError(e.toString());
     return NetworkError(e.toString());

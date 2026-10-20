@@ -602,21 +602,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
+  /// Keeps saying what went wrong, in the words of the error snack bar, after the snack bar has gone.
   Widget _validationZone() {
     return BlocBuilder<LoginBloc, LoginState>(
       buildWhen: (previous, current) => current is LoginErrorState,
-      builder: (context, state) {
-        final color = Theme.of(context).colorScheme.error;
-        return Visibility(
-          visible: state is LoginErrorState,
-          child: Center(
-            child: Text(
-              S.of(context).failed,
-              style: TextStyle(fontSize: 14, color: color),
-              textAlign: TextAlign.center,
-            ),
+      builder: (context, state) => switch (state) {
+        LoginErrorState(:final errorCode) => Center(
+          child: Text(
+            errorCode.resolve(context),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.error),
+            textAlign: TextAlign.center,
           ),
-        );
+        ),
+        LoginInitialState() ||
+        LoginLoadingState() ||
+        LoginLoadedState() ||
+        LoginOtpSentState() ||
+        LoginOtpVerifiedState() => const SizedBox.shrink(),
       },
     );
   }
@@ -774,8 +776,14 @@ class OtpVerifyScreen extends StatelessWidget {
       ),
       body: BlocListener<LoginBloc, LoginState>(
         listener: (context, state) {
-          if (state is LoginLoadedState) {
-            context.go(ApplicationRoutesConstants.home);
+          switch (state) {
+            case LoginLoadedState():
+              context.go(ApplicationRoutesConstants.home);
+            // A failed verification or resend reports why, as the email screen does.
+            case LoginErrorState(:final errorCode):
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorCode.resolve(context))));
+            case LoginInitialState() || LoginLoadingState() || LoginOtpSentState() || LoginOtpVerifiedState():
+              break;
           }
         },
         child: ResponsiveFormBuilder(
