@@ -33,6 +33,7 @@ class TopBarWidget extends StatelessWidget {
           if (onMenuTap != null)
             IconButton(
               icon: const Icon(Icons.menu, size: 16),
+              tooltip: MaterialLocalizations.of(context).openAppDrawerTooltip,
               onPressed: onMenuTap,
               visualDensity: VisualDensity.compact,
             ),

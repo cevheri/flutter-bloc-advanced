@@ -87,6 +87,24 @@ void main() {
       });
     }
 
+    // A screen reader user has to know what the bare menu icon does, in the language of the app.
+    for (final (language, label) in const [('en', 'Open navigation menu'), ('tr', 'Gezinme menüsünü aç')]) {
+      testWidgets('the menu button is announced as "$label" in $language', (tester) async {
+        final semantics = tester.ensureSemantics();
+        addTearDown(tester.view.reset);
+        tester.view.physicalSize = const Size(360, 640);
+        tester.view.devicePixelRatio = 1.0;
+        TestEnv.authenticate();
+
+        await tester.pumpWidget(App(language: language));
+        await tester.pumpAndSettle();
+
+        final button = find.descendant(of: find.byType(TopBarWidget), matching: find.byType(IconButton));
+        expect(tester.getSemantics(button), isSemantics(tooltip: label, isButton: true, hasTapAction: true));
+        semantics.dispose();
+      });
+    }
+
     // A page title and a first name much longer than the dashboard's and the mock account's, on the narrowest phone.
     testWidgets('a long page title and a long name are shortened instead of overflowing a 320 px bar', (tester) async {
       addTearDown(tester.view.reset);
