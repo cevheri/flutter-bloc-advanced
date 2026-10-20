@@ -52,16 +52,10 @@ class _DashboardHomePageState extends State<DashboardHomePage> {
   void _updateAppConfigFromLifecycle(LifecycleState lifecycleState) {
     final config = _configOf(lifecycleState);
 
-    AppConfig? appConfig;
-    try {
-      appConfig = context.read<AppConfig>();
-    } on ProviderNotFoundException {
-      // AppConfig not provided (standalone/partial-DI pump) — fall back to dev label.
-    }
-    final environment = switch (appConfig?.environment) {
+    final environment = switch (context.read<AppConfig>().environment) {
       Environment.prod => 'prod',
       Environment.test => 'test',
-      Environment.dev || null => 'dev',
+      Environment.dev => 'dev',
     };
 
     context.read<SystemDashboardCubit>().updateAppConfig(

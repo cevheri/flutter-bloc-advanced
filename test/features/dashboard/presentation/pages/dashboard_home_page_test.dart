@@ -49,22 +49,43 @@ void main() {
     addTearDown(lifecycleBloc.close);
   });
 
-  Future<void> pumpPage(WidgetTester tester) async {
-    await tester.pumpWidget(
-      RepositoryProvider<AppConfig>.value(
-        value: const AppConfig.test(),
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider<AccountBloc>.value(value: accountBloc),
-            BlocProvider<SystemDashboardCubit>.value(value: dashboardCubit),
-            BlocProvider<LifecycleBloc>.value(value: lifecycleBloc),
-          ],
-          child: const MaterialApp(home: Scaffold(body: DashboardHomePage())),
-        ),
-      ),
-    );
+  Widget page() => MultiBlocProvider(
+    providers: [
+      BlocProvider<AccountBloc>.value(value: accountBloc),
+      BlocProvider<SystemDashboardCubit>.value(value: dashboardCubit),
+      BlocProvider<LifecycleBloc>.value(value: lifecycleBloc),
+    ],
+    child: const MaterialApp(home: Scaffold(body: DashboardHomePage())),
+  );
+
+  Future<void> pumpPage(WidgetTester tester, {AppConfig appConfig = const AppConfig.test()}) async {
+    await tester.pumpWidget(RepositoryProvider<AppConfig>.value(value: appConfig, child: page()));
     await tester.pump();
   }
+
+  testWidgets('names the environment of the provided AppConfig', (tester) async {
+    await pumpPage(tester, appConfig: const AppConfig.prod());
+
+    verify(
+      () => dashboardCubit.updateAppConfig(
+        AppConfigSummary(
+          currentVersion: AppConstants.appVersion,
+          minimumVersion: '-',
+          maintenanceMode: false,
+          environment: 'prod',
+        ),
+      ),
+    ).called(1);
+  });
+
+  // AppScope always provides AppConfig. A missing one is a wiring mistake, so the page must not hide it behind a
+  // 'dev' label.
+  testWidgets('fails when no AppConfig is provided', (tester) async {
+    await tester.pumpWidget(page());
+    await tester.pump();
+
+    expect(tester.takeException(), isA<ProviderNotFoundException>());
+  });
 
   testWidgets('shows the app config the lifecycle check found when the page opens', (tester) async {
     when(() => lifecycleRepository.fetchAppConfig())
