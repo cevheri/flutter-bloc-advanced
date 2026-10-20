@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/domain/user_roles.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_error_state.dart';
@@ -141,10 +142,8 @@ class UserListView extends StatelessWidget {
       AppTableColumn<UserEntity>(
         label: S.of(context).role,
         flex: 3,
-        builder: (ctx, user) => Text(
-          user.authorities?.contains('ROLE_ADMIN') == true ? S.of(ctx).admin : S.of(ctx).guest,
-          style: cellStyle,
-        ),
+        builder: (ctx, user) =>
+            Text(primaryRole(user.authorities) == adminRole ? S.of(ctx).admin : S.of(ctx).guest, style: cellStyle),
       ),
       AppTableColumn<UserEntity>(
         label: S.of(context).login,
@@ -382,7 +381,7 @@ class _MobileUserCard extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
     final isActive = user.activated == true;
-    final isAdmin = user.authorities?.contains('ROLE_ADMIN') == true;
+    final isAdmin = primaryRole(user.authorities) == adminRole;
     final statusColor = isActive
         ? (Theme.of(context).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
         : cs.error;

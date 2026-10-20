@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/domain/user_roles.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/shared/widgets/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
@@ -213,7 +214,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
           'lastName': user?.lastName ?? '',
           'email': user?.email ?? '',
           'activated': user?.activated ?? true,
-          'authorities': user?.authorities?.firstOrNull ?? '',
+          'authorities': primaryRole(user?.authorities) ?? '',
         },
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -285,7 +286,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
             label: S.of(context).authorities,
             child: AuthoritiesDropdown(
               enabled: !readOnly,
-              initialValue: user?.authorities?.firstOrNull,
+              initialValue: primaryRole(user?.authorities),
               hintText: S.of(context).authorities,
               isRequired: true,
             ),
@@ -345,17 +346,21 @@ class _UserEditorViewState extends State<_UserEditorView> {
   void _onSubmit(BuildContext context) {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
-      final id = _userOf(context.read<UserEditorBloc>().state)?.id;
+      // An edit starts from the fetched user, so what the form does not show, such as the language, is saved as
+      // it was. A new user starts in English.
+      final original = _userOf(context.read<UserEditorBloc>().state) ?? const UserEntity(langKey: 'en');
+      // The roles field shows only the user's primary role, so leaving it keeps all of the user's roles and picking
+      // another role replaces them with that role.
+      final role = formData['authorities'] as String;
+      final authorities = role == primaryRole(original.authorities) ? original.authorities : [role];
 
-      final user = const UserEntity().copyWith(
-        id: id,
+      final user = original.copyWith(
         login: formData['login'],
         firstName: formData['firstName'],
         lastName: formData['lastName'],
         email: formData['email'],
         activated: formData['activated'],
-        langKey: 'en',
-        authorities: [formData['authorities'] ?? ''],
+        authorities: authorities,
       );
 
       context.read<UserEditorBloc>().add(UserEditorSubmit(user));

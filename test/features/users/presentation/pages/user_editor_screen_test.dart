@@ -1,11 +1,15 @@
 @Tags(['widget'])
 library;
 
+import 'dart:convert';
+
 import 'package:bloc_test/bloc_test.dart';
+import 'package:dio/dio.dart' show Interceptor, RequestInterceptorHandler, RequestOptions, Response;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
@@ -16,8 +20,11 @@ import 'package:flutter_bloc_advance/features/users/presentation/widgets/authori
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -377,6 +384,141 @@ void main() {
       ).called(2);
       verifyNever(() => userRepository.create(any()));
     });
+
+    testWidgets('keeps the language of a user saved without changes', (tester) async {
+      const ayse = UserEntity(
+        id: '9',
+        login: 'ayse.yilmaz',
+        firstName: 'Ayşe',
+        lastName: 'Yılmaz',
+        email: 'ayse.yilmaz@example.com',
+        activated: true,
+        langKey: 'tr',
+        authorities: ['ROLE_USER'],
+      );
+      when(() => userRepository.retrieve('ayse.yilmaz')).thenAnswer((_) async => const Success(ayse));
+      when(() => userRepository.update(any())).thenAnswer((_) async => const Success(ayse));
+      await openEditor(tester, '/user/ayse.yilmaz/edit');
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      verify(() => userRepository.update(any(that: isA<UserEntity>().having((user) => user.langKey, 'langKey', 'tr'))))
+          .called(1);
+    });
+  });
+
+  group('UserEditorScreen against the mock API', () {
+    late List<RequestOptions> requests;
+
+    setUp(() async {
+      requests = [];
+      TestEnv.authenticate();
+      await AppLocalStorage().save(StorageKeys.roles.key, ['ROLE_ADMIN']);
+    });
+
+    // What an admin does: open a user from the list (here by going to its address) or the new user form.
+    Future<void> open(WidgetTester tester, String location, {Map<String, Object> answers = const {}}) async {
+      tester.view.physicalSize = const Size(1600, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        App(
+          language: 'en',
+          dependencies: _RecordingDependencies(requests, answers: answers),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+      router.go(location);
+      await tester.pumpAndSettle();
+    }
+
+    Future<void> chooseRole(WidgetTester tester, String role) async {
+      await tester.ensureVisible(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
+      await tester.tap(find.byKey(const Key('userEditorAuthoritiesFieldKey')));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(role).last);
+      await tester.pumpAndSettle();
+    }
+
+    // Saves and returns the body of the request sent with [method].
+    Future<Map<String, dynamic>> save(WidgetTester tester, String method) async {
+      await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
+      return requests.singleWhere((request) => request.method == method).data as Map<String, dynamic>;
+    }
+
+    testWidgets('saving the admin without changes keeps its language and both roles', (tester) async {
+      await open(tester, '/user/admin/edit');
+
+      final update = await save(tester, 'PUT');
+
+      expect(update, containsPair('login', 'admin'));
+      expect(update, containsPair('langKey', 'en'));
+      expect(update, containsPair('authorities', ['ROLE_ADMIN', 'ROLE_USER']));
+    });
+
+    // Guards that picking a role other than the one shown replaces all of the user's roles with it.
+    testWidgets('saving the admin with another role gives it that role', (tester) async {
+      await open(tester, '/user/admin/edit');
+      await chooseRole(tester, 'ROLE_USER');
+
+      final update = await save(tester, 'PUT');
+
+      expect(update, containsPair('authorities', ['ROLE_USER']));
+    });
+
+    // A Spring backend sends the roles from a HashSet, which lists ROLE_USER before ROLE_ADMIN.
+    const mixedRoles = {
+      'id': 'user-9',
+      'login': 'mixed.roles',
+      'firstName': 'Mixed',
+      'lastName': 'Roles',
+      'email': 'mixed.roles@example.com',
+      'activated': true,
+      'langKey': 'en',
+      'authorities': ['ROLE_USER', 'ROLE_ADMIN'],
+    };
+
+    testWidgets('shows the admin role of a user whose roles arrive with ROLE_USER first', (tester) async {
+      await open(tester, '/user/mixed.roles/edit', answers: {'/admin/users/mixed.roles': mixedRoles});
+
+      final field = find.byKey(const Key('userEditorAuthoritiesFieldKey'));
+      expect(find.descendant(of: field, matching: find.text('ROLE_ADMIN')), findsOneWidget);
+      expect(find.descendant(of: field, matching: find.text('ROLE_USER')), findsNothing);
+    });
+
+    testWidgets('picking ROLE_USER for a user whose roles arrive with ROLE_USER first saves that role', (tester) async {
+      await open(tester, '/user/mixed.roles/edit', answers: {'/admin/users/mixed.roles': mixedRoles});
+      await chooseRole(tester, 'ROLE_USER');
+
+      final update = await save(tester, 'PUT');
+
+      expect(update, containsPair('login', 'mixed.roles'));
+      expect(update, containsPair('authorities', ['ROLE_USER']));
+    });
+
+    // Guards that a new user, with no fetched user to start from, is saved in English with the chosen role.
+    testWidgets('creating a user saves it in English with the chosen role', (tester) async {
+      await open(tester, ApplicationRoutesConstants.userNew);
+      await tester.enterText(find.byKey(const Key('userEditorLoginFieldKey')), 'ada.lovelace');
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Ada');
+      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'Lovelace');
+      await tester.enterText(find.byKey(const Key('userEditorEmailFieldKey')), 'ada.lovelace@example.com');
+      await chooseRole(tester, 'ROLE_USER');
+
+      final created = await save(tester, 'POST');
+
+      expect(created, isNot(contains('id')));
+      expect(created, containsPair('login', 'ada.lovelace'));
+      expect(created, containsPair('langKey', 'en'));
+      expect(created, containsPair('authorities', ['ROLE_USER']));
+    });
   });
 }
 
@@ -388,4 +530,52 @@ class _UserRepositoryDependencies extends AppDependencies {
 
   @override
   IUserRepository createUserRepository(ApiClient apiClient) => userRepository;
+}
+
+/// Test-mode app dependencies whose API client records each request the mock API answers in [requests]. A GET of a
+/// path in [answers] gets its body in place of the mock API's.
+class _RecordingDependencies extends AppDependencies {
+  const _RecordingDependencies(this.requests, {this.answers = const {}}) : super(appConfig: const AppConfig.test());
+
+  final List<RequestOptions> requests;
+  final Map<String, Object> answers;
+
+  @override
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) {
+    final apiClient = super.createApiClient(secureStorage, onSessionExpired: onSessionExpired);
+    // MockInterceptor comes last and answers in place of the server, so the recorder and the stub go right before it.
+    final interceptors = apiClient.instance.interceptors;
+    interceptors.insert(interceptors.length - 1, _RequestRecorder(requests));
+    interceptors.insert(interceptors.length - 1, _StubInterceptor(answers));
+    return apiClient;
+  }
+}
+
+class _RequestRecorder extends Interceptor {
+  _RequestRecorder(this.requests);
+
+  final List<RequestOptions> requests;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    requests.add(options);
+    handler.next(options);
+  }
+}
+
+/// Answers a GET of a path in [answers] with that body as JSON, as a server holding other data than the mock would.
+class _StubInterceptor extends Interceptor {
+  _StubInterceptor(this.answers);
+
+  final Map<String, Object> answers;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final answer = answers[options.path];
+    if (options.method == 'GET' && answer != null) {
+      handler.resolve(Response(requestOptions: options, statusCode: 200, data: jsonEncode(answer)), true);
+    } else {
+      handler.next(options);
+    }
+  }
 }
