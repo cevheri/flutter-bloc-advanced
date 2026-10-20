@@ -1,3 +1,6 @@
+import 'dart:async';
+
+import 'package:flutter/foundation.dart' show mapEquals;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
@@ -140,11 +143,45 @@ class AccountScreen extends StatelessWidget {
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
       final user = _createUserFromData(formData, state.data);
-      context.read<AccountBloc>().add(AccountSubmitEvent(user));
+      final accountBloc = context.read<AccountBloc>()..add(AccountSubmitEvent(user));
       _formKey.currentState?.save();
-      context.read<AccountBloc>().add(const AccountFetchEvent());
+      unawaited(_refetchAfterSave(accountBloc, formData));
     }
   }
+
+  /// Fetches the account once the save succeeds, then resets the form to the fetched fields. The form counts as
+  /// changed until it is reset, so without the reset leaving right after a save would ask about changes already saved.
+  /// A reset that would drop something is skipped, and the form keeps its changes and still asks before it is left.
+  Future<void> _refetchAfterSave(AccountBloc accountBloc, Map<String, dynamic> submitted) async {
+    final saved = await _requestOutcome(accountBloc);
+    if (saved?.status != AccountStatus.success) return;
+    accountBloc.add(const AccountFetchEvent());
+    final fetched = await _requestOutcome(accountBloc);
+    if (fetched?.status != AccountStatus.success) return;
+    // When the network fails, the HTTP cache answers the fetch with the account from before the save.
+    if (!mapEquals(_formValuesOf(fetched!.data), _formValuesOf(saved!.data))) return;
+    // The fields take the fetched values as their initial values when the page rebuilds, so the reset waits for it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final form = _formKey.currentState;
+      // The fields stay editable while the save and the fetch run, so the user may have changed them meanwhile.
+      if (form == null || !mapEquals(form.instantValue, submitted)) return;
+      form.reset();
+    });
+  }
+
+  /// The values the form's fields show for [account].
+  Map<String, dynamic> _formValuesOf(UserEntity? account) => {
+    'login': account?.login,
+    'firstName': account?.firstName,
+    'lastName': account?.lastName,
+    'email': account?.email,
+  };
+
+  /// The state that ends the account request now running, or null when the bloc closes first, as it does with the app.
+  Future<AccountState?> _requestOutcome(AccountBloc accountBloc) => accountBloc.stream.cast<AccountState?>().firstWhere(
+    (state) => state!.status != AccountStatus.loading,
+    orElse: () => null,
+  );
 
   /// Starts from the fetched [account], so what the form does not show, such as the language, is saved as it was.
   UserEntity _createUserFromData(Map<String, dynamic> formData, UserEntity? account) =>

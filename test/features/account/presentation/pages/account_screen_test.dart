@@ -300,6 +300,108 @@ void main() {
     });
   });
 
+  group('AccountScreen after a save', () {
+    const saved = User(
+      id: 'test-1',
+      login: 'testuser',
+      firstName: 'Updated First',
+      lastName: 'User',
+      email: 'test@example.com',
+      activated: true,
+    );
+
+    testWidgets('fetches the account once the save succeeds and then leaves without asking', (tester) async {
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Updated First');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+      verifyNever(() => mockAccountBloc.add(any(that: isA<AccountFetchEvent>())));
+
+      accountStateController.add(const AccountState(status: AccountStatus.loading, data: mockUser));
+      accountStateController.add(const AccountState(status: AccountStatus.success, data: saved));
+      await tester.pumpAndSettle();
+      verify(() => mockAccountBloc.add(any(that: isA<AccountFetchEvent>()))).called(1);
+
+      accountStateController.add(const AccountState(status: AccountStatus.loading, data: saved));
+      accountStateController.add(const AccountState(status: AccountStatus.success, data: saved));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      expect(find.text(S.current.unsaved_changes), findsNothing);
+    });
+
+    testWidgets('still asks before leaving when the save fails', (tester) async {
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Updated First');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+      accountStateController.add(const AccountState(status: AccountStatus.loading, data: mockUser));
+      accountStateController.add(const AccountState(status: AccountStatus.failure, data: mockUser));
+      await tester.pumpAndSettle();
+      verifyNever(() => mockAccountBloc.add(any(that: isA<AccountFetchEvent>())));
+      expect(find.text('Updated First'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      expect(find.text(S.current.unsaved_changes), findsOneWidget);
+    });
+
+    testWidgets('keeps what the user types while the save runs and still asks before leaving', (tester) async {
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Updated First');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+      accountStateController.add(const AccountState(status: AccountStatus.loading, data: mockUser));
+      await tester.pump();
+      // The fields stay editable while the save runs.
+      await tester.enterText(find.byKey(const Key('userEditorLastNameFieldKey')), 'Typed Last');
+      await tester.pump();
+      accountStateController.add(const AccountState(status: AccountStatus.success, data: saved));
+      await tester.pumpAndSettle();
+      accountStateController.add(const AccountState(status: AccountStatus.loading, data: saved));
+      accountStateController.add(const AccountState(status: AccountStatus.success, data: saved));
+      await tester.pumpAndSettle();
+      expect(find.text('Typed Last'), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.arrow_back));
+      await tester.pumpAndSettle();
+      expect(find.text(S.current.unsaved_changes), findsOneWidget);
+    });
+
+    testWidgets('keeps the saved values when the fetch after the save returns older ones', (tester) async {
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Updated First');
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.save));
+      await tester.pumpAndSettle();
+      accountStateController.add(const AccountState(status: AccountStatus.loading, data: mockUser));
+      accountStateController.add(const AccountState(status: AccountStatus.success, data: saved));
+      await tester.pumpAndSettle();
+      // A fetch that the HTTP cache answers when the network fails holds the account from before the save.
+      accountStateController.add(const AccountState(status: AccountStatus.loading, data: saved));
+      accountStateController.add(const AccountState(status: AccountStatus.success, data: mockUser));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Updated First'), findsOneWidget);
+    });
+  });
+
   group('AccountScreen Navigation Tests', () {
     testWidgets('Should show confirmation dialog when back button is pressed with changes', (tester) async {
       when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));

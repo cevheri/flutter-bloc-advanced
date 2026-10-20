@@ -23,6 +23,7 @@ import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -333,6 +334,26 @@ void main() {
       // Lets the list's search request, delayed by the mock backend, finish before the test ends.
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpAndSettle();
+    });
+  });
+
+  group('A saved account form', () {
+    testWidgets('leaves through the sidebar without asking once the save succeeds', (tester) async {
+      await _pumpApp(tester);
+      await _openDirtyAccountForm(tester);
+
+      await tester.tap(find.byType(ResponsiveSubmitButton));
+      await tester.pumpAndSettle();
+      expect(
+        ModalRoute.of(tester.element(find.byType(AccountScreen)))!.popDisposition,
+        isNot(RoutePopDisposition.doNotPop),
+      );
+
+      await tester.tap(find.widgetWithText(SidebarNavItem, 'Settings'));
+      await tester.pumpAndSettle();
+
+      expect(_unsavedChangesDialog, findsNothing);
+      expect(find.byType(SettingsScreen), findsOneWidget);
     });
   });
 
