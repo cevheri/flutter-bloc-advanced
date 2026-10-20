@@ -80,6 +80,42 @@ void main() {
     });
   });
 
+  group('maskHeaders', () {
+    test('masks Authorization / Cookie / Set-Cookie case-insensitively and keeps the header', () {
+      final result = maskHeaders({
+        'Authorization': 'Bearer token',
+        'cookie': 'sid=abc',
+        'Set-Cookie': 'sid=abc',
+        'Accept': 'application/json',
+      });
+      expect(result, {
+        'Authorization': '[REDACTED]',
+        'cookie': '[REDACTED]',
+        'Set-Cookie': '[REDACTED]',
+        'Accept': 'application/json',
+      });
+    });
+  });
+
+  group('scrubBodyText', () {
+    test('masks the credentials of a JSON string', () {
+      expect(
+        scrubBodyText('{\n  "id_token": "a.b.c",\n  "refresh_token": "opaque"\n}'),
+        '{"id_token":"[REDACTED]","refresh_token":"[REDACTED]"}',
+      );
+    });
+
+    test('keeps a JSON string without a credential as it is, formatting included', () {
+      const body = '{\n  "login": "admin",\n  "authorities": ["ROLE_ADMIN"]\n}';
+
+      expect(scrubBodyText(body), body);
+    });
+
+    test('masks the credentials of a Map body and prints it as a Map', () {
+      expect(scrubBodyText({'username': 'admin', 'password': 'S3cret!pw'}), '{username: admin, password: [REDACTED]}');
+    });
+  });
+
   group('scrubBodyKeys', () {
     test('masks the values of password / otp / token / refreshToken / secret keys (case-insensitive substring)', () {
       final result = scrubBodyKeys({

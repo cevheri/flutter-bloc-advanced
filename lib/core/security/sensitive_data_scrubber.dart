@@ -70,6 +70,15 @@ String maskEmails(String input) {
   return input.replaceAll(emailPattern, emailMask);
 }
 
+/// Return a copy of [headers] in which the value of every
+/// [sensitiveHeaderNames] header is replaced by [secretMask]. Unlike
+/// [scrubHeaders] it keeps the header, for a view such as the dev console
+/// that shows whether a request carried one.
+Map<String, Object?> maskHeaders(Map<String, Object?> headers) => {
+  for (final MapEntry(:key, :value) in headers.entries)
+    key: sensitiveHeaderNames.contains(key.toLowerCase()) ? secretMask : value,
+};
+
 /// Return a copy of [headers] with [sensitiveHeaderNames] removed.
 /// Generic over value type so both `Map<String, String>` (Sentry) and
 /// `Map<String, dynamic>` (Dio request options) work.
@@ -90,24 +99,36 @@ Map<K, V> scrubHeaders<K, V>(Map<K, V> headers) {
 /// [maskJwts] over the serialized form to catch embedded tokens.
 Object? scrubBodyKeys(Object? body) => _scrubKeys(body, _isSensitiveKey);
 
+/// Returns [body], a request or a response body, as text without its
+/// credentials, for a view that shows it, such as the dev console. A JSON
+/// string, a Map or a List has its values masked as [scrubBodyKeys] masks
+/// them, and every JWT is masked last. A body with nothing to mask keeps
+/// its text, the formatting of a JSON string included.
+String scrubBodyText(Object? body) => _scrubBodyText(body, _isSensitiveKey, const []);
+
 /// Returns [body], the body of an error response, as text without the
 /// credentials it may hold. ApiClient puts it into the exception it throws,
 /// whose text reaches the log, the dev console and Sentry.
 ///
-/// A JSON body has its secret values masked as [scrubBodyKeys] does, and
-/// also the values under [echoedValueKeys]. Every value of [requestBody]
-/// that [scrubBodyKeys] would mask is masked wherever the body repeats it,
-/// so a free-text detail that names the OTP is caught too. JWTs are masked
-/// last. A body with nothing to mask is returned as it is.
+/// It is scrubbed as [scrubBodyText] scrubs a body, and the values under
+/// [echoedValueKeys] are masked too. Every value of [requestBody] that
+/// [scrubBodyKeys] would mask is masked wherever the body repeats it, so a
+/// free-text detail that names the OTP is caught too.
 String scrubErrorBody(Object? body, {Object? requestBody}) {
-  if (body == null) return '';
   final secrets = _secretValues(_decoded(requestBody)).toSet().toList()..sort((a, b) => b.length - a.length);
+  bool isSecret(Object? key) => _isSensitiveKey(key) || echoedValueKeys.contains('$key'.toLowerCase());
+  return _scrubBodyText(body, isSecret, secrets);
+}
+
+String _scrubBodyText(Object? body, bool Function(Object? key) isSecret, List<String> secrets) {
+  if (body == null) return '';
   final decoded = _decoded(body);
   final String text;
-  if (decoded is Map || decoded is List) {
-    bool isSecret(Object? key) => _isSensitiveKey(key) || echoedValueKeys.contains('$key'.toLowerCase());
+  if (body is String && (decoded is Map || decoded is List)) {
     final scrubbed = jsonEncode(_maskValues(_scrubKeys(decoded, isSecret), secrets), toEncodable: _text);
-    text = body is String && scrubbed == jsonEncode(decoded, toEncodable: _text) ? body : scrubbed;
+    text = scrubbed == jsonEncode(decoded, toEncodable: _text) ? body : scrubbed;
+  } else if (body is Map || body is List) {
+    text = '${_maskValues(_scrubKeys(body, isSecret), secrets)}';
   } else {
     text = _maskValues('$body', secrets) as String;
   }

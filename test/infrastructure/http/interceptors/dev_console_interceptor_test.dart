@@ -33,7 +33,7 @@ void main() {
         expect(entries, isNotEmpty);
         expect(entries.first.method, 'GET');
         expect(entries.first.url, contains('/api/users'));
-        expect(entries.first.requestHeaders, containsPair('Authorization', 'Bearer token'));
+        expect(entries.first.requestHeaders, containsPair('Authorization', '[REDACTED]'));
       });
 
       test('should set _devConsoleId in options.extra', () {
@@ -193,6 +193,32 @@ void main() {
         final entries = DevConsoleStore.instance.networkEntries;
         expect(entries.first.statusCode, 500);
         expect(entries.first.responseBody, 'Server Error');
+      });
+
+      // Regression: the error body was kept as the server sent it, and a validation error can repeat the password the
+      // request sent.
+      test('should keep the credentials of the request out of the recorded error', () {
+        final options = RequestOptions(
+          path: '/api/account/change-password',
+          method: 'POST',
+          data: {'currentPassword': 'OldPass#1', 'newPassword': 'NewPass#2'},
+        );
+        interceptor.onRequest(options, _TestRequestHandler());
+        final dioError = DioException(
+          requestOptions: options,
+          type: DioExceptionType.badResponse,
+          response: Response(
+            requestOptions: options,
+            statusCode: 400,
+            data: '{"errors":[{"field":"newPassword","rejectedValue":"NewPass#2"}],"detail":"NewPass#2 is too short"}',
+          ),
+        );
+
+        interceptor.onError(dioError, _TestErrorHandler());
+
+        final entry = DevConsoleStore.instance.networkEntries.single;
+        expect(entry.responseBody, allOf(isNot(contains('NewPass#2')), contains('is too short')));
+        expect(entry.requestBody, allOf(isNot(contains('OldPass#1')), isNot(contains('NewPass#2'))));
       });
 
       test('should handle error with null message', () {
