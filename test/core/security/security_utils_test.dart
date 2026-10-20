@@ -1,7 +1,9 @@
 import 'dart:convert';
 
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart';
 
 void main() {
   group('SecurityUtils', () {
@@ -85,6 +87,39 @@ void main() {
         expect(result, isNotNull);
         expect(result!.millisecondsSinceEpoch ~/ 1000, future);
       });
+    });
+
+    // Regression: a three-part access token that is not a JWT failed to parse with a FormatException whose text
+    // quotes the decoded middle part, or the encoded one when it is not base64url, and both methods logged that text
+    // at error level, which every build of main_prod prints. getTokenExpiration runs on every sign-in and OTP check,
+    // and isTokenExpired when a production session is restored.
+    group('log output for a token that is not a JWT', () {
+      late List<String> lines;
+
+      setUp(() {
+        AppLogger.configure(isProduction: true);
+        lines = [];
+        void collect(OutputEvent event) => lines.addAll(event.lines);
+        Logger.addOutputListener(collect);
+        addTearDown(() => Logger.removeOutputListener(collect));
+      });
+
+      tearDown(() => AppLogger.configure(isProduction: false));
+
+      for (final (shape, middle) in [
+        ('is not JSON', base64Url.encode(utf8.encode('opaque-middle-SECRET-segment')).replaceAll('=', '')),
+        ('is not base64url', 'opaque*middle*SECRET*segment'),
+      ]) {
+        test('logs the failure without the token when the middle part $shape', () {
+          final token = 'part1SECRET.$middle.part3SECRET';
+
+          expect(SecurityUtils.getTokenExpiration(token), isNull);
+          expect(SecurityUtils.isTokenExpired(token), isTrue);
+
+          expect(lines, hasLength(2));
+          expect(lines, everyElement(allOf(contains('FormatException'), isNot(contains('SECRET')))));
+        });
+      }
     });
   });
 }

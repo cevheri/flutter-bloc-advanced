@@ -40,7 +40,8 @@ class SecurityUtils {
       final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
       return now >= exp.toInt();
     } catch (e) {
-      _log.error("isTokenExpired - error parsing token: {}", [e]);
+      // The text of a parse error quotes the part of the token it failed on, so only the type of the error is logged.
+      _log.error("isTokenExpired - error parsing token: {}", [e.runtimeType]);
       return true;
     }
   }
@@ -66,7 +67,8 @@ class SecurityUtils {
       if (exp is! num) return null;
       return DateTime.fromMillisecondsSinceEpoch(exp.toInt() * 1000);
     } catch (e) {
-      _log.error("END:getTokenExpiration - Error: {}", [e]);
+      // The text of a parse error quotes the part of the token it failed on, so only the type of the error is logged.
+      _log.error("END:getTokenExpiration - Error: {}", [e.runtimeType]);
       return null;
     }
   }
