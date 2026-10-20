@@ -1,7 +1,10 @@
 @Tags(['widget'])
 library;
 
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/dashboard/presentation/pages/dashboard_home_page.dart';
@@ -31,6 +34,22 @@ void main() {
   void startOn(WidgetTester tester, String location) {
     tester.platformDispatcher.defaultRouteNameTestValue = location;
     addTearDown(tester.platformDispatcher.clearDefaultRouteNameTestValue);
+  }
+
+  // The platform pushes a route the way iOS delivers a universal link or a custom scheme link: after the first frame,
+  // also for the link that opened the app.
+  Future<void> pushRouteFromPlatform(WidgetTester tester, String location) async {
+    final message = SystemChannels.navigation.codec.encodeMethodCall(
+      MethodCall('pushRouteInformation', <String, Object?>{'location': location, 'state': null}),
+    );
+    await tester.binding.defaultBinaryMessenger.handlePlatformMessage(SystemChannels.navigation.name, message, (_) {});
+  }
+
+  // Secure storage that answers the stored session read only when the returned completer completes.
+  Completer<String?> storedTokenPending(MockISecureStorage secureStorage) {
+    final storedToken = Completer<String?>();
+    when(() => secureStorage.read(any())).thenAnswer((_) => storedToken.future);
+    return storedToken;
   }
 
   // Pumps the authenticated shell frame by frame and returns the frames that built the login page, offstage ones
@@ -121,6 +140,38 @@ void main() {
 
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(routerFromApp(tester).state.uri.queryParameters['returnUrl'], ApplicationRoutesConstants.settings);
+    });
+
+    testWidgets('opens a route the platform pushes while the stored session is restored', (tester) async {
+      setDesktopViewport(tester);
+      final secureStorage = MockISecureStorage();
+      final storedToken = storedTokenPending(secureStorage);
+      await tester.pumpWidget(App(language: 'en', secureStorage: secureStorage));
+      await tester.pump();
+
+      await pushRouteFromPlatform(tester, ApplicationRoutesConstants.settings);
+      storedToken.complete('MOCK_TOKEN');
+      await tester.pumpAndSettle();
+
+      expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.settings);
+      expect(find.byType(SettingsScreen), findsOneWidget);
+    });
+
+    testWidgets('keeps a route the platform pushes while the stored session is restored as the login returnUrl', (
+      tester,
+    ) async {
+      setDesktopViewport(tester);
+      final secureStorage = MockISecureStorage();
+      final storedToken = storedTokenPending(secureStorage);
+      await tester.pumpWidget(App(language: 'en', secureStorage: secureStorage));
+      await tester.pump();
+
+      await pushRouteFromPlatform(tester, ApplicationRoutesConstants.settings);
+      storedToken.complete(null);
+      await tester.pumpAndSettle();
+
+      expect(routerFromApp(tester).state.uri.toString(), '/login?returnUrl=%2Fsettings');
+      expect(find.byType(LoginScreen), findsOneWidget);
     });
   });
 }

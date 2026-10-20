@@ -68,7 +68,8 @@ class _AppViewState extends State<_AppView> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _router ??= AppRouterFactory(
+    if (_router != null) return;
+    final router = _router = AppRouterFactory(
       sessionCubit: context.read<SessionCubit>(),
       observers: [
         AnalyticsRouteObserver(widget.analytics),
@@ -78,7 +79,22 @@ class _AppViewState extends State<_AppView> {
         if (context.read<AppConfig>().sentryDsn != null) SentryNavigatorObserver(),
       ],
     ).create();
+    // The Router is mounted only once the session is restored (see build), and go_router's route information provider
+    // receives the routes the platform pushes, such as an iOS universal link that opens the app, only while something
+    // listens to it. This listener keeps it receiving them from the start, so the Router opens a route pushed during
+    // the restore when it mounts.
+    router.routeInformationProvider.addListener(_receivePlatformRoutes);
   }
+
+  @override
+  void dispose() {
+    _router?.routeInformationProvider.removeListener(_receivePlatformRoutes);
+    super.dispose();
+  }
+
+  /// Does nothing itself: while it listens, the route information provider is registered with [WidgetsBinding] and
+  /// keeps the routes the platform pushes.
+  static void _receivePlatformRoutes() {}
 
   @override
   Widget build(BuildContext context) {
