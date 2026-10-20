@@ -12,6 +12,7 @@ class AppSessionListeners extends StatefulWidget {
   const AppSessionListeners({
     super.key,
     required this.scaffoldMessengerKey,
+    required this.sharedActivity,
     required this.child,
     this.idleTimeoutOverride,
   });
@@ -20,6 +21,11 @@ class AppSessionListeners extends StatefulWidget {
   /// idle timeout notice. This widget sits above MaterialApp, where its
   /// context finds no ScaffoldMessenger.
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
+
+  /// The activity of every browser tab, which the idle timeout counts on
+  /// web, where all tabs share the session. Null on mobile and desktop;
+  /// see `AppDependencies.createSharedActivityStore`.
+  final ISharedActivityStore? sharedActivity;
 
   final Widget child;
 
@@ -54,6 +60,7 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
     final cubit = context.read<SessionCubit>();
     final observer = IdleTimeoutObserver(
       idleThreshold: threshold,
+      sharedActivity: widget.sharedActivity,
       onTimeout: () {
         _log.info('idle timeout fired — signing out');
         cubit.endSession(reason: SessionExpiredReason.idleTimeout);

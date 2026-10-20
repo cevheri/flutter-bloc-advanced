@@ -141,6 +141,10 @@ This avoids a window where in-flight users with the old app version cannot reach
 
 - Configured via `AppConfig.idleTimeout` in `lib/infrastructure/config/environment.dart`: `AppConfig.prod()` sets 15 minutes, `AppConfig.dev()` and `AppConfig.test()` set `null`, which disables it.
 - Background-aware: on iOS the Dart `Timer` pauses while the app is suspended, so the observer also captures wall-clock `DateTime.now()` on lifecycle transitions; resumes past the threshold fire immediately.
+- Browser tabs: on web all tabs of the app share one session, and an idle timeout in any tab signs out every tab.
+  So each tab records its latest activity in `localStorage` while it is in the foreground, at most once every 10 seconds, and before a tab signs out, from its timer or when the user returns to it, it checks the latest activity of every tab.
+  Returning to a tab left idle does not sign out the session the user is working in, in another tab.
+  Activity can reach the other tabs up to 10 seconds late, so the session can end up to 10 seconds early.
 - Surfacing: when the timer fires, the user sees a localized snackbar ("You were signed out due to inactivity.") and the router redirects to login. The reason is tagged `SessionExpiredReason.idleTimeout` so logs and UI can distinguish it from a manual sign-out.
 - Activity scope: pointer down / pointer move events on the `MaterialApp.router` subtree reset the timer. Scroll-only sessions (a long-form reading view) do extend, since scroll causes pointer move events.
 

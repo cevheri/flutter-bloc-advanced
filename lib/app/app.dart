@@ -48,6 +48,10 @@ class _AppState extends State<App> {
   /// no ScaffoldMessenger, so it shows its notices through this key.
   final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
 
+  /// The activity that the browser tabs share for the idle timeout, on web; see
+  /// [AppDependencies.createSharedActivityStore].
+  late final _sharedActivity = widget.dependencies.createSharedActivityStore();
+
   @override
   Widget build(BuildContext context) {
     final analytics = widget._analytics ?? LogAnalyticsService();
@@ -56,6 +60,7 @@ class _AppState extends State<App> {
       secureStorage: widget.secureStorage,
       child: AppSessionListeners(
         scaffoldMessengerKey: _scaffoldMessengerKey,
+        sharedActivity: _sharedActivity,
         child: _AppView(language: widget.language, analytics: analytics, scaffoldMessengerKey: _scaffoldMessengerKey),
       ),
     );

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
@@ -13,12 +14,14 @@ import 'package:flutter_bloc_advance/features/users/domain/repositories/authorit
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
+import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/shared_preferences_activity_store.dart';
 
 class AppDependencies {
   const AppDependencies({this.appConfig = const AppConfig.dev(), this.projectLinks = const ProjectLinks()});
@@ -58,6 +61,11 @@ class AppDependencies {
   MenuRepository createMenuRepository() => MenuRepository();
 
   ISecureStorage createSecureStorage() => FlutterSecureStorageAdapter();
+
+  /// Where the idle timeout records and reads the latest activity of every running instance of the app. On web all
+  /// browser tabs share the session, so the activity of every tab counts; null on mobile and desktop, where one instance
+  /// holds the session.
+  ISharedActivityStore? createSharedActivityStore() => kIsWeb ? SharedPreferencesActivityStore() : null;
 
   IUserRepository createUserRepository(ApiClient apiClient) => UserRepository(apiClient);
 }
