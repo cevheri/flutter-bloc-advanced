@@ -219,7 +219,9 @@ Past its TTL an entry still answers a `GET` that cannot reach the server, with a
 An entry read after that is deleted instead.
 Ending the session, by a logout, the idle timeout or a token that cannot be refreshed, deletes every entry, and a clear that leaves some behind is logged as an error.
 The response of a `GET` still on its way when the session ends is not stored, so it cannot answer the next user with the previous user's data.
-No eviction runs yet, so an entry that is never read again stays in `SharedPreferences` (`localStorage` on web) until the session ends.
+The entries live in `SharedPreferences`, which on web is `localStorage`, whose per-origin quota the stored session and the preferences share.
+So `SharedPrefsCacheStorage` evicts: when it starts and before each write it deletes the entries past 24 hours, and before each write it deletes the oldest entries until the new one fits in 200 entries and 1,000,000 characters.
+A write the store refuses, such as one past the quota, is logged as an error with the key and the size, the entry is not cached, and the `GET` still succeeds.
 A `GET` cannot reach the server when the device is offline, or when the connection is refused, times out, or is closed or reset before the whole response arrived.
 A response that dart:io cannot parse, such as one from a server that does not answer in HTTP, counts the same way, since dart:io reports it like a connection reset while the response is awaited.
 Every other failure reaches the caller, a server error or a TLS failure included: an untrusted certificate is never answered from the cache (see [Certificate Pinning](#certificate-pinning-opt-in)).

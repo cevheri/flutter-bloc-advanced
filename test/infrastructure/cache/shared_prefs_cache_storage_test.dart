@@ -1,11 +1,17 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
+import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_preferences_platform_interface/in_memory_shared_preferences_async.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_async_platform_interface.dart';
 import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
+import 'package:shared_preferences_platform_interface/types.dart';
 
 /// A platform store that keeps the entry whose key ends with [kept] when asked to remove it, as a full or read-only
 /// disk does: [remove] answers false, or throws [error] when one is given.
@@ -21,6 +27,74 @@ class _KeepingStore extends InMemorySharedPreferencesStore {
     if (error != null) throw error!;
     return false;
   }
+}
+
+/// A platform store that refuses to store a value whose key ends with [refused], as a browser does when the
+/// localStorage of the origin is full: [setValue] throws [error].
+class _FullStore extends InMemorySharedPreferencesStore {
+  _FullStore({required this.refused, required this.error, Map<String, Object> data = const {}}) : super.withData(data);
+
+  final String refused;
+  final Object error;
+
+  @override
+  Future<bool> setValue(String valueType, String key, Object value) async {
+    if (key.endsWith(refused)) throw error;
+    return super.setValue(valueType, key, value);
+  }
+}
+
+/// A platform store that cannot load its values, as a browser that blocks localStorage: loading throws [error].
+class _UnloadableStore extends InMemorySharedPreferencesStore {
+  _UnloadableStore(this.error) : super.empty();
+
+  final Object error;
+
+  @override
+  Future<Map<String, Object>> getAllWithParameters(GetAllParameters parameters) async => throw error;
+}
+
+/// An adapter that answers every request with 200 and an empty JSON list.
+class _OkAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async => ResponseBody.fromString(
+    '[]',
+    200,
+    headers: {
+      Headers.contentTypeHeader: [Headers.jsonContentType],
+    },
+  );
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// A stored entry, with the platform key and the JSON that [SharedPrefsCacheStorage] writes, created [age] ago with a
+/// TTL that ended [age] minus 5 minutes ago.
+MapEntry<String, Object> _storedEntry(String key, Duration age) {
+  final createdAt = DateTime.now().subtract(age);
+  return MapEntry(
+    'flutter._cache_$key',
+    jsonEncode({
+      'data': 'data of $key',
+      'createdAt': createdAt.toIso8601String(),
+      'expiresAt': createdAt.add(const Duration(minutes: 5)).toIso8601String(),
+    }),
+  );
+}
+
+/// Collects every line the loggers print until the test ends.
+List<String> _capturePrintedLines() {
+  final lines = <String>[];
+  void collect(OutputEvent event) => lines.addAll(event.lines);
+
+  Logger.addOutputListener(collect);
+  addTearDown(() => Logger.removeOutputListener(collect));
+  return lines;
 }
 
 void main() {
@@ -369,6 +443,161 @@ void main() {
         final a = SharedPrefsCacheStorage.instance;
         final b = SharedPrefsCacheStorage.instance;
         expect(identical(a, b), isTrue);
+      });
+    });
+
+    // Regression: an entry was deleted only when it was read past its maximum stale age, so the entry of every
+    // distinct search or page stayed until logout. On web they fill the localStorage quota that the stored session
+    // and the preferences share, and then a session or preference write fails.
+    group('eviction', () {
+      test('deletes the entries past their maximum stale age when it starts', () async {
+        SharedPreferencesStorePlatform.instance = InMemorySharedPreferencesStore.withData(
+          Map.fromEntries([
+            _storedEntry('GET_/stale', const Duration(hours: 25)),
+            _storedEntry('GET_/recent', const Duration(hours: 23)),
+            const MapEntry('flutter.language', 'en'),
+          ]),
+        );
+
+        await storage.read('GET_/recent');
+
+        expect((await SharedPreferencesStorePlatform.instance.getAll()).keys, [
+          'flutter._cache_GET_/recent',
+          'flutter.language',
+        ]);
+      });
+
+      test('deletes the entries past their maximum stale age when it writes', () async {
+        await storage.read('GET_/started');
+        final stale = _storedEntry('GET_/stale', const Duration(hours: 25));
+        await (await SharedPreferences.getInstance()).setString(
+          stale.key.substring('flutter.'.length),
+          '${stale.value}',
+        );
+
+        await storage.write('GET_/new', '[]');
+
+        expect((await SharedPreferencesStorePlatform.instance.getAll()).keys, ['flutter._cache_GET_/new']);
+      });
+
+      test('keeps many distinct entries under the cap, deleting the oldest first', () async {
+        storage = SharedPrefsCacheStorage(maxEntries: 5);
+
+        for (var page = 0; page < 12; page++) {
+          await storage.write('GET_/admin/users?page=$page', '[]');
+        }
+
+        expect(await storage.count(), 5);
+        expect((await SharedPreferencesStorePlatform.instance.getAll()).keys, [
+          for (var page = 7; page < 12; page++) 'flutter._cache_GET_/admin/users?page=$page',
+        ]);
+      });
+
+      test('keeps the default cap for the entries of every distinct search', () async {
+        for (var query = 0; query < SharedPrefsCacheStorage.defaultMaxEntries + 20; query++) {
+          await storage.write('GET_/admin/users?q=$query', '[]');
+        }
+
+        expect(await storage.count(), SharedPrefsCacheStorage.defaultMaxEntries);
+      });
+
+      test('keeps the total size of the entries under the cap, deleting the oldest first', () async {
+        storage = SharedPrefsCacheStorage(maxTotalLength: 1000);
+        final body = 'x' * 200;
+
+        for (var page = 0; page < 10; page++) {
+          await storage.write('GET_/page=$page', body);
+        }
+
+        final stored = await SharedPreferencesStorePlatform.instance.getAll();
+        final length = stored.entries.fold(0, (sum, e) => sum + e.key.length - 'flutter.'.length + '${e.value}'.length);
+        expect(length, lessThanOrEqualTo(1000));
+        expect(stored.keys, contains('flutter._cache_GET_/page=9'));
+        expect(stored.keys, isNot(contains('flutter._cache_GET_/page=0')));
+      });
+
+      test('skips, with a warning, an entry larger than the size cap', () async {
+        storage = SharedPrefsCacheStorage(maxTotalLength: 100);
+        final lines = _capturePrintedLines();
+
+        await storage.write('GET_/huge', 'x' * 200);
+
+        expect(await storage.read('GET_/huge'), isNull);
+        expect(await storage.count(), 0);
+        expect(lines, contains(matches(RegExp(r'Cache write skipped for key GET_/huge \(\d+ characters\)'))));
+      });
+
+      test('keeps the other entries when it skips an entry larger than the size cap', () async {
+        storage = SharedPrefsCacheStorage(maxTotalLength: 1000);
+        await storage.write('GET_/a', 'x' * 100);
+        await storage.write('GET_/b', 'x' * 100);
+        await storage.write('GET_/huge', 'x' * 100);
+
+        await storage.write('GET_/huge', 'x' * 2000);
+
+        expect((await SharedPreferencesStorePlatform.instance.getAll()).keys, [
+          'flutter._cache_GET_/a',
+          'flutter._cache_GET_/b',
+        ], reason: 'the earlier entry of the skipped key goes, the other entries stay');
+      });
+    });
+
+    // On web localStorage refuses a write once the origin has used up its quota.
+    group('when the platform store is full', () {
+      test('logs the key and the size as an error and skips the entry', () async {
+        SharedPreferencesStorePlatform.instance = _FullStore(
+          refused: 'GET_/admin/users',
+          error: Exception('QuotaExceededError: the quota has been exceeded'),
+        );
+        final lines = _capturePrintedLines();
+
+        await expectLater(storage.write('GET_/admin/users', '[{"login":"admin"}]'), completes);
+
+        expect(
+          lines,
+          contains(
+            matches(RegExp(r'Cache write error for key GET_/admin/users \(\d+ characters\): .*QuotaExceededError')),
+          ),
+        );
+        expect(await storage.read('GET_/admin/users'), isNull, reason: 'the tab must not answer from an unsaved entry');
+        expect(await storage.count(), 0);
+      });
+
+      test(
+        'deletes the earlier entry of the same key, so it does not answer for the response it could not store',
+        () async {
+          final previous = _storedEntry('GET_/admin/users', const Duration(minutes: 1));
+          SharedPreferencesStorePlatform.instance = _FullStore(
+            refused: 'GET_/admin/users',
+            error: Exception('QuotaExceededError'),
+            data: {previous.key: previous.value},
+          );
+
+          await storage.write('GET_/admin/users', '[{"login":"admin"}]');
+
+          expect(await SharedPreferencesStorePlatform.instance.getAll(), isEmpty);
+        },
+      );
+    });
+
+    // On web localStorage throws when the browser blocks it, such as for a third-party frame.
+    group('when the platform store cannot be loaded', () {
+      test('logs the write as an error, and the GET it caches still succeeds', () async {
+        SharedPreferencesStorePlatform.instance = _UnloadableStore(
+          Exception('SecurityError: localStorage unavailable'),
+        );
+        final lines = _capturePrintedLines();
+        final dio = Dio(BaseOptions(baseUrl: 'https://x.test'))
+          ..httpClientAdapter = _OkAdapter()
+          ..interceptors.add(CacheInterceptor(storage: storage));
+
+        final response = await dio.get<Object?>(
+          '/a',
+          options: Options(extra: {'cachePolicy': CachePolicy.networkFirst}),
+        );
+
+        expect(response.statusCode, 200);
+        expect(lines, contains(matches(RegExp(r'Cache write error for key GET_https://x.test/a.*SecurityError'))));
       });
     });
 

@@ -45,8 +45,8 @@ import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.d
 /// An entry is fresh for its TTL, 5 minutes unless `options.extra['cacheTtl']`
 /// sets another: cacheFirst and cacheOnly answer from a fresh entry only.
 /// Past its TTL it still answers a GET that cannot reach the server until it
-/// is [CacheEntry.maxStaleAge] (24 hours) old. The storage deletes it when it
-/// reads it after that, and every entry when the session ends.
+/// is [CacheEntry.maxStaleAge] (24 hours) old. The storage deletes it once it
+/// is past that age, and every entry when the session ends.
 class CacheInterceptor extends Interceptor {
   CacheInterceptor({ICacheStorage? storage}) : _storage = storage ?? SharedPrefsCacheStorage();
 

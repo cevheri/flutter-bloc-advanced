@@ -23,6 +23,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 import '../../support/loopback_tls_server.dart';
 import '../../support/test_env.dart';
@@ -1445,6 +1446,42 @@ void main() {
     });
   });
 
+  // On web the cache shares the localStorage quota of the origin with the stored session and the preferences.
+  group('ApiClient when the platform store refuses to cache a response', () {
+    test('answers the GET and logs the key and the size of the entry as an error', () async {
+      SharedPreferencesStorePlatform.instance = _FullCacheStore();
+      final client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      final adapter = _FakeHttpClientAdapter()..reply(200, '[{"login":"admin"}]');
+      client.instance.httpClientAdapter = adapter;
+      TestEnv.authenticate();
+      final lines = _capturePrintedLines();
+
+      final response = await client.get('/api/quota/users');
+
+      expect(response.data, '[{"login":"admin"}]');
+      expect(
+        lines,
+        contains(
+          matches(
+            RegExp(
+              r'Cache write error for key GET_https://api.example.test/api/quota/users \(\d+ characters\): '
+              r'.*QuotaExceededError',
+            ),
+          ),
+        ),
+      );
+      expect(await SharedPrefsCacheStorage().count(), 0);
+    });
+  });
+
   // ResilienceInterceptor rejects every request to an endpoint whose circuit is open, before it is sent.
   group('ApiClient while the circuit of an endpoint is open', () {
     const cached = '[{"login":"admin"}]';
@@ -1646,6 +1683,17 @@ void main() {
       );
     });
   });
+}
+
+/// A platform store that refuses every cache entry, as localStorage does once the origin has used up its quota.
+class _FullCacheStore extends InMemorySharedPreferencesStore {
+  _FullCacheStore() : super.empty();
+
+  @override
+  Future<bool> setValue(String valueType, String key, Object value) async {
+    if (key.contains('_cache_')) throw Exception('QuotaExceededError: the quota has been exceeded');
+    return super.setValue(valueType, key, value);
+  }
 }
 
 /// Collects every line the loggers print until the test ends, whichever logger prints it.
