@@ -8,8 +8,11 @@
 # template users from the humans.txt header. It never changes web/ itself.
 #
 # A value is inserted as it is, so a value that would need escaping in HTML, JSON or XML (one of " < > & \ | or a
-# control character) fails the script instead of being escaped. Empty lines and lines starting with # are skipped.
-# A placeholder without a value is left in place; scripts/check_web_placeholders.sh fails on it afterwards.
+# control character) fails the script instead of being escaped. The GitHub Pages job also builds the app with
+# --dart-define-from-file pointing at the same file, and Flutter reads a value differently when it contains #, starts
+# with ' or `, or starts or ends with a space, so such a value fails the script too. Empty lines and lines starting
+# with # are skipped. A placeholder without a value is left in place; scripts/check_web_placeholders.sh fails on it
+# afterwards.
 #
 # Usage:
 #   scripts/fill_web_placeholders.sh VALUES_FILE BUILD_DIR
@@ -62,6 +65,13 @@ while IFS= read -r line || [ -n "$line" ]; do
     *\"* | *\<* | *\>* | *\&* | *\\* | *\|* | *[[:cntrl:]]*)
       fail "$values_file:$line_number: the value of $key contains one of \" < > & \\ | or a control character," \
         "which would need escaping in HTML, JSON or XML"
+      ;;
+  esac
+  # Flutter's .env reader ends an unquoted value at #, removes quotes around a value and trims the spaces around it.
+  case $value in
+    *'#'* | "'"* | '`'* | ' '* | *' ')
+      fail "$values_file:$line_number: the value of $key contains #, starts with ' or \`, or starts or ends with a" \
+        "space, which flutter build --dart-define-from-file would read differently"
       ;;
   esac
   keys="$keys$key "

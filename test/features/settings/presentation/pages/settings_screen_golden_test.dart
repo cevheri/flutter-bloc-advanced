@@ -1,7 +1,9 @@
 import 'package:alchemist/alchemist.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -36,18 +38,22 @@ void main() {
       ],
     );
 
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      theme: dark ? AppTheme.dark() : AppTheme.light(),
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
-      locale: const Locale('en'),
-      routerConfig: router,
+    // A project with a documentation website, so the screen shows its Help & Resources section.
+    return RepositoryProvider<ProjectLinks>.value(
+      value: const ProjectLinks(docs: 'https://docs.acme.example'),
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        theme: dark ? AppTheme.dark() : AppTheme.light(),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        locale: const Locale('en'),
+        routerConfig: router,
+      ),
     );
   }
 

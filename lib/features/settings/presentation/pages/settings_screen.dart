@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
@@ -8,7 +9,7 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../generated/l10n.dart';
-import '../../../../infrastructure/config/template_config.dart';
+import '../../../../infrastructure/config/project_links.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -74,21 +75,23 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.lg),
 
-              // Help & Resources section
-              _SettingsSection(
-                title: S.of(context).help_resources,
-                children: [
-                  _SettingsTile(
-                    key: settingsWebsiteButtonKey,
-                    icon: Icons.language,
-                    title: S.of(context).website,
-                    subtitle: S.of(context).help_resources_subtitle,
-                    onTap: () => openExternalLink(context, Uri.parse(TemplateConfig.docsUrl)),
-                  ),
-                ],
-              ),
+              // Help & Resources section, when the project has a documentation website
+              if (context.read<ProjectLinks>().docsUrl case final docsUrl?) ...[
+                const SizedBox(height: AppSpacing.lg),
+                _SettingsSection(
+                  title: S.of(context).help_resources,
+                  children: [
+                    _SettingsTile(
+                      key: settingsWebsiteButtonKey,
+                      icon: Icons.language,
+                      title: S.of(context).website,
+                      subtitle: S.of(context).help_resources_subtitle,
+                      onTap: () => openExternalLink(context, Uri.parse(docsUrl)),
+                    ),
+                  ],
+                ),
+              ],
               // Logout intentionally lives only in the sidebar / topbar
               // shell, not here. Settings is feature-scoped and an
               // auth-session lifecycle action would cross feature

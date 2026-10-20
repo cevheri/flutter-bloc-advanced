@@ -4,17 +4,29 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/testing/app_key_constants.dart';
 import '../../../../generated/l10n.dart';
-import '../../../../infrastructure/config/template_config.dart';
+import '../../../../infrastructure/config/project_links.dart';
 import '../../../../shared/utils/external_link.dart';
 
+/// The pages the community section links to: the project's repository and the pages in it, and the sponsor and
+/// documentation pages when the project has them.
 class CommunityUrls {
-  static const repo = 'https://github.com/cevheri/flutter-bloc-advanced';
-  static const issues = 'https://github.com/cevheri/flutter-bloc-advanced/issues';
-  static const discussions = 'https://github.com/cevheri/flutter-bloc-advanced/discussions';
-  static const contributing = 'https://github.com/cevheri/flutter-bloc-advanced/blob/main/CONTRIBUTING.md';
-  static const translate = 'https://github.com/cevheri/flutter-bloc-advanced/tree/main/lib/l10n';
-  static const sponsor = 'https://github.com/sponsors/cevheri';
-  static const docs = TemplateConfig.docsUrl;
+  const CommunityUrls({required this.repo, this.sponsor, this.docs});
+
+  /// The community links of [links], or null when [links] has no repository: the section is about the repository.
+  static CommunityUrls? of(ProjectLinks links) => switch (links.repositoryUrl) {
+    final repo? => CommunityUrls(repo: repo, sponsor: links.sponsorUrl, docs: links.docsUrl),
+    null => null,
+  };
+
+  /// The repository, such as `https://github.com/acme/dashboard`, without a trailing `/`.
+  final String repo;
+  final String? sponsor;
+  final String? docs;
+
+  String get issues => '$repo/issues';
+  String get discussions => '$repo/discussions';
+  String get contributing => '$repo/blob/main/CONTRIBUTING.md';
+  String get translate => '$repo/tree/main/lib/l10n';
 }
 
 class _CommunityAction {
@@ -35,14 +47,14 @@ class _CommunityAction {
   });
 }
 
-final List<_CommunityAction> _communityActions = [
+List<_CommunityAction> _communityActions(CommunityUrls urls) => [
   _CommunityAction(
     key: communityStarKey,
     icon: Icons.star_border_rounded,
     iconBackground: const Color(0xFF6366F1),
     iconColor: const Color(0xFFA5B4FC),
     label: (l10n) => l10n.community_star,
-    url: CommunityUrls.repo,
+    url: urls.repo,
   ),
   _CommunityAction(
     key: communityIssueKey,
@@ -50,7 +62,7 @@ final List<_CommunityAction> _communityActions = [
     iconBackground: const Color(0xFFEF4444),
     iconColor: const Color(0xFFFCA5A5),
     label: (l10n) => l10n.community_issue,
-    url: CommunityUrls.issues,
+    url: urls.issues,
   ),
   _CommunityAction(
     key: communityDiscussionsKey,
@@ -58,7 +70,7 @@ final List<_CommunityAction> _communityActions = [
     iconBackground: const Color(0xFF06B6D4),
     iconColor: const Color(0xFF67E8F9),
     label: (l10n) => l10n.community_discussions,
-    url: CommunityUrls.discussions,
+    url: urls.discussions,
   ),
   _CommunityAction(
     key: communityContributeKey,
@@ -66,7 +78,7 @@ final List<_CommunityAction> _communityActions = [
     iconBackground: const Color(0xFF8B5CF6),
     iconColor: const Color(0xFFC4B5FD),
     label: (l10n) => l10n.community_contribute,
-    url: CommunityUrls.contributing,
+    url: urls.contributing,
   ),
   _CommunityAction(
     key: communityTranslateKey,
@@ -74,38 +86,46 @@ final List<_CommunityAction> _communityActions = [
     iconBackground: const Color(0xFF10B981),
     iconColor: const Color(0xFF6EE7B7),
     label: (l10n) => l10n.community_translate,
-    url: CommunityUrls.translate,
+    url: urls.translate,
   ),
-  _CommunityAction(
-    key: communitySponsorKey,
-    icon: Icons.favorite_border_rounded,
-    iconBackground: const Color(0xFFEC4899),
-    iconColor: const Color(0xFFF9A8D4),
-    label: (l10n) => l10n.community_sponsor,
-    url: CommunityUrls.sponsor,
-  ),
-  _CommunityAction(
-    key: communityDocsKey,
-    icon: Icons.menu_book_rounded,
-    iconBackground: const Color(0xFFF59E0B),
-    iconColor: const Color(0xFFFCD34D),
-    label: (l10n) => l10n.community_docs,
-    url: CommunityUrls.docs,
-  ),
+  if (urls.sponsor case final sponsor?)
+    _CommunityAction(
+      key: communitySponsorKey,
+      icon: Icons.favorite_border_rounded,
+      iconBackground: const Color(0xFFEC4899),
+      iconColor: const Color(0xFFF9A8D4),
+      label: (l10n) => l10n.community_sponsor,
+      url: sponsor,
+    ),
+  if (urls.docs case final docs?)
+    _CommunityAction(
+      key: communityDocsKey,
+      icon: Icons.menu_book_rounded,
+      iconBackground: const Color(0xFFF59E0B),
+      iconColor: const Color(0xFFFCD34D),
+      label: (l10n) => l10n.community_docs,
+      url: docs,
+    ),
 ];
 
 class CommunitySectionWidget extends StatelessWidget {
   final bool isDesktop;
+  final CommunityUrls urls;
 
-  const CommunitySectionWidget({super.key, required this.isDesktop});
+  const CommunitySectionWidget({super.key, required this.isDesktop, required this.urls});
 
   @override
   Widget build(BuildContext context) {
-    return isDesktop ? _DesktopCommunitySection() : _MobileCommunitySection();
+    final actions = _communityActions(urls);
+    return isDesktop ? _DesktopCommunitySection(actions) : _MobileCommunitySection(actions);
   }
 }
 
 class _DesktopCommunitySection extends StatelessWidget {
+  const _DesktopCommunitySection(this.actions);
+
+  final List<_CommunityAction> actions;
+
   @override
   Widget build(BuildContext context) {
     final l10n = S.of(context);
@@ -146,7 +166,7 @@ class _DesktopCommunitySection extends StatelessWidget {
         Wrap(
           spacing: 10,
           runSpacing: 10,
-          children: _communityActions.map((action) => _DesktopCommunityCard(action: action)).toList(),
+          children: actions.map((action) => _DesktopCommunityCard(action: action)).toList(),
         ),
       ],
     );
@@ -247,6 +267,10 @@ class _DesktopCommunityCardState extends State<_DesktopCommunityCard> {
 }
 
 class _MobileCommunitySection extends StatelessWidget {
+  const _MobileCommunitySection(this.actions);
+
+  final List<_CommunityAction> actions;
+
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -272,7 +296,7 @@ class _MobileCommunitySection extends StatelessWidget {
           spacing: 8,
           runSpacing: 8,
           alignment: WrapAlignment.center,
-          children: _communityActions.map((action) => _MobileCommunityChip(action: action)).toList(),
+          children: actions.map((action) => _MobileCommunityChip(action: action)).toList(),
         ),
       ],
     );

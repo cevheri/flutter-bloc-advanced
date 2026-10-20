@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -61,7 +62,11 @@ void main() {
     );
 
     testWidget = MultiBlocProvider(
-      providers: [BlocProvider<LoginBloc>.value(value: mockLoginBloc)],
+      providers: [
+        BlocProvider<LoginBloc>.value(value: mockLoginBloc),
+        // The login page reads the project's links.
+        RepositoryProvider<ProjectLinks>.value(value: const ProjectLinks()),
+      ],
       child: MaterialApp.router(
         theme: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),
         darkTheme: ThemeData(useMaterial3: false, brightness: Brightness.dark, primarySwatch: Colors.blueGrey),

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -34,6 +35,14 @@ void main() {
       providers: [
         BlocProvider<LoginBloc>.value(value: loginBloc),
         BlocProvider<AccountBloc>.value(value: accountBloc),
+        // A project that gives all its links, so the page shows its community section.
+        RepositoryProvider<ProjectLinks>.value(
+          value: const ProjectLinks(
+            repository: 'https://github.com/acme/dashboard',
+            docs: 'https://docs.acme.example',
+            sponsor: 'https://github.com/sponsors/acme',
+          ),
+        ),
       ],
       child: const LoginScreen(),
     );

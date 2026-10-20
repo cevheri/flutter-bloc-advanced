@@ -51,18 +51,26 @@ fvm dart run intl_utils:generate
 # intl_utils formats its output at 80 columns; reformat to 120 so the committed files stay unchanged
 fvm dart format lib/generated --line-length=120
 
+# web/ and lib/infrastructure/config/template_config.dart keep the template placeholders. As in the GitHub Pages job,
+# only this repository builds and fills them with the hosted demo's values; a copy of the template puts its own values
+# in, and the check names any left.
+demo_build=false
+demo_defines=()
+if git config --get remote.origin.url | grep -qE '[:/]cevheri/flutter-bloc-advanced(\.git)?$'; then
+    demo_build=true
+    demo_defines=(--dart-define-from-file=.github/pages/demo-values.env)
+fi
+
 # Build for web
 print_status "Building for web..."
 # Check if build was successful
 if fvm flutter build web \
     --base-href /flutter-bloc-advanced/ \
     --target lib/main/main_local.dart \
-    --release; then
+    --release "${demo_defines[@]}"; then
     print_success "Web build completed successfully!"
     
-    # web/ keeps the template placeholders. As in the GitHub Pages job, only this repository fills them with the
-    # hosted demo's values; a copy of the template puts its own values into web/, and the check names any left.
-    if git config --get remote.origin.url | grep -qE '[:/]cevheri/flutter-bloc-advanced(\.git)?$'; then
+    if [ "$demo_build" = true ]; then
         print_status "Filling the demo values into build/web..."
         scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
     fi

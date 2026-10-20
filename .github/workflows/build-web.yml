@@ -33,7 +33,12 @@ jobs:
         run: flutter pub get
 
       - name: Build web
-        run: flutter build web --release --base-href /flutter-bloc-advanced/ --target lib/main/main_local.dart
+        # lib/infrastructure/config/template_config.dart keeps placeholders for the repository, docs and sponsor links
+        # the app shows. Only this repository builds with the hosted demo's values for them; a copy of the template
+        # gives its own, or the check below fails on the placeholders compiled into main.dart.js.
+        run: >-
+          flutter build web --release --base-href /flutter-bloc-advanced/ --target lib/main/main_local.dart
+          ${{ github.repository == 'cevheri/flutter-bloc-advanced' && '--dart-define-from-file=.github/pages/demo-values.env' || '' }}
 
       - name: Prepare deployment assets
         # flutter build web already copies web/ into build/web, dotfiles included (.nojekyll, .well-known/).
@@ -47,7 +52,8 @@ jobs:
         run: scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
 
       - name: Check for template placeholders
-        # Runs in copies of the template too: until web/ has their own values, the deploy fails and names each one.
+        # Runs in copies of the template too: until web/ and the build have their own values, the deploy fails and
+        # names each one.
         run: scripts/check_web_placeholders.sh build/web
 
       - name: Verify web assets

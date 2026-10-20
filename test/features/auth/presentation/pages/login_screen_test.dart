@@ -3,9 +3,11 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/widgets/community_section_widget.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -15,9 +17,21 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
   }
 
-  // The real app starts unauthenticated after the global reset, so it lands on /login.
+  // The real app starts unauthenticated after the global reset, so it lands on /login. The project gives all its
+  // links, so the page shows its community section.
   Future<void> pumpLogin(WidgetTester tester) async {
-    await tester.pumpWidget(const App(language: 'en'));
+    await tester.pumpWidget(
+      const App(
+        language: 'en',
+        dependencies: AppDependencies(
+          projectLinks: ProjectLinks(
+            repository: 'https://github.com/acme/dashboard',
+            docs: 'https://docs.acme.example',
+            sponsor: 'https://github.com/sponsors/acme',
+          ),
+        ),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(find.byType(LoginScreen), findsOneWidget);
   }

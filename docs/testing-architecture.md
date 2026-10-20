@@ -62,7 +62,7 @@ test/
 │   ├── mock_asset_coverage_test.dart # every repository method succeeds on the mock
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
 │   ├── test_file_naming_test.dart    # forbids *.test.dart (dot) files
-│   └── web_placeholders_test.dart    # demo values cover every web/ placeholder
+│   └── web_placeholders_test.dart    # demo values cover every web/ and build-time placeholder
 ├── app/                       # app/ layer tests (router, shell, theme, di, ...)
 ├── core/                      # core/ tests (errors, logging, security, result, ...)
 ├── features/<feature>/        # application/ data/ domain/ navigation/ presentation/
@@ -381,6 +381,7 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   A last test reads the repository interfaces under `lib/` and fails when a method is not driven, so a new repository method needs an entry in the test, and its mock file, before the build passes.
 - **`web_placeholders_test.dart`** fails if a `__KEY__` placeholder in `web/index.html`, `manifest.json`, `sitemap.xml` or `humans.txt` has no value in `.github/pages/demo-values.env`, apart from `__KEYWORD__` and `__PROD_API_URL__`, which the hosted demo leaves on purpose.
   The GitHub Pages job fills these files in `build/web` from that file and then fails on any placeholder left (`scripts/check_web_placeholders.sh`).
+  It also fails if a key that `lib/infrastructure/config/template_config.dart` reads with `String.fromEnvironment` and a placeholder default has no value there: the job builds the app with `--dart-define-from-file` pointing at that file, and a key without a value leaves its placeholder in `main.dart.js`.
   It runs only after a push to `main`, so without this test a missing value would surface as a failed deploy instead of in the pull request.
 - **`feature_generator_test.dart`** runs `tool/generate_feature.dart` in a temporary copy of the project and fails if the generated feature is not formatted, does not analyze cleanly or fails its own tests.
   Nothing else compiles the generator's templates, so they drift silently when an API they call changes.

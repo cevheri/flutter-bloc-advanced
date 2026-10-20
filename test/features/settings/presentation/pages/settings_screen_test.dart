@@ -2,11 +2,13 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
-import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,8 +17,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../support/test_env.dart';
 import '../../../../support/url_launcher_stub.dart';
 
+const _docs = 'https://docs.acme.example';
+
 void main() {
-  Widget buildTestableWidget() {
+  // The build gives the documentation website [docs].
+  Widget buildTestableWidget({String docs = _docs}) {
     final router = GoRouter(
       initialLocation: ApplicationRoutesConstants.settings,
       routes: [
@@ -31,27 +36,36 @@ void main() {
       ],
     );
 
-    return MaterialApp.router(
-      routerConfig: router,
-      localizationsDelegates: const [
-        S.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      supportedLocales: S.delegate.supportedLocales,
+    return RepositoryProvider<ProjectLinks>.value(
+      value: ProjectLinks(docs: docs),
+      child: MaterialApp.router(
+        routerConfig: router,
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+      ),
     );
   }
 
   // The real app, signed in, on settings. The shell shows the account name in the top bar once the mock API answers
-  // after its 500 ms delay, so let that land before the screen is compared.
-  Future<void> pumpAppOnSettings(WidgetTester tester) async {
+  // after its 500 ms delay, so let that land before the screen is compared. The build gives the documentation website
+  // [docs].
+  Future<void> pumpAppOnSettings(WidgetTester tester, {String docs = _docs}) async {
     addTearDown(tester.view.reset);
     tester.view.physicalSize = const Size(1600, 1600);
     tester.view.devicePixelRatio = 1.0;
     TestEnv.authenticate();
 
-    await tester.pumpWidget(const App(language: 'en'));
+    await tester.pumpWidget(
+      App(
+        language: 'en',
+        dependencies: AppDependencies(projectLinks: ProjectLinks(docs: docs)),
+      ),
+    );
     await tester.pump();
     (tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter).go(
       ApplicationRoutesConstants.settings,
@@ -77,6 +91,17 @@ void main() {
       // settings does not own auth-session lifecycle (cross-feature).
     });
 
+    // A made-up key: replacing the template's real placeholders across a project leaves this test as it is.
+    testWidgets('shows no Help & Resources section while the docs URL is a placeholder', (WidgetTester tester) async {
+      TestEnv.authenticate();
+      await tester.pumpWidget(buildTestableWidget(docs: '__DOCS__'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(settingsChangePasswordButtonKey), findsOneWidget);
+      expect(find.byKey(settingsWebsiteButtonKey), findsNothing);
+      expect(find.text('Help & Resources'), findsNothing);
+    });
+
     testWidgets('navigates to change password screen when button is pressed', (WidgetTester tester) async {
       TestEnv.authenticate();
       await tester.pumpWidget(buildTestableWidget());
@@ -99,7 +124,7 @@ void main() {
         await pumpAppOnSettings(tester);
 
         await expectTapShowsMessage(tester, find.byKey(settingsWebsiteButtonKey));
-        expect(calls.requestedUrls, contains(TemplateConfig.docsUrl));
+        expect(calls.requestedUrls, contains(_docs));
       });
     }
   });
@@ -113,7 +138,7 @@ void main() {
         await pumpAppOnSettings(tester);
 
         await expectTapShowsNoMessage(tester, find.byKey(settingsWebsiteButtonKey));
-        expect(calls.launchedUrls, [TemplateConfig.docsUrl]);
+        expect(calls.launchedUrls, [_docs]);
       });
     }
   });

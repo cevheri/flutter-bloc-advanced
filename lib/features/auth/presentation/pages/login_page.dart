@@ -11,6 +11,7 @@ import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart'
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/core/security/safe_redirect.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
@@ -149,8 +150,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       _statsRow(),
                       const SizedBox(height: 40),
                       _featureCards(),
-                      const SizedBox(height: 10),
-                      const CommunitySectionWidget(isDesktop: true),
+                      if (_communityUrls(context) case final urls?) ...[
+                        const SizedBox(height: 10),
+                        CommunitySectionWidget(isDesktop: true, urls: urls),
+                      ],
                     ],
                   ),
                 ),
@@ -404,6 +407,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   }
 
   Widget _formBody(BuildContext context, bool isDark, {required bool showCommunity}) {
+    final communityUrls = showCommunity ? _communityUrls(context) : null;
     return FormBuilder(
       key: _loginFormKey,
       child: Column(
@@ -431,13 +435,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           SizedBox(width: double.infinity, child: _otpLoginButton(context)),
           const SizedBox(height: 28),
           _registerLink(context),
-          if (showCommunity) ...[const SizedBox(height: 4), const CommunitySectionWidget(isDesktop: false)],
+          if (communityUrls != null) ...[
+            const SizedBox(height: 4),
+            CommunitySectionWidget(isDesktop: false, urls: communityUrls),
+          ],
           const SizedBox(height: 16),
           _versionText(context),
         ],
       ),
     );
   }
+
+  /// The links of the community section, or null when the project has no repository to link to.
+  CommunityUrls? _communityUrls(BuildContext context) => CommunityUrls.of(context.read<ProjectLinks>());
 
   Widget _versionText(BuildContext context) {
     final cs = Theme.of(context).colorScheme;

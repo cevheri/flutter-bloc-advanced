@@ -3,11 +3,13 @@
 # Fails if a template placeholder is left in a web build, and names each file and placeholder.
 #
 # web/ keeps __KEY__ placeholders for template users (README, "Customizing for Your Project"), and flutter build web
-# copies them into the build unchanged. Run this after scripts/fill_web_placeholders.sh and before publishing, so a
-# placeholder without a value fails the deploy instead of reaching visitors. Two may stay: __KEYWORD__, which the
-# instruction comments use for every placeholder, and __PROD_API_URL__, which appears only in an index.html comment
-# and in the production AppConfig that a mock-only build such as the hosted demo never selects. canvaskit/ holds the
-# Flutter engine, not app content, so it is not searched.
+# copies them into the build unchanged. lib/infrastructure/config/template_config.dart keeps them for the links the
+# app shows, and a build that gives no --dart-define value for one compiles its placeholder into main.dart.js. Run this
+# after scripts/fill_web_placeholders.sh and before publishing, so a placeholder without a value fails the deploy
+# instead of reaching visitors. Two may stay: __KEYWORD__, which the instruction comments use for every placeholder,
+# and __PROD_API_URL__, which appears only in an index.html comment and in the production AppConfig that a mock-only
+# build such as the hosted demo never selects. canvaskit/ holds the Flutter engine, not app content, so it is not
+# searched.
 #
 # Usage:
 #   scripts/check_web_placeholders.sh BUILD_DIR
@@ -41,7 +43,8 @@ if [ -n "$left" ]; then
   {
     echo "error: template placeholders left in $build_dir:"
     printf '%s\n' "$left"
-    echo "Give each one a value in web/ (README, \"Customizing for Your Project\")." \
+    echo "Give each one a value: in web/ for the web files, and with --dart-define or in" \
+      "lib/infrastructure/config/template_config.dart for main.dart.js (README, \"Customizing for Your Project\")." \
       "The hosted demo takes its values from .github/pages/demo-values.env."
   } >&2
   exit 1

@@ -362,13 +362,22 @@ All template placeholders use `__KEYWORD__` naming. Run a **global search** for 
 | `__APP_DESCRIPTION__` | One-line app description | `Team collaboration platform` | template_config.dart, manifest.json |
 | `__PROD_API_URL__` | Production API endpoint | `https://api.acme.com/v1` | template_config.dart, index.html |
 | `__WEB_BASE_URL__` | Deployment URL (trailing `/`) | `https://app.acme.com/` | template_config.dart, index.html, sitemap.xml |
-| `__GITHUB_REPO_URL__` | GitHub repository URL | `https://github.com/acme/dashboard` | template_config.dart |
+| `__GITHUB_REPO_URL__` | GitHub repository URL (no trailing `/`) | `https://github.com/acme/dashboard` | template_config.dart |
+| `__DOCS_URL__` | Documentation website | `https://docs.acme.com` | template_config.dart |
+| `__SPONSOR_URL__` | Sponsor page | `https://github.com/sponsors/acme` | template_config.dart |
 | `__AUTHOR_NAME__` | Developer or company name | `Acme Inc.` | template_config.dart, index.html, humans.txt |
 | `__AUTHOR_EMAIL__` | Contact email | `dev@acme.com` | template_config.dart, CONTRIBUTING.md |
 | `__AUTHOR_URL__` | Author website / profile | `https://github.com/acme` | template_config.dart, index.html, humans.txt |
 | `__AUTHOR_LOCATION__` | Author location | `San Francisco, CA` | humans.txt |
 
 The hosted demo fills these placeholders only at deploy time, from `.github/pages/demo-values.env`, and `scripts/check_web_placeholders.sh` fails the GitHub Pages build of any repository that would still publish one, naming the file and keyword (`__PROD_API_URL__` is exempt because the mock-mode web build does not use it).
+
+`template_config.dart` reads `__GITHUB_REPO_URL__`, `__DOCS_URL__` and `__SPONSOR_URL__` at build time, so you can replace them there or give them to `flutter run` and `flutter build`.
+Pass `--dart-define=GITHUB_REPO_URL=https://github.com/acme/dashboard` for one value, or `--dart-define-from-file=values.env` for a file of `KEY=value` lines; the hosted demo builds with `.github/pages/demo-values.env`.
+The login page shows its community section only when the repository URL is given, and its Sponsor and Documentation links only when their URLs are; the sidebar and settings show the Website link only when the docs URL is given.
+An unfilled template therefore shows no link that leads nowhere.
+An empty value, such as `--dart-define=SPONSOR_URL=`, leaves that link out.
+A web build that still contains one of these placeholders in `main.dart.js` fails `scripts/check_web_placeholders.sh`.
 
 Also update manually:
 
