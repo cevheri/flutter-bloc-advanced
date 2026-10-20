@@ -3,11 +3,13 @@ library;
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/shell/top_bar/breadcrumb_widget.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
 void main() {
-  Widget buildTestableWidget({required String initialLocation}) {
+  Widget buildTestableWidget({required String initialLocation, Locale locale = const Locale('en')}) {
     final router = GoRouter(
       initialLocation: initialLocation,
       routes: [
@@ -32,7 +34,17 @@ void main() {
       ],
     );
 
-    return MaterialApp.router(routerConfig: router);
+    return MaterialApp.router(
+      routerConfig: router,
+      locale: locale,
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
+    );
   }
 
   group('BreadcrumbWidget', () {
@@ -49,7 +61,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.home_outlined), findsOneWidget);
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Users'), findsOneWidget);
       expect(find.byIcon(Icons.chevron_right), findsOneWidget);
     });
 
@@ -57,7 +69,7 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(initialLocation: '/user/new'));
       await tester.pumpAndSettle();
 
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Users'), findsOneWidget);
       expect(find.text('New'), findsOneWidget);
       // home chevron + segment chevron = 2
       expect(find.byIcon(Icons.chevron_right), findsNWidgets(2));
@@ -67,7 +79,7 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(initialLocation: '/user/test-user/view'));
       await tester.pumpAndSettle();
 
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Users'), findsOneWidget);
       expect(find.text('Test user'), findsOneWidget);
       // home chevron + 1 segment chevron = 2
       expect(find.byIcon(Icons.chevron_right), findsNWidgets(2));
@@ -77,7 +89,7 @@ void main() {
       await tester.pumpWidget(buildTestableWidget(initialLocation: '/user/test-user/edit'));
       await tester.pumpAndSettle();
 
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Users'), findsOneWidget);
       expect(find.text('Test user'), findsOneWidget);
       expect(find.text('Edit'), findsOneWidget);
       // home chevron + 2 segment chevrons = 3
@@ -95,26 +107,26 @@ void main() {
       expect(find.text('Dashboard'), findsOneWidget);
     });
 
-    testWidgets('clicking User breadcrumb on /user/new navigates to /user', (tester) async {
+    testWidgets('clicking Users breadcrumb on /user/new navigates to /user', (tester) async {
       await tester.pumpWidget(buildTestableWidget(initialLocation: '/user/new'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('User'));
+      await tester.tap(find.text('Users'));
       await tester.pumpAndSettle();
 
-      // Should be on /user now, only User segment visible (non-navigable)
-      expect(find.text('User'), findsOneWidget);
+      // Should be on /user now, only Users segment visible (non-navigable)
+      expect(find.text('Users'), findsOneWidget);
       expect(find.text('New'), findsNothing);
     });
 
-    testWidgets('clicking User breadcrumb on /user/:id/edit navigates to /user', (tester) async {
+    testWidgets('clicking Users breadcrumb on /user/:id/edit navigates to /user', (tester) async {
       await tester.pumpWidget(buildTestableWidget(initialLocation: '/user/test-user/edit'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('User'));
+      await tester.tap(find.text('Users'));
       await tester.pumpAndSettle();
 
-      expect(find.text('User'), findsOneWidget);
+      expect(find.text('Users'), findsOneWidget);
       expect(find.text('Edit'), findsNothing);
     });
 
@@ -125,10 +137,30 @@ void main() {
       await tester.tap(find.text('Test user'));
       await tester.pumpAndSettle();
 
-      // Should be on /user/test-user/view now (collapsed to User > Test user)
-      expect(find.text('User'), findsOneWidget);
+      // Should be on /user/test-user/view now (collapsed to Users > Test user)
+      expect(find.text('Users'), findsOneWidget);
       expect(find.text('Test user'), findsOneWidget);
       expect(find.text('Edit'), findsNothing);
+    });
+  });
+
+  group('BreadcrumbWidget - Turkish', () {
+    testWidgets('shows the route words and the home label in Turkish', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(buildTestableWidget(initialLocation: '/user/new', locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Kullanıcılar'), findsOneWidget);
+      expect(find.text('Yeni'), findsOneWidget);
+      expect(find.bySemanticsLabel('Ana Sayfa'), findsOneWidget);
+      semantics.dispose();
+    });
+
+    testWidgets('shows the dashboard in Turkish on the home route', (tester) async {
+      await tester.pumpWidget(buildTestableWidget(initialLocation: '/', locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Panel'), findsOneWidget);
     });
   });
 }

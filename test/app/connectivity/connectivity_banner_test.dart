@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_banner.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_cubit.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -21,11 +23,19 @@ void main() {
     mockCubit = MockConnectivityCubit();
   });
 
-  Widget buildTestableWidget({required ConnectivityState state}) {
+  Widget buildTestableWidget({required ConnectivityState state, Locale locale = const Locale('en')}) {
     when(() => mockCubit.state).thenReturn(state);
     whenListen(mockCubit, Stream<ConnectivityState>.value(state), initialState: state);
 
     return MaterialApp(
+      locale: locale,
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
       home: Scaffold(
         body: BlocProvider<ConnectivityCubit>.value(
           value: mockCubit,
@@ -49,6 +59,18 @@ void main() {
         await tester.pump();
 
         expect(find.text('No internet connection'), findsOneWidget);
+      });
+
+      testWidgets('should display the offline message in Turkish', (tester) async {
+        await tester.pumpWidget(
+          buildTestableWidget(
+            state: const ConnectivityState(status: ConnectivityStatus.offline),
+            locale: const Locale('tr'),
+          ),
+        );
+        await tester.pump();
+
+        expect(find.text('İnternet bağlantısı yok'), findsOneWidget);
       });
 
       testWidgets('should display cloud_off icon', (tester) async {
@@ -140,6 +162,13 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: const [
+              S.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: S.delegate.supportedLocales,
             home: Scaffold(
               body: BlocProvider<ConnectivityCubit>.value(
                 value: mockCubit,
@@ -170,6 +199,13 @@ void main() {
 
         await tester.pumpWidget(
           MaterialApp(
+            localizationsDelegates: const [
+              S.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: S.delegate.supportedLocales,
             home: Scaffold(
               body: BlocProvider<ConnectivityCubit>.value(
                 value: mockCubit,

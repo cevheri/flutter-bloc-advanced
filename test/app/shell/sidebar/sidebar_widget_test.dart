@@ -30,14 +30,18 @@ void main() {
   Finder inSidebar(String label) => find.descendant(of: find.byType(SidebarWidget), matching: find.text(label));
 
   // The real app, signed in as an admin, on the dashboard. An admin sees every menu entry and may open the user list.
-  Future<void> pumpAdminOnDashboard(WidgetTester tester, {Size size = const Size(1600, 1600)}) async {
+  Future<void> pumpAdminOnDashboard(
+    WidgetTester tester, {
+    Size size = const Size(1600, 1600),
+    String language = 'en',
+  }) async {
     addTearDown(tester.view.reset);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
     TestEnv.authenticate();
     await AppLocalStorage().save(StorageKeys.roles.key, <String>['ROLE_ADMIN']);
 
-    await tester.pumpWidget(const App(language: 'en'));
+    await tester.pumpWidget(App(language: language));
     await tester.pumpAndSettle();
   }
 
@@ -172,6 +176,25 @@ void main() {
       expect(routerOf(tester).state.uri.path, ApplicationRoutesConstants.login);
       expect(find.byType(LoginScreen), findsOneWidget);
       expect(routerOf(tester).canPop(), isFalse);
+    });
+  });
+
+  group('SidebarWidget - Turkish', () {
+    testWidgets('the theme and collapse toggles show their labels in Turkish', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await pumpAdminOnDashboard(tester, language: 'tr');
+
+      expect(inSidebar('Açık'), findsOneWidget);
+      expect(inSidebar('Daralt'), findsOneWidget);
+
+      await tester.tap(inSidebar('Daralt'));
+      await tester.pumpAndSettle();
+
+      expect(
+        find.descendant(of: find.byType(SidebarWidget), matching: find.bySemanticsLabel('Genişlet')),
+        findsOneWidget,
+      );
+      semantics.dispose();
     });
   });
 

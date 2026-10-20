@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_avatar.dart';
@@ -95,7 +96,7 @@ class TopBarWidget extends StatelessWidget {
                 children: [
                   Icon(Icons.person_outlined, size: 14, color: cs.onSurfaceVariant),
                   const SizedBox(width: 8),
-                  Text('Account', style: tt.bodySmall),
+                  Text(S.of(context).account, style: tt.bodySmall),
                 ],
               ),
             ),
@@ -106,7 +107,7 @@ class TopBarWidget extends StatelessWidget {
                 children: [
                   Icon(Icons.settings_outlined, size: 14, color: cs.onSurfaceVariant),
                   const SizedBox(width: 8),
-                  Text('Settings', style: tt.bodySmall),
+                  Text(S.of(context).settings, style: tt.bodySmall),
                 ],
               ),
             ),
@@ -118,7 +119,7 @@ class TopBarWidget extends StatelessWidget {
                 children: [
                   Icon(Icons.logout, size: 14, color: cs.onSurfaceVariant),
                   const SizedBox(width: 8),
-                  Text('Logout', style: tt.bodySmall),
+                  Text(S.of(context).logout, style: tt.bodySmall),
                 ],
               ),
             ),

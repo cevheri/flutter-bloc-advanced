@@ -214,7 +214,9 @@ class _SidebarFooter extends StatelessWidget {
                 icon: Theme.of(context).brightness == Brightness.dark
                     ? Icons.dark_mode_outlined
                     : Icons.light_mode_outlined,
-                label: Theme.of(context).brightness == Brightness.dark ? 'Dark' : 'Light',
+                label: Theme.of(context).brightness == Brightness.dark
+                    ? S.of(context).theme_mode_dark
+                    : S.of(context).theme_mode_light,
                 isCollapsed: isCollapsed,
                 onTap: () => context.read<ThemeBloc>().add(const ToggleBrightness()),
               );
@@ -236,7 +238,7 @@ class _SidebarFooter extends StatelessWidget {
           // Collapse toggle
           SidebarNavItem(
             icon: isCollapsed ? Icons.chevron_right : Icons.chevron_left,
-            label: isCollapsed ? 'Expand' : 'Collapse',
+            label: isCollapsed ? S.of(context).sidebar_expand : S.of(context).sidebar_collapse,
             isCollapsed: isCollapsed,
             onTap: () => context.read<SidebarBloc>().add(const ToggleSidebarCollapse()),
           ),

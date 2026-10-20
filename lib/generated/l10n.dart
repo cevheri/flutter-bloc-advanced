@@ -714,6 +714,106 @@ class S {
       args: [],
     );
   }
+
+  /// `Home`
+  String get home {
+    return Intl.message('Home', name: 'home', desc: '', args: []);
+  }
+
+  /// `Users`
+  String get users {
+    return Intl.message('Users', name: 'users', desc: '', args: []);
+  }
+
+  /// `New`
+  String get new_item {
+    return Intl.message('New', name: 'new_item', desc: '', args: []);
+  }
+
+  /// `Edit`
+  String get edit {
+    return Intl.message('Edit', name: 'edit', desc: '', args: []);
+  }
+
+  /// `No internet connection`
+  String get connectivity_offline {
+    return Intl.message('No internet connection', name: 'connectivity_offline', desc: '', args: []);
+  }
+
+  /// `Page Not Found`
+  String get not_found_title {
+    return Intl.message('Page Not Found', name: 'not_found_title', desc: '', args: []);
+  }
+
+  /// `The page you requested could not be found.`
+  String get not_found_message {
+    return Intl.message('The page you requested could not be found.', name: 'not_found_message', desc: '', args: []);
+  }
+
+  /// `Dynamic Forms`
+  String get dynamic_forms {
+    return Intl.message('Dynamic Forms', name: 'dynamic_forms', desc: '', args: []);
+  }
+
+  /// `Dark`
+  String get theme_mode_dark {
+    return Intl.message('Dark', name: 'theme_mode_dark', desc: '', args: []);
+  }
+
+  /// `Light`
+  String get theme_mode_light {
+    return Intl.message('Light', name: 'theme_mode_light', desc: '', args: []);
+  }
+
+  /// `Expand`
+  String get sidebar_expand {
+    return Intl.message('Expand', name: 'sidebar_expand', desc: '', args: []);
+  }
+
+  /// `Collapse`
+  String get sidebar_collapse {
+    return Intl.message('Collapse', name: 'sidebar_collapse', desc: '', args: []);
+  }
+
+  /// `Type a command or search...`
+  String get command_palette_hint {
+    return Intl.message('Type a command or search...', name: 'command_palette_hint', desc: '', args: []);
+  }
+
+  /// `No results found`
+  String get command_palette_no_results {
+    return Intl.message('No results found', name: 'command_palette_no_results', desc: '', args: []);
+  }
+
+  /// `Go to home`
+  String get command_palette_home_description {
+    return Intl.message('Go to home', name: 'command_palette_home_description', desc: '', args: []);
+  }
+
+  /// `Manage users`
+  String get command_palette_users_description {
+    return Intl.message('Manage users', name: 'command_palette_users_description', desc: '', args: []);
+  }
+
+  /// `Create a new user`
+  String get command_palette_new_user_description {
+    return Intl.message('Create a new user', name: 'command_palette_new_user_description', desc: '', args: []);
+  }
+
+  /// `Your profile`
+  String get command_palette_account_description {
+    return Intl.message('Your profile', name: 'command_palette_account_description', desc: '', args: []);
+  }
+
+  /// `App preferences`
+  String get command_palette_settings_description {
+    return Intl.message('App preferences', name: 'command_palette_settings_description', desc: '', args: []);
+  }
+
+  /// `Update password`
+  String get command_palette_change_password_description {
+    return Intl.message('Update password', name: 'command_palette_change_password_description', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:go_router/go_router.dart';
 
 /// Command palette entry.
@@ -15,41 +16,41 @@ class _CommandEntry {
   const _CommandEntry({required this.label, this.description, required this.icon, required this.route});
 }
 
-/// All available commands for navigation.
-const _allCommands = [
+/// All available commands for navigation, in the language of [l10n].
+List<_CommandEntry> _commands(S l10n) => [
   _CommandEntry(
-    label: 'Dashboard',
-    description: 'Go to home',
+    label: l10n.dashboard,
+    description: l10n.command_palette_home_description,
     icon: Icons.dashboard_outlined,
     route: ApplicationRoutesConstants.home,
   ),
   _CommandEntry(
-    label: 'Users',
-    description: 'Manage users',
+    label: l10n.users,
+    description: l10n.command_palette_users_description,
     icon: Icons.people_outline,
     route: ApplicationRoutesConstants.userList,
   ),
   _CommandEntry(
-    label: 'New User',
-    description: 'Create a new user',
+    label: l10n.new_user,
+    description: l10n.command_palette_new_user_description,
     icon: Icons.person_add_outlined,
     route: ApplicationRoutesConstants.userNew,
   ),
   _CommandEntry(
-    label: 'Account',
-    description: 'Your profile',
+    label: l10n.account,
+    description: l10n.command_palette_account_description,
     icon: Icons.person_outline,
     route: ApplicationRoutesConstants.account,
   ),
   _CommandEntry(
-    label: 'Settings',
-    description: 'App preferences',
+    label: l10n.settings,
+    description: l10n.command_palette_settings_description,
     icon: Icons.settings_outlined,
     route: ApplicationRoutesConstants.settings,
   ),
   _CommandEntry(
-    label: 'Change Password',
-    description: 'Update password',
+    label: l10n.change_password,
+    description: l10n.command_palette_change_password_description,
     icon: Icons.lock_outline,
     route: ApplicationRoutesConstants.changePassword,
   ),
@@ -108,7 +109,7 @@ class _CommandPaletteDialog extends StatefulWidget {
 class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
   final _controller = TextEditingController();
   final _focusNode = FocusNode();
-  List<_CommandEntry> _filtered = List.from(_allCommands);
+  String _query = '';
   int _selectedIndex = 0;
 
   @override
@@ -126,10 +127,7 @@ class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
 
   void _onQueryChanged(String query) {
     setState(() {
-      final lower = query.toLowerCase();
-      _filtered = _allCommands.where((c) {
-        return c.label.toLowerCase().contains(lower) || (c.description?.toLowerCase().contains(lower) ?? false);
-      }).toList();
+      _query = query;
       _selectedIndex = 0;
     });
   }
@@ -143,17 +141,22 @@ class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    // Filtered in build, so the search matches the commands in the language the user reads.
+    final lower = _query.toLowerCase();
+    final filtered = _commands(S.of(context)).where((c) {
+      return c.label.toLowerCase().contains(lower) || (c.description?.toLowerCase().contains(lower) ?? false);
+    }).toList();
 
     return KeyboardListener(
       focusNode: FocusNode(),
       onKeyEvent: (event) {
         if (event is KeyDownEvent) {
           if (event.logicalKey == LogicalKeyboardKey.arrowDown) {
-            setState(() => _selectedIndex = (_selectedIndex + 1).clamp(0, _filtered.length - 1));
+            setState(() => _selectedIndex = (_selectedIndex + 1).clamp(0, filtered.length - 1));
           } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
-            setState(() => _selectedIndex = (_selectedIndex - 1).clamp(0, _filtered.length - 1));
-          } else if (event.logicalKey == LogicalKeyboardKey.enter && _filtered.isNotEmpty) {
-            _onSelect(_filtered[_selectedIndex]);
+            setState(() => _selectedIndex = (_selectedIndex - 1).clamp(0, filtered.length - 1));
+          } else if (event.logicalKey == LogicalKeyboardKey.enter && filtered.isNotEmpty) {
+            _onSelect(filtered[_selectedIndex]);
           }
         }
       },
@@ -175,7 +178,7 @@ class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
                     focusNode: _focusNode,
                     onChanged: _onQueryChanged,
                     decoration: InputDecoration(
-                      hintText: 'Type a command or search...',
+                      hintText: S.of(context).command_palette_hint,
                       prefixIcon: const Icon(Icons.search, size: 20),
                       suffixIcon: Padding(
                         padding: const EdgeInsets.only(right: AppSpacing.sm),
@@ -193,11 +196,11 @@ class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
                 ),
                 Divider(height: 1, color: colorScheme.outlineVariant),
                 // Results
-                if (_filtered.isEmpty)
+                if (filtered.isEmpty)
                   Padding(
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     child: Text(
-                      'No results found',
+                      S.of(context).command_palette_no_results,
                       style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                     ),
                   )
@@ -206,9 +209,9 @@ class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
                     child: ListView.builder(
                       shrinkWrap: true,
                       padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-                      itemCount: _filtered.length,
+                      itemCount: filtered.length,
                       itemBuilder: (context, index) {
-                        final entry = _filtered[index];
+                        final entry = filtered[index];
                         final isSelected = index == _selectedIndex;
                         return ListTile(
                           selected: isSelected,

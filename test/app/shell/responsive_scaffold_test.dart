@@ -2,11 +2,14 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_widget.dart';
 import 'package:flutter_bloc_advance/app/shell/top_bar/top_bar_widget.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../support/test_env.dart';
 
@@ -95,6 +98,44 @@ void main() {
       );
       expect(drawerSidebar.left, greaterThanOrEqualTo(48));
       expect(drawerSidebar.top, greaterThanOrEqualTo(24));
+    });
+  });
+
+  // The real app, signed in as an admin on a phone, where the top bar shows the page title instead of the breadcrumb.
+  Future<void> pumpPhoneOn(WidgetTester tester, String location, {required String language}) async {
+    addTearDown(tester.view.reset);
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1.0;
+    TestEnv.authenticate();
+    await AppLocalStorage().save(StorageKeys.roles.key, <String>['ROLE_ADMIN']);
+
+    await tester.pumpWidget(App(language: language));
+    await tester.pumpAndSettle();
+    (tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter).go(location);
+    await tester.pump(const Duration(seconds: 2));
+    await tester.pumpAndSettle();
+  }
+
+  Finder titleInTopBar(String title) => find.descendant(of: find.byType(TopBarWidget), matching: find.text(title));
+
+  group('ResponsiveScaffold - phone page title', () {
+    for (final (location, title) in const [
+      (ApplicationRoutesConstants.settings, 'Ayarlar'),
+      (ApplicationRoutesConstants.changePassword, 'Şifre Değiştir'),
+      (ApplicationRoutesConstants.userList, 'Kullanıcılar'),
+    ]) {
+      testWidgets('shows $title for $location in Turkish', (tester) async {
+        await pumpPhoneOn(tester, location, language: 'tr');
+
+        expect(titleInTopBar(title), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
+    testWidgets('shows the page title of a route with a hyphen in English', (tester) async {
+      await pumpPhoneOn(tester, ApplicationRoutesConstants.changePassword, language: 'en');
+
+      expect(titleInTopBar('Change Password'), findsOneWidget);
     });
   });
 }

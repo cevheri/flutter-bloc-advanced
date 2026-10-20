@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_cubit.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_durations.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 
@@ -49,7 +50,7 @@ class _OfflineBannerContent extends StatelessWidget {
               Icon(Icons.cloud_off_rounded, color: colorScheme.onError, size: 18),
               const SizedBox(width: AppSpacing.sm),
               Text(
-                'No internet connection',
+                S.of(context).connectivity_offline,
                 style: Theme.of(context).textTheme.labelLarge
                     ?.copyWith(color: colorScheme.onError, fontWeight: FontWeight.w600),
               ),

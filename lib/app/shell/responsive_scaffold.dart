@@ -3,7 +3,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/bottom_nav/bottom_nav_widget.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_widget.dart';
+import 'package:flutter_bloc_advance/app/shell/top_bar/breadcrumb_route_resolver.dart';
 import 'package:flutter_bloc_advance/app/shell/top_bar/top_bar_widget.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints.dart';
 
 class ResponsiveScaffold extends StatelessWidget {
@@ -108,7 +110,7 @@ class ResponsiveScaffold extends StatelessWidget {
             child: Column(
               children: [
                 TopBarWidget(
-                  title: _routeToTitle(activeRoute),
+                  title: _routeToTitle(activeRoute, S.of(context)),
                   onMenuTap: () => Scaffold.of(scaffoldContext).openDrawer(),
                 ),
                 Expanded(child: child),
@@ -122,15 +124,16 @@ class ResponsiveScaffold extends StatelessWidget {
     );
   }
 
-  String _routeToTitle(String route) {
-    if (route == '/') return 'Dashboard';
+  String _routeToTitle(String route, S l10n) {
+    if (route == '/') return l10n.dashboard;
 
     final segments = route.split('/').where((value) => value.isNotEmpty).toList();
     if (segments.isEmpty) {
-      return 'Dashboard';
+      return l10n.dashboard;
     }
     final segment = segments.first;
 
-    return segment.replaceFirst(segment[0], segment[0].toUpperCase());
+    return BreadcrumbRouteResolver.segmentLabel(segment, l10n) ??
+        segment.replaceFirst(segment[0], segment[0].toUpperCase());
   }
 }

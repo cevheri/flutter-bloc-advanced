@@ -12,7 +12,9 @@ import 'package:flutter_bloc_advance/features/account/presentation/pages/account
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -79,6 +81,19 @@ void main() {
     });
   });
 
+  group('TopBarWidget - Turkish', () {
+    testWidgets('the user menu shows its entries in Turkish', (tester) async {
+      await pumpSignedInOnDashboard(tester, language: 'tr');
+
+      await tester.tap(find.descendant(of: find.byType(TopBarWidget), matching: find.byType(PopupMenuButton<String>)));
+      await tester.pumpAndSettle();
+
+      for (final label in ['Hesabım', 'Ayarlar', 'Çıkış Yap']) {
+        expect(find.widgetWithText(PopupMenuItem<String>, label), findsOneWidget, reason: label);
+      }
+    });
+  });
+
   group('TopBarWidget - phone width', () {
     Finder userMenu() => find.descendant(of: find.byType(TopBarWidget), matching: find.byType(PopupMenuButton<String>));
 
@@ -142,6 +157,13 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
           home: BlocProvider<AccountBloc>.value(
             value: accountBloc,
             child: Scaffold(
@@ -186,7 +208,18 @@ void main() {
       );
       addTearDown(router.dispose);
 
-      await tester.pumpWidget(MaterialApp.router(routerConfig: router));
+      await tester.pumpWidget(
+        MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+        ),
+      );
       await tester.pumpAndSettle();
 
       final name = tester.renderObject<RenderParagraph>(find.text('Maximiliano Alejandro'));

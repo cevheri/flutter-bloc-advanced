@@ -129,6 +129,19 @@ void main() {
       expect(routerFromApp(tester).state.uri.path, ApplicationRoutesConstants.home);
     });
 
+    testWidgets('shows the not-found page in Turkish', (tester) async {
+      setDesktopViewport(tester);
+      TestEnv.authenticate();
+      await tester.pumpWidget(const App(language: 'tr'));
+      await tester.pumpAndSettle();
+
+      routerFromApp(tester).go('/does-not-exist');
+      await tester.pumpAndSettle();
+
+      expect(find.text('Sayfa Bulunamadı'), findsOneWidget);
+      expect(find.widgetWithText(TextButton, 'Ana Sayfa'), findsOneWidget);
+    });
+
     testWidgets('declares every route with a pageBuilder', (tester) async {
       setDesktopViewport(tester);
       await tester.pumpWidget(const App(language: 'en'));

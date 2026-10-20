@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:go_router/go_router.dart';
 
 import 'breadcrumb_route_resolver.dart';
@@ -11,7 +12,7 @@ class BreadcrumbWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final uri = GoRouterState.of(context).uri.toString();
-    final items = BreadcrumbRouteResolver.resolve(uri);
+    final items = BreadcrumbRouteResolver.resolve(uri, S.of(context));
     final cs = Theme.of(context).colorScheme;
     final isHome = uri == '/' || uri.isEmpty;
 
@@ -57,7 +58,7 @@ class _HomeIconState extends State<_HomeIcon> {
     }
 
     return Semantics(
-      label: 'Home',
+      label: S.of(context).home,
       button: true,
       child: MouseRegion(
         cursor: SystemMouseCursors.click,
