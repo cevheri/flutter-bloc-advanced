@@ -16,6 +16,7 @@ import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class AppDependencies {
@@ -34,8 +35,9 @@ class AppDependencies {
     return LogAnalyticsService();
   }
 
-  ApiClient createApiClient(ISecureStorage secureStorage) =>
-      ApiClient(appConfig: appConfig, secureStorage: secureStorage);
+  /// [onSessionExpired] runs when a 401 cannot be fixed by a token refresh; the caller ends the session there.
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
+      ApiClient(appConfig: appConfig, secureStorage: secureStorage, onSessionExpired: onSessionExpired);
 
   IAccountRepository createAccountRepository(ApiClient apiClient) => AccountRepository(apiClient);
 

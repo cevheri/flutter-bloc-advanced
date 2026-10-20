@@ -54,8 +54,20 @@ class AppScope extends StatelessWidget {
         else
           RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
         RepositoryProvider<AppConfig>.value(value: dependencies.appConfig),
+        // Provided above ApiClient so a failed token refresh can end the session.
+        BlocProvider<SessionCubit>(
+          create: (context) =>
+              SessionCubit(secureStorage: context.read<ISecureStorage>(), appConfig: context.read<AppConfig>())
+                ..restore(),
+        ),
         RepositoryProvider<ApiClient>(
-          create: (context) => dependencies.createApiClient(context.read<ISecureStorage>()),
+          create: (context) {
+            final session = context.read<SessionCubit>();
+            return dependencies.createApiClient(
+              context.read<ISecureStorage>(),
+              onSessionExpired: () => session.markLoggedOut(reason: SessionExpiredReason.expired),
+            );
+          },
         ),
         RepositoryProvider<IAccountRepository>(
           create: (context) => dependencies.createAccountRepository(context.read<ApiClient>()),
@@ -81,11 +93,6 @@ class AppScope extends StatelessWidget {
       child: MultiBlocProvider(
         providers: [
           BlocProvider<ConnectivityCubit>(create: (_) => ConnectivityCubit()..monitor()),
-          BlocProvider<SessionCubit>(
-            create: (context) =>
-                SessionCubit(secureStorage: context.read<ISecureStorage>(), appConfig: context.read<AppConfig>())
-                  ..restore(),
-          ),
           BlocProvider<LoginBloc>(
             create: (context) => LoginBloc(
               authenticateUserUseCase: AuthenticateUserUseCase(context.read<IAuthRepository>()),
