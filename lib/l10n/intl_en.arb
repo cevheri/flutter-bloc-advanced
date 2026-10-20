@@ -477,5 +477,9 @@
   "theme_palette_sunset": "Sunset",
   "@theme_palette_sunset": {},
   "theme_palette_sunset_description": "Warm stone, rich and inviting",
-  "@theme_palette_sunset_description": {}
+  "@theme_palette_sunset_description": {},
+  "password_show": "Show password",
+  "@password_show": {},
+  "password_hide": "Hide password",
+  "@password_hide": {}
 }

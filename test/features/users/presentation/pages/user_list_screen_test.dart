@@ -400,6 +400,21 @@ void main() {
       expect(find.text('grace.hopper@example.com'), findsOneWidget);
     });
 
+    testWidgets('names the row actions for screen readers in the app language', (tester) async {
+      final semantics = tester.ensureSemantics();
+      stubSearch(const Success([grace]));
+      await searchUsers(tester, language: 'tr');
+
+      Matcher announcedAs(String tooltip) => isSemantics(tooltip: tooltip, isButton: true);
+      expect(tester.getSemantics(find.widgetWithIcon(IconButton, Icons.edit)), announcedAs('Kullanıcı Düzenle'));
+      expect(
+        tester.getSemantics(find.widgetWithIcon(IconButton, Icons.visibility)),
+        announcedAs('Kullanıcı Görüntüle'),
+      );
+      expect(tester.getSemantics(find.widgetWithIcon(IconButton, Icons.delete)), announcedAs('Kullanıcı Sil'));
+      semantics.dispose();
+    });
+
     for (final textScale in [1.0, 1.3]) {
       testWidgets('fits the Turkish row actions menu on a phone at text scale $textScale', (tester) async {
         tester.platformDispatcher.textScaleFactorTestValue = textScale;

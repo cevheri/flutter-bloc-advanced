@@ -105,6 +105,20 @@ void main() {
       expect(find.byKey(const Key('accountScreenAppBarBackButtonKey')), findsOneWidget);
     });
 
+    testWidgets('names the back button for screen readers', (tester) async {
+      final semantics = tester.ensureSemantics();
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      expect(
+        tester.getSemantics(find.byKey(const Key('accountScreenAppBarBackButtonKey'))),
+        isSemantics(tooltip: 'Back', isButton: true),
+      );
+      semantics.dispose();
+    });
+
     testWidgets('fits the title on a 320 px wide phone with large text', (tester) async {
       tester.view.physicalSize = const Size(320, 568);
       tester.view.devicePixelRatio = 1.0;

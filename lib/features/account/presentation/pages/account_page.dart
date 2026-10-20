@@ -52,6 +52,7 @@ class AccountScreen extends StatelessWidget {
                     children: [
                       IconButton(
                         key: const Key('accountScreenAppBarBackButtonKey'),
+                        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                         icon: const Icon(Icons.arrow_back),
                         onPressed: () => _navigateBack(context),
                       ),

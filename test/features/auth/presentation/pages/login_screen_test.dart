@@ -94,6 +94,40 @@ void main() {
     }
   });
 
+  // An icon-only button is announced by its tooltip, which is all a screen reader can say about it.
+  Matcher announcedAs(String tooltip) => isSemantics(tooltip: tooltip, isButton: true);
+  final passwordToggle = find.byKey(loginButtonPasswordVisibilityKey);
+
+  group('LoginScreen screen reader labels', () {
+    testWidgets('names the password visibility toggle by what it does', (tester) async {
+      final semantics = tester.ensureSemantics();
+      setViewport(tester, const Size(1600, 1600));
+      await pumpLogin(tester);
+
+      expect(tester.getSemantics(passwordToggle), announcedAs('Show password'));
+
+      await tester.tap(passwordToggle);
+      await tester.pumpAndSettle();
+
+      expect(tester.getSemantics(passwordToggle), announcedAs('Hide password'));
+      semantics.dispose();
+    });
+
+    testWidgets('names the password visibility toggle and the OTP back button in Turkish', (tester) async {
+      final semantics = tester.ensureSemantics();
+      setViewport(tester, const Size(390, 844));
+      await pumpLogin(tester, language: 'tr');
+
+      expect(tester.getSemantics(passwordToggle), announcedAs('Şifreyi göster'));
+
+      await tester.tap(find.byKey(const Key('loginButtonOtpKey')));
+      await tester.pumpAndSettle();
+
+      expect(tester.getSemantics(find.widgetWithIcon(IconButton, Icons.arrow_back)), announcedAs('Geri'));
+      semantics.dispose();
+    });
+  });
+
   group('LoginScreen - Turkish', () {
     testWidgets('shows the form and the brand panel in Turkish', (tester) async {
       setViewport(tester, const Size(1440, 900));

@@ -151,6 +151,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
                   children: [
                     IconButton(
                       key: const Key('userEditorAppBarBackButtonKey'),
+                      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                       icon: const Icon(Icons.arrow_back, size: 18),
                       onPressed: () => _handleBack(context),
                       style: IconButton.styleFrom(

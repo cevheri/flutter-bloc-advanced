@@ -42,7 +42,11 @@ class ThemeSelectionDialog extends StatelessWidget {
                     const Icon(Icons.palette_outlined),
                     const SizedBox(width: 12),
                     Expanded(child: Text(l10n.theme_dialog_title, style: Theme.of(context).textTheme.titleLarge)),
-                    IconButton(onPressed: () => Navigator.of(context).pop(), icon: const Icon(Icons.close)),
+                    IconButton(
+                      tooltip: MaterialLocalizations.of(context).closeButtonTooltip,
+                      onPressed: () => Navigator.of(context).pop(),
+                      icon: const Icon(Icons.close),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),

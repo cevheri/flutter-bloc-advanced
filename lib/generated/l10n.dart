@@ -1385,6 +1385,16 @@ class S {
   String get theme_palette_sunset_description {
     return Intl.message('Warm stone, rich and inviting', name: 'theme_palette_sunset_description', desc: '', args: []);
   }
+
+  /// `Show password`
+  String get password_show {
+    return Intl.message('Show password', name: 'password_show', desc: '', args: []);
+  }
+
+  /// `Hide password`
+  String get password_hide {
+    return Intl.message('Hide password', name: 'password_hide', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -477,5 +477,9 @@
   "theme_palette_sunset": "Gün Batımı",
   "@theme_palette_sunset": {},
   "theme_palette_sunset_description": "Sıcak taş, zengin ve davetkâr",
-  "@theme_palette_sunset_description": {}
+  "@theme_palette_sunset_description": {},
+  "password_show": "Şifreyi göster",
+  "@password_show": {},
+  "password_hide": "Şifreyi gizle",
+  "@password_hide": {}
 }

@@ -551,6 +551,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             hintText: '********',
             suffixIcon: IconButton(
               key: loginButtonPasswordVisibilityKey,
+              tooltip: state.passwordVisible ? S.of(context).password_hide : S.of(context).password_show,
               icon: Icon(state.passwordVisible ? Icons.visibility_outlined : Icons.visibility_off_outlined, size: 18),
               onPressed: () => context.read<LoginBloc>().add(const TogglePasswordVisibility()),
             ),
@@ -689,6 +690,7 @@ class OtpEmailScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(S.of(context).login_with_email),
         leading: IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           icon: const Icon(Icons.arrow_back),
           onPressed: () => _popOrFallback(context, ApplicationRoutesConstants.login),
         ),
@@ -765,6 +767,7 @@ class OtpVerifyScreen extends StatelessWidget {
       appBar: AppBar(
         title: Text(S.of(context).verify_otp_code),
         leading: IconButton(
+          tooltip: MaterialLocalizations.of(context).backButtonTooltip,
           icon: const Icon(Icons.arrow_back),
           onPressed: () => _popOrFallback(context, ApplicationRoutesConstants.loginOtp),
         ),

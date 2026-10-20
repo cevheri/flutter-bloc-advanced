@@ -47,6 +47,17 @@ void main() {
   }
 
   group('ThemeSelectionDialog', () {
+    testWidgets('names the close button for screen readers in the app language', (tester) async {
+      final semantics = tester.ensureSemantics();
+      await openDialog(tester, const Size(412, 915), locale: const Locale('tr'));
+
+      expect(
+        tester.getSemantics(find.widgetWithIcon(IconButton, Icons.close)),
+        isSemantics(tooltip: 'Kapat', isButton: true),
+      );
+      semantics.dispose();
+    });
+
     testWidgets('puts Cancel and Apply at the end of the dialog when they fit on one line', (tester) async {
       await openDialog(tester, const Size(412, 915));
 

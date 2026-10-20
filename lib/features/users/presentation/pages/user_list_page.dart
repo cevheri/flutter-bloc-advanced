@@ -562,11 +562,26 @@ class _DesktopRowActions extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          _GhostIconButton(icon: Icons.edit, onPressed: () => _edit(context), color: cs.onSurface),
+          _GhostIconButton(
+            icon: Icons.edit,
+            tooltip: S.of(context).edit_user,
+            onPressed: () => _edit(context),
+            color: cs.onSurface,
+          ),
           const SizedBox(width: 4),
-          _GhostIconButton(icon: Icons.visibility, onPressed: () => _view(context), color: cs.onSurface),
+          _GhostIconButton(
+            icon: Icons.visibility,
+            tooltip: S.of(context).view_user,
+            onPressed: () => _view(context),
+            color: cs.onSurface,
+          ),
           const SizedBox(width: 4),
-          _GhostIconButton(icon: Icons.delete, onPressed: () => _delete(context), color: cs.error),
+          _GhostIconButton(
+            icon: Icons.delete,
+            tooltip: S.of(context).delete_user,
+            onPressed: () => _delete(context),
+            color: cs.error,
+          ),
         ],
       ),
     );
@@ -599,9 +614,12 @@ class _DesktopRowActions extends StatelessWidget {
 }
 
 class _GhostIconButton extends StatelessWidget {
-  const _GhostIconButton({required this.icon, required this.onPressed, required this.color});
+  const _GhostIconButton({required this.icon, required this.tooltip, required this.onPressed, required this.color});
 
   final IconData icon;
+
+  /// What the button does, which a screen reader announces and a hover shows.
+  final String tooltip;
   final VoidCallback onPressed;
   final Color color;
 
@@ -611,6 +629,7 @@ class _GhostIconButton extends StatelessWidget {
       width: 34,
       height: 34,
       child: IconButton(
+        tooltip: tooltip,
         onPressed: onPressed,
         icon: Icon(icon, size: 20, color: color),
         padding: EdgeInsets.zero,

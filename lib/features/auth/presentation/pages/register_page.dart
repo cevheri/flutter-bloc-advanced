@@ -35,6 +35,7 @@ class RegisterScreen extends StatelessWidget {
       title: Text(S.of(context).register),
       leading: IconButton(
         key: const Key('registerScreenAppBarBackButtonKey'),
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
         icon: const Icon(Icons.arrow_back),
         onPressed: () => _navigateBack(context),
       ),

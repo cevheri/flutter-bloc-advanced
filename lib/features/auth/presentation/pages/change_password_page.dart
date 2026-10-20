@@ -57,6 +57,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                     children: [
                       IconButton(
                         key: const Key('changePasswordScreenAppBarBackButtonKey'),
+                        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
                         icon: const Icon(Icons.arrow_back),
                         onPressed: () => _navigateBack(context),
                       ),
@@ -113,6 +114,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         labelText: S.of(context).current_password,
         prefixIcon: const Icon(Icons.lock_outline),
         suffixIcon: IconButton(
+          tooltip: _showCurrentPassword ? S.of(context).password_hide : S.of(context).password_show,
           icon: Icon(_showCurrentPassword ? Icons.visibility_off : Icons.visibility),
           onPressed: () => setState(() => _showCurrentPassword = !_showCurrentPassword),
         ),
@@ -133,6 +135,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         labelText: S.of(context).new_password,
         prefixIcon: const Icon(Icons.lock_reset),
         suffixIcon: IconButton(
+          tooltip: _showNewPassword ? S.of(context).password_hide : S.of(context).password_show,
           icon: Icon(_showNewPassword ? Icons.visibility_off : Icons.visibility),
           onPressed: () => setState(() => _showNewPassword = !_showNewPassword),
         ),

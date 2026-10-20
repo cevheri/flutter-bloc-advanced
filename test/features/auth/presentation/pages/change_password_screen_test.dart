@@ -173,6 +173,27 @@ void main() {
   });
 
   group("ChangePasswordScreen PasswordVisibilityTest", () {
+    testWidgets("names the back button and the password visibility toggles for screen readers", (tester) async {
+      final semantics = tester.ensureSemantics();
+      await tester.pumpWidget(getWidget());
+      await tester.pumpAndSettle();
+
+      Matcher announcedAs(String tooltip) => isSemantics(tooltip: tooltip, isButton: true);
+      final toggles = find.widgetWithIcon(IconButton, Icons.visibility);
+      expect(
+        tester.getSemantics(find.byKey(const Key('changePasswordScreenAppBarBackButtonKey'))),
+        announcedAs('Back'),
+      );
+      expect(tester.getSemantics(toggles.first), announcedAs('Show password'));
+      expect(tester.getSemantics(toggles.last), announcedAs('Show password'));
+
+      await tester.tap(toggles.first);
+      await tester.pump();
+
+      expect(tester.getSemantics(find.widgetWithIcon(IconButton, Icons.visibility_off)), announcedAs('Hide password'));
+      semantics.dispose();
+    });
+
     testWidgets("Toggle current password visibility", (tester) async {
       // Given
       await tester.pumpWidget(getWidget());

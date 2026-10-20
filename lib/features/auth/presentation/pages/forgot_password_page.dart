@@ -36,7 +36,11 @@ class ForgotPasswordScreen extends StatelessWidget {
     return AppBar(
       key: const Key('forgotPasswordScreenAppBarKey'),
       title: Text(S.of(context).password_forgot),
-      leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: () => _navigateBack(context)),
+      leading: IconButton(
+        tooltip: MaterialLocalizations.of(context).backButtonTooltip,
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => _navigateBack(context),
+      ),
     );
   }
 
