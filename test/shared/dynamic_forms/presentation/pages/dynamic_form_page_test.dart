@@ -26,6 +26,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
+import '../../../../support/unsaved_changes_host.dart';
 
 /// Production chain (no MockInterceptor) with certificate pinning configured.
 const _pinnedProdConfig = AppConfig(
@@ -51,11 +52,15 @@ class _PinMismatchAdapter implements HttpClientAdapter {
 }
 
 Widget _buildTestWidget(MockDynamicFormBloc bloc) {
-  return MaterialApp(
-    home: Scaffold(
-      body: BlocProvider<DynamicFormBloc>.value(
-        value: bloc,
-        child: const DynamicFormPage(formId: 'test_form'),
+  return withUnsavedChangesRegistry(
+    MaterialApp.router(
+      routerConfig: singlePageRouter(
+        Scaffold(
+          body: BlocProvider<DynamicFormBloc>.value(
+            value: bloc,
+            child: const DynamicFormPage(formId: 'test_form'),
+          ),
+        ),
       ),
     ),
   );
@@ -135,20 +140,24 @@ void main() {
         apiClient.instance.httpClientAdapter = _PinMismatchAdapter();
 
         await tester.pumpWidget(
-          MaterialApp(
-            localizationsDelegates: const [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: S.delegate.supportedLocales,
-            home: Scaffold(
-              body: RepositoryProvider<IDynamicFormRepository>.value(
-                value: DynamicFormRepository(apiClient),
-                child: Builder(
-                  builder: (context) =>
-                      DynamicFormsFeatureRoutes.withBloc(context, const DynamicFormPage(formId: 'test_form')),
+          withUnsavedChangesRegistry(
+            MaterialApp.router(
+              localizationsDelegates: const [
+                S.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              supportedLocales: S.delegate.supportedLocales,
+              routerConfig: singlePageRouter(
+                Scaffold(
+                  body: RepositoryProvider<IDynamicFormRepository>.value(
+                    value: DynamicFormRepository(apiClient),
+                    child: Builder(
+                      builder: (context) =>
+                          DynamicFormsFeatureRoutes.withBloc(context, const DynamicFormPage(formId: 'test_form')),
+                    ),
+                  ),
                 ),
               ),
             ),

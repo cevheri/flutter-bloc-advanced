@@ -15,6 +15,7 @@ import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../support/test_env.dart';
+import '../../../../support/unsaved_changes_host.dart';
 
 /// Drives the sample form that the dashboard opens at `/dynamic-forms/sample` with the real bloc and repository on
 /// the mock-backed [TestEnv.apiClient], so `MockInterceptor` serves both the schema and the submission from
@@ -30,13 +31,17 @@ void main() {
     tester.view.devicePixelRatio = 1.0;
 
     await tester.pumpWidget(
-      MaterialApp(
-        home: Scaffold(
-          body: RepositoryProvider<IDynamicFormRepository>(
-            create: (_) => DynamicFormRepository(TestEnv.apiClient()),
-            child: Builder(
-              builder: (context) =>
-                  DynamicFormsFeatureRoutes.withBloc(context, const DynamicFormPage(formId: 'sample')),
+      withUnsavedChangesRegistry(
+        MaterialApp.router(
+          routerConfig: singlePageRouter(
+            Scaffold(
+              body: RepositoryProvider<IDynamicFormRepository>(
+                create: (_) => DynamicFormRepository(TestEnv.apiClient()),
+                child: Builder(
+                  builder: (context) =>
+                      DynamicFormsFeatureRoutes.withBloc(context, const DynamicFormPage(formId: 'sample')),
+                ),
+              ),
             ),
           ),
         ),

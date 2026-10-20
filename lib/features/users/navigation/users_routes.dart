@@ -77,6 +77,7 @@ class UsersFeatureRoutes {
     GoRoute(
       name: 'userExtendedInfo',
       path: '/user/:id/extended-info',
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,

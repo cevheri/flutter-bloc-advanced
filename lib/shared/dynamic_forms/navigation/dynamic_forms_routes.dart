@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/s
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/pages/dynamic_form_page.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_page_transition.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:go_router/go_router.dart';
 
 class DynamicFormsFeatureRoutes {
@@ -30,6 +31,7 @@ class DynamicFormsFeatureRoutes {
     GoRoute(
       name: 'dynamicForm',
       path: '/dynamic-forms/:formId',
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.fade,

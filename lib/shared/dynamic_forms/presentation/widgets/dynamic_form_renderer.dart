@@ -14,6 +14,7 @@ class DynamicFormRenderer extends StatelessWidget {
     required this.schema,
     required this.formKey,
     this.onSubmit,
+    this.onChanged,
     this.readOnly = false,
     this.initialValues = const {},
   });
@@ -21,6 +22,9 @@ class DynamicFormRenderer extends StatelessWidget {
   final FormSchemaEntity schema;
   final GlobalKey<FormBuilderState> formKey;
   final ValueChanged<Map<String, dynamic>>? onSubmit;
+
+  /// Called whenever a field of the form changes.
+  final VoidCallback? onChanged;
   final bool readOnly;
 
   /// Prefilled values keyed by field key, taking precedence over each
@@ -47,6 +51,7 @@ class DynamicFormRenderer extends StatelessWidget {
   Widget build(BuildContext context) {
     return FormBuilder(
       key: formKey,
+      onChanged: onChanged,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -19,12 +19,15 @@ import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_extended_info_page.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/pages/dynamic_form_page.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
+import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
@@ -117,6 +120,39 @@ Future<void> _openDirtyAccountForm(WidgetTester tester) async {
   expect(find.byType(AccountScreen), findsOneWidget);
   await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Changed');
   await tester.pumpAndSettle();
+}
+
+/// Opens the sample form that the dashboard links to.
+Future<void> _openDynamicForm(WidgetTester tester) async {
+  _router(tester).go('/dynamic-forms/sample');
+  await tester.pumpAndSettle();
+  expect(find.text('New Lead'), findsOneWidget);
+}
+
+/// Fills in the sample form and submits it, which the mock API accepts after a delay.
+Future<void> _submitDynamicForm(WidgetTester tester) async {
+  await tester.enterText(find.widgetWithText(FormBuilderTextField, 'Full Name'), 'Jane Doe');
+  await tester.enterText(find.widgetWithText(FormBuilderTextField, 'Email Address'), 'jane.doe@example.com');
+  await tester.ensureVisible(find.byType(FormBuilderDropdown<String>));
+  await tester.tap(find.byType(FormBuilderDropdown<String>));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Referral').last);
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(find.text('Submit'));
+  await tester.tap(find.text('Submit'));
+  await tester.pump(const Duration(seconds: 1));
+  await tester.pumpAndSettle();
+  expect(find.text('Form submitted successfully'), findsOneWidget);
+}
+
+/// Opens a user's extended information from the user editor, as its button does.
+Future<void> _openExtendedInfo(WidgetTester tester) async {
+  _router(tester).go('/user/admin/edit');
+  await tester.pumpAndSettle();
+  await tester.ensureVisible(find.text(S.current.user_extended_info_button));
+  await tester.tap(find.text(S.current.user_extended_info_button));
+  await tester.pumpAndSettle();
+  expect(find.byType(UserExtendedInfoPage), findsOneWidget);
 }
 
 void main() {
@@ -337,6 +373,88 @@ void main() {
     });
   });
 
+  group('A dirty dynamic form', () {
+    testWidgets('asks before the sidebar leaves it', (tester) async {
+      await _pumpApp(tester);
+      await _openDynamicForm(tester);
+      await tester.enterText(find.widgetWithText(FormBuilderTextField, 'Full Name'), 'Jane Doe');
+      await tester.pumpAndSettle();
+      _expectBackHeld(tester, find.byType(DynamicFormPage));
+
+      await tester.tap(find.widgetWithText(SidebarNavItem, 'Settings'));
+      await tester.pumpAndSettle();
+      expect(_unsavedChangesDialog, findsOneWidget);
+
+      await _answer(tester, leave: false);
+      expect(find.byType(DynamicFormPage), findsOneWidget);
+      expect(find.text('Jane Doe'), findsOneWidget);
+    });
+
+    testWidgets('leaves without asking once the form is submitted', (tester) async {
+      await _pumpApp(tester);
+      await _openDynamicForm(tester);
+      await _submitDynamicForm(tester);
+
+      await tester.tap(find.widgetWithText(SidebarNavItem, 'Settings'));
+      await tester.pumpAndSettle();
+
+      expect(_unsavedChangesDialog, findsNothing);
+      expect(find.byType(SettingsScreen), findsOneWidget);
+    });
+
+    testWidgets('asks before the sidebar leaves changes made after a submit', (tester) async {
+      await _pumpApp(tester);
+      await _openDynamicForm(tester);
+      await _submitDynamicForm(tester);
+      // The form stays on the page after the submit, so the user can change it again.
+      await tester.enterText(find.widgetWithText(FormBuilderTextField, 'Full Name'), 'Jane Smith');
+      await tester.pumpAndSettle();
+      _expectBackHeld(tester, find.byType(DynamicFormPage));
+
+      await tester.tap(find.widgetWithText(SidebarNavItem, 'Settings'));
+      await tester.pumpAndSettle();
+      expect(_unsavedChangesDialog, findsOneWidget);
+
+      await _answer(tester, leave: false);
+      expect(find.byType(DynamicFormPage), findsOneWidget);
+      expect(find.text('Jane Smith'), findsOneWidget);
+    });
+  });
+
+  group('A dirty user extended info form', () {
+    testWidgets('asks before the Android back button returns to the user editor', (tester) async {
+      await _pumpApp(tester);
+      await _openExtendedInfo(tester);
+      await tester.enterText(find.widgetWithText(FormBuilderTextField, 'Phone'), '5550001111');
+      await tester.pumpAndSettle();
+      _expectBackHeld(tester, find.byType(UserExtendedInfoPage));
+
+      await _androidBack(tester);
+      expect(_unsavedChangesDialog, findsOneWidget);
+
+      await _answer(tester, leave: true);
+      expect(find.byType(UserExtendedInfoPage), findsNothing);
+      expect(find.byType(UserEditorScreen), findsOneWidget);
+    });
+
+    testWidgets('returns to the user editor without asking once the save succeeds', (tester) async {
+      await _pumpApp(tester);
+      await _openExtendedInfo(tester);
+      await tester.enterText(find.widgetWithText(FormBuilderTextField, 'Phone'), '5550001111');
+      await tester.pumpAndSettle();
+
+      await tester.ensureVisible(find.text('Submit'));
+      await tester.tap(find.text('Submit'));
+      // The mock API answers after a delay.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      expect(_unsavedChangesDialog, findsNothing);
+      expect(find.byType(UserExtendedInfoPage), findsNothing);
+      expect(find.byType(UserEditorScreen), findsOneWidget);
+    });
+  });
+
   group('A saved account form', () {
     testWidgets('leaves through the sidebar without asking once the save succeeds', (tester) async {
       await _pumpApp(tester);
@@ -390,6 +508,8 @@ void main() {
       ApplicationRoutesConstants.userNew,
       ApplicationRoutesConstants.userEdit,
       ApplicationRoutesConstants.userView,
+      '/user/:id/extended-info',
+      '/dynamic-forms/:formId',
     ]) {
       expect(routes[path]?.onExit, confirmLeavingUnsavedChanges, reason: path);
     }

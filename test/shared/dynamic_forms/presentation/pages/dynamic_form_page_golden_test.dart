@@ -42,7 +42,7 @@ void main() {
       value: dynamicFormBloc,
       child: const Scaffold(body: DynamicFormPage(formId: 'golden_form')),
     );
-    return goldenScreen(screen, dark: dark);
+    return goldenRoutedScreen(screen, dark: dark);
   }
 
   goldenTest(

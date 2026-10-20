@@ -18,6 +18,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dyna
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_extended_info_page.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -25,6 +26,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+
+import '../../../../support/unsaved_changes_host.dart';
 
 class _MockBloc extends MockBloc<DynamicFormEvent, DynamicFormState> implements DynamicFormBloc {}
 
@@ -86,15 +89,17 @@ const _insecureConnectionMessage =
     'The connection could not be verified as secure, so it was blocked. Try again later or on another network.';
 
 void main() {
-  Widget host(Widget child, DynamicFormBloc bloc) => MaterialApp(
-    localizationsDelegates: const [
-      S.delegate,
-      GlobalMaterialLocalizations.delegate,
-      GlobalWidgetsLocalizations.delegate,
-      GlobalCupertinoLocalizations.delegate,
-    ],
-    supportedLocales: S.delegate.supportedLocales,
-    home: BlocProvider<DynamicFormBloc>.value(value: bloc, child: child),
+  Widget host(Widget child, DynamicFormBloc bloc) => withUnsavedChangesRegistry(
+    MaterialApp.router(
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
+      routerConfig: singlePageRouter(BlocProvider<DynamicFormBloc>.value(value: bloc, child: child)),
+    ),
   );
 
   testWidgets('renders loading indicator while bloc is Loading', (tester) async {
@@ -161,6 +166,7 @@ void main() {
         ),
         GoRoute(
           path: '/extended',
+          onExit: confirmLeavingUnsavedChanges,
           builder: (ctx, state) => BlocProvider<DynamicFormBloc>.value(
             value: bloc,
             child: const UserExtendedInfoPage(userId: '42'),
@@ -170,15 +176,17 @@ void main() {
     );
 
     await tester.pumpWidget(
-      MaterialApp.router(
-        routerConfig: router,
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
+      withUnsavedChangesRegistry(
+        MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+        ),
       ),
     );
 
@@ -221,19 +229,24 @@ void main() {
     Widget pinnedHost(_FakeHttpClientAdapter adapter, {Locale locale = const Locale('en')}) {
       final apiClient = ApiClient(appConfig: _pinnedProdConfig, secureStorage: FlutterSecureStorageAdapter());
       apiClient.instance.httpClientAdapter = adapter;
-      return MaterialApp(
-        locale: locale,
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        home: RepositoryProvider<IDynamicFormRepository>.value(
-          value: DynamicFormRepository(apiClient),
-          child: Builder(
-            builder: (context) => DynamicFormsFeatureRoutes.withBloc(context, const UserExtendedInfoPage(userId: '42')),
+      return withUnsavedChangesRegistry(
+        MaterialApp.router(
+          locale: locale,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+          routerConfig: singlePageRouter(
+            RepositoryProvider<IDynamicFormRepository>.value(
+              value: DynamicFormRepository(apiClient),
+              child: Builder(
+                builder: (context) =>
+                    DynamicFormsFeatureRoutes.withBloc(context, const UserExtendedInfoPage(userId: '42')),
+              ),
+            ),
           ),
         ),
       );

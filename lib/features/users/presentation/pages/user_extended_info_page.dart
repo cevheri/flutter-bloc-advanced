@@ -6,6 +6,8 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_fo
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
@@ -39,8 +41,30 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
     );
   }
 
+  /// The form holds unsaved changes until the save succeeds; the page then closes itself without asking.
+  bool _hasUnsavedChanges() => switch (context.read<DynamicFormBloc>().state) {
+    DynamicFormSubmitted() => false,
+    _ => _formKey.currentState?.isDirty ?? false,
+  };
+
+  void _navigateBack() {
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go(ApplicationRoutesConstants.userList);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    return UnsavedChangesScope(
+      hasUnsavedChanges: _hasUnsavedChanges,
+      onBack: _navigateBack,
+      child: _buildPage(context),
+    );
+  }
+
+  Widget _buildPage(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(S.of(context).user_extended_info_title)),
       body: BlocConsumer<DynamicFormBloc, DynamicFormState>(
@@ -60,19 +84,29 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
         },
         builder: (context, state) => switch (state) {
           DynamicFormInitial() || DynamicFormLoading() => const Center(child: CircularProgressIndicator()),
-          DynamicFormLoaded(:final schema, :final initialValues) => _renderForm(schema, initialValues, readOnly: false),
-          DynamicFormSubmitting(:final schema) => _renderForm(schema, const {}, readOnly: true),
-          DynamicFormSubmitted(:final schema) => _renderForm(schema, const {}, readOnly: true),
+          DynamicFormLoaded(:final schema, :final initialValues) => _renderForm(
+            context,
+            schema,
+            initialValues,
+            readOnly: false,
+          ),
+          DynamicFormSubmitting(:final schema) => _renderForm(context, schema, const {}, readOnly: true),
+          DynamicFormSubmitted(:final schema) => _renderForm(context, schema, const {}, readOnly: true),
           DynamicFormFailure(:final error, :final errorCode, :final schema) =>
             schema == null
                 ? Center(child: Text(errorCode?.resolve(context) ?? error))
-                : _renderForm(schema, const {}, readOnly: false),
+                : _renderForm(context, schema, const {}, readOnly: false),
         },
       ),
     );
   }
 
-  Widget _renderForm(FormSchemaEntity schema, Map<String, dynamic> initialValues, {required bool readOnly}) {
+  Widget _renderForm(
+    BuildContext context,
+    FormSchemaEntity schema,
+    Map<String, dynamic> initialValues, {
+    required bool readOnly,
+  }) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: DynamicFormRenderer(
@@ -80,6 +114,7 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
         formKey: _formKey,
         readOnly: readOnly,
         initialValues: initialValues,
+        onChanged: () => UnsavedChangesScope.formChanged(context),
         onSubmit: (data) => context.read<DynamicFormBloc>().add(DynamicFormSubmitEvent(data)),
       ),
     );
