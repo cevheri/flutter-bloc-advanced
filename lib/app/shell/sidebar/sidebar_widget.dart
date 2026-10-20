@@ -7,7 +7,6 @@ import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
-import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/utils/external_link.dart';
 import 'package:flutter_bloc_advance/shared/utils/icon_utils.dart';
@@ -16,6 +15,7 @@ import 'package:flutter_bloc_advance/shared/design_system/tokens/app_breakpoints
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_durations.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
+import 'package:go_router/go_router.dart';
 
 import 'sidebar_nav_item.dart';
 import 'sidebar_sub_menu.dart';
@@ -148,7 +148,7 @@ class _SidebarContent extends StatelessWidget {
                 if ((node.leaf ?? false) && node.url.isNotEmpty) {
                   context.read<SidebarBloc>().add(SetActiveRoute(node.url));
                   _closeMobileDrawer(context);
-                  AppRouter().push(context, node.url);
+                  context.go(node.url);
                 }
               },
             );
@@ -172,7 +172,7 @@ class _SidebarContent extends StatelessWidget {
                   if ((child.leaf ?? false) && child.url.isNotEmpty) {
                     context.read<SidebarBloc>().add(SetActiveRoute(child.url));
                     _closeMobileDrawer(context);
-                    AppRouter().push(context, child.url);
+                    context.go(child.url);
                   }
                 },
               );
@@ -266,7 +266,7 @@ class _SidebarFooter extends StatelessWidget {
     await menuBloc.stream.firstWhere((s) => s.isLogout || s.status == MenuStateStatus.error);
     if (!context.mounted) return;
     if (menuBloc.state.isLogout) {
-      AppRouter().push(context, ApplicationRoutesConstants.login);
+      context.go(ApplicationRoutesConstants.login);
     }
   }
 }

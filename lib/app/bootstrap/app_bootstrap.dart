@@ -14,7 +14,6 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
-import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -67,8 +66,6 @@ class AppBootstrap {
     CrashReporter.install(analytics, forwardToAnalytics: !sentryActive);
 
     Bloc.observer = kDebugMode ? TimeTravelBlocObserver() : AppBlocObserver();
-
-    AppRouter().setRouter(RouterType.goRouter);
 
     await SystemChrome.setPreferredOrientations(config.preferredOrientations);
 

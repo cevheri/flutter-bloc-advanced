@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
-import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:go_router/go_router.dart';
 
 /// Mobile bottom navigation bar.
 class BottomNavWidget extends StatelessWidget {
@@ -32,13 +32,13 @@ class BottomNavWidget extends StatelessWidget {
   void _onTap(BuildContext context, int index) {
     switch (index) {
       case 0:
-        AppRouter().push(context, ApplicationRoutesConstants.home);
+        context.go(ApplicationRoutesConstants.home);
         break;
       case 1:
-        AppRouter().push(context, ApplicationRoutesConstants.userList);
+        context.go(ApplicationRoutesConstants.userList);
         break;
       case 2:
-        AppRouter().push(context, ApplicationRoutesConstants.settings);
+        context.go(ApplicationRoutesConstants.settings);
         break;
     }
   }

@@ -4,8 +4,15 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_widget.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
+import 'package:flutter_bloc_advance/features/account/presentation/pages/account_page.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
+import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/main/app.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -16,6 +23,23 @@ import '../../../support/url_launcher_stub.dart';
 const _docs = 'https://docs.acme.example';
 
 void main() {
+  GoRouter routerOf(WidgetTester tester) =>
+      tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+
+  Finder inSidebar(String label) => find.descendant(of: find.byType(SidebarWidget), matching: find.text(label));
+
+  // The real app, signed in as an admin, on the dashboard. An admin sees every menu entry and may open the user list.
+  Future<void> pumpAdminOnDashboard(WidgetTester tester, {Size size = const Size(1600, 1600)}) async {
+    addTearDown(tester.view.reset);
+    tester.view.physicalSize = size;
+    tester.view.devicePixelRatio = 1.0;
+    TestEnv.authenticate();
+    await AppLocalStorage().save(StorageKeys.roles.key, <String>['ROLE_ADMIN']);
+
+    await tester.pumpWidget(const App(language: 'en'));
+    await tester.pumpAndSettle();
+  }
+
   // The real app, signed in, on settings: the sidebar is the same on every shell page and settings has no loading
   // animation. The shell shows the account name in the top bar once the mock API answers after its 500 ms delay, so
   // let that land before the screen is compared. The build gives the documentation website [docs].
@@ -82,6 +106,71 @@ void main() {
 
       expect(find.byKey(sidebarWebsiteButtonKey), findsNothing);
       expect(find.text('Website'), findsNothing);
+    });
+  });
+
+  group('SidebarWidget - navigation', () {
+    for (final (label, location, page) in const [
+      ('Account', ApplicationRoutesConstants.account, AccountScreen),
+      ('Settings', ApplicationRoutesConstants.settings, SettingsScreen),
+    ]) {
+      testWidgets('tapping $label opens $location in place of the dashboard', (tester) async {
+        await pumpAdminOnDashboard(tester);
+
+        await tester.tap(inSidebar(label));
+        await tester.pumpAndSettle();
+
+        expect(routerOf(tester).state.uri.path, location);
+        expect(find.byType(page), findsOneWidget);
+        expect(routerOf(tester).canPop(), isFalse, reason: 'a menu entry replaces the page instead of stacking on it');
+      });
+    }
+
+    for (final (label, location, page) in const [
+      ('List', ApplicationRoutesConstants.userList, ListUserScreen),
+      ('New', ApplicationRoutesConstants.userNew, UserEditorScreen),
+    ]) {
+      testWidgets('tapping $label under User Management opens $location', (tester) async {
+        await pumpAdminOnDashboard(tester);
+        await tester.tap(inSidebar('User Management'));
+        await tester.pumpAndSettle();
+
+        await tester.tap(inSidebar(label));
+        await tester.pumpAndSettle();
+
+        expect(routerOf(tester).state.uri.path, location);
+        expect(find.byType(page), findsOneWidget);
+        expect(routerOf(tester).canPop(), isFalse, reason: 'a menu entry replaces the page instead of stacking on it');
+      });
+    }
+
+    testWidgets('tapping Settings in the phone drawer closes the drawer and opens /settings', (tester) async {
+      await pumpAdminOnDashboard(tester, size: const Size(390, 844));
+      final scaffold = tester.state<ScaffoldState>(find.byWidgetPredicate((w) => w is Scaffold && w.drawer != null));
+      scaffold.openDrawer();
+      await tester.pumpAndSettle();
+
+      await tester.tap(inSidebar('Settings'));
+      await tester.pumpAndSettle();
+
+      expect(routerOf(tester).state.uri.path, ApplicationRoutesConstants.settings);
+      expect(find.byType(SettingsScreen), findsOneWidget);
+      expect(scaffold.isDrawerOpen, isFalse);
+    });
+
+    testWidgets('Logout signs the user out and opens the login page with no signed-in page to go back to', (
+      tester,
+    ) async {
+      await pumpAdminOnDashboard(tester);
+
+      await tester.tap(inSidebar('Logout'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.widgetWithText(FilledButton, 'Yes'));
+      await tester.pumpAndSettle();
+
+      expect(routerOf(tester).state.uri.path, ApplicationRoutesConstants.login);
+      expect(find.byType(LoginScreen), findsOneWidget);
+      expect(routerOf(tester).canPop(), isFalse);
     });
   });
 }

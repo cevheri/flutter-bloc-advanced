@@ -1,6 +1,5 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
@@ -42,13 +41,12 @@ class TestEnv {
       ApiClient(appConfig: const AppConfig.test(), secureStorage: FlutterSecureStorageAdapter(), dio: dio);
 
   /// Resets the per-test environment: re-installs the secure-storage mock,
-  /// clears all storage, seeds language "en", and selects the goRouter
-  /// strategy. Idempotent and cheap (in-memory).
+  /// clears all storage and seeds language "en". Idempotent and cheap
+  /// (in-memory).
   static Future<void> reset() async {
     _installSecureStorageMock();
     await _clearStorage();
     await AppLocalStorage().save(StorageKeys.language.key, 'en');
-    AppRouter().setRouter(RouterType.goRouter);
   }
 
   /// Seeds a mock JWT in the secure-store backing. Call inside a test body or

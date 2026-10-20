@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
-import 'package:flutter_bloc_advance/app/router/app_router_strategy.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_avatar.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_button.dart' show AppComponentSize;
+import 'package:go_router/go_router.dart';
 
 import 'breadcrumb_widget.dart';
 
@@ -113,10 +113,10 @@ class TopBarWidget extends StatelessWidget {
   void _onMenuSelected(BuildContext context, String value) {
     switch (value) {
       case 'account':
-        AppRouter().push(context, ApplicationRoutesConstants.account);
+        context.go(ApplicationRoutesConstants.account);
         break;
       case 'settings':
-        AppRouter().push(context, ApplicationRoutesConstants.settings);
+        context.go(ApplicationRoutesConstants.settings);
         break;
       case 'logout':
         _handleLogout(context);
@@ -139,7 +139,7 @@ class TopBarWidget extends StatelessWidget {
     await menuBloc.stream.firstWhere((s) => s.isLogout || s.status == MenuStateStatus.error);
     if (!context.mounted) return;
     if (menuBloc.state.isLogout) {
-      AppRouter().push(context, ApplicationRoutesConstants.login);
+      context.go(ApplicationRoutesConstants.login);
     }
     // On failure, stay where we are — caller will see the error state
     // via the MenuBloc stream and can surface a toast if desired.

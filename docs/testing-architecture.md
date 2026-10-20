@@ -114,7 +114,7 @@ A static helper — the single test-support entry point:
 
 | Member | Use |
 | --- | --- |
-| `TestEnv.reset()` | Re-installs the secure-storage mock, clears all storage, seeds language `en`, selects the goRouter strategy. Called automatically by the bootstrap. |
+| `TestEnv.reset()` | Re-installs the secure-storage mock, clears all storage and seeds language `en`. Called automatically by the bootstrap. |
 | `TestEnv.authenticate()` | Seeds a mock JWT. Call in `setUp` or a test body — **never** in `setUpAll`. |
 | `TestEnv.apiClient({Dio? dio})` | Builds a mock-backed `ApiClient` (test `AppConfig`, shared secure adapter). Pass a stub `dio` to control responses. |
 | `TestEnv.autoReset` | Set `false` in a file's `setUpAll` to opt that file out of the global reset. |
