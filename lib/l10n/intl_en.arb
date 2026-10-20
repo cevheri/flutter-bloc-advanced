@@ -272,5 +272,94 @@
   "settings_appearance": "Appearance",
   "@settings_appearance": {},
   "settings_theme_subtitle": "Choose your preferred theme style",
-  "@settings_theme_subtitle": {}
+  "@settings_theme_subtitle": {},
+  "retry": "Retry",
+  "@retry": {},
+  "dashboard_error_title": "Dashboard Error",
+  "@dashboard_error_title": {},
+  "dashboard_title": "System Dashboard",
+  "@dashboard_title": {},
+  "dashboard_connectivity": "Connectivity",
+  "@dashboard_connectivity": {},
+  "dashboard_online": "Online",
+  "@dashboard_online": {},
+  "dashboard_offline": "Offline",
+  "@dashboard_offline": {},
+  "dashboard_circuit_breaker": "Circuit Breaker",
+  "@dashboard_circuit_breaker": {},
+  "dashboard_endpoint_count": "{count, plural, =1{1 endpoint} other{{count} endpoints}}",
+  "@dashboard_endpoint_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_open_count": "{count} open",
+  "@dashboard_open_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_cache": "Cache",
+  "@dashboard_cache": {},
+  "dashboard_cached_item_count": "{count, plural, =1{1 item cached} other{{count} items cached}}",
+  "@dashboard_cached_item_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_feature_flags": "Feature Flags",
+  "@dashboard_feature_flags": {},
+  "dashboard_feature_flags_enabled": "{enabled}/{total} enabled",
+  "@dashboard_feature_flags_enabled": {
+    "placeholders": {
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_circuit_breaker_health": "Circuit Breaker Health",
+  "@dashboard_circuit_breaker_health": {},
+  "dashboard_no_endpoints": "No endpoints tracked yet",
+  "@dashboard_no_endpoints": {},
+  "dashboard_failure_count": "Failures: {count}",
+  "@dashboard_failure_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_no_feature_flags": "No feature flags configured",
+  "@dashboard_no_feature_flags": {},
+  "dashboard_app_configuration": "App Configuration",
+  "@dashboard_app_configuration": {},
+  "dashboard_current_version": "Current Version",
+  "@dashboard_current_version": {},
+  "dashboard_minimum_version": "Minimum Version",
+  "@dashboard_minimum_version": {},
+  "dashboard_maintenance_mode": "Maintenance Mode",
+  "@dashboard_maintenance_mode": {},
+  "dashboard_on": "ON",
+  "@dashboard_on": {},
+  "dashboard_off": "OFF",
+  "@dashboard_off": {},
+  "dashboard_environment": "Environment",
+  "@dashboard_environment": {},
+  "dashboard_interceptor_chain": "Interceptor Chain",
+  "@dashboard_interceptor_chain": {},
+  "dashboard_clear_cache": "Clear Cache",
+  "@dashboard_clear_cache": {},
+  "dashboard_reset_circuit_breakers": "Reset Circuit Breakers",
+  "@dashboard_reset_circuit_breakers": {},
+  "dashboard_open_dynamic_forms": "Open Dynamic Forms",
+  "@dashboard_open_dynamic_forms": {}
 }

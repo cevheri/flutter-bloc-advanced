@@ -24,12 +24,12 @@ class MockSystemDashboardCubit extends MockCubit<SystemDashboardState> implement
 // Helpers
 // ---------------------------------------------------------------------------
 
-Widget _buildTestWidget(SystemDashboardCubit cubit) {
+Widget _buildTestWidget(SystemDashboardCubit cubit, {Locale locale = const Locale('en')}) {
   return MaterialApp(
     theme: AppTheme.light(),
     darkTheme: AppTheme.dark(),
     themeMode: ThemeMode.light,
-    locale: const Locale('en'),
+    locale: locale,
     supportedLocales: S.delegate.supportedLocales,
     localizationsDelegates: const [
       S.delegate,
@@ -151,6 +151,97 @@ void main() {
 
       expect(find.text('Quick Actions'), findsOneWidget);
       expect(tester.takeException(), isNull);
+    });
+  });
+  group('DashboardPage - language', () {
+    SystemDashboardState loaded({int total = 2, int cached = 10}) => SystemDashboardState(
+      status: SystemDashboardStatus.loaded,
+      connectivity: ConnectivityStatus.online,
+      circuitBreakerTotal: total,
+      circuitBreakerOpen: 0,
+      cacheItemCount: cached,
+      featureFlagsOn: 1,
+      featureFlagsTotal: 3,
+      endpointHealthList: const [EndpointHealth(endpoint: '/api/users', state: CircuitBreakerState.closed)],
+      featureFlags: const {'darkMode': true, 'beta': false},
+      interceptors: const [InterceptorInfo(name: 'AuthInterceptor', order: 1, detail: 'Attaches JWT')],
+    );
+
+    void useTallDesktop(WidgetTester tester) {
+      tester.view.physicalSize = const Size(1600, 2400);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+    }
+
+    testWidgets('shows the loaded dashboard in Turkish', (tester) async {
+      useTallDesktop(tester);
+      when(() => cubit.state).thenReturn(loaded());
+
+      await tester.pumpWidget(_buildTestWidget(cubit, locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      for (final text in [
+        'Sistem Paneli',
+        'Bağlantı',
+        'Çevrimiçi',
+        'Devre Kesici',
+        '2 uç nokta',
+        '0 açık',
+        'Önbellek',
+        'Önbellekte 10 öğe',
+        '1/3 etkin',
+        'Devre Kesici Durumu',
+        'Hata: 0',
+        'Uygulama Yapılandırması',
+        'Mevcut Sürüm',
+        'En Düşük Sürüm',
+        'Bakım Modu',
+        'KAPALI',
+        'Ortam',
+        'Interceptor Zinciri',
+        'Hızlı İşlemler',
+        'Önbelleği Temizle',
+        'Devre Kesicileri Sıfırla',
+        'Dinamik Formları Aç',
+      ]) {
+        expect(find.text(text), findsOneWidget, reason: text);
+      }
+      expect(find.text('Özellik Bayrakları'), findsNWidgets(2));
+      expect(find.byTooltip('Yenile'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('shows the empty sections in Turkish', (tester) async {
+      useTallDesktop(tester);
+      when(() => cubit.state).thenReturn(const SystemDashboardState(status: SystemDashboardStatus.loaded));
+
+      await tester.pumpWidget(_buildTestWidget(cubit, locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Henüz izlenen uç nokta yok'), findsOneWidget);
+      expect(find.text('Yapılandırılmış özellik bayrağı yok'), findsOneWidget);
+    });
+
+    testWidgets('shows the error state and its retry button in Turkish', (tester) async {
+      when(() => cubit.state)
+          .thenReturn(const SystemDashboardState(status: SystemDashboardStatus.error, errorMessage: 'Something broke'));
+
+      await tester.pumpWidget(_buildTestWidget(cubit, locale: const Locale('tr')));
+      await tester.pump();
+
+      expect(find.text('Panel Hatası'), findsOneWidget);
+      expect(find.text('Tekrar Dene'), findsOneWidget);
+    });
+
+    testWidgets('counts one endpoint and one cached item in the singular in English', (tester) async {
+      useTallDesktop(tester);
+      when(() => cubit.state).thenReturn(loaded(total: 1, cached: 1));
+
+      await tester.pumpWidget(_buildTestWidget(cubit));
+      await tester.pumpAndSettle();
+
+      expect(find.text('1 endpoint'), findsOneWidget);
+      expect(find.text('1 item cached'), findsOneWidget);
     });
   });
 }

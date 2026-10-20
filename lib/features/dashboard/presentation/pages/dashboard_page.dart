@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
@@ -27,8 +28,9 @@ class DashboardPage extends StatelessWidget {
             return const _DashboardSkeleton();
           case SystemDashboardStatus.error:
             return AppErrorState(
-              title: 'Dashboard Error',
+              title: S.of(context).dashboard_error_title,
               description: state.errorMessage,
+              retryLabel: S.of(context).retry,
               onRetry: () => context.read<SystemDashboardCubit>().load(),
             );
           case SystemDashboardStatus.loaded:
@@ -106,7 +108,7 @@ class _DashboardHeader extends StatelessWidget {
         const SizedBox(width: AppSpacing.md),
         Flexible(
           child: Text(
-            'System Dashboard',
+            S.of(context).dashboard_title,
             style: textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
             overflow: TextOverflow.ellipsis,
           ),
@@ -121,7 +123,7 @@ class _DashboardHeader extends StatelessWidget {
           ),
         ),
         const Spacer(),
-        IconButton(tooltip: 'Refresh', icon: const Icon(Icons.refresh), onPressed: onRefresh),
+        IconButton(tooltip: S.of(context).refresh, icon: const Icon(Icons.refresh), onPressed: onRefresh),
       ],
     );
   }
@@ -137,6 +139,7 @@ class _KpiCards extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = S.of(context);
     return AppAdaptiveGrid(
       mobileColumns: 1,
       tabletColumns: 2,
@@ -146,23 +149,27 @@ class _KpiCards extends StatelessWidget {
       children: [
         _KpiCard(
           icon: Icons.wifi,
-          label: 'Connectivity',
-          value: state.connectivity == ConnectivityStatus.online ? 'Online' : 'Offline',
+          label: l10n.dashboard_connectivity,
+          value: state.connectivity == ConnectivityStatus.online ? l10n.dashboard_online : l10n.dashboard_offline,
           dotColor: state.connectivity == ConnectivityStatus.online
               ? context.semanticColors.success
               : Theme.of(context).colorScheme.error,
         ),
         _KpiCard(
           icon: Icons.shield_outlined,
-          label: 'Circuit Breaker',
-          value: '${state.circuitBreakerTotal} endpoints',
-          subtitle: '${state.circuitBreakerOpen} open',
+          label: l10n.dashboard_circuit_breaker,
+          value: l10n.dashboard_endpoint_count(state.circuitBreakerTotal),
+          subtitle: l10n.dashboard_open_count(state.circuitBreakerOpen),
         ),
-        _KpiCard(icon: Icons.storage_outlined, label: 'Cache', value: '${state.cacheItemCount} items cached'),
+        _KpiCard(
+          icon: Icons.storage_outlined,
+          label: l10n.dashboard_cache,
+          value: l10n.dashboard_cached_item_count(state.cacheItemCount),
+        ),
         _KpiCard(
           icon: Icons.flag_outlined,
-          label: 'Feature Flags',
-          value: '${state.featureFlagsOn}/${state.featureFlagsTotal} enabled',
+          label: l10n.dashboard_feature_flags,
+          value: l10n.dashboard_feature_flags_enabled(state.featureFlagsOn, state.featureFlagsTotal),
         ),
       ],
     );
@@ -249,7 +256,7 @@ class _CircuitBreakerHealthSection extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Flexible(
                 child: Text(
-                  'Circuit Breaker Health',
+                  S.of(context).dashboard_circuit_breaker_health,
                   style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
                 ),
               ),
@@ -261,7 +268,7 @@ class _CircuitBreakerHealthSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               child: Center(
                 child: Text(
-                  'No endpoints tracked yet',
+                  S.of(context).dashboard_no_endpoints,
                   style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                 ),
               ),
@@ -319,7 +326,7 @@ class _EndpointHealthRow extends StatelessWidget {
           SizedBox(
             width: 80,
             child: Text(
-              'Failures: ${endpoint.failureCount}',
+              S.of(context).dashboard_failure_count(endpoint.failureCount),
               style: textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
             ),
           ),
@@ -352,7 +359,10 @@ class _FeatureFlagsSection extends StatelessWidget {
               Icon(Icons.flag_outlined, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
               Flexible(
-                child: Text('Feature Flags', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                child: Text(
+                  S.of(context).dashboard_feature_flags,
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
@@ -362,7 +372,7 @@ class _FeatureFlagsSection extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
               child: Center(
                 child: Text(
-                  'No feature flags configured',
+                  S.of(context).dashboard_no_feature_flags,
                   style: textTheme.bodyMedium?.copyWith(color: colorScheme.onSurfaceVariant),
                 ),
               ),
@@ -402,6 +412,7 @@ class _AppConfigSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final colorScheme = Theme.of(context).colorScheme;
+    final l10n = S.of(context);
 
     return AppCard(
       variant: AppCardVariant.outlined,
@@ -413,19 +424,22 @@ class _AppConfigSection extends StatelessWidget {
               Icon(Icons.settings_applications_outlined, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
               Flexible(
-                child: Text('App Configuration', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                child: Text(
+                  l10n.dashboard_app_configuration,
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-          _ConfigRow(label: 'Current Version', value: config.currentVersion),
-          _ConfigRow(label: 'Minimum Version', value: config.minimumVersion),
+          _ConfigRow(label: l10n.dashboard_current_version, value: config.currentVersion),
+          _ConfigRow(label: l10n.dashboard_minimum_version, value: config.minimumVersion),
           _ConfigRow(
-            label: 'Maintenance Mode',
-            value: config.maintenanceMode ? 'ON' : 'OFF',
+            label: l10n.dashboard_maintenance_mode,
+            value: config.maintenanceMode ? l10n.dashboard_on : l10n.dashboard_off,
             valueColor: config.maintenanceMode ? Theme.of(context).colorScheme.error : null,
           ),
-          _ConfigRow(label: 'Environment', value: config.environment),
+          _ConfigRow(label: l10n.dashboard_environment, value: config.environment),
         ],
       ),
     );
@@ -483,7 +497,10 @@ class _InterceptorChainSection extends StatelessWidget {
               Icon(Icons.layers_outlined, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
               Flexible(
-                child: Text('Interceptor Chain', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                child: Text(
+                  S.of(context).dashboard_interceptor_chain,
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
@@ -555,7 +572,10 @@ class _QuickActionsSection extends StatelessWidget {
               Icon(Icons.bolt, size: 20, color: colorScheme.onSurfaceVariant),
               const SizedBox(width: AppSpacing.sm),
               Flexible(
-                child: Text('Quick Actions', style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                child: Text(
+                  S.of(context).quick_actions,
+                  style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                ),
               ),
             ],
           ),
@@ -567,17 +587,17 @@ class _QuickActionsSection extends StatelessWidget {
               FilledButton.tonalIcon(
                 onPressed: () => context.read<SystemDashboardCubit>().clearCache(),
                 icon: const Icon(Icons.delete_sweep_outlined, size: 18),
-                label: const Text('Clear Cache'),
+                label: Text(S.of(context).dashboard_clear_cache),
               ),
               FilledButton.tonalIcon(
                 onPressed: () => context.read<SystemDashboardCubit>().resetCircuitBreakers(),
                 icon: const Icon(Icons.restart_alt, size: 18),
-                label: const Text('Reset Circuit Breakers'),
+                label: Text(S.of(context).dashboard_reset_circuit_breakers),
               ),
               FilledButton.tonalIcon(
                 onPressed: () => GoRouter.of(context).go('/dynamic-forms/sample'),
                 icon: const Icon(Icons.dynamic_form_outlined, size: 18),
-                label: const Text('Open Dynamic Forms'),
+                label: Text(S.of(context).dashboard_open_dynamic_forms),
               ),
             ],
           ),

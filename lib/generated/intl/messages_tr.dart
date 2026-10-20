@@ -20,20 +20,30 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'tr';
 
-  static String m0(url) => "${url} açılamadı";
+  static String m0(count) => "${Intl.plural(count, other: 'Önbellekte ${count} öğe')}";
 
-  static String m1(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
+  static String m1(count) => "${Intl.plural(count, other: '${count} uç nokta')}";
 
-  static String m2(email) => "OTP kodu ${email} adresine gönderildi";
+  static String m2(count) => "Hata: ${count}";
 
-  static String m3(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
+  static String m3(enabled, total) => "${enabled}/${total} etkin";
 
-  static String m4(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+  static String m4(count) => "${count} açık";
 
-  static String m5(translate) =>
+  static String m5(url) => "${url} açılamadı";
+
+  static String m6(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
+
+  static String m7(email) => "OTP kodu ${email} adresine gönderildi";
+
+  static String m8(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
+
+  static String m9(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+
+  static String m10(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
-  static String m6(error) => "Kaydedilemedi: ${error}";
+  static String m11(error) => "Kaydedilemedi: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -71,6 +81,33 @@ class MessageLookup extends MessageLookupByLibrary {
     "create_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Oluştur"),
     "current_password": MessageLookupByLibrary.simpleMessage("Mevcut Şifre"),
     "dashboard": MessageLookupByLibrary.simpleMessage("Panel"),
+    "dashboard_app_configuration": MessageLookupByLibrary.simpleMessage("Uygulama Yapılandırması"),
+    "dashboard_cache": MessageLookupByLibrary.simpleMessage("Önbellek"),
+    "dashboard_cached_item_count": m0,
+    "dashboard_circuit_breaker": MessageLookupByLibrary.simpleMessage("Devre Kesici"),
+    "dashboard_circuit_breaker_health": MessageLookupByLibrary.simpleMessage("Devre Kesici Durumu"),
+    "dashboard_clear_cache": MessageLookupByLibrary.simpleMessage("Önbelleği Temizle"),
+    "dashboard_connectivity": MessageLookupByLibrary.simpleMessage("Bağlantı"),
+    "dashboard_current_version": MessageLookupByLibrary.simpleMessage("Mevcut Sürüm"),
+    "dashboard_endpoint_count": m1,
+    "dashboard_environment": MessageLookupByLibrary.simpleMessage("Ortam"),
+    "dashboard_error_title": MessageLookupByLibrary.simpleMessage("Panel Hatası"),
+    "dashboard_failure_count": m2,
+    "dashboard_feature_flags": MessageLookupByLibrary.simpleMessage("Özellik Bayrakları"),
+    "dashboard_feature_flags_enabled": m3,
+    "dashboard_interceptor_chain": MessageLookupByLibrary.simpleMessage("Interceptor Zinciri"),
+    "dashboard_maintenance_mode": MessageLookupByLibrary.simpleMessage("Bakım Modu"),
+    "dashboard_minimum_version": MessageLookupByLibrary.simpleMessage("En Düşük Sürüm"),
+    "dashboard_no_endpoints": MessageLookupByLibrary.simpleMessage("Henüz izlenen uç nokta yok"),
+    "dashboard_no_feature_flags": MessageLookupByLibrary.simpleMessage("Yapılandırılmış özellik bayrağı yok"),
+    "dashboard_off": MessageLookupByLibrary.simpleMessage("KAPALI"),
+    "dashboard_offline": MessageLookupByLibrary.simpleMessage("Çevrimdışı"),
+    "dashboard_on": MessageLookupByLibrary.simpleMessage("AÇIK"),
+    "dashboard_online": MessageLookupByLibrary.simpleMessage("Çevrimiçi"),
+    "dashboard_open_count": m4,
+    "dashboard_open_dynamic_forms": MessageLookupByLibrary.simpleMessage("Dinamik Formları Aç"),
+    "dashboard_reset_circuit_breakers": MessageLookupByLibrary.simpleMessage("Devre Kesicileri Sıfırla"),
+    "dashboard_title": MessageLookupByLibrary.simpleMessage("Sistem Paneli"),
     "delete_confirmation": MessageLookupByLibrary.simpleMessage("Silmek istediğinize emin misiniz?"),
     "delete_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Sil"),
     "dynamic_forms": MessageLookupByLibrary.simpleMessage("Dinamik Formlar"),
@@ -88,7 +125,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("OTP kodu gönderilemedi"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Oturum kaydedilemedi"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Bir şeyler ters gitti"),
-    "error_link_open_failed": m0,
+    "error_link_open_failed": m5,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
       "Bağlantının güvenli olduğu doğrulanamadığı için engellendi. Daha sonra ya da başka bir ağda tekrar deneyin.",
     ),
@@ -111,7 +148,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Güncelleme bağlantısı geçersiz. En son sürümü yüklemek için uygulama mağazanızı açın.",
     ),
     "force_update_title": MessageLookupByLibrary.simpleMessage("Güncelleme Gerekli"),
-    "force_update_versions": m1,
+    "force_update_versions": m6,
     "forgot_password_description": MessageLookupByLibrary.simpleMessage(
       "E-posta adresinizi girin, şifrenizi sıfırlamanız için size bir bağlantı gönderelim.",
     ),
@@ -183,10 +220,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "only_numbers": MessageLookupByLibrary.simpleMessage("Sadece sayılar kullanılabilir"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu"),
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP 6 haneli olmalıdır"),
-    "otp_sent_to_email": m2,
+    "otp_sent_to_email": m7,
     "password_forgot": MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
-    "password_max_length": m3,
-    "password_min_length": m4,
+    "password_max_length": m8,
+    "password_min_length": m9,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Hızlı İşlemler"),
     "refresh": MessageLookupByLibrary.simpleMessage("Yenile"),
     "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
@@ -194,6 +231,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "required_field": MessageLookupByLibrary.simpleMessage("Zorunlu Alan"),
     "required_range": MessageLookupByLibrary.simpleMessage("Aralık gereklidir"),
     "resend_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Tekrar Gönder"),
+    "retry": MessageLookupByLibrary.simpleMessage("Tekrar Dene"),
     "role": MessageLookupByLibrary.simpleMessage("Rol"),
     "save": MessageLookupByLibrary.simpleMessage("Kaydet"),
     "send_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Gönder"),
@@ -211,14 +249,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme": MessageLookupByLibrary.simpleMessage("Tema"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Koyu"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Açık"),
-    "translate_menu_title": m5,
+    "translate_menu_title": m10,
     "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
     ),
     "user_delete_failed": MessageLookupByLibrary.simpleMessage("Kullanıcı silinemedi"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
-    "user_extended_info_save_failed": m6,
+    "user_extended_info_save_failed": m11,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Kullanıcılar yüklenemedi"),

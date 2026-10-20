@@ -979,6 +979,165 @@ class S {
   String get settings_theme_subtitle {
     return Intl.message('Choose your preferred theme style', name: 'settings_theme_subtitle', desc: '', args: []);
   }
+
+  /// `Retry`
+  String get retry {
+    return Intl.message('Retry', name: 'retry', desc: '', args: []);
+  }
+
+  /// `Dashboard Error`
+  String get dashboard_error_title {
+    return Intl.message('Dashboard Error', name: 'dashboard_error_title', desc: '', args: []);
+  }
+
+  /// `System Dashboard`
+  String get dashboard_title {
+    return Intl.message('System Dashboard', name: 'dashboard_title', desc: '', args: []);
+  }
+
+  /// `Connectivity`
+  String get dashboard_connectivity {
+    return Intl.message('Connectivity', name: 'dashboard_connectivity', desc: '', args: []);
+  }
+
+  /// `Online`
+  String get dashboard_online {
+    return Intl.message('Online', name: 'dashboard_online', desc: '', args: []);
+  }
+
+  /// `Offline`
+  String get dashboard_offline {
+    return Intl.message('Offline', name: 'dashboard_offline', desc: '', args: []);
+  }
+
+  /// `Circuit Breaker`
+  String get dashboard_circuit_breaker {
+    return Intl.message('Circuit Breaker', name: 'dashboard_circuit_breaker', desc: '', args: []);
+  }
+
+  /// `{count, plural, =1{1 endpoint} other{{count} endpoints}}`
+  String dashboard_endpoint_count(int count) {
+    return Intl.plural(
+      count,
+      one: '1 endpoint',
+      other: '$count endpoints',
+      name: 'dashboard_endpoint_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `{count} open`
+  String dashboard_open_count(int count) {
+    return Intl.message('$count open', name: 'dashboard_open_count', desc: '', args: [count]);
+  }
+
+  /// `Cache`
+  String get dashboard_cache {
+    return Intl.message('Cache', name: 'dashboard_cache', desc: '', args: []);
+  }
+
+  /// `{count, plural, =1{1 item cached} other{{count} items cached}}`
+  String dashboard_cached_item_count(int count) {
+    return Intl.plural(
+      count,
+      one: '1 item cached',
+      other: '$count items cached',
+      name: 'dashboard_cached_item_count',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Feature Flags`
+  String get dashboard_feature_flags {
+    return Intl.message('Feature Flags', name: 'dashboard_feature_flags', desc: '', args: []);
+  }
+
+  /// `{enabled}/{total} enabled`
+  String dashboard_feature_flags_enabled(int enabled, int total) {
+    return Intl.message(
+      '$enabled/$total enabled',
+      name: 'dashboard_feature_flags_enabled',
+      desc: '',
+      args: [enabled, total],
+    );
+  }
+
+  /// `Circuit Breaker Health`
+  String get dashboard_circuit_breaker_health {
+    return Intl.message('Circuit Breaker Health', name: 'dashboard_circuit_breaker_health', desc: '', args: []);
+  }
+
+  /// `No endpoints tracked yet`
+  String get dashboard_no_endpoints {
+    return Intl.message('No endpoints tracked yet', name: 'dashboard_no_endpoints', desc: '', args: []);
+  }
+
+  /// `Failures: {count}`
+  String dashboard_failure_count(int count) {
+    return Intl.message('Failures: $count', name: 'dashboard_failure_count', desc: '', args: [count]);
+  }
+
+  /// `No feature flags configured`
+  String get dashboard_no_feature_flags {
+    return Intl.message('No feature flags configured', name: 'dashboard_no_feature_flags', desc: '', args: []);
+  }
+
+  /// `App Configuration`
+  String get dashboard_app_configuration {
+    return Intl.message('App Configuration', name: 'dashboard_app_configuration', desc: '', args: []);
+  }
+
+  /// `Current Version`
+  String get dashboard_current_version {
+    return Intl.message('Current Version', name: 'dashboard_current_version', desc: '', args: []);
+  }
+
+  /// `Minimum Version`
+  String get dashboard_minimum_version {
+    return Intl.message('Minimum Version', name: 'dashboard_minimum_version', desc: '', args: []);
+  }
+
+  /// `Maintenance Mode`
+  String get dashboard_maintenance_mode {
+    return Intl.message('Maintenance Mode', name: 'dashboard_maintenance_mode', desc: '', args: []);
+  }
+
+  /// `ON`
+  String get dashboard_on {
+    return Intl.message('ON', name: 'dashboard_on', desc: '', args: []);
+  }
+
+  /// `OFF`
+  String get dashboard_off {
+    return Intl.message('OFF', name: 'dashboard_off', desc: '', args: []);
+  }
+
+  /// `Environment`
+  String get dashboard_environment {
+    return Intl.message('Environment', name: 'dashboard_environment', desc: '', args: []);
+  }
+
+  /// `Interceptor Chain`
+  String get dashboard_interceptor_chain {
+    return Intl.message('Interceptor Chain', name: 'dashboard_interceptor_chain', desc: '', args: []);
+  }
+
+  /// `Clear Cache`
+  String get dashboard_clear_cache {
+    return Intl.message('Clear Cache', name: 'dashboard_clear_cache', desc: '', args: []);
+  }
+
+  /// `Reset Circuit Breakers`
+  String get dashboard_reset_circuit_breakers {
+    return Intl.message('Reset Circuit Breakers', name: 'dashboard_reset_circuit_breakers', desc: '', args: []);
+  }
+
+  /// `Open Dynamic Forms`
+  String get dashboard_open_dynamic_forms {
+    return Intl.message('Open Dynamic Forms', name: 'dashboard_open_dynamic_forms', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

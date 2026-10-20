@@ -20,20 +20,30 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(url) => "Could not open ${url}";
+  static String m0(count) => "${Intl.plural(count, one: '1 item cached', other: '${count} items cached')}";
 
-  static String m1(currentVersion, minimumVersion) => "Current: ${currentVersion}  •  Required: ${minimumVersion}";
+  static String m1(count) => "${Intl.plural(count, one: '1 endpoint', other: '${count} endpoints')}";
 
-  static String m2(email) => "OTP sent to ${email}";
+  static String m2(count) => "Failures: ${count}";
 
-  static String m3(max) => "Password cannot be more than ${max} characters long";
+  static String m3(enabled, total) => "${enabled}/${total} enabled";
 
-  static String m4(min) => "Password must be at least ${min} characters long";
+  static String m4(count) => "${count} open";
 
-  static String m5(translate) =>
+  static String m5(url) => "Could not open ${url}";
+
+  static String m6(currentVersion, minimumVersion) => "Current: ${currentVersion}  •  Required: ${minimumVersion}";
+
+  static String m7(email) => "OTP sent to ${email}";
+
+  static String m8(max) => "Password cannot be more than ${max} characters long";
+
+  static String m9(min) => "Password must be at least ${min} characters long";
+
+  static String m10(translate) =>
       "${Intl.select(translate, {'account': 'Account', 'userManagement': 'User Management', 'settings': 'Settings', 'logout': 'Logout', 'info': 'Info', 'language': 'Language', 'theme': 'Theme', 'new_user': 'New', 'list_user': 'List', 'other': 'Other'})}";
 
-  static String m6(error) => "Save failed: ${error}";
+  static String m11(error) => "Save failed: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -71,6 +81,33 @@ class MessageLookup extends MessageLookupByLibrary {
     "create_user": MessageLookupByLibrary.simpleMessage("Create User"),
     "current_password": MessageLookupByLibrary.simpleMessage("Current Password"),
     "dashboard": MessageLookupByLibrary.simpleMessage("Dashboard"),
+    "dashboard_app_configuration": MessageLookupByLibrary.simpleMessage("App Configuration"),
+    "dashboard_cache": MessageLookupByLibrary.simpleMessage("Cache"),
+    "dashboard_cached_item_count": m0,
+    "dashboard_circuit_breaker": MessageLookupByLibrary.simpleMessage("Circuit Breaker"),
+    "dashboard_circuit_breaker_health": MessageLookupByLibrary.simpleMessage("Circuit Breaker Health"),
+    "dashboard_clear_cache": MessageLookupByLibrary.simpleMessage("Clear Cache"),
+    "dashboard_connectivity": MessageLookupByLibrary.simpleMessage("Connectivity"),
+    "dashboard_current_version": MessageLookupByLibrary.simpleMessage("Current Version"),
+    "dashboard_endpoint_count": m1,
+    "dashboard_environment": MessageLookupByLibrary.simpleMessage("Environment"),
+    "dashboard_error_title": MessageLookupByLibrary.simpleMessage("Dashboard Error"),
+    "dashboard_failure_count": m2,
+    "dashboard_feature_flags": MessageLookupByLibrary.simpleMessage("Feature Flags"),
+    "dashboard_feature_flags_enabled": m3,
+    "dashboard_interceptor_chain": MessageLookupByLibrary.simpleMessage("Interceptor Chain"),
+    "dashboard_maintenance_mode": MessageLookupByLibrary.simpleMessage("Maintenance Mode"),
+    "dashboard_minimum_version": MessageLookupByLibrary.simpleMessage("Minimum Version"),
+    "dashboard_no_endpoints": MessageLookupByLibrary.simpleMessage("No endpoints tracked yet"),
+    "dashboard_no_feature_flags": MessageLookupByLibrary.simpleMessage("No feature flags configured"),
+    "dashboard_off": MessageLookupByLibrary.simpleMessage("OFF"),
+    "dashboard_offline": MessageLookupByLibrary.simpleMessage("Offline"),
+    "dashboard_on": MessageLookupByLibrary.simpleMessage("ON"),
+    "dashboard_online": MessageLookupByLibrary.simpleMessage("Online"),
+    "dashboard_open_count": m4,
+    "dashboard_open_dynamic_forms": MessageLookupByLibrary.simpleMessage("Open Dynamic Forms"),
+    "dashboard_reset_circuit_breakers": MessageLookupByLibrary.simpleMessage("Reset Circuit Breakers"),
+    "dashboard_title": MessageLookupByLibrary.simpleMessage("System Dashboard"),
     "delete_confirmation": MessageLookupByLibrary.simpleMessage("Are you sure you want to delete?"),
     "delete_user": MessageLookupByLibrary.simpleMessage("Delete User"),
     "dynamic_forms": MessageLookupByLibrary.simpleMessage("Dynamic Forms"),
@@ -92,7 +129,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("Could not send the OTP code"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Could not save the session"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Something went wrong"),
-    "error_link_open_failed": m0,
+    "error_link_open_failed": m5,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
       "The connection could not be verified as secure, so it was blocked. Try again later or on another network.",
     ),
@@ -115,7 +152,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "The update link is not valid. Open your app store to install the latest version.",
     ),
     "force_update_title": MessageLookupByLibrary.simpleMessage("Update Required"),
-    "force_update_versions": m1,
+    "force_update_versions": m6,
     "forgot_password_description": MessageLookupByLibrary.simpleMessage(
       "Enter your email address and we\'ll send you a link to reset your password.",
     ),
@@ -183,10 +220,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "only_numbers": MessageLookupByLibrary.simpleMessage("Only numbers are allowed"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Code"),
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP must be 6 characters long"),
-    "otp_sent_to_email": m2,
+    "otp_sent_to_email": m7,
     "password_forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
-    "password_max_length": m3,
-    "password_min_length": m4,
+    "password_max_length": m8,
+    "password_min_length": m9,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Quick Actions"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "register": MessageLookupByLibrary.simpleMessage("Register"),
@@ -194,6 +231,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "required_field": MessageLookupByLibrary.simpleMessage("Required Field"),
     "required_range": MessageLookupByLibrary.simpleMessage("Range is required"),
     "resend_otp_code": MessageLookupByLibrary.simpleMessage("Resend OTP Code"),
+    "retry": MessageLookupByLibrary.simpleMessage("Retry"),
     "role": MessageLookupByLibrary.simpleMessage("Role"),
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "send_otp_code": MessageLookupByLibrary.simpleMessage("Send OTP Code"),
@@ -209,14 +247,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Dark"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Light"),
-    "translate_menu_title": m5,
+    "translate_menu_title": m10,
     "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
     ),
     "user_delete_failed": MessageLookupByLibrary.simpleMessage("Could not delete the user"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
-    "user_extended_info_save_failed": m6,
+    "user_extended_info_save_failed": m11,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Could not load the users"),

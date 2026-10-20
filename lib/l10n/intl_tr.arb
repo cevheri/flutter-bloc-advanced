@@ -272,5 +272,94 @@
   "settings_appearance": "Görünüm",
   "@settings_appearance": {},
   "settings_theme_subtitle": "Tercih ettiğiniz tema stilini seçin",
-  "@settings_theme_subtitle": {}
+  "@settings_theme_subtitle": {},
+  "retry": "Tekrar Dene",
+  "@retry": {},
+  "dashboard_error_title": "Panel Hatası",
+  "@dashboard_error_title": {},
+  "dashboard_title": "Sistem Paneli",
+  "@dashboard_title": {},
+  "dashboard_connectivity": "Bağlantı",
+  "@dashboard_connectivity": {},
+  "dashboard_online": "Çevrimiçi",
+  "@dashboard_online": {},
+  "dashboard_offline": "Çevrimdışı",
+  "@dashboard_offline": {},
+  "dashboard_circuit_breaker": "Devre Kesici",
+  "@dashboard_circuit_breaker": {},
+  "dashboard_endpoint_count": "{count, plural, other{{count} uç nokta}}",
+  "@dashboard_endpoint_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_open_count": "{count} açık",
+  "@dashboard_open_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_cache": "Önbellek",
+  "@dashboard_cache": {},
+  "dashboard_cached_item_count": "{count, plural, other{Önbellekte {count} öğe}}",
+  "@dashboard_cached_item_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_feature_flags": "Özellik Bayrakları",
+  "@dashboard_feature_flags": {},
+  "dashboard_feature_flags_enabled": "{enabled}/{total} etkin",
+  "@dashboard_feature_flags_enabled": {
+    "placeholders": {
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_circuit_breaker_health": "Devre Kesici Durumu",
+  "@dashboard_circuit_breaker_health": {},
+  "dashboard_no_endpoints": "Henüz izlenen uç nokta yok",
+  "@dashboard_no_endpoints": {},
+  "dashboard_failure_count": "Hata: {count}",
+  "@dashboard_failure_count": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dashboard_no_feature_flags": "Yapılandırılmış özellik bayrağı yok",
+  "@dashboard_no_feature_flags": {},
+  "dashboard_app_configuration": "Uygulama Yapılandırması",
+  "@dashboard_app_configuration": {},
+  "dashboard_current_version": "Mevcut Sürüm",
+  "@dashboard_current_version": {},
+  "dashboard_minimum_version": "En Düşük Sürüm",
+  "@dashboard_minimum_version": {},
+  "dashboard_maintenance_mode": "Bakım Modu",
+  "@dashboard_maintenance_mode": {},
+  "dashboard_on": "AÇIK",
+  "@dashboard_on": {},
+  "dashboard_off": "KAPALI",
+  "@dashboard_off": {},
+  "dashboard_environment": "Ortam",
+  "@dashboard_environment": {},
+  "dashboard_interceptor_chain": "Interceptor Zinciri",
+  "@dashboard_interceptor_chain": {},
+  "dashboard_clear_cache": "Önbelleği Temizle",
+  "@dashboard_clear_cache": {},
+  "dashboard_reset_circuit_breakers": "Devre Kesicileri Sıfırla",
+  "@dashboard_reset_circuit_breakers": {},
+  "dashboard_open_dynamic_forms": "Dinamik Formları Aç",
+  "@dashboard_open_dynamic_forms": {}
 }
