@@ -158,12 +158,11 @@ void main() {
 
       final apiClient = scope.read<ApiClient>();
       apiClient.instance.httpClientAdapter = _UnauthorizedAdapter();
-      await tester.runAsync(() async {
-        // The session ends once the stored session is cleared, which can finish after the request has failed.
-        final ended = session.stream.firstWhere((state) => state is SessionUnauthenticated);
-        await expectLater(apiClient.get('/api/account'), throwsA(isA<UnauthorizedException>()));
-        await ended;
-      });
+      // Dio runs each interceptor step on a timer, so the request, the refresh and the wipe of the stored session run
+      // while fake time moves, and all of them have finished when the pump returns.
+      final request = expectLater(apiClient.get('/api/account'), throwsA(isA<UnauthorizedException>()));
+      await tester.pump(Duration.zero);
+      await request;
 
       expect(session.state, const SessionUnauthenticated(reason: SessionExpiredReason.expired));
       // A relaunch restores the session from secure storage, as AppScope does on launch.
@@ -198,7 +197,10 @@ void main() {
 
       await FlutterSecureStorageAdapter().delete(SecureStorageKeys.jwtToken.key);
       final apiClient = scope.read<ApiClient>();
-      await tester.runAsync(() => expectLater(apiClient.get('/account'), throwsA(isA<UnauthorizedException>())));
+      // Dio runs each interceptor step on a timer, so the request moves only while fake time does.
+      final request = expectLater(apiClient.get('/account'), throwsA(isA<UnauthorizedException>()));
+      await tester.pump(Duration.zero);
+      await request;
 
       expect(session.state, const SessionUnauthenticated(reason: SessionExpiredReason.expired));
     });
@@ -226,10 +228,13 @@ void main() {
 
       await FlutterSecureStorageAdapter().delete(SecureStorageKeys.jwtToken.key);
       final apiClient = scope.read<ApiClient>();
-      final response = await tester.runAsync(() => apiClient.get('/account'));
+      // Dio runs each interceptor step on a timer, so the request and the refresh move only while fake time does.
+      final request = apiClient.get('/account');
+      await tester.pump(Duration.zero);
+      final response = await request;
 
-      expect(response?.statusCode, 200);
-      expect(response?.data, contains('"login": "admin"'));
+      expect(response.statusCode, 200);
+      expect(response.data, contains('"login": "admin"'));
       expect(session.state, isA<SessionAuthenticated>());
       // The tokens from assets/mock/POST_api_token_refresh.json.
       expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), 'MOCK_REFRESHED_TOKEN');
