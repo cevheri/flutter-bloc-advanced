@@ -63,7 +63,8 @@ test/
 │   ├── mock_asset_coverage_test.dart # every repository method succeeds on the mock
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
 │   ├── test_file_naming_test.dart    # forbids *.test.dart (dot) files
-│   └── web_placeholders_test.dart    # demo values cover every web/ and build-time placeholder
+│   ├── web_placeholders_test.dart    # demo values cover every web/ and build-time placeholder
+│   └── web_sitemap_test.dart         # sitemap lists only the canonical root page
 ├── app/                       # app/ layer tests (router, shell, theme, di, ...)
 ├── core/                      # core/ tests (errors, logging, security, result, ...)
 ├── features/<feature>/        # application/ data/ domain/ navigation/ presentation/
@@ -386,6 +387,8 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   It runs only after a push to `main`, so without this test a missing value would surface as a failed deploy instead of in the pull request.
 - **`demo_values_not_hard_coded_test.dart`** fails if a deployment-specific value of `.github/pages/demo-values.env` (any key but `APP_NAME`, `APP_SHORT_NAME` and `APP_DESCRIPTION`) appears verbatim in a file under `web/` or `lib/` (apart from `lib/generated/`), or in `SECURITY.md`.
   Only this repository's Pages job puts those values into a build, so a value written into these files instead would ship the demo's URL, path, author or security contact in every project made from the template.
+- **`web_sitemap_test.dart`** fails if `web/sitemap.xml` lists any URL other than the canonical root of `web/index.html`.
+  The app keeps Flutter's default hash URL strategy, so a path such as `/login` is not a page of the deployed site and GitHub Pages answers it with 404.
 - **`feature_generator_test.dart`** runs `tool/generate_feature.dart` in a temporary copy of the project and fails if the generated feature is not formatted, does not analyze cleanly or fails its own tests.
   Nothing else compiles the generator's templates, so they drift silently when an API they call changes.
   The generated repository and route tests go through the real `ApiClient` and `MockInterceptor`, so a mock file named differently from the request it should answer fails the guard too.
@@ -498,6 +501,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Mock asset coverage guard | `test/architecture/mock_asset_coverage_test.dart` |
 | Web demo values guard | `test/architecture/web_placeholders_test.dart` |
 | Demo values not hard-coded guard | `test/architecture/demo_values_not_hard_coded_test.dart` |
+| Web sitemap guard | `test/architecture/web_sitemap_test.dart` |
 | Feature generator guard | `test/architecture/feature_generator_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
