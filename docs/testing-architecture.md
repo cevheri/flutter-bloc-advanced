@@ -59,6 +59,7 @@ test/
 │   ├── demo_values_not_hard_coded_test.dart # no demo URL, path or contact in web/ or lib/
 │   ├── feature_generator_test.dart   # tool/generate_feature.dart output is clean and passes its tests
 │   ├── import_guard_test.dart        # layer dependency rules, url_launcher only in external_link.dart
+│   ├── log_placeholders_test.dart    # every AppLogger call has one {} for each argument
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   ├── mock_asset_coverage_test.dart # every repository method succeeds on the mock
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
@@ -393,6 +394,9 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   Nothing else compiles the generator's templates, so they drift silently when an API they call changes.
   The generated repository and route tests go through the real `ApiClient` and `MockInterceptor`, so a mock file named differently from the request it should answer fails the guard too.
   It is the slowest guard, mostly because of the nested `flutter test` run.
+- **`log_placeholders_test.dart`** fails if the message of an `AppLogger` call in `lib/` has a different number of `{}` than the call has arguments.
+  `AppLogger` never prints an argument with no `{}` left and prints a `{}` with no argument as it is, so such a call leaves a value out of the line or shows a bare `{}`, and neither fails at runtime or in `flutter analyze`.
+  It reads the calls whose message is a string literal and whose arguments are a list literal.
 
 ---
 
@@ -503,6 +507,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Demo values not hard-coded guard | `test/architecture/demo_values_not_hard_coded_test.dart` |
 | Web sitemap guard | `test/architecture/web_sitemap_test.dart` |
 | Feature generator guard | `test/architecture/feature_generator_test.dart` |
+| Log placeholder guard | `test/architecture/log_placeholders_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |

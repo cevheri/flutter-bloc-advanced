@@ -75,9 +75,9 @@ class SecurityUtils {
   ///
   /// Some paths are allowed to be accessed without JWT token like login, register, forgot-password, etc.
   static bool isAllowedPath(String path) {
-    _log.trace("BEGIN:isAllowedPath", [path]);
+    _log.trace("BEGIN:isAllowedPath - path: {}", [path]);
     final result = allowedPaths.contains(path);
-    _log.trace("END:isAllowedPath", [result]);
+    _log.trace("END:isAllowedPath - result: {}", [result]);
     return result;
   }
 }
