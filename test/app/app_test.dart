@@ -5,6 +5,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
@@ -16,8 +17,36 @@ import 'package:flutter_bloc_advance/infrastructure/storage/startup_storage_time
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../mocks/mock_classes.dart';
+
+/// Device preferences whose stored language arrives only when [language] completes, like a slow device.
+class _HeldLanguageStorage implements AppLocalStorage {
+  _HeldLanguageStorage(this.language);
+
+  final Future<Object?> language;
+
+  @override
+  Future<dynamic> read(String key) => key == StorageKeys.language.key ? language : AppLocalStorage().read(key);
+  @override
+  Future<bool> save(String key, dynamic value) => AppLocalStorage().save(key, value);
+  @override
+  Future<bool> remove(String key) => AppLocalStorage().remove(key);
+  @override
+  Future<void> clear() => AppLocalStorage().clear();
+  @override
+  void setPreferencesInstance(SharedPreferences prefs) => AppLocalStorage().setPreferencesInstance(prefs);
+}
+
+class _LocalStorageDependencies extends AppDependencies {
+  const _LocalStorageDependencies(this.localStorage);
+
+  final AppLocalStorage localStorage;
+
+  @override
+  AppLocalStorage createLocalStorage() => localStorage;
+}
 
 void main() {
   group('App', () {
@@ -125,6 +154,45 @@ void main() {
 
       expect(router().state.uri.toString(), ApplicationRoutesConstants.settings);
       expect(find.byType(SettingsScreen), findsOneWidget);
+    });
+
+    testWidgets('shows a loading indicator in place of the router until the stored language is read', (tester) async {
+      final storedLanguage = Completer<Object?>();
+      await tester.pumpWidget(
+        App(language: 'en', dependencies: _LocalStorageDependencies(_HeldLanguageStorage(storedLanguage.future))),
+      );
+      await tester.pump(const Duration(seconds: 1));
+
+      expect(find.bySemanticsLabel('Loading...'), findsOneWidget);
+      expect(find.byType(LoginScreen), findsNothing);
+
+      storedLanguage.complete('tr');
+      await tester.pumpAndSettle();
+
+      expect(find.bySemanticsLabel('Loading...'), findsNothing);
+      expect(find.text('Şifremi unuttum'), findsOneWidget);
+    });
+
+    testWidgets('starts in the language that an earlier run stored', (tester) async {
+      await AppLocalStorage().save(StorageKeys.language.key, 'tr');
+
+      await tester.pumpWidget(const App(language: 'en'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Şifremi unuttum'), findsOneWidget);
+      expect(find.text('Forgot Password'), findsNothing);
+    });
+
+    // A guard rather than a reproduction: it passed before the stored language was read. It keeps the router mounting
+    // when restore ends in the language the app already shows.
+    testWidgets('starts in the configured language when no language is stored', (tester) async {
+      await AppLocalStorage().remove(StorageKeys.language.key);
+
+      await tester.pumpWidget(const App(language: 'tr'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Şifremi unuttum'), findsOneWidget);
+      expect(find.text('Forgot Password'), findsNothing);
     });
   });
 }

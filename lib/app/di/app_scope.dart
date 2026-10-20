@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_cubit.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/app/localization/locale_cubit.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
@@ -34,7 +35,13 @@ import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 class AppScope extends StatelessWidget {
-  const AppScope({super.key, required this.dependencies, this.secureStorage, required this.child});
+  const AppScope({
+    super.key,
+    required this.dependencies,
+    this.secureStorage,
+    required this.defaultLocale,
+    required this.child,
+  });
 
   final AppDependencies dependencies;
 
@@ -43,6 +50,9 @@ class AppScope extends StatelessWidget {
   /// instance. When null, AppScope falls back to `dependencies.createSecureStorage()`
   /// (useful for tests that don't go through bootstrap).
   final ISecureStorage? secureStorage;
+
+  /// The language [LocaleCubit] shows when no language is stored on the device.
+  final Locale defaultLocale;
   final Widget child;
 
   @override
@@ -118,6 +128,10 @@ class AppScope extends StatelessWidget {
             ),
           ),
           BlocProvider<ThemeBloc>(create: (_) => ThemeBloc()..add(const LoadTheme())),
+          BlocProvider<LocaleCubit>(
+            create: (_) =>
+                LocaleCubit(storage: dependencies.createLocalStorage(), defaultLocale: defaultLocale)..restore(),
+          ),
           BlocProvider<MenuBloc>(
             create: (context) => MenuBloc(
               loginRepository: context.read<IAuthRepository>(),

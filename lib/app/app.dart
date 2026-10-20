@@ -4,6 +4,7 @@ import 'package:flutter_bloc_advance/app/analytics/analytics_route_observer.dart
 import 'package:flutter_bloc_advance/app/bootstrap/app_session_listeners.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/di/app_scope.dart';
+import 'package:flutter_bloc_advance/app/localization/locale_cubit.dart';
 import 'package:flutter_bloc_advance/app/theme/theme_bloc.dart';
 import 'package:flutter_bloc_advance/app/router/app_router.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
@@ -26,6 +27,7 @@ class App extends StatefulWidget {
     this._analytics,
   });
 
+  /// The configured default language: the app shows it until a language is stored on the device, see [LocaleCubit].
   final String language;
   final AppDependencies dependencies;
 
@@ -57,19 +59,19 @@ class _AppState extends State<App> {
     return AppScope(
       dependencies: widget.dependencies,
       secureStorage: widget.secureStorage,
+      defaultLocale: Locale(widget.language),
       child: AppSessionListeners(
         scaffoldMessengerKey: _scaffoldMessengerKey,
         sharedActivity: _sharedActivity,
-        child: _AppView(language: widget.language, analytics: analytics, scaffoldMessengerKey: _scaffoldMessengerKey),
+        child: _AppView(analytics: analytics, scaffoldMessengerKey: _scaffoldMessengerKey),
       ),
     );
   }
 }
 
 class _AppView extends StatefulWidget {
-  const _AppView({required this.language, required this.analytics, required this.scaffoldMessengerKey});
+  const _AppView({required this.analytics, required this.scaffoldMessengerKey});
 
-  final String language;
   final IAnalyticsService analytics;
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
 
@@ -113,45 +115,53 @@ class _AppViewState extends State<_AppView> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<ThemeBloc, ThemeState>(
-      builder: (context, themeState) {
-        return MaterialApp.router(
-          scaffoldMessengerKey: widget.scaffoldMessengerKey,
-          theme: AppTheme.light(themeState.palette),
-          darkTheme: AppTheme.dark(themeState.palette),
-          themeMode: themeState.themeMode,
-          themeAnimationDuration: Duration.zero,
-          debugShowCheckedModeBanner: true,
-          localizationsDelegates: const [
-            S.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          supportedLocales: S.delegate.supportedLocales,
-          locale: Locale(widget.language),
-          routerConfig: _router!,
-          // The router's first redirect must see the restored session: while the session is unknown it treats a
-          // signed-in user as signed out, shows the login page and loses a deep link. So the router is mounted, and
-          // its first route parsed, only once restore has settled the session. Later sign-ins and sign-outs are left
-          // to its redirect.
-          builder: (context, router) => BlocBuilder<SessionCubit, SessionState>(
-            buildWhen: (previous, current) => previous is SessionUnknown,
-            builder: (context, session) => switch (session) {
-              SessionUnknown() => const _SessionRestoreView(),
-              SessionAuthenticated() || SessionUnauthenticated() => router!,
-            },
-          ),
-        );
-      },
+    return BlocBuilder<LocaleCubit, LocaleState>(
+      // A new language, or the end of restore, which lets the router in.
+      buildWhen: (previous, current) => previous.locale != current.locale || previous is LocaleRestoring,
+      builder: (context, localeState) => BlocBuilder<ThemeBloc, ThemeState>(
+        builder: (context, themeState) {
+          return MaterialApp.router(
+            scaffoldMessengerKey: widget.scaffoldMessengerKey,
+            theme: AppTheme.light(themeState.palette),
+            darkTheme: AppTheme.dark(themeState.palette),
+            themeMode: themeState.themeMode,
+            themeAnimationDuration: Duration.zero,
+            debugShowCheckedModeBanner: true,
+            localizationsDelegates: const [
+              S.delegate,
+              GlobalMaterialLocalizations.delegate,
+              GlobalWidgetsLocalizations.delegate,
+              GlobalCupertinoLocalizations.delegate,
+            ],
+            supportedLocales: S.delegate.supportedLocales,
+            locale: localeState.locale,
+            routerConfig: _router!,
+            // The router's first redirect must see the restored session: while the session is unknown it treats a
+            // signed-in user as signed out, shows the login page and loses a deep link. So the router is mounted, and
+            // its first route parsed, only once restore has settled the session. Later sign-ins and sign-outs are left
+            // to its redirect. It also waits for the stored language, so the first page shows in it.
+            builder: (context, router) => BlocBuilder<SessionCubit, SessionState>(
+              buildWhen: (previous, current) => previous is SessionUnknown,
+              builder: (context, session) => switch (session) {
+                SessionUnknown() => const _RestoreView(),
+                SessionAuthenticated() || SessionUnauthenticated() => switch (localeState) {
+                  LocaleRestoring() => const _RestoreView(),
+                  LocaleReady() => router!,
+                },
+              },
+            ),
+          );
+        },
+      ),
     );
   }
 }
 
-/// Shown while [SessionCubit.restore] reads the stored session. Continues the web startup screen (`#loading` in
-/// web/index.html): a 56 px ring spinner with a 4 px stroke, centered on the theme background.
-class _SessionRestoreView extends StatelessWidget {
-  const _SessionRestoreView();
+/// Shown while [SessionCubit.restore] reads the stored session and [LocaleCubit.restore] the stored language.
+/// Continues the web startup screen (`#loading` in web/index.html): a 56 px ring spinner with a 4 px stroke, centered
+/// on the theme background.
+class _RestoreView extends StatelessWidget {
+  const _RestoreView();
 
   @override
   Widget build(BuildContext context) {

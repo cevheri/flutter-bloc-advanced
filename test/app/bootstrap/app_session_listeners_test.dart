@@ -51,11 +51,12 @@ Future<void> _choosePreferences() async {
   await AppLocalStorage().save(StorageKeys.sidebarCollapsed.key, 'true');
 }
 
-/// Signs out as the user does: Logout in the sidebar, then Yes in the confirmation dialog.
+/// Signs out as the user does: Logout in the sidebar, then Yes in the confirmation dialog, in whichever language the
+/// app shows.
 Future<void> _logOut(WidgetTester tester) async {
   await tester.tap(find.widgetWithIcon(SidebarNavItem, Icons.logout));
   await tester.pumpAndSettle();
-  await tester.tap(find.widgetWithText(FilledButton, 'Yes'));
+  await tester.tap(find.descendant(of: find.byType(AlertDialog), matching: find.byType(FilledButton)));
   await tester.pumpAndSettle();
 }
 
@@ -163,6 +164,7 @@ void main() {
         () => tester.pumpWidget(
           AppScope(
             dependencies: _app.dependencies,
+            defaultLocale: const Locale('en'),
             child: AppSessionListeners(
               scaffoldMessengerKey: GlobalKey<ScaffoldMessengerState>(),
               sharedActivity: null,

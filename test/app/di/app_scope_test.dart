@@ -141,6 +141,7 @@ Future<BuildContext> _pumpExpiredSession(WidgetTester tester, AppDependencies de
   await tester.pumpWidget(
     AppScope(
       dependencies: dependencies,
+      defaultLocale: const Locale('en'),
       child: Builder(
         builder: (context) {
           scope = context;
@@ -172,6 +173,7 @@ void main() {
       await tester.pumpWidget(
         AppScope(
           dependencies: const AppDependencies(appConfig: _prodConfig),
+          defaultLocale: const Locale('en'),
           child: Builder(
             builder: (context) {
               scope = context;
@@ -211,6 +213,7 @@ void main() {
       await tester.pumpWidget(
         AppScope(
           dependencies: const AppDependencies(appConfig: AppConfig.test()),
+          defaultLocale: const Locale('en'),
           child: Builder(
             builder: (context) {
               scope = context;
@@ -242,6 +245,7 @@ void main() {
       await tester.pumpWidget(
         AppScope(
           dependencies: const AppDependencies(appConfig: AppConfig.test()),
+          defaultLocale: const Locale('en'),
           child: Builder(
             builder: (context) {
               scope = context;
@@ -332,6 +336,7 @@ void main() {
       await tester.pumpWidget(
         AppScope(
           dependencies: _SessionRepositoryDependencies(sessionRepository),
+          defaultLocale: const Locale('en'),
           child: Builder(
             builder: (context) {
               scope = context;

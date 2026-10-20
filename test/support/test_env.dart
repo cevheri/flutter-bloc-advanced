@@ -41,12 +41,12 @@ class TestEnv {
       ApiClient(appConfig: const AppConfig.test(), secureStorage: FlutterSecureStorageAdapter(), dio: dio);
 
   /// Resets the per-test environment: re-installs the secure-storage mock,
-  /// clears all storage and seeds language "en". Idempotent and cheap
+  /// clears all storage. No language is stored, so an `App` starts in the
+  /// language passed to it, as on a first launch. Idempotent and cheap
   /// (in-memory).
   static Future<void> reset() async {
     _installSecureStorageMock();
     await _clearStorage();
-    await AppLocalStorage().save(StorageKeys.language.key, 'en');
   }
 
   /// Seeds a mock JWT in the secure-store backing. Call inside a test body or

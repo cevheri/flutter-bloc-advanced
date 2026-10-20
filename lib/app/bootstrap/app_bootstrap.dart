@@ -36,10 +36,6 @@ class AppBootstrap {
     // migrated tokens are available on first use.
     await runSessionMigration(secureStorage: secureStorage, localStorage: AppLocalStorage());
 
-    final existingLang = await AppLocalStorage().read(StorageKeys.language.key);
-    if (existingLang == null) {
-      await AppLocalStorage().save(StorageKeys.language.key, config.defaultLanguage);
-    }
     final existingPalette = await AppLocalStorage().read(StorageKeys.theme.key);
     if (existingPalette == null) {
       await AppLocalStorage().save(StorageKeys.theme.key, config.defaultPalette);
@@ -69,7 +65,7 @@ class AppBootstrap {
 
     await SystemChrome.setPreferredOrientations(config.preferredOrientations);
 
-    log.info('Starting app with env: {}, language: {}, palette: {}, brightness: {}', [
+    log.info('Starting app with env: {}, default language: {}, palette: {}, brightness: {}', [
       config.environment.name,
       config.defaultLanguage,
       config.defaultPalette,
