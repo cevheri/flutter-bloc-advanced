@@ -198,6 +198,13 @@ class MessageLookup extends MessageLookupByLibrary {
     "save": MessageLookupByLibrary.simpleMessage("Kaydet"),
     "send_otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu Gönder"),
     "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
+    "settings_account_subtitle": MessageLookupByLibrary.simpleMessage(
+      "Profil bilgilerinizi görüntüleyin veya düzenleyin",
+    ),
+    "settings_appearance": MessageLookupByLibrary.simpleMessage("Görünüm"),
+    "settings_change_password_subtitle": MessageLookupByLibrary.simpleMessage("Şifrenizi güvenle güncelleyin"),
+    "settings_subtitle": MessageLookupByLibrary.simpleMessage("Hesap tercihlerinizi yönetin"),
+    "settings_theme_subtitle": MessageLookupByLibrary.simpleMessage("Tercih ettiğiniz tema stilini seçin"),
     "sidebar_collapse": MessageLookupByLibrary.simpleMessage("Daralt"),
     "sidebar_expand": MessageLookupByLibrary.simpleMessage("Genişlet"),
     "success": MessageLookupByLibrary.simpleMessage("Başarılı"),

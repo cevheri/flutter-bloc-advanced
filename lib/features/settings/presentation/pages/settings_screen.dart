@@ -32,7 +32,7 @@ class SettingsScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(
-                'Manage your account preferences',
+                S.of(context).settings_subtitle,
                 style: Theme.of(context).textTheme.bodyMedium
                     ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
@@ -45,7 +45,7 @@ class SettingsScreen extends StatelessWidget {
                   _SettingsTile(
                     icon: Icons.person_outline,
                     title: S.of(context).account,
-                    subtitle: 'View or edit your profile information',
+                    subtitle: S.of(context).settings_account_subtitle,
                     onTap: () => context.push(ApplicationRoutesConstants.account),
                   ),
                 ],
@@ -58,7 +58,7 @@ class SettingsScreen extends StatelessWidget {
                     key: settingsChangePasswordButtonKey,
                     icon: Icons.lock_outline,
                     title: S.of(context).change_password,
-                    subtitle: 'Update your password securely',
+                    subtitle: S.of(context).settings_change_password_subtitle,
                     onTap: () => context.push(ApplicationRoutesConstants.changePassword),
                   ),
                 ],
@@ -67,12 +67,12 @@ class SettingsScreen extends StatelessWidget {
 
               // Appearance section
               _SettingsSection(
-                title: 'Appearance',
+                title: S.of(context).settings_appearance,
                 children: [
                   _SettingsTile(
                     icon: Icons.palette_outlined,
-                    title: 'Theme',
-                    subtitle: 'Choose your preferred theme style',
+                    title: S.of(context).theme,
+                    subtitle: S.of(context).settings_theme_subtitle,
                     onTap: () => ThemeSelectionDialog.show(context),
                   ),
                   _SettingsTile(

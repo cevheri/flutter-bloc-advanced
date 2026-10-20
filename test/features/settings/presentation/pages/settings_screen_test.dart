@@ -50,7 +50,7 @@ class _LocalStorageDependencies extends AppDependencies {
 
 void main() {
   // The build gives the documentation website [docs].
-  Widget buildTestableWidget({String docs = _docs}) {
+  Widget buildTestableWidget({String docs = _docs, Locale locale = const Locale('en')}) {
     final router = GoRouter(
       initialLocation: ApplicationRoutesConstants.settings,
       routes: [
@@ -69,6 +69,7 @@ void main() {
       value: ProjectLinks(docs: docs),
       child: MaterialApp.router(
         routerConfig: router,
+        locale: locale,
         localizationsDelegates: const [
           S.delegate,
           GlobalMaterialLocalizations.delegate,
@@ -147,6 +148,24 @@ void main() {
       // not merely that the settings screen disappeared.
       expect(find.byType(Placeholder), findsOneWidget);
       expect(find.byType(SettingsScreen), findsNothing);
+    });
+  });
+
+  group('SettingsScreen - Turkish', () {
+    testWidgets('shows the subtitles and the appearance section in Turkish', (tester) async {
+      await tester.pumpWidget(buildTestableWidget(locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      for (final text in [
+        'Hesap tercihlerinizi yönetin',
+        'Profil bilgilerinizi görüntüleyin veya düzenleyin',
+        'Şifrenizi güvenle güncelleyin',
+        'Görünüm',
+        'Tema',
+        'Tercih ettiğiniz tema stilini seçin',
+      ]) {
+        expect(find.text(text), findsOneWidget, reason: text);
+      }
     });
   });
 

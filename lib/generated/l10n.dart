@@ -954,6 +954,31 @@ class S {
       args: [],
     );
   }
+
+  /// `Manage your account preferences`
+  String get settings_subtitle {
+    return Intl.message('Manage your account preferences', name: 'settings_subtitle', desc: '', args: []);
+  }
+
+  /// `View or edit your profile information`
+  String get settings_account_subtitle {
+    return Intl.message('View or edit your profile information', name: 'settings_account_subtitle', desc: '', args: []);
+  }
+
+  /// `Update your password securely`
+  String get settings_change_password_subtitle {
+    return Intl.message('Update your password securely', name: 'settings_change_password_subtitle', desc: '', args: []);
+  }
+
+  /// `Appearance`
+  String get settings_appearance {
+    return Intl.message('Appearance', name: 'settings_appearance', desc: '', args: []);
+  }
+
+  /// `Choose your preferred theme style`
+  String get settings_theme_subtitle {
+    return Intl.message('Choose your preferred theme style', name: 'settings_theme_subtitle', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

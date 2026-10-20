@@ -262,5 +262,15 @@
   "register_subtitle": "Hesabınızı oluşturun",
   "@register_subtitle": {},
   "forgot_password_description": "E-posta adresinizi girin, şifrenizi sıfırlamanız için size bir bağlantı gönderelim.",
-  "@forgot_password_description": {}
+  "@forgot_password_description": {},
+  "settings_subtitle": "Hesap tercihlerinizi yönetin",
+  "@settings_subtitle": {},
+  "settings_account_subtitle": "Profil bilgilerinizi görüntüleyin veya düzenleyin",
+  "@settings_account_subtitle": {},
+  "settings_change_password_subtitle": "Şifrenizi güvenle güncelleyin",
+  "@settings_change_password_subtitle": {},
+  "settings_appearance": "Görünüm",
+  "@settings_appearance": {},
+  "settings_theme_subtitle": "Tercih ettiğiniz tema stilini seçin",
+  "@settings_theme_subtitle": {}
 }

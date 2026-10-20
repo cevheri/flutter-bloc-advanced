@@ -262,5 +262,15 @@
   "register_subtitle": "Create your account",
   "@register_subtitle": {},
   "forgot_password_description": "Enter your email address and we'll send you a link to reset your password.",
-  "@forgot_password_description": {}
+  "@forgot_password_description": {},
+  "settings_subtitle": "Manage your account preferences",
+  "@settings_subtitle": {},
+  "settings_account_subtitle": "View or edit your profile information",
+  "@settings_account_subtitle": {},
+  "settings_change_password_subtitle": "Update your password securely",
+  "@settings_change_password_subtitle": {},
+  "settings_appearance": "Appearance",
+  "@settings_appearance": {},
+  "settings_theme_subtitle": "Choose your preferred theme style",
+  "@settings_theme_subtitle": {}
 }
