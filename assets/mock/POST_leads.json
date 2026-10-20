@@ -1,0 +1,17 @@
+{
+  "id": "lead-1",
+  "name": "Jane Doe",
+  "email": "jane.doe@example.com",
+  "phone": "+1 (555) 010-2030",
+  "source": "Referral",
+  "type": "B2B",
+  "notes": "Asked for a product demo next week.",
+  "followUp": "2026-11-03",
+  "priority": 7,
+  "isHighPriority": true,
+  "tags": ["Hot", "Enterprise"],
+  "createdBy": "admin",
+  "createdDate": "2026-10-20T09:30:00Z",
+  "lastModifiedBy": "admin",
+  "lastModifiedDate": "2026-10-20T09:30:00Z"
+}
