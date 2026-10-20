@@ -353,7 +353,7 @@ lib/
   shared/              # Shared foundation across features
     design_system/     # Theme, typography, color tokens, 13 components
     dynamic_forms/     # Server-driven form engine (16 field types, bundle load, public withBloc helper)
-    models/            # Cross-feature entities (UserEntity, PagedResult)
+    models/            # Cross-feature entities (UserEntity)
     widgets/           # Reusable components (buttons, forms, dialogs)
   generated/           # Localization generated files (do not edit)
   l10n/                # ARB translation files

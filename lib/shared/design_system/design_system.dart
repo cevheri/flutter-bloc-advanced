@@ -7,7 +7,6 @@ export 'theme/semantic_colors.dart';
 export 'theme/theme_colors.dart';
 export 'tokens/app_breakpoints.dart';
 export 'tokens/app_durations.dart';
-export 'tokens/app_elevation.dart';
 export 'tokens/app_radius.dart';
 export 'tokens/app_sizes.dart';
 export 'tokens/app_spacing.dart';

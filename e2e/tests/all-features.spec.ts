@@ -313,7 +313,6 @@ test.describe('Feature #6: In-App Developer Console', () => {
       // Verify DevConsole files
       const files = [
         'lib/app/dev_console/dev_console_overlay.dart',
-        'lib/app/dev_console/dev_console_bloc_observer.dart',
         'lib/app/dev_console/tabs/network_tab.dart',
         'lib/app/dev_console/tabs/bloc_tab.dart',
         'lib/app/dev_console/tabs/storage_tab.dart',

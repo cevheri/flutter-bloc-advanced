@@ -6,7 +6,6 @@
 /// Access: Ctrl+Shift+D (desktop/web) — only visible in debug builds.
 library;
 
-export 'dev_console_bloc_observer.dart';
 export 'dev_console_overlay.dart';
 export 'time_travel/time_travel_bloc_observer.dart';
 export 'time_travel/time_travel_store.dart';

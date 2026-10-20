@@ -211,7 +211,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 
 4 theme files: AppTheme, AppThemePalette, SemanticColors, ThemeColors.
 
-7 token files: AppSpacing, AppBreakpoints, AppDurations, AppSizes, AppRadius, AppElevation, AppTypography.
+6 token files: AppSpacing, AppBreakpoints, AppDurations, AppSizes, AppRadius, AppTypography.
 
 ### Shared Widgets (shared/widgets/)
 
@@ -239,7 +239,6 @@ All BLoCs and Cubits are provided to the widget tree from here.
 
 - `app_shell.dart`: Main shell wrapper
 - `responsive_scaffold.dart`: Adaptive layout for mobile/tablet/desktop
-- `content_area.dart`: Main content rendering area
 - `sidebar/`: Collapsible sidebar with menu items
 - `top_bar/`: Top navigation bar with breadcrumb
 - `bottom_nav/`: Mobile bottom navigation

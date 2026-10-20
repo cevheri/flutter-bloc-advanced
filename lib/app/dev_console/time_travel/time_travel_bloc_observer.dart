@@ -9,8 +9,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart'
 /// Extends [AppBlocObserver] so transitions are also routed through [AppLogger]
 /// in addition to the dev-console / time-travel sinks.
 ///
-/// Replaces [DevConsoleBlocObserver] when time-travel is enabled.
-/// Install via `Bloc.observer = TimeTravelBlocObserver();` in bootstrap.
+/// AppBootstrap installs it in debug builds; release builds use [AppBlocObserver].
 class TimeTravelBlocObserver extends AppBlocObserver {
   @override
   void onCreate(BlocBase bloc) {
