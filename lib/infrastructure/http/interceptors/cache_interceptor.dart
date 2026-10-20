@@ -2,14 +2,23 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_console_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 
 /// Dio interceptor that caches successful GET responses and serves them
 /// when offline or when a [CachePolicy] is specified.
 ///
 /// Cache behavior is controlled via `options.extra['cachePolicy']`.
 /// Only GET requests are cached. POST/PUT/DELETE skip caching.
+///
+/// A response is not stored when the session it was sent under has ended
+/// since, or is being wiped: a logout or the end of the session clears the
+/// cache, and the response of a GET still on its way then would answer the
+/// next user with the data of the user who signed out. The session is the
+/// [SessionGeneration] that `AuthInterceptor` records before it reads the
+/// token; a request to a public endpoint has none and belongs to no session.
 ///
 /// A cacheOnly GET with nothing cached fails with "No cached data available",
 /// rejected with `callFollowingErrorInterceptor: true` so that the dev
@@ -118,7 +127,12 @@ class CacheInterceptor extends Interceptor {
       if (policy != CachePolicy.networkOnly) {
         final key = _cacheKey(response.requestOptions);
         final ttl = _extractTtl(response.requestOptions);
-        await _storage.write(key, response.data.toString(), ttl: ttl);
+        // Checked right before the write, so a wipe that started while the response was on its way counts.
+        if (_sessionHasEnded(response.requestOptions)) {
+          _log.info('Not caching GET {}: its session ended while it was on its way', [response.requestOptions.path]);
+        } else {
+          await _storage.write(key, response.data.toString(), ttl: ttl);
+        }
       }
     }
     handler.next(response);
@@ -183,6 +197,13 @@ class CacheInterceptor extends Interceptor {
     DioExceptionType.cancel ||
     DioExceptionType.transformTimeout => false,
   };
+
+  /// Whether the session that [options] was sent under has ended or is being wiped. A request without a recorded
+  /// session, such as one to a public endpoint, carries no user's data.
+  static bool _sessionHasEnded(RequestOptions options) {
+    final sentUnder = AuthInterceptor.sessionGenerationOf(options);
+    return sentUnder != null && SessionGeneration.hasEnded(sentUnder);
+  }
 
   static CachePolicy _extractPolicy(RequestOptions options) {
     final extra = options.extra['cachePolicy'];

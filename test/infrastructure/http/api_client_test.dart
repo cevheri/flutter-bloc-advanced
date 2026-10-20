@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io'
     show CertificateException, InternetAddress, Platform, RawSocketOption, SecureSocket, ServerSocket, Socket;
@@ -7,7 +8,10 @@ import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
@@ -139,6 +143,39 @@ class _RoutingHttpClientAdapter implements HttpClientAdapter {
     return ResponseBody.fromString(
       body,
       statusCode,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// Holds the first request until [release] completes and then answers it with [body], as a server that is slow to
+/// answer. Every later request finds the server unreachable.
+class _SlowServerAdapter implements HttpClientAdapter {
+  _SlowServerAdapter(this.body);
+
+  final String body;
+  final received = Completer<void>();
+  final release = Completer<void>();
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    if (received.isCompleted) {
+      throw DioException.connectionError(requestOptions: options, reason: 'Connection refused');
+    }
+    received.complete();
+    await release.future;
+    return ResponseBody.fromString(
+      body,
+      200,
       headers: {
         Headers.contentTypeHeader: [Headers.jsonContentType],
       },
@@ -1484,6 +1521,44 @@ void main() {
       );
       expect(adapter.requests, isEmpty);
       expect(ResilienceInterceptor.instance.circuitBreakers['/api/cache-only/missing']?.failureCount ?? 0, 0);
+    });
+  });
+
+  // Regression: a GET still on its way when the user logged out stored its response after the logout had cleared the
+  // cache. The next user's GET that could not reach the server was then answered with the previous user's data.
+  group('ApiClient when the session ends while a GET is on its way', () {
+    tearDown(ResilienceInterceptor.instance.resetAll);
+
+    test("does not cache the response, so it cannot answer the next user's GET", () async {
+      const previousUsersData = '[{"login":"user-a","email":"a@example.test"}]';
+      final server = _SlowServerAdapter(previousUsersData);
+      final client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      client.instance.httpClientAdapter = server;
+      TestEnv.authenticate();
+
+      final slowGet = client.get('/api/admin/users');
+      await server.received.future;
+      // The wipe that a logout and the end of the session run.
+      final cleared = await AuthSessionRepository(secureStorage: FlutterSecureStorageAdapter()).clear();
+      expect(cleared, isA<Success<void>>());
+      server.release.complete();
+      await slowGet;
+      expect(await SharedPrefsCacheStorage().count(), 0);
+
+      // The next user signs in, and the server cannot be reached.
+      TestEnv.authenticate();
+      await expectLater(
+        client.get('/api/admin/users'),
+        throwsA(isA<FetchDataException>().having((e) => '$e', 'message', contains('No Internet connection'))),
+      );
     });
   });
 }

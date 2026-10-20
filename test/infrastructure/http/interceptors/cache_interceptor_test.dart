@@ -1,9 +1,12 @@
+import 'dart:async';
 import 'dart:io' show HandshakeException, HttpException, OSError, RedirectException, SocketException;
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/cache_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -349,6 +352,59 @@ void main() {
         await interceptor.onResponse(response, handler);
 
         verify(() => mockStorage.write(any(), any(), ttl: any(named: 'ttl'))).called(1);
+      });
+
+      /// A GET sent under the session generation [sentUnder], as AuthInterceptor records it.
+      Response<String> responseSentUnder(int sentUnder) => Response(
+        requestOptions: RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {AuthInterceptor.sessionGenerationKey: sentUnder},
+        ),
+        statusCode: 200,
+        data: '{"users": []}',
+      );
+
+      // Regression: a GET still on its way when the session ended stored its response after the logout cleared the
+      // cache, so it could answer the next user's GET that cannot reach the server.
+      test('should not cache a response whose session ended while it was on its way', () async {
+        when(() => mockStorage.write(any(), any(), ttl: any(named: 'ttl'))).thenAnswer((_) async {});
+        final response = responseSentUnder(SessionGeneration.current);
+        await SessionGeneration.wipe(() async {});
+
+        final handler = _TestResponseHandler();
+        await interceptor.onResponse(response, handler);
+
+        expect(handler.nextCalled, isTrue);
+        verifyNever(() => mockStorage.write(any(), any(), ttl: any(named: 'ttl')));
+      });
+
+      test('should not cache a response that arrives while the session is wiped', () async {
+        when(() => mockStorage.write(any(), any(), ttl: any(named: 'ttl'))).thenAnswer((_) async {});
+        final response = responseSentUnder(SessionGeneration.current);
+        final releaseWipe = Completer<void>();
+        final wipe = SessionGeneration.wipe(() => releaseWipe.future);
+
+        final handler = _TestResponseHandler();
+        await interceptor.onResponse(response, handler);
+        releaseWipe.complete();
+        await wipe;
+
+        expect(handler.nextCalled, isTrue);
+        verifyNever(() => mockStorage.write(any(), any(), ttl: any(named: 'ttl')));
+      });
+
+      // Guards that the check skips only an ended session: the response of the current one is cached as before.
+      test('should cache a response sent under the current session', () async {
+        when(() => mockStorage.write(any(), any(), ttl: any(named: 'ttl'))).thenAnswer((_) async {});
+        await SessionGeneration.wipe(() async {});
+        final response = responseSentUnder(SessionGeneration.current);
+
+        final handler = _TestResponseHandler();
+        await interceptor.onResponse(response, handler);
+
+        verify(() => mockStorage.write(any(), '{"users": []}', ttl: any(named: 'ttl'))).called(1);
       });
     });
 
