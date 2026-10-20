@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 
 class UserJWT extends Equatable {
   final String? username;
@@ -28,6 +29,7 @@ class UserJWT extends Equatable {
   @override
   List<Object?> get props => [username, password];
 
+  /// The password is masked, so the model is safe to print in a log line or the dev console.
   @override
-  bool get stringify => true;
+  String toString() => 'UserJWT(username: $username, password: $secretMask)';
 }

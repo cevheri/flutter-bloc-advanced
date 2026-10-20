@@ -62,6 +62,10 @@ final class LoginOtpVerifiedState extends LoginState {
 
   @override
   List<Object?> get props => [email, otpCode, passwordVisible];
+
+  /// The code is masked: the debug observer records the text of every state in the dev console.
+  @override
+  String toString() => 'LoginOtpVerifiedState(email: $email, otpCode: $secretMask, passwordVisible: $passwordVisible)';
 }
 
 final class LoginErrorState extends LoginState {

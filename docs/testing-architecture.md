@@ -50,12 +50,14 @@ package is not a dependency.
 test/
 ├── flutter_test_config.dart   # GLOBAL bootstrap (auto-discovered by flutter test)
 ├── support/
+│   ├── dart_code.dart         # codeOnly(): Dart source without comments and string text, for guards
 │   └── test_env.dart          # TestEnv: reset(), authenticate(), apiClient(), autoReset
 ├── mocks/
 │   ├── mock_classes.dart      # Mock*/Fake* classes + registerAllFallbackValues()
 │   └── fake_data.dart         # Shared fixtures (mockUserFullPayload, ...)
 ├── architecture/              # Meta-tests enforcing rules (see below)
 │   ├── android_manifest_test.dart    # Android INTERNET, backup off
+│   ├── credential_to_string_test.dart # a class with a credential field keeps it out of toString
 │   ├── demo_values_not_hard_coded_test.dart # no demo URL, path or contact in web/ or lib/
 │   ├── feature_generator_test.dart   # tool/generate_feature.dart output is clean and passes its tests
 │   ├── import_guard_test.dart        # layer dependency rules, url_launcher only in external_link.dart
@@ -404,6 +406,9 @@ for genuine stateful behavior; Dio handlers are always hand-written:
 - **`log_secrets_test.dart`** fails if an argument of an `AppLogger` call in `lib/`, or an interpolation in its message, names a credential: an identifier that contains one of `sensitiveBodyKeySubstrings`, such as `passwordChangeDTO` or `event.otpCode`.
   The console of every build that prints the level keeps the line, so log that the action happened instead.
   A token may still be logged through `maskToken`, which keeps four characters at each end.
+- **`credential_to_string_test.dart`** fails if a class in `lib/` has a `String` field whose name contains one of `sensitiveBodyKeySubstrings`, such as `password`, `otpCode` or `refreshToken`, and its `toString` is not overridden, prints such a field, or prints the props.
+  A log line, the dev console and a Sentry event print an object through `toString`, and an Equatable prints its props there whenever `stringify` is on, the default of every debug build.
+  A token may be printed through `maskToken`; a password or an OTP is printed as `secretMask`.
 
 ---
 
@@ -517,6 +522,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Feature generator guard | `test/architecture/feature_generator_test.dart` |
 | Log placeholder guard | `test/architecture/log_placeholders_test.dart` |
 | Log secrets guard | `test/architecture/log_secrets_test.dart` |
+| Credential text guard | `test/architecture/credential_to_string_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |

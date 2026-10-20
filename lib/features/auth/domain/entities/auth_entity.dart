@@ -1,4 +1,6 @@
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 
 class AuthCredentialsEntity extends Equatable {
   const AuthCredentialsEntity({required this.username, required this.password});
@@ -8,6 +10,10 @@ class AuthCredentialsEntity extends Equatable {
 
   @override
   List<Object?> get props => [username, password];
+
+  /// The password is masked, so the entity is safe to print in a log line or the dev console.
+  @override
+  String toString() => 'AuthCredentialsEntity(username: $username, password: $secretMask)';
 }
 
 class AuthTokenEntity extends Equatable {
@@ -35,6 +41,11 @@ class AuthTokenEntity extends Equatable {
 
   @override
   List<Object?> get props => [idToken, refreshToken, expiresAt];
+
+  /// The tokens are masked, so the entity is safe to print in a log line or the dev console.
+  @override
+  String toString() =>
+      'AuthTokenEntity(idToken: ${maskToken(idToken)}, refreshToken: ${maskToken(refreshToken)}, expiresAt: $expiresAt)';
 }
 
 class SendOtpEntity extends Equatable {
@@ -54,4 +65,8 @@ class VerifyOtpEntity extends Equatable {
 
   @override
   List<Object?> get props => [email, otp];
+
+  /// The code is masked, so the entity is safe to print in a log line or the dev console.
+  @override
+  String toString() => 'VerifyOtpEntity(email: $email, otp: $secretMask)';
 }

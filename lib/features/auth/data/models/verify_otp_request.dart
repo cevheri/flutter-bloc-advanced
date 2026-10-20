@@ -1,3 +1,5 @@
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
+
 class VerifyOtpRequest {
   final String email;
   final String otp;
@@ -14,4 +16,8 @@ class VerifyOtpRequest {
       return null;
     }
   }
+
+  /// The code is masked, so the request is safe to print in a log line or the dev console.
+  @override
+  String toString() => 'VerifyOtpRequest(email: $email, otp: $secretMask)';
 }

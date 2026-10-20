@@ -16,6 +16,12 @@ void main() {
       expect(request.otp, equals(testOtp));
     });
 
+    test('toString names the email and leaves the code out', () {
+      final text = VerifyOtpRequest(email: 'otp.user@example.com', otp: '493817').toString();
+
+      expect(text, allOf(startsWith('VerifyOtpRequest('), contains('otp.user@example.com'), isNot(contains('493817'))));
+    });
+
     test('should convert VerifyOtpRequest to JSON correctly', () {
       // given
       const testEmail = 'test@example.com';

@@ -5,9 +5,6 @@ abstract class ChangePasswordEvent extends Equatable {
 
   @override
   List<Object> get props => [];
-
-  @override
-  bool get stringify => true;
 }
 
 class ChangePasswordChanged extends ChangePasswordEvent {
@@ -18,4 +15,8 @@ class ChangePasswordChanged extends ChangePasswordEvent {
 
   @override
   List<Object> get props => [currentPassword, newPassword];
+
+  /// Both passwords are masked: the debug observer records the text of every event in the dev console.
+  @override
+  String toString() => 'ChangePasswordChanged(currentPassword: $secretMask, newPassword: $secretMask)';
 }

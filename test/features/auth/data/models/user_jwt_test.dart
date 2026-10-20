@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc_advance/features/auth/data/models/user_jwt.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -66,10 +67,16 @@ void main() {
       expect(entity.props, [entity.username, entity.password]);
     });
 
-    test('toString should return string', () {
-      const entity = mockUserJWTPayload;
+    // Regression: the model forced stringify on, so its text printed the password in every build mode.
+    test('toString names the user and leaves the password out, in a debug and in a release build', () {
+      addTearDown(() => EquatableConfig.stringify = true);
+      for (final stringify in [true, false]) {
+        EquatableConfig.stringify = stringify;
 
-      expect(entity.toString(), 'UserJWT(username, password)');
+        final text = const UserJWT('admin', 'S3cret!pw').toString();
+
+        expect(text, allOf(startsWith('UserJWT('), contains('admin'), isNot(contains('S3cret!pw'))));
+      }
     });
 
     test('should return true when comparing two UserJWT instances', () {

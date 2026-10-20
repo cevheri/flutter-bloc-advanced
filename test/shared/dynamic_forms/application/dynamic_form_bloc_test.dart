@@ -241,6 +241,17 @@ void main() {
         expect(str, contains('DynamicFormSubmitEvent'));
       });
 
+      // Regression: the text printed every submitted value, so the debug observer recorded the password that an
+      // admin sets on the extended information form in the dev console.
+      test('toString names the fields and leaves their values out', () {
+        const event = DynamicFormSubmitEvent({'email': 'alice@example.com', 'newPassword': 'Adm1nSet!Pw'});
+
+        final text = event.toString();
+
+        expect(text, allOf(contains('email'), contains('newPassword')));
+        expect(text, allOf(isNot(contains('Adm1nSet!Pw')), isNot(contains('alice@example.com'))));
+      });
+
       test('is a subclass of DynamicFormEvent', () {
         const event = DynamicFormSubmitEvent({'name': 'John'});
         expect(event, isA<DynamicFormEvent>());

@@ -75,6 +75,17 @@ void main() {
         isNot(const ChangePasswordChanged(currentPassword: "123", newPassword: "789")),
       );
     });
+
+    // Regression: the event forced stringify on, so its text printed both passwords in every build mode, and the debug
+    // observer records the text of every event in the dev console.
+    test("ChangePasswordChanged leaves both passwords out of its text", () {
+      final text = const ChangePasswordChanged(currentPassword: "OldPass#1", newPassword: "NewPass#2").toString();
+
+      expect(
+        text,
+        allOf(startsWith("ChangePasswordChanged("), isNot(contains("OldPass#1")), isNot(contains("NewPass#2"))),
+      );
+    });
   });
   //endregion event
 

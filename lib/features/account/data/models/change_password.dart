@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:equatable/equatable.dart';
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 
 class PasswordChangeDTO extends Equatable {
   final String? currentPassword;
@@ -31,6 +32,7 @@ class PasswordChangeDTO extends Equatable {
   @override
   List<Object?> get props => [currentPassword, newPassword];
 
+  /// Both passwords are masked, so the DTO is safe to print in a log line or the dev console.
   @override
-  bool get stringify => true;
+  String toString() => 'PasswordChangeDTO(currentPassword: $secretMask, newPassword: $secretMask)';
 }

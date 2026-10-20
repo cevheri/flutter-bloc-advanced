@@ -21,6 +21,11 @@ const Set<String> sensitiveHeaderNames = {'authorization', 'cookie', 'set-cookie
 /// (so `accessToken`, `refreshToken`, `newPassword` all match).
 const Set<String> sensitiveBodyKeySubstrings = {'password', 'otp', 'token', 'refreshtoken'};
 
+/// Replacement printed in place of a password, an OTP or another secret. A
+/// class that holds one prints this in its `toString` instead of the value,
+/// as `test/architecture/credential_to_string_test.dart` requires.
+const String secretMask = '[REDACTED]';
+
 /// Replacement emitted in place of a matched JWT.
 const String jwtMask = '[REDACTED_JWT]';
 

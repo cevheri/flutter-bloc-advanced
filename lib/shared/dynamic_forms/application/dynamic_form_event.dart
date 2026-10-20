@@ -20,6 +20,11 @@ class DynamicFormSubmitEvent extends DynamicFormEvent {
   final Map<String, dynamic> data;
   @override
   List<Object?> get props => [data];
+
+  /// Names the fields only: a value can be a password, and the debug observer records the text of every event in
+  /// the dev console.
+  @override
+  String toString() => 'DynamicFormSubmitEvent(fields: ${data.keys.toList()})';
 }
 
 /// Reset form to initial state.

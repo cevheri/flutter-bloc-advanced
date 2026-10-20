@@ -19,6 +19,10 @@ class LoginFormSubmitted extends LoginEvent {
 
   @override
   List<Object?> get props => [username, password];
+
+  /// The password is masked: the debug observer records the text of every event in the dev console.
+  @override
+  String toString() => 'LoginFormSubmitted(username: $username, password: $secretMask)';
 }
 
 enum LoginMethod { otp, password }
@@ -49,6 +53,10 @@ class VerifyOtpSubmitted extends LoginEvent {
 
   @override
   List<Object?> get props => [email, otpCode];
+
+  /// The code is masked: the debug observer records the text of every event in the dev console.
+  @override
+  String toString() => 'VerifyOtpSubmitted(email: $email, otpCode: $secretMask)';
 }
 
 /// Returns to a blank sign-in when the session ends: the next user must not inherit the signed-out user's name and

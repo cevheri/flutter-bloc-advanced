@@ -232,6 +232,34 @@ void main() {
       expect(const TogglePasswordVisibility().props, []);
     });
   });
+
+  // Regression: with stringify on, the default of every debug build, these printed the password and the code, and the
+  // debug observer records the text of every event and state in the dev console.
+  group("text of the credential events and states", () {
+    test("LoginFormSubmitted names the user and leaves the password out", () {
+      final text = const LoginFormSubmitted(username: "admin", password: "S3cret!pw").toString();
+
+      expect(text, allOf(startsWith("LoginFormSubmitted("), contains("admin"), isNot(contains("S3cret!pw"))));
+    });
+
+    test("VerifyOtpSubmitted names the email and leaves the code out", () {
+      final text = const VerifyOtpSubmitted(email: "otp.user@example.com", otpCode: "493817").toString();
+
+      expect(
+        text,
+        allOf(startsWith("VerifyOtpSubmitted("), contains("otp.user@example.com"), isNot(contains("493817"))),
+      );
+    });
+
+    test("LoginOtpVerifiedState names the email and leaves the code out", () {
+      final text = const LoginOtpVerifiedState(email: "otp.user@example.com", otpCode: "493817").toString();
+
+      expect(
+        text,
+        allOf(startsWith("LoginOtpVerifiedState("), contains("otp.user@example.com"), isNot(contains("493817"))),
+      );
+    });
+  });
   //endregion event
 
   //region bloc

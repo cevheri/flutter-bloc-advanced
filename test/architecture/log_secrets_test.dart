@@ -3,6 +3,8 @@ import 'dart:io';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../support/dart_code.dart';
+
 /// Guards the arguments of the AppLogger calls in `lib/`.
 ///
 /// AppLogger prints the text of every argument it puts into a line, and the console of a build keeps that line: the
@@ -39,13 +41,12 @@ final _callStart = RegExp(r'(?:\b_?log|AppLogger\.getLogger\([^)]*\))\s*\.(?:tra
 
 final _identifier = RegExp(r'[A-Za-z_$][A-Za-z0-9_$]*');
 
-final _maskTokenCall = RegExp(r'\bmaskToken\s*\(');
-
 /// The AppLogger calls in the file at [path], each with the identifiers in its arguments that name a credential.
 Iterable<({String location, List<String> credentials})> _logCalls(String path, String source) sync* {
-  final code = _codeOnly(source);
+  final code = codeOnly(source);
   for (final match in _callStart.allMatches(code)) {
-    final arguments = _withoutMaskToken(code.substring(match.end, _closing(code, match.end)));
+    // maskToken prints only a masked preview of its argument.
+    final arguments = withoutCalls(code.substring(match.end, closingBracket(code, match.end)), 'maskToken');
     yield (
       location: '$path:${'\n'.allMatches(code.substring(0, match.start)).length + 1}',
       credentials: [
@@ -54,79 +55,4 @@ Iterable<({String location, List<String> credentials})> _logCalls(String path, S
       ],
     );
   }
-}
-
-/// [source] with every comment and the text of every string literal replaced by spaces, and its line breaks kept.
-/// The code of an interpolation stays, so `'$password'` and `'${dto.password}'` still read as code.
-String _codeOnly(String source) {
-  final code = StringBuffer();
-  var i = 0;
-  while (i < source.length) {
-    if (source.startsWith('//', i)) {
-      final end = source.indexOf('\n', i);
-      i = end == -1 ? source.length : end;
-    } else if (source.startsWith('/*', i)) {
-      final end = source.indexOf('*/', i + 2);
-      final next = end == -1 ? source.length : end + 2;
-      code.write(source.substring(i, next).replaceAll(RegExp('[^\n]'), ' '));
-      i = next;
-    } else if (source[i] == "'" || source[i] == '"') {
-      i = _writeString(source, i, code);
-    } else {
-      code.write(source[i]);
-      i++;
-    }
-  }
-  return code.toString();
-}
-
-/// Writes into [code] what [_codeOnly] keeps of the string literal that starts at [start], and returns the index
-/// after the literal.
-int _writeString(String source, int start, StringBuffer code) {
-  final raw = start > 0 && source[start - 1] == 'r';
-  final quote = source.startsWith(source[start] * 3, start) ? source[start] * 3 : source[start];
-  var i = start + quote.length;
-  while (i < source.length && !source.startsWith(quote, i)) {
-    if (!raw && source[i] == r'\') {
-      i += 2;
-    } else if (!raw && source.startsWith(r'${', i)) {
-      final end = _closing(source, i + 2, strings: true);
-      code.write(' ${_codeOnly(source.substring(i + 2, end))} ');
-      i = end + 1;
-    } else if (!raw && source[i] == r'$') {
-      final name = RegExp('[A-Za-z_][A-Za-z0-9_]*').matchAsPrefix(source, i + 1);
-      code.write(' ${name?[0] ?? ''} ');
-      i = name?.end ?? i + 1;
-    } else {
-      if (source[i] == '\n') code.write('\n');
-      i++;
-    }
-  }
-  code.write(' ');
-  return i + quote.length > source.length ? source.length : i + quote.length;
-}
-
-/// The index of the bracket that closes the one before [start]. With [strings], [text] is source whose string
-/// literals are skipped; otherwise it is the output of [_codeOnly], which has none.
-int _closing(String text, int start, {bool strings = false}) {
-  var depth = 0;
-  var i = start;
-  while (i < text.length) {
-    if (strings && (text[i] == "'" || text[i] == '"')) {
-      i = _writeString(text, i, StringBuffer());
-      continue;
-    }
-    if ('([{'.contains(text[i])) depth++;
-    if (')]}'.contains(text[i]) && depth-- == 0) return i;
-    i++;
-  }
-  return text.length;
-}
-
-/// [code] without its `maskToken(...)` calls, whose argument is logged only as a masked preview.
-String _withoutMaskToken(String code) {
-  final call = _maskTokenCall.firstMatch(code);
-  if (call == null) return code;
-  final end = _closing(code, call.end);
-  return code.substring(0, call.start) + _withoutMaskToken(end < code.length ? code.substring(end + 1) : '');
 }

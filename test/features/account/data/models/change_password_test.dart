@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -64,10 +65,20 @@ void main() {
       expect(mockPasswordChangePayload.props == entityUpd.props, false);
     });
 
-    test('should compare two ChangePassword instances toString', () {
-      final entityUpd = mockPasswordChangePayload.copyWith(currentPassword: 'new_password', newPassword: 'password');
+    // Regression: the DTO forced stringify on, so its text printed both passwords in every build mode, and
+    // AccountRepository logged it.
+    test('toString leaves both passwords out, in a debug and in a release build', () {
+      addTearDown(() => EquatableConfig.stringify = true);
+      for (final stringify in [true, false]) {
+        EquatableConfig.stringify = stringify;
 
-      expect(mockPasswordChangePayload.toString() == entityUpd.toString(), false);
+        final text = const PasswordChangeDTO(currentPassword: 'OldPass#1', newPassword: 'NewPass#2').toString();
+
+        expect(
+          text,
+          allOf(startsWith('PasswordChangeDTO('), isNot(contains('OldPass#1')), isNot(contains('NewPass#2'))),
+        );
+      }
     });
   });
 }
