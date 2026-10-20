@@ -131,7 +131,7 @@ void main() {
       final event = Logout();
       const loadingState = MenuState(status: MenuStateStatus.loading);
       const successState = MenuState(status: MenuStateStatus.success, isLogout: true);
-      const failureState = MenuState(status: MenuStateStatus.error);
+      const failureState = MenuState(status: MenuStateStatus.error, isLogout: true);
       blocTest<MenuBloc, MenuState>(
         "emits [success] when Logout is added",
         setUp: () {
@@ -143,16 +143,18 @@ void main() {
         expect: () => [loadingState, successState],
       );
 
+      // As SessionCubit.endSession does, the logout ends the session even when it cannot clear all that it stored.
       blocTest<MenuBloc, MenuState>(
-        "emits [failure] when Logout fails",
+        "signs out with the error status when the logout cannot clear the stored session",
         setUp: () {
           when(() => loginRepository.logout())
               .thenAnswer((_) => Future.value(const Failure<void>(UnknownError("Error"))));
-          MenuListCache.menus = [];
+          MenuListCache.menus = [const Menu(id: "test", name: "test")];
         },
         build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
+        verify: (_) => expect(MenuListCache.menus, isEmpty),
       );
     });
   });

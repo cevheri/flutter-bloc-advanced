@@ -185,5 +185,7 @@
   "user_load_failed": "Kullanıcı yüklenemedi",
   "@user_load_failed": {},
   "authorities_load_failed": "Roller alınamadı",
-  "@authorities_load_failed": {}
+  "@authorities_load_failed": {},
+  "logout_stored_data_left": "Oturumunuz kapatıldı, ancak kayıtlı verilerin bir kısmı bu cihazdan silinemedi.",
+  "@logout_stored_data_left": {}
 }

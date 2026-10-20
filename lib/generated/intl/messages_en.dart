@@ -121,6 +121,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "login_user_name": MessageLookupByLibrary.simpleMessage("Username"),
     "login_with_email": MessageLookupByLibrary.simpleMessage("Login with Email"),
     "logout": MessageLookupByLibrary.simpleMessage("Logout"),
+    "logout_stored_data_left": MessageLookupByLibrary.simpleMessage(
+      "You were signed out, but some stored data could not be removed from this device.",
+    ),
     "logout_sure": MessageLookupByLibrary.simpleMessage("Are you sure you want to logout?"),
     "max_length_10": MessageLookupByLibrary.simpleMessage("Field cannot be more than 10 characters long"),
     "max_length_100": MessageLookupByLibrary.simpleMessage("Field cannot be more than 100 characters long"),

@@ -18,8 +18,9 @@ class AppSessionListeners extends StatefulWidget {
   });
 
   /// The ScaffoldMessenger of the MaterialApp in [child], which shows the
-  /// idle timeout notice. This widget sits above MaterialApp, where its
-  /// context finds no ScaffoldMessenger.
+  /// session notices: the idle timeout, and a logout that could not remove
+  /// all stored data. This widget sits above MaterialApp, where its context
+  /// finds no ScaffoldMessenger.
   final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
 
   /// The activity of every browser tab, which the idle timeout counts on
@@ -99,6 +100,10 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
           listener: (context, state) {
             if (state.isLogout) {
               context.read<SessionCubit>().markLoggedOut();
+              // MenuBloc signs out with the error status when the logout could not remove all stored data.
+              if (state.status == MenuStateStatus.error) {
+                _showNotice((strings) => strings.logout_stored_data_left);
+              }
             }
           },
         ),
@@ -111,7 +116,7 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
               case SessionUnauthenticated(:final reason):
                 _stopIdleObserver();
                 if (reason == SessionExpiredReason.idleTimeout) {
-                  _showIdleTimeoutNotice();
+                  _showNotice((strings) => strings.idle_timeout_signed_out);
                 }
               case SessionUnknown():
                 break;
@@ -128,11 +133,13 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
     );
   }
 
-  void _showIdleTimeoutNotice() {
+  /// Shows the [message] of a session ending through the ScaffoldMessenger of the MaterialApp, so it stays on screen
+  /// when the login page opens.
+  void _showNotice(String Function(S strings) message) {
     final messenger = widget.scaffoldMessengerKey.currentState;
     if (messenger == null) {
-      throw StateError('No ScaffoldMessenger is mounted with scaffoldMessengerKey to show the idle timeout notice');
+      throw StateError('No ScaffoldMessenger is mounted with scaffoldMessengerKey to show a session notice');
     }
-    messenger.showSnackBar(SnackBar(content: Text(S.of(messenger.context).idle_timeout_signed_out)));
+    messenger.showSnackBar(SnackBar(content: Text(message(S.of(messenger.context)))));
   }
 }

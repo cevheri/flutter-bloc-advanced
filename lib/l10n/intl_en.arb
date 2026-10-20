@@ -185,5 +185,7 @@
   "user_load_failed": "Could not load the user",
   "@user_load_failed": {},
   "authorities_load_failed": "Roles unavailable",
-  "@authorities_load_failed": {}
+  "@authorities_load_failed": {},
+  "logout_stored_data_left": "You were signed out, but some stored data could not be removed from this device.",
+  "@logout_stored_data_left": {}
 }

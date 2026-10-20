@@ -19,6 +19,7 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences_platform_interface/shared_preferences_platform_interface.dart';
 
 import '../../support/test_env.dart';
 
@@ -177,6 +178,23 @@ void main() {
       expect(tester.widget<MaterialApp>(find.byType(MaterialApp)).themeMode, ThemeMode.dark);
       expect(tester.element(find.byType(MaterialApp)).read<SidebarBloc>().state.isCollapsed, isTrue);
     });
+
+    testWidgets('a logout that cannot remove all stored data still signs out and tells the user', (tester) async {
+      SharedPreferencesStorePlatform.instance = _CacheKeepingStore();
+      TestEnv.authenticate();
+      await tester.pumpWidget(_app);
+      await tester.pumpAndSettle();
+      expect(await SharedPrefsCacheStorage().count(), isPositive, reason: 'the dashboard caches its account request');
+
+      await _logOut(tester);
+
+      expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+      expect(
+        find.text('You were signed out, but some stored data could not be removed from this device.').hitTestable(),
+        findsOneWidget,
+      );
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), isNull);
+    });
   });
 }
 
@@ -208,4 +226,13 @@ class _MemoryActivityStore implements ISharedActivityStore {
     writes.add(time);
     lastActivity = time;
   }
+}
+
+/// A SharedPreferences platform store that keeps the cached responses when asked to remove them, as a full or
+/// read-only disk does.
+class _CacheKeepingStore extends InMemorySharedPreferencesStore {
+  _CacheKeepingStore() : super.empty();
+
+  @override
+  Future<bool> remove(String key) async => key.startsWith('flutter._cache_') ? false : super.remove(key);
 }

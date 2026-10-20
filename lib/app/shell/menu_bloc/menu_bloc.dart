@@ -41,16 +41,19 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
     }
   }
 
+  /// Signs out even when the logout cannot clear all that the session stored, as SessionCubit.endSession does: the
+  /// user asked to leave, and staying signed in would keep the session open on this device. The error status then
+  /// tells AppSessionListeners to say that stored data stayed behind.
   FutureOr<void> _onLogout(Logout event, Emitter<MenuState> emit) async {
     emit(state.copyWith(isLogout: false, status: MenuStateStatus.loading));
     final result = await _loginRepository.logout();
+    MenuListCache.menus = [];
     switch (result) {
       case Success():
-        MenuListCache.menus = [];
         emit(state.copyWith(isLogout: true, status: MenuStateStatus.success));
       case Failure(:final error):
-        emit(state.copyWith(isLogout: false, status: MenuStateStatus.error));
-        _log.error('END:onLogout Logout event error: {}', [error.message]);
+        emit(state.copyWith(isLogout: true, status: MenuStateStatus.error));
+        _log.error('END:onLogout signed out, but the stored session was not fully cleared: {}', [error.message]);
     }
   }
 

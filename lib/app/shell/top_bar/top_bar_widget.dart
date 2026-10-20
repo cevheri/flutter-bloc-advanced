@@ -158,8 +158,8 @@ class TopBarWidget extends StatelessWidget {
     if (menuBloc.state.isLogout) {
       context.go(ApplicationRoutesConstants.login);
     }
-    // On failure, stay where we are — caller will see the error state
-    // via the MenuBloc stream and can surface a toast if desired.
+    // A logout that cannot remove all stored data signs out too, and
+    // AppSessionListeners tells the user so.
   }
 
   String _getInitials(String? first, String? last) {

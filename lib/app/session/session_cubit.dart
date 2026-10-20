@@ -72,7 +72,10 @@ final class SessionUnauthenticated extends SessionState {
 /// and lets tests assert specific failure pathways without coupling
 /// them to log strings.
 enum SessionExpiredReason {
-  /// No token in secure storage (clean logged-out state).
+  /// No token in secure storage (clean logged-out state), or an explicit
+  /// logout: [SessionCubit.markLoggedOut] reports this reason also after a
+  /// logout that could not clear all of the stored session, which can leave
+  /// a token behind.
   noToken,
 
   /// Token present but past its `exp` claim, or rejected with a 401
@@ -248,9 +251,10 @@ class SessionCubit extends Cubit<SessionState> {
 
   /// Flips the cubit into [SessionUnauthenticated] with
   /// [SessionExpiredReason.noToken]. Caller-trusted: used after the explicit
-  /// logout flow (`LoginRepository.logout`) has already wiped the stored
-  /// session through [IAuthSessionRepository.clear]. Any other path that
-  /// ends a session calls [endSession] instead.
+  /// logout flow (`LoginRepository.logout`) has cleared the stored session
+  /// through [IAuthSessionRepository.clear], or failed to clear all of it:
+  /// like [endSession], the logout ends the session either way. Any other
+  /// path that ends a session calls [endSession] instead.
   void markLoggedOut() {
     emit(const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
   }

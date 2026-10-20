@@ -834,6 +834,16 @@ class S {
   String get authorities_load_failed {
     return Intl.message('Roles unavailable', name: 'authorities_load_failed', desc: '', args: []);
   }
+
+  /// `You were signed out, but some stored data could not be removed from this device.`
+  String get logout_stored_data_left {
+    return Intl.message(
+      'You were signed out, but some stored data could not be removed from this device.',
+      name: 'logout_stored_data_left',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

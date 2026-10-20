@@ -119,6 +119,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "login_user_name": MessageLookupByLibrary.simpleMessage("Kullanıcı adı"),
     "login_with_email": MessageLookupByLibrary.simpleMessage("E-posta ile Giriş"),
     "logout": MessageLookupByLibrary.simpleMessage("Çıkış Yap"),
+    "logout_stored_data_left": MessageLookupByLibrary.simpleMessage(
+      "Oturumunuz kapatıldı, ancak kayıtlı verilerin bir kısmı bu cihazdan silinemedi.",
+    ),
     "logout_sure": MessageLookupByLibrary.simpleMessage("Çıkış yapmak istediğinize emin misiniz?"),
     "max_length_10": MessageLookupByLibrary.simpleMessage("Maksimum 10 karakter uzunluğunda olmalıdır"),
     "max_length_100": MessageLookupByLibrary.simpleMessage("Maksimum 100 karakter uzunluğunda olmalıdır"),
