@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io' show HandshakeException, HttpException, OSError, RedirectException, SocketException;
 
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
@@ -615,6 +616,32 @@ void main() {
           requestOptions: options,
           type: DioExceptionType.unknown,
           error: const CertificatePinningException('example.com', 443),
+        );
+
+        final handler = _TestErrorHandler();
+        await interceptor.onError(err, handler);
+
+        expect(handler.nextCalled, isTrue);
+        expect(handler.resolveCalled, isFalse);
+      });
+
+      // Guards that an open circuit is not one of the failures the cache answers: the GET fails with it even when a
+      // response is cached, although the lost connections and timeouts that the cache answers count toward opening it.
+      test('should pass an open circuit through even when a cached entry exists', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.networkFirst},
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer(
+          (_) async => CacheEntry(key: 'GET_${options.uri}', data: '{"stale_data": true}', createdAt: DateTime.now()),
+        );
+
+        final err = DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: CircuitBreakerOpenException('/api/users'),
         );
 
         final handler = _TestErrorHandler();

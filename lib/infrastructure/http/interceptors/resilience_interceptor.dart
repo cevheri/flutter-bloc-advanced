@@ -36,9 +36,13 @@ import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 /// **Circuit breaker logic:**
 /// - Each endpoint (path prefix) gets its own [CircuitBreaker] instance.
 /// - Before a request: if the circuit is OPEN, rejects immediately with
-///   [CircuitBreakerOpenException]. A GET that [CacheInterceptor] answers from the cache alone
-///   (`CachePolicy.cacheOnly`) is let through: it never reaches the network, and its failure when nothing is
-///   cached does not count against the circuit breaker.
+///   [CircuitBreakerOpenException], with `callFollowingErrorInterceptor: true` so that the dev console and the HTTP
+///   log record it. [CacheInterceptor] does not answer it, so a GET fails with it even when a response is cached,
+///   although the circuit counts the lost connections and timeouts that the cache answers, each retry included: on a
+///   network that cannot reach a healthy server, once [failureThreshold] attempts have failed, every request to the
+///   endpoint, a cached GET included, fails for [cooldownDuration]. A GET that [CacheInterceptor] answers from the
+///   cache alone (`CachePolicy.cacheOnly`) is let through: it never reaches the network, and its failure when nothing
+///   is cached does not count against the circuit breaker.
 /// - After a response: records success or failure.
 ///
 /// Must be added to the interceptor chain AFTER [AuthInterceptor] so that
@@ -131,6 +135,7 @@ class ResilienceInterceptor extends Interceptor {
         options.path,
       ]);
 
+      // Runs every onError handler, so that the dev console and the HTTP log record the request it refuses.
       handler.reject(
         DioException(
           requestOptions: options,
@@ -138,6 +143,7 @@ class ResilienceInterceptor extends Interceptor {
           error: CircuitBreakerOpenException(endpointKey),
           message: 'Circuit breaker is open for endpoint: $endpointKey',
         ),
+        true,
       );
       return;
     }
@@ -271,7 +277,9 @@ class ResilienceInterceptor extends Interceptor {
     final breaker = _getBreaker(endpointKey);
     if (!breaker.allowRequest) {
       _log.warn('Circuit opened during retry backoff for "{}" — aborting retry', [endpointKey]);
-      handler.reject(
+      // Passed on to the onError handlers after this one, as the rejection in onRequest is, so that the dev console
+      // completes the entry of the request and the HTTP log records it.
+      handler.next(
         DioException(
           requestOptions: options,
           type: DioExceptionType.unknown,

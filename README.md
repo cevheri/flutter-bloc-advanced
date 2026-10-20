@@ -223,6 +223,7 @@ No eviction runs yet, so an entry that is never read again stays in `SharedPrefe
 A `GET` cannot reach the server when the device is offline, or when the connection is refused, times out, or is closed or reset before the whole response arrived.
 A response that dart:io cannot parse, such as one from a server that does not answer in HTTP, counts the same way, since dart:io reports it like a connection reset while the response is awaited.
 Every other failure reaches the caller, a server error or a TLS failure included: an untrusted certificate is never answered from the cache (see [Certificate Pinning](#certificate-pinning-opt-in)).
+So does an open circuit: after repeated failures `ResilienceInterceptor` refuses the requests to that endpoint for 30 seconds, and a `GET` fails with `CircuitBreakerOpenException` even when a response is cached.
 An answer from a fresh `cacheFirst` or `cacheOnly` entry carries `x-cache: hit`.
 
 ### Screen Capture Protection (opt-in)

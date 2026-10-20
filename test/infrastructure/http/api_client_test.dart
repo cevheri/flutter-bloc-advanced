@@ -1493,6 +1493,73 @@ void main() {
       expect(response.headers.value('x-cache'), 'hit');
       expect(adapter.requests, hasLength(6));
     });
+
+    // Guards that an open circuit fails a GET although its response is cached: the cache does not stand in for an
+    // open circuit, whatever failures opened it, and the request is not sent.
+    test('fails a cached GET with CircuitBreakerOpenException without sending it', () async {
+      await cacheThenOpenCircuit('/api/circuit/cached');
+
+      await expectLater(client.get('/api/circuit/cached'), throwsA(isA<CircuitBreakerOpenException>()));
+      expect(adapter.requests, hasLength(6), reason: 'no request may be sent while the circuit is open');
+    });
+
+    // Regression: the rejection skipped every onError handler, so neither the dev console nor the HTTP log recorded
+    // it.
+    test('records a GET the open circuit refuses in the dev console and the HTTP log', () async {
+      for (var failure = 0; failure < 5; failure++) {
+        adapter.reply(500, 'boom');
+        await expectLater(client.get('/api/circuit/uncached'), throwsA(isA<FetchDataException>()));
+      }
+      DevConsoleStore.instance.clearNetwork();
+      addTearDown(DevConsoleStore.instance.clearNetwork);
+      final lines = _capturePrintedLines();
+
+      await expectLater(client.get('/api/circuit/uncached'), throwsA(isA<CircuitBreakerOpenException>()));
+
+      final entry = DevConsoleStore.instance.networkEntries.single;
+      expect(entry.url, 'https://api.example.test/api/circuit/uncached');
+      expect(entry.isComplete, isTrue);
+      expect(entry.error, 'unknown: Circuit breaker is open for endpoint: /api/circuit/uncached');
+      expect(lines, contains(contains('Http : GET /api/circuit/uncached -> ERROR: unknown Circuit breaker is open')));
+    });
+
+    // Regression: when the circuit opened while a retry waited for its backoff delay, the GET failed without running
+    // the remaining onError handlers, so its dev console entry stayed in flight for good and the HTTP log missed it.
+    // Like any GET to an open circuit, it is not answered from the cache.
+    test('records a GET whose circuit opens while a retry waits in the dev console and the HTTP log', () {
+      fakeAsync((async) {
+        final failures = <Object>[];
+        adapter.reply(200, cached);
+        client.get('/api/circuit/retry');
+        async.elapse(const Duration(seconds: 1));
+
+        // The GET and its three retries fail: four failures.
+        for (var attempt = 0; attempt < 4; attempt++) {
+          adapter.reply(503, 'unavailable');
+        }
+        client.get('/api/circuit/retry').then<void>((_) {}, onError: failures.add);
+        async.elapse(const Duration(seconds: 5));
+        expect(failures, [isA<FetchDataException>()]);
+        DevConsoleStore.instance.clearNetwork();
+        addTearDown(DevConsoleStore.instance.clearNetwork);
+        final lines = _capturePrintedLines();
+
+        // The fifth failure opens the circuit while the first retry waits.
+        adapter.reply(503, 'unavailable');
+        client.get('/api/circuit/retry').then<void>((_) {}, onError: failures.add);
+        async.elapse(const Duration(seconds: 5));
+
+        expect(failures, [isA<FetchDataException>(), isA<CircuitBreakerOpenException>()]);
+        expect(adapter.requests, hasLength(6));
+        final entry = DevConsoleStore.instance.networkEntries.single;
+        expect(entry.isComplete, isTrue);
+        expect(entry.error, 'unknown: Circuit breaker opened during retry for endpoint: /api/circuit/retry');
+        expect(
+          lines,
+          contains(contains('Http : GET /api/circuit/retry -> ERROR: unknown Circuit breaker opened during retry')),
+        );
+      });
+    });
   });
 
   group('ApiClient with CachePolicy.cacheOnly', () {

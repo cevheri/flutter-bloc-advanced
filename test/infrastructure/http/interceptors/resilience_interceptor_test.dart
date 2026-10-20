@@ -69,6 +69,8 @@ void main() {
 
         expect(result.rejected, isTrue);
         expect(result.rejectError!.error, isA<CircuitBreakerOpenException>());
+        // So that the dev console and the HTTP log record it.
+        expect(result.rejectCallsFollowing, isTrue);
       });
 
       // Regression: a cacheOnly GET never reaches the network, but the open circuit rejected it before
@@ -972,8 +974,9 @@ class _InterceptorResult {
   final bool passed;
   final bool rejected;
   final DioException? rejectError;
+  final bool rejectCallsFollowing;
 
-  _InterceptorResult({this.passed = false, this.rejected = false, this.rejectError});
+  _InterceptorResult({this.passed = false, this.rejected = false, this.rejectError, this.rejectCallsFollowing = false});
 }
 
 class _InterceptorErrorResult {
@@ -994,7 +997,11 @@ class _TestRequestHandler extends RequestInterceptorHandler {
 
   @override
   void reject(DioException error, [bool callFollowingErrorInterceptor = false]) {
-    result = _InterceptorResult(rejected: true, rejectError: error);
+    result = _InterceptorResult(
+      rejected: true,
+      rejectError: error,
+      rejectCallsFollowing: callFollowingErrorInterceptor,
+    );
   }
 
   @override

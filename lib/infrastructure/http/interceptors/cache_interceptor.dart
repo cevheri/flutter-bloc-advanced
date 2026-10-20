@@ -188,6 +188,10 @@ class CacheInterceptor extends Interceptor {
   /// hostname mismatch, a captive portal, an intercepting proxy or a handshake closed before it completed, or with a
   /// `CertificatePinningException`. A handshake reset before it completed is a connection error, so it is answered.
   ///
+  /// An open circuit is not one either: once requests to an endpoint failed repeatedly, lost connections and timeouts
+  /// included, `ResilienceInterceptor` refuses its requests with a `CircuitBreakerOpenException`, and a GET fails with
+  /// it even when a response is cached.
+  ///
   /// On web the browser reports a TLS failure as a connection error without saying why the connection failed, so
   /// there it cannot be told apart from a lost connection and is answered from the cache.
   bool _couldNotReachServer(DioException err) => switch (err.type) {
