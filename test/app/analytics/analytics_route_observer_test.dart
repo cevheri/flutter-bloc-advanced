@@ -180,6 +180,58 @@ void main() {
       expect(loggedScreens(), ['settings']);
     });
 
+    testWidgets('logs the revealed shell route once when a root route pops', (tester) async {
+      final router = await startAuthenticated(tester);
+      router.go(ApplicationRoutesConstants.settings);
+      await pumpShell(tester);
+      clearInteractions(analytics);
+
+      router.push(ApplicationRoutesConstants.forbidden);
+      await pumpShell(tester);
+      expect(loggedScreens(), [ApplicationRoutesConstants.forbidden]);
+
+      router.pop();
+      await pumpShell(tester);
+      expect(loggedScreens(), ['settings']);
+    });
+
+    testWidgets('does not log the shell route when a root route pops and another is pushed in the same frame', (
+      tester,
+    ) async {
+      final router = await startAuthenticated(tester);
+      router.go(ApplicationRoutesConstants.settings);
+      await pumpShell(tester);
+      router.push(ApplicationRoutesConstants.forbidden);
+      await pumpShell(tester);
+      clearInteractions(analytics);
+
+      router.pop();
+      router.push(ApplicationRoutesConstants.forbidden);
+      await pumpShell(tester);
+
+      expect(loggedScreens(), [ApplicationRoutesConstants.forbidden]);
+    });
+
+    // Going from a root route to a shell route pops the root route and updates the shell in the same frame.
+    for (final (location, screenName) in const [
+      (ApplicationRoutesConstants.settings, 'settings'),
+      (ApplicationRoutesConstants.home, 'home'),
+    ]) {
+      testWidgets('logs only $screenName when a root route over settings goes to $location', (tester) async {
+        final router = await startAuthenticated(tester);
+        router.go(ApplicationRoutesConstants.settings);
+        await pumpShell(tester);
+        router.push(ApplicationRoutesConstants.forbidden);
+        await pumpShell(tester);
+        clearInteractions(analytics);
+
+        router.go(location);
+        await pumpShell(tester);
+
+        expect(loggedScreens(), [screenName]);
+      });
+    }
+
     testWidgets('logs the not-found page once', (tester) async {
       final router = await startAuthenticated(tester);
       clearInteractions(analytics);
