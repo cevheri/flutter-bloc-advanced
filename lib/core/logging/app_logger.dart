@@ -1,3 +1,4 @@
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:logger/logger.dart';
 
 enum LogFormat { simple, extended }
@@ -6,6 +7,10 @@ enum LogFormat { simple, extended }
 ///
 /// This class provides a simple way to log messages with different log levels.
 /// It also provides a way to configure the logger with different options.
+///
+/// A line is built only for a level that is printed, so the message and the
+/// arguments of a dropped level are never turned into text. Email addresses
+/// in a printed line are replaced with [emailMask] by [maskEmails].
 ///
 class AppLogger {
   static late Logger _logger;
@@ -40,18 +45,19 @@ class AppLogger {
         msg = msg.replaceFirst("{}", args[i].toString());
       }
     }
-    return msg;
+    return maskEmails(msg);
   }
 
-  void trace(dynamic message, [List<Object?>? args]) => _logger.t(_msg(message, args));
+  // The printer calls the closure only after the filter has passed the level, so a dropped level never runs _msg.
+  void trace(dynamic message, [List<Object?>? args]) => _logger.t(() => _msg(message, args));
 
-  void debug(dynamic message, [List<Object?>? args]) => _logger.d(_msg(message, args));
+  void debug(dynamic message, [List<Object?>? args]) => _logger.d(() => _msg(message, args));
 
-  void info(dynamic message, [List<Object?>? args]) => _logger.i(_msg(message, args));
+  void info(dynamic message, [List<Object?>? args]) => _logger.i(() => _msg(message, args));
 
-  void warn(dynamic message, [List<Object?>? args]) => _logger.w(_msg(message, args));
+  void warn(dynamic message, [List<Object?>? args]) => _logger.w(() => _msg(message, args));
 
-  void error(dynamic message, [List<Object?>? args]) => _logger.e(_msg(message, args));
+  void error(dynamic message, [List<Object?>? args]) => _logger.e(() => _msg(message, args));
 
   @override
   String toString() {

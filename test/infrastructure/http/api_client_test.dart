@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart';
 
 import '../../support/test_env.dart';
 
@@ -691,4 +693,62 @@ void main() {
       expect(sessionExpiredCalls, 0);
     });
   });
+
+  // Regression: an email in a request path, such as the login the user list fetches a user by, was printed as it
+  // was by every logger on the way, also on lines that production prints: the retry and give-up lines, the line that
+  // rejects a request while the circuit is open, and the HTTP error line. On web with a Sentry DSN each printed line
+  // also becomes a breadcrumb.
+  group('ApiClient log output', () {
+    test('masks an email in the request path on every line while the server answers 503', () {
+      fakeAsync((async) {
+        final client = ApiClient(
+          appConfig: const AppConfig(
+            environment: Environment.prod,
+            apiBaseUrl: 'https://api.example.test',
+            certificatePins: [],
+            idleTimeout: null,
+          ),
+          secureStorage: FlutterSecureStorageAdapter(),
+        );
+        final adapter = _RoutingHttpClientAdapter((_) => (503, ''));
+        client.instance.httpClientAdapter = adapter;
+        // The circuit breakers are shared by every client in this isolate, and this test leaves one open.
+        addTearDown(ResilienceInterceptor.instance.resetAll);
+        TestEnv.authenticate();
+        final lines = _capturePrintedLines();
+        final failures = <Object>[];
+
+        // The GET and its three retries fail. Fetching the same user again fails once more, which opens the
+        // circuit, and the third fetch is rejected while it is open. Each call gets more fake time than its retry
+        // backoff can take.
+        for (var call = 0; call < 3; call++) {
+          client.get('/admin/users', pathParams: 'jane.doe@example.com').then<void>((_) {}, onError: failures.add);
+          async.elapse(const Duration(seconds: 5));
+        }
+
+        expect(failures, [isA<FetchDataException>(), isA<CircuitBreakerOpenException>(), isA<AppException>()]);
+        expect(adapter.requests, hasLength(5));
+        expect(
+          lines,
+          containsAll(<Matcher>[
+            contains('ResilienceInterceptor : Retry 1/3 for GET /admin/users/[REDACTED_EMAIL] in '),
+            contains('ResilienceInterceptor : Retry 3/3 failed for GET /admin/users/[REDACTED_EMAIL] '),
+            contains('Http : GET /admin/users/[REDACTED_EMAIL] -> ERROR: badResponse '),
+            contains('rejecting request GET /admin/users/[REDACTED_EMAIL]'),
+          ]),
+        );
+        expect(lines, everyElement(isNot(contains('jane.doe'))));
+      });
+    });
+  });
+}
+
+/// Collects every line the loggers print until the test ends, whichever logger prints it.
+List<String> _capturePrintedLines() {
+  final lines = <String>[];
+  void collect(OutputEvent event) => lines.addAll(event.lines);
+
+  Logger.addOutputListener(collect);
+  addTearDown(() => Logger.removeOutputListener(collect));
+  return lines;
 }

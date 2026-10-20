@@ -1,6 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart';
+
+import '../../../support/test_env.dart';
 
 void main() {
   late LoggingInterceptor interceptor;
@@ -295,7 +304,93 @@ void main() {
         expect(() => testDio.get('/api/users'), throwsA(isA<DioException>()));
       });
     });
+
+    // Regression: the request URI was logged as it was, so an email in a path or a query string reached the
+    // console, and on web with a Sentry DSN the breadcrumbs made from it.
+    group('email in the request URI', () {
+      test('is masked on the request and response lines when it is in the path', () async {
+        TestEnv.authenticate();
+        final log = _captureHttpLog();
+
+        // The view and edit actions of the user list fetch the user by login through UserRepository.retrieve,
+        // which puts the login in the path, and registration makes the email the login of everyone who signs up.
+        await TestEnv.apiClient().get('/admin/users', pathParams: 'jane.doe@example.com');
+
+        expect(log, [
+          contains('GET /admin/users/[REDACTED_EMAIL] (headers: '),
+          contains('GET /admin/users/[REDACTED_EMAIL] -> 200 '),
+        ]);
+        expect(log.join('\n'), isNot(contains('jane.doe')));
+      });
+
+      test('is masked on the request line when it is in the query string', () async {
+        TestEnv.authenticate();
+        final log = _captureHttpLog();
+
+        // UserRepository.listByNameAndRole, which the user list search sends with the name typed into it.
+        await TestEnv.apiClient().get(
+          '/admin/users/filter',
+          queryParams: {'page': '0', 'size': '10', 'name': 'jane.doe@example.com', 'authority': 'ROLE_USER'},
+        );
+
+        expect(
+          log.first,
+          contains('GET /admin/users/filter?page=0&size=10&name=[REDACTED_EMAIL]&authority=ROLE_USER '),
+        );
+        expect(log.join('\n'), isNot(contains('jane.doe')));
+      });
+
+      test('is masked on the error line when it is in the path', () async {
+        // Production chain, without MockInterceptor, so the failed response reaches the error interceptors as
+        // it does against the real API. The adapter answers in place of the network.
+        final client = ApiClient(
+          appConfig: const AppConfig(
+            environment: Environment.prod,
+            apiBaseUrl: 'https://api.example.test',
+            certificatePins: [],
+            idleTimeout: null,
+          ),
+          secureStorage: FlutterSecureStorageAdapter(),
+        );
+        client.instance.httpClientAdapter = _NotFoundAdapter();
+        TestEnv.authenticate();
+        final log = _captureHttpLog();
+
+        await expectLater(
+          client.get('/admin/users', pathParams: 'jane.doe@example.com'),
+          throwsA(isA<FetchDataException>()),
+        );
+
+        expect(log.last, contains('GET /admin/users/[REDACTED_EMAIL] -> ERROR: badResponse '));
+        expect(log.join('\n'), isNot(contains('jane.doe')));
+      });
+    });
   });
+}
+
+/// Collects the console lines of the `Http` logger, which LoggingInterceptor writes to, until the test ends.
+List<String> _captureHttpLog() {
+  final lines = <String>[];
+  void collect(OutputEvent event) => lines.addAll(event.lines.where((line) => line.contains(' Http : ')));
+
+  Logger.addOutputListener(collect);
+  addTearDown(() => Logger.removeOutputListener(collect));
+  return lines;
+}
+
+/// Answers every request with 404, in place of the network.
+class _NotFoundAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    return ResponseBody.fromString('', 404);
+  }
+
+  @override
+  void close({bool force = false}) {}
 }
 
 /// Test handler for request interceptor.
