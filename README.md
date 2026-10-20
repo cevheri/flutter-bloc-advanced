@@ -368,7 +368,6 @@ All template placeholders use `__KEYWORD__` naming. Run a **global search** for 
 | `__SPONSOR_URL__` | Sponsor page | `https://github.com/sponsors/acme` | template_config.dart |
 | `__SECURITY_CONTACT__` | Email address for vulnerability reports | `security@acme.com` | .well-known/security.txt |
 | `__AUTHOR_NAME__` | Developer or company name | `Acme Inc.` | index.html, humans.txt |
-| `__AUTHOR_EMAIL__` | Contact email | `dev@acme.com` | CONTRIBUTING.md |
 | `__AUTHOR_URL__` | Author website / profile | `https://github.com/acme` | index.html, humans.txt |
 | `__AUTHOR_LOCATION__` | Author location | `San Francisco, CA` | humans.txt |
 
@@ -387,7 +386,18 @@ Also update manually:
 2. **`web/index.html`** — Page `<title>`, meta descriptions, Open Graph / Twitter Card text.
 3. **`lib/l10n/intl_en.arb` / `intl_tr.arb`** — App-specific translations.
 
-The central configuration file is `lib/infrastructure/config/template_config.dart` — Dart code throughout the app reads from this class.
+These platform identifiers still name the template and its author, so rename them by hand:
+
+- **Android**: `namespace` and `applicationId` in `android/app/build.gradle.kts`, the package of `MainActivity.kt` and its folder under `android/app/src/main/kotlin/`, and `android:label` in `android/app/src/main/AndroidManifest.xml`.
+- **iOS**: `PRODUCT_BUNDLE_IDENTIFIER` in `ios/Runner.xcodeproj/project.pbxproj`, and `CFBundleDisplayName` and `CFBundleName` in `ios/Runner/Info.plist`.
+- **macOS**: `PRODUCT_NAME`, `PRODUCT_BUNDLE_IDENTIFIER` and `PRODUCT_COPYRIGHT` in `macos/Runner/Configs/AppInfo.xcconfig`, and the test bundle identifiers in `macos/Runner.xcodeproj/project.pbxproj`.
+- **Linux**: `BINARY_NAME` and `APPLICATION_ID` in `linux/CMakeLists.txt`, and the window title in `linux/my_application.cc`.
+- **Windows**: `BINARY_NAME` in `windows/CMakeLists.txt`, the version strings in `windows/runner/Runner.rc`, and the window title in `windows/runner/main.cpp`.
+- **Issue templates**: the Discussions links in `.github/ISSUE_TEMPLATE/config.yml` and `.github/ISSUE_TEMPLATE/tech_debt.yml`.
+- **SonarCloud**: `sonar.projectKey` and `sonar.organization` in `sonar-project.properties` and `scripts/run_sonar_scanner.sh`.
+- **GitHub Pages**: `--base-href` in `.github/workflows/build-web.yml` and `scripts/deploy_web.sh`, the same path as `__WEB_BASE_PATH__`.
+
+`lib/infrastructure/config/template_config.dart` holds the template values the Dart code reads: the app name shown in the developer console, the production API URL, and the repository, docs and sponsor links.
 
 ## Build, Test, and Quality
 

@@ -141,6 +141,15 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - `navigation/`: DashboardFeatureRoutes
 - `presentation/pages/`: DashboardPage, DashboardHomePage
 
+### Lifecycle (11 files)
+
+- `application/`: LifecycleBloc, which checks the remote app configuration for a required update or maintenance mode
+- `data/models/`: AppConfigModel
+- `data/repositories/`: LifecycleRepository
+- `domain/entities/`: AppConfigEntity
+- `domain/repositories/`: ILifecycleRepository
+- `presentation/pages/`: LifecycleGate, ForceUpdateScreen, MaintenanceScreen
+
 ### Settings (10 files)
 
 - `application/`: SettingsBloc + use cases

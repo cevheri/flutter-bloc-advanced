@@ -91,6 +91,6 @@ bash
 By contributing to this project, you agree to adhere to our Code of Conduct.
 Contact
 
-If you have any questions, please contact us at __AUTHOR_EMAIL__.
+If you have any questions, ask in this repository's Discussions or open an issue.
 
 Thank you for your interest in contributing to our project!
