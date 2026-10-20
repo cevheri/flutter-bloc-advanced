@@ -159,7 +159,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 ### Users
 
 - `application/`: UserBloc, AuthorityBloc + use cases
-- `data/models/`: User, Authority, UserModel
+- `data/models/`: User, Authority
 - `data/repositories/`: UserRepository, AuthorityRepository
 - `domain/repositories/`: IUserRepository, IAuthorityRepository
 - `navigation/`: UsersFeatureRoutes
