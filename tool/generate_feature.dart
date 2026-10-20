@@ -39,6 +39,23 @@ void main(List<String> args) {
     exit(1);
   }
 
+  // Everything the generator writes lives under these paths, so checking them first keeps it from overwriting an
+  // existing feature, or the mock files another feature serves, before it has written anything.
+  final existing = [
+    for (final dir in ['lib/features/${feature.snake}', 'test/features/${feature.snake}'])
+      if (Directory(dir).existsSync()) dir,
+    for (final mock in [_listMock(feature), _retrieveMock(feature), _createMock(feature), _updateMock(feature)])
+      if (File('assets/mock/$mock').existsSync()) 'assets/mock/$mock',
+  ];
+  if (existing.isNotEmpty) {
+    stderr.writeln('Not generating "${feature.snake}": these already exist and would be overwritten:');
+    for (final path in existing) {
+      stderr.writeln('  $path');
+    }
+    stderr.writeln('Choose another feature name, or move them away first.');
+    exit(1);
+  }
+
   print('');
   print('Generating feature: ${feature.snake}');
   print('=' * 60);

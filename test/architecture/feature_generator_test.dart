@@ -44,6 +44,23 @@ void main() {
   test('the generated tests pass', () async {
     await _run(project, _flutter, ['test', '--no-pub', '--reporter=failures-only', 'test/features/$_feature']);
   });
+
+  // Generating over an existing feature, or over mock files another feature serves, used to overwrite them silently.
+  test('refuses to overwrite a feature that already exists', () async {
+    final barrel = File('${project.path}/lib/features/$_feature/$_feature.dart');
+    final before = barrel.readAsStringSync();
+
+    final result = await Process.run(
+      _dart,
+      ['run', 'tool/generate_feature.dart', _feature],
+      workingDirectory: project.path,
+      runInShell: Platform.isWindows,
+    );
+
+    expect(result.exitCode, 1, reason: '${result.stdout}\n${result.stderr}');
+    expect(result.stderr, contains('lib/features/$_feature'));
+    expect(barrel.readAsStringSync(), before);
+  });
 }
 
 /// Two words, so that the snake, kebab and camel case forms of the name differ.
