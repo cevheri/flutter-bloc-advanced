@@ -114,8 +114,7 @@ void main() {
       await tester.pumpAndSettle();
 
       // Assert via Keys only — text-based asserts would couple the
-      // test to the active locale (some titles use S.of(context) /
-      // generated strings, others are still literals pending i18n).
+      // test to the active locale (every title comes from S.of(context)).
       // Key presence is enough to guard the screen layout against
       // accidental tile removal.
       expect(find.byKey(settingsChangePasswordButtonKey), findsOneWidget);
