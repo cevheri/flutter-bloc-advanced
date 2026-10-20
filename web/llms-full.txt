@@ -198,7 +198,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 
 ### Design System (shared/design_system/)
 
-16 composable components: AppButton, AppCard, AppBadge, AppAvatar, AppInput, AppForm, AppSheet, AppToast, AppSkeleton, AppDivider, AppEmptyState, AppErrorState, AppLoadingOverlay, AppPageTransition, AppResponsiveBuilder, AppStatusBadge.
+13 composable components: AppButton, AppCard, AppBadge, AppAvatar, AppInput, AppForm, AppSkeleton, AppDivider, AppEmptyState, AppErrorState, AppPageTransition, AppResponsiveBuilder, AppStatusBadge.
 
 4 theme files: AppTheme, AppThemePalette, SemanticColors, ThemeColors.
 

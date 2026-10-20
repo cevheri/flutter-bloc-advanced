@@ -332,7 +332,7 @@ lib/
     http/              # Dio ApiClient + interceptors (auth, logging, mock)
     storage/           # Local storage (SharedPreferences)
   shared/              # Shared foundation across features
-    design_system/     # Theme, typography, color tokens, 16 components
+    design_system/     # Theme, typography, color tokens, 13 components
     dynamic_forms/     # Server-driven form engine (16 field types, bundle load, public withBloc helper)
     models/            # Cross-feature entities (UserEntity, PagedResult)
     widgets/           # Reusable components (buttons, forms, dialogs)

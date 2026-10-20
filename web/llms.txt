@@ -11,7 +11,7 @@ The project follows Feature-First Clean Boundaries architecture with strict depe
 - `app/` — Composition root: DI, router, shell (sidebar, top bar, bottom nav, command palette), theme, session bootstrap
 - `core/` — Cross-cutting primitives: errors, logging, security utilities
 - `infrastructure/` — External adapters: HTTP client, environment config, local storage
-- `shared/` — Business-free reusable UI: design system (14 components, theme tokens), shared widgets, utilities
+- `shared/` - Business-free reusable UI: design system (13 components, theme tokens), shared widgets, utilities
 - `features/` — 5 self-contained business modules: account, auth, dashboard, settings, users
 
 Each feature contains: `application/` (BLoC + use cases), `data/` (models, repositories), `domain/` (entities, repository interfaces), `navigation/` (route definitions), `presentation/` (pages, widgets).
