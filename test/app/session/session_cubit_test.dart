@@ -174,7 +174,8 @@ void main() {
       expect(errors, contains(allOf(contains('SessionCubit : endSession(idleTimeout)'), contains('boom on delete'))));
     });
 
-    // A rejected sign-in also ends in a 401 that no refresh can fix, so endSession runs with no session to end.
+    // A request still in flight when the user signs out can end in a 401 that no refresh can fix, so endSession runs
+    // with no session to end.
     blocTest<SessionCubit, SessionState>(
       'endSession leaves storage and state alone when no session is stored',
       setUp: () => AppLocalStorage().save(StorageKeys.language.key, 'tr'),
@@ -185,8 +186,8 @@ void main() {
       verify: (_) async => expect(await AppLocalStorage().read(StorageKeys.language.key), 'tr'),
     );
 
-    // A token refresh during a failed sign-in can store a fresh session while the cubit is signed out; a restart
-    // would restore it without the right password.
+    // A token refresh still in flight when the session ends can store a fresh session while the cubit is signed out;
+    // a restart would restore it.
     test('endSession clears a stored session even when the cubit is already signed out', () async {
       final storage = _MemorySecureStorage();
       await storage.write(SecureStorageKeys.jwtToken.key, 'fresh-jwt');

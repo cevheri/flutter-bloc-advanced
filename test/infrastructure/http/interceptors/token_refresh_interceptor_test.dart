@@ -40,6 +40,15 @@ class _MemorySecureStorage implements ISecureStorage {
   Future<void> deleteAll() async => _store.clear();
 }
 
+/// The endpoints the app calls before sign-in: sign-in, OTP send and verify, registration and password reset.
+const _publicEndpoints = [
+  '/authenticate',
+  '/authenticate/send-otp',
+  '/authenticate/verify-otp',
+  '/register',
+  '/account/reset-password/init',
+];
+
 void main() {
   late Dio dio;
   late _MemorySecureStorage secureStorage;
@@ -211,6 +220,37 @@ void main() {
 
       // Should still be detected as the refresh endpoint
       expect(sessionExpiredCalled, isTrue);
+    });
+  });
+
+  group('TokenRefreshInterceptor - 401 from a public endpoint', () {
+    // A public endpoint serves requests without a session, so its 401 rejects the credentials or input in the request.
+    // A refresh would spend the stored refresh token on a wrong password.
+    test('passes the 401 on without refreshing or ending the session', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'expired-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+
+      for (final path in _publicEndpoints) {
+        final requestOptions = RequestOptions(path: path, method: 'POST', extra: {'_basePath': path});
+        final error = DioException(
+          requestOptions: requestOptions,
+          response: Response(requestOptions: requestOptions, statusCode: 401),
+        );
+        final handler = _TestErrorHandler();
+
+        await interceptor.onError(error, handler);
+
+        expect(handler.nextError, same(error), reason: path);
+        expect(handler.resolveCalled, isFalse, reason: path);
+      }
+      expect(secureStorage.refreshTokenReadCount, 0, reason: 'the refresh-token read is the proxy for a refresh');
+      expect(sessionExpiredCalls, 0);
     });
   });
 

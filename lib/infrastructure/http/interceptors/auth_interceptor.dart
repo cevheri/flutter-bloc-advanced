@@ -1,9 +1,11 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
-/// Injects JWT Bearer token into every outgoing request.
+/// Injects JWT Bearer token into every outgoing request, except a request
+/// to a public endpoint ([isPublicEndpoint]).
 ///
 /// Reads from [ISecureStorage] on every request. There is no in-memory
 /// cache: the only data source for the JWT is the secure store, which
@@ -19,6 +21,15 @@ class AuthInterceptor extends Interceptor {
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+    // A public endpoint (sign-in, OTP, registration, password reset) needs
+    // no session, so it never gets the stored token. That token can be a
+    // stale one left by an expired session, and a server that checks every
+    // token it receives rejects such a request even where none is needed.
+    if (isPublicEndpoint(options)) {
+      _log.debug('Request [{}] {} (public endpoint, no token)', [options.method, options.path]);
+      handler.next(options);
+      return;
+    }
     // ISecureStorage.read can throw on platform / decryption failure.
     // If that happens, send the request anonymously rather than failing
     // the request itself — the downstream 401 path will trigger logout

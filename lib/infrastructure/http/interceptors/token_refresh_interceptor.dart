@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Backend contract for the refresh endpoint, isolated as named
@@ -42,6 +43,11 @@ typedef OnSessionExpired = void Function();
 typedef RefreshDioFactory = Dio Function(Dio sourceDio);
 
 /// Intercepts 401 responses and attempts a silent token refresh.
+///
+/// A 401 from a public endpoint ([isPublicEndpoint]) other than the refresh
+/// endpoint is passed on as it is: it rejects the credentials in the request,
+/// not an expired token. A 401 from the refresh endpoint still ends the
+/// session.
 ///
 /// The refresh request is coalesced via a shared in-flight [Future].
 /// When several requests fail with 401 around the same time the first
@@ -142,6 +148,17 @@ class TokenRefreshInterceptor extends Interceptor {
     if (requestPath.contains(_RefreshEndpoint.path)) {
       _log.warn('Refresh endpoint returned 401 — session expired');
       _triggerLogout();
+      handler.next(err);
+      return;
+    }
+
+    // A public endpoint (sign-in, OTP, registration, password reset) is
+    // sent without a token, so its 401 rejects the credentials or input in
+    // the request, not a session: no refresh, and no session to end. A
+    // refresh here would spend the stored refresh token on a wrong
+    // password and resend the credentials with a fresh bearer token.
+    if (isPublicEndpoint(err.requestOptions)) {
+      _log.debug('401 from public endpoint {}: no token refresh', [requestPath]);
       handler.next(err);
       return;
     }

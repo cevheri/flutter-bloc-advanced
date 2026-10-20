@@ -3,11 +3,13 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_inter
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
-/// Covers the three behaviors of [AuthInterceptor] that every outgoing
+/// Covers the four behaviors of [AuthInterceptor] that every outgoing
 /// HTTP request depends on:
 /// 1. JWT present → `Authorization: Bearer <token>` is attached.
 /// 2. JWT absent or empty → no `Authorization` header is written.
-/// 3. Secure read throws → request proceeds anonymously (does NOT
+/// 3. Public endpoint (sign-in, OTP, registration, password reset) →
+///    no `Authorization` header, whatever is stored.
+/// 4. Secure read throws → request proceeds anonymously (does NOT
 ///    crash the interceptor chain).
 ///
 /// The interceptor is the single most-called piece of code in the
@@ -48,6 +50,27 @@ void main() {
       await interceptor.onRequest(options, handler);
 
       expect(handler.passedOptions!.headers.containsKey('Authorization'), isFalse);
+    });
+
+    test('does not attach the stored token to a public endpoint', () async {
+      // The stored token may be a stale one left by an expired session, and a server that checks every token it
+      // receives rejects the request when it is, even on an endpoint that needs none.
+      final interceptor = AuthInterceptor(secureStorage: _FixedSecureStorage('stale-jwt'));
+
+      for (final path in [
+        '/authenticate',
+        '/authenticate/send-otp',
+        '/authenticate/verify-otp',
+        '/register',
+        '/account/reset-password/init',
+      ]) {
+        final handler = _CapturingRequestHandler();
+
+        await interceptor.onRequest(RequestOptions(path: path, method: 'POST', extra: {'_basePath': path}), handler);
+
+        expect(handler.passedOptions, isNotNull, reason: 'handler.next should be called for $path');
+        expect(handler.passedOptions!.headers.containsKey('Authorization'), isFalse, reason: path);
+      }
     });
 
     test('does not crash when secure storage read throws — request proceeds anonymously', () async {

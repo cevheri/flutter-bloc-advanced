@@ -132,6 +132,12 @@ class SessionCubit extends Cubit<SessionState> {
       // In production we additionally reject expired tokens. In non-prod
       // (mocks/dev) we stay lenient so a static MOCK_TOKEN without an
       // `exp` claim does not log the user out on every restart.
+      //
+      // An expired session stays stored until a sign-in replaces it. The
+      // screens a signed-out user can reach only call public endpoints,
+      // which never receive it, and clearing it here would sign out other
+      // browser tabs, which share the stored session and refresh it on
+      // their next request.
       if (_appConfig.isProduction) {
         final expired = SecurityUtils.isTokenExpired(token);
         _log.info('restore: token found, expired={} → authenticated={}', [expired, !expired]);
@@ -178,10 +184,11 @@ class SessionCubit extends Cubit<SessionState> {
   /// session they ended.
   ///
   /// The wipe depends on what is stored, not on [state]. It is skipped
-  /// when no token is stored, so a rejected sign-in, which also ends in an
-  /// unrefreshable 401, keeps the stored preferences. A stored token is
-  /// wiped even when the cubit is signed out: a token refresh during a
-  /// failed sign-in can store a session that a restart would restore.
+  /// when no token is stored, so a 401 from a request still in flight when
+  /// the user signed out keeps the stored preferences. A stored token is
+  /// wiped even when the cubit is signed out: a token refresh still in
+  /// flight when the session ended can store a session that a restart
+  /// would restore.
   ///
   /// A failed wipe is logged at error level, with the storage error, and
   /// the in-memory session still ends: staying signed in would defeat the

@@ -139,9 +139,14 @@ When it answers a protected request without a token with 401, it rejects with `c
 
 ### AuthInterceptor
 
-Reads the JWT from `ISecureStorage` on every request and adds it as a Bearer token when one is stored:
+Reads the JWT from `ISecureStorage` on every request to a private path and adds it as a Bearer token when one is stored.
+A request to a public path (see [Public vs. Private Paths](#public-vs-private-paths)) never gets a token:
 
 ```dart
+if (isPublicEndpoint(options)) {
+  handler.next(options);
+  return;
+}
 String? jwtToken;
 try {
   jwtToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
@@ -270,6 +275,9 @@ Defined in `lib/core/security/allowed_paths.dart`:
 - `/api/token/refresh`
 
 All other paths require a valid `Authorization` header. In dev/test mode the `MockInterceptor` enforces this check; in production the real API does.
+
+In every environment `AuthInterceptor` sends no token to a public path, so a stale token left by an expired session never reaches the sign-in endpoints.
+`TokenRefreshInterceptor` passes a 401 from any other public path than the refresh endpoint on without a token refresh and without ending the session, because it rejects the credentials in the request, not a token; a 401 from the refresh endpoint still ends the session.
 
 ## How Repositories Use ApiClient
 
