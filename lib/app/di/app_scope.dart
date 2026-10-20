@@ -14,6 +14,7 @@ import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/logout_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
@@ -134,7 +135,7 @@ class AppScope extends StatelessWidget {
           ),
           BlocProvider<MenuBloc>(
             create: (context) => MenuBloc(
-              loginRepository: context.read<IAuthRepository>(),
+              logoutUseCase: LogoutUseCase(context.read<IAuthRepository>()),
               menuRepository: context.read<MenuRepository>(),
             ),
           ),

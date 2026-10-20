@@ -7,13 +7,13 @@ import 'package:flutter_bloc_advance/app/shell/menu_list_cache.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
-import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/logout_usecase.dart';
 
 part 'menu_event.dart';
 part 'menu_state.dart';
 
 class MenuBloc extends Bloc<MenuEvent, MenuState> {
-  MenuBloc({required this._loginRepository, required this._menuRepository}) : super(const MenuState()) {
+  MenuBloc({required this._logoutUseCase, required this._menuRepository}) : super(const MenuState()) {
     on<LoadMenus>(_loadMenus);
     on<RefreshMenus>(_refreshMenus);
     on<Logout>(_onLogout);
@@ -21,7 +21,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
 
   static final _log = AppLogger.getLogger('MenuBloc');
 
-  final IAuthRepository _loginRepository;
+  final LogoutUseCase _logoutUseCase;
   final MenuRepository _menuRepository;
 
   /// Signs out even when the logout cannot clear all that the session stored, as SessionCubit.endSession does: the
@@ -29,7 +29,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
   /// tells AppSessionListeners to say that stored data stayed behind.
   FutureOr<void> _onLogout(Logout event, Emitter<MenuState> emit) async {
     emit(state.copyWith(isLogout: false, status: MenuStateStatus.loading));
-    final result = await _loginRepository.logout();
+    final result = await _logoutUseCase();
     MenuListCache.menus = [];
     switch (result) {
       case Success():

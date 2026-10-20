@@ -94,7 +94,7 @@ flowchart LR
     end
 
     UC_TEST -- "mocktail" --> MOCK_REPO["MockIUserRepository<br/>MockIAuthRepository<br/>MockIAccountRepository"]
-    BLOC_TEST -- "mocktail" --> MOCK_REPO_C["MockAccountRepository<br/>MockLoginRepository"]
+    BLOC_TEST -- "mocktail" --> MOCK_REPO_C["MockAccountRepository"]
     API_TEST -- "StubInterceptor" --> STUB_DIO["Test Dio Instance<br/><i>No network, no assets</i>"]
     WIDGET_TEST -- "bloc_test" --> MOCK_BLOC["MockUserListBloc<br/>MockLoginBloc"]
 

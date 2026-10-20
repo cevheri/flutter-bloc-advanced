@@ -23,7 +23,6 @@ import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.d
 
 // Repository imports (concrete)
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
-import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 
@@ -39,8 +38,6 @@ import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.d
 
 // Concrete repository mocks (for BLoC tests that depend on concrete types)
 class MockAccountRepository extends Mock implements AccountRepository {}
-
-class MockLoginRepository extends Mock implements LoginRepository {}
 
 class MockAuthorityRepository extends Mock implements IAuthorityRepository {}
 

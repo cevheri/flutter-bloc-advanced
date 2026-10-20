@@ -2,7 +2,8 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
-import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/logout_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_list_cache.dart';
@@ -19,11 +20,11 @@ import '../../mocks/mock_classes.dart';
 /// 3. Bloc test <p>
 void main() {
   //region setup
-  late LoginRepository loginRepository;
+  late IAuthRepository authRepository;
   late MenuRepository menuRepository;
 
   setUpAll(() {
-    loginRepository = MockLoginRepository();
+    authRepository = MockIAuthRepository();
     menuRepository = MockMenuRepository();
   });
   //endregion setup
@@ -80,7 +81,7 @@ void main() {
           when(() => menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
-        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
       );
@@ -91,7 +92,7 @@ void main() {
           when(() => menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
-        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
       );
@@ -110,7 +111,7 @@ void main() {
           when(() => menuRepository.list()).thenAnswer((_) => output);
           MenuListCache.menus = [];
         },
-        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
       );
@@ -121,7 +122,7 @@ void main() {
           when(() => menuRepository.list()).thenThrow(Exception("Error"));
           MenuListCache.menus = [];
         },
-        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
       );
@@ -135,23 +136,24 @@ void main() {
       blocTest<MenuBloc, MenuState>(
         "emits [success] when Logout is added",
         setUp: () {
-          when(() => loginRepository.logout()).thenAnswer((_) => Future.value(const Success<void>(null)));
+          when(() => authRepository.logout()).thenAnswer((_) => Future.value(const Success<void>(null)));
           MenuListCache.menus = [];
         },
-        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, successState],
+        verify: (_) => verify(() => authRepository.logout()).called(1),
       );
 
       // As SessionCubit.endSession does, the logout ends the session even when it cannot clear all that it stored.
       blocTest<MenuBloc, MenuState>(
         "signs out with the error status when the logout cannot clear the stored session",
         setUp: () {
-          when(() => loginRepository.logout())
+          when(() => authRepository.logout())
               .thenAnswer((_) => Future.value(const Failure<void>(UnknownError("Error"))));
           MenuListCache.menus = [const Menu(id: "test", name: "test")];
         },
-        build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),
+        build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
         verify: (_) => expect(MenuListCache.menus, isEmpty),
