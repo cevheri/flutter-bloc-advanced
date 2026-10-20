@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotency_interceptor.dart';
 
@@ -309,11 +310,13 @@ class ResilienceInterceptor extends Interceptor {
     return '/${segments.join('/')}';
   }
 
-  /// Heuristic: a segment looks like an ID if it is purely numeric or matches
-  /// a UUID-like pattern (contains dashes and hex characters).
+  /// Heuristic: a segment looks like an ID if it is purely numeric, matches
+  /// a UUID-like pattern (contains dashes and hex characters), or is an email
+  /// address, raw or percent-encoded (a login used as a path parameter).
   bool _looksLikeId(String segment) {
     if (RegExp(r'^\d+$').hasMatch(segment)) return true;
     if (RegExp(r'^[0-9a-fA-F-]{8,}$').hasMatch(segment)) return true;
+    if (emailPattern.hasMatch(segment)) return true;
     return false;
   }
 

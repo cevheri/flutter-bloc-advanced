@@ -737,6 +737,28 @@ void main() {
         expect(result.rejected, isTrue);
       });
 
+      // GET /admin/users/{login} carries the login, which registration sets to the user's email. The breaker keys
+      // are listed on the system dashboard, so the email must not become part of one.
+      for (final login in ['jane.doe@example.com', 'jane.doe%40example.com']) {
+        test('should handle an email segment ($login) as an ID', () async {
+          final interceptor = ResilienceInterceptor(
+            failureThreshold: 1,
+            cooldownDuration: const Duration(hours: 1),
+            maxRetries: 0,
+          );
+
+          final err = DioException(
+            requestOptions: RequestOptions(path: '/admin/users/$login'),
+            type: DioExceptionType.connectionTimeout,
+          );
+          _fireOnError(interceptor, err);
+
+          expect(interceptor.circuitBreakers.keys, ['/admin/users']);
+          final result = await _captureOnRequest(interceptor, RequestOptions(path: '/admin/users'));
+          expect(result.rejected, isTrue);
+        });
+      }
+
       test('should handle empty path', () async {
         final interceptor = ResilienceInterceptor(
           failureThreshold: 1,
