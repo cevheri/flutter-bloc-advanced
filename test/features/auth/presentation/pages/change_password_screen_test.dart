@@ -127,6 +127,18 @@ void main() {
       // Then - should navigate to home
       expect(find.text('Home'), findsOneWidget);
     });
+
+    testWidgets("fits the title on a 320 px wide phone", (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(getWidget());
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text(S.current.change_password), findsWidgets);
+    });
   });
 
   //form fields

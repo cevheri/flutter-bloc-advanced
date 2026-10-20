@@ -60,9 +60,11 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                         onPressed: () async => _handlePopScope(context, false),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        S.of(context).change_password,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                      Expanded(
+                        child: Text(
+                          S.of(context).change_password,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ],
                   ),
