@@ -40,18 +40,20 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m9(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
 
-  static String m10(email) => "OTP kodu ${email} adresine gönderildi";
+  static String m10(time) => "Tahmini bitiş: ${time}";
 
-  static String m11(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
+  static String m11(email) => "OTP kodu ${email} adresine gönderildi";
 
-  static String m12(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+  static String m12(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
 
-  static String m13(count) => "${Intl.plural(count, other: '${count} satır listelendi.')}";
+  static String m13(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
 
-  static String m14(translate) =>
+  static String m14(count) => "${Intl.plural(count, other: '${count} satır listelendi.')}";
+
+  static String m15(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
-  static String m15(error) => "Kaydedilemedi: ${error}";
+  static String m16(error) => "Kaydedilemedi: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -221,6 +223,12 @@ class MessageLookup extends MessageLookupByLibrary {
       "Oturumunuz kapatıldı, ancak kayıtlı verilerin bir kısmı bu cihazdan silinemedi.",
     ),
     "logout_sure": MessageLookupByLibrary.simpleMessage("Çıkış yapmak istediğinize emin misiniz?"),
+    "maintenance_estimated_end": m10,
+    "maintenance_message": MessageLookupByLibrary.simpleMessage(
+      "Planlı bir bakım çalışması yapıyoruz. Lütfen kısa bir süre sonra tekrar deneyin.",
+    ),
+    "maintenance_retry": MessageLookupByLibrary.simpleMessage("Tekrar Dene"),
+    "maintenance_title": MessageLookupByLibrary.simpleMessage("Bakım Yapılıyor"),
     "max_length_100": MessageLookupByLibrary.simpleMessage("Maksimum 100 karakter uzunluğunda olmalıdır"),
     "max_length_20": MessageLookupByLibrary.simpleMessage("Maksimum 20 karakter uzunluğunda olmalıdır"),
     "min_length_2": MessageLookupByLibrary.simpleMessage("Minimum 2 karakter uzunluğunda olmalıdır"),
@@ -238,10 +246,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "only_numbers": MessageLookupByLibrary.simpleMessage("Sadece sayılar kullanılabilir"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu"),
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP 6 haneli olmalıdır"),
-    "otp_sent_to_email": m10,
+    "otp_sent_to_email": m11,
     "password_forgot": MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
-    "password_max_length": m11,
-    "password_min_length": m12,
+    "password_max_length": m12,
+    "password_min_length": m13,
     "previous": MessageLookupByLibrary.simpleMessage("Önceki"),
     "quick_actions": MessageLookupByLibrary.simpleMessage("Hızlı İşlemler"),
     "refresh": MessageLookupByLibrary.simpleMessage("Yenile"),
@@ -266,7 +274,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "sidebar_expand": MessageLookupByLibrary.simpleMessage("Genişlet"),
     "submit": MessageLookupByLibrary.simpleMessage("Gönder"),
     "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
-    "table_rows_listed": m13,
+    "table_rows_listed": m14,
     "theme": MessageLookupByLibrary.simpleMessage("Tema"),
     "theme_dialog_subtitle": MessageLookupByLibrary.simpleMessage("Tercih ettiğiniz tema stilini seçin"),
     "theme_dialog_title": MessageLookupByLibrary.simpleMessage("Tema Seçin"),
@@ -278,7 +286,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "theme_palette_nature_description": MessageLookupByLibrary.simpleMessage("Adaçayı yeşili, sakin ve doğal"),
     "theme_palette_sunset": MessageLookupByLibrary.simpleMessage("Gün Batımı"),
     "theme_palette_sunset_description": MessageLookupByLibrary.simpleMessage("Sıcak taş, zengin ve davetkâr"),
-    "translate_menu_title": m14,
+    "translate_menu_title": m15,
     "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
@@ -300,7 +308,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_editor_info_title": MessageLookupByLibrary.simpleMessage("Kullanıcı Bilgileri"),
     "user_editor_view_subtitle": MessageLookupByLibrary.simpleMessage("Kullanıcı ayrıntılarını görüntüleyin."),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
-    "user_extended_info_save_failed": m15,
+    "user_extended_info_save_failed": m16,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "user_list_actions": MessageLookupByLibrary.simpleMessage("İşlemler"),

@@ -45,11 +45,7 @@ const _roots = [
   'lib/shared/dynamic_forms/presentation/',
 ];
 
-const _skippedRoots = [
-  'lib/app/dev_console/',
-  // Not localized yet: its texts move to the ARB files in a change of their own. Remove this entry when it lands.
-  'lib/features/lifecycle/presentation/pages/maintenance_screen.dart',
-];
+const _skippedRoots = ['lib/app/dev_console/'];
 
 /// Literals that read the same in every language.
 const _sameInEveryLanguage = {

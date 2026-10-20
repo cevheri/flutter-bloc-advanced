@@ -163,6 +163,20 @@
   "@force_update_no_store_link": {},
   "force_update_store_link_invalid": "Güncelleme bağlantısı geçersiz. En son sürümü yüklemek için uygulama mağazanızı açın.",
   "@force_update_store_link_invalid": {},
+  "maintenance_title": "Bakım Yapılıyor",
+  "@maintenance_title": {},
+  "maintenance_message": "Planlı bir bakım çalışması yapıyoruz. Lütfen kısa bir süre sonra tekrar deneyin.",
+  "@maintenance_message": {},
+  "maintenance_estimated_end": "Tahmini bitiş: {time}",
+  "@maintenance_estimated_end": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenance_retry": "Tekrar Dene",
+  "@maintenance_retry": {},
   "user_list_load_failed": "Kullanıcılar yüklenemedi",
   "@user_list_load_failed": {},
   "user_delete_failed": "Kullanıcı silinemedi",

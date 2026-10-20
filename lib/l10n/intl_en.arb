@@ -163,6 +163,20 @@
   "@force_update_no_store_link": {},
   "force_update_store_link_invalid": "The update link is not valid. Open your app store to install the latest version.",
   "@force_update_store_link_invalid": {},
+  "maintenance_title": "Under Maintenance",
+  "@maintenance_title": {},
+  "maintenance_message": "We are performing scheduled maintenance. Please check back soon.",
+  "@maintenance_message": {},
+  "maintenance_estimated_end": "Estimated end: {time}",
+  "@maintenance_estimated_end": {
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "maintenance_retry": "Try Again",
+  "@maintenance_retry": {},
   "user_list_load_failed": "Could not load the users",
   "@user_list_load_failed": {},
   "user_delete_failed": "Could not delete the user",

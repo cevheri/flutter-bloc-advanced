@@ -680,6 +680,31 @@ class S {
     );
   }
 
+  /// `Under Maintenance`
+  String get maintenance_title {
+    return Intl.message('Under Maintenance', name: 'maintenance_title', desc: '', args: []);
+  }
+
+  /// `We are performing scheduled maintenance. Please check back soon.`
+  String get maintenance_message {
+    return Intl.message(
+      'We are performing scheduled maintenance. Please check back soon.',
+      name: 'maintenance_message',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Estimated end: {time}`
+  String maintenance_estimated_end(String time) {
+    return Intl.message('Estimated end: $time', name: 'maintenance_estimated_end', desc: '', args: [time]);
+  }
+
+  /// `Try Again`
+  String get maintenance_retry {
+    return Intl.message('Try Again', name: 'maintenance_retry', desc: '', args: []);
+  }
+
   /// `Could not load the users`
   String get user_list_load_failed {
     return Intl.message('Could not load the users', name: 'user_list_load_failed', desc: '', args: []);
