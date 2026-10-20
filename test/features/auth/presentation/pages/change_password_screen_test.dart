@@ -20,6 +20,7 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -28,6 +29,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
 import '../../../../support/test_env.dart';
+import '../../../../support/unsaved_changes_host.dart';
 
 final _log = AppLogger.getLogger("AccountsScreenTest");
 
@@ -71,11 +73,21 @@ void main() {
     );
   }
 
-  MaterialApp getWidget() {
-    return MaterialApp(
-      localizationsDelegates: locales,
-      supportedLocales: S.delegate.supportedLocales,
-      home: Scaffold(body: buildBlocProviders(child: ChangePasswordScreen())),
+  Widget getWidget() {
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (_, _) => Scaffold(body: buildBlocProviders(child: ChangePasswordScreen())),
+        ),
+      ],
+    );
+    return withUnsavedChangesRegistry(
+      MaterialApp.router(
+        localizationsDelegates: locales,
+        supportedLocales: S.delegate.supportedLocales,
+        routerConfig: router,
+      ),
     );
   }
 
@@ -89,14 +101,17 @@ void main() {
         ),
         GoRoute(
           path: '/change-password',
+          onExit: confirmLeavingUnsavedChanges,
           builder: (_, _) => Scaffold(body: buildBlocProviders(child: ChangePasswordScreen())),
         ),
       ],
     );
-    return MaterialApp.router(
-      localizationsDelegates: locales,
-      supportedLocales: S.delegate.supportedLocales,
-      routerConfig: router,
+    return withUnsavedChangesRegistry(
+      MaterialApp.router(
+        localizationsDelegates: locales,
+        supportedLocales: S.delegate.supportedLocales,
+        routerConfig: router,
+      ),
     );
   }
   //endregion setup
@@ -336,6 +351,23 @@ void main() {
   });
 
   group("ChangePasswordScreen PopScope Test", () {
+    testWidgets("Back button after a successful change leaves without asking", (tester) async {
+      await tester.pumpWidget(getRouterWidget());
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(changePasswordTextFieldCurrentPasswordKey), 'oldPass');
+      await tester.pumpAndSettle();
+
+      // The page resets the form when the change succeeds.
+      stateController.add(const ChangePasswordSuccessState());
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.byKey(const Key('changePasswordScreenAppBarBackButtonKey')));
+      await tester.pumpAndSettle();
+
+      expect(find.text(S.current.unsaved_changes), findsNothing);
+      expect(find.text('Home'), findsOneWidget);
+    });
+
     testWidgets("Back button with clean form navigates back directly", (tester) async {
       // Given - use GoRouter widget, form is clean
       await tester.pumpWidget(getRouterWidget());

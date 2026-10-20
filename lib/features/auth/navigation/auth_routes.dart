@@ -13,6 +13,7 @@ import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_page_transition.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthFeatureRoutes {
@@ -70,6 +71,7 @@ class AuthFeatureRoutes {
     GoRoute(
       name: 'change-password',
       path: ApplicationRoutesConstants.changePassword,
+      onExit: confirmLeavingUnsavedChanges,
       pageBuilder: (context, state) => appTransitionPage(
         state: state,
         type: AppPageTransitionType.slideRight,

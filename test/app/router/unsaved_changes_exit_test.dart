@@ -11,7 +11,9 @@ import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_nav_item.dart';
+import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/account/presentation/pages/account_page.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/change_password_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
@@ -225,6 +227,26 @@ void main() {
     });
   });
 
+  group('A dirty change password form', () {
+    testWidgets('asks before the Android back button pops it off the settings page', (tester) async {
+      await _pumpApp(tester);
+      await tester.tap(find.widgetWithText(SidebarNavItem, 'Settings'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(settingsChangePasswordButtonKey));
+      await tester.pumpAndSettle();
+      await tester.enterText(find.byKey(changePasswordTextFieldCurrentPasswordKey), 'secret');
+      await tester.pumpAndSettle();
+      _expectBackHeld(tester, find.byType(ChangePasswordScreen));
+
+      await _androidBack(tester);
+      expect(_unsavedChangesDialog, findsOneWidget);
+
+      await _answer(tester, leave: true);
+      expect(find.byType(ChangePasswordScreen), findsNothing);
+      expect(find.byType(SettingsScreen), findsOneWidget);
+    });
+  });
+
   group('A clean account form', () {
     testWidgets('leaves through the sidebar without asking', (tester) async {
       await _pumpApp(tester);
@@ -250,7 +272,7 @@ void main() {
     }
 
     collect(_router(tester).configuration.routes);
-    for (final path in [ApplicationRoutesConstants.account]) {
+    for (final path in [ApplicationRoutesConstants.account, ApplicationRoutesConstants.changePassword]) {
       expect(routes[path]?.onExit, confirmLeavingUnsavedChanges, reason: path);
     }
   });

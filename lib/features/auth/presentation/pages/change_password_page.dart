@@ -5,9 +5,9 @@ import 'package:flutter_bloc_advance/features/auth/application/change_password_b
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
-import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:go_router/go_router.dart';
@@ -32,9 +32,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     return BlocListener<ChangePasswordBloc, ChangePasswordState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) => _handleStateChanges(context, state),
-      child: PopScope(
-        canPop: !(_formKey.currentState?.isDirty ?? false),
-        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(context, didPop),
+      child: UnsavedChangesScope(
+        hasUnsavedChanges: () => _formKey.currentState?.isDirty ?? false,
+        onBack: () => _navigateBack(context),
         child: _buildBody(context),
       ),
     );
@@ -57,7 +57,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       IconButton(
                         key: const Key('changePasswordScreenAppBarBackButtonKey'),
                         icon: const Icon(Icons.arrow_back),
-                        onPressed: () async => _handlePopScope(context, false),
+                        onPressed: () => _navigateBack(context),
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
@@ -79,6 +79,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
                       padding: const EdgeInsets.all(AppSpacing.xl),
                       child: ResponsiveFormBuilder(
                         formKey: _formKey,
+                        onChanged: () => UnsavedChangesScope.formChanged(context),
                         children: [
                           Text(
                             S.of(context).change_password_description,
@@ -196,21 +197,6 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
-  }
-
-  Future<void> _handlePopScope(BuildContext context, bool didPop) async {
-    if (didPop) return;
-    if (!context.mounted) return;
-
-    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      _navigateBack(context);
-      return;
-    }
-
-    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
-    if (shouldPop && context.mounted) {
-      _navigateBack(context);
-    }
   }
 
   void _navigateBack(BuildContext context) {

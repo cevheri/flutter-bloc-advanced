@@ -41,7 +41,7 @@ void main() {
       ],
       child: ChangePasswordScreen(),
     );
-    return goldenScreen(screen, dark: dark);
+    return goldenRoutedScreen(screen, dark: dark);
   }
 
   goldenTest(
