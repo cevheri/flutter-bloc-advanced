@@ -25,11 +25,13 @@ final class ChangePasswordSuccessState extends ChangePasswordState {
   List<Object?> get props => const [];
 }
 
+/// Changing the password failed. The UI shows [errorCode] translated via `errorCode.resolve(context)`; the raw
+/// error message only goes to the log.
 final class ChangePasswordFailureState extends ChangePasswordState {
-  const ChangePasswordFailureState({required this.errorMessage});
+  const ChangePasswordFailureState({required this.errorCode});
 
-  final String errorMessage;
+  final AppErrorCode errorCode;
 
   @override
-  List<Object?> get props => [errorMessage];
+  List<Object?> get props => [errorCode];
 }

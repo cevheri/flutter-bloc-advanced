@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/change_password_usecase.dart';
@@ -31,7 +32,7 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
         emit(const ChangePasswordSuccessState());
         _log.debug("END: changePassword bloc: _onSubmit success");
       case Failure(:final error):
-        emit(ChangePasswordFailureState(errorMessage: error.message));
+        emit(ChangePasswordFailureState(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
         _log.error("END: changePassword bloc: _onSubmit error: {}", [error.toString()]);
     }
   }

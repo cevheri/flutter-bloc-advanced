@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/change_password_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
@@ -45,10 +46,12 @@ void main() {
 
     test("ChangePasswordFailureState equals", () {
       expect(
-        const ChangePasswordFailureState(errorMessage: "boom"),
-        const ChangePasswordFailureState(errorMessage: "boom"),
+        const ChangePasswordFailureState(errorCode: AppErrorCode.generic),
+        const ChangePasswordFailureState(errorCode: AppErrorCode.generic),
       );
-      expect(const ChangePasswordFailureState(errorMessage: "boom").props, const <Object?>["boom"]);
+      expect(const ChangePasswordFailureState(errorCode: AppErrorCode.generic).props, const <Object?>[
+        AppErrorCode.generic,
+      ]);
     });
 
     test("different variants are not equal", () {
@@ -108,7 +111,7 @@ void main() {
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ServerError('Change password failed'))),
         build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)),
         act: (bloc) => bloc..add(event),
-        expect: () => [loadingState, const ChangePasswordFailureState(errorMessage: 'Change password failed')],
+        expect: () => [loadingState, const ChangePasswordFailureState(errorCode: AppErrorCode.generic)],
         verify: (_) => verify(method).called(1),
       );
 
@@ -117,8 +120,37 @@ void main() {
         setUp: () => when(method).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid password'))),
         build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(repository)),
         act: (bloc) => bloc..add(event),
-        expect: () => [loadingState, const ChangePasswordFailureState(errorMessage: 'Invalid password')],
+        expect: () => [loadingState, const ChangePasswordFailureState(errorCode: AppErrorCode.generic)],
         verify: (_) => verify(method).called(1),
+      );
+    });
+
+    // The use case refuses these before the request, with a code the page shows in the app language.
+    group("ChangePasswordChanged refused by the use case", () {
+      late MockAccountRepository untouched;
+
+      setUp(() => untouched = MockAccountRepository());
+
+      blocTest<ChangePasswordBloc, ChangePasswordState>(
+        "emits the passwords-same code when the new password is the current one",
+        build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(untouched)),
+        act: (bloc) => bloc.add(const ChangePasswordChanged(currentPassword: "secret", newPassword: "secret")),
+        expect: () => [
+          const ChangePasswordLoadingState(),
+          const ChangePasswordFailureState(errorCode: AppErrorCode.accountPasswordsSame),
+        ],
+        verify: (_) => verifyNever(() => untouched.changePassword(any())),
+      );
+
+      blocTest<ChangePasswordBloc, ChangePasswordState>(
+        "emits the password-required code when a password is empty",
+        build: () => ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(untouched)),
+        act: (bloc) => bloc.add(const ChangePasswordChanged(currentPassword: "secret", newPassword: "")),
+        expect: () => [
+          const ChangePasswordLoadingState(),
+          const ChangePasswordFailureState(errorCode: AppErrorCode.accountPasswordRequired),
+        ],
+        verify: (_) => verifyNever(() => untouched.changePassword(any())),
       );
     });
   });

@@ -3,14 +3,23 @@ library;
 
 import 'dart:async';
 
+import 'package:dio/dio.dart' show Interceptor, RequestInterceptorHandler, RequestOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/change_password_page.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -222,16 +231,19 @@ void main() {
       expect(find.text(S.current.success), findsOneWidget);
     });
 
-    testWidgets("Validate failure state shows snackbar", (WidgetTester tester) async {
+    testWidgets("Validate failure state shows why it failed in a snackbar", (WidgetTester tester) async {
       // Given
       await tester.pumpWidget(getWidget());
       await tester.pumpAndSettle();
       // When: emit failure state
-      stateController.add(const ChangePasswordFailureState(errorMessage: 'Test error'));
+      stateController.add(const ChangePasswordFailureState(errorCode: AppErrorCode.accountPasswordRequired));
       await tester.pump();
       await tester.pump();
       // Then
-      expect(find.text(S.current.failed), findsOneWidget);
+      expect(find.text(S.current.error_account_password_required), findsOneWidget);
+      expect(find.text(S.current.failed), findsNothing);
+      // The reason is a sentence, so it stays for the default 4 s instead of the 1 s of the other notices.
+      expect(tester.widget<SnackBar>(find.byType(SnackBar)).duration, const Duration(seconds: 4));
     });
 
     testWidgets("Validate submit button with invalid form", (tester) async {
@@ -382,4 +394,65 @@ void main() {
       expect(find.text('Home'), findsOneWidget);
     });
   });
+
+  group("ChangePasswordScreen in the app", () {
+    late List<RequestOptions> requests;
+
+    setUp(() {
+      requests = [];
+      TestEnv.authenticate();
+    });
+
+    testWidgets("shows why the new password was refused in the app language", (tester) async {
+      tester.view.physicalSize = const Size(1600, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(App(language: 'tr', dependencies: _RecordingDependencies(requests)));
+      await tester.pumpAndSettle();
+      final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+      router.go(ApplicationRoutesConstants.changePassword);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(changePasswordTextFieldCurrentPasswordKey), 'samePassword');
+      await tester.enterText(find.byKey(changePasswordTextFieldNewPasswordKey), 'samePassword');
+      await tester.tap(find.byKey(changePasswordButtonSubmitKey));
+      await tester.pumpAndSettle();
+      // The page first shows for a second that it is saving; the failure follows.
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Yeni şifre mevcut şifreden farklı olmalıdır'), findsOneWidget);
+      expect(find.text('Başarısız'), findsNothing);
+      expect(requests.where((request) => request.path == '/account/change-password'), isEmpty);
+    });
+  });
+}
+
+/// Test-mode app dependencies whose API client records each request the mock API answers in [requests].
+class _RecordingDependencies extends AppDependencies {
+  const _RecordingDependencies(this.requests) : super(appConfig: const AppConfig.test());
+
+  final List<RequestOptions> requests;
+
+  @override
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) {
+    final apiClient = super.createApiClient(secureStorage, onSessionExpired: onSessionExpired);
+    // MockInterceptor comes last and answers in place of the server, so the recorder goes right before it.
+    final interceptors = apiClient.instance.interceptors;
+    interceptors.insert(interceptors.length - 1, _RequestRecorder(requests));
+    return apiClient;
+  }
+}
+
+class _RequestRecorder extends Interceptor {
+  _RequestRecorder(this.requests);
+
+  final List<RequestOptions> requests;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    requests.add(options);
+    handler.next(options);
+  }
 }

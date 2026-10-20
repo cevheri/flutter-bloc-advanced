@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
@@ -185,8 +186,9 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         _formKey.currentState?.fields['newPassword']?.reset();
         _formKey.currentState?.reset();
         _showSnackBar(context, S.of(context).success, duration);
-      case ChangePasswordFailureState():
-        _showSnackBar(context, S.of(context).failed, duration);
+      case ChangePasswordFailureState(:final errorCode):
+        // The reason is a sentence, so it stays for the SnackBar's default duration instead of one second.
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(errorCode.resolve(context))));
     }
   }
 
