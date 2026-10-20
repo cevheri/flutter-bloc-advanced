@@ -8,8 +8,10 @@ import 'package:flutter_test/flutter_test.dart';
 /// HTTP request depends on:
 /// 1. JWT present → `Authorization: Bearer <token>` is attached.
 /// 2. JWT absent or empty → no `Authorization` header is written.
-/// 3. Public endpoint (sign-in, OTP, registration, password reset) →
-///    no `Authorization` header, whatever is stored.
+/// 3. Public endpoint (sign-in, OTP, registration, password reset, token
+///    refresh, app config) → no `Authorization` header, whatever is
+///    stored. Any other method on the same path, and any path that is not
+///    a public API endpoint, gets the token.
 /// 4. Secure read throws → request proceeds anonymously (does NOT
 ///    crash the interceptor chain).
 /// 5. Any other request records the session generation it goes out
@@ -60,19 +62,44 @@ void main() {
       // receives rejects the request when it is, even on an endpoint that needs none.
       final interceptor = AuthInterceptor(secureStorage: _FixedSecureStorage('stale-jwt'));
 
-      for (final path in [
-        '/authenticate',
-        '/authenticate/send-otp',
-        '/authenticate/verify-otp',
-        '/register',
-        '/account/reset-password/init',
+      for (final (method, path) in [
+        ('POST', '/authenticate'),
+        ('POST', '/authenticate/send-otp'),
+        ('POST', '/authenticate/verify-otp'),
+        ('POST', '/register'),
+        ('POST', '/account/reset-password/init'),
+        ('POST', '/api/token/refresh'),
+        // The lifecycle checks read the app config before sign-in.
+        ('GET', '/app/config'),
       ]) {
         final handler = _CapturingRequestHandler();
 
-        await interceptor.onRequest(RequestOptions(path: path, method: 'POST', extra: {'_basePath': path}), handler);
+        await interceptor.onRequest(RequestOptions(path: path, method: method, extra: {'_basePath': path}), handler);
 
-        expect(handler.passedOptions, isNotNull, reason: 'handler.next should be called for $path');
-        expect(handler.passedOptions!.headers.containsKey('Authorization'), isFalse, reason: path);
+        expect(handler.passedOptions, isNotNull, reason: 'handler.next should be called for $method $path');
+        expect(handler.passedOptions!.headers.containsKey('Authorization'), isFalse, reason: '$method $path');
+      }
+    });
+
+    // The public list held paths without methods, the app's own routes and /logout, so these requests would have gone
+    // out without the token they need. No shipped request goes to them yet.
+    test('attaches the stored token to any other request, also on the path of a public endpoint', () async {
+      final interceptor = AuthInterceptor(secureStorage: _FixedSecureStorage('jwt-value'));
+
+      for (final (method, path) in [
+        // Answers whether the session is valid, so it needs the token, unlike the sign-in on the same path.
+        ('GET', '/authenticate'),
+        // A server-side logout has to know which session to end.
+        ('POST', '/logout'),
+        // Routes of the app, not endpoints of the API.
+        ('GET', '/forgot-password'),
+        ('GET', '/login-otp'),
+      ]) {
+        final handler = _CapturingRequestHandler();
+
+        await interceptor.onRequest(RequestOptions(path: path, method: method, extra: {'_basePath': path}), handler);
+
+        expect(handler.passedOptions!.headers['Authorization'], 'Bearer jwt-value', reason: '$method $path');
       }
     });
 

@@ -18,6 +18,8 @@ import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/data/repositories/lifecycle_repository.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
@@ -411,6 +413,36 @@ void main() {
       expect(await scope.read<IAuthRepository>().logout(), isA<Success<void>>());
 
       expect(sessionRepository.clears, 1);
+    });
+
+    // The lifecycle checks read GET /app/config before sign-in. Were it not public, it would carry the expired token
+    // restore() leaves stored, get 401, and spend the stored refresh token on a refresh that stores a working session
+    // for a relaunch to restore.
+    testWidgets('reading the app config before sign-in neither sends nor refreshes the expired stored session', (
+      tester,
+    ) async {
+      final dependencies = _CountingDependencies();
+      final scope = await _pumpExpiredSession(tester, dependencies);
+      final server = _ServerAdapter({
+        'GET /app/config': (200, {'minimumVersion': '1.0.0', 'maintenanceMode': false}),
+        ..._refreshRoute,
+      });
+      final apiClient = scope.read<ApiClient>();
+      apiClient.instance.httpClientAdapter = server;
+
+      Result<AppConfigEntity>? result;
+      LifecycleRepository(apiClient).fetchAppConfig().then((value) => result = value);
+      await _pumpUntil(tester, () => result != null);
+
+      expect(result, isA<Success<AppConfigEntity>>());
+      expect(server.requests, ['GET /app/config null'], reason: 'no stored token is sent, and none is refreshed');
+      expect(dependencies.sessionExpiredCalls, 0);
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), 'stored-refresh-token');
+      // A relaunch restores the session from secure storage, as AppScope does on launch.
+      final relaunched = SessionCubit(secureStorage: FlutterSecureStorageAdapter(), appConfig: _prodConfig);
+      addTearDown(relaunched.close);
+      await relaunched.restore();
+      expect(relaunched.state, const SessionUnauthenticated(reason: SessionExpiredReason.expired));
     });
 
     // Regression: a token refresh still on its way when the session ended stored the rotated tokens after the wipe.

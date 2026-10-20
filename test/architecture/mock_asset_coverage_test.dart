@@ -25,6 +25,9 @@ import '../support/test_env.dart';
 /// submits to the endpoint its schema declares, so each form the app opens is submitted through the schema its mock
 /// serves.
 ///
+/// The methods sent before sign-in also run without a stored token: the mock answers a public endpoint without one, as
+/// the server does, and rejects any other request without one with 401.
+///
 /// The last test fails when a repository that sends requests through [ApiClient] gains a method the table does not
 /// drive.
 void main() {
@@ -84,6 +87,24 @@ void main() {
       TestEnv.authenticate();
 
       final result = await send(TestEnv.apiClient());
+
+      expect(result, isA<Success<Object?>>(), reason: '$result');
+    });
+  }
+
+  // Sent before sign-in: sign-in, the OTP sign-in, registration and password reset, and the app config the lifecycle
+  // checks read.
+  const sentBeforeSignIn = [
+    'IAuthRepository.authenticate',
+    'IAuthRepository.sendOtp',
+    'IAuthRepository.verifyOtp',
+    'IAccountRepository.register',
+    'IAccountRepository.resetPassword',
+    'ILifecycleRepository.fetchAppConfig',
+  ];
+  for (final name in sentBeforeSignIn) {
+    test('$name succeeds through the mock-backed client without a stored token', () async {
+      final result = await requests[name]!(TestEnv.apiClient());
 
       expect(result, isA<Success<Object?>>(), reason: '$result');
     });

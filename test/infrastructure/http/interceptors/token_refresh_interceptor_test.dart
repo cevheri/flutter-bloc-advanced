@@ -54,13 +54,15 @@ RequestOptions _sentRequest(String path, {Map<String, dynamic>? headers}) => Req
   extra: {AuthInterceptor.sessionGenerationKey: SessionGeneration.current},
 );
 
-/// The endpoints the app calls before sign-in: sign-in, OTP send and verify, registration and password reset.
+/// The public endpoints the app calls before sign-in: sign-in, OTP send and verify, registration and password reset,
+/// and the app config the lifecycle checks read.
 const _publicEndpoints = [
-  '/authenticate',
-  '/authenticate/send-otp',
-  '/authenticate/verify-otp',
-  '/register',
-  '/account/reset-password/init',
+  ('POST', '/authenticate'),
+  ('POST', '/authenticate/send-otp'),
+  ('POST', '/authenticate/verify-otp'),
+  ('POST', '/register'),
+  ('POST', '/account/reset-password/init'),
+  ('GET', '/app/config'),
 ];
 
 void main() {
@@ -250,8 +252,14 @@ void main() {
         onSessionExpired: () => sessionExpiredCalls++,
       );
 
-      for (final path in _publicEndpoints) {
-        final requestOptions = RequestOptions(path: path, method: 'POST', extra: {'_basePath': path});
+      for (final (method, path) in _publicEndpoints) {
+        // With a session generation recorded, as if the endpoint were not public, so only the public check stops the
+        // refresh.
+        final requestOptions = RequestOptions(
+          path: path,
+          method: method,
+          extra: {'_basePath': path, AuthInterceptor.sessionGenerationKey: SessionGeneration.current},
+        );
         final error = DioException(
           requestOptions: requestOptions,
           response: Response(requestOptions: requestOptions, statusCode: 401),
@@ -260,11 +268,31 @@ void main() {
 
         await interceptor.onError(error, handler);
 
-        expect(handler.nextError, same(error), reason: path);
-        expect(handler.resolveCalled, isFalse, reason: path);
+        expect(handler.nextError, same(error), reason: '$method $path');
+        expect(handler.resolveCalled, isFalse, reason: '$method $path');
       }
       expect(secureStorage.refreshTokenReadCount, 0, reason: 'the refresh-token read is the proxy for a refresh');
       expect(sessionExpiredCalls, 0);
+    });
+
+    // The public list held paths without methods, so a 401 from a protected request on the path of a public endpoint
+    // would have been taken for rejected credentials and never refreshed the session. No shipped request sends one yet.
+    test('refreshes the session for a 401 from another method on the path of a public endpoint', () async {
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      final requestOptions = RequestOptions(
+        path: '/authenticate',
+        method: 'GET',
+        extra: {'_basePath': '/authenticate', AuthInterceptor.sessionGenerationKey: SessionGeneration.current},
+      );
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+
+      await interceptor.onError(error, _TestErrorHandler());
+
+      expect(secureStorage.refreshTokenReadCount, 1, reason: 'the refresh-token read is the proxy for a refresh');
     });
   });
 

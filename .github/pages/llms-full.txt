@@ -173,6 +173,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 - `interceptors/auth_interceptor.dart`: Automatic JWT token injection from secure storage
 - `interceptors/logging_interceptor.dart`: Structured request/response logging via AppLogger
 - `interceptors/mock_interceptor.dart`: Dev/test mode mock data from assets
+- `public_endpoint.dart`: API endpoints that serve requests without a session, by method and path
 
 ### Configuration (infrastructure/config/)
 
@@ -200,7 +201,6 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 
 ### Security (core/security/)
 
-- `allowed_paths.dart`: Public/private route path definitions
 - `security_utils.dart`: Security utility functions
 
 ## Shared

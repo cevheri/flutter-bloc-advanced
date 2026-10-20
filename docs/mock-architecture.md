@@ -144,7 +144,7 @@ The error of that rejection is a `ConnectivityException`, so `ResilienceIntercep
 ### AuthInterceptor
 
 Reads the JWT from `ISecureStorage` on every request to a private path and adds it as a Bearer token when one is stored.
-A request to a public path (see [Public vs. Private Paths](#public-vs-private-paths)) never gets a token:
+A request to a public endpoint (see [Public vs. Private Endpoints](#public-vs-private-endpoints)) never gets a token:
 
 ```dart
 if (isPublicEndpoint(options)) {
@@ -174,7 +174,7 @@ In dev/test mode it answers every request that reaches the end of the chain with
 **Step-by-step flow:**
 
 1. **Simulated latency** — 500 ms delay in dev mode, skipped in test mode
-2. **Auth check** — For non-public paths, rejects with 401 if no `Authorization` header
+2. **Auth check**: for a request to an endpoint that is not public, rejects with 401 if no `Authorization` header
 3. **Status code** — POST → 201, DELETE → 204 (early return), everything else → 200
 4. **File resolution** — Builds a file name from the request metadata (see next section)
 5. **Asset loading** — Reads the JSON file via `rootBundle.loadString()`
@@ -290,22 +290,30 @@ Each file contains the exact JSON the real API would return.
 }
 ```
 
-## Public vs. Private Paths
+## Public vs. Private Endpoints
 
-Defined in `lib/core/security/allowed_paths.dart`:
+`publicEndpoints` in `lib/infrastructure/http/public_endpoint.dart` lists the API endpoints that serve requests without a session, each by HTTP method and path:
 
-**Public paths** (no JWT required):
-- `/authenticate`, `/register`, `/logout`
-- `/account/reset-password/init`, `/forgot-password`
-- `/login-otp`, `/login-otp-verify`
-- `/authenticate/send-otp`, `/authenticate/verify-otp`
-- `/api/token/refresh`
-- `/app/config`
+| Method | Path | Sent by |
+| --- | --- | --- |
+| `POST` | `/authenticate` | Sign-in, `LoginRepository.authenticate` |
+| `POST` | `/authenticate/send-otp` | OTP sign-in, `LoginRepository.sendOtp` |
+| `POST` | `/authenticate/verify-otp` | OTP sign-in, `LoginRepository.verifyOtp` |
+| `POST` | `/register` | Registration, `AccountRepository.register` |
+| `POST` | `/account/reset-password/init` | Password reset, `AccountRepository.resetPassword` |
+| `POST` | `/api/token/refresh` | Token refresh, `TokenRefreshInterceptor` |
+| `GET` | `/app/config` | Lifecycle checks before sign-in, `LifecycleRepository.fetchAppConfig` |
 
-All other paths require a valid `Authorization` header. In dev/test mode the `MockInterceptor` enforces this check; in production the real API does.
+The path is the one the `ApiClient` method is called with, before any path parameters.
+Another method on the same path, such as `GET /authenticate`, is private, and the app's own routes, such as `/forgot-password`, are not API endpoints, so the list leaves them out.
+All other endpoints require a valid `Authorization` header.
+In dev/test mode the `MockInterceptor` enforces this check; in production the real API does.
 
-In every environment `AuthInterceptor` sends no token to a public path, so a stale token left by an expired session never reaches the sign-in endpoints.
-`TokenRefreshInterceptor` passes a 401 from any other public path than the refresh endpoint on without a token refresh and without ending the session, because it rejects the credentials in the request, not a token; a 401 from the refresh endpoint still ends the session.
+`AuthInterceptor`, `TokenRefreshInterceptor` and `MockInterceptor` all ask `isPublicEndpoint`, so they cannot disagree about an endpoint:
+
+- In every environment `AuthInterceptor` sends no token to a public endpoint, so a stale token left by an expired session never reaches the sign-in endpoints.
+- `TokenRefreshInterceptor` passes a 401 from any other public endpoint than the refresh endpoint on without a token refresh and without ending the session, because it is not about a session: on the sign-in endpoints it rejects the credentials in the request; a 401 from the refresh endpoint still ends the session.
+- `MockInterceptor` answers a public endpoint without a token, as the server does.
 
 ## How Repositories Use ApiClient
 
@@ -463,7 +471,7 @@ When you add a new API endpoint, follow these steps:
 
 2. **Register the asset** in `pubspec.yaml` (already covered by `assets/mock/` glob).
 
-3. **If the endpoint is public**, add the path to `lib/core/security/allowed_paths.dart`.
+3. **If the endpoint is public**, add its method and path to `publicEndpoints` in `lib/infrastructure/http/public_endpoint.dart`.
 
 4. **Call `ApiClient`** from your repository — the mock interceptor handles the rest automatically.
 
@@ -482,7 +490,7 @@ A GET, POST, PUT or PATCH whose file is missing fails with 501 and the name of t
 | Auth interceptor | `lib/infrastructure/http/interceptors/auth_interceptor.dart` |
 | Mock interceptor | `lib/infrastructure/http/interceptors/mock_interceptor.dart` |
 | Logging interceptor | `lib/infrastructure/http/interceptors/logging_interceptor.dart` |
-| Public path definitions | `lib/core/security/allowed_paths.dart` |
+| Public endpoints | `lib/infrastructure/http/public_endpoint.dart` |
 | Template config (API URL) | `lib/infrastructure/config/template_config.dart` |
 | Mock JSON files | `assets/mock/*.json` (22 files) |
 | DI (ApiClient + repository factories) | `lib/app/di/app_dependencies.dart` |

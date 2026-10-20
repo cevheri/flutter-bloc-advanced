@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-import 'package:flutter_bloc_advance/core/security/allowed_paths.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 
 /// Intercepts all requests in dev/test mode and returns mock JSON from assets.
 ///
@@ -21,8 +21,8 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 /// with `callFollowingErrorInterceptor: true` for the same reason: a server
 /// 401 runs every onError handler, so [TokenRefreshInterceptor] ends the
 /// session when the token cannot be refreshed, and the dev console and
-/// logging record the failure. Paths in [allowedPaths], login among them,
-/// are never rejected.
+/// logging record the failure. A public endpoint ([isPublicEndpoint]),
+/// sign-in among them, is never rejected.
 ///
 /// A request whose mock file is missing fails with 501 Not Implemented, also
 /// rejected with `callFollowingErrorInterceptor: true`, so the dev console
@@ -45,9 +45,9 @@ class MockInterceptor extends Interceptor {
       await Future.delayed(const Duration(milliseconds: 500));
     }
 
-    // Auth check for non-public paths
+    // Auth check for non-public endpoints
     final basePath = options.extra['_basePath'] as String? ?? options.path;
-    if (!allowedPaths.contains(basePath)) {
+    if (!isPublicEndpoint(options)) {
       _log.debug('mockRequest: checking auth for endpoint: {}', [basePath]);
       if (options.headers['Authorization'] == null) {
         handler.reject(

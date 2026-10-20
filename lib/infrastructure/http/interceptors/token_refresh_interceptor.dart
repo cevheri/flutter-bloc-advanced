@@ -199,11 +199,13 @@ class TokenRefreshInterceptor extends Interceptor {
       return;
     }
 
-    // A public endpoint (sign-in, OTP, registration, password reset) is
-    // sent without a token, so its 401 rejects the credentials or input in
-    // the request, not a session: no refresh, and no session to end. A
-    // refresh here would spend the stored refresh token on a wrong
-    // password and resend the credentials with a fresh bearer token.
+    // A public endpoint is sent without a token, so its 401 is not about the
+    // session: no refresh, and no session to end. For sign-in, OTP,
+    // registration and password reset it rejects the credentials or input
+    // in the request, and a refresh here would spend the stored refresh
+    // token on a wrong password and resend the credentials with a fresh
+    // bearer token. The app config is public too: the lifecycle checks read
+    // it before sign-in.
     if (isPublicEndpoint(err.requestOptions)) {
       _log.debug('401 from public endpoint {}: no token refresh', [requestPath]);
       handler.next(err);

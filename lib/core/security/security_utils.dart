@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-import 'package:flutter_bloc_advance/core/security/allowed_paths.dart';
 
 /// Pure token / role utility functions.
 ///
@@ -71,15 +70,5 @@ class SecurityUtils {
       _log.error("END:getTokenExpiration - Error: {}", [e.runtimeType]);
       return null;
     }
-  }
-
-  /// Check if the path is allowed
-  ///
-  /// Some paths are allowed to be accessed without JWT token like login, register, forgot-password, etc.
-  static bool isAllowedPath(String path) {
-    _log.trace("BEGIN:isAllowedPath - path: {}", [path]);
-    final result = allowedPaths.contains(path);
-    _log.trace("END:isAllowedPath - result: {}", [result]);
-    return result;
   }
 }

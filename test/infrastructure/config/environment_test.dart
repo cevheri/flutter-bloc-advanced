@@ -1,4 +1,3 @@
-import 'package:flutter_bloc_advance/core/security/allowed_paths.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/template_config.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -29,20 +28,5 @@ void main() {
       expect(AppConfig.fromEnvironment(Environment.test).isTest, true);
       expect(AppConfig.fromEnvironment(Environment.prod).isProduction, true);
     });
-  });
-  test("allowed paths", () {
-    expect(allowedPaths, [
-      '/authenticate',
-      '/register',
-      '/logout',
-      '/account/reset-password/init',
-      '/forgot-password',
-      '/login-otp',
-      '/login-otp-verify',
-      '/authenticate/send-otp',
-      '/authenticate/verify-otp',
-      '/api/token/refresh',
-      '/app/config',
-    ]);
   });
 }

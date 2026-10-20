@@ -8,8 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 /// AppLogger puts each argument of a call into the next `{}` of its message. An argument with no `{}` left is never
 /// printed, and a `{}` with no argument left is printed as it is. So a call whose message has fewer or more `{}` than
 /// the call has arguments logs a line that leaves out a value or shows a bare `{}`, and neither fails at runtime or in
-/// `flutter analyze`. The two trace lines of `SecurityUtils.isAllowedPath` passed the path and the result without a
-/// `{}`, so neither value was ever printed.
+/// `flutter analyze`. The two trace lines of `SecurityUtils.isAllowedPath`, since removed, passed the path and the
+/// result without a `{}`, so neither value was ever printed.
 ///
 /// This meta-test reads every AppLogger call in `lib/` whose message is a string literal and whose arguments are a
 /// list literal, and fails when the number of `{}` in the message differs from the number of arguments.

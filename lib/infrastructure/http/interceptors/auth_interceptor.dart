@@ -34,10 +34,12 @@ class AuthInterceptor extends Interceptor {
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
-    // A public endpoint (sign-in, OTP, registration, password reset) needs
-    // no session, so it never gets the stored token. That token can be a
-    // stale one left by an expired session, and a server that checks every
-    // token it receives rejects such a request even where none is needed.
+    // A public endpoint (sign-in, OTP, registration, password reset, token
+    // refresh, and the app config that the lifecycle checks read before
+    // sign-in) needs no session, so it never gets the stored token. That
+    // token can be a stale one left by an expired session, and a server
+    // that checks every token it receives rejects such a request even
+    // where none is needed.
     if (isPublicEndpoint(options)) {
       _log.debug('Request [{}] {} (public endpoint, no token)', [options.method, options.path]);
       handler.next(options);
