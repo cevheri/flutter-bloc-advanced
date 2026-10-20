@@ -81,27 +81,93 @@ void main() {
   });
 
   group('scrubBodyKeys', () {
-    test('drops password / otp / token / refreshToken keys (case-insensitive substring)', () {
+    test('masks the values of password / otp / token / refreshToken / secret keys (case-insensitive substring)', () {
       final result = scrubBodyKeys({
         'username': 'alice',
         'password': 'p@ss',
-        'OTP': '123456',
+        'OTP': 123456,
         'accessToken': 'xxx',
         'refreshToken': 'yyy',
+        'clientSecret': 'zzz',
         'note': 'kept',
       });
-      final data = Map<String, dynamic>.from(result! as Map);
-      expect(data.containsKey('password'), isFalse);
-      expect(data.containsKey('OTP'), isFalse);
-      expect(data.containsKey('accessToken'), isFalse);
-      expect(data.containsKey('refreshToken'), isFalse);
-      expect(data['username'], 'alice');
-      expect(data['note'], 'kept');
+      expect(result, {
+        'username': 'alice',
+        'password': '[REDACTED]',
+        'OTP': '[REDACTED]',
+        'accessToken': '[REDACTED]',
+        'refreshToken': '[REDACTED]',
+        'clientSecret': '[REDACTED]',
+        'note': 'kept',
+      });
+    });
+
+    // Regression: only top-level keys were read, so a credential nested in an object or a list was kept.
+    test('masks a credential at any depth and keeps a null one as null', () {
+      final result = scrubBodyKeys({
+        'user': {'login': 'alice', 'newPassword': 'p@ss'},
+        'sessions': [
+          {'id': 1, 'refresh_token': 'yyy'},
+        ],
+        'tokens': {'access': 'xxx'},
+        'currentPassword': null,
+      });
+      expect(result, {
+        'user': {'login': 'alice', 'newPassword': '[REDACTED]'},
+        'sessions': [
+          {'id': 1, 'refresh_token': '[REDACTED]'},
+        ],
+        'tokens': '[REDACTED]',
+        'currentPassword': null,
+      });
     });
 
     test('non-Map body is returned untouched', () {
       expect(scrubBodyKeys('plain string'), 'plain string');
       expect(scrubBodyKeys(null), isNull);
+    });
+  });
+
+  group('scrubErrorBody', () {
+    test('masks the value a validation error repeats, under rejectedValue, input or value', () {
+      const body =
+          '{"errors":[{"field":"email","rejectedValue":"x@y"},{"loc":["body","pin"],"input":"1234"},'
+          '{"path":"code","value":"9876"}]}';
+
+      expect(
+        scrubErrorBody(body),
+        '{"errors":[{"field":"email","rejectedValue":"[REDACTED]"},{"loc":["body","pin"],"input":"[REDACTED]"},'
+        '{"path":"code","value":"[REDACTED]"}]}',
+      );
+    });
+
+    test('masks a credential the request sent wherever the body repeats it', () {
+      final text = scrubErrorBody(
+        '{"status":401,"detail":"OTP 493817 expired","hint":{"lastCode":493817}}',
+        requestBody: {'email': 'a@b.c', 'otp': '493817'},
+      );
+
+      expect(text, '{"status":401,"detail":"OTP [REDACTED] expired","hint":{"lastCode":"[REDACTED]"}}');
+    });
+
+    test('masks a credential of the request in a body that is not JSON', () {
+      expect(
+        scrubErrorBody('Password S3cret!pw is too weak', requestBody: '{"username":"admin","password":"S3cret!pw"}'),
+        'Password [REDACTED] is too weak',
+      );
+    });
+
+    test('masks a JWT in the body', () {
+      const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart';
+
+      expect(scrubErrorBody('token $jwt was revoked'), 'token [REDACTED_JWT] was revoked');
+    });
+
+    test('keeps a body without a credential as it is', () {
+      const body = '{"status": 404, "path": "/api/admin/users/alice", "value_count": 2}';
+
+      expect(scrubErrorBody(body, requestBody: {'login': 'alice'}), body);
+      expect(scrubErrorBody(null), '');
     });
   });
 }

@@ -3,6 +3,7 @@ import 'dart:convert' show utf8;
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinning_adapter.dart';
@@ -321,7 +322,9 @@ class ApiClient {
 
   static AppException _mapBadResponse(DioException e) {
     final statusCode = e.response?.statusCode ?? 0;
-    final body = e.response?.data?.toString() ?? '';
+    // The body becomes the text of the exception, which the log, the dev console and Sentry receive, and a validation
+    // error can repeat the password or the code the request sent.
+    final body = scrubErrorBody(e.response?.data, requestBody: e.requestOptions.data);
     switch (statusCode) {
       case 400:
         return BadRequestException(body);

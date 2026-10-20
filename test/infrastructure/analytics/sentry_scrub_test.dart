@@ -44,7 +44,7 @@ void main() {
   });
 
   group('sentryBeforeSend — body scrubbing (Map shape)', () {
-    test('drops password, otp, token, refreshToken keys', () {
+    test('masks the values of password, otp, token, refreshToken keys', () {
       final body = {
         'username': 'alice',
         'password': 'p@ss',
@@ -54,22 +54,20 @@ void main() {
         'note': 'kept',
       };
       final result = sentryBeforeSend(_eventWithBody(body));
-      final data = Map<String, dynamic>.from(result.request!.data as Map);
-      expect(data.containsKey('password'), isFalse);
-      expect(data.containsKey('otp'), isFalse);
-      expect(data.containsKey('token'), isFalse);
-      expect(data.containsKey('refreshToken'), isFalse);
-      expect(data['username'], 'alice');
-      expect(data['note'], 'kept');
+      expect(result.request!.data, {
+        'username': 'alice',
+        'password': '[REDACTED]',
+        'otp': '[REDACTED]',
+        'token': '[REDACTED]',
+        'refreshToken': '[REDACTED]',
+        'note': 'kept',
+      });
     });
 
     test('key match is case-insensitive', () {
       final body = {'Password': 'a', 'OTP': 'b', 'newPassword': 'c'};
       final result = sentryBeforeSend(_eventWithBody(body));
-      final data = Map<String, dynamic>.from(result.request!.data as Map);
-      expect(data.containsKey('Password'), isFalse);
-      expect(data.containsKey('OTP'), isFalse);
-      expect(data.containsKey('newPassword'), isFalse);
+      expect(result.request!.data, {'Password': '[REDACTED]', 'OTP': '[REDACTED]', 'newPassword': '[REDACTED]'});
     });
 
     test('keeps a non-Map body without an email or a JWT as it is', () {
@@ -194,6 +192,7 @@ void main() {
       );
       expect(result.request?.data, {
         'login': '[REDACTED_EMAIL]',
+        'password': '[REDACTED]',
         'profile': {
           'emails': ['[REDACTED_EMAIL]', '[REDACTED_EMAIL]'],
           'note': 'session [REDACTED_JWT]',

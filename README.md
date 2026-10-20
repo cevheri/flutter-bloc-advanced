@@ -88,7 +88,7 @@ fvm flutter build apk --release --target lib/main/main_prod.dart \
 `sentryBeforeSend` (see `lib/infrastructure/analytics/sentry_scrub.dart`) drops the following before any event leaves the device:
 
 - `Authorization` / `Cookie` / `Set-Cookie` headers (case-insensitive)
-- Body keys whose names contain `password`, `otp`, `token`, `refreshToken` (case-insensitive substring)
+- The values of body keys whose names contain `password`, `otp`, `token` or `secret` (case-insensitive substring), at any depth, replaced with `[REDACTED]`
 - Email addresses and JWT-shaped strings (3 base64url segments) in exception values, the event message and the request body (which only an HTTP integration a fork adds, such as `sentry_dio`, attaches), replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`
 - Email addresses and JWTs in the page location (`request.url`, query string, fragment) and the transaction name, replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`.
   On web the OTP route `/login-otp-verify/:email` puts the user's email there.

@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
@@ -850,6 +851,118 @@ void main() {
         );
         expect(lines, everyElement(isNot(contains('jane.doe'))));
       });
+    });
+  });
+
+  // Regression: ApiClient put the raw body of an error response into the exception it threw, and an AppException logs
+  // its text at error level when it is created, which every build of main_prod prints. A validation error can repeat
+  // what the request sent, so the password of a sign-in or a change and the code of an OTP check reached the console,
+  // the repository and BLoC error lines that log the exception again, and on web with a Sentry DSN the breadcrumbs.
+  group('ApiClient error responses that repeat a credential', () {
+    late ApiClient client;
+    late _FakeHttpClientAdapter adapter;
+
+    setUp(() {
+      AppLogger.configure(isProduction: true);
+      client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      adapter = _FakeHttpClientAdapter();
+      client.instance.httpClientAdapter = adapter;
+      TestEnv.authenticate();
+    });
+
+    tearDown(() => AppLogger.configure(isProduction: false));
+
+    /// The text of the exception that [request] fails with, which the repositories and BLoCs log again.
+    Future<String> failureText(Future<Object?> request) async {
+      try {
+        await request;
+      } on AppException catch (e) {
+        return e.toString();
+      }
+      fail('the request did not fail');
+    }
+
+    test('keeps the passwords out of a Spring validation error that repeats the rejected value', () async {
+      adapter.reply(
+        400,
+        jsonEncode({
+          'status': 400,
+          'errors': [
+            {'field': 'newPassword', 'rejectedValue': 'NewPass#2', 'defaultMessage': 'size must be between 8 and 100'},
+          ],
+        }),
+      );
+      final lines = _capturePrintedLines();
+
+      final text = await failureText(
+        client.post('/account/change-password', {'currentPassword': 'OldPass#1', 'newPassword': 'NewPass#2'}),
+      );
+
+      expect([text, ...lines], everyElement(allOf(isNot(contains('NewPass#2')), isNot(contains('OldPass#1')))));
+      expect(text, allOf(startsWith('Invalid Request: '), contains('size must be between 8 and 100')));
+      expect(lines, anyElement(contains('BusinessException : Invalid Request: ')));
+    });
+
+    test('keeps the code out of an OTP error whose detail names it', () async {
+      adapter.reply(401, jsonEncode({'status': 401, 'detail': 'OTP 493817 expired for otp.user@example.com'}));
+      final lines = _capturePrintedLines();
+
+      final text = await failureText(
+        client.post('/authenticate/verify-otp', {'email': 'otp.user@example.com', 'otp': '493817'}),
+      );
+
+      expect([text, ...lines], everyElement(isNot(contains('493817'))));
+      expect(text, allOf(startsWith('Unauthorized: '), contains('expired for')));
+    });
+
+    test('keeps the password out of a Pydantic validation error that repeats the input', () async {
+      adapter.reply(
+        422,
+        jsonEncode({
+          'detail': [
+            {
+              'type': 'string_too_short',
+              'loc': ['body', 'password'],
+              'msg': 'String should have at least 12 characters',
+              'input': 'S3cret!pw',
+            },
+          ],
+        }),
+      );
+      final lines = _capturePrintedLines();
+
+      final text = await failureText(client.post('/authenticate', {'username': 'admin', 'password': 'S3cret!pw'}));
+
+      expect([text, ...lines], everyElement(isNot(contains('S3cret!pw'))));
+      expect(text, allOf(contains('HTTP 422: '), contains('at least 12 characters')));
+    });
+
+    test('keeps the password out of a plain text error that repeats it', () async {
+      adapter.reply(400, 'Password S3cret!pw is too weak');
+      final lines = _capturePrintedLines();
+
+      final text = await failureText(client.post('/authenticate', {'username': 'admin', 'password': 'S3cret!pw'}));
+
+      expect([text, ...lines], everyElement(isNot(contains('S3cret!pw'))));
+      expect(text, allOf(startsWith('Invalid Request: Password '), endsWith(' is too weak')));
+    });
+
+    // Guards against the scrub losing the body: an error without a credential reaches the log as the server sent it.
+    test('keeps an error body without a credential as the server sent it', () async {
+      const body = '{"status": 400, "title": "Bad Request", "detail": "login already used", "path": "/api/register"}';
+      adapter.reply(400, body);
+
+      final text = await failureText(client.post('/register', {'login': 'admin', 'email': 'admin@example.com'}));
+
+      expect(text, 'Invalid Request: $body');
     });
   });
 
