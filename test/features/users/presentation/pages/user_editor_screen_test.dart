@@ -4,13 +4,21 @@ library;
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
+import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/authorities_dropdown.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/widgets/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -18,6 +26,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
+import '../../../../support/test_env.dart';
 
 void main() {
   late MockAuthorityBloc mockAuthorityBloc;
@@ -276,4 +285,107 @@ void main() {
       expect(find.byKey(const Key('userEditorLoginFieldKey')), findsOneWidget);
     });
   });
+
+  group('UserEditorScreen in the app', () {
+    late MockIUserRepository userRepository;
+
+    const grace = UserEntity(
+      id: '7',
+      login: 'grace.hopper',
+      firstName: 'Grace',
+      lastName: 'Hopper',
+      email: 'grace.hopper@example.com',
+      activated: true,
+      authorities: ['ROLE_USER'],
+    );
+
+    setUp(() async {
+      userRepository = MockIUserRepository();
+      TestEnv.authenticate();
+      await AppLocalStorage().save(StorageKeys.roles.key, ['ROLE_ADMIN']);
+    });
+
+    // What an admin does: open a user from the list, here by going to its address.
+    Future<void> openEditor(WidgetTester tester, String location) async {
+      tester.view.physicalSize = const Size(1600, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(App(language: 'en', dependencies: _UserRepositoryDependencies(userRepository)));
+      await tester.pumpAndSettle();
+      final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+      router.go(location);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 500));
+    }
+
+    for (final mode in ['edit', 'view']) {
+      testWidgets('shows an error with a retry when the user to $mode cannot be loaded', (tester) async {
+        when(() => userRepository.retrieve('grace.hopper'))
+            .thenAnswer((_) async => const Failure(NetworkError('User service unavailable')));
+
+        await openEditor(tester, '/user/grace.hopper/$mode');
+        expect(find.byType(SnackBar), findsNothing);
+        await tester.pumpAndSettle();
+
+        expect(find.text(S.current.user_load_failed), findsOneWidget);
+        expect(find.text(S.current.error_generic), findsOneWidget);
+        expect(find.text('User service unavailable'), findsNothing);
+        expect(find.text('No data'), findsNothing);
+        expect(find.byKey(const Key('userEditorAppBarBackButtonKey')), findsOneWidget);
+
+        when(() => userRepository.retrieve('grace.hopper')).thenAnswer((_) async => const Success(grace));
+        await tester.tap(find.text(S.current.refresh));
+        await tester.pumpAndSettle();
+
+        expect(find.text('grace.hopper@example.com'), findsOneWidget);
+        expect(find.text(S.current.user_load_failed), findsNothing);
+        // The reloaded page starts more requests; let the mock API's 500 ms delay pass so none is left pending.
+        await tester.pump(const Duration(milliseconds: 600));
+      });
+    }
+
+    testWidgets('keeps the form and the edits when saving the user fails', (tester) async {
+      when(() => userRepository.retrieve('grace.hopper')).thenAnswer((_) async => const Success(grace));
+      when(() => userRepository.update(any()))
+          .thenAnswer((_) async => const Failure(NetworkError('User service unavailable')));
+      await openEditor(tester, '/user/grace.hopper/edit');
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Amazing Grace');
+      await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Amazing Grace'), findsOneWidget);
+      expect(find.text('No data'), findsNothing);
+
+      // Saving again still updates the same user instead of creating a new one.
+      when(() => userRepository.update(any())).thenAnswer((_) async => const Success(grace));
+      await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      verify(
+        () => userRepository.update(
+          any(
+            that: isA<UserEntity>()
+                .having((user) => user.id, 'id', '7')
+                .having((user) => user.firstName, 'firstName', 'Amazing Grace'),
+          ),
+        ),
+      ).called(2);
+      verifyNever(() => userRepository.create(any()));
+    });
+  });
+}
+
+/// Mock-mode app dependencies whose users are served by [userRepository].
+class _UserRepositoryDependencies extends AppDependencies {
+  const _UserRepositoryDependencies(this.userRepository);
+
+  final IUserRepository userRepository;
+
+  @override
+  IUserRepository createUserRepository(ApiClient apiClient) => userRepository;
 }

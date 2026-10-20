@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
@@ -33,13 +34,12 @@ class UserEditorBloc extends Bloc<UserEditorEvent, UserEditorState> {
   final SaveUserUseCase _saveUserUseCase;
 
   /// Lift the carried [UserEntity] forward from any state that holds
-  /// one. Used by `_onSaveComplete` / `_onViewComplete` whose only job
-  /// is to flip the state without dropping the user being edited.
+  /// one. Used by `_onSubmit`, `_onSaveComplete` and `_onViewComplete`,
+  /// which change the state without dropping the user being edited.
   UserEntity? _carriedUser() => switch (state) {
     UserEditorLoaded(:final data) => data,
-    UserEditorSaved(:final data) => data,
-    UserEditorViewed(:final data) => data,
-    _ => null,
+    UserEditorSaved(:final data) || UserEditorViewed(:final data) || UserEditorSaveFailure(:final data) => data,
+    UserEditorInitial() || UserEditorLoading() || UserEditorFetchFailure() => null,
   };
 
   FutureOr<void> _onReset(UserEditorReset event, Emitter<UserEditorState> emit) {
@@ -56,22 +56,23 @@ class UserEditorBloc extends Bloc<UserEditorEvent, UserEditorState> {
         emit(UserEditorLoaded(data: data));
         _log.debug('END:onFetch success: {}', [data]);
       case Failure(:final error):
-        emit(UserEditorFailure(error: error.message));
-        _log.error('END:onFetch error: {}', [error.message]);
+        emit(UserEditorFetchFailure(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
+        _log.error('END:onFetch error: {}', [error]);
     }
   }
 
   FutureOr<void> _onSubmit(UserEditorSubmit event, Emitter<UserEditorState> emit) async {
     _log.debug('BEGIN: onSubmit user: {}', [event.user]);
-    emit(UserEditorLoading(data: _carriedUser()));
+    final carried = _carriedUser();
+    emit(UserEditorLoading(data: carried));
     final result = await _saveUserUseCase(event.user);
     switch (result) {
       case Success(:final data):
         emit(UserEditorSaved(data: data));
         _log.debug('END:onSubmit success: {}', [data]);
       case Failure(:final error):
-        emit(UserEditorFailure(error: error.message));
-        _log.error('END:onSubmit error: {}', [error.message]);
+        emit(UserEditorSaveFailure(data: carried));
+        _log.error('END:onSubmit error: {}', [error]);
     }
   }
 

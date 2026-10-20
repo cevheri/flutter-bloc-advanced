@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/shared/widgets/editor_form_mode.dart';
 import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/components.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -23,25 +24,32 @@ class UserEditorScreen extends StatefulWidget {
 }
 
 class _UserEditorScreenState extends State<UserEditorScreen> {
+  String get _userId => widget.id ?? widget.username ?? '';
+
   @override
   void initState() {
     super.initState();
     final bloc = context.read<UserEditorBloc>();
-    final userId = widget.id ?? widget.username ?? '';
-    final initialEvent = userId.isNotEmpty ? UserEditorFetch(userId) : const UserEditorReset();
+    final initialEvent = _userId.isNotEmpty ? UserEditorFetch(_userId) : const UserEditorReset();
     bloc.add(initialEvent);
   }
 
   @override
   Widget build(BuildContext context) {
-    return _UserEditorView(mode: widget.mode);
+    return _UserEditorView(
+      mode: widget.mode,
+      onRetry: () => context.read<UserEditorBloc>().add(UserEditorFetch(_userId)),
+    );
   }
 }
 
 class _UserEditorView extends StatefulWidget {
-  const _UserEditorView({required this.mode});
+  const _UserEditorView({required this.mode, required this.onRetry});
 
   final EditorFormMode mode;
+
+  /// Fetches the user again after the fetch failed.
+  final VoidCallback onRetry;
 
   @override
   State<_UserEditorView> createState() => _UserEditorViewState();
@@ -51,53 +59,68 @@ class _UserEditorViewState extends State<_UserEditorView> {
   final _formKey = GlobalKey<FormBuilderState>();
 
   /// Extract the user payload from whichever variant currently holds one
-  /// (Loading carries it forward during submit; success states carry their
-  /// own copy).
+  /// (Loading carries it forward during submit, a failed save keeps it,
+  /// and success states carry their own copy).
   UserEntity? _userOf(UserEditorState state) => switch (state) {
-    UserEditorLoading(:final data) => data,
     UserEditorLoaded(:final data) => data,
-    UserEditorSaved(:final data) => data,
-    UserEditorViewed(:final data) => data,
-    _ => null,
+    UserEditorLoading(:final data) ||
+    UserEditorSaved(:final data) ||
+    UserEditorViewed(:final data) ||
+    UserEditorSaveFailure(:final data) => data,
+    UserEditorInitial() || UserEditorFetchFailure() => null,
   };
 
-  bool _isInitialLoading(UserEditorState state) {
-    return state is UserEditorLoading && widget.mode != EditorFormMode.create && _userOf(state) == null;
-  }
+  /// Edit and view show the form only once the user is fetched; create starts from an empty form.
+  bool get _fetchesUser => widget.mode != EditorFormMode.create;
 
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<UserEditorBloc, UserEditorState>(
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) {
-        if (state is UserEditorSaved) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
-          context.go(ApplicationRoutesConstants.userList);
-        }
-        if (state is UserEditorFailure) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
+        switch (state) {
+          case UserEditorSaved():
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
+            context.go(ApplicationRoutesConstants.userList);
+          case UserEditorSaveFailure():
+            ScaffoldMessenger.of(context)
+                .showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
+          case UserEditorInitial() ||
+              UserEditorLoading() ||
+              UserEditorLoaded() ||
+              UserEditorViewed() ||
+              UserEditorFetchFailure():
+            break;
         }
       },
       buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
-      builder: (context, state) => _buildPage(context, state),
+      builder: (context, state) => switch (state) {
+        UserEditorInitial() ||
+        UserEditorLoading(data: null) when _fetchesUser => const Center(child: CircularProgressIndicator()),
+        UserEditorFetchFailure(:final errorCode) => _buildPage(
+          context,
+          body: AppErrorState(
+            title: S.of(context).user_load_failed,
+            description: errorCode.resolve(context),
+            retryLabel: S.of(context).refresh,
+            onRetry: widget.onRetry,
+          ),
+        ),
+        UserEditorInitial() => _buildPage(context, body: _buildForm(context, null)),
+        UserEditorLoading(:final data) => _buildPage(context, body: _buildForm(context, data, isSubmitting: true)),
+        UserEditorLoaded(:final data) => _buildPage(context, body: _buildForm(context, data)),
+        UserEditorSaved(:final data) ||
+        UserEditorViewed(:final data) ||
+        UserEditorSaveFailure(:final data) => _buildPage(context, body: _buildForm(context, data)),
+      },
     );
   }
 
-  Widget _buildPage(BuildContext context, UserEditorState state) {
-    final user = _userOf(state);
-
-    if (_isInitialLoading(state)) {
-      return const Center(child: CircularProgressIndicator());
-    }
-    if ((widget.mode == EditorFormMode.edit || widget.mode == EditorFormMode.view) && user == null) {
-      return const Center(child: Text('No data'));
-    }
-
+  /// The page header with the back button, above [body].
+  Widget _buildPage(BuildContext context, {required Widget body}) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    final isSubmitting = state is UserEditorLoading && !_isInitialLoading(state);
 
     return SingleChildScrollView(
       child: Center(
@@ -130,78 +153,85 @@ class _UserEditorViewState extends State<_UserEditorView> {
                   ],
                 ),
                 const SizedBox(height: 24),
-                AppFormCard(
-                  header: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('User Information', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Manage identity, contact, and access settings.',
-                        style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-                      ),
-                    ],
-                  ),
-                  footer: AppFormActions(
-                    secondaryAction: OutlinedButton(
-                      key: widget.mode == EditorFormMode.view ? const Key('userEditorFormBackButtonKey') : null,
-                      onPressed: () => _handleBack(context),
-                      child: Text(widget.mode == EditorFormMode.view ? S.of(context).back : 'Cancel'),
-                    ),
-                    primaryAction: widget.mode == EditorFormMode.view
-                        ? null
-                        : FilledButton(
-                            key: const Key('userEditorSubmitButtonKey'),
-                            onPressed: isSubmitting ? null : () => _onSubmit(context),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                if (isSubmitting) ...[
-                                  SizedBox(
-                                    width: 14,
-                                    height: 14,
-                                    child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
-                                  ),
-                                  const SizedBox(width: 8),
-                                ],
-                                const Text('Save'),
-                              ],
-                            ),
-                          ),
-                  ),
-                  child: FormBuilder(
-                    key: _formKey,
-                    initialValue: {
-                      'login': user?.login ?? '',
-                      'firstName': user?.firstName ?? '',
-                      'lastName': user?.lastName ?? '',
-                      'email': user?.email ?? '',
-                      'activated': user?.activated ?? true,
-                      'authorities': user?.authorities?.firstOrNull ?? '',
-                    },
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        if (widget.mode != EditorFormMode.create && user?.id != null) ...[
-                          Align(
-                            alignment: AlignmentDirectional.centerEnd,
-                            child: OutlinedButton.icon(
-                              key: const Key('userExtendedInfoButtonKey'),
-                              icon: const Icon(Icons.assignment_outlined),
-                              label: Text(S.of(context).user_extended_info_button),
-                              onPressed: () => context.push('/user/${user!.id}/extended-info'),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                        ..._buildFields(context, user),
-                      ],
-                    ),
-                  ),
-                ),
+                body,
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildForm(BuildContext context, UserEntity? user, {bool isSubmitting = false}) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return AppFormCard(
+      header: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('User Information', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 2),
+          Text(
+            'Manage identity, contact, and access settings.',
+            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ],
+      ),
+      footer: AppFormActions(
+        secondaryAction: OutlinedButton(
+          key: widget.mode == EditorFormMode.view ? const Key('userEditorFormBackButtonKey') : null,
+          onPressed: () => _handleBack(context),
+          child: Text(widget.mode == EditorFormMode.view ? S.of(context).back : 'Cancel'),
+        ),
+        primaryAction: widget.mode == EditorFormMode.view
+            ? null
+            : FilledButton(
+                key: const Key('userEditorSubmitButtonKey'),
+                onPressed: isSubmitting ? null : () => _onSubmit(context),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (isSubmitting) ...[
+                      SizedBox(
+                        width: 14,
+                        height: 14,
+                        child: CircularProgressIndicator(strokeWidth: 2, color: cs.onPrimary),
+                      ),
+                      const SizedBox(width: 8),
+                    ],
+                    const Text('Save'),
+                  ],
+                ),
+              ),
+      ),
+      child: FormBuilder(
+        key: _formKey,
+        initialValue: {
+          'login': user?.login ?? '',
+          'firstName': user?.firstName ?? '',
+          'lastName': user?.lastName ?? '',
+          'email': user?.email ?? '',
+          'activated': user?.activated ?? true,
+          'authorities': user?.authorities?.firstOrNull ?? '',
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (widget.mode != EditorFormMode.create && user?.id != null) ...[
+              Align(
+                alignment: AlignmentDirectional.centerEnd,
+                child: OutlinedButton.icon(
+                  key: const Key('userExtendedInfoButtonKey'),
+                  icon: const Icon(Icons.assignment_outlined),
+                  label: Text(S.of(context).user_extended_info_button),
+                  onPressed: () => context.push('/user/${user!.id}/extended-info'),
+                ),
+              ),
+              const SizedBox(height: 16),
+            ],
+            ..._buildFields(context, user),
+          ],
         ),
       ),
     );

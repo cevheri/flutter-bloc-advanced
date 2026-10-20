@@ -824,6 +824,11 @@ class S {
   String get user_delete_failed {
     return Intl.message('Could not delete the user', name: 'user_delete_failed', desc: '', args: []);
   }
+
+  /// `Could not load the user`
+  String get user_load_failed {
+    return Intl.message('Could not load the user', name: 'user_load_failed', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

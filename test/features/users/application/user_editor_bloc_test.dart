@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/fetch_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/save_user_usecase.dart';
@@ -86,8 +87,15 @@ void main() {
       expect(const UserEditorViewed(data: sampleUser).props, const <Object?>[sampleUser]);
     });
 
-    test('UserEditorFailure props', () {
-      expect(const UserEditorFailure(error: 'boom').props, const <Object?>['boom']);
+    test('UserEditorFetchFailure carries the error code', () {
+      expect(const UserEditorFetchFailure(errorCode: AppErrorCode.generic).props, const <Object?>[
+        AppErrorCode.generic,
+      ]);
+    });
+
+    test('UserEditorSaveFailure carries the user being edited', () {
+      expect(const UserEditorSaveFailure(data: sampleUser).props, const <Object?>[sampleUser]);
+      expect(const UserEditorSaveFailure().props, const <Object?>[null]);
     });
   });
 
@@ -136,7 +144,7 @@ void main() {
         setUp: () => repository.failure = const UnknownError('Fetch failed'),
         build: () => bloc,
         act: (b) => b.add(const UserEditorFetch('1')),
-        expect: () => [const UserEditorLoading(), const UserEditorFailure(error: 'Fetch failed')],
+        expect: () => [const UserEditorLoading(), const UserEditorFetchFailure(errorCode: AppErrorCode.generic)],
       );
     });
 
@@ -154,7 +162,25 @@ void main() {
         setUp: () => repository.failure = const UnknownError('Save failed'),
         build: () => bloc,
         act: (b) => b.add(const UserEditorSubmit(sampleUser)),
-        expect: () => [const UserEditorLoading(), const UserEditorFailure(error: 'Save failed')],
+        expect: () => [const UserEditorLoading(), const UserEditorSaveFailure()],
+      );
+
+      blocTest<UserEditorBloc, UserEditorState>(
+        'a failed save keeps the user the editor was showing',
+        setUp: () => repository.failure = const UnknownError('Save failed'),
+        build: () => bloc,
+        seed: () => const UserEditorLoaded(data: sampleUser),
+        act: (b) => b.add(const UserEditorSubmit(sampleUser)),
+        expect: () => [const UserEditorLoading(data: sampleUser), const UserEditorSaveFailure(data: sampleUser)],
+      );
+
+      blocTest<UserEditorBloc, UserEditorState>(
+        'saving again after a failed save carries the user forward',
+        setUp: () => repository.retrieveResult = sampleUser,
+        build: () => bloc,
+        seed: () => const UserEditorSaveFailure(data: sampleUser),
+        act: (b) => b.add(const UserEditorSubmit(sampleUser)),
+        expect: () => [const UserEditorLoading(data: sampleUser), const UserEditorSaved(data: sampleUser)],
       );
 
       blocTest<UserEditorBloc, UserEditorState>(

@@ -181,5 +181,7 @@
   "user_list_load_failed": "Could not load the users",
   "@user_list_load_failed": {},
   "user_delete_failed": "Could not delete the user",
-  "@user_delete_failed": {}
+  "@user_delete_failed": {},
+  "user_load_failed": "Could not load the user",
+  "@user_load_failed": {}
 }

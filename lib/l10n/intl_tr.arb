@@ -181,5 +181,7 @@
   "user_list_load_failed": "Kullanıcılar yüklenemedi",
   "@user_list_load_failed": {},
   "user_delete_failed": "Kullanıcı silinemedi",
-  "@user_delete_failed": {}
+  "@user_delete_failed": {},
+  "user_load_failed": "Kullanıcı yüklenemedi",
+  "@user_load_failed": {}
 }

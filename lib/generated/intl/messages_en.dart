@@ -182,6 +182,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Could not load the users"),
+    "user_load_failed": MessageLookupByLibrary.simpleMessage("Could not load the user"),
     "verify_otp_code": MessageLookupByLibrary.simpleMessage("Verify OTP Code"),
     "view_user": MessageLookupByLibrary.simpleMessage("View User"),
     "warning": MessageLookupByLibrary.simpleMessage("Warning"),

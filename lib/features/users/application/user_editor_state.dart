@@ -51,11 +51,24 @@ final class UserEditorViewed extends UserEditorState {
   List<Object?> get props => [data];
 }
 
-final class UserEditorFailure extends UserEditorState {
-  const UserEditorFailure({required this.error});
+/// Fetching the user to edit or view failed, so there is no user to show. The UI shows [errorCode]
+/// translated via `errorCode.resolve(context)`; the raw error message only goes to the log.
+final class UserEditorFetchFailure extends UserEditorState {
+  const UserEditorFetchFailure({required this.errorCode});
 
-  final String error;
+  final AppErrorCode errorCode;
 
   @override
-  List<Object?> get props => [error];
+  List<Object?> get props => [errorCode];
+}
+
+/// Saving the user failed. [data] is the user the editor held before the save (null when creating), so
+/// the form stays on that user and saving again updates it.
+final class UserEditorSaveFailure extends UserEditorState {
+  const UserEditorSaveFailure({this.data});
+
+  final UserEntity? data;
+
+  @override
+  List<Object?> get props => [data];
 }
