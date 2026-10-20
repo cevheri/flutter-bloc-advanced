@@ -306,6 +306,47 @@ void main() {
       });
     });
 
+    // Regression: every failed request was logged at error level, so a 4xx the app handles (a 401 before a token
+    // refresh, a 404 a repository maps, a 400 shown to the user) printed a false error next to the handler's line.
+    group('level of a failed request', () {
+      DioException badResponse(int status) {
+        final options = RequestOptions(path: '/api/users', method: 'GET');
+        return DioException(
+          requestOptions: options,
+          type: DioExceptionType.badResponse,
+          response: Response(requestOptions: options, statusCode: status),
+        );
+      }
+
+      test('logs a 4xx answer as a warning with its status', () {
+        final log = _captureHttpLog();
+
+        interceptor.onError(badResponse(404), _TestErrorHandler());
+
+        expect(log, [allOf(contains('[W]'), contains('GET /api/users -> 404'))]);
+      });
+
+      test('logs a 5xx answer as an error', () {
+        final log = _captureHttpLog();
+
+        interceptor.onError(badResponse(500), _TestErrorHandler());
+
+        expect(log, [allOf(contains('[E]'), contains('GET /api/users -> ERROR: badResponse'))]);
+      });
+
+      test('logs a request that got no answer as an error', () {
+        final log = _captureHttpLog();
+        final options = RequestOptions(path: '/api/users', method: 'GET');
+
+        interceptor.onError(
+          DioException(requestOptions: options, type: DioExceptionType.connectionError),
+          _TestErrorHandler(),
+        );
+
+        expect(log, [allOf(contains('[E]'), contains('GET /api/users -> ERROR: connectionError'))]);
+      });
+    });
+
     // Regression: the request URI was logged as it was, so an email in a path or a query string reached the
     // console, and on web with a Sentry DSN the breadcrumbs made from it.
     group('email in the request URI', () {
@@ -362,7 +403,7 @@ void main() {
           throwsA(isA<FetchDataException>()),
         );
 
-        expect(log.last, contains('GET /admin/users/[REDACTED_EMAIL] -> ERROR: badResponse '));
+        expect(log.last, contains('GET /admin/users/[REDACTED_EMAIL] -> 404 '));
         expect(log.join('\n'), isNot(contains('jane.doe')));
       });
     });

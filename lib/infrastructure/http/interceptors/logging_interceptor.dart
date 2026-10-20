@@ -45,12 +45,19 @@ class LoggingInterceptor extends Interceptor {
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
-    _log.error('{} {} -> ERROR: {} {}', [
-      err.requestOptions.method,
-      err.requestOptions.path,
-      err.type.name,
-      err.message ?? '',
-    ]);
+    final status = err.response?.statusCode;
+    // A 4xx is an answer the app handles, and the code that handles it logs it at the level it fits. A 5xx, or a
+    // request that got no answer, is an error.
+    if (err.type == DioExceptionType.badResponse && status != null && status >= 400 && status < 500) {
+      _log.warn('{} {} -> {} {}', [err.requestOptions.method, err.requestOptions.path, status, err.message ?? '']);
+    } else {
+      _log.error('{} {} -> ERROR: {} {}', [
+        err.requestOptions.method,
+        err.requestOptions.path,
+        err.type.name,
+        err.message ?? '',
+      ]);
+    }
     handler.next(err);
   }
 
