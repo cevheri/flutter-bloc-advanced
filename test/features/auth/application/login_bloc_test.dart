@@ -288,6 +288,15 @@ void main() {
         expect: () => states2Failure,
       );
     });
+
+    // LoginBloc outlives the session; AppSessionListeners resets it when the session ends.
+    blocTest<LoginBloc, LoginState>(
+      "LoginReset forgets the signed-in user and hides the password again",
+      build: () => _buildBloc(repository),
+      seed: () => const LoginLoadedState(username: "admin", roles: ["ROLE_ADMIN"], passwordVisible: true),
+      act: (bloc) => bloc.add(const LoginReset()),
+      expect: () => [const LoginInitialState()],
+    );
   });
 
   //endregion bloc

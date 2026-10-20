@@ -159,7 +159,8 @@ class AccountScreen extends StatelessWidget {
     const duration = Duration(milliseconds: 1000);
     switch (state.status) {
       case AccountStatus.initial:
-        context.read<AccountBloc>().add(const AccountFetchEvent());
+        // The account goes back to initial only when the session ends, and the next session loads it again. A fetch
+        // here would go out without a token.
         break;
       case AccountStatus.loading:
         _showSnackBar(context, S.of(context).loading, duration);

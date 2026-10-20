@@ -16,6 +16,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   AccountBloc({required this._getAccountUseCase, required this._updateAccountUseCase}) : super(const AccountState()) {
     on<AccountFetchEvent>(_onFetchAccount, transformer: EventTransformers.restart());
     on<AccountSubmitEvent>(_onSubmit, transformer: EventTransformers.dropConcurrent());
+    on<AccountResetEvent>(_onReset);
   }
 
   static final _log = AppLogger.getLogger('AccountBloc');
@@ -23,11 +24,20 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
   final GetAccountUseCase _getAccountUseCase;
   final UpdateAccountUseCase _updateAccountUseCase;
 
+  /// How many times the account was reset. A fetch or a save drops its result when this changed while its request
+  /// was out, so the account of a session that has ended does not come back.
+  int _resets = 0;
+
   FutureOr<void> _onFetchAccount(AccountFetchEvent event, Emitter<AccountState> emit) async {
     _log.debug('BEGIN: getAccount bloc: _onLoad');
+    final resets = _resets;
     emit(state.copyWith(status: AccountStatus.loading));
 
     final result = await _getAccountUseCase();
+    if (resets != _resets) {
+      _log.debug('END: getAccount bloc: _onLoad result dropped, the account was reset meanwhile');
+      return;
+    }
     switch (result) {
       case Success(:final data):
         emit(state.copyWith(data: data, status: AccountStatus.success));
@@ -40,9 +50,14 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
 
   FutureOr<void> _onSubmit(AccountSubmitEvent event, Emitter<AccountState> emit) async {
     _log.debug('BEGIN: onSubmit AccountSubmitEvent event: {}', [event.data.toString()]);
+    final resets = _resets;
     emit(state.copyWith(status: AccountStatus.loading));
 
     final result = await _updateAccountUseCase(event.data);
+    if (resets != _resets) {
+      _log.debug('END:onSubmit AccountSubmitEvent result dropped, the account was reset meanwhile');
+      return;
+    }
     switch (result) {
       case Success(:final data):
         emit(state.copyWith(status: AccountStatus.success, data: data));
@@ -51,5 +66,10 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
         emit(state.copyWith(status: AccountStatus.failure));
         _log.error('END:onSubmit AccountSubmitEvent event error: {}', [error.toString()]);
     }
+  }
+
+  void _onReset(AccountResetEvent event, Emitter<AccountState> emit) {
+    _resets++;
+    emit(const AccountState());
   }
 }

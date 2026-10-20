@@ -202,6 +202,8 @@ void main() {
       await pushRouteFromPlatform(tester, ApplicationRoutesConstants.settings);
       storedToken.complete('MOCK_TOKEN');
       await tester.pumpAndSettle();
+      // The restored session loads the account, which the mock API answers after 500 ms.
+      await tester.pump(const Duration(seconds: 1));
 
       expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.settings);
       expect(find.byType(SettingsScreen), findsOneWidget);

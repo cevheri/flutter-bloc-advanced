@@ -50,3 +50,12 @@ class VerifyOtpSubmitted extends LoginEvent {
   @override
   List<Object?> get props => [email, otpCode];
 }
+
+/// Returns to a blank sign-in when the session ends: the next user must not inherit the signed-out user's name and
+/// roles, nor a password shown in plain text.
+class LoginReset extends LoginEvent {
+  const LoginReset();
+
+  @override
+  List<Object?> get props => [];
+}

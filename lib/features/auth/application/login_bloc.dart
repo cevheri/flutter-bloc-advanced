@@ -38,6 +38,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<ChangeLoginMethod>(_onChangeLoginMethod);
     on<SendOtpRequested>(_onSendOtpRequested, transformer: EventTransformers.dropConcurrent());
     on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted, transformer: EventTransformers.dropConcurrent());
+    on<LoginReset>(_onReset);
   }
 
   /// Recreate the current variant with a flipped `passwordVisible`, preserving
@@ -110,6 +111,12 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   void _onChangeLoginMethod(ChangeLoginMethod event, Emitter<LoginState> emit) {
     emit(LoginInitialState(loginMethod: event.method, passwordVisible: state.passwordVisible));
+  }
+
+  /// A session ends only while the user is signed in, and the login routes send a signed-in user home, so no sign-in
+  /// is running that the reset could overtake.
+  void _onReset(LoginReset event, Emitter<LoginState> emit) {
+    emit(const LoginInitialState());
   }
 
   Future<void> _onSendOtpRequested(SendOtpRequested event, Emitter<LoginState> emit) async {

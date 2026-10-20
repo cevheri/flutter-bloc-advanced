@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
@@ -108,6 +110,37 @@ void main() {
         build: () => AuthorityBloc(listAuthoritiesUseCase: useCase),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
+      );
+    });
+
+    // AuthorityBloc outlives the session; AppSessionListeners resets it when the session ends.
+    group("AuthorityReset", () {
+      late Completer<Result<List<String>>> answer;
+
+      blocTest<AuthorityBloc, AuthorityState>(
+        "forgets the loaded authorities",
+        build: () => AuthorityBloc(listAuthoritiesUseCase: useCase),
+        seed: () => const AuthorityLoadSuccessState(authorities: ["ROLE_ADMIN"]),
+        act: (bloc) => bloc.add(const AuthorityReset()),
+        expect: () => [const AuthorityInitialState()],
+      );
+
+      blocTest<AuthorityBloc, AuthorityState>(
+        "drops the authorities that a load still running brings back",
+        setUp: () {
+          answer = Completer<Result<List<String>>>();
+          when(() => repository.list()).thenAnswer((_) => answer.future);
+        },
+        build: () => AuthorityBloc(listAuthoritiesUseCase: useCase),
+        act: (bloc) async {
+          bloc.add(const AuthorityLoad());
+          await Future<void>.delayed(Duration.zero);
+          bloc.add(const AuthorityReset());
+          await Future<void>.delayed(Duration.zero);
+          answer.complete(const Success(["ROLE_ADMIN"]));
+          await Future<void>.delayed(Duration.zero);
+        },
+        expect: () => [const AuthorityLoadingState(), const AuthorityInitialState()],
       );
     });
   });

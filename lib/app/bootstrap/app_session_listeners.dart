@@ -4,7 +4,9 @@ import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
+import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 
@@ -113,8 +115,12 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
             switch (state) {
               case SessionAuthenticated():
                 _startIdleObserver();
+                // Loaded here rather than by one page, since a sign-in can return the user to any page and the top
+                // bar shows the account on all of them.
+                context.read<AccountBloc>().add(const AccountFetchEvent());
               case SessionUnauthenticated(:final reason):
                 _stopIdleObserver();
+                _forgetSignedOutUser(context);
                 if (reason == SessionExpiredReason.idleTimeout) {
                   _showNotice((strings) => strings.idle_timeout_signed_out);
                 }
@@ -131,6 +137,15 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
         child: widget.child,
       ),
     );
+  }
+
+  /// The app-scoped blocs outlive the session, so the next user to sign in would see what they hold about the one
+  /// who signed out: the account in the top bar and on the dashboard, the authorities loaded with that user's rights,
+  /// and the sign-in form state, a password shown in plain text among it.
+  void _forgetSignedOutUser(BuildContext context) {
+    context.read<AccountBloc>().add(const AccountResetEvent());
+    context.read<AuthorityBloc>().add(const AuthorityReset());
+    context.read<LoginBloc>().add(const LoginReset());
   }
 
   /// Shows the [message] of a session ending through the ScaffoldMessenger of the MaterialApp, so it stays on screen

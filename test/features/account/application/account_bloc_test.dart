@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
@@ -25,11 +27,15 @@ class _FakeAccountRepository implements IAccountRepository {
   UserEntity? account;
   AppError? failure;
 
+  /// When set, getAccount and update answer only once it completes, like a slow network.
+  Completer<void>? answer;
+
   @override
   Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async => const Success(null);
 
   @override
   Future<Result<UserEntity>> getAccount() async {
+    await answer?.future;
     if (failure != null) return Failure(failure!);
     return Success(account!);
   }
@@ -45,6 +51,7 @@ class _FakeAccountRepository implements IAccountRepository {
 
   @override
   Future<Result<UserEntity>> update(UserEntity user) async {
+    await answer?.future;
     if (failure != null) return Failure(failure!);
     return Success(account ?? user);
   }
@@ -153,6 +160,53 @@ void main() {
           const AccountState(status: AccountStatus.loading),
           const AccountState(status: AccountStatus.failure),
         ],
+      );
+    });
+
+    // AccountBloc outlives the session; AppSessionListeners resets it when the session ends.
+    group("on AccountResetEvent", () {
+      blocTest<AccountBloc, AccountState>(
+        "forgets the loaded account",
+        build: () => bloc,
+        seed: () => AccountState(data: mockUserFullPayload, status: AccountStatus.success),
+        act: (bloc) => bloc.add(const AccountResetEvent()),
+        expect: () => [const AccountState()],
+      );
+
+      blocTest<AccountBloc, AccountState>(
+        "drops the account that a fetch still running brings back",
+        build: () {
+          repository
+            ..account = mockUserFullPayload
+            ..answer = Completer<void>();
+          return bloc;
+        },
+        act: (bloc) async {
+          bloc.add(const AccountFetchEvent());
+          await Future<void>.delayed(Duration.zero);
+          bloc.add(const AccountResetEvent());
+          await Future<void>.delayed(Duration.zero);
+          repository.answer!.complete();
+          await Future<void>.delayed(Duration.zero);
+        },
+        expect: () => [const AccountState(status: AccountStatus.loading), const AccountState()],
+      );
+
+      blocTest<AccountBloc, AccountState>(
+        "drops the account that a save still running brings back",
+        build: () {
+          repository.answer = Completer<void>();
+          return bloc;
+        },
+        act: (bloc) async {
+          bloc.add(AccountSubmitEvent(mockUserFullPayload));
+          await Future<void>.delayed(Duration.zero);
+          bloc.add(const AccountResetEvent());
+          await Future<void>.delayed(Duration.zero);
+          repository.answer!.complete();
+          await Future<void>.delayed(Duration.zero);
+        },
+        expect: () => [const AccountState(status: AccountStatus.loading), const AccountState()],
       );
     });
   });
