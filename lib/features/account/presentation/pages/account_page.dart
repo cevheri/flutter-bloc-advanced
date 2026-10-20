@@ -78,9 +78,8 @@ class AccountScreen extends StatelessWidget {
                         if (state.data?.email != null)
                           Text(
                             state.data?.email ?? '',
-                            style: Theme.of(
-                              context,
-                            ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                           ),
                       ],
                     ),

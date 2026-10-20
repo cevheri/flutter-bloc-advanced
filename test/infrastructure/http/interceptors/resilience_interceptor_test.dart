@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
@@ -258,6 +261,53 @@ void main() {
 
         final result = _captureOnErrorSync(interceptor, err);
         expect(result.passed, isTrue);
+      });
+
+      test('should not retry transform timeout errors', () async {
+        final interceptor = ResilienceInterceptor(
+          failureThreshold: 10,
+          cooldownDuration: const Duration(hours: 1),
+          maxRetries: 3,
+        );
+        final options = RequestOptions(path: '/api/users');
+        final err = DioException(requestOptions: options, type: DioExceptionType.transformTimeout);
+
+        // Non-retryable errors pass through synchronously; a retryable one would
+        // first await the backoff delay, leaving result.passed false here.
+        final result = _captureOnErrorSync(interceptor, err);
+        expect(result.passed, isTrue);
+      });
+
+      test('should not retry a connection the server closed after the request was sent', () async {
+        final interceptor = ResilienceInterceptor(
+          failureThreshold: 10,
+          cooldownDuration: const Duration(hours: 1),
+          maxRetries: 3,
+        );
+        final options = RequestOptions(path: '/api/users', method: 'POST');
+        // Built the way dio 5.10+ reports it (io_adapter.dart); dio 5.9 reported it as unknown.
+        const closed = HttpException('Connection closed before full header was received');
+        final err = DioException.connectionError(requestOptions: options, reason: closed.message, error: closed);
+
+        final result = _captureOnErrorSync(interceptor, err);
+        expect(result.passed, isTrue);
+      });
+
+      test('should still retry other connection errors', () {
+        fakeAsync((async) {
+          final interceptor = ResilienceInterceptor(
+            failureThreshold: 10,
+            cooldownDuration: const Duration(hours: 1),
+            maxRetries: 3,
+          );
+          final options = RequestOptions(path: '/api/users', method: 'POST');
+          const refused = SocketException('Connection refused');
+          final err = DioException.connectionError(requestOptions: options, reason: refused.message, error: refused);
+
+          // The retry waits for its backoff delay, which never elapses in fake time.
+          final result = _captureOnErrorSync(interceptor, err);
+          expect(result.passed, isFalse);
+        });
       });
     });
 
@@ -678,7 +728,7 @@ class _TestErrorHandler extends ErrorInterceptorHandler {
   }
 
   @override
-  void reject(DioException error) {
+  void reject(DioException error, [bool callFollowingErrorInterceptor = false]) {
     result = _InterceptorErrorResult(passed: true);
   }
 }

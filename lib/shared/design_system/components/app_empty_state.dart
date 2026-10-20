@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../tokens/app_spacing.dart';
 
 /// A consistent empty state placeholder with icon, title, description, and action.

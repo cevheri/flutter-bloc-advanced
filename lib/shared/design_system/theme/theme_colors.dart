@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'app_theme_palette.dart';
 
 /// Theme colors for different palettes — shadcn/ui inspired neutral aesthetics.

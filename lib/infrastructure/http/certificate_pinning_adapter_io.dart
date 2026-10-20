@@ -28,9 +28,8 @@ HttpClientAdapter buildPinnedAdapter(List<String> pins) {
       client.badCertificateCallback = (X509Certificate cert, String host, int port) {
         final accepted = CertificatePinner.matches(cert.der, pins);
         if (!accepted) {
-          AppLogger.getLogger(
-            'CertificatePinningAdapter',
-          ).warn('Pin mismatch — rejecting connection to {}:{} (subject={})', [host, port, cert.subject]);
+          AppLogger.getLogger('CertificatePinningAdapter')
+              .warn('Pin mismatch — rejecting connection to {}:{} (subject={})', [host, port, cert.subject]);
         }
         return accepted;
       };

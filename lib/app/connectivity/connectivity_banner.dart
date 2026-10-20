@@ -50,9 +50,8 @@ class _OfflineBannerContent extends StatelessWidget {
               const SizedBox(width: AppSpacing.sm),
               Text(
                 'No internet connection',
-                style: Theme.of(
-                  context,
-                ).textTheme.labelLarge?.copyWith(color: colorScheme.onError, fontWeight: FontWeight.w600),
+                style: Theme.of(context).textTheme.labelLarge
+                    ?.copyWith(color: colorScheme.onError, fontWeight: FontWeight.w600),
               ),
             ],
           ),

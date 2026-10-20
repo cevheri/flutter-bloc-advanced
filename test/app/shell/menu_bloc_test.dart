@@ -146,9 +146,8 @@ void main() {
       blocTest<MenuBloc, MenuState>(
         "emits [failure] when Logout fails",
         setUp: () {
-          when(
-            () => loginRepository.logout(),
-          ).thenAnswer((_) => Future.value(const Failure<void>(UnknownError("Error"))));
+          when(() => loginRepository.logout())
+              .thenAnswer((_) => Future.value(const Failure<void>(UnknownError("Error"))));
           MenuListCache.menus = [];
         },
         build: () => MenuBloc(loginRepository: loginRepository, menuRepository: menuRepository),

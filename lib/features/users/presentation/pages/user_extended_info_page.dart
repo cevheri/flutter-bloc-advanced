@@ -46,14 +46,12 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
         listener: (context, state) {
           switch (state) {
             case DynamicFormSubmitted():
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_saved)));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_saved)));
               if (context.canPop()) context.pop();
             case DynamicFormFailure(:final error, :final schema) when schema != null:
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_save_failed(error))));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_save_failed(error))));
             case _:
               break;
           }

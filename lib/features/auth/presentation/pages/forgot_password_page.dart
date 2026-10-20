@@ -66,9 +66,8 @@ class ForgotPasswordScreen extends StatelessWidget {
                     ),
                     Text(
                       'Enter your email address and we\'ll send you a link to reset your password.',
-                      style: Theme.of(
-                        context,
-                      ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      style: Theme.of(context).textTheme.bodyMedium
+                          ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                     ),
                     const Divider(),
                     _forgotPasswordField(context),

@@ -1,63 +1,54 @@
 name: flutter_bloc_advance
 description: "Flutter Bloc Advance Template"
 publish_to: 'none'
-version: 0.22.1+1
+version: 0.22.2+1
 
 # ➜  flutter_bloc_advance git:(main) ✗ flutter --version
-# Flutter 3.44.3 • channel stable • https://github.com/flutter/flutter.git
-# Framework • revision e1fd963c6f (4 days ago) • 2026-06-18 14:59:18 -0700
-# Engine • hash 97bcd50733ba183d436566477a85414db19fdb97 (revision a4ce257c68) (4 days ago) • 2026-06-18 17:14:12.000Z
-# Tools • Dart 3.12.2 • DevTools 2.57.0
+# Flutter 3.47.7 • channel stable • https://github.com/flutter/flutter.git
+# Framework • revision abaf9c5237 (12 days ago) • 2026-10-08 09:51:21 -0700
+# Engine • hash d8a2d6c768c334d53e16277f837970ffa1e2de81 (revision deb287481e) (12 days ago) • 2026-10-07 17:09:12.000Z
+# Tools • Dart 3.13.5 • DevTools 2.60.0
 environment:
-  sdk: ^3.12.2
-  flutter: '3.44.3'
+  sdk: ^3.13.5
+  flutter: '3.47.7'
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: 1.0.9
+  cupertino_icons: 2.0.0
   flutter_localizations:
     sdk: flutter
   flutter_bloc: 9.1.1
-  go_router: 17.3.0
-  equatable: 2.0.8
-  intl: 0.20.2
-  flutter_form_builder: 10.3.0+2
+  go_router: 18.1.0
+  equatable: 3.0.0
+  intl: 0.20.3
+  flutter_form_builder: 10.3.0+2 # pinned: 11.x builds on material_ui and needs the app-wide material_ui migration
   form_builder_validators: 11.3.0
-  intl_utils: 2.8.15 # pinned: 2.8.16 needs analyzer ^13 but test 1.31.0 caps analyzer <13
   bloc_concurrency: 0.3.0
-  stream_transform: 2.1.1
-  shared_preferences: 2.5.5
-  logger: 2.7.0
-  dio: 5.9.2
-  fl_chart: 1.2.0
-  shimmer: 3.0.0
-  cached_network_image: 3.4.1
-  url_launcher: 6.3.2
-  package_info_plus: 10.1.0
-  connectivity_plus: 7.1.1
-  flutter_secure_storage: 10.3.1
+  stream_transform: 2.1.2
+  shared_preferences: 2.5.6
+  logger: 2.8.0
+  dio: 5.11.1
+  shimmer: 4.0.0
+  url_launcher: 6.3.3
+  package_info_plus: 10.2.2
+  connectivity_plus: 7.3.2
+  flutter_secure_storage: 11.2.0
   crypto: 3.0.7
-  uuid: 4.5.3
-  screen_protector: 1.5.1 # pinned: 1.5.2 dropped its Kotlin jvmTarget pin → Java/Kotlin JVM-target mismatch on Android release builds (JDK 21+)
-  sentry_flutter: 9.22.0
+  uuid: 4.6.0
+  screen_protector: 1.5.3
+  sentry_flutter: 10.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: 6.0.0
-  test: 1.31.0 # pinned: 1.31.1 needs test_api 0.7.12 but flutter_test SDK pins 0.7.11
   bloc_test: 10.0.0
   mocktail: 1.0.5
   fake_async: 1.3.3
   shared_preferences_platform_interface: 2.4.2
-  device_preview: 1.3.1
-  alchemist: ^0.14.0
-
-flutter_secure_storage:
-  enabled: true
-  class_name: SecureStorage
-  main_locale: en
+  alchemist: 0.14.1
+  intl_utils: 2.8.17 # discontinued upstream; still works on Dart 3.13 (see docs/upgrade_flutter_3.47.7.md)
 
 flutter_intl:
   enabled: true

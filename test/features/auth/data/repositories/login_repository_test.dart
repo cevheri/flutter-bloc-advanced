@@ -48,9 +48,8 @@ void main() {
     });
 
     test("Given empty entity when authenticate then return Failure", () async {
-      final result = await LoginRepository(
-        apiClient: TestEnv.apiClient(),
-      ).authenticate(const AuthCredentialsEntity(username: "", password: ""));
+      final result = await LoginRepository(apiClient: TestEnv.apiClient())
+          .authenticate(const AuthCredentialsEntity(username: "", password: ""));
       expect(result, isA<Failure<AuthTokenEntity>>());
     });
 

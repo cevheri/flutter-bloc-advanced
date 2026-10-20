@@ -27,8 +27,7 @@ class AppLogger {
     final simple = SimplePrinter(printTime: true);
     final pretty = PrettyPrinter(dateTimeFormat: DateTimeFormat.dateAndTime, methodCount: 2);
     LogPrinter printer = _logFormat == LogFormat.simple ? simple : pretty;
-    LogOutput output =
-        ConsoleOutput(); // logToFile ? FileOutput(file: File('log.txt'), overrideExisting: true) : ConsoleOutput(); Unsupported operation: Not supported on this platform.
+    LogOutput output = ConsoleOutput(); // logToFile ? FileOutput(file: File('log.txt'), overrideExisting: true) : ConsoleOutput(); Unsupported operation: Not supported on this platform.
     LogFilter filter = isProduction ? ProductionFilter() : DevelopmentFilter();
     _logger = Logger(filter: filter, printer: printer, output: output, level: _level);
   }

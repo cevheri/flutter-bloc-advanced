@@ -5,9 +5,11 @@
 *.swp
 .DS_Store
 .atom/
+.build/
 .buildlog/
 .history
 .svn/
+.swiftpm/
 migrate_working_dir/
 
 # IntelliJ related
@@ -68,3 +70,6 @@ test/**/failures/
 # Stray native-build artifacts (never commit)
 CMakeFiles/
 *.deb
+
+# Widget Preview related
+.widget_preview/

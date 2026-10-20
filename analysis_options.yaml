@@ -45,6 +45,13 @@ analyzer:
     - "**/*.theme.dart"
     - "**/*.theme.g.dart"
     - "lib/generated/**"
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**
 
 # Dart formatter configuration
 # Requires a recent Dart SDK that supports reading formatter options from analysis_options.yaml

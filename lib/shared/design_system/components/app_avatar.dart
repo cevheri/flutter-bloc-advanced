@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../tokens/app_sizes.dart';
 import 'app_button.dart' show AppComponentSize;
 

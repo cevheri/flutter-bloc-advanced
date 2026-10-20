@@ -45,9 +45,8 @@ class RegisterScreen extends StatelessWidget {
           children: [
             Text(
               'Create your account',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 12),
             Divider(color: Theme.of(context).colorScheme.outlineVariant),

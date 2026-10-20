@@ -1,4 +1,5 @@
 #!/usr/bin/env dart
+
 // ignore_for_file: avoid_print
 
 // Feature Scaffolding CLI — generates a complete feature skeleton.

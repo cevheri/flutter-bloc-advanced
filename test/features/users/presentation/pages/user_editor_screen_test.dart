@@ -32,9 +32,8 @@ void main() {
         const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
       ]),
     );
-    when(
-      () => mockAuthorityBloc.state,
-    ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+    when(() => mockAuthorityBloc.state)
+        .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
   });
 
   Widget buildTestableWidget({required EditorFormMode mode, String? id}) {
@@ -84,12 +83,10 @@ void main() {
       when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
       whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: const UserEditorInitial());
 
-      when(
-        () => mockAuthorityBloc.state,
-      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(
-        () => mockAuthorityBloc.stream,
-      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(() => mockAuthorityBloc.state)
+          .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(() => mockAuthorityBloc.stream)
+          .thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
@@ -153,12 +150,10 @@ void main() {
       when(() => mockUserBloc.state).thenReturn(UserEditorLoaded(data: mockUser));
       whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: UserEditorLoaded(data: mockUser));
 
-      when(
-        () => mockAuthorityBloc.state,
-      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(
-        () => mockAuthorityBloc.stream,
-      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(() => mockAuthorityBloc.state)
+          .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(() => mockAuthorityBloc.stream)
+          .thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.view, id: userId));
@@ -181,12 +176,10 @@ void main() {
       when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
       whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: const UserEditorInitial());
 
-      when(
-        () => mockAuthorityBloc.state,
-      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(
-        () => mockAuthorityBloc.stream,
-      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(() => mockAuthorityBloc.state)
+          .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(() => mockAuthorityBloc.stream)
+          .thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
@@ -218,12 +211,10 @@ void main() {
       when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
       whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: const UserEditorInitial());
 
-      when(
-        () => mockAuthorityBloc.state,
-      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(
-        () => mockAuthorityBloc.stream,
-      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(() => mockAuthorityBloc.state)
+          .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(() => mockAuthorityBloc.stream)
+          .thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
@@ -261,12 +252,10 @@ void main() {
       when(() => mockUserBloc.state).thenReturn(const UserEditorInitial());
       whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: const UserEditorInitial());
 
-      when(
-        () => mockAuthorityBloc.state,
-      ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
-      when(
-        () => mockAuthorityBloc.stream,
-      ).thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
+      when(() => mockAuthorityBloc.state)
+          .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+      when(() => mockAuthorityBloc.stream)
+          .thenAnswer((_) => Stream.value(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER'])));
 
       // ACT
       await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));

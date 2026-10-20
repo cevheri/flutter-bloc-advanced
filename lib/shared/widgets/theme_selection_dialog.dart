@@ -35,9 +35,8 @@ class ThemeSelectionDialog extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   'Select your preferred theme style',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  style: Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
                 ),
                 const SizedBox(height: 24),
                 Expanded(

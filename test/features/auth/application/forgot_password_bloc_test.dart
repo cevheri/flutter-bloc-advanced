@@ -108,9 +108,9 @@ void main() {
 
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
       'emits [Loading, Error] when resetPassword returns Failure',
-      setUp: () => when(
-        () => repository.resetPassword(email),
-      ).thenAnswer((_) async => const Failure<void>(ServerError('Reset failed'))),
+      setUp: () =>
+          when(() => repository.resetPassword(email))
+              .thenAnswer((_) async => const Failure<void>(ServerError('Reset failed'))),
       build: () => ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
       expect: () => [
@@ -121,9 +121,9 @@ void main() {
 
     blocTest<ForgotPasswordBloc, ForgotPasswordState>(
       'emits [Loading, Error] when resetPassword returns ValidationError',
-      setUp: () => when(
-        () => repository.resetPassword('invalid-email'),
-      ).thenAnswer((_) async => const Failure<void>(ValidationError('Invalid email'))),
+      setUp: () =>
+          when(() => repository.resetPassword('invalid-email'))
+              .thenAnswer((_) async => const Failure<void>(ValidationError('Invalid email'))),
       build: () => ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)),
       act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: 'invalid-email')),
       expect: () => [

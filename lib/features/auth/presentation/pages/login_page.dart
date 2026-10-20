@@ -184,7 +184,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       runSpacing: 8,
       children: [
         _glassPill('Advanced Flutter BLoC Template', const Color(0xFFA5B4FC)),
-        _glassPill('Flutter 3.44.3', const Color(0xFF94A3B8)),
+        _glassPill('Flutter 3.47.7', const Color(0xFF94A3B8)),
       ],
     );
   }
@@ -700,9 +700,8 @@ class OtpEmailScreen extends StatelessWidget {
           children: [
             Text(
               'Enter your email to receive OTP code',
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+              style: Theme.of(context).textTheme.bodyMedium
+                  ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
             ),
             const SizedBox(height: 12),
             Divider(color: Theme.of(context).colorScheme.outlineVariant),

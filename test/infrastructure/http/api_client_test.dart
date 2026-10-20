@@ -151,6 +151,14 @@ void main() {
         );
       });
 
+      test('given transform timeout when get request is made then should throw FetchDataException', () async {
+        stub.stubDioError(DioExceptionType.transformTimeout, message: 'Timeout');
+        await expectLater(
+          client.get('/test'),
+          throwsA(allOf([isA<FetchDataException>(), predicate((e) => e.toString().contains('TimeoutException'))])),
+        );
+      });
+
       test('given valid data when put request is made then should return success 200', () async {
         stub.stubSuccess(data: '{"success": true}', statusCode: 200);
         final response = await client.put('/test', {'data': 'test'});

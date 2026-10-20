@@ -64,9 +64,8 @@ void main() {
     });
 
     testWidgets('shows error state with retry button when status is error', (tester) async {
-      when(
-        () => cubit.state,
-      ).thenReturn(const SystemDashboardState(status: SystemDashboardStatus.error, errorMessage: 'Something broke'));
+      when(() => cubit.state)
+          .thenReturn(const SystemDashboardState(status: SystemDashboardStatus.error, errorMessage: 'Something broke'));
       when(() => cubit.load()).thenAnswer((_) async {});
 
       await tester.pumpWidget(_buildTestWidget(cubit));

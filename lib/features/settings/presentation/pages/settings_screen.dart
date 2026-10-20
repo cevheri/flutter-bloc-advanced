@@ -30,9 +30,8 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 'Manage your account preferences',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodyMedium?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
+                style: Theme.of(context).textTheme.bodyMedium
+                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
               ),
               const SizedBox(height: AppSpacing.xl),
 

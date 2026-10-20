@@ -258,9 +258,8 @@ void main() {
         await interceptor.onResponse(response, handler);
 
         expect(handler.nextCalled, isTrue);
-        verify(
-          () => mockStorage.write('GET_${options.uri}', '{"users": []}', ttl: const Duration(minutes: 5)),
-        ).called(1);
+        verify(() => mockStorage.write('GET_${options.uri}', '{"users": []}', ttl: const Duration(minutes: 5)))
+            .called(1);
       });
 
       test('should not cache response with networkOnly policy', () async {
@@ -326,9 +325,8 @@ void main() {
         final handler = _TestResponseHandler();
         await interceptor.onResponse(response, handler);
 
-        verify(
-          () => mockStorage.write('GET_${options.uri}', '{"users": []}', ttl: const Duration(minutes: 30)),
-        ).called(1);
+        verify(() => mockStorage.write('GET_${options.uri}', '{"users": []}', ttl: const Duration(minutes: 30)))
+            .called(1);
       });
 
       test('should cache with cacheFirst policy', () async {

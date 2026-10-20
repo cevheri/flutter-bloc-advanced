@@ -33,9 +33,8 @@ void main() {
         const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']),
       ]),
     );
-    when(
-      () => mockAuthorityBloc.state,
-    ).thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
+    when(() => mockAuthorityBloc.state)
+        .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
   });
 
   Widget buildTestableWidget() {

@@ -71,15 +71,13 @@ class _UserEditorViewState extends State<_UserEditorView> {
       listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
       listener: (context, state) {
         if (state is UserEditorSaved) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
           context.go(ApplicationRoutesConstants.userList);
         }
         if (state is UserEditorFailure) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
         }
       },
       buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,

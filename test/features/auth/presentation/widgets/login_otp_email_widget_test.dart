@@ -159,9 +159,8 @@ void main() {
     });
 
     testWidgets('should show error state', (tester) async {
-      when(
-        () => mockLoginBloc.state,
-      ).thenReturn(const LoginErrorState(errorCode: AppErrorCode.authSendOtpFailed, loginMethod: LoginMethod.otp));
+      when(() => mockLoginBloc.state)
+          .thenReturn(const LoginErrorState(errorCode: AppErrorCode.authSendOtpFailed, loginMethod: LoginMethod.otp));
       await tester.pumpWidget(testWidget);
       await tester.pumpAndSettle();
 

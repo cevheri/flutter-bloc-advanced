@@ -23,33 +23,44 @@ class AuthFeatureRoutes {
     GoRoute(
       name: 'login',
       path: ApplicationRoutesConstants.login,
-      builder: (context, state) => loginBuilder?.call(context) ?? const LoginScreen(),
+      pageBuilder: (context, state) =>
+          appPlatformPage(state: state, child: loginBuilder?.call(context) ?? const LoginScreen()),
     ),
     GoRoute(
       name: 'login-otp',
       path: ApplicationRoutesConstants.loginOtp,
-      builder: (context, state) => OtpEmailScreen(),
+      pageBuilder: (context, state) => appPlatformPage(state: state, child: OtpEmailScreen()),
     ),
     GoRoute(
       name: 'login-otp-verify',
       path: '/login-otp-verify/:email',
-      builder: (context, state) => OtpVerifyScreen(email: state.pathParameters['email']!),
+      pageBuilder: (context, state) => appPlatformPage(
+        state: state,
+        child: OtpVerifyScreen(email: state.pathParameters['email']!),
+      ),
     ),
     GoRoute(
       name: 'forgot-password',
       path: ApplicationRoutesConstants.forgotPassword,
-      builder: (context, state) => BlocProvider(
-        create: (_) =>
-            ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(context.read<IAccountRepository>())),
-        child: ForgotPasswordScreen(),
+      pageBuilder: (context, state) => appPlatformPage(
+        state: state,
+        child: BlocProvider(
+          create: (_) =>
+              ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(context.read<IAccountRepository>())),
+          child: ForgotPasswordScreen(),
+        ),
       ),
     ),
     GoRoute(
       name: 'register',
       path: ApplicationRoutesConstants.register,
-      builder: (context, state) => BlocProvider(
-        create: (_) => RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(context.read<IAccountRepository>())),
-        child: RegisterScreen(),
+      pageBuilder: (context, state) => appPlatformPage(
+        state: state,
+        child: BlocProvider(
+          create: (_) =>
+              RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(context.read<IAccountRepository>())),
+          child: RegisterScreen(),
+        ),
       ),
     ),
   ];

@@ -1,8 +1,8 @@
 # Advanced Flutter BLoC Template
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Flutter](https://img.shields.io/badge/Flutter-3.44.3-02569B?logo=flutter)
-![Dart](https://img.shields.io/badge/Dart-3.12.2-0175C2?logo=dart)
+![Flutter](https://img.shields.io/badge/Flutter-3.47.7-02569B?logo=flutter)
+![Dart](https://img.shields.io/badge/Dart-3.13.5-0175C2?logo=dart)
 ![Platforms](https://img.shields.io/badge/Platforms-Android%20%7C%20iOS%20%7C%20Web%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows-2E7D32)
 ![Open Source](https://img.shields.io/badge/Open%20Source-Community%20Template-black)
 
@@ -217,10 +217,11 @@ When not to enable: screens with content the user is expected to capture (QR cod
 
 ### Prerequisites
 
-- Flutter `3.44.3` and Dart `3.12.2`
+- Flutter `3.47.7` and Dart `3.13.5`
 - [FVM](https://fvm.app/documentation/getting-started/installation) recommended for version consistency
 - Android SDK for Android builds
 - Xcode for iOS and macOS builds
+- Minimum deployment targets: Android 8.0 (API 26), iOS 15, macOS 12
 
 ### Install FVM
 
@@ -239,8 +240,8 @@ choco install fvm
 git clone https://github.com/cevheri/flutter-bloc-advanced.git
 cd flutter-bloc-advanced
 
-fvm install 3.44.3
-fvm use 3.44.3
+fvm install 3.47.7
+fvm use 3.47.7
 fvm flutter pub get
 ```
 
@@ -282,16 +283,15 @@ The production environment is configured in `lib/infrastructure/config/environme
 
 | Category | Technology |
 | --- | --- |
-| Flutter | 3.44.3 |
-| Dart | 3.12.2 |
-| State Management | flutter_bloc 9.1.1, bloc_concurrency 0.3.0, stream_transform 2.1.1 |
-| Routing | go_router 17.3.0 |
-| HTTP | dio 5.9.2 (interceptor chain: connectivity, auth, token-refresh, resilience, mock, cache, dev-console, logging) |
+| Flutter | 3.47.7 |
+| Dart | 3.13.5 |
+| State Management | flutter_bloc 9.1.1, bloc_concurrency 0.3.0, stream_transform 2.1.2 |
+| Routing | go_router 18.1.0 |
+| HTTP | dio 5.11.1 (interceptor chain: connectivity, auth, token-refresh, resilience, mock, cache, dev-console, logging) |
 | Forms | flutter_form_builder 10.3.0+2 |
-| Localization | intl 0.20.2, intl_utils 2.8.15 |
-| Storage | shared_preferences 2.5.5, flutter_secure_storage 10.3.1 |
-| Charts | fl_chart 1.2.0 |
-| Testing | flutter_test, bloc_test, mocktail, test 1.31.0 |
+| Localization | intl 0.20.3, intl_utils 2.8.17 |
+| Storage | shared_preferences 2.5.6, flutter_secure_storage 11.2.0 |
+| Testing | flutter_test, bloc_test, mocktail |
 
 ## Project Structure
 
@@ -451,11 +451,12 @@ To enable SonarQube, add the `SONAR_TOKEN` secret to your repository or organiza
 
 | Component | Version |
 | --- | --- |
-| Gradle | 8.14 |
-| Android Gradle Plugin | 8.11.1 |
-| Kotlin | 2.2.20 |
+| Gradle | 9.3.1 |
+| Android Gradle Plugin | 9.1.0 |
+| Kotlin | 2.4.0 (built-in Kotlin, `android.builtInKotlin=true`) |
 | Java Compatibility | 17 |
 | NDK | Dynamic (`flutter.ndkVersion`) |
+| Min SDK | 26 (required by `sentry_flutter` 10) |
 | Build Config | Kotlin DSL (`.gradle.kts`) |
 
 ## Adding a New Feature
@@ -497,6 +498,7 @@ If you are unsure where to start, documentation improvements, screenshot refresh
 | [Architecture Migration](docs/architecture-migration_en.md) | Feature-first migration guide |
 | [Feature-First Boundaries](docs/feature-first-clean-boundaries.md) | Clean architecture design document |
 | [Upgrade Guide — Flutter 3.44.0](docs/upgrade_flutter_3.44.0.md) | Flutter 3.41.8 → 3.44.0 upgrade notes (v0.21.0) |
+| [Upgrade Guide - Flutter 3.47.7](docs/upgrade_flutter_3.47.7.md) | Flutter 3.44.3 → 3.47.7 upgrade notes |
 
 ## References
 

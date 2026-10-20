@@ -186,11 +186,8 @@ class _NetworkEntryTile extends StatelessWidget {
             ),
             child: SelectableText(
               content,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontFamily: 'monospace',
-                fontSize: 11,
-                color: isError ? colorScheme.error : null,
-              ),
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(fontFamily: 'monospace', fontSize: 11, color: isError ? colorScheme.error : null),
               maxLines: 20,
             ),
           ),
@@ -245,9 +242,8 @@ class _MethodBadge extends StatelessWidget {
       decoration: BoxDecoration(color: color.withAlpha(25), borderRadius: BorderRadius.circular(AppRadius.sm)),
       child: Text(
         method.toUpperCase(),
-        style: Theme.of(
-          context,
-        ).textTheme.labelSmall?.copyWith(color: color, fontWeight: FontWeight.w700, fontSize: 10),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(color: color, fontWeight: FontWeight.w700, fontSize: 10),
         textAlign: TextAlign.center,
       ),
     );

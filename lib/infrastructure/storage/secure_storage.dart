@@ -38,9 +38,11 @@ abstract interface class ISecureStorage {
 /// upgrades or default flips cannot silently weaken the security
 /// posture of stored secrets:
 ///
-/// - **Android:** `flutter_secure_storage` ≥ 10 uses custom AES-GCM
-///   ciphers by default (replacing the deprecated Jetpack Crypto
-///   library). Min SDK is 23, so all targets support hardware-backed
+/// - **Android:** `flutter_secure_storage` ≥ 11 encrypts with AES-GCM
+///   under an RSA-OAEP wrapped Android Keystore key. The legacy
+///   RSA-PKCS1 / AES-CBC ciphers and the Jetpack EncryptedSharedPreferences
+///   backend were removed in 11.0.0; data written by 10.x is read as-is.
+///   The plugin's min SDK is 24, so all targets support hardware-backed
 ///   key storage. No extra options are needed beyond accepting the
 ///   library defaults — flagged here so an audit reader does not
 ///   wonder whether plaintext fallback is possible.

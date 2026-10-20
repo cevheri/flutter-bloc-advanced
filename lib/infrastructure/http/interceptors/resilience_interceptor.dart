@@ -10,6 +10,8 @@ import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 ///
 /// **Retry logic:**
 /// - Retryable errors: timeout, connection error, HTTP 502/503/504.
+///   On dart:io, a connection that closed before a full response header arrived is not retried. On web the
+///   browser reports it as a generic network error, which is retried like any other connection error.
 /// - Non-retryable: 400, 401, 403, 404, 422 pass through immediately.
 /// - Max retries: 3, exponential backoff with jitter (200ms base).
 /// - Respects the `Retry-After` header when present.
@@ -274,17 +276,29 @@ class ResilienceInterceptor extends Interceptor {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.sendTimeout:
       case DioExceptionType.receiveTimeout:
-      case DioExceptionType.connectionError:
         return true;
+      case DioExceptionType.connectionError:
+        return !_isClosedAfterRequestSent(err);
       case DioExceptionType.badResponse:
         final statusCode = err.response?.statusCode ?? 0;
         return statusCode == 502 || statusCode == 503 || statusCode == 504;
       case DioExceptionType.cancel:
       case DioExceptionType.badCertificate:
+      // The server already answered; a retry would only repeat the same slow response transform.
+      case DioExceptionType.transformTimeout:
       case DioExceptionType.unknown:
         return false;
     }
   }
+
+  /// Whether the connection closed before a full response header arrived (dart:io adapter only).
+  ///
+  /// dio 5.10+ reports this as a connection error (dio 5.9 reported it as unknown). The server may
+  /// or may not have read and processed the request, so it is not retried. The check matches the
+  /// message dio itself keys on, because `HttpException` lives in `dart:io`, which web builds cannot
+  /// import. The web adapter reports the same failure as a connection error without an error object.
+  bool _isClosedAfterRequestSent(DioException err) =>
+      err.error?.toString().contains('Connection closed before full header was received') ?? false;
 
   /// Whether an error is a client error (4xx) that should NOT trip the breaker.
   bool _isClientError(DioException err) {

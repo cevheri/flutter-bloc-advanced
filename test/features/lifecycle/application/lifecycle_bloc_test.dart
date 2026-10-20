@@ -82,9 +82,8 @@ void main() {
       blocTest<LifecycleBloc, LifecycleState>(
         'should emit [loading, ready] with error message on failure (graceful degradation)',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Failure(NetworkError('No connection')));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Failure(NetworkError('No connection')));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -115,9 +114,8 @@ void main() {
       blocTest<LifecycleBloc, LifecycleState>(
         'should emit ready when current version equals minimum version',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0.0', maintenanceMode: false)));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0.0', maintenanceMode: false)));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -127,9 +125,8 @@ void main() {
       blocTest<LifecycleBloc, LifecycleState>(
         'should emit ready when current version is above minimum version',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '0.9.0', maintenanceMode: false)));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '0.9.0', maintenanceMode: false)));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -139,9 +136,8 @@ void main() {
       blocTest<LifecycleBloc, LifecycleState>(
         'should emit ready when minimumVersion is null',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(maintenanceMode: false)));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(maintenanceMode: false)));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -168,9 +164,8 @@ void main() {
       blocTest<LifecycleBloc, LifecycleState>(
         'should not update FeatureFlagService when featureFlags are empty',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(maintenanceMode: false, featureFlags: {})));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(maintenanceMode: false, featureFlags: {})));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -195,9 +190,8 @@ void main() {
         'should handle patch version comparison (1.0.0 < 1.0.1)',
         setUp: () => AppConstants.appVersion = '1.0.0',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0.1', maintenanceMode: false)));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0.1', maintenanceMode: false)));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -208,9 +202,8 @@ void main() {
         'should handle minor version comparison (1.0.0 < 1.1.0)',
         setUp: () => AppConstants.appVersion = '1.0.0',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.1.0', maintenanceMode: false)));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.1.0', maintenanceMode: false)));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -221,9 +214,8 @@ void main() {
         'should handle major version comparison (1.9.9 < 2.0.0)',
         setUp: () => AppConstants.appVersion = '1.9.9',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '2.0.0', maintenanceMode: false)));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '2.0.0', maintenanceMode: false)));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),
@@ -234,9 +226,8 @@ void main() {
         'should not force update when current major is higher (2.0.0 > 1.9.9)',
         setUp: () => AppConstants.appVersion = '2.0.0',
         build: () {
-          when(
-            () => mockRepository.fetchAppConfig(),
-          ).thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.9.9', maintenanceMode: false)));
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.9.9', maintenanceMode: false)));
           return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
         },
         act: (bloc) => bloc.add(const LifecycleCheckEvent()),

@@ -79,9 +79,8 @@ class _AppTableHeader<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final style = Theme.of(
-      context,
-    ).textTheme.labelMedium?.copyWith(fontWeight: FontWeight.w500, color: cs.onSurfaceVariant);
+    final style = Theme.of(context).textTheme.labelMedium
+        ?.copyWith(fontWeight: FontWeight.w500, color: cs.onSurfaceVariant);
 
     return Container(
       height: 40,
