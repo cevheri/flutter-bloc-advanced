@@ -17,6 +17,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_inter
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 /// Metadata describing one entry in the [ApiClient] interceptor chain.
@@ -323,9 +324,10 @@ class ApiClient {
     // If the wrapped error is already an AppException (e.g. from MockInterceptor),
     // unwrap and rethrow it directly.
     if (e.error is AppException) return e.error as AppException;
-    // A pin mismatch gets its own type, so repositories can report AppErrorCode.networkCertInvalid instead of a
-    // generic communication error. Its message names the host and port for the log.
-    if (e.error is CertificatePinningException) return UntrustedCertificateException(e.error.toString());
+    // A TLS failure gets its own type, so repositories can report AppErrorCode.networkCertInvalid instead of a
+    // generic communication error: a pin mismatch, or a certificate the device does not trust. dio reports both as
+    // unknown, with the exception as its error. On web the browser reports them as connection errors.
+    if (isTlsError(e.error)) return _untrustedCertificate(e);
 
     switch (e.type) {
       case DioExceptionType.connectionTimeout:
@@ -340,10 +342,20 @@ class ApiClient {
       case DioExceptionType.cancel:
         return FetchDataException('Request cancelled');
       case DioExceptionType.badCertificate:
-        return FetchDataException('Bad certificate');
+        return _untrustedCertificate(e);
       case DioExceptionType.unknown:
         return _mapUnknown(e);
     }
+  }
+
+  /// An [UntrustedCertificateException] for the TLS failure [e]. Its message is for the log, never for the user: it
+  /// names the host and port and keeps what dart:io or dio reported, such as the OS error of a failed handshake.
+  static UntrustedCertificateException _untrustedCertificate(DioException e) {
+    final error = e.error;
+    // Its message names the host and port already, so the log line of a pin mismatch stays as it was.
+    if (error is CertificatePinningException) return UntrustedCertificateException(error.toString());
+    final uri = e.requestOptions.uri;
+    return UntrustedCertificateException('Untrusted connection to ${uri.host}:${uri.port}: ${e.message ?? error}');
   }
 
   static AppException _mapBadResponse(DioException e) {

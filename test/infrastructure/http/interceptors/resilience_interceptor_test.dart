@@ -358,6 +358,59 @@ void main() {
       });
     });
 
+    // Every other TLS failure fails the handshake before the request reaches the server as well, and must reach the
+    // user as the insecure-connection message, not as "Circuit Breaker Open" once five of them opened the circuit.
+    group('onError with a TLS failure', () {
+      final failures = <String, DioException Function(RequestOptions)>{
+        'a HandshakeException': (options) => DioException(
+          requestOptions: options,
+          error: const HandshakeException('Handshake error in client (OS Error: CERTIFICATE_VERIFY_FAILED)'),
+        ),
+        'a CertificateException': (options) =>
+            DioException(requestOptions: options, error: const CertificateException('certificate rejected')),
+        'a bad certificate': (options) => DioException.badCertificate(requestOptions: options),
+      };
+      // The network can change between two attempts, so a retry can fail the handshake as well.
+      test('should not count a TLS failure of a retry against the circuit breaker', () async {
+        final adapter = _FakeHttpClientAdapter([
+          503,
+          const HandshakeException('Handshake error in client (OS Error: CERTIFICATE_VERIFY_FAILED)'),
+        ]);
+        final resilience = ResilienceInterceptor(
+          maxRetries: 1,
+          baseDelay: Duration.zero,
+          maxJitter: Duration.zero,
+          failureThreshold: 10,
+          cooldownDuration: const Duration(hours: 1),
+        );
+        final dio = Dio(BaseOptions(baseUrl: 'https://test.api'))..httpClientAdapter = adapter;
+        dio.interceptors.add(resilience.forDio(dio));
+
+        await expectLater(
+          dio.get<String>('/api/users'),
+          throwsA(isA<DioException>().having((e) => e.error, 'error', isA<HandshakeException>())),
+        );
+        expect(adapter.requestCount, 2);
+        expect(resilience.circuitBreakers['/api/users']?.failureCount, 1, reason: 'only the 503 may count');
+      });
+
+      for (final MapEntry(key: failure, value: build) in failures.entries) {
+        test('should pass $failure through without recording a failure', () {
+          final shared = ResilienceInterceptor(failureThreshold: 1, cooldownDuration: const Duration(hours: 1));
+
+          final result = _captureOnErrorSync(
+            shared.forDio(Dio()),
+            build(RequestOptions(path: '/api/users', method: 'GET')),
+          );
+          expect(result.passed, isTrue);
+
+          final next = _TestRequestHandler();
+          shared.onRequest(RequestOptions(path: '/api/users'), next);
+          expect(next.result.passed, isTrue, reason: 'one recorded failure would have opened the circuit');
+        });
+      }
+    });
+
     // A retry sends the request again, so it is safe only when a second copy cannot change anything on the
     // server: an idempotent method, or a POST or PATCH whose Idempotency-Key the retry sends again.
     group('retry by HTTP method', () {
@@ -924,11 +977,11 @@ class _TestResponseHandler extends ResponseInterceptorHandler {
   }
 }
 
-/// Counts requests and answers each one with the next queued status code.
+/// Counts requests and answers each one with the next queued status code, or throws the next queued error.
 class _FakeHttpClientAdapter implements HttpClientAdapter {
-  _FakeHttpClientAdapter(this._statusCodes);
+  _FakeHttpClientAdapter(this._replies);
 
-  final List<int> _statusCodes;
+  final List<Object> _replies;
   int requestCount = 0;
 
   @override
@@ -938,7 +991,10 @@ class _FakeHttpClientAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     requestCount++;
-    return ResponseBody.fromString('', _statusCodes.removeAt(0));
+    return switch (_replies.removeAt(0)) {
+      final int statusCode => ResponseBody.fromString('', statusCode),
+      final Object error => throw error,
+    };
   }
 
   @override

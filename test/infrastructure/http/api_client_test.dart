@@ -1,5 +1,6 @@
 import 'dart:convert';
-import 'dart:io' show InternetAddress, Platform, RawSocketOption, SecureSocket, ServerSocket, Socket;
+import 'dart:io'
+    show CertificateException, InternetAddress, Platform, RawSocketOption, SecureSocket, ServerSocket, Socket;
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
@@ -688,6 +689,25 @@ void main() {
       expect(errors, contains(contains('api.example.test:443')));
     });
 
+    // dio reports a certificate that IOHttpClientAdapter.validateCertificate rejects as badCertificate, and dart:io
+    // may fail the handshake with a CertificateException; both used to reach the repositories as a plain
+    // FetchDataException.
+    test('fails a certificate dio rejects with UntrustedCertificateException', () async {
+      adapter.fail(
+        DioException.badCertificate(
+          requestOptions: RequestOptions(baseUrl: 'https://api.example.test', path: '/api/transport/rejected'),
+        ),
+      );
+
+      await expectLater(client.get('/api/transport/rejected'), throwsA(isA<UntrustedCertificateException>()));
+    });
+
+    test('fails a dart:io CertificateException with UntrustedCertificateException', () async {
+      adapter.fail(const CertificateException('certificate rejected'));
+
+      await expectLater(client.get('/api/transport/certificate'), throwsA(isA<UntrustedCertificateException>()));
+    });
+
     test('records failures on ResilienceInterceptor.instance, which the dashboard reads (#60)', () async {
       adapter.reply(500);
 
@@ -702,15 +722,16 @@ void main() {
   // captive portal) was answered with the cached response, marked stale, as if the device were offline.
   group('ApiClient when the device does not trust the server certificate', () {
     const cached = '[{"login":"admin"}]';
+    late int port;
     late ApiClient client;
 
     setUp(() async {
-      final server = await startLoopbackTlsServer(body: cached);
+      port = (await startLoopbackTlsServer(body: cached)).port;
       // Production chain on system trust, without pins.
       client = ApiClient(
         appConfig: AppConfig(
           environment: Environment.prod,
-          apiBaseUrl: 'https://127.0.0.1:${server.port}',
+          apiBaseUrl: 'https://127.0.0.1:$port',
           certificatePins: const [],
           idleTimeout: null,
         ),
@@ -735,6 +756,43 @@ void main() {
           throwsA(isA<FetchDataException>().having((e) => e.toString(), 'message', contains('HandshakeException'))),
         );
       });
+    });
+
+    // Regression: only a pin mismatch became an UntrustedCertificateException. Any other TLS failure reached the
+    // repositories as a plain FetchDataException, so the screens showed its text or a generic error instead of the
+    // insecure-connection message.
+    test('fails with UntrustedCertificateException and logs the TLS error with the host and port', () async {
+      final errors = <String>[];
+      void recordError(OutputEvent event) {
+        if (event.level == Level.error) errors.addAll(event.lines);
+      }
+
+      Logger.addOutputListener(recordError);
+      addTearDown(() => Logger.removeOutputListener(recordError));
+
+      await withRealSockets(() async {
+        await expectLater(client.get('/api/tls/untrusted'), throwsA(isA<UntrustedCertificateException>()));
+      });
+      final log = errors.join('\n');
+      expect(log, contains('127.0.0.1:$port'));
+      expect(log, contains('CERTIFICATE_VERIFY_FAILED'));
+    });
+
+    // Regression: each TLS failure counted against the endpoint's circuit breaker, so from the sixth request on the
+    // user saw "Circuit Breaker Open" instead of the insecure-connection message.
+    test('keeps failing with UntrustedCertificateException instead of opening the circuit', () async {
+      addTearDown(ResilienceInterceptor.instance.resetAll);
+
+      await withRealSockets(() async {
+        for (var request = 1; request <= 6; request++) {
+          await expectLater(
+            client.get('/api/tls/repeated'),
+            throwsA(isA<UntrustedCertificateException>()),
+            reason: 'request $request',
+          );
+        }
+      });
+      expect(ResilienceInterceptor.instance.circuitBreakers['/api/tls/repeated']?.failureCount, 0);
     });
   });
 
@@ -791,10 +849,11 @@ void main() {
       }
     }
 
-    // Regression: a TLS handshake that ended before it completed was answered from the cache as a lost connection.
-    // A dropped network ends a handshake this way, but so can anything between the device and the server, so it fails
-    // closed like any other TLS failure.
-    test('fails a cached GET whose TLS handshake the server ends instead of answering it from the cache', () async {
+    // Regression: a TLS handshake that was closed before it completed was answered from the cache as a lost
+    // connection, and once it no longer was, it reached the screens as a plain FetchDataException. A dropped network
+    // can close a handshake this way, but so can anything between the device and the server, so it fails closed like
+    // any other TLS failure, with the insecure-connection error.
+    test('fails a cached GET whose TLS handshake the server ends with UntrustedCertificateException', () async {
       final client = await clientOfCuttingServer(tls: true, cut: _Cut.duringHandshake, reset: false);
 
       await withRealSockets(() async {
@@ -803,7 +862,7 @@ void main() {
         await expectLater(
           client.get('/api/cut/users'),
           throwsA(
-            isA<FetchDataException>().having(
+            isA<UntrustedCertificateException>().having(
               (e) => '$e',
               'message',
               contains('Connection terminated during handshake'),

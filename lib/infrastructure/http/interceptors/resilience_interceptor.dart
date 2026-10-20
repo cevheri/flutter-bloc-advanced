@@ -4,10 +4,10 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
-import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotency_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 
 /// Dio interceptor that combines **smart retry** with a **circuit breaker**
 /// to improve resilience against transient failures.
@@ -24,6 +24,9 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotenc
 /// - A request that [ConnectivityInterceptor] rejected because the device is offline (its error is a
 ///   [ConnectivityException]) passes through immediately and does not count against the circuit breaker: it was
 ///   never sent.
+/// - A TLS failure (a certificate pin mismatch, a certificate the device does not trust, see [isTlsError]) passes
+///   through immediately and does not count against the circuit breaker either: the handshake failed before the
+///   request reached the server, and the user must see the insecure-connection error, not a circuit-open one.
 /// - Max retries: 3, exponential backoff with jitter (200ms base).
 /// - Respects the `Retry-After` header when present.
 /// - Retries go through the adapter of the Dio given to [forDio], so they keep its certificate
@@ -161,10 +164,10 @@ class ResilienceInterceptor extends Interceptor {
       return;
     }
 
-    // A certificate pin mismatch fails the TLS handshake before the request reaches the server, so it says nothing
-    // about the endpoint's health. Counted as failures, a few of them would open the circuit and replace the
-    // insecure-connection error with a circuit-open one.
-    if (err.error is CertificatePinningException) {
+    // A TLS failure (a certificate pin mismatch, or a certificate the device does not trust) fails the handshake
+    // before the request reaches the server, so it says nothing about the endpoint's health. Counted as failures, a
+    // few of them would open the circuit and replace the insecure-connection error with a circuit-open one.
+    if (_isTlsFailure(err)) {
       handler.next(err);
       return;
     }
@@ -293,7 +296,7 @@ class ResilienceInterceptor extends Interceptor {
         ),
       );
     } on DioException catch (retryErr) {
-      breaker.recordFailure();
+      if (!_isTlsFailure(retryErr)) breaker.recordFailure();
 
       if (_isRetryable(retryErr) && nextAttempt < maxRetries) {
         retryErr.requestOptions.extra['_retryAttempt'] = nextAttempt;
@@ -395,6 +398,9 @@ class ResilienceInterceptor extends Interceptor {
     final key = options.headers[IdempotencyInterceptor.headerName]?.toString();
     return key != null && key.isNotEmpty;
   }
+
+  /// Whether the TLS handshake failed, so the request never reached the server: see [isTlsError].
+  bool _isTlsFailure(DioException err) => err.type == DioExceptionType.badCertificate || isTlsError(err.error);
 
   /// Whether an error is a client error (4xx) that should NOT trip the breaker.
   bool _isClientError(DioException err) {

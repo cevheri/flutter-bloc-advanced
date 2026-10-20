@@ -6,6 +6,8 @@
 /// same signatures, as `certificate_pinning_adapter.dart` does. Web builds (JS and WASM) never compile `dart:io`.
 library;
 
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
+
 import 'transport_errors_web.dart' if (dart.library.io) 'transport_errors_io.dart' as platform;
 
 /// Whether [error], the `error` of a `DioException`, means that the connection was closed or reset before the whole
@@ -33,3 +35,18 @@ import 'transport_errors_web.dart' if (dart.library.io) 'transport_errors_io.dar
 /// turns into a connection error without an error object. That includes a TLS failure, so on web an untrusted or
 /// expired certificate cannot be told apart from a lost connection.
 bool isLostConnection(Object? error) => platform.isLostConnection(error);
+
+/// Whether [error], the `error` of a `DioException`, is a TLS failure: the connection could not be verified as
+/// secure, so it may be intercepted.
+///
+/// That is a certificate pin mismatch ([CertificatePinningException]) or a dart:io `TlsException`: the
+/// `HandshakeException` of a certificate the device does not trust (CERTIFICATE_VERIFY_FAILED for an expired or
+/// self-signed certificate, a wrong device clock, a captive portal or an intercepting proxy, or a hostname mismatch),
+/// the `HandshakeException` "Connection terminated during handshake", or a `CertificateException`. dio reports these
+/// as `DioExceptionType.unknown`. A handshake closed before it completed counts although a dropped network can close
+/// one that way too: a middlebox can close it the same way, so it fails closed. A handshake reset before it completed
+/// does not count: dio reports it as a connection error. A certificate that `IOHttpClientAdapter.validateCertificate`
+/// rejects is a TLS failure too, but dio reports it as `DioExceptionType.badCertificate`, which callers check by type.
+///
+/// On web the browser reports a TLS failure as a connection error, so there it is never recognized.
+bool isTlsError(Object? error) => error is CertificatePinningException || platform.isTlsException(error);

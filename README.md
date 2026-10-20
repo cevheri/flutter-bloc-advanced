@@ -124,6 +124,8 @@ How it works:
   A dropped network can close a handshake too, but so can anything between the device and the server, so that case fails closed as well.
   A handshake reset before it completed is a connection error instead, which the cache answers like a lost connection.
   `CacheInterceptor` answers a GET from cache only when it cannot reach the server: a connection error, a timeout, or a connection closed or reset before the whole response arrived.
+  `ApiClient` throws such a failure, and a certificate that `IOHttpClientAdapter.validateCertificate` rejects (`DioExceptionType.badCertificate`), as an `UntrustedCertificateException` too, so the screens above show the same translated message; the exception message keeps the TLS error for the log.
+  `ResilienceInterceptor` does not count it toward opening the endpoint's circuit, so a circuit-open error never replaces it.
   On web the browser reports a TLS failure as a connection error, so there it cannot be told apart from a lost connection.
 - **Web platform is a hard no-op.** Browsers control TLS; from JS we cannot intercept the handshake. Use HSTS / CT pinning at the server side instead.
 

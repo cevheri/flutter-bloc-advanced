@@ -20,13 +20,16 @@ class FetchDataException extends AppException {
   FetchDataException(String message) : super(message, "Error During Communication: ");
 }
 
-/// Thrown when the server presents a certificate the app does not trust,
-/// such as one that matches none of the configured certificate pins. The
-/// connection may be intercepted.
+/// Thrown when the connection could not be verified as secure: the server
+/// presents a certificate that matches none of the configured certificate
+/// pins, or one the device does not trust (expired, self-signed, issued for
+/// another host, or presented by a captive portal or an intercepting proxy),
+/// or the TLS handshake was closed before it completed ("Connection
+/// terminated during handshake"). The connection may be intercepted.
 ///
 /// A repository should report it with `AppErrorCode.networkCertInvalid` so
 /// the UI can show a translated message. The message of this exception names the
-/// host and port and is meant for the log.
+/// host and port and the TLS error, and is meant for the log.
 final class UntrustedCertificateException extends FetchDataException {
   UntrustedCertificateException(super.message);
 }

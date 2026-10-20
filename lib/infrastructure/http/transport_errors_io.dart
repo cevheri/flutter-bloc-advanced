@@ -5,3 +5,5 @@ import 'dart:io';
 
 bool isLostConnection(Object? error) =>
     error is SocketException || error is OSError || (error is HttpException && error is! RedirectException);
+
+bool isTlsException(Object? error) => error is TlsException;

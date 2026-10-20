@@ -5,3 +5,5 @@
 library;
 
 bool isLostConnection(Object? error) => false;
+
+bool isTlsException(Object? error) => false;

@@ -1,6 +1,7 @@
 @Tags(['widget'])
 library;
 
+import 'dart:io' show HandshakeException;
 import 'dart:typed_data';
 
 import 'package:bloc_test/bloc_test.dart';
@@ -36,19 +37,63 @@ const _pinnedProdConfig = AppConfig(
   idleTimeout: null,
 );
 
-/// Fails every request as the pinning adapter fails a server whose certificate matches no configured pin.
-class _PinMismatchAdapter implements HttpClientAdapter {
+/// Production chain (no MockInterceptor) on system trust, without pins.
+const _prodConfig = AppConfig(
+  environment: Environment.prod,
+  apiBaseUrl: 'https://api.example.test',
+  certificatePins: [],
+  idleTimeout: null,
+);
+
+/// Fails every request with [error], as the transport fails a TLS handshake.
+class _FailingAdapter implements HttpClientAdapter {
+  const _FailingAdapter(this.error);
+
+  final Object error;
+
   @override
   Future<ResponseBody> fetch(
     RequestOptions options,
     Stream<Uint8List>? requestStream,
     Future<void>? cancelFuture,
   ) async {
-    throw const CertificatePinningException('api.example.test', 443);
+    throw error;
   }
 
   @override
   void close({bool force = false}) {}
+}
+
+const _insecureConnectionMessage =
+    'The connection could not be verified as secure, so it was blocked. Try again later or on another network.';
+
+/// Pumps the page wired as its route wires it, on the production chain of [apiClient], and lets it load.
+Future<void> _pumpRoutedPage(WidgetTester tester, ApiClient apiClient) async {
+  await tester.pumpWidget(
+    withUnsavedChangesRegistry(
+      MaterialApp.router(
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+        routerConfig: singlePageRouter(
+          Scaffold(
+            body: RepositoryProvider<IDynamicFormRepository>.value(
+              value: DynamicFormRepository(apiClient),
+              child: Builder(
+                builder: (context) =>
+                    DynamicFormsFeatureRoutes.withBloc(context, const DynamicFormPage(formId: 'test_form')),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
 }
 
 Widget _buildTestWidget(MockDynamicFormBloc bloc, {Locale locale = const Locale('en')}) {
@@ -157,45 +202,39 @@ void main() {
       testWidgets('shows the insecure-connection message, not the host and port, when a pin mismatch fails the load', (
         tester,
       ) async {
-        // The page wired as its route wires it, on the production ApiClient chain.
         final apiClient = ApiClient(appConfig: _pinnedProdConfig, secureStorage: FlutterSecureStorageAdapter());
-        apiClient.instance.httpClientAdapter = _PinMismatchAdapter();
-
-        await tester.pumpWidget(
-          withUnsavedChangesRegistry(
-            MaterialApp.router(
-              localizationsDelegates: const [
-                S.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
-              supportedLocales: S.delegate.supportedLocales,
-              routerConfig: singlePageRouter(
-                Scaffold(
-                  body: RepositoryProvider<IDynamicFormRepository>.value(
-                    value: DynamicFormRepository(apiClient),
-                    child: Builder(
-                      builder: (context) =>
-                          DynamicFormsFeatureRoutes.withBloc(context, const DynamicFormPage(formId: 'test_form')),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
+        // As the pinning adapter fails a server whose certificate matches no configured pin.
+        apiClient.instance.httpClientAdapter = const _FailingAdapter(
+          CertificatePinningException('api.example.test', 443),
         );
-        await tester.pumpAndSettle();
+
+        await _pumpRoutedPage(tester, apiClient);
 
         expect(find.byType(AppErrorState), findsOneWidget);
-        expect(
-          find.text(
-            'The connection could not be verified as secure, so it was blocked. Try again later or on another network.',
-          ),
-          findsOneWidget,
-        );
+        expect(find.text(_insecureConnectionMessage), findsOneWidget);
         expect(find.textContaining('api.example.test'), findsNothing);
         expect(find.textContaining('443'), findsNothing);
+      });
+
+      // Regression: only a pin mismatch showed the insecure-connection message. A certificate the device does not
+      // trust (expired, self-signed, a wrong clock, a captive portal or an intercepting proxy) showed the exception
+      // text instead.
+      testWidgets('shows the insecure-connection message when the device does not trust the server certificate', (
+        tester,
+      ) async {
+        final apiClient = ApiClient(appConfig: _prodConfig, secureStorage: FlutterSecureStorageAdapter());
+        // As dart:io fails the handshake on system trust.
+        apiClient.instance.httpClientAdapter = const _FailingAdapter(
+          HandshakeException(
+            'Handshake error in client (OS Error: CERTIFICATE_VERIFY_FAILED: certificate has expired)',
+          ),
+        );
+
+        await _pumpRoutedPage(tester, apiClient);
+
+        expect(find.byType(AppErrorState), findsOneWidget);
+        expect(find.text(_insecureConnectionMessage), findsOneWidget);
+        expect(find.textContaining('HandshakeException'), findsNothing);
       });
     });
 
