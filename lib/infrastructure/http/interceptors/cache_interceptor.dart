@@ -19,7 +19,8 @@ import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 /// a connection error, a timeout, or a connection closed or reset before the
 /// whole response arrived. That includes a GET sent while the device is
 /// offline: `ConnectivityInterceptor` rejects it as a connection error that
-/// still reaches [onError].
+/// still reaches [onError]. A fresh cacheFirst entry answers it with
+/// `x-cache: hit`, as it would before the network.
 ///
 /// A response that dart:io cannot parse is answered the same way: dart:io
 /// reports it as an `HttpException`, like a connection reset while the
@@ -131,14 +132,22 @@ class CacheInterceptor extends Interceptor {
       if (policy == CachePolicy.networkFirst || policy == CachePolicy.cacheFirst) {
         final entry = await _storage.read(_cacheKey(err.requestOptions));
         if (entry != null) {
-          _log.info('Serving stale cache for offline request: {}', [err.requestOptions.path]);
+          // A fresh cacheFirst entry is the answer onRequest gives before the network, so it is a hit: it gets here
+          // when ConnectivityInterceptor rejected the GET before this interceptor saw it. Any other entry stands in
+          // for the server that could not be reached.
+          final cacheStatus = policy == CachePolicy.cacheFirst && entry.isValid ? 'hit' : 'stale';
+          _log.info('Answering GET {} from the cache ({}) after {}', [
+            err.requestOptions.path,
+            cacheStatus,
+            err.type.name,
+          ]);
           handler.resolve(
             Response(
               requestOptions: err.requestOptions,
               statusCode: 200,
               data: entry.data,
               headers: Headers.fromMap({
-                'x-cache': ['stale'],
+                'x-cache': [cacheStatus],
               }),
             ),
           );

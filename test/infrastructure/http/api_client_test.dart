@@ -1264,7 +1264,9 @@ void main() {
       expect(sessionExpiredCalls, 0);
     });
 
-    test('answers a cacheFirst GET from the cache', () async {
+    // Regression: the entry is fresh, so online CacheInterceptor answers it as a hit before the network. Offline,
+    // ConnectivityInterceptor rejects the GET before CacheInterceptor sees it, and the answer was marked stale.
+    test('answers a cacheFirst GET with a fresh entry from the cache as a hit', () async {
       final cacheFirst = Options(extra: {'cachePolicy': CachePolicy.cacheFirst});
       adapter.reply(200, cached);
       await client.instance.get<String>('/api/offline/cache-first', options: cacheFirst);
@@ -1273,7 +1275,7 @@ void main() {
       final response = await client.instance.get<String>('/api/offline/cache-first', options: cacheFirst);
 
       expect(response.data, cached);
-      expect(response.headers.value('x-cache'), 'stale');
+      expect(response.headers.value('x-cache'), 'hit');
       expect(adapter.requests, hasLength(1));
     });
 

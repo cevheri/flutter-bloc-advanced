@@ -398,6 +398,61 @@ void main() {
         expect(handler.resolvedResponse!.data, '{"fallback": true}');
       });
 
+      // A fresh cacheFirst entry is what onRequest answers as a hit; it reaches onError when ConnectivityInterceptor
+      // rejected the GET before this interceptor saw it.
+      test('should mark a fresh cacheFirst entry that answers a connection error as a hit', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.cacheFirst},
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer(
+          (_) async => CacheEntry(
+            key: 'GET_${options.uri}',
+            data: '{"fresh": true}',
+            createdAt: DateTime.now(),
+            expiresAt: DateTime.now().add(const Duration(minutes: 5)),
+          ),
+        );
+
+        final handler = _TestErrorHandler();
+        await interceptor.onError(
+          DioException(requestOptions: options, type: DioExceptionType.connectionError),
+          handler,
+        );
+
+        expect(handler.resolvedResponse!.data, '{"fresh": true}');
+        expect(handler.resolvedResponse!.headers.value('x-cache'), 'hit');
+      });
+
+      // Guards that only a fresh entry is a hit: an expired one stands in for the server, as before.
+      test('should mark an expired cacheFirst entry that answers a connection error as stale', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.cacheFirst},
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer(
+          (_) async => CacheEntry(
+            key: 'GET_${options.uri}',
+            data: '{"expired": true}',
+            createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+            expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+          ),
+        );
+
+        final handler = _TestErrorHandler();
+        await interceptor.onError(
+          DioException(requestOptions: options, type: DioExceptionType.connectionError),
+          handler,
+        );
+
+        expect(handler.resolvedResponse!.data, '{"expired": true}');
+        expect(handler.resolvedResponse!.headers.value('x-cache'), 'stale');
+      });
+
       // Guards the answers for a connection closed or reset after it was opened, which dio reports as unknown with the
       // dart:io error. These are the errors loopback sockets gave for such a cut (see the cut connections in
       // api_client_test.dart).
