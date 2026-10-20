@@ -1316,6 +1316,24 @@ void main() {
       expect(adapter.requests, hasLength(1));
     });
 
+    // Regression: SharedPrefsCacheStorage deleted an entry once its TTL (5 minutes by default) had passed, so data
+    // loaded more than five minutes before going offline was gone, and the GET failed with the no-connection error.
+    test('answers a GET from the cache after the TTL of its entry has passed', () async {
+      adapter.reply(200, cached);
+      await client.instance.get<String>(
+        '/api/offline/expired',
+        options: Options(extra: {'cacheTtl': const Duration(milliseconds: 1)}),
+      );
+      await Future<void>.delayed(const Duration(milliseconds: 20));
+      status = ConnectivityStatus.offline;
+
+      final response = await client.get('/api/offline/expired');
+
+      expect(response.data, cached);
+      expect(response.headers.value('x-cache'), 'stale');
+      expect(adapter.requests, hasLength(1));
+    });
+
     // Regression: a cacheOnly GET never reaches the network, but ConnectivityInterceptor rejected it before
     // CacheInterceptor could answer it, so it failed with the no-connection error although its response was cached.
     test('answers a cacheOnly GET from the cache', () async {

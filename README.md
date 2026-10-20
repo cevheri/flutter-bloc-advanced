@@ -123,7 +123,7 @@ How it works:
 - No other TLS failure is answered from cache either, pinning or not: a certificate the device does not trust (expired, self-signed, a wrong device clock, a captive portal or an intercepting proxy), a hostname mismatch, or a handshake closed before it completed ("Connection terminated during handshake") fails the request.
   A dropped network can close a handshake too, but so can anything between the device and the server, so that case fails closed as well.
   A handshake reset before it completed is a connection error instead, which the cache answers like a lost connection.
-  `CacheInterceptor` answers a GET from cache only when it cannot reach the server: a connection error, a timeout, or a connection closed or reset before the whole response arrived.
+  `CacheInterceptor` answers a GET from cache only when it cannot reach the server: a connection error, a timeout, or a connection closed or reset before the whole response arrived; a response that dart:io cannot parse counts too.
   `ApiClient` throws such a failure, and a certificate that `IOHttpClientAdapter.validateCertificate` rejects (`DioExceptionType.badCertificate`), as an `UntrustedCertificateException` too, so the screens above show the same translated message; the exception message keeps the TLS error for the log.
   `ResilienceInterceptor` does not count it toward opening the endpoint's circuit, so a circuit-open error never replaces it.
   On web the browser reports a TLS failure as a connection error, so there it cannot be told apart from a lost connection.
@@ -202,6 +202,28 @@ Worked example: `UserRepository.create` opts in (see `lib/features/users/data/re
 **Retry stability:** once generated, the key is stashed on `RequestOptions.extra['_idempotency_key']` and reused on every subsequent pass — covers both `ResilienceInterceptor` retries (transient 5xx) and `TokenRefreshInterceptor` re-submission after a 401 + refresh.
 
 `GET`, `HEAD`, `OPTIONS`, `DELETE` never get the header (safe / idempotent by HTTP semantics).
+
+### Response Cache and Offline Data
+
+`CacheInterceptor` stores successful `GET` responses and answers from them by the request's `CachePolicy` (`options.extra['cachePolicy']`, `networkFirst` by default):
+
+| Policy | Behavior |
+| --- | --- |
+| `networkFirst` | Sends the request; answers from the cache only when the server cannot be reached |
+| `cacheFirst` | Answers from a fresh entry without sending the request; otherwise behaves as `networkFirst` |
+| `cacheOnly` | Answers from a fresh entry or fails with "No cached data available"; it never reaches the network, so neither being offline nor an open circuit stops it |
+| `networkOnly` | Never reads or writes the cache |
+
+An entry is fresh for its TTL, 5 minutes unless `options.extra['cacheTtl']` sets another.
+Past its TTL an entry still answers a `GET` that cannot reach the server, with an `x-cache: stale` header, until it is 24 hours old (`CacheEntry.maxStaleAge`).
+An entry read after that is deleted instead.
+Ending the session, by a logout, the idle timeout or a token that cannot be refreshed, deletes every entry, and a clear that leaves some behind is logged as an error.
+The response of a `GET` still on its way when the session ends is not stored, so it cannot answer the next user with the previous user's data.
+No eviction runs yet, so an entry that is never read again stays in `SharedPreferences` (`localStorage` on web) until the session ends.
+A `GET` cannot reach the server when the device is offline, or when the connection is refused, times out, or is closed or reset before the whole response arrived.
+A response that dart:io cannot parse, such as one from a server that does not answer in HTTP, counts the same way, since dart:io reports it like a connection reset while the response is awaited.
+Every other failure reaches the caller, a server error or a TLS failure included: an untrusted certificate is never answered from the cache (see [Certificate Pinning](#certificate-pinning-opt-in)).
+An answer from a fresh `cacheFirst` or `cacheOnly` entry carries `x-cache: hit`.
 
 ### Screen Capture Protection (opt-in)
 

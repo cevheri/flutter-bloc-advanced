@@ -165,6 +165,31 @@ void main() {
         expect(handler.resolvedResponse!.headers.value('x-cache'), 'hit');
       });
 
+      // The storage keeps an entry past its TTL to answer a GET that cannot reach the server; cacheOnly answers from
+      // a fresh entry only, as before.
+      test('should reject when the entry is past its TTL', () async {
+        final options = RequestOptions(
+          path: '/api/users',
+          method: 'GET',
+          baseUrl: 'https://example.com',
+          extra: {'cachePolicy': CachePolicy.cacheOnly},
+        );
+        when(() => mockStorage.read('GET_${options.uri}')).thenAnswer(
+          (_) async => CacheEntry(
+            key: 'GET_${options.uri}',
+            data: '{"users": []}',
+            createdAt: DateTime.now().subtract(const Duration(hours: 2)),
+            expiresAt: DateTime.now().subtract(const Duration(hours: 1)),
+          ),
+        );
+
+        final handler = _TestRequestHandler();
+        await interceptor.onRequest(options, handler);
+
+        expect(handler.resolveCalled, isFalse);
+        expect(handler.rejectedError!.message, 'No cached data available');
+      });
+
       test('should reject when no cache entry exists', () async {
         final options = RequestOptions(
           path: '/api/users',

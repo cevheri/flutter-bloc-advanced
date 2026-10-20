@@ -134,6 +134,40 @@ void main() {
       });
     });
 
+    // Past its TTL an entry still answers a GET that cannot reach the server, until it is 24 hours old.
+    group('isPastMaxStaleAge', () {
+      CacheEntry storedAgo(Duration age, {required Duration ttl}) {
+        final createdAt = DateTime.now().subtract(age);
+        return CacheEntry(key: 'key', data: 'data', createdAt: createdAt, expiresAt: createdAt.add(ttl));
+      }
+
+      test('should be 24 hours', () {
+        expect(CacheEntry.maxStaleAge, const Duration(hours: 24));
+      });
+
+      test('should return false for an entry past its TTL that is not older than 24 hours', () {
+        expect(storedAgo(const Duration(hours: 23), ttl: const Duration(minutes: 5)).isPastMaxStaleAge, isFalse);
+      });
+
+      test('should return true for an entry past its TTL that is older than 24 hours', () {
+        expect(storedAgo(const Duration(hours: 25), ttl: const Duration(minutes: 5)).isPastMaxStaleAge, isTrue);
+      });
+
+      test('should return false for an entry older than 24 hours whose TTL has not passed', () {
+        expect(storedAgo(const Duration(hours: 25), ttl: const Duration(days: 30)).isPastMaxStaleAge, isFalse);
+      });
+
+      test('should return false for an entry without a TTL', () {
+        final entry = CacheEntry(
+          key: 'key',
+          data: 'data',
+          createdAt: DateTime.now().subtract(const Duration(days: 30)),
+        );
+
+        expect(entry.isPastMaxStaleAge, isFalse);
+      });
+    });
+
     group('edge cases', () {
       test('should handle empty data string', () {
         final entry = CacheEntry(key: 'empty', data: '', createdAt: DateTime.now());

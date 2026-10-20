@@ -42,7 +42,11 @@ import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.d
 /// is answered. On web the browser reports a TLS failure as a connection
 /// error, which cannot be told apart from a lost connection.
 ///
-/// Default cache TTL: 5 minutes.
+/// An entry is fresh for its TTL, 5 minutes unless `options.extra['cacheTtl']`
+/// sets another: cacheFirst and cacheOnly answer from a fresh entry only.
+/// Past its TTL it still answers a GET that cannot reach the server until it
+/// is [CacheEntry.maxStaleAge] (24 hours) old. The storage deletes it when it
+/// reads it after that, and every entry when the session ends.
 class CacheInterceptor extends Interceptor {
   CacheInterceptor({ICacheStorage? storage}) : _storage = storage ?? SharedPrefsCacheStorage();
 
@@ -71,7 +75,7 @@ class CacheInterceptor extends Interceptor {
     // CacheOnly: serve from cache, skip network
     if (policy == CachePolicy.cacheOnly) {
       final entry = await _storage.read(_cacheKey(options));
-      if (entry != null) {
+      if (entry != null && entry.isValid) {
         _log.debug('Cache hit (cacheOnly): {}', [options.path]);
         handler.resolve(
           Response(

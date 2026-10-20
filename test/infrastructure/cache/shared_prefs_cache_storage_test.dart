@@ -90,13 +90,16 @@ void main() {
         expect(entry.data, 'existing_data');
       });
 
-      test('should return null for expired entry and auto-clean it', () async {
+      // Guards that an entry past both its TTL and the maximum stale age is still deleted when it is read.
+      test('should return null for an entry past its TTL and older than 24 hours, and auto-clean it', () async {
         // Manually write an expired entry using the internal prefix
         final prefs = await SharedPreferences.getInstance();
         final json = {
           'data': 'expired_data',
-          'createdAt': DateTime.now().subtract(const Duration(hours: 2)).toIso8601String(),
-          'expiresAt': DateTime.now().subtract(const Duration(hours: 1)).toIso8601String(),
+          'createdAt': DateTime.now().subtract(const Duration(hours: 25)).toIso8601String(),
+          'expiresAt': DateTime.now()
+              .subtract(const Duration(hours: 25) - const Duration(minutes: 5))
+              .toIso8601String(),
         };
         await prefs.setString('_cache_expired_key', jsonEncode(json));
 
@@ -106,6 +109,27 @@ void main() {
         // Verify the expired entry was removed (auto-clean)
         final rawValue = prefs.getString('_cache_expired_key');
         expect(rawValue, isNull);
+      });
+
+      // Regression: an entry was deleted as soon as its TTL (5 minutes by default) had passed, so a GET that cannot
+      // reach the server could only be answered with data loaded in the last 5 minutes.
+      test('should return an entry past its TTL, as expired, while it is not older than 24 hours', () async {
+        final prefs = await SharedPreferences.getInstance();
+        final json = {
+          'data': 'stale_data',
+          'createdAt': DateTime.now().subtract(const Duration(hours: 23)).toIso8601String(),
+          'expiresAt': DateTime.now()
+              .subtract(const Duration(hours: 23) - const Duration(minutes: 5))
+              .toIso8601String(),
+        };
+        await prefs.setString('_cache_stale_key', jsonEncode(json));
+
+        final entry = await storage.read('stale_key');
+
+        expect(entry, isNotNull);
+        expect(entry!.data, 'stale_data');
+        expect(entry.isExpired, isTrue);
+        expect(prefs.getString('_cache_stale_key'), isNotNull);
       });
 
       test('should return valid entry that has not expired', () async {
@@ -233,7 +257,7 @@ void main() {
         expect(entry.isExpired, isFalse);
       });
 
-      test('should return null when TTL has expired', () async {
+      test('should return an entry whose TTL has expired as expired, for an answer marked stale', () async {
         // Directly insert an entry that is already expired
         final prefs = await SharedPreferences.getInstance();
         final json = {
@@ -244,7 +268,23 @@ void main() {
         await prefs.setString('_cache_ttl_expired', jsonEncode(json));
 
         final entry = await storage.read('ttl_expired');
-        expect(entry, isNull);
+        expect(entry, isNotNull);
+        expect(entry!.isValid, isFalse);
+      });
+
+      // Guards that the maximum stale age applies only past the TTL: a longer TTL keeps its entry fresh.
+      test('should keep an entry older than 24 hours while its TTL has not expired', () async {
+        final prefs = await SharedPreferences.getInstance();
+        final json = {
+          'data': 'long_lived_data',
+          'createdAt': DateTime.now().subtract(const Duration(hours: 25)).toIso8601String(),
+          'expiresAt': DateTime.now().add(const Duration(days: 22)).toIso8601String(),
+        };
+        await prefs.setString('_cache_long_lived', jsonEncode(json));
+
+        final entry = await storage.read('long_lived');
+        expect(entry, isNotNull);
+        expect(entry!.isValid, isTrue);
       });
 
       test('should return entry when no TTL is set (never expires)', () async {

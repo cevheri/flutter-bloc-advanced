@@ -8,6 +8,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 ///
 /// Stores cache entries as JSON with metadata (createdAt, expiresAt).
 /// Key prefix: `_cache_` to avoid conflicts with other storage.
+///
+/// An entry outlives its TTL until it is [CacheEntry.maxStaleAge] old, so
+/// that it can answer a GET that cannot reach the server. [read] deletes an
+/// entry past that, and [clear], which ending the session runs, deletes them
+/// all. No eviction runs yet, so an entry that is never read again stays
+/// until the session ends.
 class SharedPrefsCacheStorage implements ICacheStorage {
   static final _log = AppLogger.getLogger('CacheStorage');
   static const String _prefix = '_cache_';
@@ -41,9 +47,9 @@ class SharedPrefsCacheStorage implements ICacheStorage {
         expiresAt: json['expiresAt'] != null ? DateTime.parse(json['expiresAt'] as String) : null,
       );
 
-      // Auto-clean expired entries
-      if (entry.isExpired) {
-        _log.debug('Cache expired for key: {}', [key]);
+      // An entry past its TTL is kept to answer a GET that cannot reach the server, up to CacheEntry.maxStaleAge.
+      if (entry.isPastMaxStaleAge) {
+        _log.debug('Cache entry past its maximum stale age for key: {}', [key]);
         await remove(key);
         return null;
       }
