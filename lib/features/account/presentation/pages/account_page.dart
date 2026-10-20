@@ -138,21 +138,22 @@ class AccountScreen extends StatelessWidget {
 
     if (_formKey.currentState?.saveAndValidate() ?? false) {
       final formData = _formKey.currentState!.value;
-      final user = _createUserFromData(formData, state.data?.id);
+      final user = _createUserFromData(formData, state.data);
       context.read<AccountBloc>().add(AccountSubmitEvent(user));
       _formKey.currentState?.save();
       context.read<AccountBloc>().add(const AccountFetchEvent());
     }
   }
 
-  UserEntity _createUserFromData(Map<String, dynamic> formData, String? userId) => UserEntity(
-    id: userId,
-    login: formData['login'],
-    firstName: formData['firstName'],
-    lastName: formData['lastName'],
-    email: formData['email'],
-    activated: formData['activated'],
-  );
+  /// Starts from the fetched [account], so what the form does not show, such as the language, is saved as it was.
+  UserEntity _createUserFromData(Map<String, dynamic> formData, UserEntity? account) =>
+      (account ?? const UserEntity()).copyWith(
+        login: formData['login'],
+        firstName: formData['firstName'],
+        lastName: formData['lastName'],
+        email: formData['email'],
+        activated: formData['activated'],
+      );
 
   void _handleStateChanges(BuildContext context, AccountState state) {
     const duration = Duration(milliseconds: 1000);

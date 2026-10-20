@@ -2,12 +2,21 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:dio/dio.dart' show Interceptor, RequestInterceptorHandler, RequestOptions, Response;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/features/account/presentation/pages/account_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -17,6 +26,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../mocks/mock_classes.dart';
+import '../../../../support/test_env.dart';
 
 void main() {
   late MockAccountBloc mockAccountBloc;
@@ -383,4 +393,96 @@ void main() {
       expect(snackBarText, equals(S.current.loading));
     });
   });
+
+  group('AccountScreen in the app', () {
+    late List<RequestOptions> requests;
+
+    setUp(() {
+      requests = [];
+      TestEnv.authenticate();
+    });
+
+    testWidgets('saving the account keeps its language', (tester) async {
+      tester.view.physicalSize = const Size(1600, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      const turkishAccount = {
+        'id': 'user-9',
+        'login': 'ayse.yilmaz',
+        'firstName': 'Ayşe',
+        'lastName': 'Yılmaz',
+        'email': 'ayse.yilmaz@example.com',
+        'activated': true,
+        'langKey': 'tr',
+        'authorities': ['ROLE_USER'],
+      };
+
+      await tester.pumpWidget(
+        App(
+          language: 'tr',
+          dependencies: _RecordingDependencies(requests, answers: {'/account': turkishAccount}),
+        ),
+      );
+      await tester.pumpAndSettle();
+      final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+      router.go(ApplicationRoutesConstants.account);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Ayşe Nur');
+      await tester.tap(find.byType(ResponsiveSubmitButton));
+      await tester.pumpAndSettle();
+
+      final saved = requests.singleWhere((request) => request.method == 'POST' && request.path == '/account');
+      expect(saved.data, containsPair('firstName', 'Ayşe Nur'));
+      expect(saved.data, containsPair('langKey', 'tr'));
+    });
+  });
+}
+
+/// Test-mode app dependencies whose API client records each request the mock API answers in [requests]. A GET of a
+/// path in [answers] gets its body in place of the mock API's.
+class _RecordingDependencies extends AppDependencies {
+  const _RecordingDependencies(this.requests, {this.answers = const {}}) : super(appConfig: const AppConfig.test());
+
+  final List<RequestOptions> requests;
+  final Map<String, Object> answers;
+
+  @override
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) {
+    final apiClient = super.createApiClient(secureStorage, onSessionExpired: onSessionExpired);
+    // MockInterceptor comes last and answers in place of the server, so the recorder and the stub go right before it.
+    final interceptors = apiClient.instance.interceptors;
+    interceptors.insert(interceptors.length - 1, _RequestRecorder(requests));
+    interceptors.insert(interceptors.length - 1, _StubInterceptor(answers));
+    return apiClient;
+  }
+}
+
+class _RequestRecorder extends Interceptor {
+  _RequestRecorder(this.requests);
+
+  final List<RequestOptions> requests;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    requests.add(options);
+    handler.next(options);
+  }
+}
+
+/// Answers a GET of a path in [answers] with that body as JSON, as a server holding other data than the mock would.
+class _StubInterceptor extends Interceptor {
+  _StubInterceptor(this.answers);
+
+  final Map<String, Object> answers;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    final answer = answers[options.path];
+    if (options.method == 'GET' && answer != null) {
+      handler.resolve(Response(requestOptions: options, statusCode: 200, data: jsonEncode(answer)), true);
+    } else {
+      handler.next(options);
+    }
+  }
 }
