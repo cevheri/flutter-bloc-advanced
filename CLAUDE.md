@@ -102,20 +102,25 @@ final class UserListLoaded extends UserListState {
   @override List<Object?> get props => [users];
 }
 final class UserListDeleteSuccess extends UserListState { /* ... */ }
-final class UserListFailure extends UserListState {
-  const UserListFailure({required this.error});
-  final String error;
-  @override List<Object?> get props => [error];
+sealed class UserListFailure extends UserListState {
+  const UserListFailure({required this.errorCode});
+  final AppErrorCode errorCode; // shown via errorCode.resolve(context); the raw message only goes to the log
+  @override List<Object?> get props => [errorCode];
+}
+final class UserListLoadFailure extends UserListFailure { /* ... */ }
+final class UserListDeleteFailure extends UserListFailure {
+  const UserListDeleteFailure({required super.errorCode, required this.users});
+  final List<UserEntity> users; // the list stays on screen while the failure is shown
+  @override List<Object?> get props => [errorCode, users];
 }
 
 // UI
 BlocBuilder<UserListBloc, UserListState>(
   builder: (context, state) => switch (state) {
-    UserListInitial() => const SizedBox.shrink(),
+    UserListInitial() || UserListDeleteSuccess() => const SizedBox.shrink(),
     UserListLoading() => const Loading(),
-    UserListLoaded(:final users) => UserList(users),
-    UserListDeleteSuccess() => const SizedBox.shrink(),
-    UserListFailure(:final error) => ErrorBanner(error),
+    UserListLoaded(:final users) || UserListDeleteFailure(:final users) => UserList(users),
+    UserListLoadFailure(:final errorCode) => ErrorBanner(errorCode.resolve(context)),
   },
 );
 ```
