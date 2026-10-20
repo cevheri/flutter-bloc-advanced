@@ -119,7 +119,7 @@ class UserListView extends StatelessWidget {
   Widget _buildList(BuildContext context, {List<UserEntity>? items, bool isLoading = false, Widget? errorWidget}) {
     return AppResponsiveListView<UserEntity>(
       title: S.of(context).list_user,
-      subtitle: 'Browse and manage users in a table view.',
+      subtitle: S.of(context).user_list_subtitle,
       items: items,
       isLoading: isLoading,
       errorWidget: errorWidget,
@@ -149,7 +149,7 @@ class UserListView extends StatelessWidget {
           final color = isActive
               ? (Theme.of(ctx).extension<SemanticColors>()?.success ?? const Color(0xFF16A34A))
               : Theme.of(ctx).colorScheme.error;
-          return AppStatusBadge(label: isActive ? 'Active' : 'Inactive', color: color);
+          return AppStatusBadge(label: isActive ? S.of(ctx).active : S.of(ctx).inactive, color: color);
         },
       ),
       AppTableColumn<UserEntity>(
@@ -179,7 +179,7 @@ class UserListView extends StatelessWidget {
         builder: (_, user) => Text(user.email.toString(), style: cellStyle),
       ),
       AppTableColumn<UserEntity>(
-        label: 'Actions',
+        label: S.of(context).user_list_actions,
         flex: 4,
         alignment: TextAlign.right,
         builder: (_, user) => _DesktopRowActions(login: user.login ?? ''),
@@ -213,7 +213,11 @@ class UserSearchSection extends StatelessWidget {
                 const SizedBox(height: 8),
                 Row(
                   children: [
-                    const SizedBox(width: 200, height: 40, child: AuthoritiesDropdown(hintText: 'Role filter')),
+                    SizedBox(
+                      width: 200,
+                      height: 40,
+                      child: AuthoritiesDropdown(hintText: S.of(context).user_list_role_filter),
+                    ),
                     const SizedBox(width: 8),
                     const SizedBox(width: 170, height: 40, child: PaginationControls()),
                     const Spacer(),
@@ -229,7 +233,11 @@ class UserSearchSection extends StatelessWidget {
             children: [
               const Expanded(child: SizedBox(height: 40, child: SearchNameField())),
               const SizedBox(width: 8),
-              const SizedBox(width: 200, height: 40, child: AuthoritiesDropdown(hintText: 'Role filter')),
+              SizedBox(
+                width: 200,
+                height: 40,
+                child: AuthoritiesDropdown(hintText: S.of(context).user_list_role_filter),
+              ),
               const SizedBox(width: 8),
               const SizedBox(width: 170, height: 40, child: PaginationControls()),
               const SizedBox(width: 8),
@@ -292,7 +300,7 @@ class SearchNameField extends StatelessWidget {
     return FormBuilderTextField(
       name: 'name',
       decoration: InputDecoration(
-        hintText: 'Filter users...',
+        hintText: S.of(context).user_list_search_hint,
         prefixIcon: Icon(Icons.search, size: 16, color: Theme.of(context).colorScheme.onSurfaceVariant),
         prefixIconConstraints: const BoxConstraints(minWidth: 36),
       ),
@@ -469,7 +477,7 @@ class _MobileUserCard extends StatelessWidget {
             const SizedBox(height: 12),
             Row(
               children: [
-                AppStatusBadge(label: isActive ? 'Active' : 'Inactive', color: statusColor),
+                AppStatusBadge(label: isActive ? S.of(context).active : S.of(context).inactive, color: statusColor),
                 const SizedBox(width: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),

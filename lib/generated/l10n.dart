@@ -1138,6 +1138,111 @@ class S {
   String get dashboard_open_dynamic_forms {
     return Intl.message('Open Dynamic Forms', name: 'dashboard_open_dynamic_forms', desc: '', args: []);
   }
+
+  /// `Cancel`
+  String get cancel {
+    return Intl.message('Cancel', name: 'cancel', desc: '', args: []);
+  }
+
+  /// `Inactive`
+  String get inactive {
+    return Intl.message('Inactive', name: 'inactive', desc: '', args: []);
+  }
+
+  /// `Browse and manage users in a table view.`
+  String get user_list_subtitle {
+    return Intl.message('Browse and manage users in a table view.', name: 'user_list_subtitle', desc: '', args: []);
+  }
+
+  /// `Actions`
+  String get user_list_actions {
+    return Intl.message('Actions', name: 'user_list_actions', desc: '', args: []);
+  }
+
+  /// `Role filter`
+  String get user_list_role_filter {
+    return Intl.message('Role filter', name: 'user_list_role_filter', desc: '', args: []);
+  }
+
+  /// `Filter users...`
+  String get user_list_search_hint {
+    return Intl.message('Filter users...', name: 'user_list_search_hint', desc: '', args: []);
+  }
+
+  /// `User Information`
+  String get user_editor_info_title {
+    return Intl.message('User Information', name: 'user_editor_info_title', desc: '', args: []);
+  }
+
+  /// `Manage identity, contact, and access settings.`
+  String get user_editor_info_description {
+    return Intl.message(
+      'Manage identity, contact, and access settings.',
+      name: 'user_editor_info_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Identity`
+  String get user_editor_identity {
+    return Intl.message('Identity', name: 'user_editor_identity', desc: '', args: []);
+  }
+
+  /// `Basic account identity details.`
+  String get user_editor_identity_description {
+    return Intl.message(
+      'Basic account identity details.',
+      name: 'user_editor_identity_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Contact`
+  String get user_editor_contact {
+    return Intl.message('Contact', name: 'user_editor_contact', desc: '', args: []);
+  }
+
+  /// `Primary contact information.`
+  String get user_editor_contact_description {
+    return Intl.message('Primary contact information.', name: 'user_editor_contact_description', desc: '', args: []);
+  }
+
+  /// `Access`
+  String get user_editor_access {
+    return Intl.message('Access', name: 'user_editor_access', desc: '', args: []);
+  }
+
+  /// `Account status and role permissions.`
+  String get user_editor_access_description {
+    return Intl.message(
+      'Account status and role permissions.',
+      name: 'user_editor_access_description',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Fill in the details to create a new user.`
+  String get user_editor_create_subtitle {
+    return Intl.message(
+      'Fill in the details to create a new user.',
+      name: 'user_editor_create_subtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Update user information below.`
+  String get user_editor_edit_subtitle {
+    return Intl.message('Update user information below.', name: 'user_editor_edit_subtitle', desc: '', args: []);
+  }
+
+  /// `View user details.`
+  String get user_editor_view_subtitle {
+    return Intl.message('View user details.', name: 'user_editor_view_subtitle', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

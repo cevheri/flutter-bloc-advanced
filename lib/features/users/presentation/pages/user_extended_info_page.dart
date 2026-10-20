@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
@@ -74,8 +75,9 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
               ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_saved)));
               if (context.canPop()) context.pop();
-            case DynamicFormFailure(:final error, :final errorCode, :final schema) when schema != null:
-              final message = errorCode?.resolve(context) ?? error;
+            case DynamicFormFailure(:final errorCode, :final schema) when schema != null:
+              // The bloc keeps the raw error for the log; the user reads a message in the app language.
+              final message = (errorCode ?? AppErrorCode.generic).resolve(context);
               ScaffoldMessenger.of(context)
                   .showSnackBar(SnackBar(content: Text(S.of(context).user_extended_info_save_failed(message))));
             case _:
@@ -92,9 +94,9 @@ class _UserExtendedInfoPageState extends State<UserExtendedInfoPage> {
           ),
           DynamicFormSubmitting(:final schema) => _renderForm(context, schema, const {}, readOnly: true),
           DynamicFormSubmitted(:final schema) => _renderForm(context, schema, const {}, readOnly: true),
-          DynamicFormFailure(:final error, :final errorCode, :final schema) =>
+          DynamicFormFailure(:final errorCode, :final schema) =>
             schema == null
-                ? Center(child: Text(errorCode?.resolve(context) ?? error))
+                ? Center(child: Text((errorCode ?? AppErrorCode.generic).resolve(context)))
                 : _renderForm(context, schema, const {}, readOnly: false),
         },
       ),

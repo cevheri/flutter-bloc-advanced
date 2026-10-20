@@ -54,7 +54,7 @@ void main() {
         .thenReturn(const AuthorityLoadSuccessState(authorities: ['ROLE_ADMIN', 'ROLE_USER']));
   });
 
-  Widget buildTestableWidget({required EditorFormMode mode, String? id}) {
+  Widget buildTestableWidget({required EditorFormMode mode, String? id, Locale locale = const Locale('en')}) {
     final router = GoRouter(
       initialLocation: id != null ? '/user/$id/${mode.name}' : '/user/new',
       routes: [
@@ -86,6 +86,7 @@ void main() {
       child: withUnsavedChangesRegistry(
         MaterialApp.router(
           routerConfig: router,
+          locale: locale,
           localizationsDelegates: const [
             S.delegate,
             GlobalMaterialLocalizations.delegate,
@@ -97,6 +98,51 @@ void main() {
       ),
     );
   }
+
+  group('UserEditorScreen - Turkish', () {
+    testWidgets('Create Mode - shows the form texts and its actions in Turkish', (tester) async {
+      tester.view.physicalSize = const Size(1200, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+      whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: const UserEditorInitial());
+
+      await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create, locale: const Locale('tr')));
+      await tester.pumpAndSettle();
+
+      for (final text in [
+        'Yeni bir kullanıcı oluşturmak için bilgileri doldurun.',
+        'Kullanıcı Bilgileri',
+        'Kimlik, iletişim ve erişim ayarlarını yönetin.',
+        'Kimlik',
+        'Temel hesap kimlik bilgileri.',
+        'İletişim',
+        'Birincil iletişim bilgileri.',
+        'Erişim',
+        'Hesap durumu ve rol yetkileri.',
+      ]) {
+        expect(find.text(text), findsOneWidget, reason: text);
+      }
+      expect(find.widgetWithText(OutlinedButton, 'İptal'), findsOneWidget);
+      expect(find.widgetWithText(FilledButton, 'Kaydet'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    for (final (mode, subtitle) in const [
+      (EditorFormMode.edit, 'Kullanıcı bilgilerini aşağıda güncelleyin.'),
+      (EditorFormMode.view, 'Kullanıcı ayrıntılarını görüntüleyin.'),
+    ]) {
+      testWidgets('${mode.name} mode - shows its subtitle in Turkish', (tester) async {
+        const user = User(id: 'test-user-1', login: 'testuser', firstName: 'Test', lastName: 'Tester');
+        when(() => mockUserBloc.state).thenReturn(UserEditorLoaded(data: user));
+        whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: UserEditorLoaded(data: user));
+
+        await tester.pumpWidget(buildTestableWidget(mode: mode, id: 'test-user-1', locale: const Locale('tr')));
+        await tester.pumpAndSettle();
+
+        expect(find.text(subtitle), findsOneWidget);
+      });
+    }
+  });
 
   group('UserEditorScreen Tests', () {
     testWidgets('Create Mode - Should render empty form', (tester) async {

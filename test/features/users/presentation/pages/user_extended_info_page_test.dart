@@ -203,7 +203,7 @@ void main() {
     expect(find.byType(UserExtendedInfoPage), findsNothing);
   });
 
-  testWidgets('on DynamicFormFailure with schema shows save_failed snackbar', (tester) async {
+  testWidgets('on DynamicFormFailure with schema shows save_failed snackbar with the generic message', (tester) async {
     final bloc = _MockBloc();
     const schema = FormSchemaEntity(
       id: 'user_extended_info',
@@ -218,10 +218,26 @@ void main() {
     await tester.pumpWidget(host(const UserExtendedInfoPage(userId: '42'), bloc));
     await tester.pumpAndSettle();
 
-    expect(find.textContaining('Save failed'), findsOneWidget);
-    expect(find.textContaining('boom'), findsOneWidget);
+    // The repository's raw text is for the log; the user reads the generic message in the app language.
+    expect(find.text('Save failed: Something went wrong'), findsOneWidget);
+    expect(find.textContaining('boom'), findsNothing);
     // Form is still on screen — the page is preserved, not popped.
     expect(find.byType(UserExtendedInfoPage), findsOneWidget);
+  });
+
+  testWidgets('on DynamicFormFailure without a schema shows the generic message, not the raw error', (tester) async {
+    final bloc = _MockBloc();
+    whenListen(
+      bloc,
+      const Stream<DynamicFormState>.empty(),
+      initialState: const DynamicFormFailure(error: 'Form id is required'),
+    );
+
+    await tester.pumpWidget(host(const UserExtendedInfoPage(userId: '42'), bloc));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Something went wrong'), findsOneWidget);
+    expect(find.text('Form id is required'), findsNothing);
   });
 
   group('certificate pin mismatch', () {

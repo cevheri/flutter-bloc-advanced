@@ -188,19 +188,16 @@ class _UserEditorViewState extends State<_UserEditorView> {
       header: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('User Information', style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+          Text(S.of(context).user_editor_info_title, style: tt.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
           const SizedBox(height: 2),
-          Text(
-            'Manage identity, contact, and access settings.',
-            style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-          ),
+          Text(S.of(context).user_editor_info_description, style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
         ],
       ),
       footer: AppFormActions(
         secondaryAction: OutlinedButton(
           key: widget.mode == EditorFormMode.view ? const Key('userEditorFormBackButtonKey') : null,
           onPressed: () => _handleBack(context),
-          child: Text(widget.mode == EditorFormMode.view ? S.of(context).back : 'Cancel'),
+          child: Text(widget.mode == EditorFormMode.view ? S.of(context).back : S.of(context).cancel),
         ),
         primaryAction: widget.mode == EditorFormMode.view
             ? null
@@ -218,7 +215,7 @@ class _UserEditorViewState extends State<_UserEditorView> {
                       ),
                       const SizedBox(width: 8),
                     ],
-                    const Text('Save'),
+                    Text(S.of(context).save),
                   ],
                 ),
               ),
@@ -260,8 +257,8 @@ class _UserEditorViewState extends State<_UserEditorView> {
     final readOnly = widget.mode == EditorFormMode.view;
     return [
       AppFormSection(
-        title: 'Identity',
-        description: 'Basic account identity details.',
+        title: S.of(context).user_editor_identity,
+        description: S.of(context).user_editor_identity_description,
         children: [
           AppFormField(
             label: S.of(context).login,
@@ -281,8 +278,8 @@ class _UserEditorViewState extends State<_UserEditorView> {
       ),
       const SizedBox(height: 28),
       AppFormSection(
-        title: 'Contact',
-        description: 'Primary contact information.',
+        title: S.of(context).user_editor_contact,
+        description: S.of(context).user_editor_contact_description,
         children: [
           AppFormField(
             label: S.of(context).email,
@@ -292,8 +289,8 @@ class _UserEditorViewState extends State<_UserEditorView> {
       ),
       const SizedBox(height: 28),
       AppFormSection(
-        title: 'Access',
-        description: 'Account status and role permissions.',
+        title: S.of(context).user_editor_access,
+        description: S.of(context).user_editor_access_description,
         children: [
           AppFormField(
             label: S.of(context).active,
@@ -375,11 +372,11 @@ class _UserEditorViewState extends State<_UserEditorView> {
   String _getSubtitle(BuildContext context) {
     switch (widget.mode) {
       case EditorFormMode.create:
-        return 'Fill in the details to create a new user.';
+        return S.of(context).user_editor_create_subtitle;
       case EditorFormMode.edit:
-        return 'Update user information below.';
+        return S.of(context).user_editor_edit_subtitle;
       case EditorFormMode.view:
-        return 'View user details.';
+        return S.of(context).user_editor_view_subtitle;
     }
   }
 }

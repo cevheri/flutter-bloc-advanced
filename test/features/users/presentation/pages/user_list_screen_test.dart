@@ -419,6 +419,44 @@ void main() {
       });
     }
 
+    const ada = UserEntity(
+      id: '8',
+      login: 'ada.lovelace',
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      email: 'ada.lovelace@example.com',
+      activated: false,
+      authorities: ['ROLE_USER'],
+    );
+
+    testWidgets('shows the list texts and the user status in Turkish', (tester) async {
+      stubSearch(const Success([grace, ada]));
+      await openUserList(tester, language: 'tr');
+
+      expect(find.text('Kullanıcılara tablo görünümünde göz atın ve onları yönetin.'), findsOneWidget);
+      expect(find.text('Rol filtresi'), findsOneWidget);
+      expect(find.text('Kullanıcıları filtrele...'), findsOneWidget);
+
+      await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      expect(find.text('İşlemler'), findsOneWidget);
+      expect(find.text('Aktif'), findsWidgets);
+      expect(find.text('Pasif'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('shows the user status on the phone cards in Turkish', (tester) async {
+      stubSearch(const Success([grace, ada]));
+      await openUserList(tester, language: 'tr', size: const Size(412, 915));
+
+      await tester.tap(find.ancestor(of: find.text('Listele'), matching: find.byType(OutlinedButton)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Aktif'), findsOneWidget);
+      expect(find.text('Pasif'), findsOneWidget);
+    });
+
     testWidgets('shows the error instead of loading forever when the search throws', (tester) async {
       when(
         () => userRepository.list(
