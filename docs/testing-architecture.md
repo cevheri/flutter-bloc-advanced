@@ -55,6 +55,7 @@ test/
 │   ├── mock_classes.dart      # Mock*/Fake* classes + registerAllFallbackValues()
 │   └── fake_data.dart         # Shared fixtures (mockUserFullPayload, ...)
 ├── architecture/              # Meta-tests enforcing rules (see below)
+│   ├── android_manifest_test.dart    # Android INTERNET, https queries, backup off
 │   ├── import_guard_test.dart        # layer dependency rules
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   └── test_file_naming_test.dart    # forbids *.test.dart (dot) files
@@ -315,10 +316,11 @@ for genuine stateful behavior; Dio handlers are always hand-written:
 - **`test_file_naming_test.dart`** fails if any file is named `*.test.dart`
   (a dot instead of `_test.dart`) — such files compile and pass `analyze` but
   are silently never executed by `flutter test`.
-- **`macos_entitlements_test.dart`** fails if either macOS entitlement file
-  drops `com.apple.security.network.client`. The sandboxed macOS app cannot
-  make outgoing requests without it, the `flutter create` template omits it,
-  and no CI job builds macOS.
+- **`macos_entitlements_test.dart`** fails if either macOS entitlement file drops `com.apple.security.network.client`.
+  The sandboxed macOS app cannot make outgoing requests without it, the `flutter create` template omits it, and no CI job builds macOS.
+- **`android_manifest_test.dart`** fails if `AndroidManifest.xml` drops the `INTERNET` permission, the `<queries>` intent that lets `url_launcher` open https links, `android:allowBackup="false"`, or the references to the two backup rule files, or if either rule file stops excluding shared preferences.
+  Release builds need the permission to reach the API, `canLaunchUrl` returns false for https links on Android 11 and higher without the query, and a restored backup or device transfer brings back session tokens that no longer decrypt.
+  CI builds the release APK, but that build succeeds without any of these.
 
 ---
 
@@ -425,6 +427,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Layer dependency guard | `test/architecture/import_guard_test.dart` |
 | Test-file naming guard | `test/architecture/test_file_naming_test.dart` |
 | macOS network entitlement guard | `test/architecture/macos_entitlements_test.dart` |
+| Android manifest guard | `test/architecture/android_manifest_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |

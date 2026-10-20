@@ -16,9 +16,13 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   test('both macOS entitlement files allow outgoing network connections', () {
     const entitlementFiles = ['macos/Runner/DebugProfile.entitlements', 'macos/Runner/Release.entitlements'];
+    // A key inside an XML comment grants nothing, so comments are removed before matching.
+    final xmlComment = RegExp(r'<!--.*?-->', dotAll: true);
     final networkClient = RegExp(r'<key>com\.apple\.security\.network\.client</key>\s*<true/>');
 
-    final offenders = entitlementFiles.where((path) => !networkClient.hasMatch(File(path).readAsStringSync())).toList();
+    final offenders = entitlementFiles
+        .where((path) => !networkClient.hasMatch(File(path).readAsStringSync().replaceAll(xmlComment, '')))
+        .toList();
 
     expect(
       offenders,
