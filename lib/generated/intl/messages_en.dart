@@ -30,20 +30,28 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(count) => "${count} open";
 
-  static String m5(url) => "Could not open ${url}";
+  static String m5(field, count) =>
+      "${field} must be at most ${Intl.plural(count, one: '1 character', other: '${count} characters')}";
 
-  static String m6(currentVersion, minimumVersion) => "Current: ${currentVersion}  •  Required: ${minimumVersion}";
+  static String m6(field, count) =>
+      "${field} must be at least ${Intl.plural(count, one: '1 character', other: '${count} characters')}";
 
-  static String m7(email) => "OTP sent to ${email}";
+  static String m7(field) => "${field} is required";
 
-  static String m8(max) => "Password cannot be more than ${max} characters long";
+  static String m8(url) => "Could not open ${url}";
 
-  static String m9(min) => "Password must be at least ${min} characters long";
+  static String m9(currentVersion, minimumVersion) => "Current: ${currentVersion}  •  Required: ${minimumVersion}";
 
-  static String m10(translate) =>
+  static String m10(email) => "OTP sent to ${email}";
+
+  static String m11(max) => "Password cannot be more than ${max} characters long";
+
+  static String m12(min) => "Password must be at least ${min} characters long";
+
+  static String m13(translate) =>
       "${Intl.select(translate, {'account': 'Account', 'userManagement': 'User Management', 'settings': 'Settings', 'logout': 'Logout', 'info': 'Info', 'language': 'Language', 'theme': 'Theme', 'new_user': 'New', 'list_user': 'List', 'other': 'Other'})}";
 
-  static String m11(error) => "Save failed: ${error}";
+  static String m14(error) => "Save failed: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -111,6 +119,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboard_title": MessageLookupByLibrary.simpleMessage("System Dashboard"),
     "delete_confirmation": MessageLookupByLibrary.simpleMessage("Are you sure you want to delete?"),
     "delete_user": MessageLookupByLibrary.simpleMessage("Delete User"),
+    "dynamic_form_field_max_length": m5,
+    "dynamic_form_field_min_length": m6,
+    "dynamic_form_field_numeric": MessageLookupByLibrary.simpleMessage("Must be a number"),
+    "dynamic_form_field_required": m7,
+    "dynamic_form_submitted": MessageLookupByLibrary.simpleMessage("Form submitted successfully"),
     "dynamic_forms": MessageLookupByLibrary.simpleMessage("Dynamic Forms"),
     "edit": MessageLookupByLibrary.simpleMessage("Edit"),
     "edit_user": MessageLookupByLibrary.simpleMessage("Edit User"),
@@ -130,11 +143,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("Could not send the OTP code"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Could not save the session"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Something went wrong"),
-    "error_link_open_failed": m5,
+    "error_link_open_failed": m8,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
       "The connection could not be verified as secure, so it was blocked. Try again later or on another network.",
     ),
     "error_settings_change_language_failed": MessageLookupByLibrary.simpleMessage("Could not change the language"),
+    "error_title": MessageLookupByLibrary.simpleMessage("Error"),
     "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage("Admin user cannot be deleted"),
     "error_user_no_authorities": MessageLookupByLibrary.simpleMessage("No authorities found"),
     "failed": MessageLookupByLibrary.simpleMessage("Failed"),
@@ -153,7 +167,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "The update link is not valid. Open your app store to install the latest version.",
     ),
     "force_update_title": MessageLookupByLibrary.simpleMessage("Update Required"),
-    "force_update_versions": m6,
+    "force_update_versions": m9,
     "forgot_password_description": MessageLookupByLibrary.simpleMessage(
       "Enter your email address and we\'ll send you a link to reset your password.",
     ),
@@ -222,10 +236,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "only_numbers": MessageLookupByLibrary.simpleMessage("Only numbers are allowed"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Code"),
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP must be 6 characters long"),
-    "otp_sent_to_email": m7,
+    "otp_sent_to_email": m10,
     "password_forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
-    "password_max_length": m8,
-    "password_min_length": m9,
+    "password_max_length": m11,
+    "password_min_length": m12,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Quick Actions"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "register": MessageLookupByLibrary.simpleMessage("Register"),
@@ -245,11 +259,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "settings_theme_subtitle": MessageLookupByLibrary.simpleMessage("Choose your preferred theme style"),
     "sidebar_collapse": MessageLookupByLibrary.simpleMessage("Collapse"),
     "sidebar_expand": MessageLookupByLibrary.simpleMessage("Expand"),
+    "submit": MessageLookupByLibrary.simpleMessage("Submit"),
     "success": MessageLookupByLibrary.simpleMessage("Success"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Dark"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Light"),
-    "translate_menu_title": m10,
+    "translate_menu_title": m13,
     "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
@@ -269,7 +284,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_editor_info_title": MessageLookupByLibrary.simpleMessage("User Information"),
     "user_editor_view_subtitle": MessageLookupByLibrary.simpleMessage("View user details."),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
-    "user_extended_info_save_failed": m11,
+    "user_extended_info_save_failed": m14,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "user_list_actions": MessageLookupByLibrary.simpleMessage("Actions"),

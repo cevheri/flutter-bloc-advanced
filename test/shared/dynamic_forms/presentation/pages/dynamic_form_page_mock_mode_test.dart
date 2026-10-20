@@ -5,6 +5,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dy
 import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/pages/dynamic_form_page.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../../../support/test_env.dart';
@@ -33,6 +35,13 @@ void main() {
     await tester.pumpWidget(
       withUnsavedChangesRegistry(
         MaterialApp.router(
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
           routerConfig: singlePageRouter(
             Scaffold(
               body: RepositoryProvider<IDynamicFormRepository>(

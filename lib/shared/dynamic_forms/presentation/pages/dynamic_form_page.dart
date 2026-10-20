@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
@@ -69,16 +71,18 @@ class _DynamicFormPageState extends State<DynamicFormPage> {
       listener: (context, state) {
         if (state is DynamicFormSubmitted) {
           _startFromSubmittedValues();
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(const SnackBar(content: Text('Form submitted successfully'), duration: Duration(seconds: 2)));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(S.of(context).dynamic_form_submitted), duration: const Duration(seconds: 2)),
+          );
         }
       },
       builder: (context, state) => switch (state) {
         DynamicFormInitial() || DynamicFormLoading() => const Center(child: CircularProgressIndicator()),
-        DynamicFormFailure(:final error, :final errorCode) => AppErrorState(
-          title: 'Error',
-          description: errorCode?.resolve(context) ?? error,
+        // The bloc keeps the raw error for the log; the user reads a message in the app language.
+        DynamicFormFailure(:final errorCode) => AppErrorState(
+          title: S.of(context).error_title,
+          description: (errorCode ?? AppErrorCode.generic).resolve(context),
+          retryLabel: S.of(context).retry,
           onRetry: () => context.read<DynamicFormBloc>().add(DynamicFormLoadEvent(widget.formId)),
         ),
         DynamicFormLoaded(:final schema) || DynamicFormSubmitting(:final schema) => _buildForm(

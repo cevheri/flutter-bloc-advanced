@@ -1243,6 +1243,51 @@ class S {
   String get user_editor_view_subtitle {
     return Intl.message('View user details.', name: 'user_editor_view_subtitle', desc: '', args: []);
   }
+
+  /// `Submit`
+  String get submit {
+    return Intl.message('Submit', name: 'submit', desc: '', args: []);
+  }
+
+  /// `Error`
+  String get error_title {
+    return Intl.message('Error', name: 'error_title', desc: '', args: []);
+  }
+
+  /// `Form submitted successfully`
+  String get dynamic_form_submitted {
+    return Intl.message('Form submitted successfully', name: 'dynamic_form_submitted', desc: '', args: []);
+  }
+
+  /// `{field} is required`
+  String dynamic_form_field_required(String field) {
+    return Intl.message('$field is required', name: 'dynamic_form_field_required', desc: '', args: [field]);
+  }
+
+  /// `{field} must be at least {count, plural, =1{1 character} other{{count} characters}}`
+  String dynamic_form_field_min_length(String field, int count) {
+    return Intl.message(
+      '$field must be at least ${Intl.plural(count, one: '1 character', other: '$count characters')}',
+      name: 'dynamic_form_field_min_length',
+      desc: '',
+      args: [field, count],
+    );
+  }
+
+  /// `{field} must be at most {count, plural, =1{1 character} other{{count} characters}}`
+  String dynamic_form_field_max_length(String field, int count) {
+    return Intl.message(
+      '$field must be at most ${Intl.plural(count, one: '1 character', other: '$count characters')}',
+      name: 'dynamic_form_field_max_length',
+      desc: '',
+      args: [field, count],
+    );
+  }
+
+  /// `Must be a number`
+  String get dynamic_form_field_numeric {
+    return Intl.message('Must be a number', name: 'dynamic_form_field_numeric', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

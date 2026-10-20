@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_button.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
@@ -67,7 +68,7 @@ class DynamicFormRenderer extends StatelessWidget {
           ),
           if (onSubmit != null && !readOnly) ...[
             const SizedBox(height: AppSpacing.md),
-            AppButton(label: 'Submit', onPressed: _handleSubmit),
+            AppButton(label: S.of(context).submit, onPressed: _handleSubmit),
           ],
         ],
       ),
@@ -81,17 +82,18 @@ class DynamicFormRenderer extends StatelessWidget {
   }
 
   Widget _buildField(BuildContext context, FormFieldEntity field) {
+    final l10n = S.of(context);
     return switch (field.type) {
-      FormFieldType.text => _buildTextField(field),
-      FormFieldType.email => _buildTextField(field, keyboardType: TextInputType.emailAddress),
-      FormFieldType.password => _buildTextField(field, obscureText: true),
-      FormFieldType.number => _buildTextField(field, keyboardType: TextInputType.number),
-      FormFieldType.phone => _buildTextField(field, keyboardType: TextInputType.phone),
-      FormFieldType.textarea => _buildTextField(field, maxLines: field.maxLines ?? 4),
-      FormFieldType.dropdown => _buildDropdown(field),
+      FormFieldType.text => _buildTextField(field, l10n),
+      FormFieldType.email => _buildTextField(field, l10n, keyboardType: TextInputType.emailAddress),
+      FormFieldType.password => _buildTextField(field, l10n, obscureText: true),
+      FormFieldType.number => _buildTextField(field, l10n, keyboardType: TextInputType.number),
+      FormFieldType.phone => _buildTextField(field, l10n, keyboardType: TextInputType.phone),
+      FormFieldType.textarea => _buildTextField(field, l10n, maxLines: field.maxLines ?? 4),
+      FormFieldType.dropdown => _buildDropdown(field, l10n),
       FormFieldType.multiSelect => _buildMultiSelect(field),
-      FormFieldType.date => _buildDatePicker(field),
-      FormFieldType.datetime => _buildDateTimePicker(field),
+      FormFieldType.date => _buildDatePicker(field, l10n),
+      FormFieldType.datetime => _buildDateTimePicker(field, l10n),
       FormFieldType.toggle => _buildToggle(field),
       FormFieldType.checkbox => _buildCheckbox(field),
       FormFieldType.radio => _buildRadioGroup(field),
@@ -102,7 +104,8 @@ class DynamicFormRenderer extends StatelessWidget {
   }
 
   Widget _buildTextField(
-    FormFieldEntity field, {
+    FormFieldEntity field,
+    S l10n, {
     TextInputType? keyboardType,
     bool obscureText = false,
     int maxLines = 1,
@@ -115,17 +118,17 @@ class DynamicFormRenderer extends StatelessWidget {
       obscureText: obscureText,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      validator: _buildValidators(field),
+      validator: _buildValidators(field, l10n),
     );
   }
 
-  Widget _buildDropdown(FormFieldEntity field) {
+  Widget _buildDropdown(FormFieldEntity field, S l10n) {
     return FormBuilderDropdown<String>(
       name: field.key,
       initialValue: _initialFor(field)?.toString(),
       decoration: InputDecoration(labelText: field.label, hintText: field.hint),
       enabled: !readOnly && !field.readOnly,
-      validator: _buildValidators(field),
+      validator: _buildValidators(field, l10n),
       items: field.options.map((opt) => DropdownMenuItem(value: opt, child: Text(opt))).toList(),
     );
   }
@@ -141,25 +144,25 @@ class DynamicFormRenderer extends StatelessWidget {
     );
   }
 
-  Widget _buildDatePicker(FormFieldEntity field) {
+  Widget _buildDatePicker(FormFieldEntity field, S l10n) {
     return FormBuilderDateTimePicker(
       name: field.key,
       inputType: InputType.date,
       initialValue: _parseDateTime(_initialFor(field)),
       decoration: InputDecoration(labelText: field.label, hintText: field.hint),
       enabled: !readOnly && !field.readOnly,
-      validator: _buildValidators(field),
+      validator: _buildValidators(field, l10n),
     );
   }
 
-  Widget _buildDateTimePicker(FormFieldEntity field) {
+  Widget _buildDateTimePicker(FormFieldEntity field, S l10n) {
     return FormBuilderDateTimePicker(
       name: field.key,
       inputType: InputType.both,
       initialValue: _parseDateTime(_initialFor(field)),
       decoration: InputDecoration(labelText: field.label, hintText: field.hint),
       enabled: !readOnly && !field.readOnly,
-      validator: _buildValidators(field),
+      validator: _buildValidators(field, l10n),
     );
   }
 
@@ -211,12 +214,12 @@ class DynamicFormRenderer extends StatelessWidget {
     );
   }
 
-  String? Function(dynamic)? _buildValidators(FormFieldEntity field) {
+  String? Function(dynamic)? _buildValidators(FormFieldEntity field, S l10n) {
     final validators = <String? Function(dynamic)>[];
 
     if (field.required) {
       validators.add((value) {
-        if (value == null || (value is String && value.isEmpty)) return '${field.label} is required';
+        if (value == null || (value is String && value.isEmpty)) return l10n.dynamic_form_field_required(field.label);
         return null;
       });
     }
@@ -228,7 +231,7 @@ class DynamicFormRenderer extends StatelessWidget {
           // An empty value is left to the required rule, so an optional field can be cleared again.
           validators.add((value) {
             if (value is String && value.isNotEmpty && value.length < min) {
-              return '${field.label} must be at least $min characters';
+              return l10n.dynamic_form_field_min_length(field.label, min);
             }
             return null;
           });
@@ -237,20 +240,22 @@ class DynamicFormRenderer extends StatelessWidget {
         final max = int.tryParse(v.split(':').last);
         if (max != null) {
           validators.add((value) {
-            if (value is String && value.length > max) return '${field.label} must be at most $max characters';
+            if (value is String && value.length > max) return l10n.dynamic_form_field_max_length(field.label, max);
             return null;
           });
         }
       } else if (v == 'email') {
         validators.add((value) {
           if (value is String && value.isNotEmpty && !RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
-            return 'Invalid email address';
+            return l10n.invalid_email;
           }
           return null;
         });
       } else if (v == 'numeric') {
         validators.add((value) {
-          if (value is String && value.isNotEmpty && double.tryParse(value) == null) return 'Must be a number';
+          if (value is String && value.isNotEmpty && double.tryParse(value) == null) {
+            return l10n.dynamic_form_field_numeric;
+          }
           return null;
         });
       }

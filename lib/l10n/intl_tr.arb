@@ -395,5 +395,43 @@
   "user_editor_edit_subtitle": "Kullanıcı bilgilerini aşağıda güncelleyin.",
   "@user_editor_edit_subtitle": {},
   "user_editor_view_subtitle": "Kullanıcı ayrıntılarını görüntüleyin.",
-  "@user_editor_view_subtitle": {}
+  "@user_editor_view_subtitle": {},
+  "submit": "Gönder",
+  "@submit": {},
+  "error_title": "Hata",
+  "@error_title": {},
+  "dynamic_form_submitted": "Form başarıyla gönderildi",
+  "@dynamic_form_submitted": {},
+  "dynamic_form_field_required": "{field} zorunludur",
+  "@dynamic_form_field_required": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "dynamic_form_field_min_length": "{field} en az {count} karakter olmalıdır",
+  "@dynamic_form_field_min_length": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dynamic_form_field_max_length": "{field} en fazla {count} karakter olmalıdır",
+  "@dynamic_form_field_max_length": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dynamic_form_field_numeric": "Sayı olmalıdır",
+  "@dynamic_form_field_numeric": {}
 }

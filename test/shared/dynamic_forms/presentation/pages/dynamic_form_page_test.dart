@@ -51,9 +51,17 @@ class _PinMismatchAdapter implements HttpClientAdapter {
   void close({bool force = false}) {}
 }
 
-Widget _buildTestWidget(MockDynamicFormBloc bloc) {
+Widget _buildTestWidget(MockDynamicFormBloc bloc, {Locale locale = const Locale('en')}) {
   return withUnsavedChangesRegistry(
     MaterialApp.router(
+      locale: locale,
+      localizationsDelegates: const [
+        S.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: S.delegate.supportedLocales,
       routerConfig: singlePageRouter(
         Scaffold(
           body: BlocProvider<DynamicFormBloc>.value(
@@ -110,17 +118,31 @@ void main() {
 
         expect(find.byType(AppErrorState), findsOneWidget);
         expect(find.text('Error'), findsOneWidget);
-        expect(find.text('Network error'), findsOneWidget);
+        // The raw error is for the log; the user reads the generic message in the app language.
+        expect(find.text('Something went wrong'), findsOneWidget);
+        expect(find.text('Network error'), findsNothing);
         expect(find.byType(CircularProgressIndicator), findsNothing);
       });
 
-      testWidgets('shows default error message when error is null', (tester) async {
+      testWidgets('shows the generic message instead of an error the app has no code for', (tester) async {
         when(() => mockBloc.state).thenReturn(const DynamicFormFailure(error: 'Failed to load form'));
 
         await tester.pumpWidget(_buildTestWidget(mockBloc));
 
         expect(find.byType(AppErrorState), findsOneWidget);
-        expect(find.text('Failed to load form'), findsOneWidget);
+        expect(find.text('Something went wrong'), findsOneWidget);
+        expect(find.text('Failed to load form'), findsNothing);
+      });
+
+      testWidgets('shows the error state and its retry button in Turkish', (tester) async {
+        when(() => mockBloc.state).thenReturn(const DynamicFormFailure(error: 'Network error'));
+
+        await tester.pumpWidget(_buildTestWidget(mockBloc, locale: const Locale('tr')));
+        await tester.pump();
+
+        expect(find.text('Hata'), findsOneWidget);
+        expect(find.text('Bir şeyler ters gitti'), findsOneWidget);
+        expect(find.text('Tekrar Dene'), findsOneWidget);
       });
 
       testWidgets('shows retry button in error state', (tester) async {
@@ -247,6 +269,22 @@ void main() {
         await tester.pump();
 
         expect(find.text('Form submitted successfully'), findsOneWidget);
+
+        statesController.close();
+      });
+
+      testWidgets('says the form was submitted in Turkish', (tester) async {
+        final statesController = MockDynamicFormBloc();
+        whenListen(
+          statesController,
+          Stream<DynamicFormState>.fromIterable([const DynamicFormSubmitted(schema: _testSchema)]),
+          initialState: const DynamicFormLoaded(schema: _testSchema),
+        );
+
+        await tester.pumpWidget(_buildTestWidget(statesController, locale: const Locale('tr')));
+        await tester.pump();
+
+        expect(find.text('Form başarıyla gönderildi'), findsOneWidget);
 
         statesController.close();
       });

@@ -2,14 +2,24 @@
 library;
 
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/entities/form_schema_entity.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/presentation/widgets/dynamic_form_renderer.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 /// Helper to wrap the widget under test in a [MaterialApp] with a [Scaffold].
-Widget _buildTestWidget(Widget child) {
+Widget _buildTestWidget(Widget child, {Locale locale = const Locale('en')}) {
   return MaterialApp(
+    locale: locale,
+    localizationsDelegates: const [
+      S.delegate,
+      GlobalMaterialLocalizations.delegate,
+      GlobalWidgetsLocalizations.delegate,
+      GlobalCupertinoLocalizations.delegate,
+    ],
+    supportedLocales: S.delegate.supportedLocales,
     home: Scaffold(body: SingleChildScrollView(child: child)),
   );
 }
@@ -434,6 +444,88 @@ void main() {
 
         expect(find.byType(FormBuilderTextField), findsOneWidget);
       });
+    });
+  });
+  group('DynamicFormRenderer - language', () {
+    // Pumps a form with one text field and a submit button, enters [text] and submits it.
+    Future<void> submitText(
+      WidgetTester tester, {
+      required List<String> validators,
+      bool required = false,
+      String text = '',
+      Locale locale = const Locale('tr'),
+    }) async {
+      final schema = _schemaWith(
+        fields: [
+          FormFieldEntity(
+            type: FormFieldType.text,
+            key: 'name',
+            label: 'Ad',
+            required: required,
+            validators: validators,
+          ),
+        ],
+      );
+      await tester.pumpWidget(
+        _buildTestWidget(
+          DynamicFormRenderer(schema: schema, formKey: GlobalKey<FormBuilderState>(), onSubmit: (_) {}),
+          locale: locale,
+        ),
+      );
+      await tester.enterText(find.byType(FormBuilderTextField), text);
+      await tester.tap(find.text(locale.languageCode == 'tr' ? 'Gönder' : 'Submit'));
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('shows the submit button in Turkish', (tester) async {
+      final schema = _schemaWith(
+        fields: [const FormFieldEntity(type: FormFieldType.text, key: 'name', label: 'Ad')],
+      );
+
+      await tester.pumpWidget(
+        _buildTestWidget(
+          DynamicFormRenderer(schema: schema, formKey: GlobalKey<FormBuilderState>(), onSubmit: (_) {}),
+          locale: const Locale('tr'),
+        ),
+      );
+
+      expect(find.text('Gönder'), findsOneWidget);
+    });
+
+    testWidgets('says a required field is empty in Turkish', (tester) async {
+      await submitText(tester, validators: const [], required: true);
+
+      expect(find.text('Ad zorunludur'), findsOneWidget);
+    });
+
+    testWidgets('says a field is too short in Turkish', (tester) async {
+      await submitText(tester, validators: const ['minLength:3'], text: 'ab');
+
+      expect(find.text('Ad en az 3 karakter olmalıdır'), findsOneWidget);
+    });
+
+    testWidgets('says a field is too long in Turkish', (tester) async {
+      await submitText(tester, validators: const ['maxLength:2'], text: 'abc');
+
+      expect(find.text('Ad en fazla 2 karakter olmalıdır'), findsOneWidget);
+    });
+
+    testWidgets('says an email address is not valid in Turkish', (tester) async {
+      await submitText(tester, validators: const ['email'], text: 'nope');
+
+      expect(find.text('Geçersiz e-posta adresi'), findsOneWidget);
+    });
+
+    testWidgets('says a field must be a number in Turkish', (tester) async {
+      await submitText(tester, validators: const ['numeric'], text: 'abc');
+
+      expect(find.text('Sayı olmalıdır'), findsOneWidget);
+    });
+
+    testWidgets('counts one character in the singular in English', (tester) async {
+      await submitText(tester, validators: const ['maxLength:1'], text: 'ab', locale: const Locale('en'));
+
+      expect(find.text('Ad must be at most 1 character'), findsOneWidget);
     });
   });
 }

@@ -395,5 +395,43 @@
   "user_editor_edit_subtitle": "Update user information below.",
   "@user_editor_edit_subtitle": {},
   "user_editor_view_subtitle": "View user details.",
-  "@user_editor_view_subtitle": {}
+  "@user_editor_view_subtitle": {},
+  "submit": "Submit",
+  "@submit": {},
+  "error_title": "Error",
+  "@error_title": {},
+  "dynamic_form_submitted": "Form submitted successfully",
+  "@dynamic_form_submitted": {},
+  "dynamic_form_field_required": "{field} is required",
+  "@dynamic_form_field_required": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      }
+    }
+  },
+  "dynamic_form_field_min_length": "{field} must be at least {count, plural, =1{1 character} other{{count} characters}}",
+  "@dynamic_form_field_min_length": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dynamic_form_field_max_length": "{field} must be at most {count, plural, =1{1 character} other{{count} characters}}",
+  "@dynamic_form_field_max_length": {
+    "placeholders": {
+      "field": {
+        "type": "String"
+      },
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "dynamic_form_field_numeric": "Must be a number",
+  "@dynamic_form_field_numeric": {}
 }

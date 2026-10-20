@@ -30,20 +30,26 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m4(count) => "${count} açık";
 
-  static String m5(url) => "${url} açılamadı";
+  static String m5(field, count) => "${field} en fazla ${count} karakter olmalıdır";
 
-  static String m6(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
+  static String m6(field, count) => "${field} en az ${count} karakter olmalıdır";
 
-  static String m7(email) => "OTP kodu ${email} adresine gönderildi";
+  static String m7(field) => "${field} zorunludur";
 
-  static String m8(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
+  static String m8(url) => "${url} açılamadı";
 
-  static String m9(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+  static String m9(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
 
-  static String m10(translate) =>
+  static String m10(email) => "OTP kodu ${email} adresine gönderildi";
+
+  static String m11(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
+
+  static String m12(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+
+  static String m13(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
-  static String m11(error) => "Kaydedilemedi: ${error}";
+  static String m14(error) => "Kaydedilemedi: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -111,6 +117,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "dashboard_title": MessageLookupByLibrary.simpleMessage("Sistem Paneli"),
     "delete_confirmation": MessageLookupByLibrary.simpleMessage("Silmek istediğinize emin misiniz?"),
     "delete_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Sil"),
+    "dynamic_form_field_max_length": m5,
+    "dynamic_form_field_min_length": m6,
+    "dynamic_form_field_numeric": MessageLookupByLibrary.simpleMessage("Sayı olmalıdır"),
+    "dynamic_form_field_required": m7,
+    "dynamic_form_submitted": MessageLookupByLibrary.simpleMessage("Form başarıyla gönderildi"),
     "dynamic_forms": MessageLookupByLibrary.simpleMessage("Dinamik Formlar"),
     "edit": MessageLookupByLibrary.simpleMessage("Düzenle"),
     "edit_user": MessageLookupByLibrary.simpleMessage("Kullanıcı Düzenle"),
@@ -126,11 +137,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("OTP kodu gönderilemedi"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Oturum kaydedilemedi"),
     "error_generic": MessageLookupByLibrary.simpleMessage("Bir şeyler ters gitti"),
-    "error_link_open_failed": m5,
+    "error_link_open_failed": m8,
     "error_network_cert_invalid": MessageLookupByLibrary.simpleMessage(
       "Bağlantının güvenli olduğu doğrulanamadığı için engellendi. Daha sonra ya da başka bir ağda tekrar deneyin.",
     ),
     "error_settings_change_language_failed": MessageLookupByLibrary.simpleMessage("Dil değiştirilemedi"),
+    "error_title": MessageLookupByLibrary.simpleMessage("Hata"),
     "error_user_cannot_delete_admin": MessageLookupByLibrary.simpleMessage("Yönetici kullanıcı silinemez"),
     "error_user_no_authorities": MessageLookupByLibrary.simpleMessage("Yetki bulunamadı"),
     "failed": MessageLookupByLibrary.simpleMessage("Başarısız"),
@@ -149,7 +161,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Güncelleme bağlantısı geçersiz. En son sürümü yüklemek için uygulama mağazanızı açın.",
     ),
     "force_update_title": MessageLookupByLibrary.simpleMessage("Güncelleme Gerekli"),
-    "force_update_versions": m6,
+    "force_update_versions": m9,
     "forgot_password_description": MessageLookupByLibrary.simpleMessage(
       "E-posta adresinizi girin, şifrenizi sıfırlamanız için size bir bağlantı gönderelim.",
     ),
@@ -222,10 +234,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "only_numbers": MessageLookupByLibrary.simpleMessage("Sadece sayılar kullanılabilir"),
     "otp_code": MessageLookupByLibrary.simpleMessage("OTP Kodu"),
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP 6 haneli olmalıdır"),
-    "otp_sent_to_email": m7,
+    "otp_sent_to_email": m10,
     "password_forgot": MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
-    "password_max_length": m8,
-    "password_min_length": m9,
+    "password_max_length": m11,
+    "password_min_length": m12,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Hızlı İşlemler"),
     "refresh": MessageLookupByLibrary.simpleMessage("Yenile"),
     "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
@@ -247,11 +259,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "settings_theme_subtitle": MessageLookupByLibrary.simpleMessage("Tercih ettiğiniz tema stilini seçin"),
     "sidebar_collapse": MessageLookupByLibrary.simpleMessage("Daralt"),
     "sidebar_expand": MessageLookupByLibrary.simpleMessage("Genişlet"),
+    "submit": MessageLookupByLibrary.simpleMessage("Gönder"),
     "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
     "theme": MessageLookupByLibrary.simpleMessage("Tema"),
     "theme_mode_dark": MessageLookupByLibrary.simpleMessage("Koyu"),
     "theme_mode_light": MessageLookupByLibrary.simpleMessage("Açık"),
-    "translate_menu_title": m10,
+    "translate_menu_title": m13,
     "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
@@ -273,7 +286,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_editor_info_title": MessageLookupByLibrary.simpleMessage("Kullanıcı Bilgileri"),
     "user_editor_view_subtitle": MessageLookupByLibrary.simpleMessage("Kullanıcı ayrıntılarını görüntüleyin."),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
-    "user_extended_info_save_failed": m11,
+    "user_extended_info_save_failed": m14,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "user_list_actions": MessageLookupByLibrary.simpleMessage("İşlemler"),
