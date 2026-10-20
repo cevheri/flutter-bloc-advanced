@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_interceptor.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -55,6 +56,18 @@ void main() {
         reason: 'mock callFollowing must propagate the response so onResponse completes the entry',
       );
       expect(entries.first.statusCode, isNotNull);
+    });
+
+    test('a mock 401 for a request without a token is marked complete with its status', () async {
+      await expectLater(TestEnv.apiClient().get('/test'), throwsA(isA<UnauthorizedException>()));
+
+      final entry = DevConsoleStore.instance.networkEntries.single;
+      expect(
+        entry.isComplete,
+        isTrue,
+        reason: 'the mock must reject with callFollowing so onError completes the entry, as for a server 401',
+      );
+      expect(entry.statusCode, 401);
     });
   });
 }

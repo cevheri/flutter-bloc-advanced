@@ -135,6 +135,7 @@ dio.interceptors.addAll([
 
 Only `MockInterceptor` depends on the environment: it is added outside production, as the last entry.
 It sits last because it stands in for the server: it resolves with `callFollowingResponseInterceptor: true`, so its response still runs through the `onResponse` handlers of the interceptors above it (cache, dev console, logging), as a real response would.
+When it answers a protected request without a token with 401, it rejects with `callFollowingErrorInterceptor: true`, so the `onError` handlers run as they do for a server 401: `TokenRefreshInterceptor` ends the session when the token cannot be refreshed, and the dev console and logging record the failure.
 
 ### AuthInterceptor
 

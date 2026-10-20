@@ -17,6 +17,8 @@ import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../support/test_env.dart';
+
 /// Production behavior (no mock interceptor, token expiry enforced) with a valid base URL instead of the template
 /// placeholder in [AppConfig.prod].
 const _prodConfig = AppConfig(
@@ -86,6 +88,34 @@ void main() {
       expect(relaunched.state, const SessionUnauthenticated(reason: SessionExpiredReason.noToken));
       expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), isNull);
       expect(await AppLocalStorage().read(StorageKeys.roles.key), isNull);
+    });
+
+    testWidgets('ends the session in mock mode when a request without a token gets 401', (tester) async {
+      // The mock answers a protected request without a token with 401, as the server does. That happens when the
+      // stored token is gone while the session is open, for example after a logout in another browser tab. No refresh
+      // token is stored, so the refresh fails.
+      TestEnv.authenticate();
+      late BuildContext scope;
+      await tester.pumpWidget(
+        AppScope(
+          dependencies: const AppDependencies(appConfig: AppConfig.test()),
+          child: Builder(
+            builder: (context) {
+              scope = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      final session = scope.read<SessionCubit>();
+      await tester.pumpAndSettle();
+      expect(session.state, isA<SessionAuthenticated>());
+
+      await FlutterSecureStorageAdapter().delete(SecureStorageKeys.jwtToken.key);
+      final apiClient = scope.read<ApiClient>();
+      await tester.runAsync(() => expectLater(apiClient.get('/account'), throwsA(isA<UnauthorizedException>())));
+
+      expect(session.state, const SessionUnauthenticated(reason: SessionExpiredReason.expired));
     });
   });
 }

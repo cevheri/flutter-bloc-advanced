@@ -16,6 +16,13 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 /// logging, cache writes — exactly like a real round-trip would. Without
 /// that flag the response short-circuits and those handlers never fire,
 /// leaving the dev console Network tab empty in mock mode.
+///
+/// It answers a protected path sent without a token with 401 and rejects
+/// with `callFollowingErrorInterceptor: true` for the same reason: a server
+/// 401 runs every onError handler, so [TokenRefreshInterceptor] ends the
+/// session when the token cannot be refreshed, and the dev console and
+/// logging record the failure. Paths in [allowedPaths], login among them,
+/// are never rejected.
 class MockInterceptor extends Interceptor {
   MockInterceptor({this.appConfig = const AppConfig.dev()});
 
@@ -43,6 +50,7 @@ class MockInterceptor extends Interceptor {
             type: DioExceptionType.badResponse,
             response: Response(requestOptions: options, statusCode: 401, data: 'Unauthorized Access'),
           ),
+          true,
         );
         return;
       }
