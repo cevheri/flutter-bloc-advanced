@@ -86,6 +86,28 @@ void main() {
       expect(find.text(testText), findsOneWidget);
     });
 
+    for (final isLoading in [false, true]) {
+      testWidgets('wraps a label too long for the button${isLoading ? ' while loading' : ''}', (tester) async {
+        const label = 'Send the password reset email';
+
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: Center(
+                child: SizedBox(
+                  width: 160,
+                  child: ResponsiveSubmitButton(buttonText: label, isLoading: isLoading, onPressed: () {}),
+                ),
+              ),
+            ),
+          ),
+        );
+
+        expect(tester.takeException(), isNull);
+        expect(tester.getSize(find.text(label)).width, lessThanOrEqualTo(160));
+      });
+    }
+
     testWidgets('should show loading indicator when isLoading is true', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(

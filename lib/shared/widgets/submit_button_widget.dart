@@ -54,7 +54,7 @@ class ButtonContent extends StatelessWidget {
             ),
           ),
         ],
-        Text(text),
+        Flexible(child: Text(text, textAlign: TextAlign.center)),
       ],
     );
   }
