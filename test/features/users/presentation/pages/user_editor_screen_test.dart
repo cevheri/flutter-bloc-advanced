@@ -117,6 +117,21 @@ void main() {
       expect(find.byType(AuthoritiesDropdown), findsOneWidget);
     });
 
+    for (final width in [412.0]) {
+      testWidgets('Create Mode - fits the title and subtitle on a ${width.toInt()} px wide phone', (tester) async {
+        tester.view.physicalSize = Size(width, 915);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.reset);
+        whenListen(mockUserBloc, const Stream<UserEditorState>.empty(), initialState: const UserEditorInitial());
+
+        await tester.pumpWidget(buildTestableWidget(mode: EditorFormMode.create));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text(S.current.create_user), findsWidgets);
+      });
+    }
+
     testWidgets('Edit Mode - Should load and display user data', (tester) async {
       // ARRANGE
       const userId = 'test-user-1';

@@ -143,13 +143,15 @@ class _UserEditorViewState extends State<_UserEditorView> {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(_getTitle(context), style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
-                        const SizedBox(height: 2),
-                        Text(_getSubtitle(context), style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
-                      ],
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(_getTitle(context), style: tt.titleLarge?.copyWith(fontWeight: FontWeight.w600)),
+                          const SizedBox(height: 2),
+                          Text(_getSubtitle(context), style: tt.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                        ],
+                      ),
                     ),
                   ],
                 ),
