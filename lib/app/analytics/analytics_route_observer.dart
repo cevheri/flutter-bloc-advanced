@@ -3,7 +3,12 @@ import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 
 /// NavigatorObserver that logs screen views to an analytics service.
 ///
-/// Add to GoRouter's `observers` list to automatically track page navigation.
+/// Add to GoRouter's `observers` list to automatically track page navigation. go_router forwards those observers to
+/// every ShellRoute navigator (`notifyRootObserver`, on by default), so do not add this observer to a ShellRoute as
+/// well, or every shell screen is logged twice.
+///
+/// Only named page routes are screens. Dialogs, menus and bottom sheets are popup routes: opening one is not a screen
+/// view, and closing one reveals a screen the user never left.
 class AnalyticsRouteObserver extends NavigatorObserver {
   AnalyticsRouteObserver(this._analytics);
 
@@ -24,12 +29,12 @@ class AnalyticsRouteObserver extends NavigatorObserver {
   @override
   void didPop(Route route, Route? previousRoute) {
     super.didPop(route, previousRoute);
-    if (previousRoute != null) _logScreenView(previousRoute);
+    if (route is PageRoute && previousRoute != null) _logScreenView(previousRoute);
   }
 
   void _logScreenView(Route route) {
     final name = route.settings.name;
-    if (name != null && name.isNotEmpty) {
+    if (route is PageRoute && name != null && name.isNotEmpty) {
       _analytics.logScreenView(screenName: name, screenClass: route.runtimeType.toString());
     }
   }

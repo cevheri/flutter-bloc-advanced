@@ -2,6 +2,9 @@ import 'package:bloc_test/bloc_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+// Service imports
+import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
+
 // BLoC imports
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
@@ -67,6 +70,9 @@ class MockRegisterBloc extends MockBloc<RegisterEvent, RegisterState> implements
 class MockLoginBloc extends MockBloc<LoginEvent, LoginState> implements LoginBloc {}
 
 class MockDynamicFormBloc extends MockBloc<DynamicFormEvent, DynamicFormState> implements DynamicFormBloc {}
+
+// Service mocks
+class MockAnalyticsService extends Mock implements IAnalyticsService {}
 
 // Infrastructure mocks
 class MockSharedPreferences extends Mock implements SharedPreferences {}

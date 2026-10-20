@@ -38,6 +38,8 @@ class AppRouterFactory {
       observers: _observers,
       errorPageBuilder: (context, state) => appPlatformPage(
         state: state,
+        // An error state has no route name or path, and an unnamed page is invisible to analytics.
+        name: ApplicationRoutesConstants.notFound,
         child: NotFoundPage(error: state.error),
       ),
       routes: [

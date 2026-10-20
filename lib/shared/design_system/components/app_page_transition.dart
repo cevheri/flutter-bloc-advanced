@@ -13,16 +13,20 @@ enum AppPageTransitionType { fade, slideRight, slideUp }
 ///
 /// Unlike go_router 17, path and query parameters are not copied into the page arguments: nothing reads them, and
 /// navigator observers such as Sentry's would otherwise record values like the email in `/login-otp-verify/:email`.
-MaterialPage<void> appPlatformPage({required Widget child, required GoRouterState state}) {
+///
+/// [name] replaces the route-derived name for a page that has no route of its own, such as the error page.
+MaterialPage<void> appPlatformPage({required Widget child, required GoRouterState state, String? name}) {
   return MaterialPage<void>(
     key: state.pageKey,
-    name: state.name ?? state.path,
+    name: name ?? state.name ?? state.path,
     restorationId: state.pageKey.value,
     child: child,
   );
 }
 
 /// Creates a CustomTransitionPage with consistent animations.
+///
+/// Named like [appPlatformPage], because navigator observers such as analytics identify a screen by its page name.
 CustomTransitionPage<T> appTransitionPage<T>({
   required Widget child,
   required GoRouterState state,
@@ -30,6 +34,7 @@ CustomTransitionPage<T> appTransitionPage<T>({
 }) {
   return CustomTransitionPage<T>(
     key: state.pageKey,
+    name: state.name ?? state.path,
     child: child,
     transitionDuration: AppDurations.slow,
     reverseTransitionDuration: AppDurations.normal,
