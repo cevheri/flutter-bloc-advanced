@@ -358,18 +358,18 @@ All template placeholders use `__KEYWORD__` naming. Run a **global search** for 
 | Keyword | Description | Example | Where Used |
 | --- | --- | --- | --- |
 | `__APP_NAME__` | Full application name | `Acme Dashboard` | template_config.dart, manifest.json, 404.html |
-| `__APP_SHORT_NAME__` | Short name (PWA, mobile) | `Acme` | template_config.dart, manifest.json |
-| `__APP_DESCRIPTION__` | One-line app description | `Team collaboration platform` | template_config.dart, manifest.json |
+| `__APP_SHORT_NAME__` | Short name (PWA, mobile) | `Acme` | manifest.json |
+| `__APP_DESCRIPTION__` | One-line app description | `Team collaboration platform` | manifest.json |
 | `__PROD_API_URL__` | Production API endpoint | `https://api.acme.com/v1` | template_config.dart, index.html |
-| `__WEB_BASE_URL__` | Deployment URL (trailing `/`) | `https://app.acme.com/` | template_config.dart, index.html, sitemap.xml, robots.txt, .well-known/security.txt |
+| `__WEB_BASE_URL__` | Deployment URL (trailing `/`) | `https://app.acme.com/` | index.html, sitemap.xml, robots.txt, .well-known/security.txt |
 | `__WEB_BASE_PATH__` | Path of the deployment URL (leading and trailing `/`) | `/` | 404.html, robots.txt |
 | `__GITHUB_REPO_URL__` | GitHub repository URL (no trailing `/`) | `https://github.com/acme/dashboard` | template_config.dart, .well-known/security.txt |
 | `__DOCS_URL__` | Documentation website | `https://docs.acme.com` | template_config.dart |
 | `__SPONSOR_URL__` | Sponsor page | `https://github.com/sponsors/acme` | template_config.dart |
 | `__SECURITY_CONTACT__` | Email address for vulnerability reports | `security@acme.com` | .well-known/security.txt |
-| `__AUTHOR_NAME__` | Developer or company name | `Acme Inc.` | template_config.dart, index.html, humans.txt |
-| `__AUTHOR_EMAIL__` | Contact email | `dev@acme.com` | template_config.dart, CONTRIBUTING.md |
-| `__AUTHOR_URL__` | Author website / profile | `https://github.com/acme` | template_config.dart, index.html, humans.txt |
+| `__AUTHOR_NAME__` | Developer or company name | `Acme Inc.` | index.html, humans.txt |
+| `__AUTHOR_EMAIL__` | Contact email | `dev@acme.com` | CONTRIBUTING.md |
+| `__AUTHOR_URL__` | Author website / profile | `https://github.com/acme` | index.html, humans.txt |
 | `__AUTHOR_LOCATION__` | Author location | `San Francisco, CA` | humans.txt |
 
 The hosted demo fills these placeholders only at deploy time, from `.github/pages/demo-values.env`, and `scripts/check_web_placeholders.sh` fails the GitHub Pages build of any repository that would still publish one, naming the file and keyword (`__PROD_API_URL__` is exempt because the mock-mode web build does not use it).

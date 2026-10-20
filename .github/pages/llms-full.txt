@@ -168,7 +168,7 @@ Use `shared/` for business-free reusable UI: design system components, dialogs, 
 ### Configuration (infrastructure/config/)
 
 - `environment.dart`: Environment-driven configuration for local and production modes
-- `template_config.dart`: Customizable template settings (app name, API URL, author info, feature flags)
+- `template_config.dart`: Customizable template settings (app name, API URL, and the repository, docs and sponsor links given at build time)
 
 ### Storage (infrastructure/storage/)
 
