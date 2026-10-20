@@ -400,6 +400,25 @@ void main() {
       expect(find.text('grace.hopper@example.com'), findsOneWidget);
     });
 
+    for (final textScale in [1.0, 1.3]) {
+      testWidgets('fits the Turkish row actions menu on a phone at text scale $textScale', (tester) async {
+        tester.platformDispatcher.textScaleFactorTestValue = textScale;
+        addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+        stubSearch(const Success([grace]));
+        await openUserList(tester, language: 'tr', size: const Size(412, 915));
+
+        await tester.tap(find.ancestor(of: find.text('Listele'), matching: find.byType(OutlinedButton)));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byIcon(Icons.more_vert));
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull);
+        expect(find.text('Kullanıcı Görüntüle'), findsOneWidget);
+        expect(find.text('Kullanıcı Düzenle'), findsOneWidget);
+        expect(find.text('Kullanıcı Sil'), findsOneWidget);
+      });
+    }
+
     testWidgets('shows the error instead of loading forever when the search throws', (tester) async {
       when(
         () => userRepository.list(

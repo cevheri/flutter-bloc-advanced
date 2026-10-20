@@ -436,7 +436,7 @@ class _MobileUserCard extends StatelessWidget {
                         children: [
                           Icon(Icons.visibility, size: 18, color: cs.onSurface),
                           const SizedBox(width: 8),
-                          Text(S.of(context).view_user),
+                          Flexible(child: Text(S.of(context).view_user)),
                         ],
                       ),
                     ),
@@ -446,7 +446,7 @@ class _MobileUserCard extends StatelessWidget {
                         children: [
                           Icon(Icons.edit, size: 18, color: cs.onSurface),
                           const SizedBox(width: 8),
-                          Text(S.of(context).edit_user),
+                          Flexible(child: Text(S.of(context).edit_user)),
                         ],
                       ),
                     ),
@@ -456,7 +456,9 @@ class _MobileUserCard extends StatelessWidget {
                         children: [
                           Icon(Icons.delete, size: 18, color: cs.error),
                           const SizedBox(width: 8),
-                          Text(S.of(context).delete_user, style: TextStyle(color: cs.error)),
+                          Flexible(
+                            child: Text(S.of(context).delete_user, style: TextStyle(color: cs.error)),
+                          ),
                         ],
                       ),
                     ),
