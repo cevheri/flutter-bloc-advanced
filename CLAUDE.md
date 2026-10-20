@@ -142,7 +142,8 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
 - Acquire loggers via `AppLogger.getLogger('Name')` (`lib/core/logging/app_logger.dart`).
 - Use SLF4J-style parameterized substitution: `_log.debug('msg: {}', [arg])` — **not** string interpolation (`_log.debug('msg: ${arg}')`).
   - Parameterized form skips `toString()` when the log level is disabled — faster, and avoids accidentally stringifying secrets carried on events with `stringify = true`.
-- `AppLogger` masks email addresses as `[REDACTED_EMAIL]` in every line it prints (`maskEmails` in `lib/core/security/sensitive_data_scrubber.dart`).
+- `AppLogger` masks email addresses as `[REDACTED_EMAIL]` and credentials (passwords, OTP codes, tokens, `Bearer` values) as `[REDACTED]` in every line it prints, and masks the credential keys of a `Map` or `List` argument (`maskEmails`, `maskSecrets` and `scrubBodyKeys` in `lib/core/security/sensitive_data_scrubber.dart`, the one policy every exit uses).
+- Never put a secret into a log message, a log argument or an exception message; a class that holds one prints `[REDACTED]` in its `toString` (`test/architecture/credential_to_string_test.dart` and `log_secrets_test.dart` guard both rules).
 - BLoC lifecycle transitions are logged centrally by `AppBlocObserver` (`lib/core/logging/app_bloc_observer.dart`). Do **not** override `onTransition` inside BLoCs.
 
 ## Environments
