@@ -23,10 +23,13 @@ class LifecycleRepository implements ILifecycleRepository {
       final model = AppConfigModel.fromJsonString(response.data!);
       return Success(model);
     } on UnauthorizedException catch (e) {
+      _log.warn('fetchAppConfig auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on FetchDataException catch (e) {
+      _log.warn('fetchAppConfig network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
+      _log.error('fetchAppConfig unknown error: {}', [e]);
       return Failure(UnknownError(e.toString()));
     }
   }

@@ -30,13 +30,13 @@ class UserRepository implements IUserRepository {
       _log.debug('END:getUser successful - response.body: {}', [result]);
       return Success(result);
     } on UnauthorizedException catch (e) {
-      _log.error('END:getUser auth error: {}', [e]);
+      _log.warn('END:getUser auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:getUser validation error: {}', [e]);
+      _log.info('END:getUser validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:getUser network error: {}', [e]);
+      _log.warn('END:getUser network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:getUser unknown error: {}', [e]);
@@ -62,13 +62,13 @@ class UserRepository implements IUserRepository {
       }
       return Success(result);
     } on UnauthorizedException catch (e) {
-      _log.error('END:createUser auth error: {}', [e]);
+      _log.warn('END:createUser auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:createUser validation error: {}', [e]);
+      _log.info('END:createUser validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:createUser network error: {}', [e]);
+      _log.warn('END:createUser network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:createUser unknown error: {}', [e]);
@@ -91,13 +91,13 @@ class UserRepository implements IUserRepository {
       }
       return Success(result);
     } on UnauthorizedException catch (e) {
-      _log.error('END:updateUser auth error: {}', [e]);
+      _log.warn('END:updateUser auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:updateUser validation error: {}', [e]);
+      _log.info('END:updateUser validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:updateUser network error: {}', [e]);
+      _log.warn('END:updateUser network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:updateUser unknown error: {}', [e]);
@@ -115,13 +115,13 @@ class UserRepository implements IUserRepository {
       _log.debug('END:getUsers successful - response list size: {}', [result.length]);
       return Success(result);
     } on UnauthorizedException catch (e) {
-      _log.error('END:getUsers auth error: {}', [e]);
+      _log.warn('END:getUsers auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:getUsers validation error: {}', [e]);
+      _log.info('END:getUsers validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:getUsers network error: {}', [e]);
+      _log.warn('END:getUsers network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:getUsers unknown error: {}', [e]);
@@ -147,13 +147,13 @@ class UserRepository implements IUserRepository {
       _log.debug('END:findUserByAuthority successful - response list size: {}', [result.length]);
       return Success(result);
     } on UnauthorizedException catch (e) {
-      _log.error('END:findUserByAuthority auth error: {}', [e]);
+      _log.warn('END:findUserByAuthority auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:findUserByAuthority validation error: {}', [e]);
+      _log.info('END:findUserByAuthority validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:findUserByAuthority network error: {}', [e]);
+      _log.warn('END:findUserByAuthority network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:findUserByAuthority unknown error: {}', [e]);
@@ -171,13 +171,13 @@ class UserRepository implements IUserRepository {
       _log.debug('END:listByName successful - response list size: {}', [result.length]);
       return Success(result);
     } on UnauthorizedException catch (e) {
-      _log.error('END:listByName auth error: {}', [e]);
+      _log.warn('END:listByName auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:listByName validation error: {}', [e]);
+      _log.info('END:listByName validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:listByName network error: {}', [e]);
+      _log.warn('END:listByName network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:listByName unknown error: {}', [e]);
@@ -200,13 +200,13 @@ class UserRepository implements IUserRepository {
       _log.debug('END:findUserByName successful - response list size: {}', [result.length]);
       return Success(result);
     } on UnauthorizedException catch (e) {
-      _log.error('END:findUserByName auth error: {}', [e]);
+      _log.warn('END:findUserByName auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:findUserByName validation error: {}', [e]);
+      _log.info('END:findUserByName validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:findUserByName network error: {}', [e]);
+      _log.warn('END:findUserByName network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:findUserByName unknown error: {}', [e]);
@@ -225,13 +225,13 @@ class UserRepository implements IUserRepository {
       _log.debug('END:deleteUser successful - response status code: {}', [response.statusCode]);
       return const Success(null);
     } on UnauthorizedException catch (e) {
-      _log.error('END:deleteUser auth error: {}', [e]);
+      _log.warn('END:deleteUser auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:deleteUser validation error: {}', [e]);
+      _log.info('END:deleteUser validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:deleteUser network error: {}', [e]);
+      _log.warn('END:deleteUser network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:deleteUser unknown error: {}', [e]);

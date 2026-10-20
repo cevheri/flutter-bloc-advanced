@@ -713,19 +713,17 @@ void main() {
     });
 
     // Regression: a pin mismatch reached the repositories as a plain FetchDataException, so a screen showed its text,
-    // host and port included, instead of a message the user can act on. The host and port stay in the log.
-    test('fails a pin mismatch with UntrustedCertificateException and logs the host and port', () async {
-      final errors = <String>[];
-      void recordError(OutputEvent event) {
-        if (event.level == Level.error) errors.addAll(event.lines);
-      }
-
-      Logger.addOutputListener(recordError);
-      addTearDown(() => Logger.removeOutputListener(recordError));
+    // host and port included, instead of a message the user can act on. The host and port stay in its text, which the
+    // repository that catches it logs.
+    test('fails a pin mismatch with UntrustedCertificateException that names the host and port', () async {
       adapter.fail(const CertificatePinningException('api.example.test', 443));
 
-      await expectLater(client.get('/api/transport/untrusted'), throwsA(isA<UntrustedCertificateException>()));
-      expect(errors, contains(contains('api.example.test:443')));
+      await expectLater(
+        client.get('/api/transport/untrusted'),
+        throwsA(
+          isA<UntrustedCertificateException>().having((e) => e.toString(), 'text', contains('api.example.test:443')),
+        ),
+      );
     });
 
     // dio reports a certificate that IOHttpClientAdapter.validateCertificate rejects as badCertificate, and dart:io
@@ -800,21 +798,20 @@ void main() {
     // Regression: only a pin mismatch became an UntrustedCertificateException. Any other TLS failure reached the
     // repositories as a plain FetchDataException, so the screens showed its text or a generic error instead of the
     // insecure-connection message.
-    test('fails with UntrustedCertificateException and logs the TLS error with the host and port', () async {
-      final errors = <String>[];
-      void recordError(OutputEvent event) {
-        if (event.level == Level.error) errors.addAll(event.lines);
-      }
-
-      Logger.addOutputListener(recordError);
-      addTearDown(() => Logger.removeOutputListener(recordError));
-
+    // The repository that catches it logs its text, so the text names the TLS error, the host and the port.
+    test('fails with UntrustedCertificateException that names the TLS error, the host and the port', () async {
       await withRealSockets(() async {
-        await expectLater(client.get('/api/tls/untrusted'), throwsA(isA<UntrustedCertificateException>()));
+        await expectLater(
+          client.get('/api/tls/untrusted'),
+          throwsA(
+            isA<UntrustedCertificateException>().having(
+              (e) => e.toString(),
+              'text',
+              allOf(contains('127.0.0.1:$port'), contains('CERTIFICATE_VERIFY_FAILED')),
+            ),
+          ),
+        );
       });
-      final log = errors.join('\n');
-      expect(log, contains('127.0.0.1:$port'));
-      expect(log, contains('CERTIFICATE_VERIFY_FAILED'));
     });
 
     // Regression: each TLS failure counted against the endpoint's circuit breaker, so from the sixth request on the
@@ -1148,10 +1145,12 @@ void main() {
     });
   });
 
-  // Regression: ApiClient put the raw body of an error response into the exception it threw, and an AppException logs
-  // its text at error level when it is created, which every build of main_prod prints. A validation error can repeat
-  // what the request sent, so the password of a sign-in or a change and the code of an OTP check reached the console,
-  // the repository and BLoC error lines that log the exception again, and on web with a Sentry DSN the breadcrumbs.
+  // Regression: ApiClient put the raw body of an error response into the exception it threw, and an AppException
+  // logged its text at error level when it was created, which every build of main_prod printed. A validation error can
+  // repeat what the request sent, so the password of a sign-in or a change and the code of an OTP check reached the
+  // console, the repository and BLoC lines that log the exception, and on web with a Sentry DSN the breadcrumbs. The
+  // repositories now log the exception text, so `text` keeps that line free of the credential, and `lines` keeps the
+  // lines that ApiClient and its interceptors print free of it.
   group('ApiClient error responses that repeat a credential', () {
     late ApiClient client;
     late _FakeHttpClientAdapter adapter;
@@ -1202,7 +1201,6 @@ void main() {
 
       expect([text, ...lines], everyElement(allOf(isNot(contains('NewPass#2')), isNot(contains('OldPass#1')))));
       expect(text, allOf(startsWith('Invalid Request: '), contains('size must be between 8 and 100')));
-      expect(lines, anyElement(contains('BusinessException : Invalid Request: ')));
     });
 
     test('keeps the code out of an OTP error whose detail names it', () async {

@@ -1,14 +1,11 @@
-import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
-
-final _log = AppLogger.getLogger("BusinessException");
-
+/// A failed request, as ApiClient reports it to a repository.
+///
+/// Building one logs nothing: the code that catches it logs it once, at the level that fits how it is handled.
 abstract class AppException implements Exception {
   final String? _message;
   final String? _prefix;
 
-  AppException(String? message, String? prefix) : _message = message, _prefix = prefix {
-    _log.error('{}{}', [_prefix, _message]);
-  }
+  AppException(String? message, String? prefix) : _message = message, _prefix = prefix;
 
   @override
   String toString() {

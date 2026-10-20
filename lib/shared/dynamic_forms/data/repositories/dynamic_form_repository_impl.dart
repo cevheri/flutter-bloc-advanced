@@ -39,13 +39,13 @@ class DynamicFormRepository implements IDynamicFormRepository {
       _log.debug('END:fetchSchema successful: {}', [schema.id]);
       return Success(schema);
     } on UnauthorizedException catch (e) {
-      _log.error('END:fetchSchema auth error: {}', [e]);
+      _log.warn('END:fetchSchema auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:fetchSchema validation error: {}', [e]);
+      _log.info('END:fetchSchema validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:fetchSchema network error: {}', [e]);
+      _log.warn('END:fetchSchema network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:fetchSchema unknown error: {}', [e]);
@@ -65,13 +65,13 @@ class DynamicFormRepository implements IDynamicFormRepository {
       _log.debug('END:fetchBundle successful: {}', [bundle.schema.id]);
       return Success(bundle);
     } on UnauthorizedException catch (e) {
-      _log.error('END:fetchBundle auth error: {}', [e]);
+      _log.warn('END:fetchBundle auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:fetchBundle validation error: {}', [e]);
+      _log.info('END:fetchBundle validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:fetchBundle network error: {}', [e]);
+      _log.warn('END:fetchBundle network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:fetchBundle unknown error: {}', [e]);
@@ -107,13 +107,13 @@ class DynamicFormRepository implements IDynamicFormRepository {
       _log.error('END:submit unsupported method: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on UnauthorizedException catch (e) {
-      _log.error('END:submit auth error: {}', [e]);
+      _log.warn('END:submit auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:submit validation error: {}', [e]);
+      _log.info('END:submit validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:submit network error: {}', [e]);
+      _log.warn('END:submit network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:submit unknown error: {}', [e]);

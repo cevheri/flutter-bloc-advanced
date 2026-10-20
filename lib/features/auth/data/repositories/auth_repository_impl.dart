@@ -41,13 +41,13 @@ class LoginRepository implements IAuthRepository {
       }
       return Success(entity);
     } on UnauthorizedException catch (e) {
-      _log.error("END:authenticate auth error: {}", [e]);
+      _log.warn("END:authenticate auth error: {}", [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error("END:authenticate validation error: {}", [e]);
+      _log.info("END:authenticate validation error: {}", [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error("END:authenticate network error: {}", [e]);
+      _log.warn("END:authenticate network error: {}", [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error("END:authenticate error: {}", [e]);
@@ -91,13 +91,13 @@ class LoginRepository implements IAuthRepository {
       _log.debug("END:sendOtp successful");
       return const Success(null);
     } on UnauthorizedException catch (e) {
-      _log.error("END:sendOtp auth error: {}", [e]);
+      _log.warn("END:sendOtp auth error: {}", [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error("END:sendOtp validation error: {}", [e]);
+      _log.info("END:sendOtp validation error: {}", [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error("END:sendOtp network error: {}", [e]);
+      _log.warn("END:sendOtp network error: {}", [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error("END:sendOtp error: {}", [e]);
@@ -128,13 +128,13 @@ class LoginRepository implements IAuthRepository {
       }
       return Success(entity);
     } on UnauthorizedException catch (e) {
-      _log.error("END:verifyOtp auth error: {}", [e]);
+      _log.warn("END:verifyOtp auth error: {}", [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error("END:verifyOtp validation error: {}", [e]);
+      _log.info("END:verifyOtp validation error: {}", [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error("END:verifyOtp network error: {}", [e]);
+      _log.warn("END:verifyOtp network error: {}", [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error("END:verifyOtp error: {}", [e]);

@@ -43,10 +43,13 @@ class AccountRepository implements IAccountRepository {
       _log.debug('END:register successful');
       return Success(result);
     } on UnauthorizedException catch (e) {
+      _log.warn('register auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
+      _log.info('register validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
+      _log.warn('register network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error('register error: {}', [e]);
@@ -71,10 +74,13 @@ class AccountRepository implements IAccountRepository {
       }
       return Failure(ServerError('Change password failed with status: ${response.statusCode}'));
     } on UnauthorizedException catch (e) {
+      _log.warn('changePassword auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
+      _log.info('changePassword validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
+      _log.warn('changePassword network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error('changePassword error: {}', [e]);
@@ -104,10 +110,13 @@ class AccountRepository implements IAccountRepository {
       }
       return Failure(ServerError('Reset password failed with status: ${response.statusCode}'));
     } on UnauthorizedException catch (e) {
+      _log.warn('resetPassword auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
+      _log.info('resetPassword validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
+      _log.warn('resetPassword network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error('resetPassword error: {}', [e]);
@@ -129,8 +138,10 @@ class AccountRepository implements IAccountRepository {
       _log.debug('END:getAccount successful - response.body: {}', [result]);
       return Success(result);
     } on UnauthorizedException catch (e) {
+      _log.warn('getAccount auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on FetchDataException catch (e) {
+      _log.warn('getAccount network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error('getAccount error: {}', [e]);
@@ -156,10 +167,13 @@ class AccountRepository implements IAccountRepository {
       _log.debug('END:saveAccount successful');
       return Success(result);
     } on UnauthorizedException catch (e) {
+      _log.warn('update auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
+      _log.info('update validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
+      _log.warn('update network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
       _log.error('update error: {}', [e]);

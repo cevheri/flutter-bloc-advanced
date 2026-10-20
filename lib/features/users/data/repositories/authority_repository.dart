@@ -27,13 +27,13 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
       _log.debug('END:getAuthorities successful - response list size: {}', [nonNullList.length]);
       return Success(nonNullList);
     } on UnauthorizedException catch (e) {
-      _log.error('END:getAuthorities auth error: {}', [e]);
+      _log.warn('END:getAuthorities auth error: {}', [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error('END:getAuthorities validation error: {}', [e]);
+      _log.info('END:getAuthorities validation error: {}', [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error('END:getAuthorities network error: {}', [e]);
+      _log.warn('END:getAuthorities network error: {}', [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e) {
       _log.error('END:getAuthorities unknown error: {}', [e]);
