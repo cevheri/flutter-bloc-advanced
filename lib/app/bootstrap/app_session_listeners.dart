@@ -9,7 +9,17 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 
 class AppSessionListeners extends StatefulWidget {
-  const AppSessionListeners({super.key, required this.child, this.idleTimeoutOverride});
+  const AppSessionListeners({
+    super.key,
+    required this.scaffoldMessengerKey,
+    required this.child,
+    this.idleTimeoutOverride,
+  });
+
+  /// The ScaffoldMessenger of the MaterialApp in [child], which shows the
+  /// idle timeout notice. This widget sits above MaterialApp, where its
+  /// context finds no ScaffoldMessenger.
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
 
   final Widget child;
 
@@ -94,7 +104,7 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
               case SessionUnauthenticated(:final reason):
                 _stopIdleObserver();
                 if (reason == SessionExpiredReason.idleTimeout) {
-                  _showIdleTimeoutNotice(context);
+                  _showIdleTimeoutNotice();
                 }
               case SessionUnknown():
                 break;
@@ -111,9 +121,11 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
     );
   }
 
-  void _showIdleTimeoutNotice(BuildContext context) {
-    final messenger = ScaffoldMessenger.maybeOf(context);
-    if (messenger == null) return;
-    messenger.showSnackBar(SnackBar(content: Text(S.of(context).idle_timeout_signed_out)));
+  void _showIdleTimeoutNotice() {
+    final messenger = widget.scaffoldMessengerKey.currentState;
+    if (messenger == null) {
+      throw StateError('No ScaffoldMessenger is mounted with scaffoldMessengerKey to show the idle timeout notice');
+    }
+    messenger.showSnackBar(SnackBar(content: Text(S.of(messenger.context).idle_timeout_signed_out)));
   }
 }

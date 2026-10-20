@@ -18,7 +18,7 @@ import 'package:flutter_bloc_advance/shared/widgets/web_back_button_disabler.dar
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
   const App({
     super.key,
     required this.language,
@@ -40,23 +40,34 @@ class App extends StatelessWidget {
   final IAnalyticsService? _analytics;
 
   @override
+  State<App> createState() => _AppState();
+}
+
+class _AppState extends State<App> {
+  /// The ScaffoldMessenger of MaterialApp.router. [AppSessionListeners] sits above MaterialApp, where its context finds
+  /// no ScaffoldMessenger, so it shows its notices through this key.
+  final _scaffoldMessengerKey = GlobalKey<ScaffoldMessengerState>();
+
+  @override
   Widget build(BuildContext context) {
-    final analytics = _analytics ?? LogAnalyticsService();
+    final analytics = widget._analytics ?? LogAnalyticsService();
     return AppScope(
-      dependencies: dependencies,
-      secureStorage: secureStorage,
+      dependencies: widget.dependencies,
+      secureStorage: widget.secureStorage,
       child: AppSessionListeners(
-        child: _AppView(language: language, analytics: analytics),
+        scaffoldMessengerKey: _scaffoldMessengerKey,
+        child: _AppView(language: widget.language, analytics: analytics, scaffoldMessengerKey: _scaffoldMessengerKey),
       ),
     );
   }
 }
 
 class _AppView extends StatefulWidget {
-  const _AppView({required this.language, required this.analytics});
+  const _AppView({required this.language, required this.analytics, required this.scaffoldMessengerKey});
 
   final String language;
   final IAnalyticsService analytics;
+  final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey;
 
   @override
   State<_AppView> createState() => _AppViewState();
@@ -102,6 +113,7 @@ class _AppViewState extends State<_AppView> {
       builder: (context, themeState) {
         return WebBackButtonDisabler(
           child: MaterialApp.router(
+            scaffoldMessengerKey: widget.scaffoldMessengerKey,
             theme: AppTheme.light(themeState.palette),
             darkTheme: AppTheme.dark(themeState.palette),
             themeMode: themeState.themeMode,
