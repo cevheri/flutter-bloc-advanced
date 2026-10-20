@@ -300,6 +300,7 @@ void main() {
       await pumpPhone(tester, const UserListInitial());
 
       expect(find.byIcon(Icons.people_outline), findsOneWidget);
+      expect(find.text('No users to show'), findsOneWidget);
       expect(find.byType(CircularProgressIndicator), findsNothing);
     });
 
@@ -398,6 +399,16 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('grace.hopper@example.com'), findsOneWidget);
+    });
+
+    testWidgets('says that no user matched in Turkish on a phone', (tester) async {
+      stubSearch(const Success([]));
+      await openUserList(tester, language: 'tr', size: const Size(412, 915));
+
+      await tester.tap(find.ancestor(of: find.text('Listele'), matching: find.byType(OutlinedButton)));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Gösterilecek kullanıcı yok'), findsOneWidget);
     });
 
     testWidgets('names the row actions for screen readers in the app language', (tester) async {

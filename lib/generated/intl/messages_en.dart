@@ -312,6 +312,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "user_list_actions": MessageLookupByLibrary.simpleMessage("Actions"),
+    "user_list_empty": MessageLookupByLibrary.simpleMessage("No users to show"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Could not load the users"),
     "user_list_role_filter": MessageLookupByLibrary.simpleMessage("Role filter"),
     "user_list_search_hint": MessageLookupByLibrary.simpleMessage("Filter users..."),

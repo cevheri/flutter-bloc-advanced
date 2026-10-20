@@ -481,5 +481,7 @@
   "password_show": "Show password",
   "@password_show": {},
   "password_hide": "Hide password",
-  "@password_hide": {}
+  "@password_hide": {},
+  "user_list_empty": "No users to show",
+  "@user_list_empty": {}
 }

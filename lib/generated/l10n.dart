@@ -1395,6 +1395,11 @@ class S {
   String get password_hide {
     return Intl.message('Hide password', name: 'password_hide', desc: '', args: []);
   }
+
+  /// `No users to show`
+  String get user_list_empty {
+    return Intl.message('No users to show', name: 'user_list_empty', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

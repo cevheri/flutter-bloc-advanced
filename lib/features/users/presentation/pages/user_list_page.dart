@@ -127,7 +127,7 @@ class UserListView extends StatelessWidget {
       createNewKey: const Key('listUserCreateButtonKey'),
       createLabel: S.of(context).new_user,
       emptyIcon: Icons.people_outline,
-      emptyText: S.of(context).list_user,
+      emptyText: S.of(context).user_list_empty,
       showCheckbox: true,
       columns: _buildColumns(context),
       desktopSearchWidget: UserSearchSection(formKey: formKey),

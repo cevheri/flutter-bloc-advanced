@@ -481,5 +481,7 @@
   "password_show": "Şifreyi göster",
   "@password_show": {},
   "password_hide": "Şifreyi gizle",
-  "@password_hide": {}
+  "@password_hide": {},
+  "user_list_empty": "Gösterilecek kullanıcı yok",
+  "@user_list_empty": {}
 }

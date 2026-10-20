@@ -314,6 +314,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "user_list_actions": MessageLookupByLibrary.simpleMessage("İşlemler"),
+    "user_list_empty": MessageLookupByLibrary.simpleMessage("Gösterilecek kullanıcı yok"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Kullanıcılar yüklenemedi"),
     "user_list_role_filter": MessageLookupByLibrary.simpleMessage("Rol filtresi"),
     "user_list_search_hint": MessageLookupByLibrary.simpleMessage("Kullanıcıları filtrele..."),
