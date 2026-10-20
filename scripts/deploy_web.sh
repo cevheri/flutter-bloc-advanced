@@ -75,6 +75,8 @@ if fvm flutter build web \
         scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
         # The llms.txt files describe the template project itself, so only this repository publishes them.
         cp .github/pages/llms.txt .github/pages/llms-full.txt build/web/
+        # web/icons/og-image.png names no author; the demo's link preview uses the branded image.
+        cp .github/pages/og-image.png build/web/icons/og-image.png
     fi
     scripts/check_web_placeholders.sh build/web
 

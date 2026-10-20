@@ -48,11 +48,13 @@ jobs:
       - name: Fill demo values
         # web/ keeps the template placeholders. Only this repository fills them with the hosted demo's values, so a
         # copy of the template never publishes the demo's name, URLs, author or security contact. The llms.txt files
-        # describe the template project itself, so only this repository publishes them too.
+        # describe the template project itself, so only this repository publishes them too. web/icons/og-image.png
+        # names no author; the demo's link preview uses the branded image.
         if: github.repository == 'cevheri/flutter-bloc-advanced'
         run: |
           scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
           cp .github/pages/llms.txt .github/pages/llms-full.txt build/web/
+          cp .github/pages/og-image.png build/web/icons/og-image.png
 
       - name: Check for template placeholders
         # Runs in copies of the template too: until web/ and the build have their own values, the deploy fails and
