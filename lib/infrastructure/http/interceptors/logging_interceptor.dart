@@ -33,13 +33,13 @@ class LoggingInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    _log.debug('{}', [_LazyLogLine(() => formatRequest(options))]);
+    _log.debug('{}', [() => formatRequest(options)]);
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    _log.debug('{}', [_LazyLogLine(() => formatResponse(response))]);
+    _log.debug('{}', [() => formatResponse(response)]);
     handler.next(response);
   }
 
@@ -85,16 +85,4 @@ class LoggingInterceptor extends Interceptor {
   static String _truncate(String value) {
     return value.length > _maxBodyChars ? '${value.substring(0, _maxBodyChars)}...[truncated]' : value;
   }
-}
-
-/// A log argument that builds its line in toString. AppLogger turns an
-/// argument into text only for a level it prints, so the debug lines that
-/// a production build drops are never built.
-class _LazyLogLine {
-  const _LazyLogLine(this._build);
-
-  final String Function() _build;
-
-  @override
-  String toString() => _build();
 }
