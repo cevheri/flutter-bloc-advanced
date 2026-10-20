@@ -137,7 +137,7 @@ This avoids a window where in-flight users with the old app version cannot reach
 
 ### Inactivity Auto-Logout
 
-`IdleTimeoutObserver` (`lib/core/security/`) signs the user out after a configurable window of pointer inactivity. Default threshold is **15 minutes** in production, **disabled** in dev/test (where hot-reload + mocked sessions would make a 15-minute kick out hostile).
+`IdleTimeoutObserver` (`lib/core/security/`) signs the user out after a configurable window of inactivity. Default threshold is **15 minutes** in production, **disabled** in dev/test (where hot-reload + mocked sessions would make a 15-minute kick out hostile).
 
 - Configured via `AppConfig.idleTimeout` in `lib/infrastructure/config/environment.dart`: `AppConfig.prod()` sets 15 minutes, `AppConfig.dev()` and `AppConfig.test()` set `null`, which disables it.
 - Background-aware: on iOS the Dart `Timer` pauses while the app is suspended, so the observer also captures wall-clock `DateTime.now()` on lifecycle transitions; resumes past the threshold fire immediately.
@@ -146,7 +146,8 @@ This avoids a window where in-flight users with the old app version cannot reach
   Returning to a tab left idle does not sign out the session the user is working in, in another tab.
   Activity can reach the other tabs up to 10 seconds late, so the session can end up to 10 seconds early.
 - Surfacing: when the timer fires, the user sees a localized snackbar ("You were signed out due to inactivity.") and the router redirects to login. The reason is tagged `SessionExpiredReason.idleTimeout` so logs and UI can distinguish it from a manual sign-out.
-- Activity scope: pointer down / pointer move events on the `MaterialApp.router` subtree reset the timer. Scroll-only sessions (a long-form reading view) do extend, since scroll causes pointer move events.
+- Activity scope: a touch, click or drag, mouse wheel and trackpad scrolling, and key presses reset the timer, so a user who only scrolls a long page or only types in a form stays signed in.
+  Moving the mouse without a button pressed does not count, and neither do key events Flutter synthesizes to match the keyboard state.
 
 Compliance baselines that expect inactivity timeouts: SOC2 CC6.1, ISO 27001 A.9.4.2, GDPR Art. 32.
 

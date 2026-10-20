@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
@@ -47,7 +48,14 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
   IdleTimeoutObserver? _idleObserver;
 
   @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_onKeyEvent);
+  }
+
+  @override
   void dispose() {
+    HardwareKeyboard.instance.removeHandler(_onKeyEvent);
     _idleObserver?.stop();
     _idleObserver = null;
     super.dispose();
@@ -71,6 +79,14 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
     );
     observer.start();
     _idleObserver = observer;
+  }
+
+  /// Counts a key the user pressed as activity, as typing in a form or moving the focus with the keyboard does on
+  /// desktop and web. Returns false, so the key still reaches the focused widget. A key event Flutter synthesized to
+  /// match the keyboard state, such as the release of a key held down when the window lost focus, is no activity.
+  bool _onKeyEvent(KeyEvent event) {
+    if (!event.synthesized) _idleObserver?.recordActivity();
+    return false;
   }
 
   void _stopIdleObserver() {
@@ -134,6 +150,10 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
         behavior: HitTestBehavior.translucent,
         onPointerDown: (_) => _idleObserver?.recordActivity(),
         onPointerMove: (_) => _idleObserver?.recordActivity(),
+        // A mouse wheel and a trackpad scroll the page on desktop and web without a pointer down or move.
+        onPointerSignal: (_) => _idleObserver?.recordActivity(),
+        onPointerPanZoomStart: (_) => _idleObserver?.recordActivity(),
+        onPointerPanZoomUpdate: (_) => _idleObserver?.recordActivity(),
         child: widget.child,
       ),
     );

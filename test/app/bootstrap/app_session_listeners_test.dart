@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -70,6 +71,34 @@ Future<void> _idle(WidgetTester tester) async {
 
 /// The ways a session ends while the app keeps running for the next user of the device.
 const _sessionEndings = <String, Future<void> Function(WidgetTester)>{'a logout': _logOut, 'an idle timeout': _idle};
+
+/// Scrolls the page with a mouse wheel, which moves no pointer.
+Future<void> _scrollWithWheel(WidgetTester tester) async {
+  final mouse = TestPointer(1, PointerDeviceKind.mouse);
+  await tester.sendEventToBinding(mouse.hover(tester.getCenter(find.byType(ResponsiveScaffold))));
+  await tester.sendEventToBinding(mouse.scroll(const Offset(0, 100)));
+}
+
+/// Scrolls the page with two fingers on a trackpad, which sends pan and zoom events instead of pointer moves.
+Future<void> _scrollWithTrackpad(WidgetTester tester) async {
+  final trackpad = TestPointer(1, PointerDeviceKind.trackpad);
+  final center = tester.getCenter(find.byType(ResponsiveScaffold));
+  await tester.sendEventToBinding(trackpad.panZoomStart(center));
+  await tester.sendEventToBinding(trackpad.panZoomUpdate(center, pan: const Offset(0, -100)));
+  await tester.sendEventToBinding(trackpad.panZoomEnd());
+}
+
+/// Presses and releases a key, as typing in a form or moving the focus with the keyboard does.
+Future<void> _pressKey(WidgetTester tester) async {
+  await tester.sendKeyEvent(LogicalKeyboardKey.shiftLeft);
+}
+
+/// Input on desktop and web that touches no pointer down or move.
+const _inputsWithoutPointerMoves = <String, Future<void> Function(WidgetTester)>{
+  'mouse wheel scrolling': _scrollWithWheel,
+  'trackpad scrolling': _scrollWithTrackpad,
+  'typing': _pressKey,
+};
 
 /// Signs in through the login form. The mock API accepts any username and password.
 Future<void> _signIn(WidgetTester tester, String username) async {
@@ -200,6 +229,49 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(store.reads, 1);
+      expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+    });
+
+    for (final MapEntry(key: input, value: use) in _inputsWithoutPointerMoves.entries) {
+      testWidgets('$input counts as activity, so the idle timeout waits for the full threshold after it', (
+        tester,
+      ) async {
+        TestEnv.authenticate();
+        await tester.pumpWidget(_app);
+        await tester.pumpAndSettle();
+        await tester.pump(const Duration(minutes: 4));
+
+        await use(tester);
+        await tester.pump(const Duration(minutes: 4));
+        await tester.pumpAndSettle();
+        expect(find.byType(ResponsiveScaffold), findsOneWidget);
+        expect(find.byKey(loginButtonSubmitKey), findsNothing);
+
+        await tester.pump(const Duration(minutes: 1));
+        await tester.pumpAndSettle();
+        expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+      });
+    }
+
+    // Flutter synthesizes key events to match the keyboard state it finds, for example a key held down when the window
+    // gained focus, so they do not show the user at work.
+    testWidgets('a key event Flutter synthesized does not count as activity', (tester) async {
+      TestEnv.authenticate();
+      await tester.pumpWidget(_app);
+      await tester.pumpAndSettle();
+      await tester.pump(const Duration(minutes: 4));
+
+      const physical = PhysicalKeyboardKey.shiftLeft;
+      const logical = LogicalKeyboardKey.shiftLeft;
+      HardwareKeyboard.instance.handleKeyEvent(
+        const KeyDownEvent(physicalKey: physical, logicalKey: logical, timeStamp: Duration.zero, synthesized: true),
+      );
+      HardwareKeyboard.instance.handleKeyEvent(
+        const KeyUpEvent(physicalKey: physical, logicalKey: logical, timeStamp: Duration.zero, synthesized: true),
+      );
+      await tester.pump(const Duration(minutes: 1));
+      await tester.pumpAndSettle();
+
       expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
     });
 

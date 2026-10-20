@@ -32,7 +32,7 @@ abstract interface class ISharedActivityStore {
 /// foreground transitions. It does **not** know about session state or
 /// the widget tree. The integration layer (see `AppSessionListeners`)
 /// starts it when authenticated, stops it on logout, and pumps
-/// [recordActivity] from a top-level pointer listener.
+/// [recordActivity] from its pointer and keyboard listeners.
 ///
 /// **Background timing.** Dart [Timer]s pause on iOS while the app is
 /// backgrounded. Relying on the timer alone would let a 12-hour
