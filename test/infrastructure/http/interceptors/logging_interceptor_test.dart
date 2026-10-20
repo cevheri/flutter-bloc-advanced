@@ -2,6 +2,7 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/logging_interceptor.dart';
@@ -365,7 +366,47 @@ void main() {
         expect(log.join('\n'), isNot(contains('jane.doe')));
       });
     });
+
+    // Regression: onRequest and onResponse built their line before AppLogger's filter ran, so a production build,
+    // which prints no debug line, still built both lines of every request, and the response line turned the whole
+    // response body into text to give its length.
+    group('debug line of a production build', () {
+      setUp(() => AppLogger.configure(isProduction: true, logFormat: LogFormat.simple));
+      tearDown(() {
+        AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
+        LoggingInterceptor.verbose = false;
+      });
+
+      for (final verbose in [false, true]) {
+        test('is never formatted (verbose: $verbose)', () {
+          LoggingInterceptor.verbose = verbose;
+          // The request line turns the query parameters into text, the response line the response body, and the
+          // verbose request line the request body as well.
+          final value = _FormatCountingValue();
+          final options = RequestOptions(path: '/admin/users/filter', queryParameters: {'name': value}, data: value);
+
+          interceptor.onRequest(options, _TestRequestHandler());
+          interceptor.onResponse(
+            Response(requestOptions: options, statusCode: 200, data: value),
+            _TestResponseHandler(),
+          );
+
+          expect(value.toStringCalls, 0);
+        });
+      }
+    });
   });
+}
+
+/// A request or response value that counts how often it is turned into text.
+class _FormatCountingValue {
+  int toStringCalls = 0;
+
+  @override
+  String toString() {
+    toStringCalls++;
+    return 'value';
+  }
 }
 
 /// Collects the console lines of the `Http` logger, which LoggingInterceptor writes to, until the test ends.

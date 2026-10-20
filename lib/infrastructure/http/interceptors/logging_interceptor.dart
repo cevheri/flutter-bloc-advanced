@@ -16,7 +16,8 @@ import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart'
 ///
 /// The [formatRequest] / [formatResponse] builders are pure (no logging
 /// side effect) so the redaction contract is unit-testable without
-/// capturing console output.
+/// capturing console output. They run only when AppLogger prints the debug
+/// line, so a production build never formats a request or a response.
 class LoggingInterceptor extends Interceptor {
   static final _log = AppLogger.getLogger('Http');
 
@@ -31,13 +32,13 @@ class LoggingInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
-    _log.debug(formatRequest(options));
+    _log.debug('{}', [_LazyLogLine(() => formatRequest(options))]);
     handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
-    _log.debug(formatResponse(response));
+    _log.debug('{}', [_LazyLogLine(() => formatResponse(response))]);
     handler.next(response);
   }
 
@@ -85,4 +86,16 @@ class LoggingInterceptor extends Interceptor {
   static String _truncate(String value) {
     return value.length > _maxBodyChars ? '${value.substring(0, _maxBodyChars)}...[truncated]' : value;
   }
+}
+
+/// A log argument that builds its line in toString. AppLogger turns an
+/// argument into text only for a level it prints, so the debug lines that
+/// a production build drops are never built.
+class _LazyLogLine {
+  const _LazyLogLine(this._build);
+
+  final String Function() _build;
+
+  @override
+  String toString() => _build();
 }
