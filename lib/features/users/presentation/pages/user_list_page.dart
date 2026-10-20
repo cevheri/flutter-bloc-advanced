@@ -57,8 +57,21 @@ class _ListUserScreenState extends State<ListUserScreen> {
   }
 
   void _handleUserStateChanges(BuildContext context, UserListState state) {
-    if (state is UserListDeleteSuccess) {
-      _refreshUserList(context);
+    switch (state) {
+      case UserListDeleteSuccess():
+        _refreshUserList(context);
+      case UserListDeleteFailure(:final errorCode):
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [Text(S.of(context).user_delete_failed), Text(errorCode.resolve(context))],
+            ),
+          ),
+        );
+      case UserListInitial() || UserListLoading() || UserListLoaded() || UserListLoadFailure():
+        break;
     }
   }
 
@@ -75,7 +88,7 @@ class UserListView extends StatelessWidget {
 
   final GlobalKey<FormBuilderState> formKey;
 
-  /// Searches again with the current filters; offered when a request fails.
+  /// Searches again with the current filters; offered when the search fails.
   final VoidCallback onRefresh;
 
   @override
@@ -84,9 +97,9 @@ class UserListView extends StatelessWidget {
       builder: (context, state) => switch (state) {
         UserListInitial() || UserListDeleteSuccess() => _buildList(context),
         UserListLoading() => _buildList(context, isLoading: true),
-        UserListLoaded(:final users) => _buildList(context, items: users),
+        // A failed delete keeps the list; the listener shows why the delete failed.
+        UserListLoaded(:final users) || UserListDeleteFailure(:final users) => _buildList(context, items: users),
         UserListLoadFailure(:final errorCode) => _buildFailure(context, S.of(context).user_list_load_failed, errorCode),
-        UserListDeleteFailure(:final errorCode) => _buildFailure(context, S.of(context).user_delete_failed, errorCode),
       },
     );
   }

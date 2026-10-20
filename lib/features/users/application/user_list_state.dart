@@ -53,7 +53,13 @@ final class UserListLoadFailure extends UserListFailure {
   const UserListLoadFailure({required super.errorCode});
 }
 
-/// Deleting a user failed.
+/// Deleting a user failed. [users] are the users listed when the delete started, so the list stays on screen
+/// and the failure is shown over it.
 final class UserListDeleteFailure extends UserListFailure {
-  const UserListDeleteFailure({required super.errorCode});
+  const UserListDeleteFailure({required super.errorCode, required this.users});
+
+  final List<UserEntity> users;
+
+  @override
+  List<Object?> get props => [errorCode, users];
 }

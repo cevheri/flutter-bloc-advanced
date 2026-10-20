@@ -50,8 +50,15 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
     }
   }
 
+  /// The users the list shows, which a failed delete keeps on screen.
+  List<UserEntity> _listedUsers() => switch (state) {
+    UserListLoaded(:final users) || UserListDeleteFailure(:final users) => users,
+    UserListInitial() || UserListLoading() || UserListDeleteSuccess() || UserListLoadFailure() => const [],
+  };
+
   FutureOr<void> _onDelete(UserListDelete event, Emitter<UserListState> emit) async {
     _log.debug('BEGIN: onDelete login: {}', [event.login]);
+    final listedUsers = _listedUsers();
     emit(const UserListLoading());
     final result = await _guard(() => _deleteUserUseCase(event.login));
     switch (result) {
@@ -59,7 +66,12 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
         emit(const UserListDeleteSuccess());
         _log.debug('END:onDelete success login: {}', [event.login]);
       case Failure(:final error):
-        emit(UserListDeleteFailure(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
+        emit(
+          UserListDeleteFailure(
+            errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic,
+            users: listedUsers,
+          ),
+        );
         _log.error('END:onDelete error: {}', [error]);
     }
   }

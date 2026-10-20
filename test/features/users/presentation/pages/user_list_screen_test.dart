@@ -452,6 +452,26 @@ void main() {
       expect(find.text('Admin user cannot be deleted'), findsNothing);
     });
 
+    testWidgets('keeps the users listed and shows why when the delete fails', (tester) async {
+      stubSearch(const Success([grace]));
+      when(() => userRepository.delete('grace.hopper'))
+          .thenAnswer((_) async => const Failure(NetworkError('User service unavailable')));
+      await searchUsers(tester);
+
+      await tester.tap(find.byIcon(Icons.delete));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.yes));
+      await tester.pumpAndSettle();
+
+      verify(() => userRepository.delete('grace.hopper')).called(1);
+      final table = find.byType(AppDataTable<UserEntity>);
+      expect(find.descendant(of: table, matching: find.text('grace.hopper@example.com')), findsOneWidget);
+      final snackBar = find.byType(SnackBar);
+      expect(find.descendant(of: snackBar, matching: find.text(S.current.user_delete_failed)), findsOneWidget);
+      expect(find.descendant(of: snackBar, matching: find.text(S.current.error_generic)), findsOneWidget);
+      expect(find.text('User service unavailable'), findsNothing);
+    });
+
     testWidgets('shows that the users are loading instead of an empty table on a desktop', (tester) async {
       final response = Completer<Result<List<UserEntity>>>();
       when(
@@ -548,6 +568,20 @@ void main() {
 
       expect(find.text(S.current.error_user_cannot_delete_admin), findsOneWidget);
       expect(deletedPaths(), isEmpty);
+    });
+
+    testWidgets('keeps the users listed and shows the refusal in a snack bar', (tester) async {
+      await deleteUser(tester, 'admin@sample.tech');
+
+      final table = find.byType(AppDataTable<UserEntity>);
+      expect(find.descendant(of: table, matching: find.text('admin@sample.tech')), findsOneWidget);
+      expect(find.descendant(of: table, matching: find.text('mock_account-2@test.com')), findsOneWidget);
+      final snackBar = find.byType(SnackBar);
+      expect(find.descendant(of: snackBar, matching: find.text(S.current.user_delete_failed)), findsOneWidget);
+      expect(
+        find.descendant(of: snackBar, matching: find.text(S.current.error_user_cannot_delete_admin)),
+        findsOneWidget,
+      );
     });
   });
 }

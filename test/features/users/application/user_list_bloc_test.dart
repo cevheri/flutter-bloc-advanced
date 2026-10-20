@@ -98,17 +98,19 @@ void main() {
       expect(const UserListDeleteSuccess(), const UserListDeleteSuccess());
     });
 
-    test('UserListLoadFailure and UserListDeleteFailure carry the error code', () {
+    test('UserListLoadFailure carries the error code and UserListDeleteFailure the listed users too', () {
+      const users = [UserEntity(id: '1', login: 'a')];
       expect(const UserListLoadFailure(errorCode: AppErrorCode.generic).props, const <Object?>[AppErrorCode.generic]);
-      expect(const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin).props, const <Object?>[
-        AppErrorCode.userCannotDeleteAdmin,
-      ]);
+      expect(
+        const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin, users: users).props,
+        const <Object?>[AppErrorCode.userCannotDeleteAdmin, users],
+      );
     });
 
     test('a load failure is not equal to a delete failure with the same code', () {
       expect(
         const UserListLoadFailure(errorCode: AppErrorCode.generic),
-        isNot(const UserListDeleteFailure(errorCode: AppErrorCode.generic)),
+        isNot(const UserListDeleteFailure(errorCode: AppErrorCode.generic, users: [])),
       );
     });
   });
@@ -240,7 +242,36 @@ void main() {
         setUp: () => repository.failure = const UnknownError('Delete failed'),
         build: () => bloc,
         act: (b) => b.add(const UserListDelete('2')),
-        expect: () => [const UserListLoading(), const UserListDeleteFailure(errorCode: AppErrorCode.generic)],
+        expect: () => [
+          const UserListLoading(),
+          const UserListDeleteFailure(errorCode: AppErrorCode.generic, users: []),
+        ],
+      );
+
+      // The page shows the users of a failed delete, so the list does not disappear when a delete fails.
+      const listed = [UserEntity(id: '1', login: 'admin'), UserEntity(id: '2', login: 'new_user-2')];
+
+      blocTest<UserListBloc, UserListState>(
+        'keeps the listed users in the failure when delete fails',
+        setUp: () => repository.failure = const UnknownError('Delete failed'),
+        build: () => bloc,
+        seed: () => const UserListLoaded(users: listed),
+        act: (b) => b.add(const UserListDelete('new_user-2')),
+        expect: () => [
+          const UserListLoading(),
+          const UserListDeleteFailure(errorCode: AppErrorCode.generic, users: listed),
+        ],
+      );
+
+      blocTest<UserListBloc, UserListState>(
+        'keeps the listed users when a delete fails again after a failed delete',
+        build: () => bloc,
+        seed: () => const UserListDeleteFailure(errorCode: AppErrorCode.generic, users: listed),
+        act: (b) => b.add(const UserListDelete('admin')),
+        expect: () => [
+          const UserListLoading(),
+          const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin, users: listed),
+        ],
       );
 
       test('emits [loading, delete failure] and reports the error when the delete throws', () {
@@ -261,7 +292,10 @@ void main() {
           deleteBloc.add(const UserListDelete('2'));
           async.flushMicrotasks();
 
-          expect(states, [const UserListLoading(), const UserListDeleteFailure(errorCode: AppErrorCode.generic)]);
+          expect(states, [
+            const UserListLoading(),
+            const UserListDeleteFailure(errorCode: AppErrorCode.generic, users: []),
+          ]);
           expect(observer.errors, [isA<StateError>()]);
 
           sub.cancel();
@@ -277,7 +311,7 @@ void main() {
         act: (b) => b.add(const UserListDelete('admin')),
         expect: () => [
           const UserListLoading(),
-          const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin),
+          const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin, users: []),
         ],
       );
     });
