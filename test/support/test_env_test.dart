@@ -13,7 +13,7 @@ void main() {
   // Regression: only the first testWidgets in a file got mock responses, because rootBundle kept the asset Future that
   // test created in its FakeAsync zone (see the asset cache reset in test/flutter_test_config.dart). Two runs on
   // purpose: only the one that runs second can fail. The response is checked after pumping instead of awaited, so a
-  // regression fails here at once instead of hanging until the 10 minute testWidgets timeout.
+  // regression fails here at once instead of hanging until the test times out.
   group('TestEnv.apiClient', () {
     for (final run in const ['first', 'second']) {
       testWidgets('serves the mock account in the $run testWidgets of a file', (tester) async {

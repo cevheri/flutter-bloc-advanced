@@ -84,6 +84,7 @@ cross-cutting setup lives:
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   // One-time per isolate.
   TestWidgetsFlutterBinding.ensureInitialized();
+  AutomatedTestWidgetsFlutterBinding.instance.defaultTestTimeout = const Timeout.factor(1); // see "Timeouts" below
   AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
   EquatableConfig.stringify = true;
   registerAllFallbackValues();
@@ -149,6 +150,13 @@ Each `testWidgets` body runs in its own `FakeAsync` zone, and nothing runs that 
 So once a `testWidgets` had loaded an asset, every later `testWidgets` in the same file that needed it waited forever: only the first test of a file got its mock responses, and the others hung until they timed out.
 The bootstrap therefore empties the cache with `rootBundle.clear()` before and after every test, in every file, including files that opt out of `TestEnv.reset()`, so no test's cached `Future` outlives it, not even into a later group's `setUpAll`.
 `test/support/test_env_test.dart` and `test/flutter_test_config_test.dart` guard this.
+
+### Timeouts
+
+Every test, `testWidgets` included, times out after the 30 seconds set in `dart_test.yaml`, or twice that in a file tagged `@Tags(['integration'])`.
+On its own, `testWidgets` passes the binding's `defaultTestTimeout` of 10 minutes to `test()`, and a test's own duration replaces the configured timeout, so a hung widget test held CI for 10 minutes.
+The bootstrap sets `defaultTestTimeout` to `Timeout.factor(1)`, which keeps the configured timeout as a plain `test()` does, and `test/flutter_test_config_test.dart` guards it.
+A test that needs longer gets its own timeout and a comment that says why, as `test/architecture/feature_generator_test.dart` has `@Timeout(Duration(minutes: 5))` for its nested `flutter test` run, instead of a higher timeout for everyone in `dart_test.yaml`.
 
 ---
 
@@ -389,16 +397,12 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   `integration` tag is declared but reserved for a possible future on-device
   (`flutter drive`) suite — the current e2e smoke is a `test/integration/` widget
   test (tagged `widget`). Slice the suite with `flutter test --tags widget` /
-  `--exclude-tags widget`. The per-test timeout (30s) lives in `dart_test.yaml`.
-- **Pumping:** use `pumpAndSettle()` only when all animations are expected to
-  **finish** (route/page transitions, one-shot reveals). Its `Duration` argument
-  is the **per-pump interval, not a timeout** (the timeout is a separate, later
-  parameter) — prefer the bare form. For **continuous / indeterminate
-  animations** (spinner, shimmer, looping) never `pumpAndSettle` (it pumps until
-  the test times out — 30s here per `dart_test.yaml`, or `pumpAndSettle`'s own
-  10-minute default, whichever is first) — assert the spinner with `pump()` and use
-  `pump(const Duration(...))` for a fixed frame; in goldens use
-  `pumpBeforeTest: pumpOnce`.
+  `--exclude-tags widget`.
+  The per-test timeout (30s) lives in `dart_test.yaml` and applies to `testWidgets` too (see "Timeouts" above).
+- **Pumping:** use `pumpAndSettle()` only when all animations are expected to **finish** (route/page transitions, one-shot reveals).
+  Its `Duration` argument is the **per-pump interval, not a timeout** (the timeout is a separate, later parameter), so prefer the bare form.
+  For **continuous / indeterminate animations** (spinner, shimmer, looping) never `pumpAndSettle`: it pumps until its own timeout of 10 minutes of fake time, 6000 frames at the default interval, and then throws `pumpAndSettle timed out`, usually within seconds, unless slow frames reach the 30 second test timeout first.
+  Assert the spinner with `pump()` and use `pump(const Duration(...))` for a fixed frame; in goldens use `pumpBeforeTest: pumpOnce`.
 
 These are documented so newcomers know what is intentional vs. not-yet-done.
 

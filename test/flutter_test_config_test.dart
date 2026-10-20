@@ -25,4 +25,16 @@ void main() {
       expect(jsonDecode(json!), containsPair('login', 'admin'));
     });
   }
+
+  // testWidgets passes the binding's defaultTestTimeout to test(), and package:test merges a test's timeout into the
+  // one configured for it as Timeout.merge does: a duration replaces the configured timeout, a factor scales it.
+  // A factor of 1, not a fixed 30 seconds, so a file-level @Timeout, a tag or --timeout still reaches testWidgets.
+  test('a testWidgets keeps the configured timeout instead of its own 10 minutes', () {
+    final defaultTestTimeout = AutomatedTestWidgetsFlutterBinding.instance.defaultTestTimeout;
+
+    expect(defaultTestTimeout, const Timeout.factor(1));
+    for (final configured in const [Timeout(Duration(seconds: 30)), Timeout(Duration(minutes: 5))]) {
+      expect(configured.merge(defaultTestTimeout), configured);
+    }
+  });
 }

@@ -17,6 +17,10 @@ import 'support/test_env.dart';
 Future<void> testExecutable(FutureOr<void> Function() testMain) async {
   // One-time per isolate.
   TestWidgetsFlutterBinding.ensureInitialized();
+  // testWidgets hands test() the binding's defaultTestTimeout, 10 minutes unless set here, and a test's own duration
+  // replaces the timeout in dart_test.yaml. A factor of 1 keeps the configured timeout, as a plain test() does, so a
+  // hung widget test fails after 30 seconds instead of holding CI for 10 minutes.
+  AutomatedTestWidgetsFlutterBinding.instance.defaultTestTimeout = const Timeout.factor(1);
   AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
   EquatableConfig.stringify = true;
   registerAllFallbackValues();
