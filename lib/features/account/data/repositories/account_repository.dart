@@ -55,7 +55,7 @@ class AccountRepository implements IAccountRepository {
 
   @override
   Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async {
-    _log.debug('BEGIN:changePassword repository start : {}', [passwordChangeDTO.toString()]);
+    _log.debug('BEGIN:changePassword repository start');
     try {
       if (passwordChangeDTO.currentPassword == null ||
           passwordChangeDTO.currentPassword!.isEmpty ||

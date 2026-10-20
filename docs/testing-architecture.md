@@ -60,6 +60,7 @@ test/
 │   ├── feature_generator_test.dart   # tool/generate_feature.dart output is clean and passes its tests
 │   ├── import_guard_test.dart        # layer dependency rules, url_launcher only in external_link.dart
 │   ├── log_placeholders_test.dart    # every AppLogger call has one {} for each argument
+│   ├── log_secrets_test.dart         # no AppLogger call passes a value named for a credential
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   ├── mock_asset_coverage_test.dart # every repository method succeeds on the mock
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
@@ -400,6 +401,9 @@ for genuine stateful behavior; Dio handlers are always hand-written:
 - **`log_placeholders_test.dart`** fails if the message of an `AppLogger` call in `lib/` has a different number of `{}` than the call has arguments.
   `AppLogger` never prints an argument with no `{}` left and prints a `{}` with no argument as it is, so such a call leaves a value out of the line or shows a bare `{}`, and neither fails at runtime or in `flutter analyze`.
   It reads the calls whose message is a string literal and whose arguments are a list literal.
+- **`log_secrets_test.dart`** fails if an argument of an `AppLogger` call in `lib/`, or an interpolation in its message, names a credential: an identifier that contains one of `sensitiveBodyKeySubstrings`, such as `passwordChangeDTO` or `event.otpCode`.
+  The console of every build that prints the level keeps the line, so log that the action happened instead.
+  A token may still be logged through `maskToken`, which keeps four characters at each end.
 
 ---
 
@@ -512,6 +516,7 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Web history guard | `test/architecture/web_history_test.dart` |
 | Feature generator guard | `test/architecture/feature_generator_test.dart` |
 | Log placeholder guard | `test/architecture/log_placeholders_test.dart` |
+| Log secrets guard | `test/architecture/log_secrets_test.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |

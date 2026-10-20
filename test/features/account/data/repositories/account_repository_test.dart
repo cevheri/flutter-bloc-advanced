@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
@@ -103,6 +105,22 @@ void main() {
       final result = await repository.changePassword(passwordChangeDTO);
       expect(result, isA<Failure<void>>());
       expect((result as Failure<void>).error, isA<ValidationError>());
+    });
+
+    // Regression: the start line printed the PasswordChangeDTO, whose text carries both passwords, so a debug build
+    // of main_local put the user's current and new password into the console.
+    test("Given a password change when changePassword then the log says so without either password", () async {
+      TestEnv.authenticate();
+      final lines = <String>[];
+
+      await runZoned(
+        () =>
+            repository.changePassword(const PasswordChangeDTO(currentPassword: 'OldPass#1', newPassword: 'NewPass#2')),
+        zoneSpecification: ZoneSpecification(print: (self, parent, zone, line) => lines.add(line)),
+      );
+
+      expect(lines, anyElement(contains('AccountRepository : BEGIN:changePassword')));
+      expect(lines, everyElement(allOf(isNot(contains('OldPass#1')), isNot(contains('NewPass#2')))));
     });
   });
 
