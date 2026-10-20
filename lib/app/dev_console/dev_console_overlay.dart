@@ -119,8 +119,14 @@ class _DevConsolePanelState extends State<_DevConsolePanel> with SingleTickerPro
             children: [
               Icon(Icons.developer_mode, size: 20, color: colorScheme.primary),
               const SizedBox(width: AppSpacing.sm),
-              Text('Developer Console', style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600)),
-              const Spacer(),
+              Expanded(
+                child: Text(
+                  'Developer Console',
+                  style: textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
               IconButton(
                 icon: const Icon(Icons.delete_sweep_outlined, size: 18),
                 tooltip: 'Clear all',

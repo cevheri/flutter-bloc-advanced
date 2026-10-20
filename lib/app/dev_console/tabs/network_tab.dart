@@ -40,8 +40,14 @@ class NetworkTab extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       child: Row(
         children: [
-          Text('$count requests', style: Theme.of(context).textTheme.labelMedium),
-          const Spacer(),
+          Expanded(
+            child: Text(
+              '$count requests',
+              style: Theme.of(context).textTheme.labelMedium,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
           const _VerboseLogToggle(),
           IconButton(
             icon: const Icon(Icons.delete_outline, size: 18),
@@ -107,7 +113,10 @@ class _NetworkEntryTile extends StatelessWidget {
         maxLines: 1,
         overflow: TextOverflow.ellipsis,
       ),
-      subtitle: Row(
+      // Wraps to a second line when a narrow phone or a large text size leaves too little width beside the time.
+      subtitle: Wrap(
+        spacing: AppSpacing.sm,
+        crossAxisAlignment: WrapCrossAlignment.center,
         children: [
           if (entry.statusCode != null)
             Container(
@@ -121,22 +130,14 @@ class _NetworkEntryTile extends StatelessWidget {
                 style: textTheme.labelSmall?.copyWith(color: statusColor, fontWeight: FontWeight.w600),
               ),
             ),
-          if (entry.duration != null) ...[
-            const SizedBox(width: AppSpacing.sm),
-            Text('${entry.duration!.inMilliseconds}ms', style: textTheme.labelSmall),
-          ],
-          if (!entry.isComplete) ...[
-            const SizedBox(width: AppSpacing.sm),
+          if (entry.duration != null) Text('${entry.duration!.inMilliseconds}ms', style: textTheme.labelSmall),
+          if (!entry.isComplete)
             SizedBox(
               width: 12,
               height: 12,
               child: CircularProgressIndicator(strokeWidth: 1.5, color: colorScheme.primary),
             ),
-          ],
-          if (entry.error != null) ...[
-            const SizedBox(width: AppSpacing.sm),
-            Icon(Icons.error_outline, size: 14, color: colorScheme.error),
-          ],
+          if (entry.error != null) Icon(Icons.error_outline, size: 14, color: colorScheme.error),
         ],
       ),
       trailing: Text(

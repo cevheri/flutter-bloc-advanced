@@ -84,15 +84,20 @@ class EnvironmentTab extends StatelessWidget {
                     children: [
                       Icon(Icons.route, size: 14, color: semantic.info),
                       const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        route.path,
-                        style: textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontWeight: FontWeight.w600),
+                      // A long path or name wraps instead of running past the edge of a phone screen.
+                      Flexible(
+                        child: Text(
+                          route.path,
+                          style: textTheme.bodySmall?.copyWith(fontFamily: 'monospace', fontWeight: FontWeight.w600),
+                        ),
                       ),
                       if (route.name != null) ...[
                         const SizedBox(width: AppSpacing.sm),
-                        Text(
-                          '(${route.name})',
-                          style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                        Flexible(
+                          child: Text(
+                            '(${route.name})',
+                            style: textTheme.labelSmall?.copyWith(color: colorScheme.onSurfaceVariant),
+                          ),
                         ),
                       ],
                     ],
