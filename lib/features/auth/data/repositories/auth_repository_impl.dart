@@ -33,23 +33,23 @@ class LoginRepository implements IAuthRepository {
       final request = AuthMapper.toUserJwt(userJWT);
       final response = await _apiClient.post("/authenticate", request);
       final result = JWTToken.fromJsonString(response.data!);
-      _log.debug("END:authenticate successful - response.body: {}", [result.toString()]);
+      _log.debug("END:authenticate successful - response.body: {}", [result]);
       final entity = AuthMapper.toTokenEntity(result);
       if (entity == null) {
         return const Failure(UnknownError("Failed to parse authentication token"));
       }
       return Success(entity);
     } on UnauthorizedException catch (e) {
-      _log.error("END:authenticate auth error: {}", [e.toString()]);
+      _log.error("END:authenticate auth error: {}", [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error("END:authenticate validation error: {}", [e.toString()]);
+      _log.error("END:authenticate validation error: {}", [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error("END:authenticate network error: {}", [e.toString()]);
+      _log.error("END:authenticate network error: {}", [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error("END:authenticate error: {}", [e.toString()]);
+      _log.error("END:authenticate error: {}", [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }
@@ -90,16 +90,16 @@ class LoginRepository implements IAuthRepository {
       _log.debug("END:sendOtp successful");
       return const Success(null);
     } on UnauthorizedException catch (e) {
-      _log.error("END:sendOtp auth error: {}", [e.toString()]);
+      _log.error("END:sendOtp auth error: {}", [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error("END:sendOtp validation error: {}", [e.toString()]);
+      _log.error("END:sendOtp validation error: {}", [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error("END:sendOtp network error: {}", [e.toString()]);
+      _log.error("END:sendOtp network error: {}", [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error("END:sendOtp error: {}", [e.toString()]);
+      _log.error("END:sendOtp error: {}", [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }
@@ -127,16 +127,16 @@ class LoginRepository implements IAuthRepository {
       }
       return Success(entity);
     } on UnauthorizedException catch (e) {
-      _log.error("END:verifyOtp auth error: {}", [e.toString()]);
+      _log.error("END:verifyOtp auth error: {}", [e]);
       return Failure(AuthError(e.toString()));
     } on BadRequestException catch (e) {
-      _log.error("END:verifyOtp validation error: {}", [e.toString()]);
+      _log.error("END:verifyOtp validation error: {}", [e]);
       return Failure(ValidationError(e.toString()));
     } on FetchDataException catch (e) {
-      _log.error("END:verifyOtp network error: {}", [e.toString()]);
+      _log.error("END:verifyOtp network error: {}", [e]);
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error("END:verifyOtp error: {}", [e.toString()]);
+      _log.error("END:verifyOtp error: {}", [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }

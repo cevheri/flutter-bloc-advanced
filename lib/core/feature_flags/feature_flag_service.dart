@@ -25,7 +25,7 @@ class FeatureFlagService extends ChangeNotifier {
 
   /// Update flags from a remote config map.
   void updateFlags(Map<String, bool> flags) {
-    _log.info('Updating feature flags: {}', [flags.keys.join(', ')]);
+    _log.info('Updating feature flags: {}', [() => flags.keys.join(', ')]);
     _flags
       ..clear()
       ..addAll(flags);

@@ -56,7 +56,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
       emit(state.copyWith(menus: menus, status: MenuStateStatus.success));
     } catch (e) {
       emit(state.copyWith(menus: [], status: MenuStateStatus.error));
-      _log.error('END:loadMenus LoadMenus event error: {}', [e.toString()]);
+      _log.error('END:loadMenus LoadMenus event error: {}', [e]);
     }
   }
 
@@ -68,7 +68,7 @@ class MenuBloc extends Bloc<MenuEvent, MenuState> {
       emit(state.copyWith(menus: menus, status: MenuStateStatus.success));
     } catch (e) {
       emit(state.copyWith(menus: [], status: MenuStateStatus.error));
-      _log.error('END:refreshMenus RefreshMenus event error: {}', [e.toString()]);
+      _log.error('END:refreshMenus RefreshMenus event error: {}', [e]);
     }
   }
 }

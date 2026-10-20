@@ -35,7 +35,7 @@ class AuthorityBloc extends Bloc<AuthorityEvent, AuthorityState> {
     switch (result) {
       case Success(:final data):
         emit(AuthorityLoadSuccessState(authorities: data));
-        _log.debug('END: getAuthorities bloc: _onLoad success: {}', [data.toString()]);
+        _log.debug('END: getAuthorities bloc: _onLoad success: {}', [data]);
       case Failure(:final error):
         emit(AuthorityLoadFailureState(message: error.message));
         _log.error('END: getAuthorities bloc: _onLoad error: {}', [error.message]);

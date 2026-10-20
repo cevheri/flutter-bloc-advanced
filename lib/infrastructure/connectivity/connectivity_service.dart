@@ -55,7 +55,7 @@ class ConnectivityService {
   }
 
   Future<void> _onConnectivityChanged(List<ConnectivityResult> results) async {
-    _log.debug('Connectivity changed: {}', [results.map((r) => r.name).join(', ')]);
+    _log.debug('Connectivity changed: {}', [() => results.map((r) => r.name).join(', ')]);
 
     final platformStatus = _mapResults(results);
 

@@ -34,7 +34,7 @@ class ChangePasswordBloc extends Bloc<ChangePasswordEvent, ChangePasswordState> 
         _log.debug("END: changePassword bloc: _onSubmit success");
       case Failure(:final error):
         emit(ChangePasswordFailureState(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
-        _log.error("END: changePassword bloc: _onSubmit error: {}", [error.toString()]);
+        _log.error("END: changePassword bloc: _onSubmit error: {}", [error]);
     }
   }
 }

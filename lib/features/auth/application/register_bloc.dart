@@ -27,10 +27,10 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
     switch (result) {
       case Success(:final data):
         emit(RegisterCompletedState(user: data));
-        _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [data.toString()]);
+        _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [data]);
       case Failure(:final error):
         emit(RegisterErrorState(message: error.message));
-        _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [error.toString()]);
+        _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [error]);
     }
   }
 }

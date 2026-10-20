@@ -58,7 +58,7 @@ class DynamicFormBloc extends Bloc<DynamicFormEvent, DynamicFormState> {
     final action = schema.submitAction;
     if (action == null) {
       // Names the fields only: a value can be a password, and every build of main_prod prints this level.
-      _log.info('No submit action defined for form {}; fields: {}', [schema.id, event.data.keys.join(', ')]);
+      _log.info('No submit action defined for form {}; fields: {}', [schema.id, () => event.data.keys.join(', ')]);
       emit(
         DynamicFormSubmitted(schema: schema, submitResponse: 'Form data logged', submitPathParams: submitPathParams),
       );

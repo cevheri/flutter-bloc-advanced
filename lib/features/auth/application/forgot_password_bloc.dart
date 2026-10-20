@@ -29,7 +29,7 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
         _log.debug("END: forgotPassword bloc: _onSubmit success");
       case Failure(:final error):
         emit(ForgotPasswordErrorState(email: event.email, errorMessage: error.message));
-        _log.error("END: forgotPassword bloc: _onSubmit error: {}", [error.toString()]);
+        _log.error("END: forgotPassword bloc: _onSubmit error: {}", [error]);
     }
   }
 }

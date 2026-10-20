@@ -41,15 +41,15 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     switch (result) {
       case Success(:final data):
         emit(state.copyWith(data: data, status: AccountStatus.success));
-        _log.debug('END: getAccount bloc: _onLoad success: {}', [data.toString()]);
+        _log.debug('END: getAccount bloc: _onLoad success: {}', [data]);
       case Failure(:final error):
         emit(state.copyWith(status: AccountStatus.failure));
-        _log.error('END: getAccount bloc: _onLoad error: {}', [error.toString()]);
+        _log.error('END: getAccount bloc: _onLoad error: {}', [error]);
     }
   }
 
   FutureOr<void> _onSubmit(AccountSubmitEvent event, Emitter<AccountState> emit) async {
-    _log.debug('BEGIN: onSubmit AccountSubmitEvent event: {}', [event.data.toString()]);
+    _log.debug('BEGIN: onSubmit AccountSubmitEvent event: {}', [event.data]);
     final resets = _resets;
     emit(state.copyWith(status: AccountStatus.loading));
 
@@ -61,10 +61,10 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
     switch (result) {
       case Success(:final data):
         emit(state.copyWith(status: AccountStatus.success, data: data));
-        _log.debug('END:onSubmitAccountSubmitEvent event success: {}', [data.toString()]);
+        _log.debug('END:onSubmitAccountSubmitEvent event success: {}', [data]);
       case Failure(:final error):
         emit(state.copyWith(status: AccountStatus.failure));
-        _log.error('END:onSubmit AccountSubmitEvent event error: {}', [error.toString()]);
+        _log.error('END:onSubmit AccountSubmitEvent event error: {}', [error]);
     }
   }
 

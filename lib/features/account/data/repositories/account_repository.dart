@@ -20,7 +20,7 @@ class AccountRepository implements IAccountRepository {
 
   @override
   Future<Result<UserEntity>> register(UserEntity newUser) async {
-    _log.debug('BEGIN:register repository start : {}', [newUser.toString()]);
+    _log.debug('BEGIN:register repository start : {}', [newUser]);
     try {
       if (newUser.email == null || newUser.email!.isEmpty) {
         return const Failure(ValidationError('User email is required'));
@@ -48,7 +48,7 @@ class AccountRepository implements IAccountRepository {
     } on FetchDataException catch (e) {
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error('register error: {}', [e.toString()]);
+      _log.error('register error: {}', [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }
@@ -76,7 +76,7 @@ class AccountRepository implements IAccountRepository {
     } on FetchDataException catch (e) {
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error('changePassword error: {}', [e.toString()]);
+      _log.error('changePassword error: {}', [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }
@@ -109,7 +109,7 @@ class AccountRepository implements IAccountRepository {
     } on FetchDataException catch (e) {
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error('resetPassword error: {}', [e.toString()]);
+      _log.error('resetPassword error: {}', [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }
@@ -125,21 +125,21 @@ class AccountRepository implements IAccountRepository {
         return const Failure(ServerError('Account response is null'));
       }
       final result = parsed;
-      _log.debug('END:getAccount successful - response.body: {}', [result.toString()]);
+      _log.debug('END:getAccount successful - response.body: {}', [result]);
       return Success(result);
     } on UnauthorizedException catch (e) {
       return Failure(AuthError(e.toString()));
     } on FetchDataException catch (e) {
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error('getAccount error: {}', [e.toString()]);
+      _log.error('getAccount error: {}', [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }
 
   @override
   Future<Result<UserEntity>> update(UserEntity user) async {
-    _log.debug('BEGIN:saveAccount repository start : {}', [user.toString()]);
+    _log.debug('BEGIN:saveAccount repository start : {}', [user]);
     try {
       if (user.id == null || user.id!.isEmpty) {
         return const Failure(ValidationError(userIdNotNull));
@@ -161,7 +161,7 @@ class AccountRepository implements IAccountRepository {
     } on FetchDataException catch (e) {
       return Failure(_mapFetchDataException(e));
     } catch (e, st) {
-      _log.error('update error: {}', [e.toString()]);
+      _log.error('update error: {}', [e]);
       return Failure(UnknownError(e.toString()), stackTrace: st);
     }
   }
