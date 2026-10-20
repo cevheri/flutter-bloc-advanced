@@ -55,9 +55,11 @@ class AccountScreen extends StatelessWidget {
                         onPressed: () async => _handlePopScope(false, null, context),
                       ),
                       const SizedBox(width: AppSpacing.sm),
-                      Text(
-                        S.of(context).account,
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                      Expanded(
+                        child: Text(
+                          S.of(context).account,
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+                        ),
                       ),
                     ],
                   ),

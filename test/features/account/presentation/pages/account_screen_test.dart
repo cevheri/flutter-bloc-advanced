@@ -98,6 +98,21 @@ void main() {
       expect(find.byKey(const Key('accountScreenAppBarBackButtonKey')), findsOneWidget);
     });
 
+    testWidgets('fits the title on a 320 px wide phone with large text', (tester) async {
+      tester.view.physicalSize = const Size(320, 568);
+      tester.view.devicePixelRatio = 1.0;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.3;
+      addTearDown(tester.view.reset);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      when(() => mockAccountBloc.state).thenReturn(const AccountState(status: AccountStatus.success, data: mockUser));
+
+      await tester.pumpWidget(buildTestableWidget());
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull);
+      expect(find.text(S.current.account), findsOneWidget);
+    });
+
     testWidgets('Should render form fields correctly', (tester) async {
       when(() => mockAccountBloc.state).thenReturn(const AccountState(data: mockUser));
 
