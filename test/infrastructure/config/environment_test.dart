@@ -42,6 +42,7 @@ void main() {
       '/authenticate/send-otp',
       '/authenticate/verify-otp',
       '/api/token/refresh',
+      '/app/config',
     ]);
   });
 }

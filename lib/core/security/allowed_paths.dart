@@ -9,6 +9,7 @@ List<String> allowedPaths = [
   '/authenticate/send-otp',
   '/authenticate/verify-otp',
   '/api/token/refresh',
+  '/app/config',
 ];
 
 List<String> authPaths = ['/authenticate', '/login-otp', '/login-otp-verify'];

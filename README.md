@@ -155,6 +155,19 @@ This avoids a window where in-flight users with the old app version cannot reach
 
 Compliance baselines that expect inactivity timeouts: SOC2 CC6.1, ISO 27001 A.9.4.2, GDPR Art. 32.
 
+### Maintenance Mode and Forced Updates
+
+At startup the app reads `GET /app/config`, a public endpoint that needs no session (mock: `assets/mock/GET_app_config.json`).
+`LifecycleGate` (`lib/features/lifecycle/`) sits in the `MaterialApp` builder, around the session restore and the router, and shows a full-screen page in their place when the config asks for one.
+
+- `maintenanceMode: true` shows the maintenance screen with the config's `maintenanceMessage` (or a translated default), the `maintenanceEstimatedEnd` time in the user's language and time zone, and a retry button.
+- A `minimumVersion` above the installed version shows the update screen, which opens the `storeUrl` when it is an https link.
+- The app checks again when it comes back to the foreground, at most once every 5 minutes (`LifecycleBloc.defaultRecheckInterval`).
+- Fail open: when the endpoint is missing or the request fails, the app opens normally and the failure is logged as an error.
+  An untrusted certificate is reported with `AppErrorCode.networkCertInvalid`.
+  A failed re-check keeps a maintenance or update screen the server already asked for, so a server error or a lost connection does not let the user skip a required update.
+- A non-empty `featureFlags` map in the config replaces the flags in `FeatureFlagService`.
+
 ### Idempotent Mutations (opt-in)
 
 `ResilienceInterceptor` retries a transient failure (timeout, connection error, 502/503/504) only when the request is safe to send twice.

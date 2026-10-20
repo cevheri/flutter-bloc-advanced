@@ -283,6 +283,7 @@ expect(response, isNotNull, reason: 'the mock request never completed');
 
 `pumpAndSettle()` completes such a request as well, because its first pump advances 100 ms, but it stops as soon as no frame is scheduled.
 So it does not wait out the 500 ms that `MockInterceptor` adds under `AppConfig.dev()`, which `App` uses unless the test passes other dependencies: pump at least that long before settling, as `pumpAppOnSettings` in `test/features/settings/presentation/pages/settings_screen_test.dart` does.
+Every test that pumps `App` sends at least one request: the lifecycle check reads `GET /app/config` when the app starts.
 Do not use `tester.runAsync` to let a mock request finish: it runs the request in real time, and it is meant for real I/O.
 `test/support/test_env_test.dart` shows the pattern.
 

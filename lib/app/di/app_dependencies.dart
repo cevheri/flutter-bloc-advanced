@@ -7,6 +7,8 @@ import 'package:flutter_bloc_advance/features/account/data/repositories/account_
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/data/repositories/lifecycle_repository.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
@@ -61,6 +63,10 @@ class AppDependencies {
   IAuthorityRepository createAuthorityRepository(ApiClient apiClient) => AuthorityRepositoryImpl(apiClient);
 
   IDynamicFormRepository createDynamicFormRepository(ApiClient apiClient) => DynamicFormRepository(apiClient);
+
+  /// Reads the remote app config that decides whether the app opens, shows the maintenance screen or asks for an
+  /// update.
+  ILifecycleRepository createLifecycleRepository(ApiClient apiClient) => LifecycleRepository(apiClient);
 
   /// The device preferences, such as the language the user picked.
   AppLocalStorage createLocalStorage() => AppLocalStorage();

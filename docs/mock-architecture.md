@@ -295,6 +295,7 @@ Defined in `lib/core/security/allowed_paths.dart`:
 - `/login-otp`, `/login-otp-verify`
 - `/authenticate/send-otp`, `/authenticate/verify-otp`
 - `/api/token/refresh`
+- `/app/config`
 
 All other paths require a valid `Authorization` header. In dev/test mode the `MockInterceptor` enforces this check; in production the real API does.
 

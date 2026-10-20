@@ -25,8 +25,8 @@ void main() {
   const storeUrl = 'https://play.google.com/store/apps/details?id=com.example.app';
   final updateButton = find.descendant(of: find.byType(ForceUpdateScreen), matching: find.byType(AppButton));
 
-  // App does not mount LifecycleGate yet, so the gate is pumped on its own, with the app theme. The server asks for a
-  // version above any real one, so the app must update from the store.
+  // The gate is pumped on its own, with the app theme; test/app/app_test.dart covers it inside App. The server asks for
+  // a version above any real one, so the app must update from the store.
   Future<void> pumpForceUpdateScreen(
     WidgetTester tester, {
     required String? storeUrl,

@@ -23,6 +23,9 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repo
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bloc.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_event.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
@@ -101,6 +104,9 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<IDynamicFormRepository>(
           create: (context) => dependencies.createDynamicFormRepository(context.read<ApiClient>()),
         ),
+        RepositoryProvider<ILifecycleRepository>(
+          create: (context) => dependencies.createLifecycleRepository(context.read<ApiClient>()),
+        ),
         RepositoryProvider<MenuRepository>(create: (_) => dependencies.createMenuRepository()),
         RepositoryProvider<IUserRepository>(
           create: (context) => dependencies.createUserRepository(context.read<ApiClient>()),
@@ -129,6 +135,13 @@ class AppScope extends StatelessWidget {
             ),
           ),
           BlocProvider<ThemeBloc>(create: (_) => ThemeBloc()..add(const LoadTheme())),
+          // Created, and the first check sent, when App's LifecycleGate first builds.
+          BlocProvider<LifecycleBloc>(
+            create: (context) => LifecycleBloc(
+              repository: context.read<ILifecycleRepository>(),
+              featureFlagService: FeatureFlagService.instance,
+            )..add(const LifecycleCheckEvent()),
+          ),
           BlocProvider<LocaleCubit>(
             create: (_) =>
                 LocaleCubit(storage: dependencies.createLocalStorage(), defaultLocale: defaultLocale)..restore(),

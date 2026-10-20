@@ -10,6 +10,7 @@ import 'package:flutter_bloc_advance/app/router/app_router.dart';
 import 'package:flutter_bloc_advance/app/session/session_cubit.dart';
 import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/presentation/pages/lifecycle_gate.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
@@ -145,17 +146,21 @@ class _AppViewState extends State<_AppView> {
             // its first route parsed, only once restore has settled the session. Later sign-ins and sign-outs are left
             // to its redirect. It also waits for the stored language, so the first page shows in it.
             // The registry sits above the router, so the routes' onExit and the pages' UnsavedChangesScope find it.
+            // LifecycleGate shows the maintenance or update screen in place of all of it when the app config asks for
+            // one, and mounts the router again once the app may open.
             builder: (context, router) => RepositoryProvider<UnsavedChangesRegistry>.value(
               value: _unsavedChanges!,
-              child: BlocBuilder<SessionCubit, SessionState>(
-                buildWhen: (previous, current) => previous is SessionUnknown,
-                builder: (context, session) => switch (session) {
-                  SessionUnknown() => const _RestoreView(),
-                  SessionAuthenticated() || SessionUnauthenticated() => switch (localeState) {
-                    LocaleRestoring() => const _RestoreView(),
-                    LocaleReady() || LocaleChanging() || LocaleChangeFailure() => router!,
+              child: LifecycleGate(
+                child: BlocBuilder<SessionCubit, SessionState>(
+                  buildWhen: (previous, current) => previous is SessionUnknown,
+                  builder: (context, session) => switch (session) {
+                    SessionUnknown() => const _RestoreView(),
+                    SessionAuthenticated() || SessionUnauthenticated() => switch (localeState) {
+                      LocaleRestoring() => const _RestoreView(),
+                      LocaleReady() || LocaleChanging() || LocaleChangeFailure() => router!,
+                    },
                   },
-                },
+                ),
               ),
             ),
           );
