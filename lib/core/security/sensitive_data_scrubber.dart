@@ -37,10 +37,22 @@ const String emailMask = '[REDACTED_EMAIL]';
 /// an encoded character such as the `%2B` in `jane%2Btag%40example.com`
 /// is masked along with the rest of the address. Practical rather than
 /// RFC 5322 complete: it matches the addresses people actually use.
-final RegExp emailPattern = RegExp(r'[A-Za-z0-9._%+-]+(?:@|%40)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}');
+///
+/// The local part matches at most 64 characters, the RFC 5321 limit, so a
+/// longer one keeps its leading characters. The bound keeps the scan linear:
+/// unbounded, a long run of local-part characters without an `@` made it
+/// quadratic, and past Dart's backtracking limit the match failed and the
+/// address after the run was left unmasked.
+final RegExp emailPattern = RegExp(r'[A-Za-z0-9._%+-]{1,64}(?:@|%40)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}');
 
 /// Replace every email address inside [input] with [emailMask].
-String maskEmails(String input) => input.replaceAll(emailPattern, emailMask);
+///
+/// A string without an `@` or a `%40` holds no address, so it is returned
+/// without a scan: AppLogger runs every printed line through this.
+String maskEmails(String input) {
+  if (!input.contains('@') && !input.contains('%40')) return input;
+  return input.replaceAll(emailPattern, emailMask);
+}
 
 /// Return a copy of [headers] with [sensitiveHeaderNames] removed.
 /// Generic over value type so both `Map<String, String>` (Sentry) and

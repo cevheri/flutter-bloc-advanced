@@ -44,6 +44,20 @@ void main() {
       const input = 'https://app.example/login-otp-verify?step=2#top';
       expect(maskEmails(input), input);
     });
+
+    // AppLogger runs every printed line through maskEmails, and an error line can carry a whole HTTP error body. An
+    // unbounded local part made the scan quadratic in a long run of local-part characters, so this line took minutes.
+    test('masks an email after a long run of local-part characters without a slow scan', () {
+      final input = '${'a1' * 50000} jane.doe@example.com';
+
+      expect(maskEmails(input), '${'a1' * 50000} [REDACTED_EMAIL]');
+    });
+
+    test('masks the last 64 characters of a longer local part, the RFC 5321 limit', () {
+      final local = 'x' * 70;
+
+      expect(maskEmails('$local@example.com'), '${'x' * 6}[REDACTED_EMAIL]');
+    });
   });
 
   group('scrubHeaders', () {
