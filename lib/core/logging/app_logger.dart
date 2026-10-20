@@ -12,6 +12,12 @@ enum LogFormat { simple, extended }
 /// arguments of a dropped level are never turned into text. Email addresses
 /// in a printed line are replaced with [emailMask] by [maskEmails].
 ///
+/// Each `{}` in the message takes the text of the next argument, from left
+/// to right. The message is scanned once, so an argument whose text contains
+/// `{}` is printed as it is and never takes the place of a later one. A `{}`
+/// with no argument left is printed as `{}`. An argument with no `{}` left
+/// is not printed, and is not turned into text either.
+///
 class AppLogger {
   static late Logger _logger;
   static late Level _level;
@@ -39,13 +45,11 @@ class AppLogger {
 
   // generate log methods with message and arguments
   String _msg(dynamic message, [List<dynamic>? args]) {
-    String msg = "$_name : $message";
-    if (args != null) {
-      for (int i = 0; i < args.length; i++) {
-        msg = msg.replaceFirst("{}", args[i].toString());
-      }
-    }
-    return maskEmails(msg);
+    final arguments = args ?? const [];
+    var next = 0;
+    // One pass over the message, so the text of an argument is never searched for "{}".
+    final text = "$message".replaceAllMapped("{}", (_) => next < arguments.length ? "${arguments[next++]}" : "{}");
+    return maskEmails("$_name : $text");
   }
 
   // The printer calls the closure only after the filter has passed the level, so a dropped level never runs _msg.

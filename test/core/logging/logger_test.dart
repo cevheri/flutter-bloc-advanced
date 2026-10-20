@@ -80,6 +80,40 @@ void main() {
     }
   });
 
+  // Regression: each argument replaced the first "{}" left in the line built so far, so an argument whose text
+  // contained "{}", such as a name typed into the user search or an empty map, took the next argument's place.
+  group('AppLogger placeholders', () {
+    test('prints an argument that contains {} as it is', () {
+      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
+      final lines = _capturePrintedLines();
+
+      AppLogger.getLogger('PlaceholderTest').info('event: {} params: {}', ['{}', 'x']);
+
+      expect(lines, anyElement(contains('PlaceholderTest : event: {} params: x')));
+    });
+
+    // Guards the SLF4J behavior the one-pass rewrite keeps: a "{}" with no argument left stays in the line as it is.
+    test('keeps a {} that has no argument left', () {
+      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
+      final lines = _capturePrintedLines();
+
+      AppLogger.getLogger('PlaceholderTest').info('page: {}, size: {}, name: {}', [0, 10]);
+
+      expect(lines, anyElement(contains('PlaceholderTest : page: 0, size: 10, name: {}')));
+    });
+
+    test('neither prints nor turns into text an argument that has no {} left', () {
+      AppLogger.configure(isProduction: false, logFormat: LogFormat.simple);
+      final lines = _capturePrintedLines();
+      final unused = _FakeLogArgument();
+
+      AppLogger.getLogger('PlaceholderTest').info('GET {}', ['/admin/users', unused]);
+
+      expect(lines, anyElement(endsWith('PlaceholderTest : GET /admin/users')));
+      expect(unused.toStringCalls, 0);
+    });
+  });
+
   // Regression: the line was built before the logger's filter ran, so the arguments of a dropped level were still
   // turned into text.
   group('AppLogger lazy message', () {
