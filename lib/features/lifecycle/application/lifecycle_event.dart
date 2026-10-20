@@ -13,14 +13,14 @@ enum LifecycleCheckTrigger {
   resume,
 }
 
-class LifecycleEvent extends Equatable {
+sealed class LifecycleEvent extends Equatable {
   const LifecycleEvent();
   @override
   List<Object> get props => [];
 }
 
 /// Fetch remote app configuration.
-class LifecycleCheckEvent extends LifecycleEvent {
+final class LifecycleCheckEvent extends LifecycleEvent {
   const LifecycleCheckEvent({this.trigger = LifecycleCheckTrigger.launch});
 
   final LifecycleCheckTrigger trigger;
