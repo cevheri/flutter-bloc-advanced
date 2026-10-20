@@ -24,13 +24,20 @@ void main() {
       tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
 
   // The real app, signed in, on the dashboard, after the mock API has answered.
-  Future<void> pumpSignedInOnDashboard(WidgetTester tester, {Size size = const Size(1600, 1600)}) async {
+  Future<void> pumpSignedInOnDashboard(
+    WidgetTester tester, {
+    Size size = const Size(1600, 1600),
+    String language = 'en',
+    double textScale = 1.0,
+  }) async {
     addTearDown(tester.view.reset);
+    addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1.0;
+    tester.platformDispatcher.textScaleFactorTestValue = textScale;
     TestEnv.authenticate();
 
-    await tester.pumpWidget(const App(language: 'en'));
+    await tester.pumpWidget(App(language: language));
     await tester.pumpAndSettle();
   }
 
@@ -85,6 +92,19 @@ void main() {
         expect(tester.getRect(userMenu()).right, lessThanOrEqualTo(tester.getRect(find.byType(TopBarWidget)).right));
         expect(find.descendant(of: find.byType(TopBarWidget), matching: find.text('Admin')), findsOneWidget);
       });
+    }
+
+    // The same phones with the system text size raised to 130 percent, in both app languages.
+    for (final language in const ['en', 'tr']) {
+      for (final size in const [Size(320, 568), Size(360, 640), Size(375, 667)]) {
+        testWidgets('the signed-in top bar fits a ${size.width.toInt()}x${size.height.toInt()} phone at text scale 1.3 '
+            'in $language', (tester) async {
+          await pumpSignedInOnDashboard(tester, size: size, language: language, textScale: 1.3);
+
+          expect(tester.takeException(), isNull);
+          expect(tester.getRect(userMenu()).right, lessThanOrEqualTo(tester.getRect(find.byType(TopBarWidget)).right));
+        });
+      }
     }
 
     // A screen reader user has to know what the bare menu icon does, in the language of the app.
