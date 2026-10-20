@@ -101,7 +101,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                     const SizedBox(height: 32),
                     _formHeading(context),
                     const SizedBox(height: 32),
-                    _formBody(context, isDark),
+                    _formBody(context, isDark, showCommunity: true),
                   ],
                 ),
               ),
@@ -353,7 +353,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                       const SizedBox(height: 36),
                       _formHeading(context),
                       const SizedBox(height: 32),
-                      _formBody(context, isDark),
+                      // The brand panel already shows the desktop community section.
+                      _formBody(context, isDark, showCommunity: false),
                     ],
                   ),
                 ),
@@ -399,7 +400,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
     );
   }
 
-  Widget _formBody(BuildContext context, bool isDark) {
+  Widget _formBody(BuildContext context, bool isDark, {required bool showCommunity}) {
     return FormBuilder(
       key: _loginFormKey,
       child: Column(
@@ -427,8 +428,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           SizedBox(width: double.infinity, child: _otpLoginButton(context)),
           const SizedBox(height: 28),
           _registerLink(context),
-          const SizedBox(height: 4),
-          const CommunitySectionWidget(isDesktop: false),
+          if (showCommunity) ...[const SizedBox(height: 4), const CommunitySectionWidget(isDesktop: false)],
           const SizedBox(height: 16),
           _versionText(context),
         ],
