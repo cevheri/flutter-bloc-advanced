@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
@@ -272,8 +273,8 @@ void main() {
         final options = RequestOptions(path: '/api/users');
         final err = DioException(requestOptions: options, type: DioExceptionType.transformTimeout);
 
-        // Non-retryable errors pass through synchronously; a retryable one would
-        // first await the backoff delay, leaving result.passed false here.
+        // Non-retryable errors pass through synchronously. A retryable one is
+        // rejected here instead, because this instance was not made by forDio.
         final result = _captureOnErrorSync(interceptor, err);
         expect(result.passed, isTrue);
       });
@@ -299,7 +300,7 @@ void main() {
             failureThreshold: 10,
             cooldownDuration: const Duration(hours: 1),
             maxRetries: 3,
-          );
+          ).forDio(Dio());
           final options = RequestOptions(path: '/api/users', method: 'POST');
           const refused = SocketException('Connection refused');
           final err = DioException.connectionError(requestOptions: options, reason: refused.message, error: refused);
@@ -571,6 +572,66 @@ void main() {
       });
     });
 
+    group('retry transport', () {
+      test('forDio shares circuit breakers with the instance it was made from', () {
+        final shared = ResilienceInterceptor(
+          failureThreshold: 1,
+          cooldownDuration: const Duration(hours: 1),
+          maxRetries: 0,
+        );
+        final bound = shared.forDio(Dio());
+
+        _fireOnError(
+          bound,
+          DioException(
+            requestOptions: RequestOptions(path: '/api/users'),
+            type: DioExceptionType.connectionTimeout,
+          ),
+        );
+
+        expect(shared.circuitBreakers['/api/users']?.state, CircuitBreakerState.open);
+      });
+
+      test('forDio sends the retry through the adapter of that Dio', () async {
+        final adapter = _FakeHttpClientAdapter([503, 200]);
+        final dio = Dio(BaseOptions(baseUrl: 'https://test.api'))..httpClientAdapter = adapter;
+        dio.interceptors.add(
+          ResilienceInterceptor(
+            maxRetries: 1,
+            baseDelay: Duration.zero,
+            maxJitter: Duration.zero,
+            failureThreshold: 10,
+            cooldownDuration: const Duration(hours: 1),
+          ).forDio(dio),
+        );
+
+        final response = await dio.get<String>('/api/users');
+
+        expect(response.statusCode, 200);
+        expect(adapter.requestCount, 2);
+      });
+
+      test('an instance not made by forDio rejects a retry instead of sending it', () async {
+        final adapter = _FakeHttpClientAdapter([503]);
+        final dio = Dio(BaseOptions(baseUrl: 'https://test.api'))..httpClientAdapter = adapter;
+        dio.interceptors.add(
+          ResilienceInterceptor(
+            maxRetries: 1,
+            baseDelay: Duration.zero,
+            maxJitter: Duration.zero,
+            failureThreshold: 10,
+            cooldownDuration: const Duration(hours: 1),
+          ),
+        );
+
+        await expectLater(
+          dio.get<String>('/api/users'),
+          throwsA(isA<DioException>().having((e) => e.error, 'error', isA<StateError>())),
+        );
+        expect(adapter.requestCount, 1);
+      });
+    });
+
     group('endpoint key extraction', () {
       test('should extract base path without IDs', () async {
         final interceptor = ResilienceInterceptor(
@@ -672,8 +733,9 @@ class _InterceptorResult {
 class _InterceptorErrorResult {
   final bool passed;
   final bool resolved;
+  final bool rejected;
 
-  _InterceptorErrorResult({this.passed = false, this.resolved = false});
+  _InterceptorErrorResult({this.passed = false, this.resolved = false, this.rejected = false});
 }
 
 class _TestRequestHandler extends RequestInterceptorHandler {
@@ -714,6 +776,27 @@ class _TestResponseHandler extends ResponseInterceptorHandler {
   }
 }
 
+/// Counts requests and answers each one with the next queued status code.
+class _FakeHttpClientAdapter implements HttpClientAdapter {
+  _FakeHttpClientAdapter(this._statusCodes);
+
+  final List<int> _statusCodes;
+  int requestCount = 0;
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    requestCount++;
+    return ResponseBody.fromString('', _statusCodes.removeAt(0));
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
 class _TestErrorHandler extends ErrorInterceptorHandler {
   _InterceptorErrorResult result = _InterceptorErrorResult();
 
@@ -729,6 +812,6 @@ class _TestErrorHandler extends ErrorInterceptorHandler {
 
   @override
   void reject(DioException error, [bool callFollowingErrorInterceptor = false]) {
-    result = _InterceptorErrorResult(passed: true);
+    result = _InterceptorErrorResult(rejected: true);
   }
 }

@@ -37,6 +37,8 @@ typedef OnSessionExpired = void Function();
 /// production interceptor chain (otherwise a 401 on `/api/token/refresh`
 /// would re-enter this interceptor recursively). Pluggable so tests
 /// can short-circuit the POST without depending on `http_mock_adapter`.
+/// A factory that reaches the network must reuse the adapter of
+/// `sourceDio`, or the refresh token skips its certificate pinning.
 typedef RefreshDioFactory = Dio Function(Dio sourceDio);
 
 /// Intercepts 401 responses and attempts a silent token refresh.
@@ -77,6 +79,9 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
        _secureStorage = secureStorage ?? FlutterSecureStorageAdapter(),
        _refreshDioFactory = refreshDioFactory ?? _defaultRefreshDio;
 
+  /// Shares [source]'s adapter, so the refresh token travels through the
+  /// same transport as every other request, certificate pinning included.
+  /// Never close the returned Dio: that would close the shared adapter.
   static Dio _defaultRefreshDio(Dio source) => Dio(
     BaseOptions(
       baseUrl: source.options.baseUrl,
@@ -84,7 +89,7 @@ class TokenRefreshInterceptor extends QueuedInterceptor {
       receiveTimeout: source.options.receiveTimeout,
       headers: {'Accept': 'application/json', 'Content-Type': 'application/json'},
     ),
-  );
+  )..httpClientAdapter = source.httpClientAdapter;
 
   /// Typed marker that flags a [RequestOptions] as "already retried
   /// once after a successful refresh." A second 401 on the same

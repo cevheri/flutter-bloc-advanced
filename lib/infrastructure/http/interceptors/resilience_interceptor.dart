@@ -15,6 +15,8 @@ import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 /// - Non-retryable: 400, 401, 403, 404, 422 pass through immediately.
 /// - Max retries: 3, exponential backoff with jitter (200ms base).
 /// - Respects the `Retry-After` header when present.
+/// - Retries go through the adapter of the Dio given to [forDio], so they keep its certificate
+///   pinning. An instance not made by [forDio] rejects a retry instead of sending it.
 ///
 /// **Circuit breaker logic:**
 /// - Each endpoint (path prefix) gets its own [CircuitBreaker] instance.
@@ -42,7 +44,10 @@ class ResilienceInterceptor extends Interceptor {
   final Duration maxJitter;
 
   /// Per-endpoint circuit breakers.
-  final Map<String, CircuitBreaker> _breakers = {};
+  final Map<String, CircuitBreaker> _breakers;
+
+  /// The [Dio] whose adapter sends retries; null unless this instance was made by [forDio].
+  final Dio? _dio;
 
   /// Unmodifiable view of per-endpoint circuit breakers for monitoring.
   Map<String, CircuitBreaker> get circuitBreakers => Map.unmodifiable(_breakers);
@@ -65,7 +70,24 @@ class ResilienceInterceptor extends Interceptor {
     this.maxJitter = const Duration(milliseconds: 100),
     this.failureThreshold = 5,
     this.cooldownDuration = const Duration(seconds: 30),
-  });
+  }) : _breakers = {},
+       _dio = null;
+
+  ResilienceInterceptor._forDio(ResilienceInterceptor source, Dio dio)
+    : maxRetries = source.maxRetries,
+      baseDelay = source.baseDelay,
+      maxJitter = source.maxJitter,
+      failureThreshold = source.failureThreshold,
+      cooldownDuration = source.cooldownDuration,
+      _breakers = source._breakers,
+      _dio = dio;
+
+  /// Returns an interceptor for [dio] that shares this instance's circuit breakers and retry policy
+  /// and sends every retry through [dio]'s adapter, so retries keep its certificate pinning.
+  ///
+  /// `ApiClient` adds `ResilienceInterceptor.instance.forDio(dio)` to its chain, so the breakers the
+  /// dashboard reads through [instance] are the ones real traffic updates.
+  ResilienceInterceptor forDio(Dio dio) => ResilienceInterceptor._forDio(this, dio);
 
   // ---------------------------------------------------------------------------
   // Interceptor hooks
@@ -161,6 +183,22 @@ class ResilienceInterceptor extends Interceptor {
       return;
     }
 
+    // Any other adapter would send the retry, Authorization header and body included, outside the
+    // certificate pinning of the client's Dio, so an instance not made by forDio refuses to retry.
+    final source = _dio;
+    if (source == null) {
+      _log.error('Cannot retry {} {}: interceptor was not made by forDio', [options.method, options.path]);
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          type: DioExceptionType.unknown,
+          error: StateError('ResilienceInterceptor has no Dio to retry through; add instance.forDio(dio) to the chain'),
+          message: 'Retry refused: no Dio to send it through',
+        ),
+      );
+      return;
+    }
+
     final nextAttempt = attempt + 1;
     final delay = _calculateDelay(err, nextAttempt);
 
@@ -202,6 +240,8 @@ class ResilienceInterceptor extends Interceptor {
           responseType: options.responseType,
         ),
       );
+      // Shared with the client's Dio: never close this Dio, that would close the shared adapter.
+      dio.httpClientAdapter = source.httpClientAdapter;
 
       final response = await dio.fetch<dynamic>(options);
       breaker.recordSuccess();

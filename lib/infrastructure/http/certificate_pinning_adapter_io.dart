@@ -14,9 +14,11 @@ import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart
 ///   falls through `badCertificateCallback` (the only way to enforce pinning
 ///   even against system-trusted but adversarial CAs — e.g. a corporate MITM
 ///   proxy or malware-installed root). The callback returns true only when the
-///   live cert matches one of the configured pins; otherwise Dio raises
-///   `DioExceptionType.badCertificate`, which `ResilienceInterceptor` already
-///   treats as non-retryable.
+///   live cert matches one of the configured pins; otherwise the TLS handshake
+///   fails with a `HandshakeException`, which Dio reports as
+///   `DioExceptionType.unknown`, not `badCertificate` (Dio raises that only
+///   for `IOHttpClientAdapter.validateCertificate`). `ResilienceInterceptor`
+///   does not retry `unknown` errors.
 HttpClientAdapter buildPinnedAdapter(List<String> pins) {
   if (pins.isEmpty) {
     return IOHttpClientAdapter();

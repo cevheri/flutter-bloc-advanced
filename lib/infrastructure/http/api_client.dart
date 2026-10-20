@@ -102,6 +102,9 @@ class ApiClient {
     // adapter; populating appConfig.certificatePins swaps in a
     // pinning adapter that fails closed on any non-matching cert. Web
     // is a hard no-op — see buildPinnedAdapter docs.
+    // Retries and the token refresh are sent through this same adapter
+    // (ResilienceInterceptor.forDio, TokenRefreshInterceptor), so the
+    // pins cover every request the client sends.
     final pins = _appConfig.certificatePins;
     if (pins.isNotEmpty) {
       _log.info('Installing certificate pinning adapter ({} pin(s))', [pins.length]);
@@ -142,10 +145,10 @@ class ApiClient {
         ),
       ),
       (
-        // Use the shared singleton so dashboard metrics (circuit breakers,
-        // reset actions) target the same instance as real HTTP traffic
-        // (fixes #60).
-        interceptor: ResilienceInterceptor.instance,
+        // Share the singleton's circuit breakers so dashboard metrics
+        // and reset actions see real HTTP traffic (fixes #60). forDio
+        // sends retries through this Dio's adapter, pins included.
+        interceptor: ResilienceInterceptor.instance.forDio(dio),
         meta: const InterceptorChainEntry(name: 'ResilienceInterceptor', detail: 'Retry + circuit breaker'),
       ),
       (

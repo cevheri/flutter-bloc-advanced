@@ -95,8 +95,11 @@ The HTTP client supports certificate pinning to defend against MITM via user-ins
 
 How it works:
 
-- `ProfileConstants.certificatePins` is a `List<String>` of base64 SHA-256 hashes. Empty list = pinning disabled (use system trust); non-empty list installs a custom Dio adapter that uses `SecurityContext(withTrustedRoots: false)` so **every** certificate falls through `badCertificateCallback` for pin checking. This is the only correct way to enforce pinning even against system-trusted but adversarial CAs.
-- Pin mismatch → `DioExceptionType.badCertificate`, which `ResilienceInterceptor` already treats as non-retryable. `AppErrorCode.networkCertInvalid` is available for repository-layer code paths that want to surface a typed error.
+- `AppConfig.certificatePins` (`lib/infrastructure/config/environment.dart`) is a `List<String>` of base64 SHA-256 hashes. Empty list = pinning disabled (use system trust); non-empty list installs a custom Dio adapter that uses `SecurityContext(withTrustedRoots: false)` so **every** certificate falls through `badCertificateCallback` for pin checking. This is the only correct way to enforce pinning even against system-trusted but adversarial CAs.
+- A pin mismatch fails the TLS handshake, so dio reports `DioExceptionType.unknown` with a `HandshakeException` as its `error`, not `DioExceptionType.badCertificate` (dio raises that only for `IOHttpClientAdapter.validateCertificate`).
+  `ResilienceInterceptor` does not retry it.
+  Retries and the token-refresh call go through the same pinned adapter as the original request.
+  `AppErrorCode.networkCertInvalid` is available for repository-layer code paths that want to surface a typed error.
 - **Web platform is a hard no-op.** Browsers control TLS; from JS we cannot intercept the handshake. Use HSTS / CT pinning at the server side instead.
 
 Extract pins from your live backend:

@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:io' show HandshakeException;
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../../support/test_env.dart';
@@ -57,6 +63,48 @@ class _StubInterceptor extends Interceptor {
     }
     handler.next(options);
   }
+}
+
+/// Records every request that reaches it and answers from a queue. Installed in the
+/// `httpClientAdapter` slot of the client's Dio, where `ApiClient` puts the certificate-pinning
+/// adapter, it shows which requests travel through that transport.
+class _FakeHttpClientAdapter implements HttpClientAdapter {
+  final requests = <({String method, String path, String? authorization, String? body})>[];
+  final _replies = <Object>[];
+  bool closed = false;
+
+  void reply(int statusCode, [String body = '']) => _replies.add((statusCode, body));
+
+  void fail(Object error) => _replies.add(error);
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    final body = requestStream == null ? null : utf8.decode(await requestStream.expand((chunk) => chunk).toList());
+    requests.add((
+      method: options.method,
+      path: options.path,
+      authorization: options.headers['Authorization'] as String?,
+      body: body,
+    ));
+    if (_replies.isEmpty) throw StateError('No reply queued for ${options.method} ${options.path}');
+    return switch (_replies.removeAt(0)) {
+      (final int statusCode, final String body) => ResponseBody.fromString(
+        body,
+        statusCode,
+        headers: {
+          Headers.contentTypeHeader: [Headers.jsonContentType],
+        },
+      ),
+      final Object error => throw error,
+    };
+  }
+
+  @override
+  void close({bool force = false}) => closed = true;
 }
 
 void main() {
@@ -361,6 +409,92 @@ void main() {
       client.instance; // force Dio + chain construction
       final names = client.interceptorChainSnapshot.map((e) => e.name);
       expect(names, containsAll(<String>['AuthInterceptor', 'TokenRefreshInterceptor']));
+    });
+  });
+
+  // Regression: retries and the token-refresh POST used to go through fresh Dio instances on the
+  // default adapter, so with certificate pinning configured they were checked against system trust
+  // only. Every request the client sends must go through the adapter installed on its Dio.
+  group('ApiClient transport', () {
+    late ApiClient client;
+    late _FakeHttpClientAdapter adapter;
+
+    setUp(() {
+      // Production chain (no MockInterceptor) with pinning configured. The fake replaces the pinned
+      // adapter in its slot, so it sees every request that adapter would carry.
+      client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: ['test-pin'],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      adapter = _FakeHttpClientAdapter();
+      client.instance.httpClientAdapter = adapter;
+    });
+
+    test('sends the retry of a failed request through the client adapter', () async {
+      TestEnv.authenticate();
+      adapter
+        ..reply(503)
+        ..reply(200, '{"saved":true}');
+
+      final response = await client.post('/api/transport/retry', {'name': 'test'});
+
+      expect(response.statusCode, 200);
+      const sent = (
+        method: 'POST',
+        path: '/api/transport/retry',
+        authorization: 'Bearer MOCK_TOKEN',
+        body: '{"name":"test"}',
+      );
+      expect(adapter.requests, [sent, sent]);
+      expect(adapter.closed, isFalse);
+    });
+
+    test('sends the token refresh POST through the client adapter', () async {
+      TestEnv.authenticate();
+      await FlutterSecureStorageAdapter().write(SecureStorageKeys.refreshToken.key, 'REFRESH_TOKEN');
+      adapter
+        ..reply(401)
+        ..reply(200, '{"id_token":"NEW_JWT","refresh_token":"NEW_REFRESH"}')
+        ..reply(200, '{"ok":true}');
+
+      final response = await client.get('/api/transport/refresh');
+
+      expect(response.statusCode, 200);
+      expect(adapter.requests, [
+        (method: 'GET', path: '/api/transport/refresh', authorization: 'Bearer MOCK_TOKEN', body: null),
+        (method: 'POST', path: '/api/token/refresh', authorization: null, body: '{"refresh_token":"REFRESH_TOKEN"}'),
+        (method: 'GET', path: '/api/transport/refresh', authorization: 'Bearer NEW_JWT', body: null),
+      ]);
+      expect(adapter.closed, isFalse);
+    });
+
+    test('fails a pin mismatch as DioExceptionType.unknown and never retries it', () async {
+      // The pinned adapter rejects the certificate during the TLS handshake, so HttpClient throws a
+      // HandshakeException and dio wraps it in DioExceptionType.unknown, not badCertificate.
+      adapter.fail(const HandshakeException('Handshake error in client (OS Error: CERTIFICATE_VERIFY_FAILED)'));
+
+      await expectLater(
+        client.instance.post<String>('/api/transport/pin-mismatch', data: {'name': 'test'}),
+        throwsA(
+          isA<DioException>()
+              .having((e) => e.type, 'type', DioExceptionType.unknown)
+              .having((e) => e.error, 'error', isA<HandshakeException>()),
+        ),
+      );
+      expect(adapter.requests, hasLength(1));
+    });
+
+    test('records failures on ResilienceInterceptor.instance, which the dashboard reads (#60)', () async {
+      adapter.reply(500);
+
+      await expectLater(client.post('/api/transport/breaker', {'name': 'test'}), throwsA(isA<FetchDataException>()));
+
+      expect(ResilienceInterceptor.instance.circuitBreakers['/api/transport/breaker']?.failureCount, 1);
     });
   });
 }
