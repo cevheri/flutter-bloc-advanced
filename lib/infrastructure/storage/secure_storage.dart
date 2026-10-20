@@ -16,6 +16,13 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 ///
 /// [read] returns null only when the key is absent. Platform / decryption
 /// failures throw.
+///
+/// Android exception: [FlutterSecureStorageAdapter] keeps the plugin default
+/// `resetOnError: true`. When an entry can no longer be decrypted (for
+/// example after a backup restore without its Keystore key), the plugin
+/// deletes it and [read] returns null, so the caller sees an absent key.
+/// With `resetOnError: false`, a lost Keystore key would leave the whole
+/// store unusable, including writes, which blocks sign-in.
 abstract interface class ISecureStorage {
   /// Read a value by [key]. Returns null only when the key is absent.
   /// Throws on platform / decryption failure so transactional callers
