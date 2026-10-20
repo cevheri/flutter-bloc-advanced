@@ -6,8 +6,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// `web/` keeps `__KEY__` placeholders for template users, and `flutter build web` copies them into `build/web`
 /// unchanged. Before the upload, `.github/workflows/build-web.yml` replaces each one in `index.html`, `manifest.json`,
-/// `sitemap.xml` and `humans.txt` with the value of its `KEY=value` line in `.github/pages/demo-values.env`
-/// (`scripts/fill_web_placeholders.sh`) and then fails on any placeholder left (`scripts/check_web_placeholders.sh`).
+/// `sitemap.xml`, `humans.txt`, `404.html`, `robots.txt` and `.well-known/security.txt` with the value of its
+/// `KEY=value` line in `.github/pages/demo-values.env` (`scripts/fill_web_placeholders.sh`) and then fails on any
+/// placeholder left (`scripts/check_web_placeholders.sh`).
 /// Published unfilled, the placeholders named the app in Chrome's install prompt and sent the canonical link and
 /// `og:image` to pages that return 404.
 ///
@@ -21,7 +22,15 @@ import 'package:flutter_test/flutter_test.dart';
 /// that the mock-only demo never selects.
 void main() {
   const valuesPath = '.github/pages/demo-values.env';
-  const webFiles = ['web/index.html', 'web/manifest.json', 'web/sitemap.xml', 'web/humans.txt'];
+  const webFiles = [
+    'web/index.html',
+    'web/manifest.json',
+    'web/sitemap.xml',
+    'web/humans.txt',
+    'web/404.html',
+    'web/robots.txt',
+    'web/.well-known/security.txt',
+  ];
   const templateConfigPath = 'lib/infrastructure/config/template_config.dart';
   const keysLeftUnfilled = {'KEYWORD', 'PROD_API_URL'};
 

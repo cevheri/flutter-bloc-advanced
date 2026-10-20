@@ -3,9 +3,9 @@
 # Fills the template placeholders of a web build with the values of one deployment.
 #
 # web/ keeps __KEY__ placeholders for template users (README, "Customizing for Your Project"), and flutter build web
-# copies them into the build unchanged. This script replaces each __KEY__ in index.html, manifest.json, sitemap.xml
-# and humans.txt under BUILD_DIR with the value of the KEY=value line in VALUES_FILE, and strips the instruction for
-# template users from the humans.txt header. It never changes web/ itself.
+# copies them into the build unchanged. This script replaces each __KEY__ in index.html, manifest.json, sitemap.xml,
+# humans.txt, 404.html, robots.txt and .well-known/security.txt under BUILD_DIR with the value of the KEY=value line in
+# VALUES_FILE, and strips the instruction for template users from the humans.txt header. It never changes web/ itself.
 #
 # A value is inserted as it is, so a value that would need escaping in HTML, JSON or XML (one of " < > & \ | or a
 # control character) fails the script instead of being escaped. The GitHub Pages job also builds the app with
@@ -35,7 +35,7 @@ if [ "$#" -ne 2 ]; then
 fi
 values_file=$1
 build_dir=$2
-files=(index.html manifest.json sitemap.xml humans.txt)
+files=(index.html manifest.json sitemap.xml humans.txt 404.html robots.txt .well-known/security.txt)
 
 [ -f "$values_file" ] || fail "values file '$values_file' does not exist"
 for file in "${files[@]}"; do

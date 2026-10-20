@@ -47,7 +47,7 @@ jobs:
 
       - name: Fill demo values
         # web/ keeps the template placeholders. Only this repository fills them with the hosted demo's values, so a
-        # copy of the template never publishes the demo's name, URLs or author.
+        # copy of the template never publishes the demo's name, URLs, author or security contact.
         if: github.repository == 'cevheri/flutter-bloc-advanced'
         run: scripts/fill_web_placeholders.sh .github/pages/demo-values.env build/web
 
