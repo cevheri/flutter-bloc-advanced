@@ -180,16 +180,6 @@ void main() {
       );
     });
 
-    group('LifecycleDismissUpdateEvent', () {
-      blocTest<LifecycleBloc, LifecycleState>(
-        'should emit ready (preserving config) when update is dismissed from force-update',
-        build: () => LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance),
-        seed: () => const LifecycleForceUpdate(config: AppConfigEntity(minimumVersion: '2.0.0')),
-        act: (bloc) => bloc.add(const LifecycleDismissUpdateEvent()),
-        expect: () => [isA<LifecycleReady>().having((s) => s.config?.minimumVersion, 'config.minimumVersion', '2.0.0')],
-      );
-    });
-
     group('version comparison edge cases', () {
       blocTest<LifecycleBloc, LifecycleState>(
         'should handle patch version comparison (1.0.0 < 1.0.1)',

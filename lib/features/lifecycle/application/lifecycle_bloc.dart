@@ -27,7 +27,6 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
     this._recheckInterval = defaultRecheckInterval,
   }) : super(const LifecycleInitial()) {
     on<LifecycleCheckEvent>(_onCheck, transformer: EventTransformers.dropConcurrent());
-    on<LifecycleDismissUpdateEvent>(_onDismissUpdate);
   }
 
   static final _log = AppLogger.getLogger('LifecycleBloc');
@@ -107,15 +106,5 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
             emit(LifecycleReady(error: error));
         }
     }
-  }
-
-  FutureOr<void> _onDismissUpdate(LifecycleDismissUpdateEvent event, Emitter<LifecycleState> emit) {
-    final config = switch (state) {
-      LifecycleMaintenance(:final config) => config,
-      LifecycleForceUpdate(:final config) => config,
-      LifecycleReady(:final config) => config,
-      _ => null,
-    };
-    emit(LifecycleReady(config: config));
   }
 }

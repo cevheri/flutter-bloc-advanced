@@ -28,8 +28,3 @@ class LifecycleCheckEvent extends LifecycleEvent {
   @override
   List<Object> get props => [trigger];
 }
-
-/// Dismiss a soft-update notice (user chose to skip).
-class LifecycleDismissUpdateEvent extends LifecycleEvent {
-  const LifecycleDismissUpdateEvent();
-}
