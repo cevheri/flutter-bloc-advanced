@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/idempotency_interceptor.dart';
@@ -156,6 +157,14 @@ class ResilienceInterceptor extends Interceptor {
     // only delay the cached answer, and the endpoint did not fail. The request interceptors after it never ran either,
     // so a retry would also go out without the Authorization header.
     if (err.error is ConnectivityException) {
+      handler.next(err);
+      return;
+    }
+
+    // A certificate pin mismatch fails the TLS handshake before the request reaches the server, so it says nothing
+    // about the endpoint's health. Counted as failures, a few of them would open the circuit and replace the
+    // insecure-connection error with a circuit-open one.
+    if (err.error is CertificatePinningException) {
       handler.next(err);
       return;
     }

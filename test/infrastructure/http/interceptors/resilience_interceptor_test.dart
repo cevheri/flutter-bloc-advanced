@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:fake_async/fake_async.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/circuit_breaker.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/connectivity_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
@@ -336,6 +337,24 @@ void main() {
           shared.onRequest(RequestOptions(path: '/api/users'), next);
           expect(next.result.passed, isTrue, reason: 'one recorded failure would have opened the circuit');
         });
+      });
+
+      // A pin mismatch fails the TLS handshake before the request reaches the server, so it says nothing about the
+      // endpoint's health. Counted as failures, five of them opened the circuit, and the user then saw "Circuit
+      // Breaker Open" instead of the insecure-connection message.
+      test('should pass a certificate pin mismatch through without recording a failure', () {
+        final shared = ResilienceInterceptor(failureThreshold: 1, cooldownDuration: const Duration(hours: 1));
+        final err = DioException(
+          requestOptions: RequestOptions(path: '/api/users', method: 'GET'),
+          error: const CertificatePinningException('api.example.test', 443),
+        );
+
+        final result = _captureOnErrorSync(shared.forDio(Dio()), err);
+        expect(result.passed, isTrue);
+
+        final next = _TestRequestHandler();
+        shared.onRequest(RequestOptions(path: '/api/users'), next);
+        expect(next.result.passed, isTrue, reason: 'one recorded failure would have opened the circuit');
       });
     });
 

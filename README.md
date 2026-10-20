@@ -104,7 +104,7 @@ How it works:
 
 - `AppConfig.certificatePins` (`lib/infrastructure/config/environment.dart`) is a `List<String>` of base64 SHA-256 hashes. Empty list = pinning disabled (use system trust); non-empty list installs a custom Dio adapter that uses `SecurityContext(withTrustedRoots: false)` so **every** certificate falls through `badCertificateCallback` for pin checking. This is the only correct way to enforce pinning even against system-trusted but adversarial CAs.
 - A pin mismatch fails the TLS handshake with a `CertificatePinningException` (`lib/infrastructure/http/certificate_pinner.dart`), so dio reports `DioExceptionType.unknown` with that exception as its `error`, not `DioExceptionType.badCertificate` (dio raises that only for `IOHttpClientAdapter.validateCertificate`).
-  `ResilienceInterceptor` does not retry it.
+  `ResilienceInterceptor` neither retries it nor counts it toward opening the endpoint's circuit.
   `CacheInterceptor` never answers it from cache: the connection may be intercepted, so the request fails instead of showing earlier data.
   Retries and the token-refresh call go through the same pinned adapter as the original request.
   `ApiClient` throws it as an `UntrustedCertificateException` (`lib/core/errors/app_api_exception.dart`), a `FetchDataException` whose message names the host and port for the log.
