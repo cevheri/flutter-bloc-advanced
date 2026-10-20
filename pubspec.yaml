@@ -15,7 +15,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: 2.0.0
   flutter_localizations:
     sdk: flutter
   flutter_bloc: 9.1.1
