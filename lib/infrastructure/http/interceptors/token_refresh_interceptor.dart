@@ -52,7 +52,8 @@ sealed class _RefreshOutcome {
   const _RefreshOutcome();
 }
 
-/// The rotated tokens are stored; [idToken] is the new JWT.
+/// The session has a new JWT, [idToken]: the one this refresh stored or, on web, the one another browser tab stored
+/// while this refresh was on its way, when that tab refreshed the session or signed in.
 final class _Refreshed extends _RefreshOutcome {
   const _Refreshed(this.idToken);
 
@@ -63,17 +64,20 @@ final class _Refreshed extends _RefreshOutcome {
   String toString() => '_Refreshed(idToken: ${maskToken(idToken)})';
 }
 
-/// The session cannot be refreshed: no refresh token is stored, the refresh failed or its answer was malformed, or
-/// storing or taking back the rotated tokens failed.
+/// The stored session cannot be refreshed: no refresh token is stored, the refresh failed or its answer was malformed,
+/// or storing or taking back the rotated tokens failed.
 final class _RefreshFailed extends _RefreshOutcome {
   const _RefreshFailed();
 }
 
-/// A logout or the end of the session wiped, or is wiping, the session the refresh was asked for, so the rotated tokens
-/// were dropped.
+/// A logout or the end of the session wiped, or is wiping, the session the refresh was asked for, in this tab or, on
+/// web, in another browser tab, so the answer of the refresh was dropped.
 final class _SessionEnded extends _RefreshOutcome {
   const _SessionEnded();
 }
+
+/// The tokens in the answer of a refresh: the new JWT, and the new refresh token when the server rotates it.
+typedef _RotatedTokens = ({String idToken, String? refreshToken});
 
 /// Intercepts 401 responses and attempts a silent token refresh.
 ///
@@ -95,6 +99,23 @@ final class _SessionEnded extends _RefreshOutcome {
 /// who signed in since. A refresh still on its way when the wipe starts
 /// drops the rotated tokens, so a relaunch cannot restore the session the
 /// user ended. The requests fail with their 401 ([SessionGeneration]).
+///
+/// On web every browser tab of the app shares the stored session but
+/// counts its own [SessionGeneration], so another tab can sign out or
+/// refresh the session while this tab's refresh is on its way. Before it
+/// acts on the answer, success or failure, the refresh reads the stored
+/// refresh token again: when it is gone, the session ended and the answer
+/// is dropped; when it is another one, another tab refreshed the session
+/// or signed in, so its tokens stay and the requests are sent again with
+/// its JWT, even when the server refused this tab's refresh token because
+/// that tab had already used it. Each tab reads its own copy of the
+/// browser's storage, which takes another tab's change a moment later, so
+/// a sign-out in another tab just before or while this tab stores the
+/// rotated tokens can still be undone by them. A sign-out in another tab
+/// does not end this tab's generation, so a request this tab sent before
+/// that sign-out can still go out again with the JWT of a different user
+/// who signed in since: when its 401 comes after that sign-in, and when
+/// that sign-in comes while this tab's refresh is on its way.
 ///
 /// Deliberately not a [QueuedInterceptor]: the retry goes back through
 /// the client's [Dio], so a failed retry reaches [onError] while the
@@ -346,12 +367,13 @@ class TokenRefreshInterceptor extends Interceptor {
   }
 
   /// Performs the actual refresh call + persistence. Returns [_Refreshed]
-  /// with the new idToken on success, [_SessionEnded] when the session of
-  /// [generation] has ended before the rotated tokens are stored or while
-  /// they are, and [_RefreshFailed] on any
-  /// failure (missing refresh token, non-2xx response, malformed body,
-  /// transport error). [generation] is the session generation of the
-  /// request that asked for the refresh.
+  /// with the new idToken on success, or with the JWT of another browser
+  /// tab that refreshed the session meanwhile, [_SessionEnded] when the
+  /// session of [generation] has ended before the rotated tokens are
+  /// stored or while they are, and [_RefreshFailed] on any failure
+  /// (missing refresh token, non-2xx response, malformed body, transport
+  /// error) of the session that is still stored. [generation] is the
+  /// session generation of the request that asked for the refresh.
   Future<_RefreshOutcome> _performRefresh(int generation) async {
     try {
       final refreshToken = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
@@ -360,45 +382,12 @@ class TokenRefreshInterceptor extends Interceptor {
         return const _RefreshFailed();
       }
 
-      // Use a fresh Dio instance to bypass the interceptor chain.
-      final refreshDio = _refreshDioFactory(_dio);
-
-      final response = await refreshDio.post(
-        _RefreshEndpoint.path,
-        data: jsonEncode({_RefreshEndpoint.requestKeyRefreshToken: refreshToken}),
-      );
-
-      if (response.statusCode != 200 && response.statusCode != 201) {
-        _log.warn('Token refresh failed with status {} — session expired', [response.statusCode]);
-        return const _RefreshFailed();
-      }
-
-      // Decode the body, then defensively narrow to Map<String, dynamic>
-      // before indexing. A misconfigured backend / proxy could return a
-      // JSON array, a bare string, or wrap the payload (e.g. `{"data":
-      // {...}}`); in any of those shapes `decoded[id_token]` would throw
-      // a NoSuchMethodError that the outer catch would swallow as
-      // "Unexpected error during token refresh" — surfacing the body
-      // shape explicitly makes the misconfiguration debuggable from logs.
-      final decoded = response.data is String ? decodeCredentialJson(response.data as String) : response.data;
-      if (decoded is! Map<String, dynamic>) {
-        _log.error('Refresh response body is not a JSON object (was {}); session expired', [decoded.runtimeType]);
-        return const _RefreshFailed();
-      }
-      final newIdToken = decoded[_RefreshEndpoint.responseKeyIdToken] as String?;
-      final newRefreshToken = decoded[_RefreshEndpoint.responseKeyRefreshToken] as String?;
-
-      if (newIdToken == null || newIdToken.isEmpty) {
-        _log.error('Refresh response missing id_token — session expired');
-        return const _RefreshFailed();
-      }
-
-      // A logout or the end of the session wiped, or is wiping, the stored session while the refresh was on its way.
-      // Storing the rotated tokens now would bring back the session the user ended, and a relaunch would restore it.
-      if (SessionGeneration.hasEnded(generation)) {
-        _log.warn('Session ended during the token refresh: rotated tokens dropped');
-        return const _SessionEnded();
-      }
+      final rotated = await _requestRotation(refreshToken);
+      // The answer, tokens or a failure, is acted on only while the session the refresh was sent for is stored.
+      final movedOn = await _sessionMovedOn(sentRefreshToken: refreshToken, generation: generation);
+      if (movedOn != null) return movedOn;
+      if (rotated == null) return const _RefreshFailed();
+      final (idToken: newIdToken, refreshToken: newRefreshToken) = rotated;
 
       // Persist the rotated tokens. AuthInterceptor reads JWT from
       // secure storage on every request, so the next outgoing call
@@ -447,15 +436,92 @@ class TokenRefreshInterceptor extends Interceptor {
 
       _log.info('Token refresh successful');
       return _Refreshed(newIdToken);
-    } on DioException catch (e) {
-      // A failure that dio only wraps, such as a certificate pin mismatch, has no message: its cause is the wrapped
-      // error. The refresh request skips the client's interceptors, so nothing else logs it.
-      _log.error('Token refresh request failed (type: {}, message: {}, error: {})', [e.type.name, e.message, e.error]);
-      return const _RefreshFailed();
     } catch (e) {
       _log.error('Unexpected error during token refresh: {}', [e]);
       return const _RefreshFailed();
     }
+  }
+
+  /// Sends [refreshToken] to the refresh endpoint and returns the tokens of its answer, or null when the refresh failed
+  /// or its answer is malformed. The reason is logged here.
+  Future<_RotatedTokens?> _requestRotation(String refreshToken) async {
+    try {
+      // Use a fresh Dio instance to bypass the interceptor chain.
+      final refreshDio = _refreshDioFactory(_dio);
+
+      final response = await refreshDio.post(
+        _RefreshEndpoint.path,
+        data: jsonEncode({_RefreshEndpoint.requestKeyRefreshToken: refreshToken}),
+      );
+
+      if (response.statusCode != 200 && response.statusCode != 201) {
+        _log.warn('Token refresh failed with status {}', [response.statusCode]);
+        return null;
+      }
+
+      // Decode the body, then defensively narrow to Map<String, dynamic>
+      // before indexing. A misconfigured backend / proxy could return a
+      // JSON array, a bare string, or wrap the payload (e.g. `{"data":
+      // {...}}`); in any of those shapes `decoded[id_token]` would throw
+      // a NoSuchMethodError that the catch below would swallow as
+      // "Unexpected error during token refresh". Surfacing the body
+      // shape explicitly makes the misconfiguration debuggable from logs.
+      final decoded = response.data is String ? decodeCredentialJson(response.data as String) : response.data;
+      if (decoded is! Map<String, dynamic>) {
+        _log.error('Refresh response body is not a JSON object (was {})', [decoded.runtimeType]);
+        return null;
+      }
+      final newIdToken = decoded[_RefreshEndpoint.responseKeyIdToken] as String?;
+      final newRefreshToken = decoded[_RefreshEndpoint.responseKeyRefreshToken] as String?;
+
+      if (newIdToken == null || newIdToken.isEmpty) {
+        _log.error('Refresh response missing id_token');
+        return null;
+      }
+      return (idToken: newIdToken, refreshToken: newRefreshToken);
+    } on DioException catch (e) {
+      // A failure that dio only wraps, such as a certificate pin mismatch, has no message: its cause is the wrapped
+      // error. The refresh request skips the client's interceptors, so nothing else logs it.
+      _log.error('Token refresh request failed (type: {}, message: {}, error: {})', [e.type.name, e.message, e.error]);
+      return null;
+    } catch (e) {
+      _log.error('Unexpected error during token refresh: {}', [e]);
+      return null;
+    }
+  }
+
+  /// The outcome for a refresh whose session ended or moved on while the refresh was on its way, or null while the
+  /// session it sent [sentRefreshToken] for, under [generation], is still the stored one.
+  ///
+  /// The session can end or move on in this tab or, on web, in another browser tab, which shares the stored session
+  /// but counts its own [SessionGeneration]. The checks run in this order: this tab's generation, the stored refresh
+  /// token, then the stored JWT. They hold for a failed refresh too, which must not end a session it was not sent for.
+  Future<_RefreshOutcome?> _sessionMovedOn({required String sentRefreshToken, required int generation}) async {
+    // A logout or the end of the session in this tab wiped, or is wiping, the stored session. Storing the rotated
+    // tokens now would bring back the session the user ended, and a relaunch would restore it.
+    if (SessionGeneration.hasEnded(generation)) {
+      _log.warn('Session ended during the token refresh: its answer is dropped');
+      return const _SessionEnded();
+    }
+    final storedRefreshToken = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
+    // Another tab ended the session. What is stored now is not this session, so it is not ended again either.
+    if (storedRefreshToken == null || storedRefreshToken.isEmpty) {
+      _log.warn('Session ended in another tab during the token refresh: its answer is dropped');
+      return const _SessionEnded();
+    }
+    if (storedRefreshToken == sentRefreshToken) return null;
+    // Another tab refreshed the session, or signed in. Its tokens stay: this answer stored over them could pair this
+    // JWT with that tab's refresh token, and a server that accepts a refresh token once has refused this refresh. The
+    // requests are sent again with the JWT that tab stored. A tab stores its JWT before its refresh token, so this
+    // read, after the refresh token's, sees that JWT or a later one.
+    final storedIdToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    // A sign-out deletes the JWT before the refresh token, so a missing JWT is another tab's sign-out under way.
+    if (storedIdToken == null || storedIdToken.isEmpty) {
+      _log.warn('Session ended in another tab during the token refresh: its answer is dropped');
+      return const _SessionEnded();
+    }
+    _log.info('Session refreshed in another tab during the token refresh: using its tokens');
+    return _Refreshed(storedIdToken);
   }
 
   /// Deletes [key] when it still holds [value], which this refresh stored, and leaves any other value alone.

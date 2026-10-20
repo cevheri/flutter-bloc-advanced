@@ -201,6 +201,10 @@ In production the refresh Dio has no interceptors and uses the adapter of the cl
 A logout or the end of the session wipes the stored session inside `SessionGeneration.wipe`.
 So within one app process, which on web is one browser tab, a 401 for a request whose session has been wiped since, or is being wiped, is neither sent again nor refreshed: the token stored now may be that of another user who signed in since.
 A refresh still on its way drops the rotated tokens instead of storing a session that a relaunch would restore.
+On web every browser tab shares the stored session but counts its own session generation, so before it acts on the answer of a refresh, success or failure, `TokenRefreshInterceptor` also reads the stored refresh token again.
+When another tab has signed out meanwhile, the answer is dropped; when another tab has refreshed the session, its tokens stay and the request is sent again with its JWT.
+Each tab reads its own copy of the browser's storage, which takes another tab's change a moment later, so a sign-out in another tab just before or while a refresh stores its tokens can still be undone by them.
+A sign-out in one tab does not end the session generation of the other tabs, so a request one of them sent before the sign-out can still be sent again with the JWT of a different user who signed in since: when its 401 comes after that sign-in, and when that sign-in comes while the tab's refresh is on its way.
 `CacheInterceptor` checks the same generation before it stores a response, so a GET still on its way when the session ends does not put the data of the user who signed out back into the cache the wipe cleared.
 
 ## Mock File Naming Convention

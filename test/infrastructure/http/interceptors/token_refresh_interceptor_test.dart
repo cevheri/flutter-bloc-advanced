@@ -29,7 +29,7 @@ class _ReadThrowsOnJwtSecureStorage implements ISecureStorage {
 }
 
 /// In-memory ISecureStorage for tests. Counts reads of the refresh-token
-/// key so concurrent-refresh coalescing can be asserted.
+/// key, the proxy several tests use for whether a refresh started.
 class _MemorySecureStorage implements ISecureStorage {
   final Map<String, String> _store = {};
   int refreshTokenReadCount = 0;
@@ -280,7 +280,16 @@ void main() {
     // would have been taken for rejected credentials and never refreshed the session. No shipped request sends one yet.
     test('refreshes the session for a 401 from another method on the path of a public endpoint', () async {
       await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
-      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      var refreshRequests = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        refreshDioFactory: (source) {
+          refreshRequests++;
+          return Dio(BaseOptions(baseUrl: source.options.baseUrl))
+            ..interceptors.add(_StubInterceptor()..stubError(statusCode: 401));
+        },
+      );
       final requestOptions = RequestOptions(
         path: '/authenticate',
         method: 'GET',
@@ -293,7 +302,7 @@ void main() {
 
       await interceptor.onError(error, _TestErrorHandler());
 
-      expect(secureStorage.refreshTokenReadCount, 1, reason: 'the refresh-token read is the proxy for a refresh');
+      expect(refreshRequests, 1);
     });
   });
 
@@ -372,12 +381,17 @@ void main() {
   group('TokenRefreshInterceptor - concurrent refresh coalescing', () {
     test('coalesces concurrent 401s into a single refresh request', () async {
       await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh-token');
-      // Baseline the counter — earlier setup or other code paths may
-      // have read the key — so we assert the DELTA introduced by the
-      // three concurrent onError calls below, not the absolute count.
-      final baseline = secureStorage.refreshTokenReadCount;
+      var refreshRequests = 0;
 
-      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        refreshDioFactory: (source) {
+          refreshRequests++;
+          return Dio(BaseOptions(baseUrl: source.options.baseUrl))
+            ..interceptors.add(_StubInterceptor()..stubError(statusCode: 401));
+        },
+      );
       DioException makeErr() {
         final ro = _sentRequest('/api/users');
         return DioException(
@@ -396,15 +410,10 @@ void main() {
         interceptor.onError(makeErr(), h3),
       ]);
 
-      // Without coalescing this would be 3 — one refreshToken read per
+      // Without coalescing this would be 3, one refresh request per
       // concurrent 401. With the in-flight Future shared, all three
-      // queued callers await the same refresh and the secure store is
-      // read exactly once.
-      expect(
-        secureStorage.refreshTokenReadCount - baseline,
-        1,
-        reason: 'concurrent 401s should share a single refresh attempt',
-      );
+      // queued callers await the same refresh.
+      expect(refreshRequests, 1, reason: 'concurrent 401s should share a single refresh attempt');
     });
 
     test('does not attempt a second refresh when the retried request 401s again', () async {
@@ -598,7 +607,7 @@ void main() {
       // bounded because a queued interceptor used to hang here.
       await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
       await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
-      final baselineRefreshReads = secureStorage.refreshTokenReadCount;
+      var refreshRequests = 0;
       var sessionExpiredCalls = 0;
       final server = _UnauthorizedServerStub();
 
@@ -609,6 +618,7 @@ void main() {
           secureStorage: secureStorage,
           onSessionExpired: () => sessionExpiredCalls++,
           refreshDioFactory: (source) {
+            refreshRequests++;
             final refreshDio = Dio(BaseOptions(baseUrl: source.options.baseUrl));
             refreshDio.interceptors.add(_StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}'));
             return refreshDio;
@@ -626,7 +636,7 @@ void main() {
 
       expect(server.authorizations, ['Bearer old-jwt', 'Bearer new-jwt']);
       expect(sessionExpiredCalls, 1);
-      expect(secureStorage.refreshTokenReadCount - baselineRefreshReads, 1, reason: 'exactly one refresh');
+      expect(refreshRequests, 1, reason: 'exactly one refresh');
     });
   });
 
@@ -1194,6 +1204,224 @@ void main() {
       expect(await storage.read(SecureStorageKeys.jwtToken.key), 'signed-in-jwt');
       expect(await storage.read(SecureStorageKeys.refreshToken.key), 'signed-in-refresh');
     });
+
+    // Regression: a refresh that failed after the session ended still ended the session, which wiped the session the
+    // user had signed in to while the refresh was on its way.
+    test('does not end the session signed in after the end when the refresh then fails', () async {
+      final storage = _InterleavingSecureStorage();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: storage,
+        onSessionExpired: () => sessionExpiredCalls++,
+        refreshDioFactory: (source) => Dio(BaseOptions(baseUrl: source.options.baseUrl))
+          ..interceptors.add(
+            _RefreshInFlightStub(
+              statusCode: 401,
+              whileInFlight: () async {
+                await endSession(storage);
+                await storage.write(SecureStorageKeys.jwtToken.key, 'signed-in-jwt');
+                await storage.write(SecureStorageKeys.refreshToken.key, 'signed-in-refresh');
+              },
+            ),
+          ),
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(sessionExpiredCalls, 0, reason: 'ending the session would wipe the session signed in to since');
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), 'signed-in-jwt');
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), 'signed-in-refresh');
+    });
+  });
+
+  // On web every browser tab of the app runs its own interceptor and counts its own session generation, but all of
+  // them read and write the same stored session. A refresh on its way in one tab stored its answer after another tab
+  // signed out, so the session came back for every tab, or over the tokens another tab had just rotated; and when the
+  // server refused the refresh token that tab had just used, it ended the session that tab had refreshed.
+  group('TokenRefreshInterceptor - another browser tab', () {
+    late _SharedLocalStorage localStorage;
+    late _TabStorage thisTab;
+    late _TabStorage otherTab;
+    late _CapturingSuccessStub retryStub;
+    late int sessionExpiredCalls;
+
+    setUp(() async {
+      localStorage = _SharedLocalStorage();
+      thisTab = localStorage.openTab();
+      otherTab = localStorage.openTab();
+      await thisTab.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await thisTab.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      otherTab.receive();
+      retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      sessionExpiredCalls = 0;
+    });
+
+    DioException unauthorized() {
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      return DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+    }
+
+    /// The interceptor of this tab, whose refresh request is answered with [statusCode] and [body] once [whileInFlight]
+    /// has run.
+    TokenRefreshInterceptor interceptorOfThisTab({
+      required Future<void> Function() whileInFlight,
+      int statusCode = 200,
+      String body = '{"id_token":"new-jwt","refresh_token":"new-refresh"}',
+    }) => TokenRefreshInterceptor(
+      dio: dio,
+      secureStorage: thisTab,
+      onSessionExpired: () => sessionExpiredCalls++,
+      refreshDioFactory: (source) =>
+          Dio(BaseOptions(baseUrl: source.options.baseUrl))
+            ..interceptors.add(_RefreshInFlightStub(statusCode: statusCode, body: body, whileInFlight: whileInFlight)),
+    );
+
+    /// A 401 in the other tab, which that tab's own interceptor fixes with a token refresh: the server rotates the
+    /// tokens to that tab's, and the interceptor stores the JWT, then the refresh token.
+    Future<void> refreshInOtherTab() async {
+      final otherDio = Dio(BaseOptions(baseUrl: 'https://test.api'))..interceptors.add(_CapturingSuccessStub());
+      addTearDown(otherDio.close);
+      final interceptorOfOtherTab = TokenRefreshInterceptor(
+        dio: otherDio,
+        secureStorage: otherTab,
+        refreshDioFactory: (source) => Dio(BaseOptions(baseUrl: source.options.baseUrl))
+          ..interceptors.add(
+            _StubInterceptor()
+              ..stubSuccess(data: '{"id_token":"jwt-of-other-tab","refresh_token":"refresh-of-other-tab"}'),
+          ),
+      );
+      await interceptorOfOtherTab.onError(unauthorized(), _TestErrorHandler());
+    }
+
+    /// What a sign-out in the other tab does to the stored session: it deletes the JWT, then the refresh token. The
+    /// wipe runs in that tab's own session generation, so the test deletes the tokens without SessionGeneration.wipe,
+    /// which would end the generation of this tab too.
+    Future<void> signOutInOtherTab() async {
+      await otherTab.delete(SecureStorageKeys.jwtToken.key);
+      await otherTab.delete(SecureStorageKeys.refreshToken.key);
+    }
+
+    test('drops the rotated tokens when the other tab signs out while the refresh is on its way', () async {
+      final interceptor = interceptorOfThisTab(
+        whileInFlight: () async {
+          await signOutInOtherTab();
+          thisTab.receive();
+        },
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(localStorage.values, isEmpty, reason: 'the session the other tab ended stays ended');
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull);
+      expect(sessionExpiredCalls, 0, reason: 'what is stored now is not the session this refresh was for');
+    });
+
+    test('does not end the session when the other tab signs out while a failing refresh is on its way', () async {
+      final interceptor = interceptorOfThisTab(
+        statusCode: 503,
+        body: '',
+        whileInFlight: () async {
+          await signOutInOtherTab();
+          thisTab.receive();
+        },
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      // A session the user signs in to next may hold no refresh token, so ending the session here could wipe it.
+      expect(sessionExpiredCalls, 0, reason: 'what is stored now is not the session this refresh was for');
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(localStorage.values, isEmpty);
+    });
+
+    test('keeps the tokens the other tab rotated while the refresh was on its way and retries with them', () async {
+      final interceptor = interceptorOfThisTab(
+        whileInFlight: () async {
+          await refreshInOtherTab();
+          thisTab.receive();
+        },
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(unauthorized(), handler);
+
+      expect(localStorage.values, {
+        SecureStorageKeys.jwtToken.key: 'jwt-of-other-tab',
+        SecureStorageKeys.refreshToken.key: 'refresh-of-other-tab',
+      });
+      expect(handler.resolveCalled, isTrue);
+      expect(retryStub.lastAuthorization, 'Bearer jwt-of-other-tab');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('keeps the session the other tab refreshed when the server refuses the refresh token it replaced', () async {
+      // A server that accepts a refresh token once refuses the second tab that sends it.
+      final interceptor = interceptorOfThisTab(
+        statusCode: 401,
+        body: '',
+        whileInFlight: () async {
+          await refreshInOtherTab();
+          thisTab.receive();
+        },
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(unauthorized(), handler);
+
+      expect(sessionExpiredCalls, 0, reason: 'ending the session would sign out the tab that refreshed it');
+      expect(handler.resolveCalled, isTrue);
+      expect(retryStub.lastAuthorization, 'Bearer jwt-of-other-tab');
+      expect(localStorage.values, {
+        SecureStorageKeys.jwtToken.key: 'jwt-of-other-tab',
+        SecureStorageKeys.refreshToken.key: 'refresh-of-other-tab',
+      });
+    });
+
+    test('drops the answer when the other tab refreshed the session and has begun to sign out', () async {
+      final interceptor = interceptorOfThisTab(
+        whileInFlight: () async {
+          await refreshInOtherTab();
+          // The sign-out has deleted the JWT but not yet the refresh token.
+          await otherTab.delete(SecureStorageKeys.jwtToken.key);
+          thisTab.receive();
+        },
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(localStorage.values, {SecureStorageKeys.refreshToken.key: 'refresh-of-other-tab'});
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull);
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('still ends the session when the refresh fails and no other tab has changed it', () async {
+      final interceptor = interceptorOfThisTab(statusCode: 401, body: '', whileInFlight: () async {});
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(sessionExpiredCalls, 1);
+      expect(handler.nextError, same(error));
+    });
   });
 }
 
@@ -1223,18 +1451,102 @@ class _InterleavingSecureStorage extends _MemorySecureStorage {
   }
 }
 
-/// Answers the refresh request with [body] once [whileInFlight] has run, which stands for what the app does while the
-/// refresh request is on its way.
+/// Answers the refresh request with [statusCode] and [body] once [whileInFlight] has run, which stands for what the app
+/// does while the refresh request is on its way. A status other than 200 is rejected, as the server's error response.
 class _RefreshInFlightStub extends Interceptor {
-  _RefreshInFlightStub({required this.body, required this.whileInFlight});
+  _RefreshInFlightStub({this.body = '', this.statusCode = 200, required this.whileInFlight});
 
   final String body;
+  final int statusCode;
   final Future<void> Function() whileInFlight;
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
     await whileInFlight();
-    handler.resolve(Response(requestOptions: options, statusCode: 200, data: body));
+    final response = Response(requestOptions: options, statusCode: statusCode, data: body);
+    if (statusCode == 200) {
+      handler.resolve(response);
+      return;
+    }
+    handler.reject(DioException(requestOptions: options, type: DioExceptionType.badResponse, response: response));
+  }
+}
+
+/// The localStorage that every browser tab of the app shares, opened by each tab as a [_TabStorage].
+///
+/// [values] is the browser's copy, which takes every change in the order the tabs make it. Each tab reads a copy of its
+/// own, which takes another tab's change only when [_TabStorage.receive] delivers it, as in a browser that keeps a copy
+/// of localStorage in the process of each tab and updates it from the other tabs later.
+class _SharedLocalStorage {
+  final values = <String, String>{};
+  final _tabs = <_TabStorage>[];
+  int _changes = 0;
+
+  _TabStorage openTab() {
+    final tab = _TabStorage._(this);
+    _tabs.add(tab);
+    return tab;
+  }
+}
+
+/// A browser tab's view of [_SharedLocalStorage]. A change made here reaches this tab's copy and the browser's copy at
+/// once, and the other tabs when they receive it.
+class _TabStorage implements ISecureStorage {
+  _TabStorage._(this._shared) : _copy = Map.of(_shared.values);
+
+  final _SharedLocalStorage _shared;
+  final Map<String, String> _copy;
+
+  /// The number of the latest change this tab's copy holds for each key.
+  final _changeOfKey = <String, int>{};
+  final _undelivered = <({String key, String? value, int change})>[];
+
+  /// Applies the changes the other tabs made since the last delivery, in their order. A change older than the one this
+  /// tab's copy holds for the key is skipped: the browser's copy holds the later one.
+  void receive() {
+    for (final change in _undelivered) {
+      if ((_changeOfKey[change.key] ?? 0) > change.change) continue;
+      _take(change.key, change.value, change.change);
+    }
+    _undelivered.clear();
+  }
+
+  void _take(String key, String? value, int change) {
+    if (value == null) {
+      _copy.remove(key);
+    } else {
+      _copy[key] = value;
+    }
+    _changeOfKey[key] = change;
+  }
+
+  void _change(String key, String? value) {
+    final change = ++_shared._changes;
+    _take(key, value, change);
+    if (value == null) {
+      _shared.values.remove(key);
+    } else {
+      _shared.values[key] = value;
+    }
+    for (final tab in _shared._tabs) {
+      if (!identical(tab, this)) tab._undelivered.add((key: key, value: value, change: change));
+    }
+  }
+
+  @override
+  Future<String?> read(String key) async => _copy[key];
+
+  @override
+  Future<void> write(String key, String value) async => _change(key, value);
+
+  @override
+  Future<void> delete(String key) async => _change(key, null);
+
+  @override
+  Future<void> deleteAll() async {
+    for (final key in List.of(_copy.keys)) {
+      _change(key, null);
+    }
   }
 }
 
