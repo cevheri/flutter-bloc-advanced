@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 // See lib/core/security/screen_capture_protection.dart for Android/iOS asymmetry.
 // import 'package:flutter_bloc_advance/core/security/screen_capture_protected.dart';
 import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
+import 'package:flutter_bloc_advance/shared/widgets/password_validator.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
@@ -560,11 +561,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           textInputAction: TextInputAction.done,
           onSubmitted: (_) => _trySubmit(context),
           obscureText: !state.passwordVisible,
-          validator: FormBuilderValidators.compose([
-            FormBuilderValidators.required(errorText: S.of(context).required_field),
-            FormBuilderValidators.minLength(4, errorText: S.of(context).password_min_length),
-            FormBuilderValidators.maxLength(20, errorText: S.of(context).password_max_length),
-          ]),
+          validator: passwordValidator(context),
         );
       },
     );

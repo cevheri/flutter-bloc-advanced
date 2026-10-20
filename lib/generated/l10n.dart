@@ -313,19 +313,24 @@ class S {
     return Intl.message('Register', name: 'register', desc: '', args: []);
   }
 
-  /// `Password cannot be more than 6 characters long`
-  String get password_max_length {
+  /// `Password cannot be more than {max} characters long`
+  String password_max_length(int max) {
     return Intl.message(
-      'Password cannot be more than 6 characters long',
+      'Password cannot be more than $max characters long',
       name: 'password_max_length',
       desc: '',
-      args: [],
+      args: [max],
     );
   }
 
-  /// `Password must be at least 5 characters long`
-  String get password_min_length {
-    return Intl.message('Password must be at least 5 characters long', name: 'password_min_length', desc: '', args: []);
+  /// `Password must be at least {min} characters long`
+  String password_min_length(int min) {
+    return Intl.message(
+      'Password must be at least $min characters long',
+      name: 'password_min_length',
+      desc: '',
+      args: [min],
+    );
   }
 
   /// `Login`

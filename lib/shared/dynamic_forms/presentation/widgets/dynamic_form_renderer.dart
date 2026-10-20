@@ -225,8 +225,11 @@ class DynamicFormRenderer extends StatelessWidget {
       if (v.startsWith('minLength:')) {
         final min = int.tryParse(v.split(':').last);
         if (min != null) {
+          // An empty value is left to the required rule, so an optional field can be cleared again.
           validators.add((value) {
-            if (value is String && value.length < min) return '${field.label} must be at least $min characters';
+            if (value is String && value.isNotEmpty && value.length < min) {
+              return '${field.label} must be at least $min characters';
+            }
             return null;
           });
         }

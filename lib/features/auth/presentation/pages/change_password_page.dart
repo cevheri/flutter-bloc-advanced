@@ -5,6 +5,7 @@ import 'package:flutter_bloc_advance/features/auth/application/change_password_b
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/shared/widgets/password_validator.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
@@ -138,9 +139,7 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
       ),
       obscureText: !_showNewPassword,
       maxLines: 1,
-      validator: FormBuilderValidators.compose([
-        FormBuilderValidators.required(errorText: S.of(context).required_field),
-      ]),
+      validator: passwordValidator(context),
     );
   }
 

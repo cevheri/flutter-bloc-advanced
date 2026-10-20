@@ -24,10 +24,14 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(currentVersion, minimumVersion) => "Current: ${currentVersion}  •  Required: ${minimumVersion}";
 
-  static String m2(translate) =>
+  static String m2(max) => "Password cannot be more than ${max} characters long";
+
+  static String m3(min) => "Password must be at least ${min} characters long";
+
+  static String m4(translate) =>
       "${Intl.select(translate, {'account': 'Account', 'userManagement': 'User Management', 'settings': 'Settings', 'logout': 'Logout', 'info': 'Info', 'language': 'Language', 'theme': 'Theme', 'new_user': 'New', 'list_user': 'List', 'other': 'Other'})}";
 
-  static String m3(error) => "Save failed: ${error}";
+  static String m5(error) => "Save failed: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -134,8 +138,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP must be 6 characters long"),
     "otp_sent_to": MessageLookupByLibrary.simpleMessage("OTP sent to"),
     "password_forgot": MessageLookupByLibrary.simpleMessage("Forgot Password"),
-    "password_max_length": MessageLookupByLibrary.simpleMessage("Password cannot be more than 6 characters long"),
-    "password_min_length": MessageLookupByLibrary.simpleMessage("Password must be at least 5 characters long"),
+    "password_max_length": m2,
+    "password_min_length": m3,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Quick Actions"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "register": MessageLookupByLibrary.simpleMessage("Register"),
@@ -148,14 +152,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "settings": MessageLookupByLibrary.simpleMessage("Settings"),
     "success": MessageLookupByLibrary.simpleMessage("Success"),
     "theme": MessageLookupByLibrary.simpleMessage("Theme"),
-    "translate_menu_title": m2,
+    "translate_menu_title": m4,
     "turkish": MessageLookupByLibrary.simpleMessage("Turkish"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "You have unsaved changes. Are you sure you want to leave?",
     ),
     "user_delete_failed": MessageLookupByLibrary.simpleMessage("Could not delete the user"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Extended Info"),
-    "user_extended_info_save_failed": m3,
+    "user_extended_info_save_failed": m5,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Saved"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Extended Information"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Could not load the users"),

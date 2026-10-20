@@ -50,8 +50,22 @@
   "new_password": "Yeni Şifre",
   "password_forgot": "Şifremi unuttum",
   "register": "Kayıt Ol",
-  "password_max_length": "Şifre en fazla 20 karakter uzunluğunda olmalıdır",
-  "password_min_length": "Şifre en az 6 karakter uzunluğunda olmalıdır",
+  "password_max_length": "Şifre en fazla {max} karakter uzunluğunda olmalıdır",
+  "@password_max_length": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "password_min_length": "Şifre en az {min} karakter uzunluğunda olmalıdır",
+  "@password_min_length": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
   "login_button": "Giriş Yap",
   "loading": "Yükleniyor...",
   "email_send": "E-posta Gönder",

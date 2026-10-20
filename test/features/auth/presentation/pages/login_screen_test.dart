@@ -19,11 +19,11 @@ void main() {
 
   // The real app starts unauthenticated after the global reset, so it lands on /login. The project gives all its
   // links, so the page shows its community section.
-  Future<void> pumpLogin(WidgetTester tester) async {
+  Future<void> pumpLogin(WidgetTester tester, {String language = 'en'}) async {
     await tester.pumpWidget(
-      const App(
-        language: 'en',
-        dependencies: AppDependencies(
+      App(
+        language: language,
+        dependencies: const AppDependencies(
           projectLinks: ProjectLinks(
             repository: 'https://github.com/acme/dashboard',
             docs: 'https://docs.acme.example',
@@ -65,5 +65,32 @@ void main() {
 
       expect(tester.takeException(), isNull);
     });
+  });
+
+  group('LoginScreen password length', () {
+    // Validates the password field alone, so a valid password does not sign in.
+    Future<String?> passwordError(WidgetTester tester, String password) async {
+      await tester.enterText(find.byKey(loginTextFieldPasswordKey), password);
+      final field = tester.state<FormFieldState<dynamic>>(find.byKey(loginTextFieldPasswordKey));
+      field.validate();
+      return field.errorText;
+    }
+
+    const messages = {
+      'en': ('Password must be at least 4 characters long', 'Password cannot be more than 20 characters long'),
+      'tr': ('Şifre en az 4 karakter uzunluğunda olmalıdır', 'Şifre en fazla 20 karakter uzunluğunda olmalıdır'),
+    };
+
+    for (final MapEntry(key: language, value: (tooShort, tooLong)) in messages.entries) {
+      testWidgets('accepts 4 to 20 characters and says so in $language', (tester) async {
+        setViewport(tester, const Size(1600, 1600));
+        await pumpLogin(tester, language: language);
+
+        expect(await passwordError(tester, 'a' * 3), tooShort);
+        expect(await passwordError(tester, 'a' * 4), isNull);
+        expect(await passwordError(tester, 'a' * 20), isNull);
+        expect(await passwordError(tester, 'a' * 21), tooLong);
+      });
+    }
   });
 }

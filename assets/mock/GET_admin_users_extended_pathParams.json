@@ -25,7 +25,7 @@
       {"type": "toggle", "key": "newsletter", "label": "Subscribe to newsletter", "default": false},
       {"type": "divider", "key": "_div_2", "label": ""},
       {"type": "sectionHeader", "key": "_sec_security", "label": "Security"},
-      {"type": "password", "key": "newPassword", "label": "New password (optional)"},
+      {"type": "password", "key": "newPassword", "label": "New password (optional)", "validators": ["minLength:4", "maxLength:20"]},
       {"type": "datetime", "key": "lastLoginOverride", "label": "Override last login"},
       {"type": "checkbox", "key": "acceptTerms", "label": "I accept the terms", "required": true}
     ]

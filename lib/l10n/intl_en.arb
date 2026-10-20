@@ -50,8 +50,22 @@
   "new_password": "New Password",
   "password_forgot": "Forgot Password",
   "register": "Register",
-  "password_max_length": "Password cannot be more than 6 characters long",
-  "password_min_length": "Password must be at least 5 characters long",
+  "password_max_length": "Password cannot be more than {max} characters long",
+  "@password_max_length": {
+    "placeholders": {
+      "max": {
+        "type": "int"
+      }
+    }
+  },
+  "password_min_length": "Password must be at least {min} characters long",
+  "@password_min_length": {
+    "placeholders": {
+      "min": {
+        "type": "int"
+      }
+    }
+  },
   "login_button": "Login",
   "loading": "Loading...",
   "email_send": "Send Email",

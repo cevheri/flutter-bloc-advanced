@@ -471,6 +471,42 @@ void main() {
       expect(requests.where((request) => request.path == '/account/change-password'), isEmpty);
     });
   });
+
+  group("ChangePasswordScreen new password length", () {
+    // Validates the new password field alone, so a valid password does not submit.
+    Future<String?> newPasswordError(WidgetTester tester, String password) async {
+      await tester.enterText(find.byKey(changePasswordTextFieldNewPasswordKey), password);
+      final field = tester.state<FormFieldState<dynamic>>(find.byKey(changePasswordTextFieldNewPasswordKey));
+      field.validate();
+      return field.errorText;
+    }
+
+    const messages = {
+      'en': ('Password must be at least 4 characters long', 'Password cannot be more than 20 characters long'),
+      'tr': ('Şifre en az 4 karakter uzunluğunda olmalıdır', 'Şifre en fazla 20 karakter uzunluğunda olmalıdır'),
+    };
+
+    for (final MapEntry(key: language, value: (tooShort, tooLong)) in messages.entries) {
+      testWidgets("accepts 4 to 20 characters and says so in $language", (tester) async {
+        await tester.pumpWidget(
+          withUnsavedChangesRegistry(
+            MaterialApp.router(
+              locale: Locale(language),
+              localizationsDelegates: locales,
+              supportedLocales: S.delegate.supportedLocales,
+              routerConfig: singlePageRouter(Scaffold(body: buildBlocProviders(child: ChangePasswordScreen()))),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+
+        expect(await newPasswordError(tester, 'a' * 3), tooShort);
+        expect(await newPasswordError(tester, 'a' * 4), isNull);
+        expect(await newPasswordError(tester, 'a' * 20), isNull);
+        expect(await newPasswordError(tester, 'a' * 21), tooLong);
+      });
+    }
+  });
 }
 
 /// Test-mode app dependencies whose API client records each request the mock API answers in [requests].

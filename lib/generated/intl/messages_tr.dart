@@ -24,10 +24,14 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(currentVersion, minimumVersion) => "Mevcut: ${currentVersion}  •  Gerekli: ${minimumVersion}";
 
-  static String m2(translate) =>
+  static String m2(max) => "Şifre en fazla ${max} karakter uzunluğunda olmalıdır";
+
+  static String m3(min) => "Şifre en az ${min} karakter uzunluğunda olmalıdır";
+
+  static String m4(translate) =>
       "${Intl.select(translate, {'account': 'Hesabım', 'userManagement': 'Kullanıcı Yönetimi', 'settings': 'Ayarlar', 'logout': 'Çıkış', 'info': 'Bilgiler', 'language': 'Diller', 'theme': 'Tema', 'new_user': 'Yeni Kullanıcı Ekle', 'list_user': 'Kullanıcılar', 'other': 'Diğer'})}";
 
-  static String m3(error) => "Kaydedilemedi: ${error}";
+  static String m5(error) => "Kaydedilemedi: ${error}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -132,8 +136,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "otp_length": MessageLookupByLibrary.simpleMessage("OTP 6 haneli olmalıdır"),
     "otp_sent_to": MessageLookupByLibrary.simpleMessage("OTP kodu gönderildi"),
     "password_forgot": MessageLookupByLibrary.simpleMessage("Şifremi unuttum"),
-    "password_max_length": MessageLookupByLibrary.simpleMessage("Şifre en fazla 20 karakter uzunluğunda olmalıdır"),
-    "password_min_length": MessageLookupByLibrary.simpleMessage("Şifre en az 6 karakter uzunluğunda olmalıdır"),
+    "password_max_length": m2,
+    "password_min_length": m3,
     "quick_actions": MessageLookupByLibrary.simpleMessage("Hızlı İşlemler"),
     "refresh": MessageLookupByLibrary.simpleMessage("Yenile"),
     "register": MessageLookupByLibrary.simpleMessage("Kayıt Ol"),
@@ -146,14 +150,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "settings": MessageLookupByLibrary.simpleMessage("Ayarlar"),
     "success": MessageLookupByLibrary.simpleMessage("Başarılı"),
     "theme": MessageLookupByLibrary.simpleMessage("Tema"),
-    "translate_menu_title": m2,
+    "translate_menu_title": m4,
     "turkish": MessageLookupByLibrary.simpleMessage("Türkçe"),
     "unsaved_changes": MessageLookupByLibrary.simpleMessage(
       "Kaydedilmemiş değişiklikleriniz var. Çıkmak istediğinize emin misiniz?",
     ),
     "user_delete_failed": MessageLookupByLibrary.simpleMessage("Kullanıcı silinemedi"),
     "user_extended_info_button": MessageLookupByLibrary.simpleMessage("Detaylar"),
-    "user_extended_info_save_failed": m3,
+    "user_extended_info_save_failed": m5,
     "user_extended_info_saved": MessageLookupByLibrary.simpleMessage("Kaydedildi"),
     "user_extended_info_title": MessageLookupByLibrary.simpleMessage("Genişletilmiş Bilgi"),
     "user_list_load_failed": MessageLookupByLibrary.simpleMessage("Kullanıcılar yüklenemedi"),

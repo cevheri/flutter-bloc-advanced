@@ -28,6 +28,7 @@ import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../../../support/unsaved_changes_host.dart';
+import '../../../../support/test_env.dart';
 
 class _MockBloc extends MockBloc<DynamicFormEvent, DynamicFormState> implements DynamicFormBloc {}
 
@@ -288,6 +289,87 @@ void main() {
       expect(find.text('Save failed: $_insecureConnectionMessage'), findsOneWidget);
       expect(find.textContaining('api.example.test'), findsNothing);
       expect(find.textContaining('443'), findsNothing);
+    });
+  });
+  // Regression: the new password field had no length rule, so a 1 or 200 character password was sent to the server.
+  group('new password length', () {
+    const label = 'New password (optional)';
+
+    /// The page on the mock-backed client, so the form is the one the GET_admin_users_extended mock serves.
+    Widget mockHost() => withUnsavedChangesRegistry(
+      MaterialApp.router(
+        routerConfig: GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => RepositoryProvider<IDynamicFormRepository>.value(
+                value: DynamicFormRepository(TestEnv.apiClient()),
+                child: Builder(
+                  builder: (context) =>
+                      DynamicFormsFeatureRoutes.withBloc(context, const UserExtendedInfoPage(userId: 'user-1')),
+                ),
+              ),
+            ),
+          ],
+        ),
+        localizationsDelegates: const [
+          S.delegate,
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: S.delegate.supportedLocales,
+      ),
+    );
+
+    /// Types each of [typed] into the field in turn, then submits.
+    Future<void> submitWithPassword(WidgetTester tester, List<String> typed) async {
+      TestEnv.authenticate();
+      await tester.pumpWidget(mockHost());
+      await tester.pumpAndSettle();
+      final field = find.widgetWithText(TextField, label);
+      for (final text in typed) {
+        await tester.ensureVisible(field);
+        await tester.enterText(field, text);
+      }
+      await tester.ensureVisible(find.text('Submit'));
+      await tester.tap(find.text('Submit'));
+      await tester.pumpAndSettle();
+    }
+
+    for (final (length, error) in [
+      (3, '$label must be at least 4 characters'),
+      (21, '$label must be at most 20 characters'),
+    ]) {
+      testWidgets('rejects a $length character password', (tester) async {
+        await submitWithPassword(tester, ['a' * length]);
+
+        expect(find.text(error), findsOneWidget);
+        expect(find.text('Saved'), findsNothing);
+      });
+    }
+
+    for (final length in [4, 20]) {
+      testWidgets('saves a $length character password', (tester) async {
+        await submitWithPassword(tester, ['a' * length]);
+
+        expect(find.textContaining('must be at'), findsNothing);
+        expect(find.text('Saved'), findsOneWidget);
+      });
+    }
+
+    testWidgets('saves without a password, since the field is optional', (tester) async {
+      await submitWithPassword(tester, const []);
+
+      expect(find.textContaining('must be at'), findsNothing);
+      expect(find.text('Saved'), findsOneWidget);
+    });
+
+    testWidgets('saves when a typed password is cleared again, since the field is optional', (tester) async {
+      await submitWithPassword(tester, const ['abc', '']);
+
+      expect(find.textContaining('must be at'), findsNothing);
+      expect(find.text('Saved'), findsOneWidget);
     });
   });
 }
