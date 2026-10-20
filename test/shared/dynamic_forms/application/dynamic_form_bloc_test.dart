@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_bloc.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_event.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/dynamic_form_state.dart';
@@ -10,6 +11,7 @@ import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/l
 import 'package:flutter_bloc_advance/shared/dynamic_forms/application/usecases/submit_form_usecase.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart';
 
 import '../../../support/test_env.dart';
 
@@ -392,6 +394,37 @@ void main() {
           isA<DynamicFormSubmitted>().having((s) => s.submitResponse, 'submitResponse', 'Form data logged'),
         ],
       );
+
+      // Regression: without a submit action the bloc logged every value of the form at info level, which every build
+      // of main_prod prints, so the value of a password field reached the console.
+      test('logs the form and the names of its fields, not their values, when no submitAction', () async {
+        AppLogger.configure(isProduction: true);
+        addTearDown(() => AppLogger.configure(isProduction: false));
+        stub.stubSuccess(
+          data: jsonEncode({
+            'id': 'pin_reset',
+            'title': 'Reset PIN',
+            'fields': [
+              {'type': 'text', 'key': 'login', 'label': 'Login'},
+              {'type': 'password', 'key': 'pin', 'label': 'New PIN'},
+            ],
+          }),
+        );
+        final bloc = buildBloc();
+        addTearDown(bloc.close);
+        bloc.add(const DynamicFormLoadEvent('pin_reset'));
+        await bloc.stream.firstWhere((s) => s is DynamicFormLoaded);
+        final lines = <String>[];
+        void collect(OutputEvent event) => lines.addAll(event.lines);
+        Logger.addOutputListener(collect);
+        addTearDown(() => Logger.removeOutputListener(collect));
+
+        bloc.add(const DynamicFormSubmitEvent({'login': 'admin', 'pin': 'S3cret!pw'}));
+        await bloc.stream.firstWhere((s) => s is DynamicFormSubmitted);
+
+        expect(lines, everyElement(allOf(isNot(contains('S3cret!pw')), isNot(contains('admin')))));
+        expect(lines, anyElement(allOf(contains('pin_reset'), contains('login, pin'))));
+      });
 
       blocTest<DynamicFormBloc, DynamicFormState>(
         'emits [submitting, submitted] with POST when submitAction method is POST',
