@@ -1,6 +1,6 @@
 # Mock Data Architecture
 
-This document explains how the project handles real API calls vs. local mock data, how mock JSON files are structured and resolved, and how the test layer works independently of both.
+This document explains how the project handles real API calls vs. local mock data, how mock JSON files are structured and resolved, and which tests use the mock data and which bypass it with test doubles.
 
 ## Overview
 
@@ -32,34 +32,30 @@ flowchart TB
     subgraph REPO["Repository Layer"]
         direction LR
         UR["UserRepository"]
-        AR["AuthRepository"]
+        AR["LoginRepository"]
         ACR["AccountRepository"]
-        DR["DashboardRepository"]
     end
 
     REPO --> API
 
     subgraph API["ApiClient — Dio Instance"]
         direction TB
-        AUTH_INT["1. AuthInterceptor<br/><i>Injects JWT Bearer token</i>"]
-        AUTH_INT --> DECISION
+        CHAIN["1. ConnectivityInterceptor<br/>2. AuthInterceptor<br/>3. TokenRefreshInterceptor<br/>4. IdempotencyInterceptor<br/>5. ResilienceInterceptor<br/>6. CacheInterceptor<br/>7. DevConsoleInterceptor<br/>8. LoggingInterceptor<br/><i>Added in every mode</i>"]
+        CHAIN --> DECISION
 
         DECISION{isProduction?}
 
         DECISION -- "No (dev / test)" --> MOCK_INT
-        DECISION -- "Yes (prod)" --> LOG_INT_PROD
+        DECISION -- "Yes (prod)" --> NETWORK
 
-        MOCK_INT["2. MockInterceptor<br/><i>Intercepts request</i>"]
+        MOCK_INT["9. MockInterceptor<br/><i>Intercepts request</i>"]
         MOCK_INT --> RESOLVE
 
         RESOLVE["Resolve mock file name<br/><code>assets/mock/{METHOD}_{path}.json</code>"]
         RESOLVE --> ASSET
 
-        ASSET[("assets/mock/*.json<br/><i>31 JSON files</i>")]
+        ASSET[("assets/mock/*.json<br/><i>35 JSON files</i>")]
         ASSET --> RESPONSE
-
-        LOG_INT_PROD["3. LoggingInterceptor"]
-        LOG_INT_PROD --> NETWORK
 
         NETWORK["Real HTTP Request"]
         NETWORK --> REAL_API
@@ -86,7 +82,7 @@ flowchart TB
     style DECISION fill:#e9c46a,color:#000
 ```
 
-### Test Layer (Independent)
+### Test Layer (Test Doubles)
 
 ```mermaid
 flowchart LR
@@ -98,9 +94,9 @@ flowchart LR
     end
 
     UC_TEST -- "mocktail" --> MOCK_REPO["MockIUserRepository<br/>MockIAuthRepository<br/>MockIAccountRepository"]
-    BLOC_TEST -- "mocktail" --> MOCK_REPO_C["MockUserRepository<br/>MockLoginRepository"]
+    BLOC_TEST -- "mocktail" --> MOCK_REPO_C["MockAccountRepository<br/>MockLoginRepository"]
     API_TEST -- "StubInterceptor" --> STUB_DIO["Test Dio Instance<br/><i>No network, no assets</i>"]
-    WIDGET_TEST -- "bloc_test" --> MOCK_BLOC["MockUserBloc<br/>MockLoginBloc"]
+    WIDGET_TEST -- "bloc_test" --> MOCK_BLOC["MockUserListBloc<br/>MockLoginBloc"]
 
     MOCK_REPO --> RESULT_T["Result&lt;T&gt;"]
     MOCK_REPO_C --> RESULT_T
@@ -116,23 +112,43 @@ flowchart LR
 
 ## Interceptor Chain
 
-The Dio HTTP client is created in `lib/infrastructure/http/api_client.dart`:
+The Dio HTTP client is created in `lib/infrastructure/http/api_client.dart`.
+`ApiClient._createDio()` pairs each interceptor with the metadata the system dashboard shows; without that metadata, the chain is:
 
 ```dart
 dio.interceptors.addAll([
-  AuthInterceptor(),                              // always
-  if (!appConfig.isProduction) MockInterceptor(appConfig: appConfig),  // dev + test only
-  LoggingInterceptor(),                           // always
+  ConnectivityInterceptor(),                      // rejects requests while offline
+  AuthInterceptor(secureStorage: _secureStorage), // attaches the JWT
+  TokenRefreshInterceptor(                        // refreshes expired access tokens
+    dio: dio,
+    onSessionExpired: _onSessionExpired,
+    secureStorage: _secureStorage,
+  ),
+  IdempotencyInterceptor(),                       // opt-in Idempotency-Key for POST/PUT/PATCH
+  ResilienceInterceptor.instance.forDio(dio),     // retry + circuit breaker
+  CacheInterceptor(),                             // GET response caching with TTL
+  DevConsoleInterceptor(),                        // records requests in debug builds
+  LoggingInterceptor(),                           // request/response logging
+  if (!_appConfig.isProduction) MockInterceptor(appConfig: _appConfig), // dev + test only
 ]);
 ```
 
+Only `MockInterceptor` depends on the environment: it is added outside production, as the last entry.
+It sits last because it stands in for the server: it resolves with `callFollowingResponseInterceptor: true`, so its response still runs through the `onResponse` handlers of the interceptors above it (cache, dev console, logging), as a real response would.
+
 ### AuthInterceptor
 
-Reads the JWT token from `AppLocalStorage` and injects it into every outgoing request:
+Reads the JWT from `ISecureStorage` on every request and adds it as a Bearer token when one is stored:
 
 ```dart
-final jwtToken = await AppLocalStorage().read(StorageKeys.jwtToken.name);
-if (jwtToken != null) {
+String? jwtToken;
+try {
+  jwtToken = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+} catch (e) {
+  _log.warn('secure read failed for {}; sending request without Authorization: {}', [options.path, e]);
+}
+final hasAuth = jwtToken != null && jwtToken.isNotEmpty;
+if (hasAuth) {
   options.headers['Authorization'] = 'Bearer $jwtToken';
 }
 ```
@@ -141,7 +157,8 @@ This runs **before** MockInterceptor so that mock auth checks see the token.
 
 ### MockInterceptor
 
-This is the core of the mock system. It intercepts every request in dev/test mode and returns a response loaded from a local JSON file — the request never leaves the device.
+This is the core of the mock system.
+In dev/test mode it answers every request that reaches the end of the chain with a response loaded from a local JSON file, so the request never leaves the device.
 
 **Step-by-step flow:**
 
@@ -154,11 +171,12 @@ This is the core of the mock system. It intercepts every request in dev/test mod
 
 ### LoggingInterceptor
 
-Logs request method, path, status code, and timing via `AppLogger`. Always runs, in every mode.
+Logs the method and URI of each request, and the status code and body length of each response, via `AppLogger`.
+Always runs, in every mode.
 
 ## Mock File Naming Convention
 
-Mock JSON files live in `assets/mock/` and follow a strict naming pattern:
+Mock JSON files served by `MockInterceptor` live in `assets/mock/` and follow a strict naming pattern:
 
 ```
 {HTTP_METHOD}{path_with_underscores}[_pathParams|_queryParams].json
@@ -215,34 +233,28 @@ Each file contains the exact JSON the real API would return.
   "lastName": "User",
   "activated": true,
   "langKey": "en",
+  "createdBy": "system",
+  "createdDate": "2024-01-04T06:02:47.757Z",
+  "lastModifiedBy": "admin",
+  "lastModifiedDate": "2024-01-04T06:02:47.757Z",
   "authorities": ["ROLE_ADMIN", "ROLE_USER"]
 }
 ```
 
-**Array** (`GET_admin_users.json`):
+**Array** (`GET_admin_users_queryParams.json`):
 ```json
 [
   { "id": "user-1", "login": "admin", "firstName": "Admin", ... },
-  { "id": "user-2", "login": "user", "firstName": "User", ... }
+  { "id": "user-2", "login": "new_user-2", "firstName": "Mock new user First Name", ... },
+  ...
 ]
 ```
 
 **Auth token** (`POST_authenticate.json`):
 ```json
 {
-  "id_token": "MOCK_TOKEN"
-}
-```
-
-**Dashboard data** (`dashboard.json`):
-```json
-{
-  "summary": [
-    { "id": "leads", "label": "Leads", "value": 120, "trend": 8 },
-    { "id": "customers", "label": "Customers", "value": 54, "trend": -2 }
-  ],
-  "activities": [ ... ],
-  "quick_actions": [ ... ]
+  "id_token": "MOCK_TOKEN",
+  "refresh_token": "MOCK_REFRESH_TOKEN"
 }
 ```
 
@@ -253,28 +265,35 @@ Defined in `lib/core/security/allowed_paths.dart`:
 **Public paths** (no JWT required):
 - `/authenticate`, `/register`, `/logout`
 - `/account/reset-password/init`, `/forgot-password`
+- `/login-otp`, `/login-otp-verify`
 - `/authenticate/send-otp`, `/authenticate/verify-otp`
+- `/api/token/refresh`
 
 All other paths require a valid `Authorization` header. In dev/test mode the `MockInterceptor` enforces this check; in production the real API does.
 
 ## How Repositories Use ApiClient
 
-Repositories are **completely unaware** of whether they are running against mock data or a real API. They always call `ApiClient`:
+Repositories are **completely unaware** of whether they are running against mock data or a real API.
+They receive the shared `ApiClient` through their constructor and always call it:
 
 ```dart
 class UserRepository implements IUserRepository {
-  static const _resource = 'users';
+  UserRepository(this._apiClient);
+
+  final ApiClient _apiClient;
+
+  static const String _resource = 'users';
 
   @override
   Future<Result<UserEntity>> retrieve(String id) async {
     try {
-      final response = await ApiClient.get('/admin/$_resource', pathParams: id);
-      final result = User.fromJsonString(response.data!);
-      return Success(result!);
+      final response = await _apiClient.get('/admin/$_resource', pathParams: id);
+      final result = User.fromJsonString(response.data!)!;
+      return Success(result);
     } on UnauthorizedException catch (e) {
       return Failure(AuthError(e.toString()));
     } on FetchDataException catch (e) {
-      return Failure(NetworkError(e.toString()));
+      return Failure(_mapFetchDataException(e)); // TimeoutError or NetworkError
     }
   }
 }
@@ -285,34 +304,42 @@ The `pathParams: id` argument causes `ApiClient` to:
 2. Store `_basePath: '/admin/users'` and `_pathParams: id` in `options.extra`
 3. In dev mode, `MockInterceptor` reads `_pathParams`, resolves `GET_admin_users_pathParams.json`
 
-## Dashboard: Explicit Mock Repository
+## Menu: Direct Asset Read
 
-Dashboard is the one exception where mock behavior is handled at the DI level instead of the interceptor:
+The shell menu is the one exception where mock data is read outside the interceptor:
 
 ```dart
-// lib/app/di/app_dependencies.dart
-IDashboardRepository createDashboardRepository() =>
-    environment == Environment.prod
-        ? DashboardApiRepository()   // uses ApiClient → real API
-        : DashboardMockRepository(); // reads assets/mock/dashboard.json directly
+// lib/app/shell/repositories/menu_repository.dart
+Future<List<Menu>> list() async {
+  final json = await rootBundle.loadString('assets/mock/menus.json');
+  final result = Menu.fromJsonStringList(json);
+  return result;
+}
 ```
 
-`DashboardMockRepository` loads the JSON via `rootBundle.loadString()` without going through the HTTP layer. This is because the dashboard data structure is complex and does not follow the standard REST endpoint pattern.
+`AppDependencies.createMenuRepository()` returns this repository in every environment, so the menu comes from the bundled `menus.json` in production too.
+Because the file never goes through `ApiClient`, its name does not follow the `{METHOD}_{path}` convention.
 
 ## Test Layer
 
-Tests do **not** use the mock interceptor. They mock at the repository interface level using `mocktail`:
+Most tests do **not** use the mock interceptor.
+They replace a layer with a test double instead:
 
 ```
 ┌──────────────────────────────────────────────────────────────────┐
 │                        Test Layer                                 │
 │                                                                   │
 │  Use Case Tests:   MockIUserRepository (interface mock)          │
-│  BLoC Tests:       MockUserRepository (concrete mock)            │
+│  BLoC Tests:       MockAccountRepository (concrete mock)         │
 │  ApiClient Tests:  _StubInterceptor (Dio-level stub)             │
 │  Widget Tests:     MockBloc (bloc_test)                          │
 └──────────────────────────────────────────────────────────────────┘
 ```
+
+Two common setups do run the mock interceptor.
+`TestEnv.apiClient()`, which repository tests use, builds an `ApiClient` with `AppConfig.test()`, so `MockInterceptor` serves `assets/mock/*.json` without the simulated latency.
+Passing a stub `dio` to it replaces the whole chain, `MockInterceptor` included.
+A test that pumps the whole `App` with its default `AppDependencies`, such as `test/integration/app_smoke_test.dart`, runs with `AppConfig.dev()`, the same `AppConfig` as `main_local.dart`.
 
 ### Use Case Tests
 
@@ -335,17 +362,20 @@ test('fetches user by id', () async {
 Mock the repository (or use case) and verify state transitions:
 
 ```dart
-blocTest<UserBloc, UserState>(
-  'emits [loading, success] when fetch succeeds',
+blocTest<UserEditorBloc, UserEditorState>(
+  'emits [loading, loaded] when fetch succeeds',
   build: () {
     when(() => mockRepo.retrieve('1'))
         .thenAnswer((_) async => const Success(user));
-    return UserBloc(repository: mockRepo);
+    return UserEditorBloc(
+      fetchUserUseCase: FetchUserUseCase(mockRepo),
+      saveUserUseCase: SaveUserUseCase(mockRepo),
+    );
   },
-  act: (bloc) => bloc.add(const UserFetchEvent(id: '1')),
+  act: (bloc) => bloc.add(const UserEditorFetch('1')),
   expect: () => [
-    const UserState(status: UserStatus.loading),
-    const UserState(status: UserStatus.success, user: user),
+    const UserEditorLoading(),
+    const UserEditorLoaded(data: user),
   ],
 );
 ```
@@ -414,8 +444,8 @@ No changes to `MockInterceptor` or `ApiClient` are needed.
 | Logging interceptor | `lib/infrastructure/http/interceptors/logging_interceptor.dart` |
 | Public path definitions | `lib/core/security/allowed_paths.dart` |
 | Template config (API URL) | `lib/infrastructure/config/template_config.dart` |
-| Mock JSON files | `assets/mock/*.json` (31 files) |
-| DI (repo selection) | `lib/app/di/app_dependencies.dart` |
-| Test utilities | `test/test_utils.dart` |
+| Mock JSON files | `assets/mock/*.json` (35 files) |
+| DI (ApiClient + repository factories) | `lib/app/di/app_dependencies.dart` |
+| Test utilities | `test/support/test_env.dart` |
 | Mock classes | `test/mocks/mock_classes.dart` |
 | ApiClient tests | `test/infrastructure/http/api_client_test.dart` |
