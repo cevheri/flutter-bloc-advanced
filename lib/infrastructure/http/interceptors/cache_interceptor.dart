@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_console_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 
 /// Dio interceptor that caches successful GET responses and serves them
@@ -141,16 +142,18 @@ class CacheInterceptor extends Interceptor {
             cacheStatus,
             err.type.name,
           ]);
-          handler.resolve(
-            Response(
-              requestOptions: err.requestOptions,
-              statusCode: 200,
-              data: entry.data,
-              headers: Headers.fromMap({
-                'x-cache': [cacheStatus],
-              }),
-            ),
+          final response = Response(
+            requestOptions: err.requestOptions,
+            statusCode: 200,
+            data: entry.data,
+            headers: Headers.fromMap({
+              'x-cache': [cacheStatus],
+            }),
           );
+          // Resolving here ends the error chain before DevConsoleInterceptor, which sits after this interceptor,
+          // so the entry it added for a GET that went out would stay in flight.
+          DevConsoleInterceptor.recordAnswer(err, response);
+          handler.resolve(response);
           return;
         }
       }

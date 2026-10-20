@@ -1348,6 +1348,48 @@ void main() {
     });
   });
 
+  group('ApiClient when a GET cannot reach the server', () {
+    const cached = '[{"login":"admin"}]';
+
+    setUp(() {
+      DevConsoleStore.instance.clearNetwork();
+      addTearDown(DevConsoleStore.instance.clearNetwork);
+    });
+    tearDown(ResilienceInterceptor.instance.resetAll);
+
+    // Regression: CacheInterceptor answered the failed GET before DevConsoleInterceptor's onError ran, which ends the
+    // error chain, so the entry the dev console added for the request stayed in flight for good.
+    test('completes the dev console entry of a GET the cache answers', () async {
+      // The server answers the first GET and closes the connection of the second while its body is read.
+      final server = await _startCuttingServer(body: cached, cut: _Cut.midBody, reset: false, tls: false);
+      final client = ApiClient(
+        appConfig: AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'http://127.0.0.1:${server.port}',
+          certificatePins: const [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      TestEnv.authenticate();
+
+      final response = await withRealSockets(() async {
+        await client.get('/api/unreachable/cached');
+        return client.get('/api/unreachable/cached');
+      });
+
+      expect(response.data, cached);
+      expect(response.headers.value('x-cache'), 'stale');
+      final entry = DevConsoleStore.instance.networkEntries.first;
+      expect(entry.url, 'http://127.0.0.1:${server.port}/api/unreachable/cached');
+      expect(entry.isComplete, isTrue);
+      expect(entry.statusCode, 200);
+      expect(entry.responseHeaders, containsPair('x-cache', 'stale'));
+      expect(entry.responseBody, cached);
+      expect(entry.error, startsWith('unknown: HttpException: Connection closed while receiving data'));
+    });
+  });
+
   // ResilienceInterceptor rejects every request to an endpoint whose circuit is open, before it is sent.
   group('ApiClient while the circuit of an endpoint is open', () {
     const cached = '[{"login":"admin"}]';

@@ -141,6 +141,7 @@ When it answers a protected request without a token with 401, it rejects with `c
 `ConnectivityInterceptor` rejects with `callFollowingErrorInterceptor: true` as well when `ConnectivityService` reports the device offline, so the `onError` handlers run as they do for a request that cannot connect: `CacheInterceptor` answers a GET from its cache with an `x-cache: stale` header (`x-cache: hit` for a fresh `cacheFirst` entry, as online), and the dev console and logging record a request it cannot answer.
 The error of that rejection is a `ConnectivityException`, so `ResilienceInterceptor` neither retries it nor counts it against the endpoint's circuit breaker: the request was never sent.
 A GET with `CachePolicy.cacheOnly` never reaches the network, so neither the offline check nor an open circuit stops it, and `CacheInterceptor` answers it from the cache.
+When `CacheInterceptor` answers a GET that went out and failed, it ends the error chain before the dev console sees the failure, so it completes the dev console entry itself (`DevConsoleInterceptor.recordAnswer`): the entry shows the cached answer and the error it answers.
 
 ### AuthInterceptor
 

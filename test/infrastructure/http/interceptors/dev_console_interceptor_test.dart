@@ -1,3 +1,5 @@
+import 'dart:io' show HttpException;
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/dev_console_store.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/dev_console_interceptor.dart';
@@ -316,6 +318,87 @@ void main() {
 
         interceptor.onError(dioError, handler);
         expect(handler.nextCalled, isTrue);
+      });
+
+      // dio wraps an error it does not map itself, such as a connection closed while the body is read, without a
+      // message.
+      test('should name the wrapped error when the exception has no message', () {
+        final options = RequestOptions(path: '/api/test', method: 'GET');
+        interceptor.onRequest(options, _TestRequestHandler());
+
+        interceptor.onError(
+          DioException(requestOptions: options, error: const HttpException('Connection closed while receiving data')),
+          _TestErrorHandler(),
+        );
+
+        expect(
+          DevConsoleStore.instance.networkEntries.first.error,
+          'unknown: HttpException: Connection closed while receiving data',
+        );
+      });
+    });
+
+    // CacheInterceptor answers a GET that cannot reach the server in its onError, which ends the error chain before
+    // this interceptor's onError runs.
+    group('recordAnswer', () {
+      test('should complete the entry with the answer and keep the error it answers', () {
+        final options = RequestOptions(path: '/api/users', method: 'GET', baseUrl: 'https://example.com');
+        interceptor.onRequest(options, _TestRequestHandler());
+
+        DevConsoleInterceptor.recordAnswer(
+          DioException(requestOptions: options, type: DioExceptionType.connectionError, message: 'Failed'),
+          Response(
+            requestOptions: options,
+            statusCode: 200,
+            data: '{"users": []}',
+            headers: Headers.fromMap({
+              'x-cache': ['stale'],
+            }),
+          ),
+        );
+
+        final entry = DevConsoleStore.instance.networkEntries.single;
+        expect(entry.isComplete, isTrue);
+        expect(entry.statusCode, 200);
+        expect(entry.responseHeaders, containsPair('x-cache', 'stale'));
+        expect(entry.responseBody, '{"users": []}');
+        expect(entry.error, 'connectionError: Failed');
+      });
+
+      // A cached answer is a response like any other, so the Network tab masks its credentials as onResponse does.
+      test('should mask the credentials of the cached answer', () {
+        final options = RequestOptions(path: '/api/session', method: 'GET');
+        interceptor.onRequest(options, _TestRequestHandler());
+
+        DevConsoleInterceptor.recordAnswer(
+          DioException(requestOptions: options, type: DioExceptionType.connectionError),
+          Response(
+            requestOptions: options,
+            statusCode: 200,
+            data: '{"login":"admin","accessToken":"cached-access-token"}',
+            headers: Headers.fromMap({
+              'set-cookie': ['session=cached-session-id'],
+              'x-cache': ['stale'],
+            }),
+          ),
+        );
+
+        final entry = DevConsoleStore.instance.networkEntries.single;
+        expect(entry.responseBody, '{"login":"admin","accessToken":"[REDACTED]"}');
+        expect(entry.responseHeaders, containsPair('set-cookie', '[REDACTED]'));
+        expect(entry.responseHeaders, containsPair('x-cache', 'stale'));
+      });
+
+      // Such a request was never sent, like a cache hit.
+      test('should add no entry for a request that never reached onRequest', () {
+        final options = RequestOptions(path: '/api/users', method: 'GET');
+
+        DevConsoleInterceptor.recordAnswer(
+          DioException(requestOptions: options, type: DioExceptionType.connectionError),
+          Response(requestOptions: options, statusCode: 200, data: 'cached'),
+        );
+
+        expect(DevConsoleStore.instance.networkEntries, isEmpty);
       });
     });
 

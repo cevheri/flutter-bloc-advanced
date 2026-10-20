@@ -38,12 +38,8 @@ class DevConsoleInterceptor extends Interceptor {
         id,
         (entry) => entry.copyWith(
           statusCode: response.statusCode,
-          responseHeaders: maskHeaders(response.headers.map.map((k, v) => MapEntry(k, v.join(', ')))),
-          responseBody: _truncate(
-            response.data == null
-                ? null
-                : scrubBodyText(response.data, sensitiveKeys: sensitiveKeysOf(response.requestOptions)),
-          ),
+          responseHeaders: _headersOf(response),
+          responseBody: _responseBodyOf(response),
           endTime: DateTime.now(),
         ),
       );
@@ -75,11 +71,50 @@ class DevConsoleInterceptor extends Interceptor {
                 ),
         ),
         endTime: DateTime.now(),
-        error: '${err.type.name}: ${err.message ?? 'Unknown error'}',
+        error: _describe(err),
       ),
     );
     handler.next(err);
   }
+
+  /// Completes the entry of a request that failed with [err] and that an interceptor before this one answered with
+  /// [response] instead, as `CacheInterceptor` answers a GET that cannot reach the server from its cache.
+  ///
+  /// Resolving a request in onError ends the error chain there, so neither [onError] nor [onResponse] of this
+  /// interceptor sees it, and the entry its [onRequest] added would stay in flight for good. The entry shows
+  /// [response] and keeps the error it answers. A request that never reached [onRequest], such as one rejected while
+  /// the device is offline, has no entry and gets none: it was never sent.
+  static void recordAnswer(DioException err, Response response) {
+    if (!kDebugMode) return;
+
+    final id = err.requestOptions.extra['_devConsoleId'] as String?;
+    if (id == null) return;
+    DevConsoleStore.instance.updateNetworkEntry(
+      id,
+      (entry) => entry.copyWith(
+        statusCode: response.statusCode,
+        responseHeaders: _headersOf(response),
+        responseBody: _responseBodyOf(response),
+        endTime: DateTime.now(),
+        error: _describe(err),
+      ),
+    );
+  }
+
+  /// The error text of an entry: the type of [err] and its message, or the error it wraps when it has none, such as
+  /// the dart:io exception of a connection reset.
+  static String _describe(DioException err) => '${err.type.name}: ${err.message ?? err.error ?? 'Unknown error'}';
+
+  /// The headers of [response] as the Network tab records them, with the value of every credential header masked.
+  static Map<String, dynamic> _headersOf(Response response) =>
+      maskHeaders(response.headers.map.map((k, v) => MapEntry(k, v.join(', '))));
+
+  /// The body of [response] as the Network tab records it, without the credentials it may hold.
+  static String? _responseBodyOf(Response response) => _truncate(
+    response.data == null
+        ? null
+        : scrubBodyText(response.data, sensitiveKeys: sensitiveKeysOf(response.requestOptions)),
+  );
 
   /// Records [options] in [DevConsoleStore] as a request in flight and returns the id of its entry.
   String _addEntry(RequestOptions options) {
@@ -99,7 +134,7 @@ class DevConsoleInterceptor extends Interceptor {
     return id;
   }
 
-  String? _truncate(String? value, [int maxLength = 10000]) {
+  static String? _truncate(String? value, [int maxLength = 10000]) {
     if (value == null) return null;
     return value.length > maxLength ? '${value.substring(0, maxLength)}...[truncated]' : value;
   }
