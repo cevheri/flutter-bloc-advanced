@@ -183,5 +183,7 @@
   "user_delete_failed": "Kullanıcı silinemedi",
   "@user_delete_failed": {},
   "user_load_failed": "Kullanıcı yüklenemedi",
-  "@user_load_failed": {}
+  "@user_load_failed": {},
+  "authorities_load_failed": "Roller alınamadı",
+  "@authorities_load_failed": {}
 }

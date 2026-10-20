@@ -36,6 +36,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "add_task": MessageLookupByLibrary.simpleMessage("Add Task"),
     "admin": MessageLookupByLibrary.simpleMessage("Admin"),
     "authorities": MessageLookupByLibrary.simpleMessage("Authorities"),
+    "authorities_load_failed": MessageLookupByLibrary.simpleMessage("Roles unavailable"),
     "back": MessageLookupByLibrary.simpleMessage("Back"),
     "change_password": MessageLookupByLibrary.simpleMessage("Change Password"),
     "change_password_description": MessageLookupByLibrary.simpleMessage(

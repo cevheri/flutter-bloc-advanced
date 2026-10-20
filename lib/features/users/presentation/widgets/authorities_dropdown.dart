@@ -33,50 +33,82 @@ class _AuthoritiesDropdownState extends State<AuthoritiesDropdown> {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<AuthorityBloc, AuthorityState>(
-      builder: (context, state) {
-        if (state is! AuthorityLoadSuccessState) {
-          return const SizedBox.shrink();
-        }
+      builder: (context, state) => switch (state) {
+        AuthorityInitialState() || AuthorityLoadingState() => const SizedBox.shrink(),
+        AuthorityLoadSuccessState(:final authorities) => _buildField(context, authorities),
+        AuthorityLoadFailureState() => _buildLoadFailure(context),
+      },
+    );
+  }
 
-        final authorities = ['', ...state.authorities];
-        final normalizedInitialValue = authorities.contains(widget.initialValue)
-            ? widget.initialValue
-            : authorities.first;
+  Widget _buildField(BuildContext context, List<String?> loadedAuthorities) {
+    final authorities = ['', ...loadedAuthorities];
+    final normalizedInitialValue = authorities.contains(widget.initialValue) ? widget.initialValue : authorities.first;
 
-        return FormBuilderField<String>(
-          key: const Key('userEditorAuthoritiesFieldKey'),
-          name: 'authorities',
-          initialValue: normalizedInitialValue,
-          validator: widget.isRequired ? FormBuilderValidators.required(errorText: S.of(context).required_field) : null,
-          builder: (field) {
-            final cs = Theme.of(context).colorScheme;
-            final tt = Theme.of(context).textTheme;
-            final selectedValue = field.value ?? '';
-            final showPlaceholder = selectedValue.isEmpty;
-            final displayText = showPlaceholder ? (widget.hintText ?? S.of(context).authorities) : selectedValue;
+    return FormBuilderField<String>(
+      key: const Key('userEditorAuthoritiesFieldKey'),
+      name: 'authorities',
+      initialValue: normalizedInitialValue,
+      validator: widget.isRequired ? FormBuilderValidators.required(errorText: S.of(context).required_field) : null,
+      builder: (field) {
+        final cs = Theme.of(context).colorScheme;
+        final tt = Theme.of(context).textTheme;
+        final selectedValue = field.value ?? '';
+        final showPlaceholder = selectedValue.isEmpty;
+        final displayText = showPlaceholder ? (widget.hintText ?? S.of(context).authorities) : selectedValue;
 
-            return InkWell(
-              onTap: widget.enabled ? () => _openMenu(context, field, authorities) : null,
-              borderRadius: BorderRadius.circular(8),
-              child: InputDecorator(
-                isEmpty: showPlaceholder,
-                isFocused: false,
-                isHovering: false,
-                decoration: InputDecoration(
-                  hintText: widget.hintText ?? S.of(context).authorities,
-                  errorText: field.errorText,
-                  enabled: widget.enabled,
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
-                ),
-                child: Text(
-                  displayText,
-                  overflow: TextOverflow.ellipsis,
-                  style: tt.bodyMedium?.copyWith(color: showPlaceholder ? cs.onSurfaceVariant : cs.onSurface),
-                ),
-              ),
-            );
-          },
+        return InkWell(
+          onTap: widget.enabled ? () => _openMenu(context, field, authorities) : null,
+          borderRadius: BorderRadius.circular(8),
+          child: InputDecorator(
+            isEmpty: showPlaceholder,
+            isFocused: false,
+            isHovering: false,
+            decoration: InputDecoration(
+              hintText: widget.hintText ?? S.of(context).authorities,
+              errorText: field.errorText,
+              enabled: widget.enabled,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              suffixIcon: const Icon(Icons.keyboard_arrow_down_rounded, size: 18),
+            ),
+            child: Text(
+              displayText,
+              overflow: TextOverflow.ellipsis,
+              style: tt.bodyMedium?.copyWith(color: showPlaceholder ? cs.onSurfaceVariant : cs.onSurface),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// Shown when the roles could not be loaded, with a button that loads them again. It keeps the field in
+  /// the form with the initial role, so a required role still stops a user from being saved without one.
+  Widget _buildLoadFailure(BuildContext context) {
+    return FormBuilderField<String>(
+      name: 'authorities',
+      initialValue: widget.initialValue ?? '',
+      validator: widget.isRequired ? FormBuilderValidators.required(errorText: S.of(context).required_field) : null,
+      builder: (field) {
+        final cs = Theme.of(context).colorScheme;
+        final tt = Theme.of(context).textTheme;
+
+        return InputDecorator(
+          decoration: InputDecoration(
+            errorText: field.errorText,
+            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            suffixIcon: IconButton(
+              key: const Key('authoritiesRetryButtonKey'),
+              tooltip: S.of(context).refresh,
+              icon: const Icon(Icons.refresh, size: 18),
+              onPressed: () => context.read<AuthorityBloc>().add(const AuthorityLoad()),
+            ),
+          ),
+          child: Text(
+            S.of(context).authorities_load_failed,
+            overflow: TextOverflow.ellipsis,
+            style: tt.bodyMedium?.copyWith(color: cs.error),
+          ),
         );
       },
     );

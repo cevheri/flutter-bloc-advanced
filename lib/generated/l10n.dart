@@ -829,6 +829,11 @@ class S {
   String get user_load_failed {
     return Intl.message('Could not load the user', name: 'user_load_failed', desc: '', args: []);
   }
+
+  /// `Roles unavailable`
+  String get authorities_load_failed {
+    return Intl.message('Roles unavailable', name: 'authorities_load_failed', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

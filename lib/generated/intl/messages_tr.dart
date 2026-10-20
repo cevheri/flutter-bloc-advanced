@@ -36,6 +36,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "add_task": MessageLookupByLibrary.simpleMessage("Görev Ekle"),
     "admin": MessageLookupByLibrary.simpleMessage("Admin"),
     "authorities": MessageLookupByLibrary.simpleMessage("Roller"),
+    "authorities_load_failed": MessageLookupByLibrary.simpleMessage("Roller alınamadı"),
     "back": MessageLookupByLibrary.simpleMessage("Geri"),
     "change_password": MessageLookupByLibrary.simpleMessage("Şifre Değiştir"),
     "change_password_description": MessageLookupByLibrary.simpleMessage(

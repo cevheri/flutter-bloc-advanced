@@ -183,5 +183,7 @@
   "user_delete_failed": "Could not delete the user",
   "@user_delete_failed": {},
   "user_load_failed": "Could not load the user",
-  "@user_load_failed": {}
+  "@user_load_failed": {},
+  "authorities_load_failed": "Roles unavailable",
+  "@authorities_load_failed": {}
 }
