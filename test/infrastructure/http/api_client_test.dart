@@ -1395,6 +1395,53 @@ void main() {
       expect(adapter.requests, hasLength(6));
     });
   });
+
+  group('ApiClient with CachePolicy.cacheOnly', () {
+    late ApiClient client;
+    late _FakeHttpClientAdapter adapter;
+
+    setUp(() {
+      client = ApiClient(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: [],
+          idleTimeout: null,
+        ),
+        secureStorage: FlutterSecureStorageAdapter(),
+      );
+      adapter = _FakeHttpClientAdapter();
+      client.instance.httpClientAdapter = adapter;
+      TestEnv.authenticate();
+      DevConsoleStore.instance.clearNetwork();
+      addTearDown(DevConsoleStore.instance.clearNetwork);
+    });
+
+    // Regression: CacheInterceptor rejected a cacheOnly GET with nothing cached without running any onError handler,
+    // so neither the dev console nor the HTTP log recorded the failure.
+    test('records a GET with nothing cached in the dev console and the HTTP log, not as an endpoint failure', () async {
+      final lines = _capturePrintedLines();
+
+      await expectLater(
+        client.instance.get<String>(
+          '/api/cache-only/missing',
+          options: Options(extra: {'cachePolicy': CachePolicy.cacheOnly}),
+        ),
+        throwsA(isA<DioException>().having((e) => e.message, 'message', 'No cached data available')),
+      );
+
+      final entry = DevConsoleStore.instance.networkEntries.single;
+      expect(entry.url, 'https://api.example.test/api/cache-only/missing');
+      expect(entry.isComplete, isTrue);
+      expect(entry.error, 'unknown: No cached data available');
+      expect(
+        lines,
+        contains(contains('Http : GET /api/cache-only/missing -> ERROR: unknown No cached data available')),
+      );
+      expect(adapter.requests, isEmpty);
+      expect(ResilienceInterceptor.instance.circuitBreakers['/api/cache-only/missing']?.failureCount ?? 0, 0);
+    });
+  });
 }
 
 /// Collects every line the loggers print until the test ends, whichever logger prints it.

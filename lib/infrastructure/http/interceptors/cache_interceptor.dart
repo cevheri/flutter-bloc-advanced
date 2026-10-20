@@ -10,6 +10,10 @@ import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 /// Cache behavior is controlled via `options.extra['cachePolicy']`.
 /// Only GET requests are cached. POST/PUT/DELETE skip caching.
 ///
+/// A cacheOnly GET with nothing cached fails with "No cached data available",
+/// rejected with `callFollowingErrorInterceptor: true` so that the dev
+/// console and the HTTP log record it like any other failure.
+///
 /// When a GET cannot reach the server, the networkFirst and cacheFirst
 /// policies answer it from the cache with an `x-cache: stale` header: after
 /// a connection error, a timeout, or a connection closed or reset before the
@@ -70,8 +74,10 @@ class CacheInterceptor extends Interceptor {
         );
         return;
       }
+      // Runs every onError handler, so the dev console and the HTTP log record the failure like any other.
       handler.reject(
         DioException(requestOptions: options, type: DioExceptionType.unknown, message: 'No cached data available'),
+        true,
       );
       return;
     }

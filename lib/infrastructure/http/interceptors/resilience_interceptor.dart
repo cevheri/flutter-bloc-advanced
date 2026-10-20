@@ -37,7 +37,8 @@ import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 /// - Each endpoint (path prefix) gets its own [CircuitBreaker] instance.
 /// - Before a request: if the circuit is OPEN, rejects immediately with
 ///   [CircuitBreakerOpenException]. A GET that [CacheInterceptor] answers from the cache alone
-///   (`CachePolicy.cacheOnly`) is let through: it never reaches the network.
+///   (`CachePolicy.cacheOnly`) is let through: it never reaches the network, and its failure when nothing is
+///   cached does not count against the circuit breaker.
 /// - After a response: records success or failure.
 ///
 /// Must be added to the interceptor chain AFTER [AuthInterceptor] so that
@@ -167,6 +168,13 @@ class ResilienceInterceptor extends Interceptor {
     // only delay the cached answer, and the endpoint did not fail. The request interceptors after it never ran either,
     // so a retry would also go out without the Authorization header.
     if (err.error is ConnectivityException) {
+      handler.next(err);
+      return;
+    }
+
+    // A GET answered from the cache alone never reaches the network, so its failure (nothing is cached) says nothing
+    // about the endpoint either.
+    if (CacheInterceptor.isCacheOnly(err.requestOptions)) {
       handler.next(err);
       return;
     }

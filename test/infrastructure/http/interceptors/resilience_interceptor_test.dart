@@ -363,6 +363,27 @@ void main() {
         });
       });
 
+      // CacheInterceptor fails a cacheOnly GET with nothing cached before it is sent, so it says nothing about the
+      // endpoint either.
+      test('should pass the failure of a cacheOnly GET through without recording a failure', () {
+        final shared = ResilienceInterceptor(failureThreshold: 1, cooldownDuration: const Duration(hours: 1));
+        final err = DioException(
+          requestOptions: RequestOptions(
+            path: '/api/users',
+            method: 'GET',
+            extra: {'cachePolicy': CachePolicy.cacheOnly},
+          ),
+          message: 'No cached data available',
+        );
+
+        final result = _captureOnErrorSync(shared.forDio(Dio()), err);
+        expect(result.passed, isTrue);
+
+        final next = _TestRequestHandler();
+        shared.onRequest(RequestOptions(path: '/api/users'), next);
+        expect(next.result.passed, isTrue, reason: 'one recorded failure would have opened the circuit');
+      });
+
       // A pin mismatch fails the TLS handshake before the request reaches the server, so it says nothing about the
       // endpoint's health. Counted as failures, five of them opened the circuit, and the user then saw "Circuit
       // Breaker Open" instead of the insecure-connection message.

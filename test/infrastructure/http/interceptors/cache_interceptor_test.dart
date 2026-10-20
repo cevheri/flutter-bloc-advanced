@@ -177,6 +177,8 @@ void main() {
 
         expect(handler.rejectCalled, isTrue);
         expect(handler.rejectedError!.message, 'No cached data available');
+        // So that the log, the dev console and the other onError handlers see the failure.
+        expect(handler.rejectCallsFollowing, isTrue);
       });
     });
 
@@ -639,6 +641,7 @@ class _TestRequestHandler extends RequestInterceptorHandler {
   bool rejectCalled = false;
   Response? resolvedResponse;
   DioException? rejectedError;
+  bool rejectCallsFollowing = false;
 
   @override
   void next(RequestOptions requestOptions) {
@@ -655,6 +658,7 @@ class _TestRequestHandler extends RequestInterceptorHandler {
   void reject(DioException error, [bool callFollowingErrorInterceptor = false]) {
     rejectCalled = true;
     rejectedError = error;
+    rejectCallsFollowing = callFollowingErrorInterceptor;
   }
 }
 
