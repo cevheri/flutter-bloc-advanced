@@ -1585,7 +1585,6 @@ void main() {
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/${f.snake}/data/repositories/${f.singularSnake}_repository.dart';
 import 'package:flutter_bloc_advance/features/${f.snake}/domain/repositories/${f.singularSnake}_repository.dart';
@@ -1624,9 +1623,6 @@ void main() {
   }
 
   setUp(TestEnv.authenticate);
-  // rootBundle caches each loaded mock file as a future of the test that loaded it. A later test awaiting that
-  // future never resumes, because the earlier test's fake async zone no longer runs, so start every test uncached.
-  setUp(rootBundle.clear);
 
   testWidgets('the list route shows the items from the mock API', (tester) async {
     await tester.pumpWidget(buildApp('/${f.kebab}'));
