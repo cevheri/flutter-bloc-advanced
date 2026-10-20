@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
@@ -11,9 +9,9 @@ import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dar
 import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
-import 'package:flutter_bloc_advance/shared/widgets/confirmation_dialog_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
 
@@ -27,9 +25,9 @@ class AccountScreen extends StatelessWidget {
     return BlocListener<AccountBloc, AccountState>(
       listenWhen: (previous, current) => previous.status != current.status,
       listener: (context, state) => _handleStateChanges(context, state),
-      child: PopScope(
-        canPop: !(_formKey.currentState?.isDirty ?? false),
-        onPopInvokedWithResult: (bool didPop, Object? data) async => _handlePopScope(didPop, data),
+      child: UnsavedChangesScope(
+        hasUnsavedChanges: () => _formKey.currentState?.isDirty ?? false,
+        onBack: () => _navigateBack(context),
         child: _buildBody(context),
       ),
     );
@@ -52,7 +50,7 @@ class AccountScreen extends StatelessWidget {
                       IconButton(
                         key: const Key('accountScreenAppBarBackButtonKey'),
                         icon: const Icon(Icons.arrow_back),
-                        onPressed: () async => _handlePopScope(false, null, context),
+                        onPressed: () => _navigateBack(context),
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
@@ -92,6 +90,7 @@ class AccountScreen extends StatelessWidget {
                     padding: const EdgeInsets.all(AppSpacing.xl),
                     child: ResponsiveFormBuilder(
                       formKey: _formKey,
+                      onChanged: () => UnsavedChangesScope.formChanged(context),
                       children: [..._buildFormFields(context, state), _submitButton(context, state)],
                     ),
                   ),
@@ -178,23 +177,6 @@ class AccountScreen extends StatelessWidget {
 
   void _showSnackBar(BuildContext context, String message, Duration duration) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: duration));
-  }
-
-  Future<void> _handlePopScope(bool didPop, Object? data, [BuildContext? contextParam]) async {
-    if (didPop) return;
-
-    final context = contextParam ?? data as BuildContext;
-    if (!context.mounted) return;
-
-    if (!(_formKey.currentState?.isDirty ?? false) || _formKey.currentState == null) {
-      _navigateBack(context);
-      return;
-    }
-
-    final shouldPop = await ConfirmationDialog.show(context: context, type: DialogType.unsavedChanges) ?? false;
-    if (shouldPop && context.mounted) {
-      _navigateBack(context);
-    }
   }
 
   void _navigateBack(BuildContext context) {

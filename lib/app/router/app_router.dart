@@ -126,6 +126,11 @@ class AppRouterFactory {
     );
   }
 
+  /// Whether [leaving] must close without asking about unsaved changes: a page that needs a session cannot stay once
+  /// the session has ended, so logout, an idle timeout or a 401 always reach the login page.
+  bool isExitForced(GoRouterState leaving) =>
+      _sessionCubit.state is! SessionAuthenticated && !_isPublicRoute(leaving.matchedLocation);
+
   bool _isPublicRoute(String path) {
     return path == ApplicationRoutesConstants.login ||
         path == ApplicationRoutesConstants.register ||

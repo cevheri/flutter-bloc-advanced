@@ -28,6 +28,10 @@ import 'package:mocktail/mocktail.dart';
 import '../../../../mocks/mock_classes.dart';
 import '../../../../support/test_env.dart';
 
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
+
+import '../../../../support/unsaved_changes_host.dart';
+
 void main() {
   late MockAccountBloc mockAccountBloc;
   late StreamController<AccountState> accountStateController;
@@ -62,6 +66,7 @@ void main() {
       routes: [
         GoRoute(
           path: '/account',
+          onExit: confirmLeavingUnsavedChanges,
           builder: (context, state) => Scaffold(body: AccountScreen()),
         ),
       ],
@@ -70,15 +75,17 @@ void main() {
 
     return BlocProvider<AccountBloc>.value(
       value: mockAccountBloc,
-      child: MaterialApp.router(
-        routerConfig: router,
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
+      child: withUnsavedChangesRegistry(
+        MaterialApp.router(
+          routerConfig: router,
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+        ),
       ),
     );
   }

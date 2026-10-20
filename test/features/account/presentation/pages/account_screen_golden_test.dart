@@ -15,6 +15,7 @@ import 'package:mocktail/mocktail.dart';
 import '../../../../mocks/mock_classes.dart';
 import '../../../../support/test_env.dart';
 import '../../../../support/golden_app.dart' show kGoldenScreenSize;
+import '../../../../support/unsaved_changes_host.dart';
 
 void main() {
   setUpAll(() => TestEnv.autoReset = false);
@@ -56,18 +57,20 @@ void main() {
 
     return BlocProvider<AccountBloc>.value(
       value: accountBloc,
-      child: MaterialApp.router(
-        debugShowCheckedModeBanner: false,
-        theme: dark ? AppTheme.dark() : AppTheme.light(),
-        localizationsDelegates: const [
-          S.delegate,
-          GlobalMaterialLocalizations.delegate,
-          GlobalWidgetsLocalizations.delegate,
-          GlobalCupertinoLocalizations.delegate,
-        ],
-        supportedLocales: S.delegate.supportedLocales,
-        locale: const Locale('en'),
-        routerConfig: router,
+      child: withUnsavedChangesRegistry(
+        MaterialApp.router(
+          debugShowCheckedModeBanner: false,
+          theme: dark ? AppTheme.dark() : AppTheme.light(),
+          localizationsDelegates: const [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+          locale: const Locale('en'),
+          routerConfig: router,
+        ),
       ),
     );
   }

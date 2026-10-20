@@ -15,6 +15,7 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
+import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
@@ -81,12 +82,13 @@ class _AppView extends StatefulWidget {
 
 class _AppViewState extends State<_AppView> {
   GoRouter? _router;
+  UnsavedChangesRegistry? _unsavedChanges;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_router != null) return;
-    final router = _router = AppRouterFactory(
+    final routerFactory = AppRouterFactory(
       sessionCubit: context.read<SessionCubit>(),
       observers: [
         AnalyticsRouteObserver(widget.analytics),
@@ -95,7 +97,9 @@ class _AppViewState extends State<_AppView> {
         // outside that window the observer is harmless overhead.
         if (context.read<AppConfig>().sentryDsn != null) SentryNavigatorObserver(),
       ],
-    ).create();
+    );
+    final router = _router = routerFactory.create();
+    _unsavedChanges = UnsavedChangesRegistry(isExitForced: routerFactory.isExitForced);
     // The Router is mounted only once the session is restored (see build), and go_router's route information provider
     // receives the routes the platform pushes, such as an iOS universal link that opens the app, only while something
     // listens to it. This listener keeps it receiving them from the start, so the Router opens a route pushed during
@@ -140,15 +144,19 @@ class _AppViewState extends State<_AppView> {
             // signed-in user as signed out, shows the login page and loses a deep link. So the router is mounted, and
             // its first route parsed, only once restore has settled the session. Later sign-ins and sign-outs are left
             // to its redirect. It also waits for the stored language, so the first page shows in it.
-            builder: (context, router) => BlocBuilder<SessionCubit, SessionState>(
-              buildWhen: (previous, current) => previous is SessionUnknown,
-              builder: (context, session) => switch (session) {
-                SessionUnknown() => const _RestoreView(),
-                SessionAuthenticated() || SessionUnauthenticated() => switch (localeState) {
-                  LocaleRestoring() => const _RestoreView(),
-                  LocaleReady() || LocaleChanging() || LocaleChangeFailure() => router!,
+            // The registry sits above the router, so the routes' onExit and the pages' UnsavedChangesScope find it.
+            builder: (context, router) => RepositoryProvider<UnsavedChangesRegistry>.value(
+              value: _unsavedChanges!,
+              child: BlocBuilder<SessionCubit, SessionState>(
+                buildWhen: (previous, current) => previous is SessionUnknown,
+                builder: (context, session) => switch (session) {
+                  SessionUnknown() => const _RestoreView(),
+                  SessionAuthenticated() || SessionUnauthenticated() => switch (localeState) {
+                    LocaleRestoring() => const _RestoreView(),
+                    LocaleReady() || LocaleChanging() || LocaleChangeFailure() => router!,
+                  },
                 },
-              },
+              ),
             ),
           );
         },

@@ -146,7 +146,6 @@ class _SidebarContent extends StatelessWidget {
               isCollapsed: sidebarState.isCollapsed,
               onTap: () {
                 if ((node.leaf ?? false) && node.url.isNotEmpty) {
-                  context.read<SidebarBloc>().add(SetActiveRoute(node.url));
                   _closeMobileDrawer(context);
                   context.go(node.url);
                 }
@@ -170,7 +169,6 @@ class _SidebarContent extends StatelessWidget {
                 isActive: sidebarState.activeRoute == child.url,
                 onTap: () {
                   if ((child.leaf ?? false) && child.url.isNotEmpty) {
-                    context.read<SidebarBloc>().add(SetActiveRoute(child.url));
                     _closeMobileDrawer(context);
                     context.go(child.url);
                   }
