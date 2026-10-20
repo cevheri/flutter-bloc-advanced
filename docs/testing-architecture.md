@@ -428,7 +428,7 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   lives **next to the code it covers** (feature-first, mirroring `lib/` — same as
   every other test), with its images in a sibling `goldens/ci/` dir; e.g.
   `test/shared/design_system/components/app_button_golden_test.dart`,
-  `test/features/users/presentation/pages/user_list_screen_golden_test.dart`. The
+  `test/features/users/presentation/pages/user_list_page_golden_test.dart`. The
   bootstrap sets a default `AlchemistConfig` (light theme) and **disables platform
   goldens**, so only the CI (Ahem-rendered) variant runs — identical on
   macOS/Linux/CI, no font flake. Golden files set `setUpAll(() => TestEnv.autoReset
