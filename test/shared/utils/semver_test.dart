@@ -28,9 +28,33 @@ void main() {
       expect(Semver.isBelow('1', '1.0.1'), isTrue);
     });
 
-    test('returns false on parse error (caller-friendly fallback)', () {
-      expect(Semver.isBelow('not-a-version', '1.0.0'), isFalse);
-      expect(Semver.isBelow('1.0.0', 'x'), isFalse);
+    // A typo in minimumVersion returned false, so the forced update was silently off. The caller decides what a
+    // malformed version means and logs it.
+    test('throws a FormatException naming a malformed version', () {
+      expect(
+        () => Semver.isBelow('not-a-version', '1.0.0'),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('not-a-version'))),
+      );
+      expect(
+        () => Semver.isBelow('1.0.0', '1.0,1'),
+        throwsA(isA<FormatException>().having((e) => e.message, 'message', contains('1.0,1'))),
+      );
+    });
+
+    test('rejects what int.parse would accept but is not a version', () {
+      for (final version in const [
+        '',
+        ' 1.0.0',
+        '1.0.0 ',
+        '+1.0.0',
+        '1.-1.0',
+        '0x1.0.0',
+        '1..0',
+        '1.0.0.0',
+        'v1.0.0',
+      ]) {
+        expect(() => Semver.isBelow('1.0.0', version), throwsFormatException, reason: version);
+      }
     });
   });
 }

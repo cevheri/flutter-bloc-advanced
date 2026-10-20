@@ -230,6 +230,54 @@ void main() {
       );
     });
 
+    // A typo in minimumVersion turned the forced update off without a word. It is now logged as an error with the
+    // value, and the update decision fails open as for a failed fetch: the app opens, and a re-check keeps an update
+    // screen an earlier answer chose.
+    group('malformed minimumVersion', () {
+      const malformed = AppConfigEntity(minimumVersion: '1.0,1');
+
+      blocTest<LifecycleBloc, LifecycleState>(
+        'opens the app with the config and an error, and logs the malformed version',
+        setUp: () => errors = _recordErrors(),
+        build: () {
+          when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(malformed));
+          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+        },
+        act: (bloc) => bloc.add(const LifecycleCheckEvent()),
+        expect: () => [
+          const LifecycleLoading(),
+          isA<LifecycleReady>()
+              .having((s) => s.config, 'config', malformed)
+              .having((s) => s.error, 'error', isA<ValidationError>()),
+        ],
+        verify: (_) => expect(errors, contains(allOf(contains('LifecycleBloc : '), contains('1.0,1')))),
+      );
+
+      blocTest<LifecycleBloc, LifecycleState>(
+        'a re-check keeps the update screen and logs the malformed version',
+        setUp: () => errors = _recordErrors(),
+        build: () {
+          when(() => mockRepository.fetchAppConfig()).thenAnswer((_) async => const Success(malformed));
+          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+        },
+        seed: () => const LifecycleForceUpdate(config: AppConfigEntity(minimumVersion: '2.0.0')),
+        act: (bloc) => bloc.add(const LifecycleCheckEvent(trigger: LifecycleCheckTrigger.resume)),
+        expect: () => const <LifecycleState>[],
+        verify: (_) => expect(errors, contains(contains('1.0,1'))),
+      );
+
+      blocTest<LifecycleBloc, LifecycleState>(
+        'still shows maintenance, which does not depend on the version',
+        build: () {
+          when(() => mockRepository.fetchAppConfig())
+              .thenAnswer((_) async => const Success(AppConfigEntity(minimumVersion: '1.0,1', maintenanceMode: true)));
+          return LifecycleBloc(repository: mockRepository, featureFlagService: FeatureFlagService.instance);
+        },
+        act: (bloc) => bloc.add(const LifecycleCheckEvent()),
+        expect: () => [const LifecycleLoading(), isA<LifecycleMaintenance>()],
+      );
+    });
+
     // A check after the first one keeps the screen the last answer chose until the new answer arrives: emitting
     // LifecycleLoading let the gate show the app between two maintenance answers, and while the user retried.
     group('re-check', () {

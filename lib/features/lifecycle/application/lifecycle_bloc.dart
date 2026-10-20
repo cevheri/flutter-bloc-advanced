@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:clock/clock.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_event.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_state.dart';
+import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
@@ -82,10 +84,20 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
         }
 
         // Check force update
-        if (data.minimumVersion != null && Semver.isBelow(AppConstants.appVersion, data.minimumVersion!)) {
-          _log.info('Force update required: current={}, minimum={}', [AppConstants.appVersion, data.minimumVersion]);
-          emit(LifecycleForceUpdate(config: data));
-          return;
+        final minimumVersion = data.minimumVersion;
+        if (minimumVersion != null) {
+          final bool updateRequired;
+          try {
+            updateRequired = Semver.isBelow(AppConstants.appVersion, minimumVersion);
+          } on FormatException catch (e) {
+            _onMalformedVersion(data, e, emit);
+            return;
+          }
+          if (updateRequired) {
+            _log.info('Force update required: current={}, minimum={}', [AppConstants.appVersion, minimumVersion]);
+            emit(LifecycleForceUpdate(config: data));
+            return;
+          }
         }
 
         // All clear
@@ -105,6 +117,25 @@ class LifecycleBloc extends Bloc<LifecycleEvent, LifecycleState> {
             _log.error('Could not check the app config, so the app opens without it: {}', [error]);
             emit(LifecycleReady(error: error));
         }
+    }
+  }
+
+  /// A version that does not parse fails open, as a failed check does: the app opens with the config and the error,
+  /// and an update screen an earlier answer chose stays.
+  void _onMalformedVersion(AppConfigEntity config, FormatException exception, Emitter<LifecycleState> emit) {
+    final error = ValidationError(exception.message);
+    switch (state) {
+      case LifecycleForceUpdate():
+        _log.error(
+          'Could not compare app version {} with minimumVersion {} from the app config, so the update screen stays: {}',
+          [AppConstants.appVersion, config.minimumVersion, error],
+        );
+      case LifecycleInitial() || LifecycleLoading() || LifecycleReady() || LifecycleMaintenance():
+        _log.error(
+          'Could not compare app version {} with minimumVersion {} from the app config, so the app opens: {}',
+          [AppConstants.appVersion, config.minimumVersion, error],
+        );
+        emit(LifecycleReady(config: config, error: error));
     }
   }
 }
