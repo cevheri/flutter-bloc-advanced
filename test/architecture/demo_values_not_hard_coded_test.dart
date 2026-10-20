@@ -23,6 +23,46 @@ void main() {
   const files = ['SECURITY.md'];
   const skippedDirectory = 'lib/generated/';
 
+  // A git-ignored file, such as the lib/.claude/settings.local.json that a local Claude Code session writes with the
+  // developer's name in it, is never part of a project made from the template, so it used to fail this guard on that
+  // developer's machine only. The guard asks git in the current directory, so this test moves into a temporary
+  // repository for its run; each test file runs in its own process.
+  test('looks at the files a copy of the template gets, not at git-ignored local files', () {
+    final previous = Directory.current;
+    final repo = Directory.systemTemp.createTempSync('demo_values_guard_');
+    addTearDown(() {
+      Directory.current = previous;
+      repo.deleteSync(recursive: true);
+    });
+    void git(List<String> arguments) {
+      final result = Process.runSync('git', arguments, workingDirectory: repo.path);
+      if (result.exitCode != 0) {
+        throw StateError('git ${arguments.join(' ')} failed with exit code ${result.exitCode}: ${result.stderr}');
+      }
+    }
+
+    git(['init', '--quiet']);
+    for (final (path, content) in [
+      ('.gitignore', 'lib/.claude/\n'),
+      ('lib/tracked.dart', ''),
+      ('lib/.claude/settings.local.json', ''),
+      ('web/index.html', ''),
+      ('SECURITY.md', ''),
+    ]) {
+      File('${repo.path}/$path')
+        ..parent.createSync(recursive: true)
+        ..writeAsStringSync(content);
+    }
+    git(['add', 'lib/tracked.dart', 'SECURITY.md']);
+    Directory.current = repo;
+
+    expect(_filesGitTracksOrWouldAdd(['web', 'lib', 'SECURITY.md'])..sort(), [
+      'SECURITY.md',
+      'lib/tracked.dart',
+      'web/index.html',
+    ]);
+  });
+
   test('no file a project copies from the template carries a deployment-specific demo value', () {
     final values = {
       for (final MapEntry(:key, :value) in _readValues(valuesPath).entries)
