@@ -346,7 +346,7 @@ test/
 6. Define routes: `navigation/<feature>_routes.dart`
 7. Register DI: `app/di/app_dependencies.dart` (repos) + `app/di/app_scope.dart` (BLoCs)
 8. Register routes: `app/router/app_router.dart`
-9. Add translations: `l10n/` ARB files, then run `fvm dart run intl_utils:generate`
+9. Add translations: `l10n/` ARB files, then run `fvm dart run intl_utils:generate` and `fvm dart format lib/generated --line-length=120`
 10. Write tests: `test/features/<feature>/` mirroring the feature structure
 
 ## Environments

@@ -1,4 +1,8 @@
 #!/bin/bash
+set -e
+
+# The scanner reads the token from the environment; passing it as -Dsonar.token would expose it in the process list.
+: "${SONAR_TOKEN:?SONAR_TOKEN is not set}"
 
 #dart pub global activate fvm
 #export PATH="$PATH":"$HOME/.pub-cache/bin"
@@ -8,16 +12,16 @@ fvm flutter clean
 fvm flutter pub get
 
 fvm dart run intl_utils:generate
+# intl_utils formats its output at 80 columns; reformat to 120 so the committed files stay unchanged
+fvm dart format lib/generated --line-length=120
 
 # when flutter analyze issue found then exit
-fvm flutter analyze
-if [ $? -ne 0 ]; then
+if ! fvm flutter analyze; then
   echo "Flutter analyze found issues. Exiting."
   exit 1
 fi
 
-fvm flutter test --coverage
-if [ $? -ne 0 ]; then
+if ! fvm flutter test --coverage; then
   echo "Flutter test found issues. Exiting."
   exit 1
 fi
@@ -41,5 +45,4 @@ $SONAR_SCANNER_DIR/bin/sonar-scanner \
   -Dsonar.projectKey=cevheri_flutter-bloc-advanced \
   -Dsonar.organization=cevheri-open-source \
   -Dsonar.sources=. \
-  -Dsonar.host.url=https://sonarcloud.io \
-  -Dsonar.login=$SONAR_TOKEN
+  -Dsonar.host.url=https://sonarcloud.io

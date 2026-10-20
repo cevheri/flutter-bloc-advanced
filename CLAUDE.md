@@ -33,6 +33,7 @@ fvm flutter test --coverage                                # with coverage
 
 # Localization code generation (after editing ARB files)
 fvm dart run intl_utils:generate
+fvm dart format lib/generated --line-length=120   # intl_utils writes 80 columns; CI checks 120
 
 # Build
 fvm flutter build apk --release --target lib/main/main_prod.dart
@@ -151,7 +152,7 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
 4. Define feature-specific routes in `navigation/`.
 5. Implement pages and feature-specific widgets in `presentation/`.
 6. Register the feature routes in `lib/app/router/app_router.dart`.
-7. Add translations to `lib/l10n/` and run `fvm dart run intl_utils:generate`.
+7. Add translations to `lib/l10n/`, run `fvm dart run intl_utils:generate`, then `fvm dart format lib/generated --line-length=120`.
 8. Write tests mirroring the feature structure under `test/features/<feature_name>/`.
 
 ## Testing

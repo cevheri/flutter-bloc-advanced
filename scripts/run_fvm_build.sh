@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 fvm use 3.47.7
 
@@ -18,15 +19,13 @@ echo dart format . --line-length=120
 fvm dart format . --line-length=120
 
 echo "Running flutter analyze"
-fvm dart analyze
-if [ $? -ne 0 ]; then
+if ! fvm dart analyze; then
   echo "Flutter analyze found issues. Exiting."
   exit 1
 fi
 
 echo "Running flutter test"
-fvm flutter test --coverage
-if [ $? -ne 0 ]; then
+if ! fvm flutter test --coverage; then
   echo "Flutter test found issues. Exiting."
   exit 1
 fi

@@ -39,25 +39,25 @@ fi
 
 # Clean previous builds
 print_status "Cleaning previous builds..."
-flutter clean
+fvm flutter clean
 
 # Get dependencies
 print_status "Getting dependencies..."
-flutter pub get
+fvm flutter pub get
 
 # Generate localization files
 print_status "Generating localization files..."
-flutter gen-l10n
+fvm dart run intl_utils:generate
+# intl_utils formats its output at 80 columns; reformat to 120 so the committed files stay unchanged
+fvm dart format lib/generated --line-length=120
 
 # Build for web
 print_status "Building for web..."
-flutter build web \
+# Check if build was successful
+if fvm flutter build web \
     --base-href /flutter-bloc-advanced/ \
     --target lib/main/main_local.dart \
-    --release
-
-# Check if build was successful
-if [ $? -eq 0 ]; then
+    --release; then
     print_success "Web build completed successfully!"
     
     # Display build information
