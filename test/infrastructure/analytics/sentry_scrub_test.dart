@@ -209,6 +209,48 @@ void main() {
     });
   });
 
+  // Regression: the text of an event and of a breadcrumb was masked for emails and JWTs only, so a credential member of
+  // a JSON body, a bearer token that is not a JWT, or a credential key of the data of a breadcrumb, such as the
+  // parameters of an analytics event, reached Sentry.
+  group('sentry scrubbers - credentials', () {
+    test('masks a credential member and a bearer token in an exception value and the message', () {
+      final result = sentryBeforeSend(
+        SentryEvent(
+          message: SentryMessage('retry with Bearer at-opaque-0a1b2c3d'),
+          exceptions: [
+            SentryException(
+              type: 'FormatException',
+              value: 'Unexpected end: {"id_token":"at-opaque-0a1b2c3d","refresh_token":"rt-9f8e7d6c"',
+            ),
+          ],
+        ),
+      );
+
+      expect(result.message?.formatted, 'retry with Bearer [REDACTED]');
+      expect(result.exceptions?.first.value, 'Unexpected end: {"id_token":"[REDACTED]","refresh_token":"[REDACTED]"');
+    });
+
+    test('masks the value of a credential key in the data of a breadcrumb, at any depth', () {
+      final result = sentryBeforeBreadcrumb(
+        Breadcrumb(
+          category: 'event',
+          message: 'pin_reset',
+          data: {
+            'step': 2,
+            'otp': '493817',
+            'form': {'login': 'admin', 'newPassword': 'Adm1nSet!Pw'},
+          },
+        ),
+      );
+
+      expect(result?.data, {
+        'step': 2,
+        'otp': '[REDACTED]',
+        'form': {'login': 'admin', 'newPassword': '[REDACTED]'},
+      });
+    });
+  });
+
   // Regression: no beforeBreadcrumb was installed, so a breadcrumb that did not come from AppLogger output reached
   // Sentry as it was: the breadcrumbs of SentryAnalyticsService, the navigation breadcrumbs, debugPrint lines, which on
   // web include the text of an uncaught error, and on web every other printed line. The http and ui breadcrumbs below

@@ -23,6 +23,50 @@ void main() {
     });
   });
 
+  group('maskSecrets', () {
+    test('masks the value of a credential member of JSON, a string or a number', () {
+      expect(
+        maskSecrets('body: {"login":"admin","newPassword" : "p\\"ss","otp":493817,"remember":true}'),
+        'body: {"login":"admin","newPassword" : "[REDACTED]","otp":[REDACTED],"remember":true}',
+      );
+    });
+
+    test('masks the value of a credential name=value pair', () {
+      expect(
+        maskSecrets('GET /cb?state=x&access_token=at-0a1b&code=7 refresh_token=rt-9f8e'),
+        'GET /cb?state=x&access_token=[REDACTED]&code=7 refresh_token=[REDACTED]',
+      );
+    });
+
+    test('masks the credentials of a Bearer authorization and every JWT', () {
+      const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart';
+
+      expect(
+        maskSecrets('Authorization: bearer at-0a1b2c3d, saw $jwt'),
+        'Authorization: bearer [REDACTED], saw [REDACTED_JWT]',
+      );
+    });
+
+    test('keeps a value that is already masked', () {
+      const masked = 'access_token=[REDACTED_JWT] {"id_token":"[REDACTED_JWT]"} Bearer [REDACTED_JWT]';
+
+      expect(maskSecrets(masked), masked);
+    });
+
+    test('keeps text without a credential in a known shape as it is', () {
+      const text = 'token: eyJh…VyZQ, password changed, GET /users?page=0&size=20 {"count":2}';
+
+      expect(maskSecrets(text), text);
+    });
+
+    // AppLogger runs every printed line through this, and an error line can carry a whole HTTP error body.
+    test('masks a credential after a long run of characters without a slow scan', () {
+      final input = '${'"a1":' * 20000} "password":"x"';
+
+      expect(maskSecrets(input), '${'"a1":' * 20000} "password":"[REDACTED]"');
+    });
+  });
+
   group('maskEmails', () {
     test('masks an email in a route path', () {
       expect(maskEmails('/login-otp-verify/jane.doe@example.com'), '/login-otp-verify/[REDACTED_EMAIL]');

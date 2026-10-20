@@ -10,7 +10,11 @@ enum LogFormat { simple, extended }
 ///
 /// A line is built only for a level that is printed, so the message and the
 /// arguments of a dropped level are never turned into text. Email addresses
-/// in a printed line are replaced with [emailMask] by [maskEmails].
+/// in a printed line are replaced with [emailMask] by [maskEmails], and the
+/// secrets that [maskSecrets] finds, such as the value of a `password`
+/// member of a JSON body or a `Bearer` token, with [secretMask]. A Map or a
+/// List argument has the values of its credential keys masked by
+/// [scrubBodyKeys] first.
 ///
 /// Each `{}` in the message takes the text of the next argument, from left
 /// to right. The message is scanned once, so an argument whose text contains
@@ -48,9 +52,16 @@ class AppLogger {
     final arguments = args ?? const [];
     var next = 0;
     // One pass over the message, so the text of an argument is never searched for "{}".
-    final text = "$message".replaceAllMapped("{}", (_) => next < arguments.length ? "${arguments[next++]}" : "{}");
-    return maskEmails("$_name : $text");
+    final text = "$message".replaceAllMapped(
+      "{}",
+      (_) => next < arguments.length ? "${_printable(arguments[next++])}" : "{}",
+    );
+    return maskEmails(maskSecrets("$_name : $text"));
   }
+
+  /// [argument] as it is printed: a Map or a List with the values of its credential keys masked.
+  static Object? _printable(Object? argument) =>
+      argument is Map || argument is List ? scrubBodyKeys(argument) : argument;
 
   // The printer calls the closure only after the filter has passed the level, so a dropped level never runs _msg.
   void trace(dynamic message, [List<Object?>? args]) => _logger.t(() => _msg(message, args));

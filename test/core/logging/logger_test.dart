@@ -80,6 +80,66 @@ void main() {
     }
   });
 
+  // Regression: AppLogger masked only emails, so a line that carried a credential in a known shape printed it: a JSON
+  // body with a token member, a Map of form values, an Authorization header or a URL with a token in its query. The
+  // console of the build keeps every line of a level it prints.
+  group('AppLogger credential masking', () {
+    setUp(() => AppLogger.configure(isProduction: false, logFormat: LogFormat.simple));
+
+    test('masks the value of a credential member of a JSON argument', () {
+      final lines = _capturePrintedLines();
+
+      AppLogger.getLogger('MaskTest')
+          .error('Invalid Request: {}', ['{"status":400,"refresh_token":"rt-9f8e7d6c","detail":"expired"}']);
+
+      expect(
+        lines,
+        anyElement(
+          contains('MaskTest : Invalid Request: {"status":400,"refresh_token":"[REDACTED]","detail":"expired"}'),
+        ),
+      );
+    });
+
+    test('masks the value of a credential key of a Map argument', () {
+      final lines = _capturePrintedLines();
+
+      AppLogger.getLogger('MaskTest').info('params: {}', [
+        {'login': 'admin', 'newPassword': 'Adm1nSet!Pw'},
+      ]);
+
+      expect(lines, anyElement(contains('MaskTest : params: {login: admin, newPassword: [REDACTED]}')));
+    });
+
+    test('masks a bearer token and a token in a query string', () {
+      final lines = _capturePrintedLines();
+
+      AppLogger.getLogger('MaskTest').warn('{} -> {}', [
+        'Authorization: Bearer at-opaque-0a1b2c3d',
+        '/callback?state=1&access_token=at-opaque-0a1b2c3d',
+      ]);
+
+      expect(
+        lines,
+        anyElement(
+          contains('MaskTest : Authorization: Bearer [REDACTED] -> /callback?state=1&access_token=[REDACTED]'),
+        ),
+      );
+    });
+
+    // Guards against over-masking: a masked token preview and a line without a credential print as they are.
+    test('keeps a line without a credential in a known shape as it is', () {
+      final lines = _capturePrintedLines();
+
+      AppLogger.getLogger('MaskTest')
+          .debug('Request [{}] {} (auth: {}, token: {})', ['GET', '/account?page=0&size=20', true, 'eyJh…VyZQ']);
+
+      expect(
+        lines,
+        anyElement(endsWith('MaskTest : Request [GET] /account?page=0&size=20 (auth: true, token: eyJh…VyZQ)')),
+      );
+    });
+  });
+
   // Regression: each argument replaced the first "{}" left in the line built so far, so an argument whose text
   // contained "{}", such as a name typed into the user search or an empty map, took the next argument's place.
   group('AppLogger placeholders', () {

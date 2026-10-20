@@ -72,8 +72,10 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
 /// breadcrumb: those of `SentryAnalyticsService` and the navigation
 /// breadcrumbs. It also covers the http and ui breadcrumbs a fork adds
 /// through `sentry_dio` or `SentryUserInteractionWidget`, and a printed line
-/// if a fork turns print breadcrumbs back on. Masks emails and JWTs in the
-/// message and in every string of the data, at any depth.
+/// if a fork turns print breadcrumbs back on. Masks emails, JWTs and the
+/// other secrets [maskSecrets] finds in the message and in every string of
+/// the data, at any depth, and the value of every credential key of the
+/// data.
 ///
 /// The hook runs when a breadcrumb is added, before the scope keeps it and
 /// passes it on to the native SDK, so the copy the native SDK keeps for its
@@ -85,7 +87,7 @@ Breadcrumb? sentryBeforeBreadcrumb(Breadcrumb? breadcrumb) {
   final message = breadcrumb.message;
   if (message != null) breadcrumb.message = _maskText(message);
   final data = breadcrumb.data;
-  if (data != null) breadcrumb.data = _maskMap(data);
+  if (data != null) breadcrumb.data = _maskMap(scrubBodyKeys(data) as Map<String, dynamic>);
   return breadcrumb;
 }
 
@@ -113,8 +115,8 @@ void installSentryScrubbers(SentryOptions options) {
 /// Sentry, and a link such as `?token=` or `#access_token=` holds a JWT.
 String? _scrubUrlPart(String? value) => value == null ? null : _maskText(value);
 
-/// Masks emails and JWTs in [value].
-String _maskText(String value) => maskEmails(maskJwts(value));
+/// Masks emails, JWTs and the other secrets [maskSecrets] finds in [value].
+String _maskText(String value) => maskEmails(maskSecrets(value));
 
 /// Masks every string in [value] the way Sentry sends it: inside maps and
 /// lists at any depth. Any other value that is not a number or a bool is

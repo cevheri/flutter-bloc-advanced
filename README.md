@@ -92,8 +92,9 @@ fvm flutter build apk --release --target lib/main/main_prod.dart \
 - Email addresses and JWT-shaped strings (3 base64url segments) in exception values, the event message and the request body (which only an HTTP integration a fork adds, such as `sentry_dio`, attaches), replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`
 - Email addresses and JWTs in the page location (`request.url`, query string, fragment) and the transaction name, replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`.
   On web the OTP route `/login-otp-verify/:email` puts the user's email there.
+- In the same text, the value of a JSON member or a `name=value` pair whose name contains one of those words, and the credentials of a `Bearer` authorization, replaced with `[REDACTED]` by `maskSecrets`, which `AppLogger` also runs over every line it prints.
 
-`sentryBeforeBreadcrumb`, the `beforeBreadcrumb` hook, masks email addresses and JWTs in the message and the data of every breadcrumb when it is recorded: the breadcrumbs of `SentryAnalyticsService` and the navigation breadcrumbs.
+`sentryBeforeBreadcrumb`, the `beforeBreadcrumb` hook, masks email addresses, JWTs and the secrets `maskSecrets` finds in the message and the data of every breadcrumb when it is recorded, and the value of every credential key of the data: the breadcrumbs of `SentryAnalyticsService` and the navigation breadcrumbs.
 It also covers the http and ui breadcrumbs a fork adds through `sentry_dio` or `SentryUserInteractionWidget`.
 `installSentryScrubbers` installs both hooks, and `AppBootstrap.run` calls it when it starts Sentry.
 It also turns print breadcrumbs off, so no printed line, and no `AppLogger` line, becomes a breadcrumb.

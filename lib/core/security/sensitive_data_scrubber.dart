@@ -1,9 +1,12 @@
 /// Single source of truth for "what counts as sensitive" when data leaves
 /// the app: to a crash report ([sentryBeforeSend] for the event,
 /// [sentryBeforeBreadcrumb] for each breadcrumb), to the local debug logs
-/// ([LoggingInterceptor] verbose mode), to the text of an HTTP error
-/// ([ApiClient], [scrubErrorBody]), or to the console through [AppLogger],
-/// which runs every line it prints through [maskEmails].
+/// ([LoggingInterceptor] verbose mode), to the Network tab of the dev
+/// console ([DevConsoleInterceptor]), to the text of an HTTP error
+/// ([ApiClient], [scrubErrorBody]), or to the console through [AppLogger].
+/// AppLogger masks the credential keys of a Map or a List argument with
+/// [scrubBodyKeys], and runs every line it prints through [maskSecrets] and
+/// [maskEmails].
 ///
 /// Keeping one copy of the redaction policy is a security invariant, not
 /// just DRY: two divergent copies guarantee that one exit eventually
@@ -16,7 +19,9 @@ library;
 
 import 'dart:convert';
 
-/// Header names dropped entirely (compared lower-cased).
+/// Header names whose values no log or view may show (compared
+/// lower-cased). [scrubHeaders] drops them, and [maskHeaders] keeps them
+/// with a masked value.
 const Set<String> sensitiveHeaderNames = {'authorization', 'cookie', 'set-cookie'};
 
 /// Body keys whose values are masked when any of these appears as a
@@ -44,6 +49,44 @@ final RegExp jwtPattern = RegExp(r'eyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Z
 
 /// Replace every JWT-shaped token inside [input] with [jwtMask].
 String maskJwts(String input) => input.replaceAll(jwtPattern, jwtMask);
+
+/// A JSON member whose value is a string or a number: its name, the colon
+/// with the spaces around it, and its value.
+final RegExp _jsonMember = RegExp(r'"([^"\\]{1,64})"(\s*:\s*)("(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)');
+
+/// A `name=value` pair, as in a query string or a form body. A value that
+/// starts with `[` is already a mask.
+final RegExp _namedValue = RegExp(r'''(?<![\w.\-])([A-Za-z_][\w.\-]{0,63})=([^\[&\s#"',;)}\]][^&\s#"',;)}\]]*)''');
+
+/// The credentials of a Bearer authorization. A mask starts with `[`, so it
+/// is not matched again.
+final RegExp _bearer = RegExp(r'\b(bearer)\s+[A-Za-z0-9\-._~+/]+=*', caseSensitive: false);
+
+/// Masks the secrets that [input] holds in a shape that names them: the
+/// value of a JSON member or of a `name=value` pair whose name contains one
+/// of [sensitiveBodyKeySubstrings], the credentials of a `Bearer`
+/// authorization, and every JWT. A value that is already a mask is kept.
+///
+/// [AppLogger] runs every line it prints through this, and the Sentry
+/// scrubbers every text they send. A secret in free text has no shape to
+/// find, so it has to be kept out of the text where it is written.
+String maskSecrets(String input) {
+  var text = input.contains('eyJ') ? maskJwts(input) : input;
+  final lower = text.toLowerCase();
+  if (lower.contains('bearer')) text = text.replaceAllMapped(_bearer, (match) => '${match[1]} $secretMask');
+  if (!sensitiveBodyKeySubstrings.any(lower.contains)) return text;
+  if (text.contains('"')) {
+    text = text.replaceAllMapped(_jsonMember, (match) {
+      final value = match[3]!;
+      if (!_isSensitiveKey(match[1]) || value.startsWith('"[REDACTED')) return match[0]!;
+      return '"${match[1]}"${match[2]}${value.startsWith('"') ? '"$secretMask"' : secretMask}';
+    });
+  }
+  if (text.contains('=')) {
+    text = text.replaceAllMapped(_namedValue, (m) => _isSensitiveKey(m[1]) ? '${m[1]}=$secretMask' : m[0]!);
+  }
+  return text;
+}
 
 /// Replacement emitted in place of a matched email address.
 const String emailMask = '[REDACTED_EMAIL]';
