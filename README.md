@@ -409,9 +409,9 @@ A web build that still contains one of these placeholders in `main.dart.js` fail
 
 Also update manually:
 
-1. **`pubspec.yaml`** — Package name, version, description.
-2. **`web/index.html`** — Page `<title>`, meta descriptions, Open Graph / Twitter Card text.
-3. **`lib/l10n/intl_en.arb` / `intl_tr.arb`** — App-specific translations, including `app_title`, the app name the task switcher and the browser tab show once the app has started (keep it in step with the `<title>` in `web/index.html`).
+1. **`pubspec.yaml`**: Package name, version, description.
+2. **`web/index.html`**: Page `<title>`, meta descriptions, Open Graph / Twitter Card text.
+3. **`lib/l10n/intl_en.arb` / `intl_tr.arb`**: App-specific translations, including `app_title`, the app name the task switcher and the browser tab show once the app has started (keep it in step with the `<title>` in `web/index.html`).
 
 These platform identifiers still name the template and its author, so rename them by hand:
 
