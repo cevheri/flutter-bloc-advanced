@@ -18,17 +18,22 @@ enum AccountStatus { initial, loading, success, failure }
 /// When this BLoC is touched in the future, prefer the existing shape
 /// unless the concurrent-access requirement is removed.
 class AccountState extends Equatable {
-  const AccountState({this.data, this.status = AccountStatus.initial});
+  const AccountState({this.data, this.status = AccountStatus.initial, this.errorCode});
 
   final UserEntity? data;
   final AccountStatus status;
 
-  AccountState copyWith({UserEntity? data, AccountStatus? status}) {
-    return AccountState(status: status ?? this.status, data: data ?? this.data);
+  /// Set with [AccountStatus.failure] when the failure has a translated message, which the UI shows via
+  /// `errorCode.resolve(context)` instead of its generic one.
+  final AppErrorCode? errorCode;
+
+  /// [errorCode] belongs to the failure that set it, so a copy keeps it only when it is passed again.
+  AccountState copyWith({UserEntity? data, AccountStatus? status, AppErrorCode? errorCode}) {
+    return AccountState(status: status ?? this.status, data: data ?? this.data, errorCode: errorCode);
   }
 
   @override
-  List<Object?> get props => [status, data];
+  List<Object?> get props => [status, data, errorCode];
 
   @override
   bool get stringify => true;

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/reset_password_usecase.dart';
@@ -28,7 +29,13 @@ class ForgotPasswordBloc extends Bloc<ForgotPasswordEvent, ForgotPasswordState> 
         emit(ForgotPasswordCompletedState(email: event.email));
         _log.debug("END: forgotPassword bloc: _onSubmit success");
       case Failure(:final error):
-        emit(ForgotPasswordErrorState(email: event.email, errorMessage: error.message));
+        emit(
+          ForgotPasswordErrorState(
+            email: event.email,
+            errorMessage: error.message,
+            errorCode: AppErrorCode.fromKey(error.code),
+          ),
+        );
         _log.error("END: forgotPassword bloc: _onSubmit error: {}", [error]);
     }
   }

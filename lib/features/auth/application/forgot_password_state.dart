@@ -28,11 +28,15 @@ final class ForgotPasswordCompletedState extends ForgotPasswordState {
 }
 
 final class ForgotPasswordErrorState extends ForgotPasswordState {
-  const ForgotPasswordErrorState({required this.email, required this.errorMessage});
+  const ForgotPasswordErrorState({required this.email, required this.errorMessage, this.errorCode});
 
   final String email;
   final String errorMessage;
 
+  /// Set when the failure has a translated message, which the UI shows via `errorCode.resolve(context)` instead of
+  /// its generic one.
+  final AppErrorCode? errorCode;
+
   @override
-  List<Object?> get props => [email, errorMessage];
+  List<Object?> get props => [email, errorMessage, errorCode];
 }

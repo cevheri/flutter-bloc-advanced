@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/register_account_usecase.dart';
@@ -29,7 +30,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         emit(RegisterCompletedState(user: data));
         _log.debug("END:onSubmit RegisterFormSubmitted event success: {}", [data]);
       case Failure(:final error):
-        emit(RegisterErrorState(message: error.message));
+        emit(RegisterErrorState(message: error.message, errorCode: AppErrorCode.fromKey(error.code)));
         _log.error("END:onSubmit RegisterFormSubmitted event error: {}", [error]);
     }
   }

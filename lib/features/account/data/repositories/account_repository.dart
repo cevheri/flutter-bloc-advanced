@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
@@ -166,7 +167,12 @@ class AccountRepository implements IAccountRepository {
     }
   }
 
+  /// An untrusted certificate carries [AppErrorCode.networkCertInvalid], so the account, registration and password
+  /// screens tell the user that the connection was blocked instead of reporting a failure of their own.
   AppError _mapFetchDataException(FetchDataException e) {
+    if (e is UntrustedCertificateException) {
+      return NetworkError(e.toString(), code: AppErrorCode.networkCertInvalid.key);
+    }
     final message = e.toString().toLowerCase();
     if (message.contains('no internet')) return NetworkError(e.toString());
     if (message.contains('timeout')) return TimeoutError(e.toString());

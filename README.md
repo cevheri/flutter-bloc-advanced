@@ -117,7 +117,9 @@ How it works:
   `CacheInterceptor` never answers it from cache: the connection may be intercepted, so the request fails instead of showing earlier data.
   Retries and the token-refresh call go through the same pinned adapter as the original request.
   `ApiClient` throws it as an `UntrustedCertificateException` (`lib/core/errors/app_api_exception.dart`), a `FetchDataException` whose message names the host and port for the log.
-  So far only `DynamicFormRepository` reports it as an `AppError` with the `AppErrorCode.networkCertInvalid` key, so the dynamic form pages show a translated message instead of the exception text; the other repositories still return a generic error.
+  `LoginRepository`, `AccountRepository`, `UserRepository`, `AuthorityRepositoryImpl`, `DynamicFormRepository` and `LifecycleRepository` report it as an `AppError` with the `AppErrorCode.networkCertInvalid` key.
+  The sign-in, OTP, registration, password reset, change password and account screens, the user list and editor, and the dynamic form pages show its translated message instead of the exception text.
+  The roles field of the user list and editor still says "Roles unavailable" without the reason.
 - **Web platform is a hard no-op.** Browsers control TLS; from JS we cannot intercept the handshake. Use HSTS / CT pinning at the server side instead.
 
 Extract pins from your live backend:

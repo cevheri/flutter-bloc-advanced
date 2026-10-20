@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
@@ -159,6 +160,54 @@ void main() {
         expect: () => [
           const AccountState(status: AccountStatus.loading),
           const AccountState(status: AccountStatus.failure),
+        ],
+      );
+
+      // Regression: the failure dropped the code, so the page said "Failed" when the certificate matched no pin.
+      blocTest<AccountBloc, AccountState>(
+        "emits the code of the failed fetch",
+        build: () {
+          repository.failure = NetworkError('pin mismatch', code: AppErrorCode.networkCertInvalid.key);
+          return bloc;
+        },
+        act: (bloc) => bloc.add(const AccountFetchEvent()),
+        expect: () => [
+          const AccountState(status: AccountStatus.loading),
+          const AccountState(status: AccountStatus.failure, errorCode: AppErrorCode.networkCertInvalid),
+        ],
+      );
+
+      blocTest<AccountBloc, AccountState>(
+        "does not report the code of an earlier failure",
+        seed: () => const AccountState(status: AccountStatus.failure, errorCode: AppErrorCode.networkCertInvalid),
+        build: () {
+          repository.failure = const UnknownError("error");
+          return bloc;
+        },
+        act: (bloc) => bloc.add(const AccountFetchEvent()),
+        expect: () => [
+          const AccountState(status: AccountStatus.loading),
+          const AccountState(status: AccountStatus.failure),
+        ],
+      );
+    });
+
+    group("on AccountSubmitEvent", () {
+      blocTest<AccountBloc, AccountState>(
+        "emits the code of the failed save and keeps the account",
+        seed: () => AccountState(data: mockUserFullPayload, status: AccountStatus.success),
+        build: () {
+          repository.failure = NetworkError('pin mismatch', code: AppErrorCode.networkCertInvalid.key);
+          return bloc;
+        },
+        act: (bloc) => bloc.add(AccountSubmitEvent(mockUserFullPayload)),
+        expect: () => [
+          AccountState(data: mockUserFullPayload, status: AccountStatus.loading),
+          AccountState(
+            data: mockUserFullPayload,
+            status: AccountStatus.failure,
+            errorCode: AppErrorCode.networkCertInvalid,
+          ),
         ],
       );
     });

@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/shared/design_system/components/app_avatar.
 import 'package:flutter_bloc_advance/shared/design_system/components/app_button.dart' show AppComponentSize;
 import 'package:flutter_bloc_advance/shared/design_system/components/app_card.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
@@ -209,7 +210,9 @@ class AccountScreen extends StatelessWidget {
         _showSnackBar(context, S.of(context).success, duration);
         break;
       case AccountStatus.failure:
-        _showSnackBar(context, S.of(context).failed, duration);
+        // A reason is a sentence, so the failure stays for the SnackBar's default duration instead of one second.
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(state.errorCode?.resolve(context) ?? S.of(context).failed)));
         break;
     }
   }

@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/reset_password_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
@@ -83,6 +84,7 @@ void main() {
       expect(const ForgotPasswordErrorState(email: 'test@example.com', errorMessage: 'boom').props, const <Object?>[
         'test@example.com',
         'boom',
+        null,
       ]);
     });
 
@@ -129,6 +131,24 @@ void main() {
       expect: () => [
         const ForgotPasswordLoadingState(),
         const ForgotPasswordErrorState(email: 'invalid-email', errorMessage: 'Invalid email'),
+      ],
+    );
+
+    // Regression: the failure dropped the code, so the page said "Failed" when the certificate matched no pin.
+    blocTest<ForgotPasswordBloc, ForgotPasswordState>(
+      'emits the code of the failure',
+      setUp: () => when(
+        () => repository.resetPassword(email),
+      ).thenAnswer((_) async => Failure<void>(NetworkError('pin mismatch', code: AppErrorCode.networkCertInvalid.key))),
+      build: () => ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(repository)),
+      act: (bloc) => bloc..add(const ForgotPasswordEmailChanged(email: email)),
+      expect: () => [
+        const ForgotPasswordLoadingState(),
+        const ForgotPasswordErrorState(
+          email: email,
+          errorMessage: 'pin mismatch',
+          errorCode: AppErrorCode.networkCertInvalid,
+        ),
       ],
     );
   });

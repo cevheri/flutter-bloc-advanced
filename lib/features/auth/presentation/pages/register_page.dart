@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/register_bloc.dart';
 import 'package:flutter_bloc_advance/shared/widgets/user_form_fields.dart';
+import 'package:flutter_bloc_advance/shared/l10n/app_error_code_l10n.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart';
@@ -116,8 +117,10 @@ class RegisterScreen extends StatelessWidget {
       case RegisterCompletedState():
         _formKey.currentState?.reset();
         _showSnackBar(context, S.of(context).success, duration);
-      case RegisterErrorState():
-        _showSnackBar(context, S.of(context).failed, duration);
+      case RegisterErrorState(:final errorCode):
+        // A reason is a sentence, so the failure stays for the SnackBar's default duration instead of one second.
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(errorCode?.resolve(context) ?? S.of(context).failed)));
     }
   }
 

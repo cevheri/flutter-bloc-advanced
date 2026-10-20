@@ -1,5 +1,6 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/register_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
@@ -70,7 +71,11 @@ void main() {
 
     test("RegisterErrorState", () {
       expect(const RegisterErrorState(message: "Register Error"), const RegisterErrorState(message: "Register Error"));
-      expect(const RegisterErrorState(message: "Register Error").props, const <Object?>["Register Error"]);
+      expect(const RegisterErrorState(message: "Register Error").props, const <Object?>["Register Error", null]);
+      expect(
+        const RegisterErrorState(message: "Register Error", errorCode: AppErrorCode.networkCertInvalid).props,
+        const <Object?>["Register Error", AppErrorCode.networkCertInvalid],
+      );
     });
   });
   //endregion state
@@ -126,6 +131,20 @@ void main() {
         build: () => RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(repository)),
         act: (bloc) => bloc..add(event),
         expect: () => statesFailure,
+      );
+
+      // Regression: the failure dropped the code, so the page said "Failed" when the certificate matched no pin.
+      blocTest<RegisterBloc, RegisterState>(
+        "emits the code of the failure",
+        setUp: () => repository.registerResult = Failure(
+          NetworkError('pin mismatch', code: AppErrorCode.networkCertInvalid.key),
+        ),
+        build: () => RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(repository)),
+        act: (bloc) => bloc..add(event),
+        expect: () => [
+          loadingState,
+          const RegisterErrorState(message: 'pin mismatch', errorCode: AppErrorCode.networkCertInvalid),
+        ],
       );
     });
   });

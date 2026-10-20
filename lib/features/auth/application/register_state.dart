@@ -28,10 +28,14 @@ final class RegisterCompletedState extends RegisterState {
 }
 
 final class RegisterErrorState extends RegisterState {
-  const RegisterErrorState({required this.message});
+  const RegisterErrorState({required this.message, this.errorCode});
 
   final String message;
 
+  /// Set when the failure has a translated message, which the UI shows via `errorCode.resolve(context)` instead of
+  /// its generic one.
+  final AppErrorCode? errorCode;
+
   @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, errorCode];
 }

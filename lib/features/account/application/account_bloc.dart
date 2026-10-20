@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
@@ -43,7 +44,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
         emit(state.copyWith(data: data, status: AccountStatus.success));
         _log.debug('END: getAccount bloc: _onLoad success: {}', [data]);
       case Failure(:final error):
-        emit(state.copyWith(status: AccountStatus.failure));
+        emit(state.copyWith(status: AccountStatus.failure, errorCode: AppErrorCode.fromKey(error.code)));
         _log.error('END: getAccount bloc: _onLoad error: {}', [error]);
     }
   }
@@ -63,7 +64,7 @@ class AccountBloc extends Bloc<AccountEvent, AccountState> {
         emit(state.copyWith(status: AccountStatus.success, data: data));
         _log.debug('END:onSubmitAccountSubmitEvent event success: {}', [data]);
       case Failure(:final error):
-        emit(state.copyWith(status: AccountStatus.failure));
+        emit(state.copyWith(status: AccountStatus.failure, errorCode: AppErrorCode.fromKey(error.code)));
         _log.error('END:onSubmit AccountSubmitEvent event error: {}', [error]);
     }
   }
