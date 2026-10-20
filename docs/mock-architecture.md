@@ -54,7 +54,7 @@ flowchart TB
         RESOLVE["Resolve mock file name<br/><code>assets/mock/{METHOD}_{path}.json</code>"]
         RESOLVE --> ASSET
 
-        ASSET[("assets/mock/*.json<br/><i>35 JSON files</i>")]
+        ASSET[("assets/mock/*.json<br/><i>23 JSON files</i>")]
         ASSET --> RESPONSE
 
         NETWORK["Real HTTP Request"]
@@ -192,7 +192,6 @@ Mock JSON files served by `MockInterceptor` live in `assets/mock/` and follow a 
 | --- | --- |
 | `GET /account` | `GET_account.json` |
 | `POST /authenticate` | `POST_authenticate.json` |
-| `GET /admin/users` | `GET_admin_users.json` |
 | `GET /admin/users/{id}` | `GET_admin_users_pathParams.json` |
 | `GET /admin/users?page=0&size=10` | `GET_admin_users_queryParams.json` |
 | `GET /admin/users/filter?name=John` | `GET_admin_users_filter_queryParams.json` |
@@ -444,7 +443,7 @@ No changes to `MockInterceptor` or `ApiClient` are needed.
 | Logging interceptor | `lib/infrastructure/http/interceptors/logging_interceptor.dart` |
 | Public path definitions | `lib/core/security/allowed_paths.dart` |
 | Template config (API URL) | `lib/infrastructure/config/template_config.dart` |
-| Mock JSON files | `assets/mock/*.json` (35 files) |
+| Mock JSON files | `assets/mock/*.json` (23 files) |
 | DI (ApiClient + repository factories) | `lib/app/di/app_dependencies.dart` |
 | Test utilities | `test/support/test_env.dart` |
 | Mock classes | `test/mocks/mock_classes.dart` |
