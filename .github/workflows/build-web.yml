@@ -36,24 +36,39 @@ jobs:
         run: flutter build web --release --base-href /flutter-bloc-advanced/ --target lib/main/main_local.dart
 
       - name: Prepare deployment assets
-        run: |
-          touch build/web/.nojekyll
-          cp -r web/.well-known build/web/.well-known 2>/dev/null || true
+        # flutter build web already copies web/ into build/web, dotfiles included (.nojekyll, .well-known/).
+        # Drop Flutter's incremental-build marker so include-hidden-files does not publish it.
+        run: rm -f build/web/.last_build_id
 
       - name: Verify web assets
         run: |
           echo "Checking required web assets..."
-          for f in robots.txt sitemap.xml 404.html browserconfig.xml .nojekyll llms.txt llms-full.txt humans.txt; do
-            test -f "build/web/$f" && echo "OK: $f" || echo "WARN: $f missing"
+          missing=0
+          for f in robots.txt sitemap.xml 404.html browserconfig.xml .nojekyll .well-known/security.txt \
+            llms.txt llms-full.txt humans.txt; do
+            if test -f "build/web/$f"; then echo "OK: $f"; else echo "::error::$f missing"; missing=1; fi
           done
+          exit $missing
 
       - name: Configure Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: build/web
+          # Dotfiles are skipped by default; .nojekyll and .well-known/security.txt need to be published.
+          include-hidden-files: true
+
+      - name: Verify published dotfiles
+        # Checks the archive that is deployed, so dropping include-hidden-files fails the build.
+        run: |
+          for f in ./.nojekyll ./.well-known/security.txt; do
+            if ! tar -tf "$RUNNER_TEMP/artifact.tar" | grep -x "$f" > /dev/null; then
+              echo "::error::$f is not in the Pages artifact"
+              exit 1
+            fi
+          done
 
   deploy:
     name: Deploy
@@ -65,4 +80,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

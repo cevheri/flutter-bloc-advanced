@@ -1,4 +1,8 @@
-Contact: https://github.com/cevheri/flutter-bloc-advanced/issues
+# This copy is served under the project path, so it is informational; RFC 9116 discovery only reads the host root.
+# Renew Expires before it passes: RFC 9116 requires the field and recommends less than a year ahead.
+Contact: https://github.com/cevheri/flutter-bloc-advanced/security/advisories/new
+Contact: mailto:cevheribozoglan@gmail.com
+Expires: 2027-10-01T00:00:00.000Z
 Preferred-Languages: en, tr
 Canonical: https://cevheri.github.io/flutter-bloc-advanced/.well-known/security.txt
 Policy: https://github.com/cevheri/flutter-bloc-advanced/security/policy
