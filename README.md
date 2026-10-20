@@ -88,9 +88,13 @@ fvm flutter build apk --release --target lib/main/main_prod.dart \
 
 - `Authorization` / `Cookie` / `Set-Cookie` headers (case-insensitive)
 - Body keys whose names contain `password`, `otp`, `token`, `refreshToken` (case-insensitive substring)
-- JWT-shaped strings (3 base64url segments) in exception values + event message — replaced with `[REDACTED_JWT]`
+- Email addresses and JWT-shaped strings (3 base64url segments) in exception values, the event message and the request body (which only an HTTP integration a fork adds, such as `sentry_dio`, attaches), replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`
 - Email addresses and JWTs in the page location (`request.url`, query string, fragment) and the transaction name, replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`.
   On web the OTP route `/login-otp-verify/:email` puts the user's email there.
+
+`sentryBeforeBreadcrumb`, the `beforeBreadcrumb` hook, masks email addresses and JWTs in the message and the data of every breadcrumb when it is recorded: the breadcrumbs of `SentryAnalyticsService`, the navigation breadcrumbs, every `debugPrint` line of a release build, which on web includes the text of an uncaught error, and on web every other printed line.
+It also covers the http and ui breadcrumbs a fork adds through `sentry_dio` or `SentryUserInteractionWidget`.
+`installSentryScrubbers` installs both hooks, and `AppBootstrap.run` calls it when it starts Sentry.
 
 The scrubber is unit-tested independently of the SDK; review it against your fork's PII surface before adopting in production. Adding new redaction rules is a single-file change.
 

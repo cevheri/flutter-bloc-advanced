@@ -89,7 +89,7 @@ class AppBootstrap {
       await SentryFlutter.init(
         (options) {
           options.dsn = dsn;
-          options.beforeSend = (event, hint) => sentryBeforeSend(event);
+          installSentryScrubbers(options);
           options.tracesSampleRate = 0.2;
           options.release = '${AppConstants.appVersion}+${AppConstants.appBuildNumber}';
         },

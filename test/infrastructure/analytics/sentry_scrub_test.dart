@@ -1,3 +1,8 @@
+import 'dart:convert';
+
+import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
+import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_scrub.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -67,7 +72,7 @@ void main() {
       expect(data.containsKey('newPassword'), isFalse);
     });
 
-    test('non-Map body is left untouched', () {
+    test('keeps a non-Map body without an email or a JWT as it is', () {
       final result = sentryBeforeSend(_eventWithBody('plain string body'));
       expect(result.request?.data, 'plain string body');
     });
@@ -90,7 +95,7 @@ void main() {
       expect(formatted.contains('[REDACTED_JWT]'), isTrue);
     });
 
-    test('leaves non-JWT content untouched', () {
+    test('leaves an exception value without a JWT or an email untouched', () {
       final result = sentryBeforeSend(_eventWithExceptionValue('Server returned 500 with body {"error":"oops"}'));
       expect(result.exceptions?.first.value, 'Server returned 500 with body {"error":"oops"}');
     });
@@ -144,4 +149,201 @@ void main() {
       expect(result.message?.formatted, 'Plain note');
     });
   });
+
+  // Regression: the exception values were masked for JWTs only, so an email in one reached Sentry. ApiClient puts the
+  // error response body into the exception it throws, and a Spring error body names the request path, such as
+  // /api/admin/users/{login}, where the login is the email the user registered with. The message was masked for JWTs
+  // only too and the request body only lost its secret keys, but nothing in the app fills either. A fork can fill the
+  // message through Sentry.captureMessage and the body through an HTTP integration such as sentry_dio.
+  group('sentryBeforeSend - emails', () {
+    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart';
+
+    test('masks an email in an exception value', () {
+      final result = sentryBeforeSend(
+        _eventWithExceptionValue('Not found: {"status":404,"path":"/api/admin/users/jane.doe@example.com"}'),
+      );
+      expect(result.exceptions?.first.value, 'Not found: {"status":404,"path":"/api/admin/users/[REDACTED_EMAIL]"}');
+    });
+
+    test('masks an email in the formatted message, the template and the params', () {
+      final result = sentryBeforeSend(
+        SentryEvent(
+          message: SentryMessage(
+            'Signed in as jane.doe@example.com',
+            template: 'Signed in as %s (was jane.doe@example.com)',
+            params: ['jane.doe@example.com', 3],
+          ),
+        ),
+      );
+      expect(result.message?.formatted, 'Signed in as [REDACTED_EMAIL]');
+      expect(result.message?.template, 'Signed in as %s (was [REDACTED_EMAIL])');
+      expect(result.message?.params, ['[REDACTED_EMAIL]', 3]);
+    });
+
+    test('masks emails and JWTs in the values of a Map body, at any depth', () {
+      final result = sentryBeforeSend(
+        _eventWithBody({
+          'login': 'jane.doe@example.com',
+          'password': 'p@ss',
+          'profile': {
+            'emails': ['jane.doe@example.com', 'j.doe@example.org'],
+            'note': 'session $jwt',
+          },
+          'age': 42,
+        }),
+      );
+      expect(result.request?.data, {
+        'login': '[REDACTED_EMAIL]',
+        'profile': {
+          'emails': ['[REDACTED_EMAIL]', '[REDACTED_EMAIL]'],
+          'note': 'session [REDACTED_JWT]',
+        },
+        'age': 42,
+      });
+    });
+
+    test('masks an email and a JWT in a raw string body', () {
+      final result = sentryBeforeSend(_eventWithBody('{"email":"jane.doe@example.com","id_token":"$jwt"}'));
+      expect(result.request?.data, '{"email":"[REDACTED_EMAIL]","id_token":"[REDACTED_JWT]"}');
+    });
+  });
+
+  // Regression: no beforeBreadcrumb was installed, so a breadcrumb that did not come from AppLogger output reached
+  // Sentry as it was: the breadcrumbs of SentryAnalyticsService, the navigation breadcrumbs, debugPrint lines, which on
+  // web include the text of an uncaught error, and on web every other printed line. The http and ui breadcrumbs below
+  // stand for the ones a fork adds through sentry_dio or SentryUserInteractionWidget.
+  group('sentryBeforeBreadcrumb', () {
+    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart';
+
+    test('masks an email and a JWT in the url and the query of an http breadcrumb', () {
+      final result = sentryBeforeBreadcrumb(
+        Breadcrumb.http(
+          url: Uri.parse('https://api.example.test/admin/users/jane.doe@example.com'),
+          method: 'GET',
+          statusCode: 503,
+          httpQuery: 'access_token=$jwt',
+        ),
+      );
+      expect(result?.data, {
+        'url': 'https://api.example.test/admin/users/[REDACTED_EMAIL]',
+        'method': 'GET',
+        'status_code': 503,
+        'http.query': 'access_token=[REDACTED_JWT]',
+      });
+    });
+
+    test('masks an email and a JWT in the message of a console breadcrumb', () {
+      final result = sentryBeforeBreadcrumb(
+        Breadcrumb.console(message: 'GET /admin/users/jane.doe@example.com Authorization: Bearer $jwt'),
+      );
+      expect(result?.message, 'GET /admin/users/[REDACTED_EMAIL] Authorization: Bearer [REDACTED_JWT]');
+    });
+
+    test('masks an email in the route arguments of a navigation breadcrumb and keeps them a map', () {
+      final result = sentryBeforeBreadcrumb(
+        RouteObserverBreadcrumb(
+          navigationType: 'didPush',
+          from: const RouteSettings(name: 'login-otp'),
+          to: const RouteSettings(name: 'login-otp-verify', arguments: {'email': 'jane.doe@example.com'}),
+        ),
+      );
+      expect(result?.data, {
+        'state': 'didPush',
+        'from': 'login-otp',
+        'to': 'login-otp-verify',
+        'to_arguments': {'email': '[REDACTED_EMAIL]'},
+      });
+      // Before handing a breadcrumb to the native SDK, Sentry turns a nested map into its toString unless it is a
+      // Map<String, dynamic>.
+      expect(result?.data?['to_arguments'], isA<Map<String, dynamic>>());
+    });
+
+    test('masks an email in the message and the data of a ui breadcrumb', () {
+      final result = sentryBeforeBreadcrumb(
+        Breadcrumb.userInteraction(
+          subCategory: 'click',
+          message: 'jane.doe@example.com',
+          viewId: 'user_row',
+          data: {'label': 'Edit jane.doe@example.com'},
+        ),
+      );
+      expect(result?.message, '[REDACTED_EMAIL]');
+      expect(result?.data, {'view.id': 'user_row', 'label': 'Edit [REDACTED_EMAIL]'});
+    });
+
+    // Guards against the hook dropping or reshaping data: a breadcrumb with nothing to mask reaches Sentry as it was.
+    test('keeps a breadcrumb without an email or a JWT as it was', () {
+      final breadcrumb = Breadcrumb(
+        category: 'event',
+        message: 'bloc_transition',
+        data: {
+          'bloc': 'UserListBloc',
+          'count': 3,
+          'loaded': true,
+          'pages': [1, 2],
+          'filter': {'authority': 'ROLE_USER'},
+        },
+      );
+      final before = jsonEncode(breadcrumb.toJson());
+
+      final result = sentryBeforeBreadcrumb(breadcrumb);
+
+      expect(jsonEncode(result?.toJson()), before);
+    });
+  });
+
+  // The hooks AppBootstrap installs, through installSentryScrubbers and the real SDK: the breadcrumbs of an error event
+  // come from the scope, where the beforeBreadcrumb hook ran when each was added, and beforeSend scrubs the rest of the
+  // event.
+  group('Sentry SDK with installSentryScrubbers', () {
+    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart';
+    late List<String> sentEvents;
+
+    setUp(() async {
+      sentEvents = [];
+      await Sentry.init((options) {
+        options.dsn = 'https://public@example.invalid/1';
+        options.transport = _CapturingTransport(sentEvents);
+        installSentryScrubbers(options);
+      });
+      addTearDown(Sentry.close);
+    });
+
+    test('sends an error event without the email or the JWT, in the event or in its breadcrumbs', () async {
+      SentryAnalyticsService().logUserAction(action: 'open_user', target: 'jane.doe@example.com');
+      await Sentry.addBreadcrumb(
+        Breadcrumb.http(url: Uri.parse('https://api.example.test/admin/users/jane.doe@example.com'), method: 'GET'),
+      );
+      await Sentry.addBreadcrumb(Breadcrumb.console(message: 'Authorization: Bearer $jwt'));
+
+      // What ApiClient throws for a 404 whose body names the request path.
+      await Sentry.captureException(FetchDataException('Not found: {"path":"/api/admin/users/jane.doe@example.com"}'));
+
+      final sent = sentEvents.single;
+      expect(sent, isNot(contains('jane.doe')));
+      expect(sent, isNot(contains(jwt)));
+      expect(sent, contains('"data":{"target":"[REDACTED_EMAIL]"}'));
+      expect(sent, contains('"url":"https://api.example.test/admin/users/[REDACTED_EMAIL]"'));
+      expect(sent, contains('"message":"Authorization: Bearer [REDACTED_JWT]"'));
+      expect(
+        sent,
+        contains(r'"value":"Error During Communication: Not found: {\"path\":\"/api/admin/users/[REDACTED_EMAIL]\"}"'),
+      );
+    });
+  });
+}
+
+/// Keeps the JSON of every event the SDK sends, as it would go over the wire, and sends nothing.
+class _CapturingTransport implements Transport {
+  _CapturingTransport(this._sentEvents);
+
+  final List<String> _sentEvents;
+
+  @override
+  Future<SentryId?> send(SentryEnvelope envelope) async {
+    for (final item in envelope.items) {
+      if (item.originalObject is SentryEvent) _sentEvents.add(utf8.decode(await item.dataFactory()));
+    }
+    return SentryId.newId();
+  }
 }

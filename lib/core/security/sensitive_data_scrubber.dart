@@ -1,5 +1,6 @@
 /// Single source of truth for "what counts as sensitive" when data leaves
-/// the app: to a crash report ([sentryBeforeSend]), to the local debug logs
+/// the app: to a crash report ([sentryBeforeSend] for the event,
+/// [sentryBeforeBreadcrumb] for each breadcrumb), to the local debug logs
 /// ([LoggingInterceptor] verbose mode), or to the console through
 /// [AppLogger], which runs every line it prints through [maskEmails]. On
 /// web with a Sentry DSN each printed line also becomes a breadcrumb.
