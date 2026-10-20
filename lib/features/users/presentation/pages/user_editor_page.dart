@@ -99,9 +99,10 @@ class _UserEditorViewState extends State<_UserEditorView> {
             ScaffoldMessenger.of(context)
                 .showSnackBar(SnackBar(content: Text(S.of(context).success), duration: const Duration(seconds: 2)));
             context.go(ApplicationRoutesConstants.userList);
-          case UserEditorSaveFailure():
+          case UserEditorSaveFailure(:final errorCode):
+            // A reason is a sentence, so the failure stays for the SnackBar's default duration instead of two seconds.
             ScaffoldMessenger.of(context)
-                .showSnackBar(SnackBar(content: Text(S.of(context).failed), duration: const Duration(seconds: 2)));
+                .showSnackBar(SnackBar(content: Text(errorCode?.resolve(context) ?? S.of(context).failed)));
           case UserEditorInitial() ||
               UserEditorLoading() ||
               UserEditorLoaded() ||

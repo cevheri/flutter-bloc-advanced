@@ -71,7 +71,7 @@ class UserEditorBloc extends Bloc<UserEditorEvent, UserEditorState> {
         emit(UserEditorSaved(data: data));
         _log.debug('END:onSubmit success: {}', [data]);
       case Failure(:final error):
-        emit(UserEditorSaveFailure(data: carried));
+        emit(UserEditorSaveFailure(data: carried, errorCode: AppErrorCode.fromKey(error.code)));
         _log.error('END:onSubmit error: {}', [error]);
     }
   }

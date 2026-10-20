@@ -1,8 +1,15 @@
+import 'dart:typed_data';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -230,6 +237,51 @@ void main() {
       expect(result, const Failure<void>(ValidationError('User login is required')));
     });
   });
+
+  // Regression: a pin mismatch came back as a NetworkError without a code, so the user screens said "Something went
+  // wrong" or "Failed" instead of telling the user that the connection was blocked.
+  group('User Repository over a connection whose certificate matches no pin', () {
+    UserRepository pinnedRepository() {
+      final apiClient = ApiClient(appConfig: _pinnedProdConfig, secureStorage: FlutterSecureStorageAdapter());
+      apiClient.instance.httpClientAdapter = _PinMismatchAdapter();
+      return UserRepository(apiClient);
+    }
+
+    final certInvalid = isA<Failure<Object?>>()
+        .having((failure) => failure.error, 'error', isA<NetworkError>())
+        .having((failure) => failure.error.code, 'error.code', AppErrorCode.networkCertInvalid.key);
+
+    test('list reports AppErrorCode.networkCertInvalid', () async {
+      expect(await pinnedRepository().list(), certInvalid);
+    });
+
+    test('update reports AppErrorCode.networkCertInvalid', () async {
+      expect(await pinnedRepository().update(const UserEntity(id: 'user-1', login: 'admin')), certInvalid);
+    });
+  });
+}
+
+/// Production chain (no MockInterceptor) with certificate pinning configured.
+const _pinnedProdConfig = AppConfig(
+  environment: Environment.prod,
+  apiBaseUrl: 'https://api.example.test',
+  certificatePins: ['test-pin'],
+  idleTimeout: null,
+);
+
+/// Fails every request as the pinning adapter fails a server whose certificate matches no configured pin.
+class _PinMismatchAdapter implements HttpClientAdapter {
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    throw const CertificatePinningException('api.example.test', 443);
+  }
+
+  @override
+  void close({bool force = false}) {}
 }
 
 /// Answers every request with an empty user list and records what was requested.

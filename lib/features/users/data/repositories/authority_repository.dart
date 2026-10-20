@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/authority.dart';
@@ -40,7 +41,11 @@ class AuthorityRepositoryImpl implements IAuthorityRepository {
     }
   }
 
+  /// An untrusted certificate carries [AppErrorCode.networkCertInvalid], like the other requests of the user screens.
   static AppError _mapFetchDataException(FetchDataException e) {
+    if (e is UntrustedCertificateException) {
+      return NetworkError(e.toString(), code: AppErrorCode.networkCertInvalid.key);
+    }
     final message = e.toString().toLowerCase();
     if (message.contains('timeout')) return TimeoutError(e.toString());
     return NetworkError(e.toString());

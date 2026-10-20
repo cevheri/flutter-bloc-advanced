@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/users/data/models/user.dart';
@@ -238,7 +239,12 @@ class UserRepository implements IUserRepository {
     }
   }
 
+  /// An untrusted certificate carries [AppErrorCode.networkCertInvalid], so the user screens tell the admin that the
+  /// connection was blocked instead of showing a generic error.
   static AppError _mapFetchDataException(FetchDataException e) {
+    if (e is UntrustedCertificateException) {
+      return NetworkError(e.toString(), code: AppErrorCode.networkCertInvalid.key);
+    }
     final message = e.toString().toLowerCase();
     if (message.contains('timeout')) return TimeoutError(e.toString());
     return NetworkError(e.toString());

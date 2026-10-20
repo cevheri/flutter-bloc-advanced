@@ -2,9 +2,12 @@
 library;
 
 import 'dart:async';
+import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:bloc_test/bloc_test.dart';
-import 'package:dio/dio.dart' show Interceptor, RequestInterceptorHandler, RequestOptions;
+import 'package:dio/dio.dart'
+    show HttpClientAdapter, Interceptor, RequestInterceptorHandler, RequestOptions, ResponseBody;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
@@ -21,6 +24,7 @@ import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.d
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
@@ -670,6 +674,74 @@ void main() {
       );
     });
   });
+
+  // Regression: on a network that intercepts the connection, the list said "Something went wrong" instead of telling
+  // the admin that the connection was blocked.
+  testWidgets('tells the admin the connection was blocked when the certificate matches no pin', (tester) async {
+    tester.view.physicalSize = const Size(1600, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await FlutterSecureStorageAdapter().write(SecureStorageKeys.jwtToken.key, _unexpiredJwt());
+    await AppLocalStorage().save(StorageKeys.roles.key, ['ROLE_ADMIN']);
+    final adapter = _PinMismatchAdapter();
+
+    await tester.pumpWidget(App(language: 'en', dependencies: _PinnedDependencies(adapter)));
+    await tester.pumpAndSettle();
+    final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+    router.go(ApplicationRoutesConstants.userList);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));
+    await tester.pumpAndSettle();
+
+    expect(adapter.requests, contains('GET /admin/users'));
+    expect(find.text(S.current.user_list_load_failed), findsOneWidget);
+    expect(find.text(S.current.error_network_cert_invalid), findsOneWidget);
+    expect(find.text(S.current.error_generic), findsNothing);
+  });
+}
+
+/// A JWT whose `exp` lies far in the future, so a production session restores it as signed in.
+String _unexpiredJwt() {
+  String part(Map<String, Object> json) => base64Url.encode(utf8.encode(jsonEncode(json))).replaceAll('=', '');
+  return '${part({'alg': 'HS256', 'typ': 'JWT'})}.${part({'sub': 'admin', 'exp': 4102444800})}.signature';
+}
+
+/// Sits in the slot of the certificate-pinning adapter and fails every request the way it fails a server whose
+/// certificate matches no configured pin.
+class _PinMismatchAdapter implements HttpClientAdapter {
+  final requests = <String>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    requests.add('${options.method} ${options.path}');
+    throw const CertificatePinningException('api.example.test', 443);
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// Production dependencies with certificate pinning configured and [adapter] in the slot of the pinning adapter.
+class _PinnedDependencies extends AppDependencies {
+  _PinnedDependencies(this.adapter)
+    : super(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: ['test-pin'],
+          idleTimeout: null,
+        ),
+      );
+
+  final _PinMismatchAdapter adapter;
+
+  @override
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
+      super.createApiClient(secureStorage, onSessionExpired: onSessionExpired)..instance.httpClientAdapter = adapter;
 }
 
 /// Mock-mode app dependencies whose user list is served by [userRepository].

@@ -2,9 +2,11 @@
 library;
 
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:bloc_test/bloc_test.dart';
-import 'package:dio/dio.dart' show Interceptor, RequestInterceptorHandler, RequestOptions, Response;
+import 'package:dio/dio.dart'
+    show Headers, HttpClientAdapter, Interceptor, RequestInterceptorHandler, RequestOptions, Response, ResponseBody;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
@@ -22,6 +24,7 @@ import 'package:flutter_bloc_advance/features/users/application/user_editor_bloc
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_editor_page.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/certificate_pinner.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
@@ -606,6 +609,115 @@ void main() {
       expect(created, containsPair('authorities', ['ROLE_USER']));
     });
   });
+
+  // Regression: a save that met a certificate matching no pin showed "Failed", which tells the admin nothing about the
+  // blocked connection.
+  testWidgets('tells the admin the connection was blocked when the save meets a certificate that matches no pin', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(1600, 1600);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+    await FlutterSecureStorageAdapter().write(SecureStorageKeys.jwtToken.key, _unexpiredJwt());
+    await AppLocalStorage().save(StorageKeys.roles.key, ['ROLE_ADMIN']);
+    // The user and the roles load; every other request, the save among them, meets a certificate that matches no pin.
+    final adapter = _PinnedServerAdapter({
+      'GET /admin/users/grace.hopper': {
+        'id': '7',
+        'login': 'grace.hopper',
+        'firstName': 'Grace',
+        'lastName': 'Hopper',
+        'email': 'grace.hopper@example.com',
+        'activated': true,
+        'authorities': ['ROLE_USER'],
+      },
+      'GET /authorities': [
+        {'name': 'ROLE_ADMIN'},
+        {'name': 'ROLE_USER'},
+      ],
+    });
+    await tester.pumpWidget(App(language: 'en', dependencies: _PinnedDependencies(adapter)));
+    await tester.pumpAndSettle();
+    final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+    router.go('/user/grace.hopper/edit');
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byKey(const Key('userEditorFirstNameFieldKey')), 'Amazing Grace');
+    await tester.ensureVisible(find.byKey(const Key('userEditorSubmitButtonKey')));
+    await tester.tap(find.byKey(const Key('userEditorSubmitButtonKey')));
+
+    // The reason is a sentence, so it stays for the default 4 s.
+    expect(await _snackBars(tester), {S.current.error_network_cert_invalid: const Duration(seconds: 4)});
+    expect(adapter.requests, contains('PUT /admin/users'));
+    expect(find.text('Amazing Grace'), findsOneWidget);
+  });
+}
+
+/// Pumps for [duration] and collects the text and the display duration of every snack bar shown meanwhile.
+Future<Map<String, Duration>> _snackBars(WidgetTester tester, {Duration duration = const Duration(seconds: 5)}) async {
+  final snackBars = <String, Duration>{};
+  for (var elapsed = Duration.zero; elapsed < duration; elapsed += const Duration(milliseconds: 100)) {
+    await tester.pump(const Duration(milliseconds: 100));
+    for (final snackBar in tester.widgetList<SnackBar>(find.byType(SnackBar))) {
+      snackBars[(snackBar.content as Text).data!] = snackBar.duration;
+    }
+  }
+  return snackBars;
+}
+
+/// A JWT whose `exp` lies far in the future, so a production session restores it as signed in.
+String _unexpiredJwt() {
+  String part(Map<String, Object> json) => base64Url.encode(utf8.encode(jsonEncode(json))).replaceAll('=', '');
+  return '${part({'alg': 'HS256', 'typ': 'JWT'})}.${part({'sub': 'admin', 'exp': 4102444800})}.signature';
+}
+
+/// Sits in the slot of the certificate-pinning adapter. Answers each request in [_routes], by method and path, with its
+/// JSON, and fails every other one the way the pinning adapter fails a server whose certificate matches no pin.
+class _PinnedServerAdapter implements HttpClientAdapter {
+  _PinnedServerAdapter(this._routes);
+
+  final Map<String, Object> _routes;
+  final requests = <String>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    final route = '${options.method} ${options.path}';
+    requests.add(route);
+    final body = _routes[route] ?? (throw const CertificatePinningException('api.example.test', 443));
+    return ResponseBody.fromString(
+      jsonEncode(body),
+      200,
+      headers: {
+        Headers.contentTypeHeader: [Headers.jsonContentType],
+      },
+    );
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// Production dependencies with certificate pinning configured and [adapter] in the slot of the pinning adapter.
+class _PinnedDependencies extends AppDependencies {
+  _PinnedDependencies(this.adapter)
+    : super(
+        appConfig: const AppConfig(
+          environment: Environment.prod,
+          apiBaseUrl: 'https://api.example.test',
+          certificatePins: ['test-pin'],
+          idleTimeout: null,
+        ),
+      );
+
+  final _PinnedServerAdapter adapter;
+
+  @override
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
+      super.createApiClient(secureStorage, onSessionExpired: onSessionExpired)..instance.httpClientAdapter = adapter;
 }
 
 /// Mock-mode app dependencies whose users are served by [userRepository].

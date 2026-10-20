@@ -65,10 +65,14 @@ final class UserEditorFetchFailure extends UserEditorState {
 /// Saving the user failed. [data] is the user the editor held before the save (null when creating), so
 /// the form stays on that user and saving again updates it.
 final class UserEditorSaveFailure extends UserEditorState {
-  const UserEditorSaveFailure({this.data});
+  const UserEditorSaveFailure({this.data, this.errorCode});
 
   final UserEntity? data;
 
+  /// Set when the failure has a translated message, which the UI shows via `errorCode.resolve(context)`
+  /// instead of its generic one.
+  final AppErrorCode? errorCode;
+
   @override
-  List<Object?> get props => [data];
+  List<Object?> get props => [data, errorCode];
 }

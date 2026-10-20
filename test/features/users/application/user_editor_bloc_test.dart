@@ -90,9 +90,13 @@ void main() {
       ]);
     });
 
-    test('UserEditorSaveFailure carries the user being edited', () {
-      expect(const UserEditorSaveFailure(data: sampleUser).props, const <Object?>[sampleUser]);
-      expect(const UserEditorSaveFailure().props, const <Object?>[null]);
+    test('UserEditorSaveFailure carries the user being edited and the error code', () {
+      expect(const UserEditorSaveFailure(data: sampleUser).props, const <Object?>[sampleUser, null]);
+      expect(const UserEditorSaveFailure().props, const <Object?>[null, null]);
+      expect(
+        const UserEditorSaveFailure(data: sampleUser, errorCode: AppErrorCode.networkCertInvalid).props,
+        const <Object?>[sampleUser, AppErrorCode.networkCertInvalid],
+      );
     });
   });
 
@@ -169,6 +173,19 @@ void main() {
         seed: () => const UserEditorLoaded(data: sampleUser),
         act: (b) => b.add(const UserEditorSubmit(sampleUser)),
         expect: () => [const UserEditorLoading(data: sampleUser), const UserEditorSaveFailure(data: sampleUser)],
+      );
+
+      // Regression: the failure dropped the code, so a save that met a certificate matching no pin showed "Failed".
+      blocTest<UserEditorBloc, UserEditorState>(
+        'a failed save carries the code of the failure',
+        setUp: () => repository.failure = NetworkError('pin mismatch', code: AppErrorCode.networkCertInvalid.key),
+        build: () => bloc,
+        seed: () => const UserEditorLoaded(data: sampleUser),
+        act: (b) => b.add(const UserEditorSubmit(sampleUser)),
+        expect: () => [
+          const UserEditorLoading(data: sampleUser),
+          const UserEditorSaveFailure(data: sampleUser, errorCode: AppErrorCode.networkCertInvalid),
+        ],
       );
 
       blocTest<UserEditorBloc, UserEditorState>(
