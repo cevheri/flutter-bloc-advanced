@@ -4,6 +4,7 @@ library;
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:dio/dio.dart' show Interceptor, RequestInterceptorHandler, RequestOptions;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
@@ -18,10 +19,14 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/user_list_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_list_page.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/design_system/components/app_skeleton.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
+import 'package:flutter_bloc_advance/shared/widgets/app_data_table.dart';
 import 'package:flutter_bloc_advance/shared/widgets/app_responsive_list_view.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -395,12 +400,12 @@ void main() {
     });
 
     testWidgets('shows why a delete was refused in the app language', (tester) async {
-      // The list deletes a user by login, and DeleteUserUseCase refuses 'user-1'.
+      // The list deletes a user by login, and DeleteUserUseCase refuses the admin's login.
       stubSearch(
         const Success([
           UserEntity(
             id: '1',
-            login: 'user-1',
+            login: 'admin',
             firstName: 'Admin',
             lastName: 'User',
             email: 'admin@example.com',
@@ -470,6 +475,55 @@ void main() {
       expect(find.text(S.current.error_generic), findsNothing);
     });
   });
+
+  group('UserListScreen against the mock API', () {
+    late List<RequestOptions> requests;
+
+    setUp(() async {
+      requests = [];
+      TestEnv.authenticate();
+      await AppLocalStorage().save(StorageKeys.roles.key, ['ROLE_ADMIN']);
+    });
+
+    // What an admin does: list the users, press delete on the row with [email] and confirm.
+    Future<void> deleteUser(WidgetTester tester, String email) async {
+      tester.view.physicalSize = const Size(1600, 1600);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(App(language: 'en', dependencies: _RecordingDependencies(requests)));
+      await tester.pumpAndSettle();
+      final router = tester.widget<MaterialApp>(find.byType(MaterialApp)).routerConfig! as GoRouter;
+      router.go(ApplicationRoutesConstants.userList);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byKey(const Key('listUserSubmitButtonKey')));
+      await tester.pumpAndSettle();
+
+      final emailCell = find.descendant(of: find.byType(AppDataTable<UserEntity>), matching: find.text(email));
+      final row = find.ancestor(of: emailCell, matching: find.byType(Row)).first;
+      await tester.tap(find.descendant(of: row, matching: find.byIcon(Icons.delete)));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(S.current.yes));
+      await tester.pumpAndSettle();
+    }
+
+    List<String> deletedPaths() =>
+        requests.where((request) => request.method == 'DELETE').map((request) => request.path).toList();
+
+    // Guards that the row deletes by login, the identifier the admin guard checks.
+    testWidgets('deletes a user by login, which the API takes', (tester) async {
+      await deleteUser(tester, 'mock_account-2@test.com');
+
+      expect(deletedPaths(), ['/admin/users/new_user-2']);
+    });
+
+    testWidgets('refuses to delete the admin without sending the delete', (tester) async {
+      await deleteUser(tester, 'admin@sample.tech');
+
+      expect(find.text(S.current.error_user_cannot_delete_admin), findsOneWidget);
+      expect(deletedPaths(), isEmpty);
+    });
+  });
 }
 
 /// Mock-mode app dependencies whose user list is served by [userRepository].
@@ -480,4 +534,32 @@ class _UserRepositoryDependencies extends AppDependencies {
 
   @override
   IUserRepository createUserRepository(ApiClient apiClient) => userRepository;
+}
+
+/// Test-mode app dependencies whose API client records each request the mock API answers in [requests].
+class _RecordingDependencies extends AppDependencies {
+  const _RecordingDependencies(this.requests) : super(appConfig: const AppConfig.test());
+
+  final List<RequestOptions> requests;
+
+  @override
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) {
+    final apiClient = super.createApiClient(secureStorage, onSessionExpired: onSessionExpired);
+    // MockInterceptor comes last and answers in place of the server, so the recorder goes right before it.
+    final interceptors = apiClient.instance.interceptors;
+    interceptors.insert(interceptors.length - 1, _RequestRecorder(requests));
+    return apiClient;
+  }
+}
+
+class _RequestRecorder extends Interceptor {
+  _RequestRecorder(this.requests);
+
+  final List<RequestOptions> requests;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    requests.add(options);
+    handler.next(options);
+  }
 }

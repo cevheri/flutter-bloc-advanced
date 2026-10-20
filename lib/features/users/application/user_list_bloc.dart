@@ -51,13 +51,13 @@ class UserListBloc extends Bloc<UserListEvent, UserListState> {
   }
 
   FutureOr<void> _onDelete(UserListDelete event, Emitter<UserListState> emit) async {
-    _log.debug('BEGIN: onDelete id: {}', [event.id]);
+    _log.debug('BEGIN: onDelete login: {}', [event.login]);
     emit(const UserListLoading());
-    final result = await _guard(() => _deleteUserUseCase(event.id));
+    final result = await _guard(() => _deleteUserUseCase(event.login));
     switch (result) {
       case Success():
         emit(const UserListDeleteSuccess());
-        _log.debug('END:onDelete success id: {}', [event.id]);
+        _log.debug('END:onDelete success login: {}', [event.login]);
       case Failure(:final error):
         emit(UserListDeleteFailure(errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.generic));
         _log.error('END:onDelete error: {}', [error]);

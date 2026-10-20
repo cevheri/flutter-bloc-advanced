@@ -272,9 +272,9 @@ void main() {
       // Admin-protection rule lives in DeleteUserUseCase (#73). Verify its
       // error code surfaces through the bloc, so the UI can translate it.
       blocTest<UserListBloc, UserListState>(
-        'emits a delete failure with the admin-protection code when deleting user-1',
+        'emits a delete failure with the admin-protection code when deleting the admin',
         build: () => bloc,
-        act: (b) => b.add(const UserListDelete('user-1')),
+        act: (b) => b.add(const UserListDelete('admin')),
         expect: () => [
           const UserListLoading(),
           const UserListDeleteFailure(errorCode: AppErrorCode.userCannotDeleteAdmin),

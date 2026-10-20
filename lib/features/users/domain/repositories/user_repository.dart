@@ -18,5 +18,5 @@ abstract class IUserRepository {
 
   Future<Result<List<UserEntity>>> listByNameAndRole(int page, int size, String name, String authority);
 
-  Future<Result<void>> delete(String id);
+  Future<Result<void>> delete(String login);
 }

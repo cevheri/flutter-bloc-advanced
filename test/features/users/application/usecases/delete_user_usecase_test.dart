@@ -33,9 +33,10 @@ void main() {
   });
 
   // Regression coverage for #73: the admin-protection rule now lives in
-  // the use case, not in UserBloc.
-  test('rejects deletion of the protected admin user (user-1) without hitting repo', () async {
-    final result = await useCase.call('user-1');
+  // the use case, not in UserBloc. The list deletes by login, so the rule
+  // checks the admin's login.
+  test('rejects deletion of the protected admin user (admin) without hitting repo', () async {
+    final result = await useCase.call('admin');
 
     expect(result, isA<Failure<void>>());
     expect((result as Failure).error, isA<ValidationError>());

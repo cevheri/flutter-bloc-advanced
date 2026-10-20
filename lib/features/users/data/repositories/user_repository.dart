@@ -239,13 +239,13 @@ class UserRepository implements IUserRepository {
   }
 
   @override
-  Future<Result<void>> delete(String id) async {
-    _log.debug('BEGIN:deleteUser repository start - id: {}', [id]);
-    if (id.isEmpty) {
+  Future<Result<void>> delete(String login) async {
+    _log.debug('BEGIN:deleteUser repository start - login: {}', [login]);
+    if (login.isEmpty) {
       return const Failure(ValidationError(userIdRequired));
     }
     try {
-      final response = await _apiClient.delete('/admin/$_resource', pathParams: id);
+      final response = await _apiClient.delete('/admin/$_resource', pathParams: login);
       _log.debug('END:deleteUser successful - response status code: {}', [response.statusCode]);
       return const Success(null);
     } on UnauthorizedException catch (e) {

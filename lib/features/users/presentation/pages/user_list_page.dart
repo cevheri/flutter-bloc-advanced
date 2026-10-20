@@ -170,7 +170,7 @@ class UserListView extends StatelessWidget {
         label: 'Actions',
         flex: 4,
         alignment: TextAlign.right,
-        builder: (_, user) => _DesktopRowActions(userId: user.login ?? ''),
+        builder: (_, user) => _DesktopRowActions(login: user.login ?? ''),
       ),
     ];
   }
@@ -517,7 +517,7 @@ class _MobileUserCard extends StatelessWidget {
     }
   }
 
-  void _showDeleteConfirmation(BuildContext context, String userId) {
+  void _showDeleteConfirmation(BuildContext context, String login) {
     final cs = Theme.of(context).colorScheme;
     showDialog(
       context: context,
@@ -529,7 +529,7 @@ class _MobileUserCard extends StatelessWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<UserListBloc>().add(UserListDelete(userId));
+              context.read<UserListBloc>().add(UserListDelete(login));
             },
             style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
             child: Text(S.of(ctx).yes),
@@ -545,9 +545,9 @@ class _MobileUserCard extends StatelessWidget {
 // ---------------------------------------------------------------------------
 
 class _DesktopRowActions extends StatelessWidget {
-  const _DesktopRowActions({required this.userId});
+  const _DesktopRowActions({required this.login});
 
-  final String userId;
+  final String login;
 
   @override
   Widget build(BuildContext context) {
@@ -568,8 +568,8 @@ class _DesktopRowActions extends StatelessWidget {
     );
   }
 
-  void _edit(BuildContext context) => context.goNamed('userEdit', pathParameters: {'id': userId});
-  void _view(BuildContext context) => context.goNamed('userView', pathParameters: {'id': userId});
+  void _edit(BuildContext context) => context.goNamed('userEdit', pathParameters: {'id': login});
+  void _view(BuildContext context) => context.goNamed('userView', pathParameters: {'id': login});
 
   void _delete(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
@@ -583,7 +583,7 @@ class _DesktopRowActions extends StatelessWidget {
           FilledButton(
             onPressed: () {
               Navigator.pop(ctx);
-              context.read<UserListBloc>().add(UserListDelete(userId));
+              context.read<UserListBloc>().add(UserListDelete(login));
             },
             style: FilledButton.styleFrom(backgroundColor: cs.error, foregroundColor: cs.onError),
             child: Text(S.of(ctx).yes),

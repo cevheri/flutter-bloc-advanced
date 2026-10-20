@@ -19,11 +19,12 @@ final class UserListSearch extends UserListEvent {
   List<Object?> get props => [page, size, authorities, name];
 }
 
+/// Deletes the user with [login], the identifier the API deletes a user by.
 final class UserListDelete extends UserListEvent {
-  const UserListDelete(this.id);
+  const UserListDelete(this.login);
 
-  final String id;
+  final String login;
 
   @override
-  List<Object?> get props => [id];
+  List<Object?> get props => [login];
 }
