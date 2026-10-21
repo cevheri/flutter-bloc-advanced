@@ -132,10 +132,15 @@ abstract interface class IOidcClient {
 /// user and the store dropping this tab's transaction, so the app's session storage is the only place tokens live.
 /// The one exception is the web tap: the state and the PKCE verifier must stay for `web/redirect.html` and for the
 /// tab that comes back.
+///
+/// The operations run one at a time, each after the previous one has ended, because they share the manager: a code
+/// exchange that lands while a refresh holds the adopted user would replace that user's token, whose ID token the
+/// package then reads without checking the signature, and the provider error flag would belong to two operations.
 final class OidcClient implements IOidcClient {
   /// [launchUrl] opens the browser on Linux and Windows. It must throw rather than answer false, since the package
   /// logs the authorization URL when a launcher answers false. [pageUri] is the page a web build runs in, which the
-  /// web redirect URIs are built from; it defaults to `Uri.base`.
+  /// web redirect URIs are built from; it defaults to `Uri.base`. [onManagerCreated] lets a test see each manager the
+  /// client builds.
   OidcClient({
     required this._settings,
     required this._loginPath,
@@ -145,6 +150,7 @@ final class OidcClient implements IOidcClient {
     OidcPlatformKind? platform,
     Uri? pageUri,
     Future<void> Function()? cancelAndroidFlow,
+    @visibleForTesting this._onManagerCreated,
   }) : _store = store ?? OidcTransactionStore.forPlatform(),
        _http = _ProviderHttpClient(httpClient ?? http.Client()),
        _platform = platform ?? OidcPlatformKind.current(),
@@ -170,14 +176,29 @@ final class OidcClient implements IOidcClient {
   final OidcPlatformKind _platform;
   final Uri _pageUri;
   final Future<void> Function() _cancelAndroidFlow;
+  final void Function(AppOidcUserManager manager)? _onManagerCreated;
 
   late final _redirectUris = OidcRedirectUris.forPlatform(_settings, platform: _platform, pageUri: _pageUri);
 
   /// The run's manager once its `init()` has started, or null before that and after a failed `init()`.
   Future<AppOidcUserManager>? _ready;
 
+  /// Completes when the last operation queued has ended, whatever its result.
+  Future<void> _idle = Future<void>.value();
+
+  /// Runs [operation] after every operation queued before it has ended. Its result and its error reach the caller
+  /// unchanged; the queue only waits for it.
+  Future<T> _oneAtATime<T>(Future<T> Function() operation) {
+    final result = _idle.then((_) => operation());
+    _idle = result.then<void>((_) {}, onError: (Object _) {});
+    return result;
+  }
+
   @override
-  Future<OidcSignInOutcome> signIn({String? webReturnPath, required String browserDoneMessage}) async {
+  Future<OidcSignInOutcome> signIn({String? webReturnPath, required String browserDoneMessage}) =>
+      _oneAtATime(() => _signIn(webReturnPath: webReturnPath, browserDoneMessage: browserDoneMessage));
+
+  Future<OidcSignInOutcome> _signIn({String? webReturnPath, required String browserDoneMessage}) async {
     _http.getFailed = false;
     final AppOidcUserManager manager;
     try {
@@ -238,7 +259,9 @@ final class OidcClient implements IOidcClient {
   }
 
   @override
-  Future<OidcSignInOutcome?> completePendingSignIn() async {
+  Future<OidcSignInOutcome?> completePendingSignIn() => _oneAtATime(_completePendingSignIn);
+
+  Future<OidcSignInOutcome?> _completePendingSignIn() async {
     // A verifier with no response: the tab left for the provider and came back without an answer (Back button).
     if (_store.hasAbandonedSignIn()) {
       await _store.clearTransactions();
@@ -250,8 +273,11 @@ final class OidcClient implements IOidcClient {
     _http.getFailed = false;
     // The manager's init() exchanges the stored response. A manager that already ran init() in this run would not
     // read the store again, so the completion always starts a new one, which then serves the rest of the run.
+    final replaced = _ready;
     final manager = _newManager();
     try {
+      // The queue lets no other operation use the replaced manager any more, and a manager in _ready is initialized.
+      await (await replaced)?.dispose();
       await _initialize(manager);
       final user = manager.currentUser;
       if (user == null) {
@@ -277,6 +303,12 @@ final class OidcClient implements IOidcClient {
     required String idToken,
     required String accessToken,
     required DateTime accessTokenExpiresAt,
+  }) => _oneAtATime(() => _refresh(refreshToken: refreshToken, idToken: idToken, accessToken: accessToken));
+
+  Future<TokenRotationResult> _refresh({
+    required String refreshToken,
+    required String idToken,
+    required String accessToken,
   }) async {
     _http.getFailed = false;
     final AppOidcUserManager manager;
@@ -321,7 +353,10 @@ final class OidcClient implements IOidcClient {
   }
 
   @override
-  Future<OidcLogoutOutcome> endProviderSession({String? idTokenHint}) async {
+  Future<OidcLogoutOutcome> endProviderSession({String? idTokenHint}) =>
+      _oneAtATime(() => _endProviderSession(idTokenHint: idTokenHint));
+
+  Future<OidcLogoutOutcome> _endProviderSession({String? idTokenHint}) async {
     try {
       final manager = await _initializedManager();
       final endpoint = _logoutEndpoint(manager.discoveryDocument);
@@ -386,7 +421,13 @@ final class OidcClient implements IOidcClient {
     }
   }
 
-  AppOidcUserManager _newManager() => AppOidcUserManager.lazy(
+  AppOidcUserManager _newManager() {
+    final manager = _buildManager();
+    _onManagerCreated?.call(manager);
+    return manager;
+  }
+
+  AppOidcUserManager _buildManager() => AppOidcUserManager.lazy(
     discoveryDocumentUri: OidcUtils.getOpenIdConfigWellKnownUri(_settings.issuer),
     clientCredentials: OidcClientAuthentication.none(clientId: _settings.clientId),
     store: _store,
@@ -469,9 +510,13 @@ final class OidcClient implements IOidcClient {
         refreshToken: _nonEmpty(user.token.refreshToken),
         accessTokenExpiresAt: expiresAt.toUtc(),
       ),
-      claims: user.claims.toJson(),
+      claims: Map.of(user.claims.toJson())..removeWhere((name, _) => _protocolClaims.contains(name)),
     );
   }
+
+  /// ID token claims that only bind the token to this sign-in. The `nonce` must never reach a log line, and a caller
+  /// needs none of them.
+  static const _protocolClaims = {'nonce', 'at_hash', 'c_hash'};
 
   /// A transport failure, or a discovery or JWKS failure, is [OidcFailure.discovery]; an error answer or a failed
   /// check, such as a bad signature or a nonce mismatch, is [OidcFailure.failed].

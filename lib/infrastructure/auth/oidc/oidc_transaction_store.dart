@@ -161,7 +161,13 @@ final class OidcTransactionStore implements OidcStore {
   Set<String> _index(OidcStoreNamespace namespace) {
     final raw = _persistent.read(_indexKey(namespace));
     if (raw == null) return {};
-    final decoded = jsonDecode(raw);
+    final Object? decoded;
+    try {
+      decoded = jsonDecode(raw);
+    } on FormatException {
+      // The decoder's exception carries the raw index, a list of state ids, as its source.
+      throw FormatException('${_indexKey(namespace)} is not valid JSON');
+    }
     if (decoded is! List || decoded.any((id) => id is! String)) {
       throw FormatException('${_indexKey(namespace)} is not a JSON array of strings');
     }

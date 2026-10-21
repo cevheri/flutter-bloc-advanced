@@ -211,4 +211,30 @@ void main() {
 
     expect(() => store.getAllKeys(OidcStoreNamespace.stateResponse), throwsFormatException);
   });
+
+  for (final (indexKey, namespace) in [
+    ('oidc.keys.response.state', OidcStoreNamespace.stateResponse),
+    ('oidc.keys.state', OidcStoreNamespace.state),
+  ]) {
+    test('a malformed $indexKey names the key and carries no state id', () async {
+      persistent.write(indexKey, '["state-secret-1","state-secret-2"');
+
+      final error = await store.getAllKeys(namespace).then<Object?>((_) => null, onError: (Object error) => error);
+
+      expect(error, isA<FormatException>());
+      final format = error! as FormatException;
+      expect(format.message, contains(indexKey));
+      expect(format.source, isNull);
+      expect(format.toString(), isNot(contains('state-secret')));
+    });
+  }
+
+  test('a malformed response index escapes hasPendingResponse without a state id', () async {
+    persistent.write('oidc.keys.response.state', '["state-secret-1",');
+
+    final error = await store.hasPendingResponse().then<Object?>((_) => null, onError: (Object error) => error);
+
+    expect(error, isA<FormatException>());
+    expect(error.toString(), isNot(contains('state-secret')));
+  });
 }

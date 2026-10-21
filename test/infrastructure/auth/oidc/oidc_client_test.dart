@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/app_oidc_user_manager.dart';
 import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_key_value.dart';
 import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_redirect_uris.dart';
@@ -44,6 +46,7 @@ void main() {
     OidcTransactionStore? transactionStore,
     FakeProvider? at,
     Future<void> Function()? cancelAndroidFlow,
+    void Function(AppOidcUserManager manager)? onManagerCreated,
   }) {
     final idp = at ?? provider;
     return OidcClient(
@@ -58,6 +61,7 @@ void main() {
       platform: platformKind,
       pageUri: _pageUri,
       cancelAndroidFlow: cancelAndroidFlow ?? () async => fail('cancelAndroidFlow was not expected'),
+      onManagerCreated: onManagerCreated,
     );
   }
 
@@ -116,6 +120,29 @@ void main() {
 
       expect(await signIn(newClient()), _failed(OidcFailure.failed));
       await expectStoreEmpty();
+    });
+
+    test('an ID token with another nonce is failed', () async {
+      provider.codeAnswer = () => provider.tokenAnswer(nonce: 'another-nonce');
+
+      expect(await signIn(newClient()), _failed(OidcFailure.failed));
+      expect(provider.tokenRequests, hasLength(1));
+      await expectStoreEmpty();
+    });
+
+    test('the claims leave out the nonce, at_hash and c_hash of the ID token', () async {
+      provider.hashClaims = true;
+
+      final outcome = await signIn(newClient());
+
+      expect(outcome, isA<OidcSignedIn>());
+      final signedIn = outcome as OidcSignedIn;
+      final idTokenClaims = JsonWebToken.unverified(signedIn.tokens.idToken).claims.toJson();
+      expect(idTokenClaims.keys, containsAll(<String>['nonce', 'at_hash', 'c_hash']));
+      expect(signedIn.claims.keys, isNot(anyOf(contains('nonce'), contains('at_hash'), contains('c_hash'))));
+      expect(signedIn.claims['sub'], fakeSubject);
+      expect(signedIn.claims['preferred_username'], 'person');
+      expect(signedIn.claims.toString(), isNot(contains(idTokenClaims['nonce'] as String)));
     });
 
     test('an ID token with a bad signature is failed', () async {
@@ -648,20 +675,13 @@ void main() {
     });
   });
 
-  test('no background refresh: a token of expires_in 1 is not refreshed after the sign-in', () async {
-    // Real time: jose_plus verifies the ID token signature on a path that fake_async never completes.
-    provider.expiresIn = 1;
-
-    expect(await newClient().signIn(browserDoneMessage: _doneMessage), isA<OidcSignedIn>());
-    expect(provider.tokenRequests, hasLength(1));
-    await Future<void>.delayed(const Duration(seconds: 2));
-
-    expect(provider.tokenRequests, hasLength(1), reason: 'a package timer refreshed the token after the sign-in');
-  });
-
   test(
     'no background refresh: an access token that has expired at the sign-in is not refreshed by the package',
     () async {
+      // Real time, not fake time: jose_plus verifies the ID token signature on a path that never completes under
+      // fake_async, so a sign-in in fake time never ends and a test that advances the clock past expires_in cannot
+      // run. A token that has expired when it arrives makes the package's expired timer fire at once instead, which
+      // the client forgetting its user after the sign-in cannot hide.
       // The package's expired timer fires at once for such a token and refreshes it, unless the manager arms no timer.
       provider.expiresIn = 0;
       // A refused refresh ends the package's refresh loop, which would otherwise never stop for a 0 second token.
@@ -673,6 +693,89 @@ void main() {
       expect(provider.tokenRequests, hasLength(1), reason: 'a package timer refreshed the token during the sign-in');
     },
   );
+
+  group('one operation at a time', () {
+    test('a sign-in started during a refresh runs after it, and its ID token signature is still checked', () async {
+      final refreshAnswer = Completer<http.Response>();
+      provider.refreshAnswer = () => refreshAnswer.future;
+      final client = newClient();
+      final refreshing = client.refresh(
+        refreshToken: 'refresh-old-value',
+        idToken: provider.signIdToken(),
+        accessToken: 'access-old-value',
+        accessTokenExpiresAt: clock.now().toUtc(),
+      );
+      while (provider.tokenRequests.isEmpty) {
+        await Future<void>.delayed(Duration.zero);
+      }
+      provider.signWithForeignKey = true;
+
+      final signingIn = signIn(client);
+      for (var turn = 0; turn < 20; turn++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      expect(platform.authorizeRequests, isEmpty, reason: 'the sign-in started while the refresh was in flight');
+      refreshAnswer.complete(provider.tokenAnswer(idToken: false));
+      expect(await refreshing, isA<TokensRotated>());
+      expect(await signingIn, _failed(OidcFailure.failed));
+      expect(platform.authorizeRequests, hasLength(1));
+      await expectStoreEmpty();
+    });
+
+    test('a refresh started during a sign-in runs after it', () async {
+      platform.authorization = FakeAuthorization.pending;
+      final client = newClient();
+      final signingIn = signIn(client);
+      while (!platform.hasPending) {
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      final refreshing = client.refresh(
+        refreshToken: 'refresh-old-value',
+        idToken: provider.signIdToken(),
+        accessToken: 'access-old-value',
+        accessTokenExpiresAt: clock.now().toUtc(),
+      );
+      for (var turn = 0; turn < 20; turn++) {
+        await Future<void>.delayed(Duration.zero);
+      }
+
+      expect(provider.tokenRequests, isEmpty, reason: 'the refresh started while the sign-in was pending');
+      platform.completePending();
+      expect(await signingIn, isA<OidcSignInCancelled>());
+      expect(await refreshing, isA<TokensRotated>());
+    });
+
+    test('an operation that throws does not stop the next one', () async {
+      // A web sign-in that answers a user instead of leaving the page throws.
+      final client = newClient(platformKind: OidcPlatformKind.web);
+
+      await expectLater(signIn(client), throwsStateError);
+
+      expect(await client.endProviderSession(), isA<ProviderLogoutNavigatedAway>());
+    });
+  });
+
+  test('a web completion disposes the manager it replaces', () async {
+    final managers = <AppOidcUserManager>[];
+    platform.authorization = FakeAuthorization.navigateAway;
+    final client = newClient(platformKind: OidcPlatformKind.web, onManagerCreated: managers.add);
+    await signIn(client);
+    final request = platform.authorizeRequests.single;
+    await store.setStateResponseData(
+      state: request.state!,
+      stateData: request.redirectUri
+          .replace(queryParameters: {'code': 'code-value', 'state': request.state!})
+          .toString(),
+    );
+
+    expect(await client.completePendingSignIn(), isA<OidcSignedIn>());
+
+    expect(managers, hasLength(2));
+    expect(managers.first.isDisposed, isTrue, reason: 'the replaced manager was left running');
+    expect(managers.last.isDisposed, isFalse);
+  });
 
   group('endProviderSession', () {
     test('with a hint, the end-session URL carries client_id, post_logout_redirect_uri and id_token_hint', () async {

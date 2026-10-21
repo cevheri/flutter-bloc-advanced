@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:clock/clock.dart';
+import 'package:crypto/crypto.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -63,6 +64,10 @@ final class FakeProvider {
   /// Whether a refresh answer carries a new ID token.
   bool refreshReturnsIdToken = true;
 
+  /// Whether the ID token of a token answer carries an `at_hash` for its access token and a `c_hash` for the code
+  /// [FakeOidcPlatform] redirects with.
+  bool hashClaims = false;
+
   /// The nonce the last authorization request sent, which the code exchange puts into the ID token.
   String? nonce;
 
@@ -99,8 +104,9 @@ final class FakeProvider {
     'grant_types_supported': ['authorization_code', 'refresh_token'],
   };
 
-  /// An RS256 ID token for [fakeSubject] that expires [ttl] from now, with [nonce] when given.
-  String signIdToken({String? nonce, Duration ttl = const Duration(hours: 1)}) {
+  /// An RS256 ID token for [fakeSubject] that expires [ttl] from now, with [nonce] when given, and the `at_hash` of
+  /// [accessToken] and the `c_hash` of [code] when given.
+  String signIdToken({String? nonce, Duration ttl = const Duration(hours: 1), String? accessToken, String? code}) {
     final now = clock.now();
     final builder = JsonWebSignatureBuilder()
       ..jsonContent = {
@@ -110,6 +116,8 @@ final class FakeProvider {
         'exp': now.add(ttl).millisecondsSinceEpoch ~/ 1000,
         'iat': now.millisecondsSinceEpoch ~/ 1000,
         'nonce': ?nonce,
+        if (accessToken != null) 'at_hash': _halfHash(accessToken),
+        if (code != null) 'c_hash': _halfHash(code),
         'preferred_username': 'person',
         'realm_access': {
           'roles': ['admin'],
@@ -122,10 +130,16 @@ final class FakeProvider {
   /// A token endpoint answer: a new access and refresh token, an ID token unless [idToken] is false, and [expiresIn].
   http.Response tokenAnswer({bool idToken = true, String? nonce, String? accessToken}) {
     _counter++;
+    final access = accessToken ?? 'access-$_counter-value';
     return json({
-      'access_token': accessToken ?? 'access-$_counter-value',
+      'access_token': access,
       'refresh_token': 'refresh-$_counter-value',
-      if (idToken) 'id_token': signIdToken(nonce: nonce),
+      if (idToken)
+        'id_token': signIdToken(
+          nonce: nonce,
+          accessToken: hashClaims ? access : null,
+          code: hashClaims ? FakeOidcPlatform.code : null,
+        ),
       'token_type': 'Bearer',
       'expires_in': ?expiresIn,
     });
@@ -134,6 +148,12 @@ final class FakeProvider {
   /// An RFC 6749 error answer such as `invalid_grant`.
   static http.Response errorAnswer(String error, {int status = 400}) =>
       json({'error': error, 'error_description': 'The provider says no'}, status: status);
+
+  /// The OpenID Connect hash of [value] for RS256: the left half of its SHA-256, base64url without padding.
+  static String _halfHash(String value) {
+    final digest = sha256.convert(ascii.encode(value)).bytes;
+    return base64Url.encode(digest.sublist(0, digest.length ~/ 2)).replaceAll('=', '');
+  }
 
   static http.Response json(Object body, {int status = 200}) =>
       http.Response(jsonEncode(body), status, headers: const {'content-type': 'application/json'});
@@ -186,6 +206,9 @@ enum FakeEndSession { ended, nullAnswer, fails, pending }
 final class FakeOidcPlatform extends OidcPlatform {
   FakeOidcPlatform(this.provider);
 
+  /// The authorization code of a [FakeAuthorization.code] redirect.
+  static const code = 'code-value';
+
   final FakeProvider provider;
 
   FakeAuthorization authorization = FakeAuthorization.code;
@@ -229,7 +252,7 @@ final class FakeOidcPlatform extends OidcPlatform {
         await pending.future;
         return null;
       case FakeAuthorization.code:
-        return redirect(request, {'code': 'code-value', 'state': request.state!});
+        return redirect(request, {'code': code, 'state': request.state!});
       case FakeAuthorization.accessDenied:
         return redirect(request, {'error': 'access_denied', 'state': request.state!});
     }
