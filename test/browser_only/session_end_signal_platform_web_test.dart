@@ -48,4 +48,18 @@ void main() {
       expect(heard, [DateTime.fromMillisecondsSinceEpoch(endedAt.millisecondsSinceEpoch)]);
     },
   );
+
+  test('hears no end once disposed', () async {
+    final thisTab = createPlatformSessionEndSignal()!;
+    final heard = <DateTime>[];
+    thisTab.endedElsewhere.listen(heard.add);
+    final otherTab = createPlatformSessionEndSignal()!;
+    addTearDown(otherTab.dispose);
+
+    thisTab.dispose();
+    otherTab.notifyEnded();
+    await Future<void>.delayed(const Duration(milliseconds: 300));
+
+    expect(heard, isEmpty);
+  });
 }

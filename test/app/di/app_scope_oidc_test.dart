@@ -63,8 +63,8 @@ class _OidcDependencies extends AppDependencies {
   ApiClient createApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) => throw StateError('an oidc build must create its ApiClient through createOidcApiClient');
 
   @override
@@ -72,8 +72,8 @@ class _OidcDependencies extends AppDependencies {
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
     required TokenRotation tokenRotation,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) {
     apiClientRotations.add(tokenRotation);
     apiClientLocks.add(tokenRefreshLock);
@@ -101,8 +101,8 @@ class _MisconfiguredDependencies extends AppDependencies {
   ApiClient createApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) => throw StateError('a misconfigured oidc build must never refresh through the backend refresh endpoint');
 
   @override
@@ -110,8 +110,8 @@ class _MisconfiguredDependencies extends AppDependencies {
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
     required TokenRotation tokenRotation,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) {
     apiClientRotations.add(tokenRotation);
     return super.createOidcApiClient(
@@ -333,6 +333,9 @@ class _ManualSessionEndSignal implements ISessionEndSignal {
 
   /// Another tab begins to end the session now.
   void endInAnotherTab() => _endedElsewhere.add(DateTime.now());
+
+  @override
+  void dispose() {}
 }
 
 /// This tab's [ITokenRefreshLock], which runs each refresh at once and counts them.
@@ -344,6 +347,9 @@ class _CountingLock implements ITokenRefreshLock {
     turns++;
     return body();
   }
+
+  @override
+  void dispose() {}
 }
 
 /// Refreshes the stored session at the provider, rotating every token, with a new access token that expires at

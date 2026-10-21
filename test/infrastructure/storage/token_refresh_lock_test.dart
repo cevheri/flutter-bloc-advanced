@@ -480,4 +480,7 @@ class _TabStampCopy implements HandOverStampCopy {
 
   @override
   Stream<void> get changes => _tab._stampChanges.stream;
+
+  @override
+  void dispose() {}
 }

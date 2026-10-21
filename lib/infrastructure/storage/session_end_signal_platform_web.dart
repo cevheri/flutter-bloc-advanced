@@ -20,7 +20,7 @@ ISessionEndSignal? createPlatformSessionEndSignal() => BroadcastSessionEndSignal
 class BroadcastSessionEndSignal implements ISessionEndSignal {
   BroadcastSessionEndSignal() : _channel = web.BroadcastChannel(channelName) {
     _channel.onmessage = _onMessage.toJS;
-    web.window.addEventListener('storage', _onStorage.toJS);
+    web.window.addEventListener('storage', _storageListener);
   }
 
   static final _log = AppLogger.getLogger('BroadcastSessionEndSignal');
@@ -29,6 +29,9 @@ class BroadcastSessionEndSignal implements ISessionEndSignal {
   static const channelName = 'flutter_bloc_advance.session.ended';
 
   final web.BroadcastChannel _channel;
+
+  /// The listener given to the browser, kept so that [dispose] removes the same one.
+  late final JSFunction _storageListener = _onStorage.toJS;
   final _endedElsewhere = StreamController<DateTime>.broadcast();
   final _storeChanges = StreamController<void>.broadcast();
 
@@ -59,4 +62,15 @@ class BroadcastSessionEndSignal implements ISessionEndSignal {
 
   @override
   Stream<void> get storeChanges => _storeChanges.stream;
+
+  /// Closes the channel and stops listening for `storage` events. A hot restart does not dispose the tab's app, so its
+  /// listeners stay until the page reloads; that happens only in a debug build.
+  @override
+  void dispose() {
+    _channel.onmessage = null;
+    _channel.close();
+    web.window.removeEventListener('storage', _storageListener);
+    unawaited(_endedElsewhere.close());
+    unawaited(_storeChanges.close());
+  }
 }

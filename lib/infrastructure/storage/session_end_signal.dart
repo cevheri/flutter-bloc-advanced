@@ -19,6 +19,9 @@ abstract interface class ISessionEndSignal {
   /// Fires when another tab's change to the stored session, or a clear of the store, reaches this tab's copy of it.
   /// Another tab's wipe reaches this copy some time after [endedElsewhere] fired for it, on a channel of its own.
   Stream<void> get storeChanges;
+
+  /// Stops telling and hearing, once the tab's app no longer runs: no end of another tab is heard after it.
+  void dispose();
 }
 
 /// The time that a session end message of another tab carries, in milliseconds since the epoch, or null when the

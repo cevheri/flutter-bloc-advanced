@@ -607,8 +607,8 @@ class _PinnedDependencies extends AppDependencies {
   ApiClient createApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) => super.createApiClient(
     secureStorage,
     onSessionExpired: onSessionExpired,
@@ -640,8 +640,8 @@ class _RecordingDependencies extends AppDependencies {
   ApiClient createApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) {
     final apiClient = super.createApiClient(
       secureStorage,

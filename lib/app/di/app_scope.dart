@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_cubit.dart';
@@ -103,6 +105,8 @@ class AppScope extends StatelessWidget {
           lazy: false,
           create: (context) =>
               RotatedTokensTakeBack(secureStorage: context.read<ISecureStorage>(), sessionEndSignal: sessionEndSignal),
+          // A scope mounted again creates its own, so this one stops hearing: one end, one wipe.
+          dispose: (takeBack) => unawaited(takeBack.dispose()),
         ),
         // Provided above SessionCubit and IAuthRepository, which clear the stored session when they end one.
         RepositoryProvider<IAuthSessionRepository>(

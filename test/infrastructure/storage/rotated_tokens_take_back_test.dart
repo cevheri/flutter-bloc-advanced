@@ -110,6 +110,9 @@ class _TabSignal implements ISessionEndSignal {
 
   @override
   Stream<void> get storeChanges => const Stream.empty();
+
+  @override
+  void dispose() {}
 }
 
 /// A tab whose stored session cannot be deleted, and whose end of the session tells the other tabs, as

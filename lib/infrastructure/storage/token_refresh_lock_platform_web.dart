@@ -147,8 +147,11 @@ final class IndexedDbHandOverRecord implements HandOverRecord {
 /// [HandOverStampCopy] in this tab's localStorage, next to the tokens flutter_secure_storage web keeps there.
 final class LocalStorageStampCopy implements HandOverStampCopy {
   LocalStorageStampCopy() {
-    web.window.addEventListener('storage', _onStorage.toJS);
+    web.window.addEventListener('storage', _storageListener);
   }
+
+  /// The listener given to the browser, kept so that [dispose] removes the same one.
+  late final JSFunction _storageListener = _onStorage.toJS;
 
   static const key = 'flutter_bloc_advance.token_refresh.hand_over';
 
@@ -168,4 +171,10 @@ final class LocalStorageStampCopy implements HandOverStampCopy {
 
   @override
   Stream<void> get changes => _changes.stream;
+
+  @override
+  void dispose() {
+    web.window.removeEventListener('storage', _storageListener);
+    unawaited(_changes.close());
+  }
 }

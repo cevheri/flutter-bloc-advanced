@@ -125,7 +125,7 @@ class _SessionRepositoryDependencies extends AppDependencies {
   @override
   IAuthSessionRepository createAuthSessionRepository(
     ISecureStorage secureStorage, {
-    ISessionEndSignal? sessionEndSignal,
+    required ISessionEndSignal? sessionEndSignal,
   }) => sessionRepository;
 }
 
@@ -139,8 +139,8 @@ class _CountingDependencies extends AppDependencies {
   ApiClient createApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) => super.createApiClient(
     secureStorage,
     onSessionExpired: () {
@@ -756,6 +756,16 @@ void main() {
       expect(signal.isHeard, isTrue);
     });
 
+    testWidgets('stops hearing another tab\'s end once the scope is unmounted', (tester) async {
+      final signal = _ManualSessionEndSignal();
+      await pumpTab(tester, signal: signal);
+      await tester.pumpAndSettle();
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(signal.isHeard, isFalse, reason: 'a scope mounted again would otherwise run a second wipe for one end');
+    });
+
     testWidgets('tells the other tabs when the session repository clears the session', (tester) async {
       final signal = _ManualSessionEndSignal();
       final scope = await pumpTab(tester, signal: signal);
@@ -876,6 +886,9 @@ class _ManualSessionEndSignal implements ISessionEndSignal {
 
   /// Another tab begins to end the session now.
   void endInAnotherTab() => _endedElsewhere.add(DateTime.now());
+
+  @override
+  void dispose() {}
 }
 
 /// This tab's [ITokenRefreshLock], which runs each refresh at once and counts them.
@@ -887,4 +900,7 @@ class _CountingLock implements ITokenRefreshLock {
     turns++;
     return body();
   }
+
+  @override
+  void dispose() {}
 }

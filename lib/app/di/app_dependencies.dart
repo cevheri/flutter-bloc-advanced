@@ -77,8 +77,8 @@ class AppDependencies {
   ApiClient createApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) => ApiClient(
     appConfig: appConfig,
     secureStorage: secureStorage,
@@ -95,8 +95,8 @@ class AppDependencies {
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
     required TokenRotation tokenRotation,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) => ApiClient(
     appConfig: appConfig,
     secureStorage: secureStorage,
@@ -118,7 +118,7 @@ class AppDependencies {
   /// token expiry.
   IAuthSessionRepository createAuthSessionRepository(
     ISecureStorage secureStorage, {
-    ISessionEndSignal? sessionEndSignal,
+    required ISessionEndSignal? sessionEndSignal,
   }) => AuthSessionRepository(
     secureStorage: secureStorage,
     cacheStorage: SharedPrefsCacheStorage(),

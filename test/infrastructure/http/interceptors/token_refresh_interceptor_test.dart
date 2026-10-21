@@ -2654,6 +2654,9 @@ class _TabSessionEndSignal implements ISessionEndSignal {
 
   @override
   Stream<void> get storeChanges => _storage?.received.map((_) {}) ?? const Stream.empty();
+
+  @override
+  void dispose() {}
 }
 
 /// Lets the take-back of a tab act on the changes its copy has just received.
@@ -2805,6 +2808,9 @@ class _TabStampCopy implements HandOverStampCopy {
 
   @override
   Stream<void> get changes => _storage.received.where((changed) => changed == key);
+
+  @override
+  void dispose() {}
 }
 
 /// A token server that accepts each refresh token once, as Keycloak with "Revoke Refresh Token" and "Refresh Token Max

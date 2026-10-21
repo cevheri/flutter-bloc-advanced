@@ -85,7 +85,7 @@ class _TabResourceDependencies extends AppDependencies {
   @override
   IAuthSessionRepository createAuthSessionRepository(
     ISecureStorage secureStorage, {
-    ISessionEndSignal? sessionEndSignal,
+    required ISessionEndSignal? sessionEndSignal,
   }) {
     repositorySignals.add(sessionEndSignal);
     return super.createAuthSessionRepository(secureStorage, sessionEndSignal: sessionEndSignal);
@@ -95,8 +95,8 @@ class _TabResourceDependencies extends AppDependencies {
   ApiClient createApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
-    ITokenRefreshLock? tokenRefreshLock,
-    RotatedTokensTakeBack? rotatedTokensTakeBack,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) {
     apiClientLocks.add(tokenRefreshLock);
     apiClientTakeBacks.add(rotatedTokensTakeBack);
@@ -111,6 +111,11 @@ class _TabResourceDependencies extends AppDependencies {
 
 /// A session end signal that no other tab uses.
 class _SilentSessionEndSignal implements ISessionEndSignal {
+  bool disposed = false;
+
+  @override
+  void dispose() => disposed = true;
+
   @override
   void notifyEnded() {}
 
@@ -123,6 +128,11 @@ class _SilentSessionEndSignal implements ISessionEndSignal {
 
 /// A refresh lock of its own, which runs each refresh at once.
 class _PassThroughLock implements ITokenRefreshLock {
+  bool disposed = false;
+
+  @override
+  void dispose() => disposed = true;
+
   @override
   Future<T> hold<T>(Future<T> Function() body) => body();
 }
@@ -309,6 +319,20 @@ void main() {
       expect(dependencies.repositorySignals, [same(dependencies.signals.single)]);
       expect(dependencies.apiClientLocks, [same(dependencies.locks.single)]);
       expect(dependencies.apiClientTakeBacks.single, isNotNull);
+    });
+
+    testWidgets('releases the tab\'s session end signal and refresh lock when it is unmounted', (tester) async {
+      final dependencies = _TabResourceDependencies();
+      await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
+      await tester.pumpAndSettle();
+      final signal = dependencies.signals.single as _SilentSessionEndSignal;
+      final lock = dependencies.locks.single as _PassThroughLock;
+      expect(signal.disposed, isFalse);
+
+      await tester.pumpWidget(const SizedBox());
+
+      expect(signal.disposed, isTrue, reason: 'an App mounted again would otherwise run a second wipe for one end');
+      expect(lock.disposed, isTrue);
     });
   });
 

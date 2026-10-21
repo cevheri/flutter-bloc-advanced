@@ -590,6 +590,9 @@ class _ManualSessionEndSignal implements ISessionEndSignal {
     _endedElsewhere.add(DateTime.now());
     await Future<void>.delayed(Duration.zero);
   }
+
+  @override
+  void dispose() {}
 }
 
 /// An [ITokenRefreshLock] that counts its turns, knows whether one is running, and runs [beforeTurn] once it grants
@@ -614,6 +617,9 @@ class _RecordingLock implements ITokenRefreshLock {
       held = false;
     }
   }
+
+  @override
+  void dispose() {}
 }
 
 /// An [ITokenRefreshLock] that grants its turn once [beforeTurn] has completed, as when another tab held the lock.
@@ -627,6 +633,9 @@ class _WaitingLock implements ITokenRefreshLock {
     await beforeTurn();
     return body();
   }
+
+  @override
+  void dispose() {}
 }
 
 /// The localStorage, the Web Lock and the IndexedDB hand-over record that the browser tabs share. Each tab reads a
@@ -746,4 +755,7 @@ class _BrowserStampCopy implements HandOverStampCopy {
 
   @override
   Stream<void> get changes => _tab._received.stream.where((changed) => changed == key);
+
+  @override
+  void dispose() {}
 }

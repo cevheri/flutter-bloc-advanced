@@ -14,6 +14,9 @@ abstract interface class ITokenRefreshLock {
   /// Throws [TokenRefreshLockException] when [body] did not run because the lock could not be taken or the turn could
   /// not be prepared.
   Future<T> hold<T>(Future<T> Function() body);
+
+  /// Releases what the lock holds in this tab, once the tab's app no longer runs.
+  void dispose();
 }
 
 /// [ITokenRefreshLock] of one running instance of the app, which holds the stored session alone, as on mobile and
@@ -23,6 +26,9 @@ final class InProcessTokenRefreshLock implements ITokenRefreshLock {
 
   @override
   Future<T> hold<T>(Future<T> Function() body) => body();
+
+  @override
+  void dispose() {}
 }
 
 /// The cross-tab lock did not give this tab a turn, or the turn could not be prepared, so its body did not run and
@@ -89,6 +95,9 @@ abstract interface class HandOverStampCopy {
 
   /// Fires when another tab's change to the stamp, or a clear of the store, reaches this tab's copy.
   Stream<void> get changes;
+
+  /// Stops following the changes of the copy.
+  void dispose();
 }
 
 /// [ITokenRefreshLock] over a [CrossTabMutex], which hands the localStorage state of each holder over to the next.
@@ -154,6 +163,10 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
 
   /// Six times [defaultCatchUpLimit]: another tab's change that has not reached the copy by then is not coming.
   static const defaultAbandonedAfter = Duration(seconds: 30);
+
+  /// Stops following this tab's copy of the stamp.
+  @override
+  void dispose() => _copy.dispose();
 
   @override
   Future<T> hold<T>(Future<T> Function() body) async {

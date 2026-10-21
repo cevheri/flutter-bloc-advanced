@@ -61,6 +61,15 @@ class _AppState extends State<App> {
   late final _sessionEndSignal = widget.dependencies.createSessionEndSignal();
   late final _tokenRefreshLock = widget.dependencies.createTokenRefreshLock();
 
+  /// Releases the tab's signal and lock, so an App mounted again in this tab does not leave the listeners of this one,
+  /// which would run a second wipe for one end.
+  @override
+  void dispose() {
+    _sessionEndSignal?.dispose();
+    _tokenRefreshLock.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final analytics = widget._analytics ?? LogAnalyticsService();

@@ -111,6 +111,9 @@ class _RecordingSessionEndSignal implements ISessionEndSignal {
 
   @override
   Stream<void> get storeChanges => const Stream.empty();
+
+  @override
+  void dispose() {}
 }
 
 /// Storage fake that lets a test choose which key's `save` should fail.
@@ -854,4 +857,7 @@ class _OneAtATimeLock implements ITokenRefreshLock {
     _tail = released.future;
     return previous.then((_) => body().whenComplete(released.complete));
   }
+
+  @override
+  void dispose() {}
 }
