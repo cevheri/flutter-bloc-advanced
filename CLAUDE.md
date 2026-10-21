@@ -87,7 +87,7 @@ Every feature follows: **Event → BLoC → State → UI**
 ### `Bloc` vs `Cubit`
 
 - Use **`Cubit`** when every interaction is an atomic, fire-and-forget call and the event stream adds no value (no debouncing, no concurrency policy, no historical event payload needed). Example: `LocaleCubit` (`restore`, `changeLocale`).
-- Use **`Bloc`** when events carry meaningful payload, when an `EventTransformer` (debounce, restartable, droppable) is needed, or when the event log itself is valuable for replay/observability. Examples: `UserListBloc` (search debounce + delete drop-concurrent), `UserEditorBloc` (fetch/save lifecycle), `LoginBloc` (multi-step auth flow).
+- Use **`Bloc`** when events carry meaningful payload, when an `EventTransformer` (debounce, restartable, droppable) is needed, or when the event log itself is valuable for replay/observability. Examples: `UserListBloc` (search debounce + delete drop-concurrent), `UserEditorBloc` (fetch/save lifecycle), `LoginBloc` (multistep auth flow).
 - Default to `Bloc` for any new feature touching network requests or user input streams; reach for `Cubit` only after confirming none of the above apply.
 
 ### State Modeling — MAIN RULE
@@ -178,9 +178,9 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
   - `TestEnv.authenticate()` for auth-dependent tests — call it in `setUp` or the test body, **never** in `setUpAll` (the global reset clears the secure store before each test).
   - `TestEnv.apiClient()` for the mock-backed `ApiClient`.
 - A test file that installs its own `MethodChannel` / `SharedPreferences` mock opts out of the global reset with `setUpAll(() => TestEnv.autoReset = false);` (isolated per file). Example: `test/infrastructure/storage/local_storage_test.dart`.
-- **Test doubles** — reach for a `mocktail` mock first; drop to a hand-fake only for genuine stateful behavior; Dio handlers are always hand-written:
+- **Test doubles** — reach for a `mocktail` mock first; drop to a hand-fake only for genuine stateful behavior; Dio handlers are always handwritten:
   - **mocktail mock (default):** the `Mock*` classes in `test/mocks/mock_classes.dart`, for interface doubles configured with `when(...)` / `verify(...)` (repository / use-case / BLoC).
-  - **hand-written fake:** a private `_Fake*` / `_Memory*` class next to the test when it needs real stateful behavior (in-memory store, throw-on-Nth-call, selective/sequenced failures, return-driven branching). These are **purpose-built per test** — same-named fakes in different files are not duplication; do not force them into shared "god" fakes.
+  - **handwritten fake:** a private `_Fake*` / `_Memory*` class next to the test when it needs real stateful behavior (in-memory store, throw-on-Nth-call, selective/sequenced failures, return-driven branching). These are **purpose-built per test** — same-named fakes in different files are not duplication; do not force them into shared "god" fakes.
   - **Dio handler stub:** a private `_Test*Handler` / `_StubInterceptor` extending Dio's `Interceptor` / `RequestInterceptorHandler` / `ResponseInterceptorHandler` / `ErrorInterceptorHandler`, to test interceptors at the Dio layer (can't be mocked cleanly).
 - **Pumping:** `pumpAndSettle()` only when animations finish; its `Duration` arg is the per-pump interval (not a timeout) — prefer the bare form. For continuous animations (spinner/shimmer) use `pump(Duration)`, never `pumpAndSettle`.
 - Full test structure, per-layer patterns, and guard tests: see `docs/testing-architecture.md`.
