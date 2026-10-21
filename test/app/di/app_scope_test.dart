@@ -208,7 +208,7 @@ class _RefreshRaceServer implements HttpClientAdapter {
         Headers.contentTypeHeader: [Headers.jsonContentType],
       },
     );
-    if (route == 'POST /api/token/refresh') {
+    if (route == 'POST /token/refresh') {
       refreshReceived.complete();
       await releaseRefresh.future;
       return json(200, {'id_token': freshJwt, 'refresh_token': 'rotated-refresh-token'});
@@ -351,7 +351,7 @@ Future<BuildContext> _pumpScope(WidgetTester tester, AppDependencies dependencie
 
 /// The server's answer to a refresh, which a sign-in must never ask for.
 final _refreshRoute = <String, (int, Object)>{
-  'POST /api/token/refresh': (200, {'id_token': _unexpiredJwt(), 'refresh_token': 'rotated-refresh-token'}),
+  'POST /token/refresh': (200, {'id_token': _unexpiredJwt(), 'refresh_token': 'rotated-refresh-token'}),
 };
 
 void main() {
@@ -461,7 +461,7 @@ void main() {
       expect(response.statusCode, 200);
       expect(response.data, contains('"login": "admin"'));
       expect(session.state, isA<SessionAuthenticated>());
-      // The tokens from assets/mock/POST_api_token_refresh.json.
+      // The tokens from assets/mock/POST_token_refresh.json.
       expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), 'MOCK_REFRESHED_TOKEN');
       expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), 'MOCK_REFRESH_TOKEN_NEW');
     });
@@ -652,7 +652,7 @@ void main() {
         await _pumpUntil(tester, () => outcome != null);
 
         expect(outcome, isA<UnauthorizedException>());
-        expect(server.requests, ['GET /account Bearer stale', 'POST /api/token/refresh null']);
+        expect(server.requests, ['GET /account Bearer stale', 'POST /token/refresh null']);
         expect(dependencies.sessionExpiredCalls, 0);
         expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), isNull);
         expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), isNull);

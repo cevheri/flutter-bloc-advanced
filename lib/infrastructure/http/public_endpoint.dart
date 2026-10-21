@@ -18,7 +18,7 @@ const publicEndpoints = <PublicEndpoint>{
   (method: 'POST', path: '/authenticate/verify-otp'),
   (method: 'POST', path: '/register'),
   (method: 'POST', path: '/account/reset-password/init'),
-  (method: 'POST', path: '/api/token/refresh'),
+  (method: 'POST', path: '/token/refresh'),
   (method: 'GET', path: '/app/config'),
 };
 

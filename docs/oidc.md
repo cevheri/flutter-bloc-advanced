@@ -341,7 +341,7 @@ The backend must:
 - answer 401 to a missing, invalid or expired token, after which the app refreshes once at the provider and retries, and a second 401 ends the session;
 - answer 403 to a valid token without permission, which the app already handles.
 
-The app calls the same endpoints as in `jwt` mode, minus `/authenticate*`, `/register`, `/account/reset-password/*`, `/account/change-password` and `/api/token/refresh`.
+The app calls the same endpoints as in `jwt` mode, minus `/authenticate*`, `/register`, `/account/reset-password/*`, `/account/change-password` and `/token/refresh`.
 The template's account repository calls `GET /account` after sign-in for the profile; an app on another backend replaces that repository, for example with LibreDB Studio's `GET /api/auth/me`.
 The account fetch runs after sign-in, and its failure does not end the session.
 User management pages keep calling the backend as they do today; managing users in `oidc` mode is out of scope, and users and roles live at the provider.
@@ -662,7 +662,7 @@ In `oidc` mode the refresh goes through `OidcTokenRotation`:
 | `invalid_grant`, `invalid_client` or another client or authentication error, or a new ID token whose signature or claims fail a check | `RotationRefused` | The session ends with reason expired, and the login page shows the button with no error |
 | A token endpoint status of 429 or 5xx whatever its error code, `server_error`, `temporarily_unavailable`, discovery that cannot be fetched, or a transport failure | `RotationUnavailable` | The session is kept, the request fails as a network error, and the next 401 tries again |
 
-`jwt` mode keeps `BackendTokenRotation`, today's `POST /api/token/refresh`, where any failure ends the session.
+`jwt` mode keeps `BackendTokenRotation`, today's `POST /token/refresh`, where any failure ends the session.
 
 ### Logout
 

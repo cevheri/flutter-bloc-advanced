@@ -158,7 +158,7 @@ void main() {
 
     await _getUnauthorized(client, adapter);
 
-    expect(adapter.requests, ['GET /api/users', 'POST /api/token/refresh']);
+    expect(adapter.requests, ['GET /api/users', 'POST /token/refresh']);
     expect(sessionExpiredCalls, 1);
   });
 

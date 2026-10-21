@@ -5,9 +5,9 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
 import 'package:flutter_bloc_advance/core/security/credential_json.dart';
 
-/// The path of the backend's refresh endpoint in `jwt` mode. A 401 from it ends the session in
-/// `TokenRefreshInterceptor`, since there is nothing left to refresh with.
-const String refreshEndpointPath = '/api/token/refresh';
+/// The path of the backend's refresh endpoint in `jwt` mode, relative to the API base URL as every other request path
+/// is. A 401 from it ends the session in `TokenRefreshInterceptor`, since there is nothing left to refresh with.
+const String refreshEndpointPath = '/token/refresh';
 
 /// The body keys of [refreshEndpointPath]'s request and answer, isolated as named constants so a typo or rename
 /// surfaces at one site. Private, because they describe how [BackendTokenRotation] talks to the backend, not a
@@ -109,7 +109,7 @@ Dio defaultRefreshDio(Dio source) => Dio(
   ),
 )..httpClientAdapter = source.httpClientAdapter;
 
-/// Today's POST /api/token/refresh, unchanged: every failure is RotationRefused, as in jwt mode today.
+/// Today's POST /token/refresh, unchanged: every failure is RotationRefused, as in jwt mode today.
 final class BackendTokenRotation implements TokenRotation {
   BackendTokenRotation({required this._dio, this._refreshDioFactory = defaultRefreshDio});
 

@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/account/data/models/change_password.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
@@ -10,6 +11,8 @@ import 'package:flutter_bloc_advance/features/users/data/repositories/authority_
 import 'package:flutter_bloc_advance/features/users/data/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/users/presentation/pages/user_extended_info_page.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -110,6 +113,23 @@ void main() {
     });
   }
 
+  // Every request path is relative to the API base URL, which ends in /api for the documented backend, so a path that
+  // starts with /api/ reaches /api/api/ on the server.
+  test('no request path the app sends starts with /api/', () async {
+    final sentPaths = <String>{};
+    for (final send in requests.values) {
+      // The sign-out of IAuthRepository.logout ends the session the next request needs.
+      TestEnv.authenticate();
+      final client = TestEnv.apiClient();
+      client.instance.interceptors.insert(0, _PathRecordingInterceptor(sentPaths));
+      await send(client);
+    }
+    final paths = {...sentPaths, refreshEndpointPath, for (final endpoint in publicEndpoints) endpoint.path};
+
+    expect(sentPaths, isNotEmpty);
+    expect(paths.where((path) => path.startsWith('/api/')), isEmpty);
+  });
+
   test('every method of a repository that sends requests through ApiClient is driven above', () {
     final driven = requests.keys.map((name) => name.split(' ').first).toSet();
     final methods = _apiClientRepositoryMethods();
@@ -151,4 +171,17 @@ Set<String> _apiClientRepositoryMethods() {
     for (final interface in implemented)
       for (final method in declared[interface]!) '$interface.$method',
   };
+}
+
+/// Records the path of every request it sees, before the path parameters, as `MockInterceptor` resolves it.
+class _PathRecordingInterceptor extends Interceptor {
+  _PathRecordingInterceptor(this._paths);
+
+  final Set<String> _paths;
+
+  @override
+  void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    _paths.add(options.extra['_basePath'] as String? ?? options.path);
+    handler.next(options);
+  }
 }

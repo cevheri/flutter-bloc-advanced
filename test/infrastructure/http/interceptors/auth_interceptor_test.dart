@@ -68,7 +68,7 @@ void main() {
         ('POST', '/authenticate/verify-otp'),
         ('POST', '/register'),
         ('POST', '/account/reset-password/init'),
-        ('POST', '/api/token/refresh'),
+        ('POST', '/token/refresh'),
         // The lifecycle checks read the app config before sign-in.
         ('GET', '/app/config'),
       ]) {
