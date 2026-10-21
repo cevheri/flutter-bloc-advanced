@@ -13,6 +13,7 @@ import 'package:flutter_bloc_advance/app/bootstrap/app_session_listeners.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/di/app_scope.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
+import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/responsive_scaffold.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_bloc.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_nav_item.dart';
@@ -20,9 +21,14 @@ import 'package:flutter_bloc_advance/app/shell/top_bar/top_bar_widget.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -334,6 +340,107 @@ void main() {
       expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), isNull);
     });
 
+    group('in an oidc build', () {
+      testWidgets('a logout whose provider logout fails signs out and says the provider session may be active', (
+        tester,
+      ) async {
+        final client = _FakeOidcClient()..logoutOutcome = const ProviderLogoutFailed();
+        TestEnv.authenticate();
+        await tester.pumpWidget(App(language: 'en', dependencies: _OidcDependencies(client)));
+        await tester.pumpAndSettle();
+        expect(find.byType(ResponsiveScaffold), findsOneWidget);
+
+        await _logOut(tester);
+
+        expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+        expect(
+          find
+              .text('You are signed out of this app, but your session at the identity provider may still be active.')
+              .hitTestable(),
+          findsOneWidget,
+        );
+        expect(client.logouts, 1);
+        expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), isNull);
+      });
+
+      testWidgets('a logout whose provider session ended shows no notice', (tester) async {
+        final client = _FakeOidcClient();
+        TestEnv.authenticate();
+        await tester.pumpWidget(App(language: 'en', dependencies: _OidcDependencies(client)));
+        await tester.pumpAndSettle();
+
+        await _logOut(tester);
+
+        expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+        expect(client.logouts, 1);
+        expect(find.byType(SnackBar), findsNothing);
+      });
+
+      testWidgets('a session restored at startup closes the automatic redirect gate', (tester) async {
+        TestEnv.authenticate();
+        await tester.pumpWidget(App(language: 'en', dependencies: _OidcDependencies(_FakeOidcClient())));
+        await tester.pumpAndSettle();
+        expect(find.byType(ResponsiveScaffold), findsOneWidget);
+
+        expect(tester.element(find.byType(MaterialApp)).read<SsoAutoRedirectGate>().isOpen, isFalse);
+      });
+
+      testWidgets('a sign-in closes the automatic redirect gate', (tester) async {
+        await tester.pumpWidget(App(language: 'en', dependencies: _OidcDependencies(_FakeOidcClient())));
+        await tester.pumpAndSettle();
+        final app = tester.element(find.byType(MaterialApp));
+        expect(app.read<SsoAutoRedirectGate>().isOpen, isTrue);
+
+        // As the single sign-on button does.
+        app.read<LoginBloc>().add(const SsoSignInRequested(browserDoneMessage: 'done'));
+        await tester.pumpAndSettle();
+
+        expect(app.read<LoginBloc>().state, isA<LoginLoadedState>());
+        expect(app.read<SsoAutoRedirectGate>().isOpen, isFalse);
+      });
+
+      // A sign-in closes the gate as well, so this logout comes from a run that was never signed in.
+      testWidgets('a logout closes the automatic redirect gate', (tester) async {
+        await tester.pumpWidget(App(language: 'en', dependencies: _OidcDependencies(_FakeOidcClient())));
+        await tester.pumpAndSettle();
+        final app = tester.element(find.byType(MaterialApp));
+        expect(app.read<SsoAutoRedirectGate>().isOpen, isTrue);
+
+        app.read<MenuBloc>().add(Logout());
+        await tester.pumpAndSettle();
+
+        expect(app.read<MenuBloc>().state.isLogout, isTrue);
+        expect(app.read<SsoAutoRedirectGate>().isOpen, isFalse);
+      });
+    });
+
+    // Neither build provides the gate, so reading it would throw ProviderNotFoundException.
+    for (final (build, authMode) in <(String, AuthMode)>[
+      ('a jwt build', const JwtAuthMode()),
+      ('a misconfigured oidc build', const OidcMisconfiguredAuthMode('OIDC_ISSUER is required in oidc mode')),
+    ]) {
+      testWidgets('in $build, a session left by an earlier build and a logout read no gate', (tester) async {
+        TestEnv.authenticate();
+        await tester.pumpWidget(
+          App(
+            language: 'en',
+            dependencies: AppDependencies(appConfig: _app.dependencies.appConfig, authMode: authMode),
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(find.byType(ResponsiveScaffold), findsOneWidget);
+        expect(
+          () => tester.element(find.byType(MaterialApp)).read<SsoAutoRedirectGate>(),
+          throwsA(isA<ProviderNotFoundException>()),
+        );
+
+        await _logOut(tester);
+
+        expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+        expect(tester.takeException(), isNull);
+      });
+    }
+
     for (final MapEntry(key: ending, value: endSession) in _sessionEndings.entries) {
       for (final (page, location) in [
         ('the dashboard', ApplicationRoutesConstants.home),
@@ -397,6 +504,61 @@ void main() {
       });
     }
   });
+}
+
+/// The identity provider of an oidc build: a sign-in succeeds as a user, no web sign-in is pending, and a provider
+/// logout ends with [logoutOutcome], counted in [logouts].
+class _FakeOidcClient implements IOidcClient {
+  OidcLogoutOutcome logoutOutcome = const ProviderSessionEnded();
+  var logouts = 0;
+
+  @override
+  Future<OidcSignInOutcome> signIn({String? webReturnPath, required String browserDoneMessage}) async => OidcSignedIn(
+    tokens: OidcTokens(
+      accessToken: 'sso-access-token',
+      idToken: 'sso-id-token',
+      refreshToken: 'sso-refresh-token',
+      accessTokenExpiresAt: DateTime.utc(2100),
+    ),
+    claims: const {
+      'iss': 'https://id.example.com/realms/demo',
+      'sub': 'subject-1',
+      'roles': ['admin'],
+    },
+  );
+
+  @override
+  Future<OidcSignInOutcome?> completePendingSignIn() async => null;
+
+  @override
+  Future<TokenRotationResult> refresh({
+    required String refreshToken,
+    required String idToken,
+    required String accessToken,
+    required DateTime accessTokenExpiresAt,
+  }) => throw UnimplementedError('these tests store no expired session');
+
+  @override
+  Future<OidcLogoutOutcome> endProviderSession({String? idTokenHint}) async {
+    logouts++;
+    return logoutOutcome;
+  }
+}
+
+/// The dependencies of [_app] in an oidc build over [client].
+class _OidcDependencies extends AppDependencies {
+  _OidcDependencies(this.client)
+    : super(
+        appConfig: _app.dependencies.appConfig,
+        authMode: OidcAuthMode(
+          OidcSettings(issuer: Uri.parse('https://id.example.com/realms/demo'), clientId: 'app', roleClaim: 'roles'),
+        ),
+      );
+
+  final IOidcClient client;
+
+  @override
+  IOidcClient createOidcClient(OidcSettings settings) => client;
 }
 
 /// The dependencies of [_app], with [store] as the activity that the browser tabs share, as on web.

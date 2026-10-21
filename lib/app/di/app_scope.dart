@@ -24,6 +24,7 @@ import 'package:flutter_bloc_advance/features/account/domain/repositories/accoun
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/sso_sign_out_auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/data/services/sso_session_startup_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
@@ -140,9 +141,22 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<IAuthorityRepository>(
           create: (context) => dependencies.createAuthorityRepository(context.read<ApiClient>()),
         ),
+        // A logout the user starts in an oidc build also ends the session at the identity provider.
         RepositoryProvider<IAuthRepository>(
-          create: (context) =>
-              dependencies.createAuthRepository(context.read<IAuthSessionRepository>(), context.read<ApiClient>()),
+          create: (context) {
+            final auth = dependencies.createAuthRepository(
+              context.read<IAuthSessionRepository>(),
+              context.read<ApiClient>(),
+            );
+            return oidcSettings == null
+                ? auth
+                : SsoSignOutAuthRepository(
+                    inner: auth,
+                    client: context.read<IOidcClient>(),
+                    secureStorage: context.read<ISecureStorage>(),
+                    settings: oidcSettings,
+                  );
+          },
         ),
         RepositoryProvider<IDynamicFormRepository>(
           create: (context) => dependencies.createDynamicFormRepository(context.read<ApiClient>()),

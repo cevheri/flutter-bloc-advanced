@@ -1,6 +1,7 @@
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/app/shell/models/menu.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/logout_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
@@ -156,6 +157,23 @@ void main() {
         build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
         act: (bloc) => bloc..add(event),
         expect: () => [loadingState, failureState],
+        verify: (_) => expect(MenuListCache.menus, isEmpty),
+      );
+
+      // In an oidc build the app session has ended, but the provider logout failed.
+      blocTest<MenuBloc, MenuState>(
+        "signs out with the providerSessionLeft status when the provider logout is incomplete",
+        setUp: () {
+          when(() => authRepository.logout()).thenAnswer(
+            (_) => Future.value(
+              Failure<void>(AuthError('provider logout incomplete', code: AppErrorCode.authOidcLogoutIncomplete.key)),
+            ),
+          );
+          MenuListCache.menus = [const Menu(id: "test", name: "test")];
+        },
+        build: () => MenuBloc(logoutUseCase: LogoutUseCase(authRepository), menuRepository: menuRepository),
+        act: (bloc) => bloc..add(event),
+        expect: () => [loadingState, const MenuState(status: MenuStateStatus.providerSessionLeft, isLogout: true)],
         verify: (_) => expect(MenuListCache.menus, isEmpty),
       );
     });
