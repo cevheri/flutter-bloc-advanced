@@ -215,6 +215,7 @@ final class OidcClient implements IOidcClient {
       _log.warn('The identity provider could not be reached to sign in: {}', [() => _describe(error)]);
       return const OidcSignInFailed(OidcFailure.discovery);
     }
+    manager.startSignIn();
     final options = _platformOptions(successfulPageResponse: _browserDonePage(browserDoneMessage));
     if (_platform == OidcPlatformKind.web) return _startWebSignIn(manager, options, webReturnPath);
 

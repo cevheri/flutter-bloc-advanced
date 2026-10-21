@@ -211,6 +211,22 @@ void main() {
       expect(await signIn(client), _failed(OidcFailure.discovery));
     });
 
+    test('a sign-in that fails before the browser after a flow that timed out is failed, not cancelled', () async {
+      final writes = _BreakableKeyValue();
+      final client = newClient(
+        platformKind: OidcPlatformKind.linux,
+        transactionStore: OidcTransactionStore(persistent: writes, tab: writes),
+      );
+      platform.authorization = FakeAuthorization.flowTimeout;
+      expect(await signIn(client), isA<OidcSignInCancelled>());
+
+      platform.authorization = FakeAuthorization.code;
+      writes.failWrites = true;
+
+      expect(await signIn(client), _failed(OidcFailure.failed));
+      expect(platform.authorizeRequests, hasLength(1), reason: 'the second sign-in reached the browser');
+    });
+
     test('discovery naming another issuer is discovery', () async {
       provider.discoveryIssuer = 'https://evil.test/realms/demo';
 
@@ -976,3 +992,24 @@ void main() {
 
 Matcher _failed(OidcFailure failure) =>
     isA<OidcSignInFailed>().having((outcome) => outcome.failure, 'failure', failure);
+
+/// A [MemoryKeyValue] whose writes throw while [failWrites] is set, so a sign-in fails before its browser step.
+final class _BreakableKeyValue implements OidcKeyValue {
+  final _values = MemoryKeyValue();
+  bool failWrites = false;
+
+  @override
+  String? read(String key) => _values.read(key);
+
+  @override
+  void write(String key, String value) {
+    if (failWrites) throw StateError('The store is not writable');
+    _values.write(key, value);
+  }
+
+  @override
+  void delete(String key) => _values.delete(key);
+
+  @override
+  Iterable<String> get keys => _values.keys;
+}

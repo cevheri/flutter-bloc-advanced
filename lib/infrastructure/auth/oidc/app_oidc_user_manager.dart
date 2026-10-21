@@ -34,6 +34,14 @@ final class AppOidcUserManager extends OidcUserManager {
   /// completion apart from a failure of its code exchange: both happen inside `init()`.
   bool get discoveryLoaded => _discoveryLoaded;
 
+  /// Forgets what the previous sign-in's browser step left in [authorizationResponseReceived] and
+  /// [browserFlowTimedOut]. The run's manager serves every sign-in, and one that fails before its browser step must
+  /// not be read as the previous one's timeout.
+  void startSignIn() {
+    _responseReceived = false;
+    _flowTimedOut = false;
+  }
+
   @override
   Future<void> listenToTokenRefreshIfSupported(OidcTokenEventsManager tokenEventsManager, OidcUser? user) async {}
 
@@ -54,8 +62,6 @@ final class AppOidcUserManager extends OidcUserManager {
     OidcPlatformSpecificOptions options,
     Map<String, dynamic> preparationResult,
   ) async {
-    _responseReceived = false;
-    _flowTimedOut = false;
     final OidcAuthorizeResponse? response;
     try {
       response = await super.getAuthorizationResponse(metadata, request, options, preparationResult);

@@ -5,8 +5,8 @@ import 'package:flutter_bloc_advance/features/auth/domain/services/sso_session_s
 /// and the login page shows [AppErrorCode.authOidcConfig].
 ///
 /// A session that an earlier, correctly configured `oidc` build stored holds the provider's tokens. This build can
-/// neither refresh nor end it at the provider, and restoring it would hide the misconfiguration from the user. The
-/// session stays stored, so a corrected build can still restore it.
+/// neither refresh nor end it at the provider, and restoring it would hide the misconfiguration from the user. [run]
+/// never reads the stored session; it is wiped if this build ends a session, as a refused refresh does.
 class MisconfiguredSsoSessionStartup implements ISsoSessionStartup {
   const MisconfiguredSsoSessionStartup();
 
