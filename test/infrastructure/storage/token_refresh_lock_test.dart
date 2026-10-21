@@ -188,13 +188,16 @@ void main() {
       expect(ran, isFalse);
     });
 
-    test('fails with TokenRefreshLockException when the turn cannot be handed over after the body', () async {
-      browser.failRecordWrites = true;
+    test(
+      'fails with TokenRefreshLockException and releases the lock when the turn cannot commit its hand-over',
+      () async {
+        browser.failRecordWrites = true;
 
-      await expectLater(tabA.lock().hold(() async => 'stored'), throwsA(isA<TokenRefreshLockException>()));
+        await expectLater(tabA.lock().hold(() async => 'stored'), throwsA(isA<TokenRefreshLockException>()));
 
-      expect(browser.events.last, 'A released');
-    });
+        expect(browser.events.last, 'A released');
+      },
+    );
 
     // Committed after the body, a failed commit left the previous stamp in the record, which every caught-up copy
     // shows, so the next holder ran at once on a copy behind the failed turn's token writes.
