@@ -16,6 +16,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///    crash the interceptor chain).
 /// 5. Any other request records the session generation it goes out
 ///    under, read before the token.
+/// 6. A request to another origin than the API's base URL → no
+///    `Authorization` header and no session generation. A relative path
+///    with an empty base URL (mock mode) keeps the token.
 ///
 /// The interceptor is the single most-called piece of code in the
 /// project; running the chain through `Interceptor.onRequest` directly
@@ -127,6 +130,71 @@ void main() {
       final sentUnder = AuthInterceptor.sessionGenerationOf(handler.passedOptions!);
       expect(sentUnder, isNotNull);
       expect(SessionGeneration.hasEnded(sentUnder!), isTrue);
+    });
+  });
+
+  // Dio sends a request to an absolute URL there instead of to the base URL, so a path a server supplies, such as the
+  // submit endpoint of a dynamic form, could carry the token to any host.
+  group('AuthInterceptor.onRequest, origin of the request', () {
+    const apiBase = 'https://api.example.test/api';
+
+    Future<RequestOptions> send(RequestOptions options) async {
+      final handler = _CapturingRequestHandler();
+      await AuthInterceptor(secureStorage: _FixedSecureStorage('jwt-value')).onRequest(options, handler);
+      expect(handler.passedOptions, isNotNull, reason: 'handler.next should be called for ${options.path}');
+      return handler.passedOptions!;
+    }
+
+    test('does not attach the token to a request to another origin', () async {
+      for (final path in [
+        'https://other.example/collect',
+        'http://api.example.test/api/account',
+        'http://api.example.test:443/api/account',
+        'https://api.example.test:8443/api/account',
+        'https://api.example.test.other.example/api/account',
+      ]) {
+        final sent = await send(RequestOptions(baseUrl: apiBase, path: path));
+
+        expect(sent.headers.containsKey('Authorization'), isFalse, reason: path);
+        expect(AuthInterceptor.sessionGenerationOf(sent), isNull, reason: path);
+      }
+    });
+
+    test('removes an Authorization header already set on a request to another origin', () async {
+      final sent = await send(
+        RequestOptions(
+          baseUrl: apiBase,
+          path: 'https://other.example/collect',
+          headers: {'Authorization': 'Bearer preset-value'},
+        ),
+      );
+
+      expect(sent.headers.containsKey('Authorization'), isFalse);
+    });
+
+    test('does not attach the token when a relative path resolves to another host', () async {
+      final sent = await send(RequestOptions(baseUrl: 'https://api.example.test', path: '@other.example/collect'));
+
+      expect(sent.uri.host, 'other.example');
+      expect(sent.headers.containsKey('Authorization'), isFalse);
+    });
+
+    test('attaches the token to a relative request and to an absolute one on the API origin', () async {
+      for (final path in ['/account', 'https://api.example.test/api/account', 'https://API.example.test:443/x']) {
+        final sent = await send(RequestOptions(baseUrl: apiBase, path: path));
+
+        expect(sent.headers['Authorization'], 'Bearer jwt-value', reason: path);
+      }
+    });
+
+    // In the dev and test environments the base URL is empty and MockInterceptor answers the relative paths, which
+    // relies on the token, for example for the 401 of an expired JWT.
+    test('mock mode: attaches the token to a relative path, not to an absolute URL', () async {
+      final relative = await send(RequestOptions(path: '/account'));
+      expect(relative.headers['Authorization'], 'Bearer jwt-value');
+
+      final absolute = await send(RequestOptions(path: 'https://other.example/collect'));
+      expect(absolute.headers.containsKey('Authorization'), isFalse);
     });
   });
 }

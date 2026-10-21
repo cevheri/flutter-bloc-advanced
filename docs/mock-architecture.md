@@ -146,11 +146,19 @@ When `CacheInterceptor` answers a GET that went out and failed, it ends the erro
 
 ### AuthInterceptor
 
-Reads the JWT from `ISecureStorage` on every request to a private path and adds it as a Bearer token when one is stored.
-A request to a public endpoint (see [Public vs. Private Endpoints](#public-vs-private-endpoints)) never gets a token:
+Reads the JWT from `ISecureStorage` on every request to a private path on the API origin and adds it as a Bearer token when one is stored.
+A request to a public endpoint (see [Public vs. Private Endpoints](#public-vs-private-endpoints)) never gets a token.
+Dio sends a request whose path is an absolute URL to that URL instead of to the base URL, so a path a server supplies, such as the submit endpoint of a dynamic form, can name any host.
+`isApiOriginRequest` in `lib/infrastructure/http/api_origin.dart` compares the scheme, host and port of the request with those of the base URL, and a request to another origin never gets a token either: `AuthInterceptor` removes an `Authorization` header already on it and records no session generation for it.
+A relative path with an empty base URL, as in dev/test mode, counts as the API origin, so `MockInterceptor` still sees the token:
 
 ```dart
 if (isPublicEndpoint(options)) {
+  handler.next(options);
+  return;
+}
+if (!isApiOriginRequest(options)) {
+  options.headers.remove('Authorization');
   handler.next(options);
   return;
 }
@@ -340,6 +348,8 @@ In dev/test mode the `MockInterceptor` enforces this check; in production the re
 - In every environment `AuthInterceptor` sends no token to a public endpoint, so a stale token left by an expired session never reaches the sign-in endpoints.
 - `TokenRefreshInterceptor` passes a 401 from any other public endpoint than the refresh endpoint on without a token refresh and without ending the session, because it is not about a session: on the sign-in endpoints it rejects the credentials in the request; a 401 from the refresh endpoint still ends the session.
 - `MockInterceptor` answers a public endpoint without a token, as the server does.
+
+`TokenRefreshInterceptor` also asks `isApiOriginRequest`: a 401 from another origin than the API's is passed on with no token refresh, no retry and no session end, because `AuthInterceptor` sent no token there and sending the request again would carry the refreshed one.
 
 ## How Repositories Use ApiClient
 
