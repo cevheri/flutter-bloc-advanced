@@ -35,6 +35,7 @@ fvm dart format . --line-length=120
 fvm flutter test
 fvm flutter test test/path/to/specific_test.dart          # single test file
 fvm flutter test --coverage                                # with coverage
+fvm flutter test --platform chrome test/browser_only/      # web interop tests in Chrome (CHROME_EXECUTABLE picks one)
 
 # Localization code generation (after editing ARB files)
 fvm dart run intl_utils:generate

@@ -90,6 +90,16 @@ final class _RefreshTurnFailed extends _RefreshOutcome {
 /// with the already-rotated token instead of triggering a refresh
 /// storm against the refresh endpoint.
 ///
+/// Below that coalescing the refresh takes its turn at an
+/// [ITokenRefreshLock], which on web the token refreshes of every browser
+/// tab share, so one tab at a time reads the refresh token, sends it and
+/// stores the answer, and a server that accepts each refresh token once
+/// never sees it twice. Once granted, the refresh checks this tab's
+/// generation and the stored JWT again, and a JWT another tab stored
+/// meanwhile is sent instead of a refresh. A turn the lock cannot give,
+/// or cannot hand over, fails the request and keeps the session: nothing
+/// refused it.
+///
 /// A 401 for a request sent under a session that a logout or the end of
 /// the session has wiped since, or is wiping, is neither sent again nor
 /// refreshed, so within one app process, which on web is one browser tab,
@@ -109,11 +119,15 @@ final class _RefreshTurnFailed extends _RefreshOutcome {
 /// that tab had already used it. Each tab reads its own copy of the
 /// browser's storage, which takes another tab's change a moment later, so
 /// a sign-out in another tab just before or while this tab stores the
-/// rotated tokens can still be undone by them. A sign-out in another tab
-/// does not end this tab's generation, so a request this tab sent before
-/// that sign-out can still go out again with the JWT of a different user
-/// who signed in since: when its 401 comes after that sign-in, and when
-/// that sign-in comes while this tab's refresh is on its way.
+/// rotated tokens can reach the storage before them. That tab tells this
+/// one of the end (`ISessionEndSignal`), and [RotatedTokensTakeBack] ends
+/// this tab's generation and takes back what the refresh stored. A
+/// sign-out in another tab ends this tab's generation only once its
+/// message arrives, so a request this tab sent before that sign-out can
+/// still go out again with the JWT of a different user who signed in
+/// since: when its 401 comes after that sign-in and before the message,
+/// and when that sign-in comes while this tab's refresh is on its way or
+/// waits for its turn at the lock, a wait that makes this window longer.
 ///
 /// Deliberately not a [QueuedInterceptor]: the retry goes back through
 /// the client's [Dio], so a failed retry reaches [onError] while the
@@ -321,8 +335,8 @@ class TokenRefreshInterceptor extends Interceptor {
         // the user may have signed in since, and that session must stay.
         handler.next(err);
       case _RefreshTurnFailed(:final error):
-        // No refresh was sent for this request, so nothing refused the session: it is kept. Rejected, so that
-        // ResilienceInterceptor does not send the request again behind the same lock.
+        // Nothing was sent, or the refresh stored its tokens and could not hand over: nothing refused the session, so
+        // it is kept. Rejected, so that ResilienceInterceptor does not send the request again behind the same lock.
         handler.reject(
           DioException(
             requestOptions: err.requestOptions,

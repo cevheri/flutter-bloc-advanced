@@ -203,8 +203,13 @@ So within one app process, which on web is one browser tab, a 401 for a request 
 A refresh still on its way drops the rotated tokens instead of storing a session that a relaunch would restore.
 On web every browser tab shares the stored session but counts its own session generation, so before it acts on the answer of a refresh, success or failure, `TokenRefreshInterceptor` also reads the stored refresh token again.
 When another tab has signed out meanwhile, the answer is dropped; when another tab has refreshed the session, its tokens stay and the request is sent again with its JWT.
-Each tab reads its own copy of the browser's storage, which takes another tab's change a moment later, so a sign-out in another tab just before or while a refresh stores its tokens can still be undone by them.
-A sign-out in one tab does not end the session generation of the other tabs, so a request one of them sent before the sign-out can still be sent again with the JWT of a different user who signed in since: when its 401 comes after that sign-in, and when that sign-in comes while the tab's refresh is on its way.
+Each tab reads its own copy of the browser's storage, which takes another tab's change a moment later, so a sign-out in another tab just before or while a refresh stores its tokens can reach the storage before them.
+So a tab that ends the session first tells the other tabs over a `BroadcastChannel` (`ISessionEndSignal`, from `AuthSessionRepository.clear`).
+A tab that hears it ends its own session generation, so a refresh on its way drops its answer, and takes back the tokens its last refresh stored just then, where they are still stored (`RotatedTokensTakeBack`).
+The refreshes of all tabs also take turns at one Web Lock (`ITokenRefreshLock`), so a server that accepts each refresh token once never sees it twice.
+A lock grant can reach a tab before the previous holder's writes do, so each turn ends with a random stamp in localStorage and IndexedDB, and the next holder waits until its copy of localStorage shows that stamp.
+Off web there is no signal, and the lock runs each refresh at once.
+A sign-out in one tab ends the session generation of the other tabs only once its message arrives, so a request one of them sent before the sign-out can still be sent again with the JWT of a different user who signed in since: when its 401 comes after that sign-in and before the message, and when that sign-in comes while the tab's refresh is on its way or waits for the lock, which makes this window longer.
 `CacheInterceptor` checks the same generation before it stores a response, so a GET still on its way when the session ends does not put the data of the user who signed out back into the cache the wipe cleared.
 
 ## Mock File Naming Convention

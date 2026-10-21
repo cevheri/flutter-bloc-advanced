@@ -12,7 +12,9 @@ import 'oidc_client.dart';
 ///
 /// The startup step and `TokenRefreshInterceptor` share one instance, and a refresh token is sent in at most one grant:
 /// a provider with refresh token reuse detection revokes the whole session when a used one comes back. So the
-/// rotations run one at a time, and each first checks that its refresh token is still unused.
+/// rotations run one at a time, and each first checks that its refresh token is still unused. On web the browser tabs
+/// each have an instance, and their rotations take turns at the cross-tab lock that both callers hold while they rotate
+/// (`ITokenRefreshLock`).
 final class OidcTokenRotation implements TokenRotation {
   OidcTokenRotation({required this._client, required this._secureStorage});
 

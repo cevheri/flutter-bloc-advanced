@@ -630,6 +630,11 @@ The tab itself goes to the provider, so the sign-in completes after a page load:
 `SessionCubit.restore` runs the startup step first, under its own 15 second limit, and only then reads the stored session under the existing 10 second storage limit.
 The step completes a pending web sign-in, then checks the stored access token expiry, never a JWT `exp`, so an opaque access token works too.
 An expired access token with a stored refresh token is refreshed through the shared `TokenRotation`.
+The refresh takes its turn at the lock that the token refreshes of every browser tab share (`ITokenRefreshLock`): the expiry is read first without the lock, so a valid session waits for no other tab, and once this tab holds the lock the expiry and the refresh token are read again, so a session another tab refreshed meanwhile is used as it is and no grant is sent.
+A turn the lock cannot give keeps the stored session.
+The 15 second limit below counts the wait for the lock too.
+The refresh follows the session-generation rules of `TokenRefreshInterceptor`: an answer that comes after the session ended is dropped, and what it stored while the session ended is taken back.
+It records what it stored, so an end that another tab reports just then takes it back (`RotatedTokensTakeBack`).
 A refused refresh, an expired access token without a refresh token, or a failed write of the refreshed tokens clears the session, and the user starts signed out.
 An unreachable provider keeps the stored session.
 A step that does not answer within 15 seconds is treated as an unreachable provider: the stored session is read as it is, and the automatic redirect gate closes.
@@ -637,10 +642,12 @@ What the step answers after its limit is acted on only while nothing has been em
 
 ### Refresh
 
-`TokenRefreshInterceptor` stays the only owner of refresh, with its single flight, its session-generation checks, its rollback and its cross-tab check of the stored refresh token.
+`TokenRefreshInterceptor` stays the only owner of refresh, with its single flight, its session-generation checks, its rollback, its cross-tab check of the stored refresh token, its turn at the cross-tab lock and the take-back when another tab ends the session.
+On web the single flight holds across the browser tabs too: the refreshes of all tabs and the startup step take turns at one Web Lock, and the end of the session in one tab reaches the others over a `BroadcastChannel` (see "Token refresh" in [`mock-architecture.md`](mock-architecture.md)).
 The package's own refresh timers are off (`AppOidcUserManager`).
 In `oidc` mode the refresh goes through `OidcTokenRotation`:
-1. Rotations run one at a time, and a refresh token that the provider has replaced or refused is never sent in a second grant, so a provider with refresh token reuse detection never sees a used token twice.
+1. Rotations run one at a time, across the browser tabs as well, and a refresh token that the provider has replaced or refused is never sent in a second grant, so a provider with refresh token reuse detection never sees a used token twice.
+   `OidcClient.refresh` has no time limit of its own, so a grant that hangs holds the lock, and the other tabs' refreshes fail after `ApiClient.tokenRefreshLockWaitLimit`.
    A provider that does not rotate refresh tokens answers with no new one, or the same one, so that token stays the stored one and is sent again when the new access token expires.
 2. A refresh token that the store no longer holds gets `RotationUnavailable` without a request, and the interceptor retries with the stored tokens.
 3. `OidcClient.refresh` hands the stored access token, ID token and refresh token to the package for one `refresh_token` grant at the provider's token endpoint; the stored ID token may have expired.

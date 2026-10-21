@@ -26,6 +26,8 @@ import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.d
 /// answer that comes after the session ended is dropped, and what it stored while the session ended is taken back. On
 /// web another browser tab can end the session too: [_takeBack] records what the refresh stored, so that tab's end
 /// takes it back, and when that fails [_onSessionExpired] ends the session as a 401 that a refresh cannot fix does.
+/// The refresh also takes its turn at [_refreshLock], which on web the token refreshes of every tab share, see
+/// [_refreshExpiredSession]; a turn it cannot get keeps the stored session.
 class SsoSessionStartup implements ISsoSessionStartup {
   SsoSessionStartup({
     required this._auth,
