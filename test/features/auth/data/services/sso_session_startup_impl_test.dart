@@ -30,10 +30,17 @@ class _MemorySecureStorage implements ISecureStorage {
   /// Runs once, after the next write is applied, as a call that runs while the store is still on its way does.
   Future<void> Function()? onWrite;
 
+  /// Runs once, during the next read, before it answers.
+  Future<void> Function()? onRead;
+
   @override
   Future<String?> read(String key) async {
     if (failReads) throw StateError('read failed');
-    return store[key];
+    final value = store[key];
+    final hook = onRead;
+    onRead = null;
+    await hook?.call();
+    return value;
   }
 
   @override
@@ -100,6 +107,19 @@ void main() {
     gate = SsoAutoRedirectGate();
     when(() => auth.completePendingSignIn()).thenAnswer((_) async => null);
     when(() => sessionRepository.clear()).thenAnswer((_) async => const Success(null));
+  });
+
+  group('construction', () {
+    test('takes a takeBack only with an onSessionExpired, which ends the session when it cannot take back', () {
+      final takeBack = RotatedTokensTakeBack(secureStorage: storage);
+      addTearDown(takeBack.dispose);
+
+      expect(() => newStartup(takeBack: takeBack), throwsArgumentError);
+    });
+
+    test('takes an onSessionExpired only with a takeBack', () {
+      expect(() => newStartup(onSessionExpired: () {}), throwsArgumentError);
+    });
   });
 
   group('a pending web sign-in', () {
@@ -491,6 +511,28 @@ void main() {
       verifyNever(() => sessionRepository.clear());
     });
 
+    // The generation is noted before the first read of the expiry. Noted later, a wipe that has completed by then,
+    // such as this tab's share of another tab's end while its copy still shows the expired session, would not count.
+    test('sends no refresh and ends nothing when a wipe completed while this tab waited for the lock', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      final lock = _WaitingLock(() => SessionGeneration.wipe(() async {}));
+      when(() => rotation.rotate(any())).thenAnswer((_) async => const RotationRefused());
+
+      expect(await newStartup(refreshLock: lock).run(), isA<SsoStartupSessionEnded>());
+      verifyNever(() => rotation.rotate(any()));
+      verifyNever(() => sessionRepository.clear());
+    });
+
+    test('sends no refresh and ends nothing when a wipe completed during the first read of the expiry', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      storage.onRead = () => SessionGeneration.wipe(() async {});
+      when(() => rotation.rotate(any())).thenAnswer((_) async => const RotationRefused());
+
+      expect(await newStartup(refreshLock: _RecordingLock()).run(), isA<SsoStartupSessionEnded>());
+      verifyNever(() => rotation.rotate(any()));
+      verifyNever(() => sessionRepository.clear());
+    });
+
     test('ends the session after the lock is released', () async {
       final lock = _RecordingLock();
       storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
@@ -571,6 +613,19 @@ class _RecordingLock implements ITokenRefreshLock {
     } finally {
       held = false;
     }
+  }
+}
+
+/// An [ITokenRefreshLock] that grants its turn once [beforeTurn] has completed, as when another tab held the lock.
+class _WaitingLock implements ITokenRefreshLock {
+  _WaitingLock(this.beforeTurn);
+
+  final Future<void> Function() beforeTurn;
+
+  @override
+  Future<T> hold<T>(Future<T> Function() body) async {
+    await beforeTurn();
+    return body();
   }
 }
 
