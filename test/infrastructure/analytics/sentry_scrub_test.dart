@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc_advance/core/errors/app_api_exception.dart';
@@ -43,6 +44,118 @@ void main() {
       expect(result.request?.headers.containsKey('Set-Cookie'), isFalse);
       expect(result.request?.headers['X-K'], 'v');
     });
+  });
+
+  // Regression: only the Authorization, Cookie and Set-Cookie headers were dropped by name, and every other header
+  // value and every env value reached Sentry as it was, so a JWT or an email in a custom header or in the env did too.
+  group('sentryBeforeSend', () {
+    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart';
+
+    test('masks emails and JWTs in header values', () {
+      final result = sentryBeforeSend(
+        _eventWithHeaders({'X-Debug-Context': 'session $jwt', 'X-User-Email': 'jane.doe@example.com'}),
+      );
+      expect(result.request?.headers, {
+        'X-Debug-Context': 'session [REDACTED_JWT]',
+        'X-User-Email': '[REDACTED_EMAIL]',
+      });
+    });
+
+    test('masks emails and JWTs in env values', () {
+      final result = sentryBeforeSend(
+        SentryEvent(
+          request: SentryRequest(
+            env: {'REMOTE_USER': 'jane.doe@example.com', 'SESSION': jwt, 'QUERY_STRING': 'code=4f2a9c&state=st4te999'},
+          ),
+        ),
+      );
+      expect(result.request?.env, {
+        'REMOTE_USER': '[REDACTED_EMAIL]',
+        'SESSION': '[REDACTED_JWT]',
+        'QUERY_STRING': 'code=[REDACTED]&state=[REDACTED]',
+      });
+    });
+
+    test('keeps a header value without a secret as it was', () {
+      final result = sentryBeforeSend(_eventWithHeaders({'Accept': 'application/json', 'X-Request-Id': 'abc-123'}));
+      expect(result.request?.headers, {'Accept': 'application/json', 'X-Request-Id': 'abc-123'});
+    });
+
+    // An opaque token has no JWT shape and names no key inside its value, so only the name of its header says what it
+    // is.
+    test('masks the whole value of a header named like a credential', () {
+      final result = sentryBeforeSend(
+        _eventWithHeaders({'X-Auth-Token': 'at-opaque-0a1b2c3d', 'Accept': 'text/plain'}),
+      );
+      expect(result.request?.headers, {'X-Auth-Token': '[REDACTED]', 'Accept': 'text/plain'});
+    });
+  });
+
+  // Regression: a header such as Proxy-Authorization or X-Api-Key names no password, otp, token or secret, so its opaque
+  // value reached Sentry as it was.
+  test('sentryBeforeSend masks the whole value of an authorization or api-key header', () {
+    final result = sentryBeforeSend(
+      _eventWithHeaders({
+        'Proxy-Authorization': 'Basic dXNlcjpwYXNz',
+        'X-Api-Key': 'k-0a1b2c3d4e',
+        'Api-Key': 'k-9f8e7d6c',
+        'X-Keyboard-Layout': 'tr-q',
+      }),
+    );
+    expect(result.request?.headers, {
+      'Proxy-Authorization': '[REDACTED]',
+      'X-Api-Key': '[REDACTED]',
+      'Api-Key': '[REDACTED]',
+      'X-Keyboard-Layout': 'tr-q',
+    });
+  });
+
+  // Regression: the tags were sent as they were, so SentryAnalyticsService.setUserProperty(name: 'otp', ...) sent the
+  // code.
+  test('sentryBeforeSend masks the value of a tag named like a credential and the text of every tag', () {
+    final event = SentryEvent(tags: {'otp': '493817', 'login': 'jane.doe@example.com', 'event.origin': 'flutter'});
+
+    final result = sentryBeforeSend(event);
+
+    expect(result.tags, {'otp': '[REDACTED]', 'login': '[REDACTED_EMAIL]', 'event.origin': 'flutter'});
+  });
+
+  // Regression: the user was sent as it was, so a fork that calls setUserId with an email sent the address.
+  test('sentryBeforeSend masks the user like the text and the data of the event', () {
+    final event = SentryEvent(
+      user: SentryUser(
+        id: 'jane.doe@example.com',
+        username: 'jane eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart',
+        email: 'jane.doe@example.com',
+        ipAddress: '203.0.113.7',
+        name: 'Jane token=at-0a1b',
+        data: {'refreshToken': 'rt-9f8e7d6c', 'plan': 'pro', 'contact': 'j@example.org'},
+      ),
+    );
+
+    final user = sentryBeforeSend(event).user!;
+
+    expect(user.id, '[REDACTED_EMAIL]');
+    expect(user.username, 'jane [REDACTED_JWT]');
+    expect(user.email, '[REDACTED_EMAIL]');
+    expect(user.ipAddress, '203.0.113.7');
+    expect(user.name, 'Jane token=[REDACTED]');
+    expect(user.data, {'refreshToken': '[REDACTED]', 'plan': 'pro', 'contact': '[REDACTED_EMAIL]'});
+  });
+
+  test('sentryBeforeSend masks every map case of the fixture shared with the Android scrubber', () {
+    final cases = jsonDecode(File('test/fixtures/native_scrub_map_cases.json').readAsStringSync()) as List<dynamic>;
+
+    expect(cases, isNotEmpty);
+    for (final entry in cases.cast<Map<String, dynamic>>()) {
+      final input = (entry['input'] as Map<String, dynamic>).cast<String, String>();
+      final result = switch (entry['field']) {
+        'headers' => sentryBeforeSend(_eventWithHeaders(input)).request?.headers,
+        'tags' => sentryBeforeSend(SentryEvent(tags: input)).tags,
+        final field => fail('unknown field $field'),
+      };
+      expect(result, entry['expected'], reason: '${entry['field']}');
+    }
   });
 
   group('sentryBeforeSend — body scrubbing (Map shape)', () {
@@ -386,6 +499,19 @@ void main() {
         sent,
         contains(r'"value":"Error During Communication: Not found: {\"path\":\"/api/admin/users/[REDACTED_EMAIL]\"}"'),
       );
+    });
+
+    test('sends an event without the JWT in a custom request header', () async {
+      await Sentry.captureEvent(
+        SentryEvent(
+          message: SentryMessage('request failed'),
+          request: SentryRequest(url: 'https://api.example.test/', headers: {'X-Debug-Context': jwt}),
+        ),
+      );
+
+      final sent = sentEvents.single;
+      expect(sent, isNot(contains(jwt)));
+      expect(sent, contains('"X-Debug-Context":"[REDACTED_JWT]"'));
     });
   });
 

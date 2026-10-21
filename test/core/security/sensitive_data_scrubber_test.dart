@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -310,5 +313,16 @@ void main() {
         'errorCode': 'E1',
       });
     });
+  });
+
+  // The Android host masks what sentry-android records itself with a Kotlin copy of maskSecrets and maskEmails, and
+  // NativeSentryScrubberTest runs the same cases, so the two copies mask the same text the same way.
+  test('masks every case of the fixture shared with the Android scrubber', () {
+    final cases = jsonDecode(File('test/fixtures/native_scrub_cases.json').readAsStringSync()) as List<dynamic>;
+
+    expect(cases, isNotEmpty);
+    for (final entry in cases.cast<Map<String, dynamic>>()) {
+      expect(maskEmails(maskSecrets(entry['input'] as String)), entry['expected'], reason: '${entry['input']}');
+    }
   });
 }
