@@ -19,9 +19,13 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// and the debug-log exit share one definition and cannot drift apart.
 ///
 /// Of the request headers, `Authorization`, `Cookie` and `Set-Cookie` are
-/// dropped, a header whose name names a credential keeps its name with its
-/// whole value masked, and every other header value and every env value is
-/// masked like the text of the event.
+/// dropped, a header whose name names a credential (a body key, or one of
+/// [sensitiveHeaderNameSubstrings]) keeps its name with its whole value
+/// masked, and every other header value and every env value is masked like
+/// the text of the event. A tag named like a credential has its whole value
+/// masked and every other tag value is masked as text, and the text fields
+/// and the data of the user are masked like the rest of the event, so a fork
+/// that sets an email as the user id or as a tag does not send it.
 ///
 /// Deterministic and free of external side effects, but **mutates the
 /// passed-in [SentryEvent] in place** (replacing `event.request` and editing
@@ -52,6 +56,12 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
   // On web the SDK names an unnamed event after the page path, which
   // carries the route parameters under the path URL strategy.
   event.transaction = _scrubUrlPart(event.transaction);
+
+  final tags = event.tags;
+  if (tags != null) event.tags = _scrubTextMap(tags);
+
+  final user = event.user;
+  if (user != null) _scrubUser(user);
 
   final exceptions = event.exceptions;
   if (exceptions != null) {
@@ -148,12 +158,41 @@ String? _scrubUrlPart(String? value) => value == null ? null : _maskText(value);
 /// opaque `X-Auth-Token` has no shape to find), and every other value masked
 /// as [_maskText] masks text. The names stay as they were.
 Map<String, String> _scrubHeaderValues(Map<String, String> headers) => {
-  for (final MapEntry(:key, :value) in (scrubBodyKeys(scrubHeaders(headers)) as Map<String, dynamic>).entries)
+  for (final MapEntry(:key, :value) in _scrubTextMap(scrubHeaders(headers)).entries)
+    key: _namesHeaderCredential(key) ? secretMask : value,
+};
+
+/// Whether the header name [name] contains one of [sensitiveHeaderNameSubstrings].
+bool _namesHeaderCredential(String name) {
+  final lower = name.toLowerCase();
+  return sensitiveHeaderNameSubstrings.any(lower.contains);
+}
+
+/// Returns [map] with the whole value of every credential key replaced by
+/// [secretMask] and every other value masked as [_maskText] masks text.
+Map<String, String> _scrubTextMap(Map<String, String> map) => {
+  for (final MapEntry(:key, :value) in (scrubBodyKeys(map) as Map<String, dynamic>).entries)
     key: _maskText(value as String),
 };
 
+/// Masks the text fields of [user] as [_maskText] masks text, and its data as
+/// a breadcrumb's data is masked.
+void _scrubUser(SentryUser user) {
+  user
+    ..id = _maskOptional(user.id)
+    ..username = _maskOptional(user.username)
+    ..email = _maskOptional(user.email)
+    ..ipAddress = _maskOptional(user.ipAddress)
+    ..name = _maskOptional(user.name);
+  final data = user.data;
+  if (data != null) user.data = _maskMap(scrubBodyKeys(data) as Map<String, dynamic>);
+}
+
 /// Masks emails, JWTs and the other secrets [maskSecrets] finds in [value].
 String _maskText(String value) => maskEmails(maskSecrets(value));
+
+/// [_maskText] of [value], or null when it is null.
+String? _maskOptional(String? value) => value == null ? null : _maskText(value);
 
 /// Masks every string in [value] the way Sentry sends it: inside maps and
 /// lists at any depth. Any other value that is not a number or a bool is

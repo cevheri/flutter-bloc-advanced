@@ -26,6 +26,12 @@ import 'package:flutter/foundation.dart' show visibleForTesting;
 /// with a masked value.
 const Set<String> sensitiveHeaderNames = {'authorization', 'cookie', 'set-cookie'};
 
+/// Parts of a header name that name a credential the body keys do not, such
+/// as `Proxy-Authorization` and the api-key headers (`X-Api-Key`, `Api-Key`,
+/// `x_api_key`). The crash-report scrubbers mask the whole value of a header
+/// whose lower-cased name contains one.
+const Set<String> sensitiveHeaderNameSubstrings = {'authorization', 'api-key', 'api_key', 'apikey'};
+
 /// Body keys whose values are masked when any of these appears as a
 /// lower-cased substring (so `accessToken`, `refreshToken`, `newPassword`
 /// and `clientSecret` all match).

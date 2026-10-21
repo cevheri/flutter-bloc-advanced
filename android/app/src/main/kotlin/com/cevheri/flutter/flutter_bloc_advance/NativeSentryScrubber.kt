@@ -4,6 +4,7 @@ import android.util.Log
 import io.sentry.Breadcrumb
 import io.sentry.SentryEvent
 import io.sentry.protocol.Request
+import io.sentry.protocol.User
 
 /**
  * Masks what sentry-android records and sends itself: its own breadcrumbs (activity and app lifecycle, system
@@ -28,6 +29,7 @@ object NativeSentryScrubber {
     private val bearer = Regex(NativeScrubPatterns.BEARER_PATTERN)
 
     private val sensitiveHeaderNames = NativeScrubPatterns.SENSITIVE_HEADER_NAMES.split(",").toSet()
+    private val sensitiveHeaderNameSubstrings = NativeScrubPatterns.SENSITIVE_HEADER_NAME_SUBSTRINGS.split(",").toSet()
     private val sensitiveBodyKeySubstrings = NativeScrubPatterns.SENSITIVE_BODY_KEY_SUBSTRINGS.split(",").toSet()
     private val sensitiveExactKeys = NativeScrubPatterns.SENSITIVE_EXACT_KEYS.split(",").toSet()
     private val navigationTypes = NativeScrubPatterns.NAVIGATION_TYPES.split(",").toSet()
@@ -147,7 +149,8 @@ object NativeSentryScrubber {
         event.exceptions?.forEach { exception -> exception.value?.let { exception.value = maskText(it) } }
         event.breadcrumbs?.forEach { scrubBreadcrumb(it) }
         event.extras?.let { extras -> event.extras = maskMap(extras) }
-        event.tags?.let { tags -> event.tags = tags.mapValues { (_, value) -> maskText(value) } }
+        event.tags?.let { tags -> event.tags = maskTextMap(tags) }
+        event.user?.let { scrubUser(it) }
         event.request?.let { scrubRequest(it) }
         event.transaction?.let { event.transaction = maskText(it) }
         return event
@@ -155,8 +158,9 @@ object NativeSentryScrubber {
 
     /**
      * Masks [request] as sentryBeforeSend does: the url parts and the body masked, the cookies dropped, the
-     * [NativeScrubPatterns.SENSITIVE_HEADER_NAMES] dropped, a header whose name names a credential masked whole, and
-     * every other header value and every env value masked as text.
+     * [NativeScrubPatterns.SENSITIVE_HEADER_NAMES] dropped, a header whose name names a credential (a body key, or one
+     * of [NativeScrubPatterns.SENSITIVE_HEADER_NAME_SUBSTRINGS]) masked whole, and every other header value and every
+     * env value masked as text.
      */
     private fun scrubRequest(request: Request) {
         request.url?.let { request.url = maskText(it) }
@@ -168,11 +172,34 @@ object NativeSentryScrubber {
             request.headers = headers
                 .filterKeys { it.lowercase() !in sensitiveHeaderNames }
                 .mapValues { (name, value) ->
-                    if (isSensitiveKey(name)) NativeScrubPatterns.SECRET_MASK else maskText(value)
+                    if (isSensitiveKey(name) || namesHeaderCredential(name)) {
+                        NativeScrubPatterns.SECRET_MASK
+                    } else {
+                        maskText(value)
+                    }
                 }
         }
         request.envs?.let { envs -> request.envs = envs.mapValues { (_, value) -> maskText(value) } }
         request.others?.let { others -> request.others = others.mapValues { (_, value) -> maskText(value) } }
+    }
+
+    /** Masks the text fields of [user] as text, and its data as a breadcrumb's data, as sentryBeforeSend does. */
+    private fun scrubUser(user: User) {
+        user.id?.let { user.id = maskText(it) }
+        user.username?.let { user.username = maskText(it) }
+        user.email?.let { user.email = maskText(it) }
+        user.ipAddress?.let { user.ipAddress = maskText(it) }
+        user.name?.let { user.name = maskText(it) }
+        user.data?.let { data -> user.data = maskTextMap(data) }
+    }
+
+    /** [map] with the whole value of every credential key masked and every other value masked as text. */
+    private fun maskTextMap(map: Map<String, String>): Map<String, String> =
+        maskMap(map).mapValues { (_, value) -> value.toString() }
+
+    private fun namesHeaderCredential(name: String): Boolean {
+        val lower = name.lowercase()
+        return sensitiveHeaderNameSubstrings.any { lower.contains(it) }
     }
 
     internal fun logToLogcat(message: String, error: Throwable) {

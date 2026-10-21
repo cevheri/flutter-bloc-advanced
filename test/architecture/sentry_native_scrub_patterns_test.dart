@@ -32,6 +32,7 @@ void main() {
   };
   final dartSets = {
     'SENSITIVE_HEADER_NAMES': sensitiveHeaderNames,
+    'SENSITIVE_HEADER_NAME_SUBSTRINGS': sensitiveHeaderNameSubstrings,
     'SENSITIVE_BODY_KEY_SUBSTRINGS': sensitiveBodyKeySubstrings,
     'SENSITIVE_EXACT_KEYS': sensitiveExactKeys,
     'NAVIGATION_TYPES': sentryNavigationTypes,

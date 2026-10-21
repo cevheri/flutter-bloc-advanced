@@ -91,7 +91,9 @@ fvm flutter build apk --release --target lib/main/main_prod.dart \
 `sentryBeforeSend` (see `lib/infrastructure/analytics/sentry_scrub.dart`) drops the following before any event leaves the device:
 
 - `Authorization` / `Cookie` / `Set-Cookie` headers (case-insensitive)
-- The whole value of any other header whose name contains `password`, `otp`, `token` or `secret` or is an OpenID Connect key, such as `X-Auth-Token`, replaced with `[REDACTED]`
+- The whole value of any other header whose name contains `password`, `otp`, `token`, `secret`, `authorization` or an api-key name (`api-key`, `api_key`, `apikey`), or is an OpenID Connect key, such as `X-Auth-Token`, `Proxy-Authorization` or `X-Api-Key`, replaced with `[REDACTED]`
+- The whole value of a tag named the same way as a credential body key, and email addresses, JWTs and the secrets `maskSecrets` finds in every other tag value
+- Email addresses, JWTs and the secrets `maskSecrets` finds in the user's id, username, email, IP address and name, and the user's data masked like a breadcrumb's data
 - Email addresses, JWTs and the secrets `maskSecrets` finds (see the last item) in every other request header value and every `request.env` value; the header names are kept
 - The values of body keys whose names contain `password`, `otp`, `token` or `secret` (case-insensitive substring), at any depth, replaced with `[REDACTED]`
 - Email addresses and JWT-shaped strings (3 base64url segments) in exception values, the event message and the request body (which only an HTTP integration a fork adds, such as `sentry_dio`, attaches), replaced with `[REDACTED_EMAIL]` / `[REDACTED_JWT]`

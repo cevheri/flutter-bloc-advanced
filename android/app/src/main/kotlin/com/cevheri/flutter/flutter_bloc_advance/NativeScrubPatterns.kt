@@ -18,6 +18,7 @@ object NativeScrubPatterns {
 
     // Comma-separated, compared as sets by the guard test.
     const val SENSITIVE_HEADER_NAMES = "authorization,cookie,set-cookie"
+    const val SENSITIVE_HEADER_NAME_SUBSTRINGS = "authorization,api-key,api_key,apikey"
     const val SENSITIVE_BODY_KEY_SUBSTRINGS = "password,otp,token,refreshtoken,secret"
     const val SENSITIVE_EXACT_KEYS = "code,code_verifier,state,nonce,session_state,id_token_hint"
     const val NAVIGATION_TYPES = "didPush,didPop,didReplace"

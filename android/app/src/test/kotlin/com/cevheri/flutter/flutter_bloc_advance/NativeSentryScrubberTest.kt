@@ -8,6 +8,7 @@ import io.sentry.SentryOptions
 import io.sentry.protocol.Message
 import io.sentry.protocol.Request
 import io.sentry.protocol.SentryException
+import io.sentry.protocol.User
 import java.io.File
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -210,6 +211,83 @@ class NativeSentryScrubberTest {
     }
 
     @Test
+    fun masksTheValueOfATagNamedLikeACredential() {
+        val event = SentryEvent().apply {
+            setTag("otp", "493817")
+            setTag("event.origin", "android")
+        }
+
+        NativeSentryScrubber.beforeSend(event, logError)
+
+        assertEquals("[REDACTED]", event.getTag("otp"))
+        assertEquals("android", event.getTag("event.origin"))
+    }
+
+    @Test
+    fun masksTheWholeValueOfAnAuthorizationOrApiKeyHeader() {
+        val event = SentryEvent().apply {
+            request = Request().apply {
+                headers = mapOf(
+                    "Proxy-Authorization" to "Basic dXNlcjpwYXNz",
+                    "X-Api-Key" to "k-0a1b2c3d4e",
+                    "X-Keyboard-Layout" to "tr-q",
+                )
+            }
+        }
+
+        val headers = NativeSentryScrubber.beforeSend(event, logError)!!.request!!.headers
+
+        assertEquals(
+            mapOf("Proxy-Authorization" to "[REDACTED]", "X-Api-Key" to "[REDACTED]", "X-Keyboard-Layout" to "tr-q"),
+            headers,
+        )
+    }
+
+    // Scope sync copies the Dart user to the native scope, so a fork that calls setUserId with an email sends it in
+    // every native crash.
+    @Test
+    fun masksTheUserLikeTheDartScrubber() {
+        val event = SentryEvent().apply {
+            user = User().apply {
+                id = "jane.doe@example.com"
+                username = "jane $jwt"
+                email = "jane.doe@example.com"
+                ipAddress = "203.0.113.7"
+                name = "Jane token=at-0a1b"
+                data = mapOf("refreshToken" to "rt-9f8e7d6c", "plan" to "pro", "contact" to "j@example.org")
+            }
+        }
+
+        val user = NativeSentryScrubber.beforeSend(event, logError)!!.user!!
+
+        assertEquals("[REDACTED_EMAIL]", user.id)
+        assertEquals("jane [REDACTED_JWT]", user.username)
+        assertEquals("[REDACTED_EMAIL]", user.email)
+        assertEquals("203.0.113.7", user.ipAddress)
+        assertEquals("Jane token=[REDACTED]", user.name)
+        assertEquals(mapOf("refreshToken" to "[REDACTED]", "plan" to "pro", "contact" to "[REDACTED_EMAIL]"), user.data)
+    }
+
+    @Test
+    fun masksEveryMapCaseOfTheFixtureSharedWithTheDartScrubber() {
+        val json = File("../../test/fixtures/native_scrub_map_cases.json").readText()
+        val cases = Gson().fromJson(json, Array<MapFixtureCase>::class.java)
+
+        assertTrue(cases.isNotEmpty())
+        for (case in cases) {
+            val event = SentryEvent()
+            when (case.field) {
+                "headers" -> event.request = Request().apply { headers = case.input }
+                "tags" -> event.tags = case.input
+                else -> throw AssertionError("unknown field ${case.field}")
+            }
+            val result = NativeSentryScrubber.beforeSend(event, logError)!!
+            val masked = if (case.field == "headers") result.request!!.headers else result.tags
+            assertEquals(case.field, case.expected, masked)
+        }
+    }
+
+    @Test
     fun dropsTheEventAndLogsWhenScrubbingThrows() {
         val event = SentryEvent().apply { setExtra("value", unreadable) }
 
@@ -264,4 +342,6 @@ class NativeSentryScrubberTest {
     }
 
     private class FixtureCase(val input: String, val expected: String)
+
+    private class MapFixtureCase(val field: String, val input: Map<String, String>, val expected: Map<String, String>)
 }
