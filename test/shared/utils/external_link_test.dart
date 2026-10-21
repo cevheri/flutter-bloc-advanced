@@ -56,4 +56,28 @@ void main() {
       });
     }
   });
+
+  group('launchExternalUri', () {
+    for (final failure in UrlLauncherFailure.values) {
+      test(
+        'throws a StateError that names no part of the link, and never answers false, when ${failure.description}',
+        () async {
+          final calls = stubFailingUrlLauncher(failure);
+
+          await expectLater(
+            launchExternalUri(Uri.parse('$url?state=state-value')),
+            throwsA(isA<StateError>().having((error) => error.message, 'message', isNot(contains('example.com')))),
+          );
+          expect(calls.launchedUrls, ['$url?state=state-value']);
+        },
+      );
+    }
+
+    test('answers true when the link opens', () async {
+      final calls = stubOpeningUrlLauncher(canLaunch: false);
+
+      expect(await launchExternalUri(Uri.parse(url)), isTrue);
+      expect(calls.launchedUrls, [url]);
+    });
+  });
 }
