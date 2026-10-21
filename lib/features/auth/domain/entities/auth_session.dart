@@ -10,17 +10,29 @@ import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
 ///
 /// [idToken] is non-nullable by contract — callers must validate the
 /// token before constructing the session (see `AuthTokenEntity.isValid`).
+///
+/// An `oidc` sign-in also carries [oidcIdToken], the provider's ID token,
+/// and [accessTokenExpiresAt], the access token's expiry from the token
+/// response. In `jwt` mode both stay null.
 class AuthSession extends Equatable {
-  const AuthSession({required this.idToken, required this.username, this.refreshToken, this.roles = const []})
-    : assert(idToken != '', 'idToken must be non-empty');
+  const AuthSession({
+    required this.idToken,
+    required this.username,
+    this.refreshToken,
+    this.roles = const [],
+    this.oidcIdToken,
+    this.accessTokenExpiresAt,
+  }) : assert(idToken != '', 'idToken must be non-empty');
 
   final String idToken;
   final String? refreshToken;
   final String username;
   final List<String> roles;
+  final String? oidcIdToken;
+  final DateTime? accessTokenExpiresAt;
 
   @override
-  List<Object?> get props => [idToken, refreshToken, username, roles];
+  List<Object?> get props => [idToken, refreshToken, username, roles, oidcIdToken, accessTokenExpiresAt];
 
   /// Tokens are masked so this is safe to embed in log output.
   @override
@@ -29,5 +41,7 @@ class AuthSession extends Equatable {
       'idToken: ${maskToken(idToken)}, '
       'refreshToken: ${maskToken(refreshToken)}, '
       'username: $username, '
-      'roles: $roles)';
+      'roles: $roles, '
+      'oidcIdToken: ${maskToken(oidcIdToken)}, '
+      'accessTokenExpiresAt: $accessTokenExpiresAt)';
 }

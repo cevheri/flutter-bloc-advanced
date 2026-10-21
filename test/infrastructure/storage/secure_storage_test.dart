@@ -138,4 +138,37 @@ void main() {
       expect(sent, everyElement(containsPair('accessibility', 'first_unlock_this_device')));
     });
   });
+
+  group('access token expiry', () {
+    test('the OIDC keys keep their stored names', () {
+      expect(SecureStorageKeys.oidcIdToken.key, 'oidcIdToken');
+      expect(SecureStorageKeys.accessTokenExpiresAt.key, 'accessTokenExpiresAt');
+    });
+
+    test('an expiry round-trips through encode and read as the same instant in UTC', () {
+      final expiresAt = DateTime.utc(2026, 10, 21, 12, 30, 15, 250);
+
+      final stored = encodeAccessTokenExpiry(expiresAt);
+
+      expect(stored, '${expiresAt.millisecondsSinceEpoch}');
+      expect(readAccessTokenExpiry(stored), expiresAt);
+      expect(readAccessTokenExpiry(stored)!.isUtc, isTrue);
+    });
+
+    test('a local time is stored as the same instant', () {
+      final local = DateTime(2026, 10, 21, 12, 30);
+
+      expect(encodeAccessTokenExpiry(local), '${local.toUtc().millisecondsSinceEpoch}');
+      expect(readAccessTokenExpiry(encodeAccessTokenExpiry(local))!.isAtSameMomentAs(local), isTrue);
+    });
+
+    test('no stored expiry reads as null', () {
+      expect(readAccessTokenExpiry(null), isNull);
+    });
+
+    test('a stored value that is not an integer throws FormatException', () {
+      expect(() => readAccessTokenExpiry('2026-10-21T12:00:00Z'), throwsFormatException);
+      expect(() => readAccessTokenExpiry(''), throwsFormatException);
+    });
+  });
 }

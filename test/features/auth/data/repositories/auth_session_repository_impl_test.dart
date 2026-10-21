@@ -58,6 +58,40 @@ class _SelectiveFailSecureStorage implements ISecureStorage {
   Future<void> deleteAll() async => _store.clear();
 }
 
+/// ISecureStorage whose write of [failOnWrite] stores the value and then throws, as an adapter that fails after it
+/// changed the platform store. Exercises the rollback of a key whose write failed.
+class _WriteFailSecureStorage extends _MemorySecureStorage {
+  _WriteFailSecureStorage({required this.failOnWrite});
+  final String failOnWrite;
+  @override
+  Future<void> write(String key, String value) async {
+    await super.write(key, value);
+    if (key == failOnWrite) throw StateError('boom on write $key');
+  }
+}
+
+/// In-memory ISecureStorage that records every call as `<method> <key>`, in order.
+class _CallRecordingSecureStorage extends _MemorySecureStorage {
+  final calls = <String>[];
+  @override
+  Future<String?> read(String key) {
+    calls.add('read $key');
+    return super.read(key);
+  }
+
+  @override
+  Future<void> write(String key, String value) {
+    calls.add('write $key');
+    return super.write(key, value);
+  }
+
+  @override
+  Future<void> delete(String key) {
+    calls.add('delete $key');
+    return super.delete(key);
+  }
+}
+
 /// Storage fake that lets a test choose which key's `save` should fail.
 class _FlakyStorage implements AppLocalStorage {
   _FlakyStorage(this._inner, this.failOnKey);
@@ -360,6 +394,159 @@ void main() {
       expect(recording.calls.map((call) => call.ended), everyElement(isTrue));
       expect(cache.endedWhenCleared, isTrue);
       expect(SessionGeneration.hasEnded(recording.calls.first.generation), isTrue);
+    });
+  });
+
+  group('AuthSessionRepository with the OIDC keys', () {
+    final expiresAt = DateTime.utc(2026, 10, 21, 12);
+    final idTokenKey = SecureStorageKeys.oidcIdToken.key;
+    final expiryKey = SecureStorageKeys.accessTokenExpiresAt.key;
+
+    test('persists the OIDC ID token and the expiry next to the tokens', () async {
+      final recording = _CallRecordingSecureStorage();
+      final repo = AuthSessionRepository(secureStorage: recording, storage: storage, oidcKeys: true);
+      final session = AuthSession(
+        idToken: 'ACCESS',
+        refreshToken: 'REFRESH',
+        username: 'alice',
+        oidcIdToken: 'ID_TOKEN',
+        accessTokenExpiresAt: expiresAt,
+      );
+
+      final result = await repo.persist(session);
+
+      expect(result, isA<Success<void>>());
+      expect(recording.calls.where((call) => call.startsWith('write ')), [
+        'write ${SecureStorageKeys.jwtToken.key}',
+        'write ${SecureStorageKeys.refreshToken.key}',
+        'write $idTokenKey',
+        'write $expiryKey',
+      ]);
+      expect(await recording.read(idTokenKey), 'ID_TOKEN');
+      expect(await recording.read(expiryKey), encodeAccessTokenExpiry(expiresAt));
+      expect(readAccessTokenExpiry(await recording.read(expiryKey)), expiresAt);
+    });
+
+    test('deletes a stored OIDC ID token and expiry when the new session has none', () async {
+      await secure.write(idTokenKey, 'OLD_ID_TOKEN');
+      await secure.write(expiryKey, encodeAccessTokenExpiry(expiresAt));
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage, oidcKeys: true);
+
+      final result = await repo.persist(const AuthSession(idToken: 'ACCESS', username: 'alice'));
+
+      expect(result, isA<Success<void>>());
+      expect(await secure.read(idTokenKey), isNull);
+      expect(await secure.read(expiryKey), isNull);
+    });
+
+    test('rolls the OIDC ID token and expiry back when a later write fails', () async {
+      final failing = _WriteFailSecureStorage(failOnWrite: expiryKey);
+      await failing.write(SecureStorageKeys.jwtToken.key, 'OLD_ACCESS');
+      await failing.write(SecureStorageKeys.refreshToken.key, 'OLD_REFRESH');
+      await failing.write(idTokenKey, 'OLD_ID_TOKEN');
+      final repo = AuthSessionRepository(secureStorage: failing, storage: storage, oidcKeys: true);
+      final session = AuthSession(
+        idToken: 'NEW_ACCESS',
+        refreshToken: 'NEW_REFRESH',
+        username: 'alice',
+        oidcIdToken: 'NEW_ID_TOKEN',
+        accessTokenExpiresAt: expiresAt,
+      );
+
+      final result = await repo.persist(session);
+
+      expect(result, isA<Failure<void>>());
+      expect(await failing.read(SecureStorageKeys.jwtToken.key), 'OLD_ACCESS');
+      expect(await failing.read(SecureStorageKeys.refreshToken.key), 'OLD_REFRESH');
+      expect(await failing.read(idTokenKey), 'OLD_ID_TOKEN');
+      expect(await failing.read(expiryKey), isNull, reason: 'the expiry the failed write stored is removed');
+    });
+
+    test('restores a stored expiry and ID token when a local write fails', () async {
+      final priorExpiry = encodeAccessTokenExpiry(expiresAt);
+      await secure.write(idTokenKey, 'OLD_ID_TOKEN');
+      await secure.write(expiryKey, priorExpiry);
+      final flaky = _FlakyStorage(storage, StorageKeys.username.key);
+      final repo = AuthSessionRepository(secureStorage: secure, storage: flaky, oidcKeys: true);
+      final session = AuthSession(
+        idToken: 'NEW_ACCESS',
+        username: 'bob',
+        oidcIdToken: 'NEW_ID_TOKEN',
+        accessTokenExpiresAt: expiresAt.add(const Duration(minutes: 5)),
+      );
+
+      final result = await repo.persist(session);
+
+      expect(result, isA<Failure<void>>());
+      expect(await secure.read(idTokenKey), 'OLD_ID_TOKEN');
+      expect(await secure.read(expiryKey), priorExpiry);
+    });
+
+    test('clear deletes the OIDC ID token and the expiry', () async {
+      final repo = AuthSessionRepository(secureStorage: secure, storage: storage, oidcKeys: true);
+      await repo.persist(
+        AuthSession(idToken: 'ACCESS', username: 'alice', oidcIdToken: 'ID_TOKEN', accessTokenExpiresAt: expiresAt),
+      );
+
+      final result = await repo.clear();
+
+      expect(result, isA<Success<void>>());
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await secure.read(idTokenKey), isNull);
+      expect(await secure.read(expiryKey), isNull);
+    });
+
+    test('clear keeps deleting the OIDC keys when the bearer delete throws', () async {
+      final flaky = _SelectiveFailSecureStorage(failOn: SecureStorageKeys.jwtToken.key);
+      await flaky.write(idTokenKey, 'ID_TOKEN');
+      await flaky.write(expiryKey, encodeAccessTokenExpiry(expiresAt));
+      final repo = AuthSessionRepository(secureStorage: flaky, storage: storage, oidcKeys: true);
+
+      final result = await repo.clear();
+
+      expect(result, isA<Failure<void>>());
+      expect(await flaky.read(idTokenKey), isNull);
+      expect(await flaky.read(expiryKey), isNull);
+    });
+
+    test('clear reports an OIDC key it cannot delete and still removes the rest', () async {
+      final flaky = _SelectiveFailSecureStorage(failOn: idTokenKey);
+      await flaky.write(SecureStorageKeys.jwtToken.key, 'ACCESS');
+      await flaky.write(expiryKey, encodeAccessTokenExpiry(expiresAt));
+      final repo = AuthSessionRepository(secureStorage: flaky, storage: storage, oidcKeys: true);
+
+      final result = await repo.clear();
+
+      expect(result, isA<Failure<void>>());
+      expect((result as Failure<void>).error.message, contains('oidcIdToken'));
+      expect(await flaky.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await flaky.read(expiryKey), isNull);
+    });
+
+    test('never reads, writes or deletes the OIDC keys', () async {
+      final recording = _CallRecordingSecureStorage();
+      final session = AuthSession(
+        idToken: 'ACCESS',
+        refreshToken: 'REFRESH',
+        username: 'alice',
+        oidcIdToken: 'ID_TOKEN',
+        accessTokenExpiresAt: expiresAt,
+      );
+
+      await AuthSessionRepository(secureStorage: recording, storage: storage).persist(session);
+      expect(recording.calls, [
+        'read ${SecureStorageKeys.jwtToken.key}',
+        'read ${SecureStorageKeys.refreshToken.key}',
+        'write ${SecureStorageKeys.jwtToken.key}',
+        'write ${SecureStorageKeys.refreshToken.key}',
+      ]);
+      // A local write that fails sends persist through the rollback.
+      final flaky = _FlakyStorage(storage, StorageKeys.username.key);
+      await AuthSessionRepository(secureStorage: recording, storage: flaky).persist(session);
+      await AuthSessionRepository(secureStorage: recording, storage: storage).clear();
+
+      expect(recording.calls, isNotEmpty);
+      expect(recording.calls.where((call) => call.endsWith(' $idTokenKey') || call.endsWith(' $expiryKey')), isEmpty);
     });
   });
 

@@ -64,9 +64,13 @@ class AppDependencies {
   IAuthRepository createAuthRepository(IAuthSessionRepository sessionRepository, ApiClient apiClient) =>
       LoginRepository(sessionRepository: sessionRepository, apiClient: apiClient);
 
-  /// Ending a session also clears the cache of GET responses that [ApiClient] keeps in SharedPreferences.
-  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) =>
-      AuthSessionRepository(secureStorage: secureStorage, cacheStorage: SharedPrefsCacheStorage());
+  /// Ending a session also clears the cache of GET responses that [ApiClient] keeps in SharedPreferences. Only an
+  /// `oidc` build stores the OIDC ID token and the access token expiry.
+  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) => AuthSessionRepository(
+    secureStorage: secureStorage,
+    cacheStorage: SharedPrefsCacheStorage(),
+    oidcKeys: authMode.usesOidc,
+  );
 
   IAuthorityRepository createAuthorityRepository(ApiClient apiClient) => AuthorityRepositoryImpl(apiClient);
 
