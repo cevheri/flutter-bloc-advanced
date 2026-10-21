@@ -12,9 +12,9 @@ package com.cevheri.flutter.flutter_bloc_advance
 object NativeScrubPatterns {
     const val JWT_PATTERN = """eyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}"""
     const val EMAIL_PATTERN = """[A-Za-z0-9._%+-]{1,64}(?:@|%40)[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}"""
-    const val JSON_MEMBER_PATTERN = """"([^"\\]{1,64})"(\s*:\s*)("(?:[^"\\]|\\[^\n\r\u2028\u2029])*"|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)"""
-    const val NAMED_VALUE_PATTERN = """(?<![A-Za-z0-9_.\-])([A-Za-z_][A-Za-z0-9_.\-]{0,63})=([^\[&\s#"',;)}\]][^&\s#"',;)}\]]*)"""
-    const val BEARER_PATTERN = """(?<![A-Za-z0-9_])(bearer)\s+[A-Za-z0-9\-._~+/]+=*"""
+    const val JSON_MEMBER_PATTERN = """"([^"\\]{1,64})"([\t\n\u000b\f\r \u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*:[\t\n\u000b\f\r \u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]*)("(?:[^"\\]|\\[^\n\r\u2028\u2029])*"|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)"""
+    const val NAMED_VALUE_PATTERN = """(?<![A-Za-z0-9_.\-])([A-Za-z_][A-Za-z0-9_.\-]{0,63})=([^\[&\t\n\u000b\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff#"',;)}\]][^&\t\n\u000b\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff#"',;)}\]]*)"""
+    const val BEARER_PATTERN = """(?<![A-Za-z0-9_])([Bb][Ee][Aa][Rr][Ee][Rr])[\t\n\u000b\f\r \u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]+[A-Za-z0-9\-._~+/]+=*"""
 
     // Comma-separated, compared as sets by the guard test.
     const val SENSITIVE_HEADER_NAMES = "authorization,cookie,set-cookie"

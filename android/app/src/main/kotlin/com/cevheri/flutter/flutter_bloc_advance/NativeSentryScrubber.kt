@@ -25,7 +25,7 @@ object NativeSentryScrubber {
     private val email = Regex(NativeScrubPatterns.EMAIL_PATTERN)
     private val jsonMember = Regex(NativeScrubPatterns.JSON_MEMBER_PATTERN)
     private val namedValue = Regex(NativeScrubPatterns.NAMED_VALUE_PATTERN)
-    private val bearer = Regex(NativeScrubPatterns.BEARER_PATTERN, RegexOption.IGNORE_CASE)
+    private val bearer = Regex(NativeScrubPatterns.BEARER_PATTERN)
 
     private val sensitiveHeaderNames = NativeScrubPatterns.SENSITIVE_HEADER_NAMES.split(",").toSet()
     private val sensitiveBodyKeySubstrings = NativeScrubPatterns.SENSITIVE_BODY_KEY_SUBSTRINGS.split(",").toSet()

@@ -86,5 +86,37 @@
   {
     "input": "statusCode=404 countryCode=TR",
     "expected": "statusCode=404 countryCode=TR"
+  },
+  {
+    "input": "\u017fBearer abcdef123",
+    "expected": "\u017fBearer [REDACTED]"
+  },
+  {
+    "input": "\u212aBearer abcdef123",
+    "expected": "\u212aBearer [REDACTED]"
+  },
+  {
+    "input": "Bearer\ufeffat-opaque-0a1b2c3d",
+    "expected": "Bearer [REDACTED]"
+  },
+  {
+    "input": "Bearer\u00a0at-opaque-0a1b2c3d",
+    "expected": "Bearer [REDACTED]"
+  },
+  {
+    "input": "Bearer\u0085at-opaque-0a1b2c3d",
+    "expected": "Bearer [REDACTED]"
+  },
+  {
+    "input": "{\"token\"\u00a0:\u0085\"rt-9f8e7d6c\"}",
+    "expected": "{\"token\"\u00a0:\u0085\"[REDACTED]\"}"
+  },
+  {
+    "input": "password=abc\u0085def",
+    "expected": "password=[REDACTED]"
+  },
+  {
+    "input": "password=abc\u3000def",
+    "expected": "password=[REDACTED]\u3000def"
   }
 ]

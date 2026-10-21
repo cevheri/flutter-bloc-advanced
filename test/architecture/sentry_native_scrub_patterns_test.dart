@@ -13,8 +13,9 @@ import 'package:flutter_test/flutter_test.dart';
 ///
 /// The patterns must also mean the same thing on the device. Android's `java.util.regex` is backed by ICU, which reads
 /// `\w`, `\d` and `\b` as Unicode classes and lets `.` skip U+0085, while Dart and the OpenJDK of the JVM unit tests
-/// read them as ASCII, so the patterns spell out explicit classes instead. `\s` is left: Dart and ICU read it as
-/// Unicode whitespace and OpenJDK as ASCII, so a no-break space can differ in a JVM unit test but not on a device.
+/// read them as ASCII, so the patterns spell out explicit classes instead. `\s` is spelled out too: Dart reads it with
+/// U+FEFF and without U+0085, ICU the other way round, and OpenJDK as ASCII only. No pattern takes a case-insensitive
+/// flag, which Kotlin turns into Unicode case folding.
 ///
 /// The logic is held equal by `test/fixtures/native_scrub_cases.json`, which the Dart scrubber test and
 /// `NativeSentryScrubberTest.kt` both run.
@@ -96,13 +97,18 @@ void main() {
   test('the Kotlin scrubber compiles the patterns with the flags of the Dart ones', () {
     final scrubber = File(scrubberPath).readAsStringSync();
 
+    // Kotlin's IGNORE_CASE adds UNICODE_CASE, under which `[A-Za-z]` also matches U+017F and the Kelvin sign, while
+    // Dart's caseSensitive: false does not: a pattern spells out both cases instead.
     for (final MapEntry(key: name, value: pattern) in dartPatterns.entries) {
-      expect(pattern.isMultiLine || pattern.isUnicode || pattern.isDotAll, isFalse, reason: '$name has a flag');
-      final compiled = pattern.isCaseSensitive
-          ? 'Regex(NativeScrubPatterns.$name)'
-          : 'Regex(NativeScrubPatterns.$name, RegexOption.IGNORE_CASE)';
+      expect(
+        pattern.isMultiLine || pattern.isUnicode || pattern.isDotAll || !pattern.isCaseSensitive,
+        isFalse,
+        reason: '$name has a flag',
+      );
+      final compiled = 'Regex(NativeScrubPatterns.$name)';
       expect(scrubber, contains(compiled), reason: '$scrubberPath must compile $name as $compiled');
     }
+    expect(scrubber, isNot(contains('RegexOption')), reason: '$scrubberPath must compile the patterns without options');
   });
 
   test('the shared patterns use no class that ICU reads differently from Dart', () {
@@ -143,14 +149,14 @@ void main() {
 bool _sameSet(List<String> kotlin, Set<String> dart) =>
     kotlin.length == dart.length && kotlin.toSet().containsAll(dart);
 
-/// The first construct in [pattern] that ICU reads differently from Dart: `\w`, `\d`, `\b`, or a `.` that is neither
-/// escaped nor inside a character class.
+/// The first construct in [pattern] that ICU or OpenJDK reads differently from Dart: `\w`, `\d`, `\b`, `\s`, or a `.`
+/// that is neither escaped nor inside a character class.
 String? _nonPortable(String pattern) {
   var inClass = false;
   for (var i = 0; i < pattern.length; i++) {
     final char = pattern[i];
     if (char == r'\') {
-      if (i + 1 < pattern.length && 'wWdDbB'.contains(pattern[i + 1])) return '\\${pattern[i + 1]}';
+      if (i + 1 < pattern.length && 'wWdDbBsS'.contains(pattern[i + 1])) return '\\${pattern[i + 1]}';
       i++;
     } else if (char == '[') {
       inClass = true;

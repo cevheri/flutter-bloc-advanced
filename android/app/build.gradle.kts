@@ -75,6 +75,11 @@ flutter {
     source = "../.."
 }
 
+// NativeSentryScrubberTest reads the fixtures the Dart tests share, so a changed fixture runs the JVM tests again.
+tasks.withType<Test>().configureEach {
+    inputs.dir(rootProject.file("../test/fixtures")).withPropertyName("sharedScrubFixtures")
+}
+
 dependencies {
     testImplementation("junit:junit:4.13.2")
     // Reads test/fixtures/native_scrub_cases.json, which the Dart scrubber test runs too.
