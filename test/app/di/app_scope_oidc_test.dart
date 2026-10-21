@@ -328,6 +328,9 @@ class _ManualSessionEndSignal implements ISessionEndSignal {
   @override
   Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
 
+  @override
+  Stream<void> get storeChanges => const Stream.empty();
+
   /// Another tab begins to end the session now.
   void endInAnotherTab() => _endedElsewhere.add(DateTime.now());
 }

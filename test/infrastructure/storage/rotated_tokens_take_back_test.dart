@@ -22,6 +22,33 @@ void main() {
     expect(SessionGeneration.hasEnded(before), isTrue, reason: 'a refresh still on its way here drops its answer');
   });
 
+  test('stops hearing the other tabs once disposed', () async {
+    final tab = _Tab(channel);
+    final other = _Tab(channel);
+    await tab.takeBack.dispose();
+    final before = SessionGeneration.current;
+
+    other.signal.notifyEnded();
+    await tab.signal.deliver();
+
+    expect(SessionGeneration.hasEnded(before), isFalse, reason: 'a disposed take-back runs no second wipe');
+  });
+
+  test('ends a wipe that waits for this tab\'s copy when disposed', () async {
+    final tab = _Tab(channel);
+    final other = _Tab(channel);
+    // This tab's copy still holds the refresh token the other tab deletes, and no change of it ever arrives.
+    tab.storage.values[SecureStorageKeys.refreshToken.key] = 'refresh-other-tab-deletes';
+    other.signal.notifyEnded();
+    await tab.signal.deliver();
+    expect(SessionGeneration.hasEnded(SessionGeneration.current), isTrue, reason: 'the wipe waits for the copy');
+
+    await tab.takeBack.dispose();
+    await Future<void>.delayed(Duration.zero);
+
+    expect(SessionGeneration.hasEnded(SessionGeneration.current), isFalse);
+  });
+
   test('prints which keys it holds, never their values', () {
     final tab = _Tab(channel);
     tab.takeBack.record([(SecureStorageKeys.jwtToken, 'secret-jwt')], onTakeBackFailed: () {});
@@ -80,6 +107,9 @@ class _TabSignal implements ISessionEndSignal {
 
   @override
   Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
+
+  @override
+  Stream<void> get storeChanges => const Stream.empty();
 }
 
 /// A tab whose stored session cannot be deleted, and whose end of the session tells the other tabs, as

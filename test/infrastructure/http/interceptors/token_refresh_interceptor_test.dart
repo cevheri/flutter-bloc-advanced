@@ -1453,24 +1453,36 @@ void main() {
       await thisTab.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
       otherTab.receive();
       channel = _SessionEndChannel();
-      thisTabSignal = channel.openTab();
+      thisTabSignal = channel.openTab(storage: thisTab);
       otherTabSignal = channel.openTab();
       retryStub = _CapturingSuccessStub();
       dio.interceptors.add(retryStub);
       sessionExpiredCalls = 0;
     });
 
-    /// The interceptor of this tab, whose rotation answers [rotated] once [whileRotating] has run.
+    /// The interceptor of this tab, whose rotation answers [rotated] once [whileRotating] has run. With [rotation],
+    /// that rotation instead.
     TokenRefreshInterceptor interceptorOfThisTab({
       Future<void> Function()? whileRotating,
       TokensRotated rotated = const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'),
-    }) => TokenRefreshInterceptor(
-      dio: dio,
-      secureStorage: thisTab,
-      rotation: _FakeRotation(rotated, whileRotating: whileRotating),
-      takeBack: RotatedTokensTakeBack(secureStorage: thisTab, sessionEndSignal: thisTabSignal),
-      onSessionExpired: () => sessionExpiredCalls++,
-    );
+      TokenRotation? rotation,
+      Duration copyCatchUpLimit = RotatedTokensTakeBack.defaultCopyCatchUpLimit,
+    }) {
+      final takeBack = RotatedTokensTakeBack(
+        secureStorage: thisTab,
+        sessionEndSignal: thisTabSignal,
+        copyCatchUpLimit: copyCatchUpLimit,
+      );
+      // A wipe still waiting for this tab's copy would end the session generation of the next test too.
+      addTearDown(takeBack.dispose);
+      return TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: thisTab,
+        rotation: rotation ?? _FakeRotation(rotated, whileRotating: whileRotating),
+        takeBack: takeBack,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+    }
 
     /// What a sign-out in the other tab does: it tells the other tabs, then wipes the stored session, [keys] in their
     /// order. The wipe runs in that tab's own session generation, so the test deletes the keys without
@@ -1594,6 +1606,97 @@ void main() {
       await thisTabSignal.deliver();
 
       expect(sessionExpiredCalls, 1, reason: 'ending the session wipes what is stored');
+    });
+
+    // The end message and the other tab's deletes reach this tab on separate channels, and the message usually comes
+    // first. A 401 in that gap must not refresh with the refresh token this tab's copy still shows: the other tab has
+    // deleted it, and the rotated tokens would land after the wipe, with no later end to take them back.
+    test(
+      'sends no refresh for a 401 that comes after the end was heard and before this tab\'s copy shows it',
+      () async {
+        final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+        final interceptor = interceptorOfThisTab(rotation: rotation);
+        await signOutInOtherTab();
+        await thisTabSignal.deliver();
+        // A request this tab sends now, still with the JWT its copy shows, gets a 401 before the deletes arrive.
+        final error = unauthorized();
+        final handler = _TestErrorHandler();
+
+        await interceptor.onError(error, handler);
+        thisTab.receive();
+        await _settleTakeBack();
+
+        expect(rotation.sent, isEmpty, reason: 'the refresh token the other tab deleted is not sent');
+        expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+        expect(retryStub.lastAuthorization, isNull, reason: 'nothing is sent again');
+        expect(localStorage.values, isEmpty, reason: 'the session the other tab ended stays ended');
+        expect(sessionExpiredCalls, 0);
+      },
+    );
+
+    test('refreshes nothing before or after this tab\'s copy shows the end of the other tab', () async {
+      final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+      final interceptor = interceptorOfThisTab(rotation: rotation);
+      await signOutInOtherTab();
+      await thisTabSignal.deliver();
+      final whileBehind = _TestErrorHandler();
+      await interceptor.onError(unauthorized(), whileBehind);
+
+      thisTab.receive();
+      await _settleTakeBack();
+      final error = unauthorized();
+      final onceCaughtUp = _TestErrorHandler();
+      await interceptor.onError(error, onceCaughtUp);
+
+      expect(rotation.sent, isEmpty);
+      expect(whileBehind.nextCalled, isTrue);
+      expect(onceCaughtUp.nextError, same(error), reason: 'no refresh token is stored, so the session cannot go on');
+      expect(retryStub.lastAuthorization, isNull);
+      expect(localStorage.values, isEmpty);
+    });
+
+    test('keeps a session the other tab signs in to while this tab waits for its copy to show the end', () async {
+      final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+      final interceptor = interceptorOfThisTab(rotation: rotation);
+      await signOutInOtherTab();
+      await thisTabSignal.deliver();
+      await signInInOtherTab();
+
+      thisTab.receive();
+      await _settleTakeBack();
+
+      expect(localStorage.values, {
+        SecureStorageKeys.jwtToken.key: 'signed-in-jwt',
+        SecureStorageKeys.refreshToken.key: 'signed-in-refresh',
+      });
+      expect(
+        SessionGeneration.hasEnded(SessionGeneration.current),
+        isFalse,
+        reason: 'the wipe ended once the copy showed the end',
+      );
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer signed-in-jwt'});
+      await interceptor.onError(
+        DioException(
+          requestOptions: requestOptions,
+          response: Response(requestOptions: requestOptions, statusCode: 401),
+        ),
+        _TestErrorHandler(),
+      );
+      expect(rotation.sent, ['signed-in-refresh'], reason: 'the session signed in to since refreshes as usual');
+    });
+
+    test('ends its wipe after copyCatchUpLimit when this tab\'s copy never shows the end', () async {
+      final warnings = _recordLogs(Level.warning);
+      interceptorOfThisTab(copyCatchUpLimit: const Duration(milliseconds: 20));
+      // The other tab told the end, but its deletes failed, so they never reach this tab.
+      otherTabSignal.notifyEndedAt(DateTime.now());
+      await thisTabSignal.deliver();
+      expect(SessionGeneration.hasEnded(SessionGeneration.current), isTrue, reason: 'the wipe waits for the copy');
+
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+
+      expect(SessionGeneration.hasEnded(SessionGeneration.current), isFalse);
+      expect(warnings.join('\n'), contains('did not show the end of another tab within 20 ms'));
     });
   });
 
@@ -2511,8 +2614,9 @@ class _KeyRecordingSecureStorage extends _InterleavingSecureStorage {
 class _SessionEndChannel {
   final _tabs = <_TabSessionEndSignal>[];
 
-  _TabSessionEndSignal openTab() {
-    final tab = _TabSessionEndSignal._(this);
+  /// The end of the channel of the tab whose copy of localStorage is [storage], whose changes are its store changes.
+  _TabSessionEndSignal openTab({_TabStorage? storage}) {
+    final tab = _TabSessionEndSignal._(this, storage);
     _tabs.add(tab);
     return tab;
   }
@@ -2520,9 +2624,10 @@ class _SessionEndChannel {
 
 /// A browser tab's end of [_SessionEndChannel].
 class _TabSessionEndSignal implements ISessionEndSignal {
-  _TabSessionEndSignal._(this._channel);
+  _TabSessionEndSignal._(this._channel, this._storage);
 
   final _SessionEndChannel _channel;
+  final _TabStorage? _storage;
   final _endedElsewhere = StreamController<DateTime>.broadcast(sync: true);
   final _undelivered = <DateTime>[];
 
@@ -2546,6 +2651,24 @@ class _TabSessionEndSignal implements ISessionEndSignal {
 
   @override
   Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
+
+  @override
+  Stream<void> get storeChanges => _storage?.received.map((_) {}) ?? const Stream.empty();
+}
+
+/// Lets the take-back of a tab act on the changes its copy has just received.
+Future<void> _settleTakeBack() => Future<void>.delayed(Duration.zero);
+
+/// Collects the lines logged at [level] until the test ends.
+List<String> _recordLogs(Level level) {
+  final lines = <String>[];
+  void record(OutputEvent event) {
+    if (event.level == level) lines.addAll(event.lines);
+  }
+
+  Logger.addOutputListener(record);
+  addTearDown(() => Logger.removeOutputListener(record));
+  return lines;
 }
 
 /// Ends the session of this tab, as a logout does, without deleting anything.

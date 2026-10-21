@@ -1,8 +1,13 @@
 @TestOn('browser')
 library;
 
+import 'dart:js_interop';
+
 import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal_platform.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal_platform_web.dart'
+    show BroadcastSessionEndSignal;
 import 'package:flutter_test/flutter_test.dart';
+import 'package:web/web.dart' as web;
 
 void main() {
   // Two channel objects in one page stand for two tabs: a BroadcastChannel delivers to every other object with its
@@ -23,4 +28,24 @@ void main() {
     await Future<void>.delayed(const Duration(milliseconds: 100));
     expect(heardHere, isEmpty);
   });
+
+  test(
+    'ignores a message that is not a whole number of milliseconds, without throwing, and hears the next end',
+    () async {
+      final thisTab = createPlatformSessionEndSignal()!;
+      final heard = <DateTime>[];
+      thisTab.endedElsewhere.listen(heard.add);
+      final stranger = web.BroadcastChannel(BroadcastSessionEndSignal.channelName);
+      addTearDown(() => stranger.close());
+      final endedAt = DateTime.now();
+
+      for (final message in <JSAny?>[double.nan.toJS, double.infinity.toJS, 1.5.toJS, 9e15.toJS, 'soon'.toJS, null]) {
+        stranger.postMessage(message);
+      }
+      stranger.postMessage(endedAt.millisecondsSinceEpoch.toJS);
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+
+      expect(heard, [DateTime.fromMillisecondsSinceEpoch(endedAt.millisecondsSinceEpoch)]);
+    },
+  );
 }

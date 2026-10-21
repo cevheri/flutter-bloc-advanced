@@ -206,6 +206,11 @@ When another tab has signed out meanwhile, the answer is dropped; when another t
 Each tab reads its own copy of the browser's storage, which takes another tab's change a moment later, so a sign-out in another tab just before or while a refresh stores its tokens can reach the storage before them.
 So a tab that ends the session first tells the other tabs over a `BroadcastChannel` (`ISessionEndSignal`, from `AuthSessionRepository.clear`).
 A tab that hears it ends its own session generation, so a refresh on its way drops its answer, and takes back the tokens its last refresh stored just then, where they are still stored (`RotatedTokensTakeBack`).
+The message usually arrives before the other tab's deletes reach this tab's copy of localStorage, so that wipe lasts until the copy shows the end: until its refresh token is gone, or is another one, which a sign-in since stores, for at most 5 seconds.
+While it lasts no 401 in the tab is refreshed or sent again, so no refresh reads the refresh token the other tab deleted and stores a session that tab ended.
+When the copy does not show the end within the 5 seconds, such as when the other tab's deletes failed, the wipe ends, and a refresh may again read that copy.
+The take-back fails closed: a message that arrives after the copy already shows a session signed in to since may take back that session's rotated tokens, which signs it out in every tab, but it never brings back a session that was ended.
+A message that is not a whole number of milliseconds, which no tab of the app sends, is ignored with a warning.
 The refreshes of all tabs also take turns at one Web Lock (`ITokenRefreshLock`), so a server that accepts each refresh token once never sees it twice.
 A lock grant can reach a tab before the previous holder's writes do, so each turn ends with a random stamp in localStorage and IndexedDB, and the next holder waits until its copy of localStorage shows that stamp.
 When its copy does not show the stamp within 5 seconds, the request fails, the session is kept, and the stamp stays as it was, so the next turn of that tab waits for it again.

@@ -116,6 +116,9 @@ class _SilentSessionEndSignal implements ISessionEndSignal {
 
   @override
   Stream<DateTime> get endedElsewhere => const Stream.empty();
+
+  @override
+  Stream<void> get storeChanges => const Stream.empty();
 }
 
 /// A refresh lock of its own, which runs each refresh at once.

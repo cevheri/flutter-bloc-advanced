@@ -393,6 +393,8 @@ void main() {
       storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
       when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => rotated);
       final takeBack = RotatedTokensTakeBack(secureStorage: storage, sessionEndSignal: signal);
+      // A wipe still waiting for this tab's copy would end the session generation of the next test too.
+      addTearDown(takeBack.dispose);
       await newStartup(takeBack: takeBack, onSessionExpired: () {}).run();
       expect(storage.store[SecureStorageKeys.jwtToken.key], 'new-access');
 
@@ -407,6 +409,8 @@ void main() {
       storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
       when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => rotated);
       final takeBack = RotatedTokensTakeBack(secureStorage: storage, sessionEndSignal: signal);
+      // A wipe still waiting for this tab's copy would end the session generation of the next test too.
+      addTearDown(takeBack.dispose);
       await newStartup(takeBack: takeBack, onSessionExpired: () => sessionExpiredCalls++).run();
       storage.failDeletes = true;
 
@@ -535,6 +539,9 @@ class _ManualSessionEndSignal implements ISessionEndSignal {
 
   @override
   Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
+
+  @override
+  Stream<void> get storeChanges => const Stream.empty();
 
   /// Another tab begins to end the session now; completes once this tab has acted on it.
   Future<void> endInAnotherTab() async {

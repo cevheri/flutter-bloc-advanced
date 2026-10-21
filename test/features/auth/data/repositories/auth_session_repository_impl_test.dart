@@ -108,6 +108,9 @@ class _RecordingSessionEndSignal implements ISessionEndSignal {
 
   @override
   Stream<DateTime> get endedElsewhere => const Stream.empty();
+
+  @override
+  Stream<void> get storeChanges => const Stream.empty();
 }
 
 /// Storage fake that lets a test choose which key's `save` should fail.

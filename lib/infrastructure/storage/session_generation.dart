@@ -12,8 +12,8 @@
 /// before it acts on the answer of a refresh: it drops the answer when another tab signed out meanwhile, and keeps the
 /// tokens of a tab that refreshed the session. Each tab reads its own copy of the browser's storage, which takes another
 /// tab's change a moment later, so a tab that ends the session also tells the other tabs (`ISessionEndSignal`), and each
-/// of them runs a [wipe] of its own when it hears it (`RotatedTokensTakeBack`): its generation ends, and the tokens its
-/// last refresh stored just then are taken back.
+/// of them runs a [wipe] of its own when it hears it (`RotatedTokensTakeBack`): its generation ends, the tokens its
+/// last refresh stored just then are taken back, and the wipe lasts until its copy shows the end, for a bound.
 abstract final class SessionGeneration {
   static int _current = 0;
   static int _wipesRunning = 0;

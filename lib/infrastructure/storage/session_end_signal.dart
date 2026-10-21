@@ -15,4 +15,19 @@ abstract interface class ISessionEndSignal {
   /// Fires when another tab ended the stored session, with the time that tab began to end it, read from the clock of
   /// the device, which every tab shares. Never fires for [notifyEnded] of this tab.
   Stream<DateTime> get endedElsewhere;
+
+  /// Fires when another tab's change to the stored session, or a clear of the store, reaches this tab's copy of it.
+  /// Another tab's wipe reaches this copy some time after [endedElsewhere] fired for it, on a channel of its own.
+  Stream<void> get storeChanges;
 }
+
+/// The time that a session end message of another tab carries, in milliseconds since the epoch, or null when the
+/// message is not one: anything other than a whole number of milliseconds that [DateTime] holds.
+DateTime? sessionEndTimeOf(Object? message) {
+  if (message is! num || !message.isFinite || message.abs() > _latestTime) return null;
+  if (message != message.roundToDouble()) return null;
+  return DateTime.fromMillisecondsSinceEpoch(message.toInt());
+}
+
+/// The latest time [DateTime] holds, in milliseconds since the epoch.
+const _latestTime = 8640000000000000;
