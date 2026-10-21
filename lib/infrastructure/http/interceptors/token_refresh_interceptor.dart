@@ -6,6 +6,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_inter
 import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart' as token_rotation show defaultRefreshDio;
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 
@@ -124,6 +125,7 @@ class TokenRefreshInterceptor extends Interceptor {
   final ISecureStorage _secureStorage;
   final TokenRotation _rotation;
   final SessionExpiredPredicate _isSessionExpired;
+  final RotatedTokensTakeBack? _takeBack;
 
   /// Shared in-flight refresh. Non-null while a refresh is in progress;
   /// concurrent 401s await the same Future. Cleared on completion (success
@@ -137,6 +139,7 @@ class TokenRefreshInterceptor extends Interceptor {
     RefreshDioFactory? refreshDioFactory,
     TokenRotation? rotation,
     SessionExpiredPredicate isSessionExpired = isUnauthorized,
+    RotatedTokensTakeBack? takeBack,
     // ignore: prefer_initializing_formals
   }) : _dio = dio,
        // ignore: prefer_initializing_formals
@@ -146,7 +149,9 @@ class TokenRefreshInterceptor extends Interceptor {
        _rotation =
            rotation ?? BackendTokenRotation(dio: dio, refreshDioFactory: refreshDioFactory ?? defaultRefreshDio),
        // ignore: prefer_initializing_formals
-       _isSessionExpired = isSessionExpired;
+       _isSessionExpired = isSessionExpired,
+       // ignore: prefer_initializing_formals
+       _takeBack = takeBack;
 
   /// The default [RefreshDioFactory], which [BackendTokenRotation] uses unless it is given another one: see
   /// [token_rotation.defaultRefreshDio].
@@ -397,6 +402,13 @@ class TokenRefreshInterceptor extends Interceptor {
       final hasNewOidcIdToken = newOidcIdToken != null && newOidcIdToken.isNotEmpty;
       final expiresAt = rotated.accessTokenExpiresAt;
       final newExpiry = expiresAt == null ? null : encodeAccessTokenExpiry(expiresAt);
+      // What this refresh writes, in the order it writes it, for the take-backs: the JWT first, as a wipe deletes it.
+      final stored = <(SecureStorageKeys, String)>[
+        (SecureStorageKeys.jwtToken, newIdToken),
+        if (hasNewRefreshToken) (SecureStorageKeys.refreshToken, newRefreshToken),
+        if (hasNewOidcIdToken) (SecureStorageKeys.oidcIdToken, newOidcIdToken),
+        if (newExpiry != null) (SecureStorageKeys.accessTokenExpiresAt, newExpiry),
+      ];
 
       // Persist the rotated tokens. AuthInterceptor reads JWT from
       // secure storage on every request, so the next outgoing call
@@ -439,12 +451,13 @@ class TokenRefreshInterceptor extends Interceptor {
       // here reaches the catch below as a failed refresh, which ends the session and so wipes what is stored.
       if (SessionGeneration.hasEnded(generation)) {
         _log.warn('Session ended while the rotated tokens were stored: taking them back');
-        await _deleteIfStored(SecureStorageKeys.jwtToken, newIdToken);
-        if (hasNewRefreshToken) await _deleteIfStored(SecureStorageKeys.refreshToken, newRefreshToken);
-        if (hasNewOidcIdToken) await _deleteIfStored(SecureStorageKeys.oidcIdToken, newOidcIdToken);
-        if (newExpiry != null) await _deleteIfStored(SecureStorageKeys.accessTokenExpiresAt, newExpiry);
+        for (final (key, value) in stored) {
+          await _deleteIfStored(key, value);
+        }
         return const _SessionEnded();
       }
+      // No await since the check above, so an end that another tab reports from here on finds these tokens.
+      _takeBack?.record(stored, onTakeBackFailed: _triggerLogout);
 
       _log.info('Token refresh successful');
       return _Refreshed(newIdToken);

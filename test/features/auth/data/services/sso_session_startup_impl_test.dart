@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
@@ -6,7 +8,10 @@ import 'package:flutter_bloc_advance/features/auth/domain/entities/sso_sign_in_r
 import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/services/sso_session_startup.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 import 'package:mocktail/mocktail.dart';
@@ -19,6 +24,10 @@ class _MemorySecureStorage implements ISecureStorage {
   final writes = <String>[];
   bool failReads = false;
   String? failWriteOf;
+  bool failDeletes = false;
+
+  /// Runs once, after the next write is applied, as a call that runs while the store is still on its way does.
+  Future<void> Function()? onWrite;
 
   @override
   Future<String?> read(String key) async {
@@ -31,10 +40,16 @@ class _MemorySecureStorage implements ISecureStorage {
     if (key == failWriteOf) throw StateError('write failed');
     writes.add(key);
     store[key] = value;
+    final hook = onWrite;
+    onWrite = null;
+    await hook?.call();
   }
 
   @override
-  Future<void> delete(String key) async => store.remove(key);
+  Future<void> delete(String key) async {
+    if (failDeletes) throw StateError('delete failed');
+    store.remove(key);
+  }
 
   @override
   Future<void> deleteAll() async => store.clear();
@@ -53,14 +68,17 @@ void main() {
   late MockIAuthSessionRepository sessionRepository;
   late SsoAutoRedirectGate gate;
 
-  SsoSessionStartup newStartup() => SsoSessionStartup(
-    auth: auth,
-    rotation: rotation,
-    secureStorage: storage,
-    sessionRepository: sessionRepository,
-    gate: gate,
-    now: () => _now,
-  );
+  SsoSessionStartup newStartup({RotatedTokensTakeBack? takeBack, void Function()? onSessionExpired}) =>
+      SsoSessionStartup(
+        auth: auth,
+        rotation: rotation,
+        secureStorage: storage,
+        sessionRepository: sessionRepository,
+        gate: gate,
+        now: () => _now,
+        takeBack: takeBack,
+        onSessionExpired: onSessionExpired,
+      );
 
   void storeSession({required DateTime expiresAt, String? refreshToken = 'stored-refresh'}) {
     storage.store[SecureStorageKeys.jwtToken.key] = _opaqueBearer;
@@ -309,6 +327,88 @@ void main() {
       expect(errors.join('\n'), isNot(contains('platform-detail-text')));
     });
   });
+
+  // A logout, the end of the session, or on web another tab's end that this tab hears, can wipe the stored session
+  // while the startup refresh is on its way. Its tokens must not bring that session back.
+  group('the session ends during the startup refresh', () {
+    final rotated = TokensRotated(
+      accessToken: 'new-access',
+      refreshToken: 'new-refresh',
+      oidcIdToken: 'new-id',
+      accessTokenExpiresAt: _newExpiry,
+    );
+
+    test('drops the rotated tokens when the session ends while the refresh is on its way', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async {
+        await SessionGeneration.wipe(() async {});
+        return rotated;
+      });
+
+      expect(await newStartup().run(), isA<SsoStartupSessionEnded>());
+      expect(storage.writes, isEmpty);
+      verifyNever(() => sessionRepository.clear());
+    });
+
+    test('drops a refusal when the session ended while the refresh was on its way, and ends nothing', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async {
+        await SessionGeneration.wipe(() async {});
+        return const RotationRefused();
+      });
+
+      expect(await newStartup().run(), isA<SsoStartupSessionEnded>());
+      verifyNever(() => sessionRepository.clear());
+    });
+
+    test('takes back what it stored when the session ends while it stores', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => rotated);
+      storage.onWrite = () => SessionGeneration.wipe(() async {});
+
+      expect(await newStartup().run(), isA<SsoStartupSessionEnded>());
+      expect(storage.store.values, isNot(contains(startsWith('new-'))));
+      expect(storage.store[SecureStorageKeys.accessTokenExpiresAt.key], isNot(encodeAccessTokenExpiry(_newExpiry)));
+      verifyNever(() => sessionRepository.clear());
+    });
+
+    test('ends the session when what it stored as the session ended cannot be taken back', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => rotated);
+      storage.onWrite = () => SessionGeneration.wipe(() async {});
+      storage.failDeletes = true;
+
+      expect(await newStartup().run(), isA<SsoStartupSessionEnded>());
+      verify(() => sessionRepository.clear()).called(1);
+    });
+
+    test('lets another tab\'s end take back what it stored', () async {
+      final signal = _ManualSessionEndSignal();
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => rotated);
+      final takeBack = RotatedTokensTakeBack(secureStorage: storage, sessionEndSignal: signal);
+      await newStartup(takeBack: takeBack, onSessionExpired: () {}).run();
+      expect(storage.store[SecureStorageKeys.jwtToken.key], 'new-access');
+
+      await signal.endInAnotherTab();
+
+      expect(storage.store.values, isNot(contains(startsWith('new-'))));
+    });
+
+    test('ends the session as an unfixable 401 does when another tab\'s end cannot take back what it stored', () async {
+      final signal = _ManualSessionEndSignal();
+      var sessionExpiredCalls = 0;
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => rotated);
+      final takeBack = RotatedTokensTakeBack(secureStorage: storage, sessionEndSignal: signal);
+      await newStartup(takeBack: takeBack, onSessionExpired: () => sessionExpiredCalls++).run();
+      storage.failDeletes = true;
+
+      await signal.endInAnotherTab();
+
+      expect(sessionExpiredCalls, 1);
+    });
+  });
 }
 
 /// Collects the lines logged at [level] until the test ends.
@@ -321,4 +421,21 @@ List<String> _recordLogs(Level level) {
   Logger.addOutputListener(record);
   addTearDown(() => Logger.removeOutputListener(record));
   return lines;
+}
+
+/// [ISessionEndSignal] whose other tab ends the session when the test says so.
+class _ManualSessionEndSignal implements ISessionEndSignal {
+  final _endedElsewhere = StreamController<DateTime>.broadcast(sync: true);
+
+  @override
+  void notifyEnded() {}
+
+  @override
+  Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
+
+  /// Another tab begins to end the session now; completes once this tab has acted on it.
+  Future<void> endInAnotherTab() async {
+    _endedElsewhere.add(DateTime.now());
+    await Future<void>.delayed(Duration.zero);
+  }
 }

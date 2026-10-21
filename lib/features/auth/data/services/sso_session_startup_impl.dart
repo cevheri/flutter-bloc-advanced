@@ -7,7 +7,9 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_
 import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/services/sso_session_startup.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 
 /// [ISsoSessionStartup] over the single sign-on, the token rotation and the stored session.
 ///
@@ -18,6 +20,11 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 ///
 /// Only the expiry the sign-in stored is checked, never a JWT `exp`, since a provider's access token need not be a
 /// JWT. Nothing else uses the client at startup, and the client runs its operations one at a time.
+///
+/// The refresh follows the rules of `TokenRefreshInterceptor` for the session generation ([SessionGeneration]): an
+/// answer that comes after the session ended is dropped, and what it stored while the session ended is taken back. On
+/// web another browser tab can end the session too: [_takeBack] records what the refresh stored, so that tab's end
+/// takes it back, and when that fails [_onSessionExpired] ends the session as a 401 that a refresh cannot fix does.
 class SsoSessionStartup implements ISsoSessionStartup {
   SsoSessionStartup({
     required this._auth,
@@ -26,7 +33,13 @@ class SsoSessionStartup implements ISsoSessionStartup {
     required this._sessionRepository,
     required this._gate,
     this._now = DateTime.now,
-  });
+    this._takeBack,
+    this._onSessionExpired,
+  }) {
+    if ((_takeBack == null) != (_onSessionExpired == null)) {
+      throw ArgumentError('SsoSessionStartup takes a takeBack and an onSessionExpired together, or neither');
+    }
+  }
 
   static final _log = AppLogger.getLogger('SsoSessionStartup');
 
@@ -36,6 +49,8 @@ class SsoSessionStartup implements ISsoSessionStartup {
   final IAuthSessionRepository _sessionRepository;
   final SsoAutoRedirectGate _gate;
   final DateTime Function() _now;
+  final RotatedTokensTakeBack? _takeBack;
+  final void Function()? _onSessionExpired;
 
   @override
   Future<SsoStartupResult> run() async {
@@ -71,6 +86,8 @@ class SsoSessionStartup implements ISsoSessionStartup {
 
   /// Refreshes the stored session when its access token has expired, see [run].
   Future<SsoStartupResult> _refreshExpiredSession() async {
+    // Noted before the first read: a wipe from here on ends it, in this tab or, heard through [_takeBack], in another.
+    final generation = SessionGeneration.current;
     final DateTime? expiresAt;
     final String? refreshToken;
     try {
@@ -86,16 +103,26 @@ class SsoSessionStartup implements ISsoSessionStartup {
       _log.info('startup: the access token has expired and no refresh token is stored, so the session ends');
       return _endSession();
     }
-    switch (await _rotation.rotate(refreshToken)) {
+    final result = await _rotation.rotate(refreshToken);
+    // The wipe that ended the session cleared it, and a session signed in to since must stay: nothing is ended again.
+    if (SessionGeneration.hasEnded(generation)) {
+      _log.warn('startup: the session ended while the refresh was on its way, so its answer is dropped');
+      return const SsoStartupSessionEnded();
+    }
+    switch (result) {
       case final TokensRotated rotated:
+        final stored = _storedValues(rotated);
         try {
-          await _store(rotated);
+          await _store(stored);
         } catch (error) {
           _log.error('startup: the refreshed tokens could not be stored, so the session is cleared: {}', [
             error.runtimeType,
           ]);
           return _endSession();
         }
+        if (SessionGeneration.hasEnded(generation)) return _takeBackStored(stored);
+        // No await since the check above, so an end that another tab reports from here on finds these tokens.
+        _takeBack?.record(stored, onTakeBackFailed: _onSessionExpired!);
         _log.info('startup: the expired access token was refreshed');
         return const SsoStartupUseStoredSession();
       case RotationRefused():
@@ -107,18 +134,42 @@ class SsoSessionStartup implements ISsoSessionStartup {
     }
   }
 
-  /// Writes the fields of [rotated] that are present and not empty, in the order bearer, refresh token, ID token,
-  /// expiry.
-  Future<void> _store(TokensRotated rotated) async {
+  /// The fields of [rotated] that are present and not empty, in the order bearer, refresh token, ID token, expiry.
+  static StoredTokens _storedValues(TokensRotated rotated) {
     final expiresAt = rotated.accessTokenExpiresAt;
-    for (final (key, value) in [
-      (SecureStorageKeys.jwtToken, rotated.accessToken),
-      (SecureStorageKeys.refreshToken, rotated.refreshToken),
-      (SecureStorageKeys.oidcIdToken, rotated.oidcIdToken),
-      (SecureStorageKeys.accessTokenExpiresAt, expiresAt == null ? null : encodeAccessTokenExpiry(expiresAt)),
-    ]) {
-      if (value != null && value.isNotEmpty) await _secureStorage.write(key.key, value);
+    return [
+      for (final (key, value) in [
+        (SecureStorageKeys.jwtToken, rotated.accessToken),
+        (SecureStorageKeys.refreshToken, rotated.refreshToken),
+        (SecureStorageKeys.oidcIdToken, rotated.oidcIdToken),
+        (SecureStorageKeys.accessTokenExpiresAt, expiresAt == null ? null : encodeAccessTokenExpiry(expiresAt)),
+      ])
+        if (value != null && value.isNotEmpty) (key, value),
+    ];
+  }
+
+  /// Writes [stored] in its order.
+  Future<void> _store(StoredTokens stored) async {
+    for (final (key, value) in stored) {
+      await _secureStorage.write(key.key, value);
     }
+  }
+
+  /// The session ended while [stored] was written, so the wipe may have run before a write landed: takes back what
+  /// is still stored of it, and leaves a session stored since alone. A storage failure clears the session.
+  Future<SsoStartupResult> _takeBackStored(StoredTokens stored) async {
+    _log.warn('startup: the session ended while the refreshed tokens were stored, so they are taken back');
+    try {
+      for (final (key, value) in stored) {
+        if (await _secureStorage.read(key.key) == value) await _secureStorage.delete(key.key);
+      }
+    } catch (error) {
+      _log.error('startup: the refreshed tokens could not be taken back, so the session is cleared: {}', [
+        error.runtimeType,
+      ]);
+      return _endSession();
+    }
+    return const SsoStartupSessionEnded();
   }
 
   Future<SsoStartupResult> _endSession() async {
