@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 import 'package:mocktail/mocktail.dart';
@@ -68,17 +69,22 @@ void main() {
   late MockIAuthSessionRepository sessionRepository;
   late SsoAutoRedirectGate gate;
 
-  SsoSessionStartup newStartup({RotatedTokensTakeBack? takeBack, void Function()? onSessionExpired}) =>
-      SsoSessionStartup(
-        auth: auth,
-        rotation: rotation,
-        secureStorage: storage,
-        sessionRepository: sessionRepository,
-        gate: gate,
-        now: () => _now,
-        takeBack: takeBack,
-        onSessionExpired: onSessionExpired,
-      );
+  SsoSessionStartup newStartup({
+    RotatedTokensTakeBack? takeBack,
+    void Function()? onSessionExpired,
+    ITokenRefreshLock refreshLock = const InProcessTokenRefreshLock(),
+    ISecureStorage? secureStorage,
+  }) => SsoSessionStartup(
+    auth: auth,
+    rotation: rotation,
+    secureStorage: secureStorage ?? storage,
+    sessionRepository: sessionRepository,
+    gate: gate,
+    now: () => _now,
+    takeBack: takeBack,
+    onSessionExpired: onSessionExpired,
+    refreshLock: refreshLock,
+  );
 
   void storeSession({required DateTime expiresAt, String? refreshToken = 'stored-refresh'}) {
     storage.store[SecureStorageKeys.jwtToken.key] = _opaqueBearer;
@@ -409,6 +415,92 @@ void main() {
       expect(sessionExpiredCalls, 1);
     });
   });
+
+  // On web another browser tab may refresh the stored session while this tab starts, and a provider that accepts each
+  // refresh token once refuses the second tab that sends it. The startup refresh takes its turn at the lock that the
+  // tabs' token refreshes share.
+  group('the startup refresh across browser tabs', () {
+    test('takes no turn of the lock while the access token is still valid', () async {
+      final lock = _RecordingLock();
+      storeSession(expiresAt: _now.add(const Duration(minutes: 1)));
+
+      expect(await newStartup(refreshLock: lock).run(), isA<SsoStartupUseStoredSession>());
+      expect(lock.turns, 0, reason: 'a launch with a valid session does not wait for another tab\'s refresh');
+    });
+
+    test('does not refresh when another tab refreshed while this tab waited for the lock', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      final lock = _RecordingLock(
+        beforeTurn: () {
+          storage.store[SecureStorageKeys.jwtToken.key] = 'access-of-other-tab';
+          storage.store[SecureStorageKeys.refreshToken.key] = 'refresh-of-other-tab';
+          storage.store[SecureStorageKeys.accessTokenExpiresAt.key] = encodeAccessTokenExpiry(_newExpiry);
+        },
+      );
+      when(() => rotation.rotate(any())).thenAnswer((_) async => const RotationUnavailable());
+
+      expect(await newStartup(refreshLock: lock).run(), isA<SsoStartupUseStoredSession>());
+      verifyNever(() => rotation.rotate(any()));
+      verifyNever(() => sessionRepository.clear());
+    });
+
+    test('does not refresh when this tab\'s copy shows the other tab\'s refresh only after the grant', () async {
+      final browser = _Browser();
+      final otherTab = browser.openTab();
+      final thisTab = browser.openTab();
+      await otherTab.write(SecureStorageKeys.jwtToken.key, _opaqueBearer);
+      await otherTab.write(SecureStorageKeys.refreshToken.key, 'stored-refresh');
+      await otherTab.write(
+        SecureStorageKeys.accessTokenExpiresAt.key,
+        encodeAccessTokenExpiry(_now.subtract(const Duration(minutes: 1))),
+      );
+      thisTab.receive();
+      // The other tab refreshes under the lock, and its writes reach this tab a moment after this tab's grant.
+      await browser.lockOf(otherTab).hold(() async {
+        await otherTab.write(SecureStorageKeys.jwtToken.key, 'access-of-other-tab');
+        await otherTab.write(SecureStorageKeys.refreshToken.key, 'refresh-of-other-tab');
+        await otherTab.write(SecureStorageKeys.accessTokenExpiresAt.key, encodeAccessTokenExpiry(_newExpiry));
+      });
+      // The provider accepts each refresh token once, and the other tab has spent this one.
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => const RotationRefused());
+      final lock = browser.lockOf(
+        thisTab,
+        catchUpOnGrant: false,
+        onGranted: () => Timer(const Duration(milliseconds: 5), thisTab.receive),
+      );
+
+      final result = await newStartup(refreshLock: lock, secureStorage: thisTab).run();
+
+      expect(result, isA<SsoStartupUseStoredSession>());
+      verifyNever(() => rotation.rotate(any()));
+      verifyNever(() => sessionRepository.clear());
+    });
+
+    test('ends the session after the lock is released', () async {
+      final lock = _RecordingLock();
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => const RotationRefused());
+      bool? heldWhileClearing;
+      when(() => sessionRepository.clear()).thenAnswer((_) async {
+        heldWhileClearing = lock.held;
+        return const Success(null);
+      });
+
+      expect(await newStartup(refreshLock: lock).run(), isA<SsoStartupSessionEnded>());
+      expect(lock.turns, 1);
+      expect(heldWhileClearing, isFalse, reason: 'a wipe never waits behind a refresh in another tab');
+    });
+
+    test('keeps the stored session when the refresh does not get its turn', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      final lock = _RecordingLock(refuse: true);
+      when(() => rotation.rotate(any())).thenAnswer((_) async => const RotationUnavailable());
+
+      expect(await newStartup(refreshLock: lock).run(), isA<SsoStartupUseStoredSession>());
+      verifyNever(() => rotation.rotate(any()));
+      verifyNever(() => sessionRepository.clear());
+    });
+  });
 }
 
 /// Collects the lines logged at [level] until the test ends.
@@ -438,4 +530,147 @@ class _ManualSessionEndSignal implements ISessionEndSignal {
     _endedElsewhere.add(DateTime.now());
     await Future<void>.delayed(Duration.zero);
   }
+}
+
+/// An [ITokenRefreshLock] that counts its turns, knows whether one is running, and runs [beforeTurn] once it grants
+/// one, as another tab whose refresh ends just then. With [refuse], it never grants a turn.
+class _RecordingLock implements ITokenRefreshLock {
+  _RecordingLock({this.beforeTurn, this.refuse = false});
+
+  final void Function()? beforeTurn;
+  final bool refuse;
+  int turns = 0;
+  bool held = false;
+
+  @override
+  Future<T> hold<T>(Future<T> Function() body) async {
+    if (refuse) throw const TokenRefreshLockException('The token refresh lock was not granted');
+    turns++;
+    held = true;
+    beforeTurn?.call();
+    try {
+      return await body();
+    } finally {
+      held = false;
+    }
+  }
+}
+
+/// The localStorage, the Web Lock and the IndexedDB hand-over record that the browser tabs share. Each tab reads a
+/// copy of localStorage of its own, which takes another tab's changes only when [_BrowserTab.receive] runs.
+class _Browser {
+  final _tabs = <_BrowserTab>[];
+  Future<void> _lockTail = Future<void>.value();
+  String? _record;
+
+  _BrowserTab openTab() {
+    final tab = _BrowserTab._(this);
+    _tabs.add(tab);
+    return tab;
+  }
+
+  /// The token refresh lock of [tab]. With [catchUpOnGrant], the tab's copy takes the other tabs' changes before the
+  /// grant; without it, they come when the test delivers them, from [onGranted] for one.
+  HandOverTokenRefreshLock lockOf(_BrowserTab tab, {bool catchUpOnGrant = true, void Function()? onGranted}) =>
+      HandOverTokenRefreshLock(
+        mutex: _BrowserMutex(this, tab, catchUpOnGrant: catchUpOnGrant, onGranted: onGranted),
+        record: _BrowserRecord(this),
+        copy: _BrowserStampCopy(tab),
+      );
+}
+
+/// A browser tab's copy of [_Browser]'s localStorage, as the secure storage reads and writes it.
+class _BrowserTab implements ISecureStorage {
+  _BrowserTab._(this._browser);
+
+  final _Browser _browser;
+  final _copy = <String, String?>{};
+  final _undelivered = <(String, String?)>[];
+  final _received = StreamController<String>.broadcast(sync: true);
+
+  void _change(String key, String? value) {
+    _copy[key] = value;
+    for (final tab in _browser._tabs) {
+      if (!identical(tab, this)) tab._undelivered.add((key, value));
+    }
+  }
+
+  /// Applies the other tabs' changes since the last delivery, in their order.
+  void receive() {
+    final changes = List.of(_undelivered);
+    _undelivered.clear();
+    for (final (key, value) in changes) {
+      _copy[key] = value;
+      _received.add(key);
+    }
+  }
+
+  @override
+  Future<String?> read(String key) async => _copy[key];
+
+  @override
+  Future<void> write(String key, String value) async => _change(key, value);
+
+  @override
+  Future<void> delete(String key) async => _change(key, null);
+
+  @override
+  Future<void> deleteAll() async => throw UnimplementedError();
+}
+
+/// A tab's view of the Web Lock of [_Browser]: holders run one at a time, in the order they asked.
+class _BrowserMutex implements CrossTabMutex {
+  _BrowserMutex(this._browser, this._tab, {required this.catchUpOnGrant, this.onGranted});
+
+  final _Browser _browser;
+  final _BrowserTab _tab;
+  final bool catchUpOnGrant;
+  final void Function()? onGranted;
+
+  @override
+  Future<T> run<T>(Future<T> Function() body) {
+    final previous = _browser._lockTail;
+    final released = Completer<void>();
+    _browser._lockTail = released.future;
+    return previous.then((_) async {
+      if (catchUpOnGrant) _tab.receive();
+      onGranted?.call();
+      try {
+        return await body();
+      } finally {
+        released.complete();
+      }
+    });
+  }
+}
+
+/// The IndexedDB hand-over record of [_Browser]: every tab reads what was committed last.
+class _BrowserRecord implements HandOverRecord {
+  _BrowserRecord(this._browser);
+
+  final _Browser _browser;
+
+  @override
+  Future<String?> read() async => _browser._record;
+
+  @override
+  Future<void> write(String stamp) async => _browser._record = stamp;
+}
+
+/// The hand-over stamp in a [_BrowserTab]'s copy of localStorage, next to the tokens.
+class _BrowserStampCopy implements HandOverStampCopy {
+  _BrowserStampCopy(this._tab);
+
+  static const key = 'tokenRefreshHandOver';
+
+  final _BrowserTab _tab;
+
+  @override
+  String? read() => _tab._copy[key];
+
+  @override
+  void write(String stamp) => _tab._change(key, stamp);
+
+  @override
+  Stream<void> get changes => _tab._received.stream.where((changed) => changed == key);
 }

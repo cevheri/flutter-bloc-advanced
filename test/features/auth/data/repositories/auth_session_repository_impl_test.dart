@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
@@ -6,10 +8,12 @@ import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -667,6 +671,37 @@ void main() {
       expect(await secure.read(SecureStorageKeys.refreshToken.key), 'signed-in-refresh');
       expect(sessionExpiredCalls, 0);
     });
+
+    // On web the refreshes of all browser tabs take turns at one lock. A logout must never wait behind a refresh that
+    // a slow server holds it for: nothing on the wipe path takes the lock.
+    test('does not make logout wait for a refresh that holds the lock', () async {
+      await secure.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secure.write(SecureStorageKeys.refreshToken.key, 'old-refresh');
+      final rotation = _HangingRotation();
+      final sent = await _send(AuthInterceptor(secureStorage: secure), RequestOptions(path: '/account'));
+      final unauthorized = DioException(
+        requestOptions: sent,
+        response: Response(requestOptions: sent, statusCode: 401),
+      );
+      final handled = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secure,
+        rotation: rotation,
+        refreshLock: _OneAtATimeLock(),
+        onSessionExpired: () => sessionExpiredCalls++,
+      ).onError(unauthorized, _TestErrorHandler());
+      await rotation.started.future;
+
+      final cleared = await AuthSessionRepository(
+        secureStorage: secure,
+        storage: storage,
+      ).clear().timeout(const Duration(seconds: 1));
+
+      expect(cleared, isA<Success<void>>());
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), isNull);
+      rotation.answer.complete(const RotationRefused());
+      await handled;
+    });
   });
 }
 
@@ -791,4 +826,29 @@ class _OkStub extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) =>
       handler.resolve(Response(requestOptions: options, statusCode: 200, data: '{}'));
+}
+
+/// A rotation whose server takes the refresh token and answers only when the test completes [answer].
+class _HangingRotation implements TokenRotation {
+  final started = Completer<void>();
+  final answer = Completer<TokenRotationResult>();
+
+  @override
+  Future<TokenRotationResult> rotate(String refreshToken) {
+    started.complete();
+    return answer.future;
+  }
+}
+
+/// An [ITokenRefreshLock] that runs its holders one at a time, as the Web Lock of the browser tabs does.
+class _OneAtATimeLock implements ITokenRefreshLock {
+  Future<void> _tail = Future<void>.value();
+
+  @override
+  Future<T> hold<T>(Future<T> Function() body) {
+    final previous = _tail;
+    final released = Completer<void>();
+    _tail = released.future;
+    return previous.then((_) => body().whenComplete(released.complete));
+  }
 }

@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart' as
 import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 
 export 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart' show RefreshDioFactory;
 
@@ -59,6 +60,14 @@ final class _RefreshUnavailable extends _RefreshOutcome {
 /// web, in another browser tab, so the answer of the refresh was dropped.
 final class _SessionEnded extends _RefreshOutcome {
   const _SessionEnded();
+}
+
+/// On web, the refresh did not get its turn at the lock the browser tabs share, or could not hand it over
+/// ([TokenRefreshLockException]): the session is kept, and the request fails.
+final class _RefreshTurnFailed extends _RefreshOutcome {
+  const _RefreshTurnFailed(this.error);
+
+  final TokenRefreshLockException error;
 }
 
 /// Intercepts 401 responses and attempts a silent token refresh.
@@ -126,6 +135,7 @@ class TokenRefreshInterceptor extends Interceptor {
   final TokenRotation _rotation;
   final SessionExpiredPredicate _isSessionExpired;
   final RotatedTokensTakeBack? _takeBack;
+  final ITokenRefreshLock _refreshLock;
 
   /// Shared in-flight refresh. Non-null while a refresh is in progress;
   /// concurrent 401s await the same Future. Cleared on completion (success
@@ -140,6 +150,7 @@ class TokenRefreshInterceptor extends Interceptor {
     TokenRotation? rotation,
     SessionExpiredPredicate isSessionExpired = isUnauthorized,
     RotatedTokensTakeBack? takeBack,
+    ITokenRefreshLock? refreshLock,
     // ignore: prefer_initializing_formals
   }) : _dio = dio,
        // ignore: prefer_initializing_formals
@@ -151,7 +162,8 @@ class TokenRefreshInterceptor extends Interceptor {
        // ignore: prefer_initializing_formals
        _isSessionExpired = isSessionExpired,
        // ignore: prefer_initializing_formals
-       _takeBack = takeBack;
+       _takeBack = takeBack,
+       _refreshLock = refreshLock ?? const InProcessTokenRefreshLock();
 
   /// The default [RefreshDioFactory], which [BackendTokenRotation] uses unless it is given another one: see
   /// [token_rotation.defaultRefreshDio].
@@ -287,7 +299,7 @@ class TokenRefreshInterceptor extends Interceptor {
       return;
     }
 
-    switch (await _refreshOnce(sentUnder)) {
+    switch (await _refreshOnce(sentUnder, requestToken)) {
       case _Refreshed(:final idToken):
         await _retryWithToken(err, idToken, handler);
       case _RefreshFailed():
@@ -308,6 +320,16 @@ class TokenRefreshInterceptor extends Interceptor {
         // The session is already over, so there is no token to send the request again with. It is not ended again:
         // the user may have signed in since, and that session must stay.
         handler.next(err);
+      case _RefreshTurnFailed(:final error):
+        // No refresh was sent for this request, so nothing refused the session: it is kept. Rejected, so that
+        // ResilienceInterceptor does not send the request again behind the same lock.
+        handler.reject(
+          DioException(
+            requestOptions: err.requestOptions,
+            error: error,
+            message: 'The token refresh did not get its turn across the browser tabs',
+          ),
+        );
     }
   }
 
@@ -355,11 +377,23 @@ class TokenRefreshInterceptor extends Interceptor {
 
   /// Returns a single in-flight refresh Future. The first caller starts
   /// the refresh; concurrent callers await the same Future. Cleared on
-  /// completion so subsequent refresh windows start fresh.
-  Future<_RefreshOutcome> _refreshOnce(int generation) {
-    return _inFlightRefresh ??= _performRefresh(generation).whenComplete(() {
+  /// completion so subsequent refresh windows start fresh. [requestToken]
+  /// is the JWT the first caller's request was sent with.
+  Future<_RefreshOutcome> _refreshOnce(int generation, String? requestToken) {
+    return _inFlightRefresh ??= _refreshInTurn(generation, requestToken).whenComplete(() {
       _inFlightRefresh = null;
     });
+  }
+
+  /// Runs the refresh while this tab holds [_refreshLock], which on web the token refreshes of every browser tab take
+  /// turns at, so a refresh token is sent by one tab at a time.
+  Future<_RefreshOutcome> _refreshInTurn(int generation, String? requestToken) async {
+    try {
+      return await _refreshLock.hold(() => _performRefresh(generation, requestToken));
+    } on TokenRefreshLockException catch (e) {
+      _log.error('Token refresh did not get its turn across the browser tabs, so the session is kept: {}', [e]);
+      return _RefreshTurnFailed(e);
+    }
   }
 
   /// Performs the actual refresh call + persistence. Returns [_Refreshed]
@@ -370,9 +404,20 @@ class TokenRefreshInterceptor extends Interceptor {
   /// could not reach its server, and [_RefreshFailed] on any other failure
   /// (missing refresh token, refused rotation, failed persist) of the
   /// session that is still stored. [generation] is the session generation
-  /// of the request that asked for the refresh.
-  Future<_RefreshOutcome> _performRefresh(int generation) async {
+  /// of the request that asked for the refresh, and [requestToken] the JWT
+  /// it was sent with.
+  Future<_RefreshOutcome> _performRefresh(int generation, String? requestToken) async {
     try {
+      // On web another tab may have held the lock while this refresh waited for it: what the 401 checked before the
+      // refresh is checked again. The lock hands over that tab's writes, so this tab's copy shows them.
+      if (SessionGeneration.hasEnded(generation)) return const _SessionEnded();
+      final storedIdToken = await _readStoredJwt();
+      if (SessionGeneration.hasEnded(generation)) return const _SessionEnded();
+      if (storedIdToken != null && storedIdToken.isNotEmpty && requestToken != null && storedIdToken != requestToken) {
+        _log.info('JWT rotated while this refresh waited for its turn: retrying with it, no refresh is sent');
+        return _Refreshed(storedIdToken);
+      }
+
       final refreshToken = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
       if (refreshToken == null || refreshToken.isEmpty) {
         _log.warn('No refresh token available — session expired');
@@ -464,6 +509,16 @@ class TokenRefreshInterceptor extends Interceptor {
     } catch (e) {
       _log.error('Unexpected error during token refresh: {}', [e]);
       return const _RefreshFailed();
+    }
+  }
+
+  /// The stored JWT for the check of a stale header, or null when it cannot be read, as in [onError].
+  Future<String?> _readStoredJwt() async {
+    try {
+      return await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    } catch (e) {
+      _log.warn('Stale-header check after the wait for the lock skipped, the secure read failed: {}', [e]);
+      return null;
     }
   }
 
