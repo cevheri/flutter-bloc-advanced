@@ -3,6 +3,7 @@ import 'package:flutter_bloc_advance/features/account/domain/repositories/accoun
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -21,6 +22,10 @@ class _StubSecureStorage implements ISecureStorage {
 
 void main() {
   const dependencies = AppDependencies();
+
+  test('AppDependencies defaults to jwt', () {
+    expect(const AppDependencies().authMode, isA<JwtAuthMode>());
+  });
 
   test('app dependencies expose account repository contract', () {
     expect(dependencies.createAccountRepository(TestEnv.apiClient()), isA<IAccountRepository>());

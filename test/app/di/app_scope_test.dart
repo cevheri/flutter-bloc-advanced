@@ -20,6 +20,7 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repo
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/data/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
@@ -444,6 +445,25 @@ void main() {
       addTearDown(relaunched.close);
       await relaunched.restore();
       expect(relaunched.state, const SessionAuthenticated(roles: {'ROLE_ADMIN'}));
+    });
+
+    testWidgets('provides the auth mode that AppDependencies carries', (tester) async {
+      const authMode = OidcMisconfiguredAuthMode('OIDC_ISSUER is required');
+      late BuildContext scope;
+      await tester.pumpWidget(
+        AppScope(
+          dependencies: const AppDependencies(authMode: authMode),
+          defaultLocale: const Locale('en'),
+          child: Builder(
+            builder: (context) {
+              scope = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+
+      expect(scope.read<AuthMode>(), same(authMode));
     });
 
     // The logout, the idle timeout and an unrefreshable 401 must clear the same things, so they share one repository.

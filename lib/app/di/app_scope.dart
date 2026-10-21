@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_cubit.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/localization/locale_cubit.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/app/shell/menu_bloc/menu_bloc.dart';
@@ -71,6 +72,7 @@ class AppScope extends StatelessWidget {
           RepositoryProvider<ISecureStorage>(create: (_) => dependencies.createSecureStorage()),
         RepositoryProvider<AppConfig>.value(value: dependencies.appConfig),
         RepositoryProvider<ProjectLinks>.value(value: dependencies.projectLinks),
+        RepositoryProvider<AuthMode>.value(value: dependencies.authMode),
         // Provided above SessionCubit and IAuthRepository, which clear the stored session when they end one.
         RepositoryProvider<IAuthSessionRepository>(
           create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),

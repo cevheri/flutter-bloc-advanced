@@ -19,6 +19,7 @@ import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
@@ -28,12 +29,19 @@ import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart'
 import 'package:flutter_bloc_advance/infrastructure/storage/shared_preferences_activity_store.dart';
 
 class AppDependencies {
-  const AppDependencies({this.appConfig = const AppConfig.dev(), this.projectLinks = const ProjectLinks()});
+  const AppDependencies({
+    this.appConfig = const AppConfig.dev(),
+    this.projectLinks = const ProjectLinks(),
+    this.authMode = const JwtAuthMode(),
+  });
 
   final AppConfig appConfig;
 
   /// The project's repository, documentation and sponsor links that the app shows.
   final ProjectLinks projectLinks;
+
+  /// How the user signs in, read from `AUTH_PROVIDER` at bootstrap.
+  final AuthMode authMode;
 
   /// Returns the analytics implementation appropriate for the active
   /// environment. Production + non-empty DSN → [SentryAnalyticsService]

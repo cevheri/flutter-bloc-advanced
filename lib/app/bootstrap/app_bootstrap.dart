@@ -10,6 +10,7 @@ import 'package:flutter_bloc_advance/app/dev_console/time_travel/time_travel_blo
 import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_scrub.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
@@ -26,8 +27,21 @@ class AppBootstrap {
     AppLogger.configure(isProduction: config.isProduction);
     final log = AppLogger.getLogger('AppBootstrap');
 
+    // An unknown AUTH_PROVIDER stops the app here, before any screen. An invalid OIDC configuration does not: the app
+    // starts, and the login page says that single sign-on is not configured correctly.
+    final AuthMode authMode;
+    try {
+      authMode = AuthMode.fromDefines(const AuthDefines());
+    } on AuthProviderConfigError catch (error) {
+      log.error('{}', [error]);
+      rethrow;
+    }
+    if (authMode case OidcMisconfiguredAuthMode(:final reason)) {
+      log.error('OIDC configuration is invalid: {}', [reason]);
+    }
+
     final appConfig = AppConfig.fromEnvironment(config.environment);
-    final dependencies = AppDependencies(appConfig: appConfig);
+    final dependencies = AppDependencies(appConfig: appConfig, authMode: authMode);
     final secureStorage = dependencies.createSecureStorage();
 
     // One-shot migration of legacy plaintext tokens (jwtToken/refreshToken).
