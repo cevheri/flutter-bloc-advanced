@@ -106,6 +106,27 @@ It also turns print breadcrumbs off, so no printed line, and no `AppLogger` line
 On web the SDK runs the app in a zone that made a breadcrumb of every printed line, and a scrubber cannot find a password or a code in free text.
 Native builds never recorded `AppLogger` lines.
 
+The native Sentry SDKs record breadcrumbs and send events of their own (activity and app lifecycle, system events, Java and Kotlin exceptions, ANR events, native crash reports), and none of them pass through the Dart hooks.
+On Android the host app starts sentry-android itself (`MainApplication.kt` and `NativeSentry.kt` under `android/app/src/main/kotlin`) with `beforeSend` and `beforeBreadcrumb` hooks that mask them with a Kotlin copy of the same rules (`NativeSentryScrubber.kt`), and the Dart side turns `autoInitializeNativeSdk` off on Android only.
+`test/architecture/sentry_native_scrub_patterns_test.dart` fails when the Kotlin patterns drift from the Dart ones, and `test/fixtures/native_scrub_cases.json` runs in the Dart test and in the Android JVM unit tests (`cd android && ./gradlew :app:testDebugUnitTest -Ptarget=lib/main/main_prod.dart`).
+The lifecycle breadcrumbs of sentry-android keep their `state` (such as `resumed` or `foreground`); a copy that Sentry merges into a Dart event still shows it masked.
+
+| Platform | Dart events and breadcrumbs | Native breadcrumbs | Native events and crash reports |
+| --- | --- | --- | --- |
+| Android | Scrubbed | Scrubbed | Scrubbed |
+| iOS | Scrubbed | Not scrubbed | Not scrubbed |
+| macOS | Scrubbed | Not scrubbed | Not scrubbed |
+| Linux, Windows | Scrubbed | None recorded | Minidumps, which cannot be scrubbed |
+| Web | Scrubbed | Not applicable | Not applicable |
+
+Native scrubbing is not done on iOS and macOS yet: sentry_flutter starts sentry-cocoa there, and what it records itself leaves the device unmasked.
+On Linux and Windows sentry-native records no breadcrumbs of its own, but a native crash uploads a minidump, a copy of process memory that no text scrubber can clean; set `options.enableNativeCrashHandling = false` for those platforms in `AppBootstrap.run` if that is not acceptable.
+Sentry's server-side data scrubbing (Advanced Data Scrubbing in the project settings) is a useful complement on every platform, but it runs after the data has left the device, so it does not replace the hooks.
+
+On Android, Gradle passes the DSN to the native SDK only for a `lib/main/main_prod.dart` build (`android/app/build.gradle.kts`), the only entry point that selects the prod environment in which the Dart side starts Sentry.
+A fork that renames that entry point changes the check there too; when the two disagree, the app throws a `StateError` at start in a debug or profile build, and a release build logs the error and runs without Sentry.
+A native option set on the Dart side in `AppBootstrap.run` does not reach the Android SDK, so set it in `NativeSentry.kt` as well; Session Replay would need its recorder wired there before it can be turned on.
+
 The scrubber is unit-tested independently of the SDK; review it against your fork's PII surface before adopting in production. Adding new redaction rules is a single-file change.
 
 Default sample rate: `tracesSampleRate: 0.2`. Adjust in `AppBootstrap.run` if your event budget needs different cadence.
