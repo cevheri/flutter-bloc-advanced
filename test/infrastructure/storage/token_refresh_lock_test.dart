@@ -83,9 +83,10 @@ void main() {
       expect(await tabB.lock().hold(() async => 'ran'), 'ran');
     });
 
-    test('gives up the turn without running the body when the copy does not catch up in time, and leaves a stamp '
-        'that the next holder can use', () async {
+    test('gives up the turn without running the body when the copy does not catch up in time, and leaves the '
+        'hand-over as it was', () async {
       await tabA.lock().hold(() async => tabA.write('refreshToken', 'refresh-1'));
+      final handedOver = browser.record;
       var ran = false;
 
       await expectLater(
@@ -94,7 +95,69 @@ void main() {
       );
 
       expect(ran, isFalse, reason: 'a body that read a copy behind the hand-over could send a spent refresh token');
-      expect(await tabB.lock().hold(() async => 'next turn'), 'next turn', reason: 'one stale stamp stops no turn');
+      expect(browser.record, handedOver, reason: 'a stamp of its own would let the copy that is behind pass next time');
+      expect(tabB.read('stamp'), isNull);
+    });
+
+    test('runs the next turn of a tab whose copy did not catch up only once the copy shows the hand-over', () async {
+      await tabA.lock().hold(() async => tabA.write('refreshToken', 'refresh-1'));
+      final lagging = tabB.lock(catchUpLimit: const Duration(milliseconds: 20));
+      await expectLater(lagging.hold(() async => 'first'), throwsA(isA<TokenRefreshLockException>()));
+
+      String? seen;
+      final next = tabB.lock().hold(() async => seen = tabB.read('refreshToken'));
+      await _settle();
+      expect(seen, isNull, reason: 'the copy is still behind the refresh of tab A');
+
+      tabB.receive();
+      await next;
+
+      expect(seen, 'refresh-1');
+    });
+
+    test('gives up the next turn as well while the copy stays behind', () async {
+      await tabA.lock().hold(() async => tabA.write('refreshToken', 'refresh-1'));
+      final lagging = tabB.lock(catchUpLimit: const Duration(milliseconds: 20));
+      var runs = 0;
+
+      for (var turn = 0; turn < 2; turn++) {
+        await expectLater(lagging.hold(() async => runs++), throwsA(isA<TokenRefreshLockException>()));
+      }
+
+      expect(runs, 0);
+    });
+
+    test('runs the body when no copy has shown the hand-over for abandonedAfter since it was committed', () async {
+      var now = DateTime.utc(2026, 10, 21, 12);
+      DateTime clock() => now;
+      await tabA.lock(now: clock).hold(() async => tabA.write('refreshToken', 'refresh-1'));
+      // A stamp that no copy will show, such as one left after the user cleared localStorage alone.
+      final lock = tabB.lock(
+        catchUpLimit: const Duration(milliseconds: 20),
+        abandonedAfter: const Duration(seconds: 30),
+        now: clock,
+      );
+
+      now = now.add(const Duration(seconds: 30));
+      await expectLater(lock.hold(() async => 'within the bound'), throwsA(isA<TokenRefreshLockException>()));
+
+      now = now.add(const Duration(milliseconds: 1));
+      expect(await lock.hold(() async => 'abandoned'), 'abandoned');
+      expect(tabB.read('stamp'), browser.record, reason: 'the turn hands over a fresh stamp of its own');
+    });
+
+    test('takes a hand-over committed later than now by more than abandonedAfter for an abandoned one', () async {
+      var now = DateTime.utc(2026, 10, 21, 12);
+      DateTime clock() => now;
+      await tabA.lock(now: clock).hold(() async => tabA.write('refreshToken', 'refresh-1'));
+      // The clock of the browser was set back.
+      now = now.subtract(const Duration(hours: 1));
+
+      final ran = await tabB
+          .lock(catchUpLimit: const Duration(milliseconds: 20), abandonedAfter: const Duration(seconds: 30), now: clock)
+          .hold(() async => 'ran');
+
+      expect(ran, 'ran', reason: 'a clock set back does not stop every turn until it reaches the commit time again');
     });
 
     test('passes an error of the body on unchanged and still hands over', () async {
@@ -142,8 +205,9 @@ class _Browser {
   /// What the tabs did to the lock and the stores, in order.
   final events = <String>[];
 
-  /// The committed hand-over stamp.
+  /// The committed hand-over stamp, and when it was committed.
   String? record;
+  DateTime? committedAt;
   bool failRecordReads = false;
   bool failRecordWrites = false;
 
@@ -174,13 +238,18 @@ class _Tab {
   void Function()? onGranted;
   bool refuseLock = false;
 
-  HandOverTokenRefreshLock lock({Duration catchUpLimit = HandOverTokenRefreshLock.defaultCatchUpLimit}) =>
-      HandOverTokenRefreshLock(
-        mutex: _TabMutex(this),
-        record: _TabRecord(this),
-        copy: _TabStampCopy(this),
-        catchUpLimit: catchUpLimit,
-      );
+  HandOverTokenRefreshLock lock({
+    Duration catchUpLimit = HandOverTokenRefreshLock.defaultCatchUpLimit,
+    Duration abandonedAfter = HandOverTokenRefreshLock.defaultAbandonedAfter,
+    DateTime Function() now = DateTime.now,
+  }) => HandOverTokenRefreshLock(
+    mutex: _TabMutex(this),
+    record: _TabRecord(this),
+    copy: _TabStampCopy(this),
+    catchUpLimit: catchUpLimit,
+    abandonedAfter: abandonedAfter,
+    now: now,
+  );
 
   String? read(String key) => _copy[key];
 
@@ -237,16 +306,19 @@ class _TabRecord implements HandOverRecord {
   final _Tab _tab;
 
   @override
-  Future<String?> read() async {
-    if (_tab._browser.failRecordReads) throw StateError('IndexedDB read failed');
-    return _tab._browser.record;
+  Future<HandOver?> read() async {
+    final browser = _tab._browser;
+    if (browser.failRecordReads) throw StateError('IndexedDB read failed');
+    final stamp = browser.record;
+    return stamp == null ? null : HandOver(stamp, browser.committedAt!);
   }
 
   @override
-  Future<void> write(String stamp) async {
+  Future<void> write(HandOver handOver) async {
     final browser = _tab._browser;
     if (browser.failRecordWrites) throw StateError('IndexedDB write failed');
-    browser.record = stamp;
+    browser.record = handOver.stamp;
+    browser.committedAt = handOver.committedAt;
     browser.events.add('${_tab._name} committed');
   }
 }

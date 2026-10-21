@@ -45,14 +45,23 @@ abstract interface class CrossTabMutex {
   Future<T> run<T>(Future<T> Function() body);
 }
 
-/// Where a holder of [CrossTabMutex] leaves its hand-over stamp for the next holder: IndexedDB on web, whose writes are
+/// What a holder of [CrossTabMutex] left for the next holder: a fresh random [stamp], which carries no token material,
+/// and when it was committed by the clock of the holder's tab, which all the tabs of one browser share.
+final class HandOver {
+  const HandOver(this.stamp, this.committedAt);
+
+  final String stamp;
+  final DateTime committedAt;
+}
+
+/// Where a holder of [CrossTabMutex] leaves its [HandOver] for the next holder: IndexedDB on web, whose writes are
 /// ordered with the lock. A [write] that has completed before the lock is released is seen by a [read] that the next
 /// holder makes once it is granted, in any tab.
 abstract interface class HandOverRecord {
-  Future<String?> read();
+  Future<HandOver?> read();
 
-  /// Completes once the stamp is committed.
-  Future<void> write(String stamp);
+  /// Completes once [handOver] is committed.
+  Future<void> write(HandOver handOver);
 }
 
 /// This tab's copy of the hand-over stamp in the storage that holds the session, next to the tokens: localStorage on
@@ -77,9 +86,16 @@ abstract interface class HandOverStampCopy {
 /// once granted and, when its copy shows another stamp, waits for the copy to catch up before its body runs.
 ///
 /// The wait listens for the copy's [HandOverStampCopy.changes], since timers are throttled in a background tab, and
-/// lasts at most [catchUpLimit]. When the limit passes the body does not run, the turn still ends with a fresh stamp,
-/// so that a stamp nobody's copy will show, such as one the user cleared, does not stop every later turn, and
-/// [hold] throws [TokenRefreshLockException].
+/// lasts at most [catchUpLimit]. When the limit passes the body does not run, [hold] throws
+/// [TokenRefreshLockException], and the record is left as it was: a stamp of this tab's own would show in its copy at
+/// once, and its next turn would run on the copy that is still behind. A turn whose body did not run hands over
+/// nothing, since it wrote nothing.
+///
+/// A stamp that no copy will show, such as one left when the user cleared localStorage alone, would then stop every
+/// later turn. So a record that this tab's copy does not show, and that was committed more than [abandonedAfter]
+/// before or after now, is taken for an abandoned one: the body runs at once, and its turn hands over a fresh stamp.
+/// A copy that is that far behind the commit, or a clock set back by that much just after it, is taken for abandoned
+/// too, and its body may read a refresh token that was spent.
 ///
 /// A holder that closes during its body, after its token writes and before its stamp, leaves no hand-over: the next
 /// holder may then read a copy that has not caught up yet.
@@ -89,7 +105,9 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
     required this._record,
     required this._copy,
     this.catchUpLimit = defaultCatchUpLimit,
+    this.abandonedAfter = defaultAbandonedAfter,
     Random? random,
+    this._now = DateTime.now,
   }) : _random = random ?? Random.secure();
 
   /// How long a holder waits for its copy to show the previous holder's writes. Another tab's change usually reaches
@@ -100,9 +118,16 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
   final HandOverRecord _record;
   final HandOverStampCopy _copy;
   final Random _random;
+  final DateTime Function() _now;
 
   /// How long a holder waits for its copy to catch up with the hand-over before it gives up its turn.
   final Duration catchUpLimit;
+
+  /// How long after its commit a record that this tab's copy does not show is taken for an abandoned one.
+  final Duration abandonedAfter;
+
+  /// Six times [defaultCatchUpLimit]: another tab's change that has not reached the copy by then is not coming.
+  static const defaultAbandonedAfter = Duration(seconds: 30);
 
   @override
   Future<T> hold<T>(Future<T> Function() body) async {
@@ -121,36 +146,42 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
     };
   }
 
-  /// One turn of the lock: catch up with the previous holder, run [body], hand over to the next holder.
+  /// One turn of the lock: catch up with the previous holder, run [body], hand over to the next holder. A turn that
+  /// did not catch up throws before [body] runs and leaves the record as it was.
   Future<_BodyOutcome<T>> _turn<T>(Future<T> Function() body) async {
+    await _catchUp();
+    final outcome = await _run(body);
+    await _handOver();
+    return outcome;
+  }
+
+  /// Runs [body], and carries what it answered or threw.
+  static Future<_BodyOutcome<T>> _run<T>(Future<T> Function() body) async {
     try {
-      await _catchUp();
-      try {
-        return _BodyAnswered(await body());
-      } catch (error, stackTrace) {
-        return _BodyThrew(error, stackTrace);
-      }
-    } finally {
-      await _handOver();
+      return _BodyAnswered(await body());
+    } catch (error, stackTrace) {
+      return _BodyThrew(error, stackTrace);
     }
   }
 
   /// Waits until this tab's copy shows the stamp the previous holder committed, so the body reads what it stored.
   Future<void> _catchUp() async {
-    final String? handedOver;
+    final HandOver? handedOver;
     try {
       handedOver = await _record.read();
     } catch (error) {
       throw TokenRefreshLockException('The hand-over of the previous token refresh could not be read', error);
     }
     if (handedOver == null) return;
+    final stamp = handedOver.stamp;
     final caughtUp = Completer<void>();
     // Listening before the first comparison, so a change that arrives in between is not missed.
     final subscription = _copy.changes.listen((_) {
-      if (!caughtUp.isCompleted && _copy.read() == handedOver) caughtUp.complete();
+      if (!caughtUp.isCompleted && _copy.read() == stamp) caughtUp.complete();
     });
     try {
-      if (_copy.read() == handedOver) return;
+      if (_copy.read() == stamp) return;
+      if (_now().difference(handedOver.committedAt).abs() > abandonedAfter) return;
       await caughtUp.future.timeout(
         catchUpLimit,
         onTimeout: () => throw TokenRefreshLockException(
@@ -168,7 +199,7 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
     final stamp = _newStamp();
     try {
       _copy.write(stamp);
-      await _record.write(stamp);
+      await _record.write(HandOver(stamp, _now()));
     } catch (error) {
       throw TokenRefreshLockException('The token refresh could not hand over to the next holder', error);
     }

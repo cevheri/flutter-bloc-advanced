@@ -43,13 +43,27 @@ void main() {
 
   test('a turn leaves the same stamp in IndexedDB and in localStorage', () async {
     await newLock().hold(() async {});
-    final committed = await IndexedDbHandOverRecord().read();
+    final committed = (await IndexedDbHandOverRecord().read())?.stamp;
 
     expect(committed, isNotNull);
     expect(LocalStorageStampCopy().read(), committed);
 
     await newLock().hold(() async {});
-    expect(await IndexedDbHandOverRecord().read(), isNot(committed), reason: 'every turn hands over a fresh stamp');
+    expect(
+      (await IndexedDbHandOverRecord().read())?.stamp,
+      isNot(committed),
+      reason: 'every turn hands over a fresh stamp',
+    );
+  });
+
+  test('the record in IndexedDB keeps the time its turn committed it', () async {
+    final before = DateTime.now();
+    await newLock().hold(() async {});
+    final committedAt = (await IndexedDbHandOverRecord().read())?.committedAt;
+
+    expect(committedAt, isNotNull);
+    expect(committedAt!.isBefore(before.subtract(const Duration(milliseconds: 1))), isFalse);
+    expect(committedAt.isAfter(DateTime.now()), isFalse);
   });
 
   test('a request that waits longer than its limit fails without running the body', () async {

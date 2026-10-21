@@ -208,6 +208,8 @@ So a tab that ends the session first tells the other tabs over a `BroadcastChann
 A tab that hears it ends its own session generation, so a refresh on its way drops its answer, and takes back the tokens its last refresh stored just then, where they are still stored (`RotatedTokensTakeBack`).
 The refreshes of all tabs also take turns at one Web Lock (`ITokenRefreshLock`), so a server that accepts each refresh token once never sees it twice.
 A lock grant can reach a tab before the previous holder's writes do, so each turn ends with a random stamp in localStorage and IndexedDB, and the next holder waits until its copy of localStorage shows that stamp.
+When its copy does not show the stamp within 5 seconds, the request fails, the session is kept, and the stamp stays as it was, so the next turn of that tab waits for it again.
+A stamp that no copy has shown 30 seconds after its commit is taken for an abandoned one, such as after the user cleared localStorage alone, and the next turn runs.
 Off web there is no signal, and the lock runs each refresh at once.
 A sign-out in one tab ends the session generation of the other tabs only once its message arrives, so a request one of them sent before the sign-out can still be sent again with the JWT of a different user who signed in since: when its 401 comes after that sign-in and before the message, and when that sign-in comes while the tab's refresh is on its way or waits for the lock, which makes this window longer.
 `CacheInterceptor` checks the same generation before it stores a response, so a GET still on its way when the session ends does not put the data of the user who signed out back into the cache the wipe cleared.

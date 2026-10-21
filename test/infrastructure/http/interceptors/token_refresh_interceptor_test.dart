@@ -1737,6 +1737,89 @@ void main() {
       });
     });
 
+    test('sends no refresh and ends nothing when this tab\'s session ended while it waited for the lock', () async {
+      final server = _OneTimeRefreshServer();
+      // A logout in this tab while another tab held the lock: the turn starts after the session ended.
+      final only = tab(thisTab, server, lock: browserLock.openTab(thisTab, onGranted: _wipeTheSession));
+
+      await only.unauthorized();
+
+      expect(server.sent, isEmpty, reason: 'a refresh now could spend the refresh token of a session signed in since');
+      expect(only.handler.nextError?.response?.statusCode, 401, reason: 'the request fails with its 401');
+      expect(only.retries.lastAuthorization, isNull);
+      expect(sessionExpiredCalls, 0, reason: 'the session is over already, and every tab was told once');
+    });
+
+    test('sends no refresh and ends nothing when this tab\'s session ends while its turn reads the JWT', () async {
+      final server = _OneTimeRefreshServer();
+      final retries = _CapturingSuccessStub();
+      final tabDio = Dio(BaseOptions(baseUrl: 'https://test.api'))..interceptors.add(retries);
+      addTearDown(tabDio.close);
+      // The 401 reads the JWT once before the lock and once in its turn; the logout starts during the second read.
+      final only = _TabUnderTest(
+        TokenRefreshInterceptor(
+          dio: tabDio,
+          secureStorage: _WipeOnReadStorage(thisTab, SecureStorageKeys.jwtToken.key, readNumber: 2),
+          rotation: server,
+          refreshLock: browserLock.openTab(thisTab),
+          onSessionExpired: () => sessionExpiredCalls++,
+        ),
+        retries,
+      );
+
+      await only.unauthorized();
+
+      expect(server.sent, isEmpty);
+      expect(only.handler.nextError?.response?.statusCode, 401);
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('sends no refresh and keeps the session when this tab\'s copy stays behind for two 401s in a row', () async {
+      final server = _OneTimeRefreshServer();
+      final first = tab(thisTab, server);
+      final second = tab(
+        otherTab,
+        server,
+        lock: browserLock.openTab(otherTab, catchUpOnGrant: false, catchUpLimit: const Duration(milliseconds: 20)),
+      );
+      await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+      // Another request of the lagging tab gets its 401 after the first turn gave up; the copy still shows valid-refresh.
+      final again = _TestErrorHandler();
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      await second.interceptor.onError(
+        DioException(
+          requestOptions: requestOptions,
+          response: Response(requestOptions: requestOptions, statusCode: 401),
+        ),
+        again,
+      );
+
+      expect(server.sent, ['valid-refresh'], reason: 'the lagging copy would send the spent refresh token');
+      expect(again.rejectedError?.error, isA<TokenRefreshLockException>());
+      expect(sessionExpiredCalls, 0, reason: 'a refusal of the spent token would sign out every tab');
+      expect(_tokensIn(localStorage), {
+        SecureStorageKeys.jwtToken.key: 'jwt-1',
+        SecureStorageKeys.refreshToken.key: 'refresh-1',
+      });
+
+      // Once the other tab's writes reach the copy, the next 401 retries with the JWT they hold.
+      otherTab.receive();
+      final caughtUp = _TestErrorHandler();
+      final laterOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      await second.interceptor.onError(
+        DioException(
+          requestOptions: laterOptions,
+          response: Response(requestOptions: laterOptions, statusCode: 401),
+        ),
+        caughtUp,
+      );
+
+      expect(caughtUp.resolveCalled, isTrue);
+      expect(second.retries.lastAuthorization, 'Bearer jwt-1');
+      expect(server.sent, ['valid-refresh']);
+    });
+
     test('sends one oidc grant for two tabs, and stores the ID token and expiry once', () async {
       final expiresAt = DateTime.utc(2026, 10, 21, 12, 30);
       await thisTab.write(SecureStorageKeys.oidcIdToken.key, 'old-id-token');
@@ -2465,6 +2548,35 @@ class _TabSessionEndSignal implements ISessionEndSignal {
   Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
 }
 
+/// Ends the session of this tab, as a logout does, without deleting anything.
+void _wipeTheSession() => unawaited(SessionGeneration.wipe(() async {}));
+
+/// [ISecureStorage] over a tab's storage that ends the session when [key] is read for the [readNumber]th time.
+class _WipeOnReadStorage implements ISecureStorage {
+  _WipeOnReadStorage(this._inner, this._key, {required this.readNumber});
+
+  final ISecureStorage _inner;
+  final String _key;
+  final int readNumber;
+  int _reads = 0;
+
+  @override
+  Future<String?> read(String key) async {
+    final value = await _inner.read(key);
+    if (key == _key && ++_reads == readNumber) _wipeTheSession();
+    return value;
+  }
+
+  @override
+  Future<void> write(String key, String value) => _inner.write(key, value);
+
+  @override
+  Future<void> delete(String key) => _inner.delete(key);
+
+  @override
+  Future<void> deleteAll() => _inner.deleteAll();
+}
+
 /// The stored session without the hand-over stamp of the token refresh lock.
 Map<String, String> _tokensIn(_SharedLocalStorage localStorage) =>
     Map.of(localStorage.values)..remove(_TabStampCopy.key);
@@ -2493,7 +2605,7 @@ class _TabUnderTest {
 /// The Web Lock of one name and the IndexedDB hand-over record that the browser tabs share.
 class _BrowserLock {
   Future<void> _tail = Future<void>.value();
-  String? _record;
+  HandOver? _record;
 
   /// The token refresh lock of the tab that reads and writes [storage]. With [catchUpOnGrant], the tab's copy of
   /// localStorage takes the other tabs' changes before the grant, as when the browser delivers them first; without it
@@ -2548,10 +2660,10 @@ class _SharedHandOverRecord implements HandOverRecord {
   final _BrowserLock _lock;
 
   @override
-  Future<String?> read() async => _lock._record;
+  Future<HandOver?> read() async => _lock._record;
 
   @override
-  Future<void> write(String stamp) async => _lock._record = stamp;
+  Future<void> write(HandOver handOver) async => _lock._record = handOver;
 }
 
 /// The hand-over stamp in a [_TabStorage], next to the tokens, as in the tab's copy of localStorage.

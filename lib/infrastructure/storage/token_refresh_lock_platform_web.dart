@@ -63,15 +63,32 @@ final class IndexedDbHandOverRecord implements HandOverRecord {
   Future<web.IDBDatabase>? _database;
 
   @override
-  Future<String?> read() async {
+  Future<HandOver?> read() async {
     final value = await _transact('read', 'readonly', (store) => store.get(recordKey.toJS));
     if (value == null || value.isUndefinedOrNull) return null;
-    if (!value.isA<JSString>()) throw StateError('The hand-over record does not hold a stamp');
-    return (value as JSString).toDart;
+    final record = value.dartify();
+    if (record is! Map || record['stamp'] is! String || record['committedAt'] is! num) {
+      throw StateError('The hand-over record does not hold a stamp and its commit time');
+    }
+    final committedAt = record['committedAt'] as num;
+    if (!committedAt.isFinite || committedAt.abs() > _latestTime) {
+      throw StateError('The hand-over record holds a commit time out of range');
+    }
+    return HandOver(record['stamp'] as String, DateTime.fromMillisecondsSinceEpoch(committedAt.toInt()));
   }
 
   @override
-  Future<void> write(String stamp) => _transact('write', 'readwrite', (store) => store.put(stamp.toJS, recordKey.toJS));
+  Future<void> write(HandOver handOver) => _transact(
+    'write',
+    'readwrite',
+    (store) => store.put(
+      {'stamp': handOver.stamp, 'committedAt': handOver.committedAt.millisecondsSinceEpoch}.jsify(),
+      recordKey.toJS,
+    ),
+  );
+
+  /// The latest time [DateTime] holds, in milliseconds since the epoch.
+  static const _latestTime = 8640000000000000;
 
   /// Runs [operation] in a transaction of [mode], and answers the request's result once the transaction completed.
   Future<JSAny?> _transact(

@@ -476,6 +476,17 @@ void main() {
       verifyNever(() => sessionRepository.clear());
     });
 
+    test('sends no refresh and ends nothing when the session ended while this tab waited for the lock', () async {
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      // A logout in this tab while another tab held the lock: the turn starts after the session ended.
+      final lock = _RecordingLock(beforeTurn: () => unawaited(SessionGeneration.wipe(() async {})));
+      when(() => rotation.rotate(any())).thenAnswer((_) async => const RotationRefused());
+
+      expect(await newStartup(refreshLock: lock).run(), isA<SsoStartupSessionEnded>());
+      verifyNever(() => rotation.rotate(any()));
+      verifyNever(() => sessionRepository.clear());
+    });
+
     test('ends the session after the lock is released', () async {
       final lock = _RecordingLock();
       storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
@@ -561,7 +572,7 @@ class _RecordingLock implements ITokenRefreshLock {
 class _Browser {
   final _tabs = <_BrowserTab>[];
   Future<void> _lockTail = Future<void>.value();
-  String? _record;
+  HandOver? _record;
 
   _BrowserTab openTab() {
     final tab = _BrowserTab._(this);
@@ -651,10 +662,10 @@ class _BrowserRecord implements HandOverRecord {
   final _Browser _browser;
 
   @override
-  Future<String?> read() async => _browser._record;
+  Future<HandOver?> read() async => _browser._record;
 
   @override
-  Future<void> write(String stamp) async => _browser._record = stamp;
+  Future<void> write(HandOver handOver) async => _browser._record = handOver;
 }
 
 /// The hand-over stamp in a [_BrowserTab]'s copy of localStorage, next to the tokens.
