@@ -35,6 +35,9 @@ fvm dart format . --line-length=120
 fvm flutter test
 fvm flutter test test/path/to/specific_test.dart          # single test file
 fvm flutter test --coverage                                # with coverage
+# Android JVM tests of the native Sentry scrubber (JDK 17; a Flutter Android build, such as
+# fvm flutter build apk --config-only --target lib/main/main_prod.dart, writes the Gradle wrapper)
+cd android && ./gradlew :app:testDebugUnitTest -Ptarget=lib/main/main_prod.dart
 
 # Localization code generation (after editing ARB files)
 fvm dart run intl_utils:generate

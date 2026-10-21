@@ -110,7 +110,8 @@ Native builds never recorded `AppLogger` lines.
 
 The native Sentry SDKs record breadcrumbs and send events of their own (activity and app lifecycle, system events, Java and Kotlin exceptions, ANR events, native crash reports), and none of them pass through the Dart hooks.
 On Android the host app starts sentry-android itself (`MainApplication.kt` and `NativeSentry.kt` under `android/app/src/main/kotlin`) with `beforeSend` and `beforeBreadcrumb` hooks that mask them with a Kotlin copy of the same rules (`NativeSentryScrubber.kt`), and the Dart side turns `autoInitializeNativeSdk` off on Android only.
-`test/architecture/sentry_native_scrub_patterns_test.dart` fails when the Kotlin patterns drift from the Dart ones, and `test/fixtures/native_scrub_cases.json` runs in the Dart test and in the Android JVM unit tests (`cd android && ./gradlew :app:testDebugUnitTest -Ptarget=lib/main/main_prod.dart`).
+`test/architecture/sentry_native_scrub_patterns_test.dart` fails when the Kotlin patterns drift from the Dart ones, and the fixtures in `test/fixtures/` run in the Dart tests and in the Android JVM unit tests (`cd android && ./gradlew :app:testDebugUnitTest -Ptarget=lib/main/main_prod.dart`).
+Gradle needs JDK 17 there, and the Gradle wrapper is not committed: any Flutter Android build writes it, for example `fvm flutter build apk --config-only --target lib/main/main_prod.dart`.
 The lifecycle breadcrumbs of sentry-android keep their `state` (such as `resumed` or `foreground`); a copy that Sentry merges into a Dart event still shows it masked.
 
 | Platform | Dart events and breadcrumbs | Native breadcrumbs | Native events and crash reports |
