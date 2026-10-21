@@ -12,7 +12,8 @@ void reloadWhenRestoredFromCache() {
   web.window.addEventListener(
     'pageshow',
     (web.PageTransitionEvent event) {
-      onPageShow(persisted: event.persisted, reload: web.window.location.reload);
+      // A closure, not a tear-off: dart2js rejects tear-offs of external interop members such as `reload`.
+      onPageShow(persisted: event.persisted, reload: () => web.window.location.reload());
     }.toJS,
   );
 }
