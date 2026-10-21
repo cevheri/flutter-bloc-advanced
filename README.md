@@ -114,15 +114,25 @@ On Android the host app starts sentry-android itself (`MainApplication.kt` and `
 Gradle needs JDK 17 there, and the Gradle wrapper is not committed: any Flutter Android build writes it, for example `fvm flutter build apk --config-only --target lib/main/main_prod.dart`.
 The lifecycle breadcrumbs of sentry-android keep their `state` (such as `resumed` or `foreground`); a copy that Sentry merges into a Dart event still shows it masked.
 
+On web the native SDK in the table is the Sentry JavaScript SDK, which sentry_flutter starts there.
+
 | Platform | Dart events and breadcrumbs | Native breadcrumbs | Native events and crash reports |
 | --- | --- | --- | --- |
 | Android | Scrubbed | Scrubbed | Scrubbed |
 | iOS | Scrubbed | Not scrubbed | Not scrubbed |
 | macOS | Scrubbed | Not scrubbed | Not scrubbed |
 | Linux, Windows | Scrubbed | None recorded | Minidumps, which cannot be scrubbed |
-| Web | Scrubbed | Not applicable | Not applicable |
+| Web | Scrubbed | None recorded | Not scrubbed |
 
 Native scrubbing is not done on iOS and macOS yet: sentry_flutter starts sentry-cocoa there, and what it records itself leaves the device unmasked.
+It is not done on web either, and the code fix for all three is tracked in #177.
+On web sentry_flutter starts the JavaScript SDK with only its global handlers and its dedupe integration, so the JavaScript SDK records no console, fetch, XHR, DOM or navigation breadcrumbs of its own.
+The global handlers send an event of their own for every uncaught JavaScript error and unhandled promise rejection, and so for a Dart error that escapes the zone `SentryFlutter.init` runs the app in, such as one thrown inside a JavaScript interop callback.
+Such an event carries its error message and stack trace unmasked: the Dart `beforeSend` and `beforeBreadcrumb` hooks are not passed to the JavaScript SDK, and the `beforeSend` that sentry_flutter sets there only names the SDK.
+It carries none of the Dart breadcrumbs, user or tags, because sentry_flutter does not copy the Dart scope to the JavaScript SDK on web.
+The Dart events leave through the JavaScript SDK as well, but only after the Dart hooks have masked them.
+When a DSN is set, sentry_flutter fetches the JavaScript SDK at start from `https://browser.sentry-cdn.com` (`bundle.tracing.min.js` in a release build, with a subresource integrity hash), so a fork with a strict Content Security Policy allows that origin in `script-src` and the ingest host of its DSN in `connect-src`.
+Where Trusted Types are enforced, the loader creates a policy named `sentry-dart`, which the `trusted-types` directive must allow.
 On Linux and Windows sentry-native records no breadcrumbs of its own, but a native crash uploads a minidump, a copy of process memory that no text scrubber can clean; set `options.enableNativeCrashHandling = false` for those platforms in `configureSentryOptions` if that is not acceptable.
 Sentry's server-side data scrubbing (Advanced Data Scrubbing in the project settings) is a useful complement on every platform, but it runs after the data has left the device, so it does not replace the hooks.
 
