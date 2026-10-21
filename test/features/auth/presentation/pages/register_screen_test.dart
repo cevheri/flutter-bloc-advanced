@@ -27,6 +27,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 
 import '../../../../mocks/mock_classes.dart';
 import '../../../../support/unsaved_changes_host.dart';
@@ -345,8 +347,17 @@ class _PinnedDependencies extends AppDependencies {
   final HttpClientAdapter adapter;
 
   @override
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
-      super.createApiClient(secureStorage, onSessionExpired: onSessionExpired)..instance.httpClientAdapter = adapter;
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    ITokenRefreshLock? tokenRefreshLock,
+    RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) => super.createApiClient(
+    secureStorage,
+    onSessionExpired: onSessionExpired,
+    tokenRefreshLock: tokenRefreshLock,
+    rotatedTokensTakeBack: rotatedTokensTakeBack,
+  )..instance.httpClientAdapter = adapter;
 }
 
 /// Pumps for [duration] and collects the text and the display duration of every snack bar shown meanwhile. The page

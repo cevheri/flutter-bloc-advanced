@@ -37,6 +37,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 
 import '../../../../mocks/fake_data.dart';
 import '../../../../mocks/mock_classes.dart';
@@ -740,8 +742,17 @@ class _PinnedDependencies extends AppDependencies {
   final _PinMismatchAdapter adapter;
 
   @override
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
-      super.createApiClient(secureStorage, onSessionExpired: onSessionExpired)..instance.httpClientAdapter = adapter;
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    ITokenRefreshLock? tokenRefreshLock,
+    RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) => super.createApiClient(
+    secureStorage,
+    onSessionExpired: onSessionExpired,
+    tokenRefreshLock: tokenRefreshLock,
+    rotatedTokensTakeBack: rotatedTokensTakeBack,
+  )..instance.httpClientAdapter = adapter;
 }
 
 /// Mock-mode app dependencies whose user list is served by [userRepository].
@@ -761,8 +772,18 @@ class _RecordingDependencies extends AppDependencies {
   final List<RequestOptions> requests;
 
   @override
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) {
-    final apiClient = super.createApiClient(secureStorage, onSessionExpired: onSessionExpired);
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    ITokenRefreshLock? tokenRefreshLock,
+    RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) {
+    final apiClient = super.createApiClient(
+      secureStorage,
+      onSessionExpired: onSessionExpired,
+      tokenRefreshLock: tokenRefreshLock,
+      rotatedTokensTakeBack: rotatedTokensTakeBack,
+    );
     // MockInterceptor comes last and answers in place of the server, so the recorder goes right before it.
     final interceptors = apiClient.instance.interceptors;
     interceptors.insert(interceptors.length - 1, _RequestRecorder(requests));

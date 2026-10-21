@@ -19,7 +19,9 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refr
 import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 
 /// Metadata describing one entry in the [ApiClient] interceptor chain.
 ///
@@ -63,7 +65,9 @@ class InterceptorChainEntry {
 ///
 /// `tokenRotation` replaces the backend's refresh endpoint ([BackendTokenRotation]) as the way
 /// [TokenRefreshInterceptor] refreshes the session, and `isSessionExpired` decides which 401 starts
-/// that refresh ([isUnauthorized], every 401, when it is null).
+/// that refresh ([isUnauthorized], every 401, when it is null). On web the refresh takes turns at
+/// `tokenRefreshLock` with the other browser tabs, and records what it stores in `rotatedTokensTakeBack`;
+/// without them it runs at once and records nothing.
 class ApiClient {
   ApiClient({
     required this._appConfig,
@@ -72,17 +76,32 @@ class ApiClient {
     this._dio,
     this._tokenRotation,
     this._isSessionExpired,
+    this._tokenRefreshLock,
+    this._rotatedTokensTakeBack,
   });
 
   static final _log = AppLogger.getLogger('ApiClient');
 
   static const int _timeoutSeconds = 30;
 
+  /// How long a browser tab waits for its turn at the token refresh lock it shares with the other tabs
+  /// ([ITokenRefreshLock]) before the request fails. It is longer than the longest turn that has a bound: a backend
+  /// refresh, whose Dio takes this client's connect and receive timeouts ([defaultRefreshDio]), after a wait of at most
+  /// [HandOverTokenRefreshLock.defaultCatchUpLimit] for the previous holder's writes, plus 10 seconds for the
+  /// secure-storage writes and the hand-over. An `oidc` grant has no time limit of its own, so a grant that hangs keeps
+  /// the other tabs waiting this long.
+  static final tokenRefreshLockWaitLimit =
+      const Duration(seconds: 2 * _timeoutSeconds) +
+      HandOverTokenRefreshLock.defaultCatchUpLimit +
+      const Duration(seconds: 10);
+
   final AppConfig _appConfig;
   final ISecureStorage? _secureStorage;
   final OnSessionExpired? _onSessionExpired;
   final TokenRotation? _tokenRotation;
   final SessionExpiredPredicate? _isSessionExpired;
+  final ITokenRefreshLock? _tokenRefreshLock;
+  final RotatedTokensTakeBack? _rotatedTokensTakeBack;
   Dio? _dio;
   List<InterceptorChainEntry> _chainSnapshot = const [];
 
@@ -157,6 +176,8 @@ class ApiClient {
           refreshDioFactory: _appConfig.isProduction ? null : _mockRefreshDio,
           rotation: _tokenRotation,
           isSessionExpired: _isSessionExpired ?? isUnauthorized,
+          refreshLock: _tokenRefreshLock,
+          takeBack: _rotatedTokensTakeBack,
         ),
         meta: const InterceptorChainEntry(name: 'TokenRefreshInterceptor', detail: 'Refreshes expired access tokens'),
       ),

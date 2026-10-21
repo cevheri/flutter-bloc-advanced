@@ -30,6 +30,9 @@ import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
 
 import '../../support/test_env.dart';
 
@@ -120,7 +123,10 @@ class _SessionRepositoryDependencies extends AppDependencies {
   final IAuthSessionRepository sessionRepository;
 
   @override
-  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) => sessionRepository;
+  IAuthSessionRepository createAuthSessionRepository(
+    ISecureStorage secureStorage, {
+    ISessionEndSignal? sessionEndSignal,
+  }) => sessionRepository;
 }
 
 /// The production dependencies, counting how often the client reports a 401 that a token refresh could not fix.
@@ -130,14 +136,20 @@ class _CountingDependencies extends AppDependencies {
   int sessionExpiredCalls = 0;
 
   @override
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
-      super.createApiClient(
-        secureStorage,
-        onSessionExpired: () {
-          sessionExpiredCalls++;
-          onSessionExpired();
-        },
-      );
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    ITokenRefreshLock? tokenRefreshLock,
+    RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) => super.createApiClient(
+    secureStorage,
+    onSessionExpired: () {
+      sessionExpiredCalls++;
+      onSessionExpired();
+    },
+    tokenRefreshLock: tokenRefreshLock,
+    rotatedTokensTakeBack: rotatedTokensTakeBack,
+  );
 }
 
 /// Pumps [AppScope] over an expired stored session, the state a production launch leaves the login page in: restore()
@@ -710,6 +722,82 @@ void main() {
     });
   });
 
+  // On web each browser tab has one session end signal and one token refresh lock, which App creates and hands to
+  // the scope.
+  group('AppScope and the other browser tabs', () {
+    Future<BuildContext> pumpTab(
+      WidgetTester tester, {
+      required ISessionEndSignal signal,
+      ITokenRefreshLock? lock,
+    }) async {
+      late BuildContext scope;
+      await tester.pumpWidget(
+        AppScope(
+          dependencies: const AppDependencies(appConfig: _prodConfig),
+          defaultLocale: const Locale('en'),
+          sessionEndSignal: signal,
+          tokenRefreshLock: lock,
+          child: Builder(
+            builder: (context) {
+              scope = context;
+              return const SizedBox();
+            },
+          ),
+        ),
+      );
+      return scope;
+    }
+
+    testWidgets('hears another tab\'s end from the start, before anything builds the HTTP client', (tester) async {
+      final signal = _ManualSessionEndSignal();
+
+      await pumpTab(tester, signal: signal);
+
+      expect(signal.isHeard, isTrue);
+    });
+
+    testWidgets('tells the other tabs when the session repository clears the session', (tester) async {
+      final signal = _ManualSessionEndSignal();
+      final scope = await pumpTab(tester, signal: signal);
+      await tester.pumpAndSettle();
+
+      await scope.read<IAuthSessionRepository>().clear();
+
+      expect(signal.told, 1);
+    });
+
+    testWidgets('a token refresh takes its turn at this tab\'s lock, and another tab\'s end takes back what it '
+        'stored', (tester) async {
+      final staleJwt = _unexpiredJwt();
+      final freshJwt = _jwt(exp: 4102444801);
+      await FlutterSecureStorageAdapter().write(SecureStorageKeys.jwtToken.key, staleJwt);
+      await FlutterSecureStorageAdapter().write(SecureStorageKeys.refreshToken.key, 'stored-refresh-token');
+      await AppLocalStorage().save(StorageKeys.roles.key, <String>['ROLE_ADMIN']);
+      final signal = _ManualSessionEndSignal();
+      final lock = _CountingLock();
+      final scope = await pumpTab(tester, signal: signal, lock: lock);
+      await tester.pumpAndSettle();
+      final server = _RefreshRaceServer(staleJwt: staleJwt, freshJwt: freshJwt)..releaseRefresh.complete();
+      final apiClient = scope.read<ApiClient>();
+      apiClient.instance.httpClientAdapter = server;
+
+      Object? outcome;
+      apiClient
+          .get('/account')
+          .then<void>((response) => outcome = response, onError: (Object error) => outcome = error);
+      await _pumpUntil(tester, () => outcome != null);
+      expect(outcome, isA<Response<String>>());
+      expect(lock.turns, 1);
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), freshJwt);
+
+      signal.endInAnotherTab();
+      await tester.pump();
+
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), isNull);
+    });
+  });
+
   group('AppScope single sign-on', () {
     testWidgets('an oidc build signs in through the OIDC client and stores the whole session', (tester) async {
       final expiresAt = DateTime.utc(2100);
@@ -766,4 +854,34 @@ void main() {
       expect(() => scope.read<IOidcClient>(), throwsA(isA<ProviderNotFoundException>()));
     });
   });
+}
+
+/// This tab's [ISessionEndSignal], whose other tab ends the session when the test says so, and which counts the ends
+/// this tab tells.
+class _ManualSessionEndSignal implements ISessionEndSignal {
+  final _endedElsewhere = StreamController<DateTime>.broadcast(sync: true);
+  int told = 0;
+
+  /// Whether something in this tab listens for another tab's end.
+  bool get isHeard => _endedElsewhere.hasListener;
+
+  @override
+  void notifyEnded() => told++;
+
+  @override
+  Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
+
+  /// Another tab begins to end the session now.
+  void endInAnotherTab() => _endedElsewhere.add(DateTime.now());
+}
+
+/// This tab's [ITokenRefreshLock], which runs each refresh at once and counts them.
+class _CountingLock implements ITokenRefreshLock {
+  int turns = 0;
+
+  @override
+  Future<T> hold<T>(Future<T> Function() body) {
+    turns++;
+    return body();
+  }
 }

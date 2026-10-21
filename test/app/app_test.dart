@@ -30,6 +30,12 @@ import 'package:go_router/go_router.dart';
 import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 
 import '../mocks/mock_classes.dart';
 import '../support/url_launcher_stub.dart';
@@ -50,6 +56,72 @@ class _HeldLanguageStorage implements AppLocalStorage {
   Future<void> clear() => AppLocalStorage().clear();
   @override
   void setPreferencesInstance(SharedPreferences prefs) => AppLocalStorage().setPreferencesInstance(prefs);
+}
+
+/// The default dependencies, recording the session end signals and refresh locks they create and where they go.
+class _TabResourceDependencies extends AppDependencies {
+  _TabResourceDependencies();
+
+  final signals = <ISessionEndSignal>[];
+  final locks = <ITokenRefreshLock>[];
+  final repositorySignals = <ISessionEndSignal?>[];
+  final apiClientLocks = <ITokenRefreshLock?>[];
+  final apiClientTakeBacks = <RotatedTokensTakeBack?>[];
+
+  @override
+  ISessionEndSignal? createSessionEndSignal() {
+    final signal = _SilentSessionEndSignal();
+    signals.add(signal);
+    return signal;
+  }
+
+  @override
+  ITokenRefreshLock createTokenRefreshLock() {
+    final lock = _PassThroughLock();
+    locks.add(lock);
+    return lock;
+  }
+
+  @override
+  IAuthSessionRepository createAuthSessionRepository(
+    ISecureStorage secureStorage, {
+    ISessionEndSignal? sessionEndSignal,
+  }) {
+    repositorySignals.add(sessionEndSignal);
+    return super.createAuthSessionRepository(secureStorage, sessionEndSignal: sessionEndSignal);
+  }
+
+  @override
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    ITokenRefreshLock? tokenRefreshLock,
+    RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) {
+    apiClientLocks.add(tokenRefreshLock);
+    apiClientTakeBacks.add(rotatedTokensTakeBack);
+    return super.createApiClient(
+      secureStorage,
+      onSessionExpired: onSessionExpired,
+      tokenRefreshLock: tokenRefreshLock,
+      rotatedTokensTakeBack: rotatedTokensTakeBack,
+    );
+  }
+}
+
+/// A session end signal that no other tab uses.
+class _SilentSessionEndSignal implements ISessionEndSignal {
+  @override
+  void notifyEnded() {}
+
+  @override
+  Stream<DateTime> get endedElsewhere => const Stream.empty();
+}
+
+/// A refresh lock of its own, which runs each refresh at once.
+class _PassThroughLock implements ITokenRefreshLock {
+  @override
+  Future<T> hold<T>(Future<T> Function() body) => body();
 }
 
 class _LocalStorageDependencies extends AppDependencies {
@@ -217,6 +289,24 @@ void main() {
         expect(tester.widget<Title>(find.byType(Title)).title, title);
       });
     }
+
+    // On web a second BroadcastChannel in the same tab would hear the tab's own ends, and a second lock object would
+    // still share the lock, but the take-back and the refreshes of one tab must hear and use the same ones.
+    testWidgets('creates one session end signal and one refresh lock per tab and hands them to the session and the '
+        'HTTP client', (tester) async {
+      final dependencies = _TabResourceDependencies();
+
+      await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
+      await tester.pumpAndSettle();
+      await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
+      await tester.pumpAndSettle();
+
+      expect(dependencies.signals, hasLength(1));
+      expect(dependencies.locks, hasLength(1));
+      expect(dependencies.repositorySignals, [same(dependencies.signals.single)]);
+      expect(dependencies.apiClientLocks, [same(dependencies.locks.single)]);
+      expect(dependencies.apiClientTakeBacks.single, isNotNull);
+    });
   });
 
   // The gate sits in the MaterialApp builder, around the session restore and the router. These tests replace the
