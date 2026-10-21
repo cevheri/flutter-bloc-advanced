@@ -49,8 +49,10 @@ class AuthInterceptor extends Interceptor {
     }
     // Dio sends a request to an absolute URL there instead of to the base URL, so the token goes only to the origin
     // of the API, whatever path a server supplied. Such a request records no session generation either: its 401 is not
-    // about the session, and TokenRefreshInterceptor passes it on.
+    // about the session, and TokenRefreshInterceptor passes it on. An Authorization header already on the request, set
+    // by a caller or left on reused options, is removed for the same reason.
     if (!isApiOriginRequest(options)) {
+      options.headers.remove('Authorization');
       _log.warn('Request [{}] to {}, another origin than the API: sent without the token', [
         options.method,
         options.uri.host,

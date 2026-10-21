@@ -149,6 +149,7 @@ void main() {
       for (final path in [
         'https://other.example/collect',
         'http://api.example.test/api/account',
+        'http://api.example.test:443/api/account',
         'https://api.example.test:8443/api/account',
         'https://api.example.test.other.example/api/account',
       ]) {
@@ -157,6 +158,18 @@ void main() {
         expect(sent.headers.containsKey('Authorization'), isFalse, reason: path);
         expect(AuthInterceptor.sessionGenerationOf(sent), isNull, reason: path);
       }
+    });
+
+    test('removes an Authorization header already set on a request to another origin', () async {
+      final sent = await send(
+        RequestOptions(
+          baseUrl: apiBase,
+          path: 'https://other.example/collect',
+          headers: {'Authorization': 'Bearer preset-value'},
+        ),
+      );
+
+      expect(sent.headers.containsKey('Authorization'), isFalse);
     });
 
     test('does not attach the token when a relative path resolves to another host', () async {
