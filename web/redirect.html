@@ -181,7 +181,8 @@
                 // The OP returned an error in the url (RFC 6749 sec 4.1.2.1): show
                 // it immediately, we already know the outcome.
                 if (errorInfo) {
-                    finish('error', messages.errorTitle, errorInfo.description || errorInfo.error, errorInfo.uri, true);
+                    // A crafted link sets error_description and error_uri, so show fixed copy and no link.
+                    finish('error', messages.errorTitle, messages.appError, null, true);
                     return;
                 }
 
