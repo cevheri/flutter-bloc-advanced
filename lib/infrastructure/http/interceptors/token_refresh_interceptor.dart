@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_origin.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
@@ -220,6 +221,18 @@ class TokenRefreshInterceptor extends Interceptor {
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     // Only handle a 401 that means the bearer is no longer valid
     if (!_isSessionExpired(err)) {
+      handler.next(err);
+      return;
+    }
+
+    // AuthInterceptor sends no token to another origin than the API's, so its 401 is not about the session, and
+    // sending the request again would carry the token there: no refresh, no retry, and no session to end. Checked
+    // first, so a path there that looks like the refresh endpoint ends no session either.
+    if (!isApiOriginRequest(err.requestOptions)) {
+      _log.warn('401 from another origin than the API for [{}] {}: no token refresh', [
+        err.requestOptions.method,
+        err.requestOptions.uri.host,
+      ]);
       handler.next(err);
       return;
     }

@@ -26,6 +26,8 @@ class DynamicFormRepository implements IDynamicFormRepository {
   static const String submitEndpointRequired = 'Submit action endpoint is required';
   static const String submitMethodRequired = 'Submit action method is required';
   static const String endpointRequired = 'Endpoint is required';
+  static const String submitEndpointNotApiPath = 'Submit action endpoint must be a path on the API';
+  static const String endpointNotApiPath = 'Endpoint must be a path on the API';
 
   @override
   Future<Result<FormSchemaEntity>> fetchSchema(String formId) async {
@@ -59,6 +61,10 @@ class DynamicFormRepository implements IDynamicFormRepository {
     if (basePath.isEmpty) {
       return const Failure(ValidationError(endpointRequired));
     }
+    if (!_isApiPath(basePath)) {
+      _log.warn('END:fetchBundle rejected a base path that leaves the API', []);
+      return const Failure(ValidationError(endpointNotApiPath));
+    }
     try {
       final response = await _apiClient.get(basePath, pathParams: pathParams);
       final bundle = FormBundleModel.fromJsonString(response.data!);
@@ -90,6 +96,10 @@ class DynamicFormRepository implements IDynamicFormRepository {
     if (action.endpoint.isEmpty) {
       return const Failure(ValidationError(submitEndpointRequired));
     }
+    if (!_isApiPath(action.endpoint)) {
+      _log.warn('END:submit rejected an endpoint that leaves the API', []);
+      return const Failure(ValidationError(submitEndpointNotApiPath));
+    }
     if (action.method.isEmpty) {
       return const Failure(ValidationError(submitMethodRequired));
     }
@@ -119,6 +129,17 @@ class DynamicFormRepository implements IDynamicFormRepository {
       _log.error('END:submit unknown error: {}', [e]);
       return Failure(UnknownError(e.toString()));
     }
+  }
+
+  /// Whether [endpoint] is a path on the API: it starts with a single `/` and names no scheme and no host.
+  ///
+  /// The submit endpoint of a form and the base path of a bundle come from the server, and Dio sends a request to an
+  /// absolute URL there instead of to the API. A path without the leading `/` is appended to the base URL as it is, so
+  /// `@other.example/x` would make the host of the API the user name of a URL to `other.example`.
+  static bool _isApiPath(String endpoint) {
+    if (!endpoint.startsWith('/') || endpoint.startsWith('//')) return false;
+    final uri = Uri.tryParse(endpoint);
+    return uri != null && !uri.hasScheme && !uri.hasAuthority;
   }
 
   /// An untrusted certificate carries [AppErrorCode.networkCertInvalid], so the UI shows a translated message

@@ -1,12 +1,14 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/logging/log_sanitizer.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_origin.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 
 /// Injects JWT Bearer token into every outgoing request, except a request
-/// to a public endpoint ([isPublicEndpoint]).
+/// to a public endpoint ([isPublicEndpoint]) and a request to any origin
+/// other than the API's ([isApiOriginRequest]).
 ///
 /// Reads from [ISecureStorage] on every request. There is no in-memory
 /// cache: the only data source for the JWT is the secure store, which
@@ -42,6 +44,17 @@ class AuthInterceptor extends Interceptor {
     // where none is needed.
     if (isPublicEndpoint(options)) {
       _log.debug('Request [{}] {} (public endpoint, no token)', [options.method, options.path]);
+      handler.next(options);
+      return;
+    }
+    // Dio sends a request to an absolute URL there instead of to the base URL, so the token goes only to the origin
+    // of the API, whatever path a server supplied. Such a request records no session generation either: its 401 is not
+    // about the session, and TokenRefreshInterceptor passes it on.
+    if (!isApiOriginRequest(options)) {
+      _log.warn('Request [{}] to {}, another origin than the API: sent without the token', [
+        options.method,
+        options.uri.host,
+      ]);
       handler.next(options);
       return;
     }

@@ -314,6 +314,86 @@ void main() {
     });
   });
 
+  // AuthInterceptor sends no token to another origin, so a 401 from there is not about the session, and sending the
+  // request again after a refresh would carry the rotated token there.
+  group('TokenRefreshInterceptor - 401 from another origin', () {
+    DioException unauthorizedFrom(String url, {Map<String, dynamic>? headers}) {
+      final requestOptions = RequestOptions(
+        baseUrl: 'https://test.api',
+        path: url,
+        headers: headers,
+        extra: {AuthInterceptor.sessionGenerationKey: SessionGeneration.current},
+      );
+      return DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+    }
+
+    test('passes the 401 on without refreshing, sending it again or ending the session', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      var refreshRequests = 0;
+      var sessionExpiredCalls = 0;
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+        refreshDioFactory: (source) {
+          refreshRequests++;
+          return Dio(BaseOptions(baseUrl: source.options.baseUrl))
+            ..interceptors.add(_StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}'));
+        },
+      );
+      final error = unauthorizedFrom('https://other.example/collect');
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error));
+      expect(handler.resolveCalled, isFalse);
+      expect(refreshRequests, 0);
+      expect(secureStorage.refreshTokenReadCount, 0);
+      expect(retryStub.lastAuthorization, isNull, reason: 'the request must not be sent again with a token');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('does not send the current token there when the token was rotated since the request was sent', () async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'current-jwt');
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      final interceptor = TokenRefreshInterceptor(dio: dio, secureStorage: secureStorage);
+      final error = unauthorizedFrom('https://other.example/collect', headers: {'Authorization': 'Bearer old-jwt'});
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error));
+      expect(retryStub.lastAuthorization, isNull, reason: 'the request must not be sent again with a token');
+    });
+
+    test('still refreshes for a 401 from the API origin', () async {
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      final retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      final interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        refreshDioFactory: (source) =>
+            Dio(BaseOptions(baseUrl: source.options.baseUrl))
+              ..interceptors.add(_StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}')),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(unauthorizedFrom('https://test.api/api/users'), handler);
+
+      expect(handler.resolveCalled, isTrue);
+      expect(retryStub.lastAuthorization, 'Bearer new-jwt');
+    });
+  });
+
   group('TokenRefreshInterceptor - 401 with no refresh token', () {
     test('should call onSessionExpired when no refresh token is stored', () async {
       var sessionExpiredCalled = false;

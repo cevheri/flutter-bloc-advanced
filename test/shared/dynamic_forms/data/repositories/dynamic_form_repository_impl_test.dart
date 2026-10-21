@@ -21,6 +21,9 @@ class _StubInterceptor extends Interceptor {
   Response<String>? _successResponse;
   DioException? _dioError;
 
+  /// The URI of every request that reached the stub, so a test can tell that nothing was sent.
+  final sentUris = <Uri>[];
+
   void stubSuccess({required String data, int statusCode = 200}) {
     _successResponse = Response(requestOptions: RequestOptions(), data: data, statusCode: statusCode);
     _dioError = null;
@@ -41,6 +44,7 @@ class _StubInterceptor extends Interceptor {
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
+    sentUris.add(options.uri);
     if (_dioError != null) {
       handler.reject(
         DioException(
@@ -142,6 +146,56 @@ void main() {
       final failure = result as Failure<String?>;
       expect(failure.error, isA<ValidationError>());
       expect(failure.error.message, DynamicFormRepository.submitMethodRequired);
+    });
+  });
+
+  // A form definition comes from the server, and Dio sends a request to an absolute URL there instead of to the API,
+  // so whoever can write a form could collect what the users submit, and before AuthInterceptor checked the origin,
+  // their access tokens too.
+  group('endpoints that leave the API', () {
+    const outside = [
+      'https://other.example/collect',
+      'http://test.api/leads',
+      '//other.example/collect',
+      'other.example/collect',
+      '@other.example/collect',
+    ];
+
+    for (final endpoint in outside) {
+      for (final method in ['POST', 'PUT', 'PATCH', 'DELETE']) {
+        test('submit rejects $method $endpoint and sends nothing', () async {
+          stub.stubSuccess(data: '{}');
+
+          final result = await repo.submit(FormSubmitAction(method: method, endpoint: endpoint), const {'a': 'b'});
+
+          expect(stub.sentUris, isEmpty);
+          expect(result, isA<Failure<String?>>());
+          final failure = result as Failure<String?>;
+          expect(failure.error, isA<ValidationError>());
+          expect(failure.error.message, DynamicFormRepository.submitEndpointNotApiPath);
+        });
+      }
+
+      test('fetchBundle rejects $endpoint and sends nothing', () async {
+        stub.stubSuccess(data: _validBundleJson);
+
+        final result = await repo.fetchBundle(endpoint, pathParams: '42');
+
+        expect(stub.sentUris, isEmpty);
+        expect(result, isA<Failure<FormBundleEntity>>());
+        final failure = result as Failure<FormBundleEntity>;
+        expect(failure.error, isA<ValidationError>());
+        expect(failure.error.message, DynamicFormRepository.endpointNotApiPath);
+      });
+    }
+
+    test('submit sends a relative endpoint to the API', () async {
+      stub.stubSuccess(data: '{"ok":true}');
+
+      final result = await repo.submit(const FormSubmitAction(method: 'POST', endpoint: '/leads'), const {'a': 'b'});
+
+      expect(result, isA<Success<String?>>());
+      expect(stub.sentUris.single, Uri.parse('https://test.api/leads'));
     });
   });
 
