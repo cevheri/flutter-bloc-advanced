@@ -20,7 +20,11 @@ import org.junit.Test
 class NativeSentryScrubberTest {
     private val jwt = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart"
     private val logged = mutableListOf<String>()
-    private val logError: (String, Throwable) -> Unit = { message, _ -> logged.add(message) }
+    private val loggedClasses = mutableListOf<String>()
+    private val logError: (String, String) -> Unit = { message, errorClass ->
+        logged.add(message)
+        loggedClasses.add(errorClass)
+    }
 
     /** A value whose text cannot be read, so scrubbing it throws. */
     private val unreadable = object {
@@ -301,6 +305,24 @@ class NativeSentryScrubberTest {
 
         assertNull(NativeSentryScrubber.beforeBreadcrumb(crumb, logError))
         assertEquals(listOf("Dropped a native breadcrumb: scrubbing it failed"), logged)
+    }
+
+    // The message of the exception that stopped the scrub can hold the value it failed on, and logcat is readable over
+    // adb, so the drop line names only the hook and the class of the exception.
+    @Test
+    fun logsOnlyTheClassOfTheExceptionThatDroppedAnEventOrABreadcrumb() {
+        val leaking = object {
+            override fun toString(): String = throw IllegalStateException("jane.doe@example.com $jwt")
+        }
+
+        NativeSentryScrubber.beforeSend(SentryEvent().apply { setExtra("value", leaking) }, logError)
+        NativeSentryScrubber.beforeBreadcrumb(Breadcrumb().apply { setData("value", leaking) }, logError)
+
+        assertEquals(
+            listOf("Dropped a native event: scrubbing it failed", "Dropped a native breadcrumb: scrubbing it failed"),
+            logged,
+        )
+        assertEquals(listOf("java.lang.IllegalStateException", "java.lang.IllegalStateException"), loggedClasses)
     }
 
     // sentry_flutter tags the origin of an event in the callback SentryFlutterPlugin.setupBeforeSend installs; the

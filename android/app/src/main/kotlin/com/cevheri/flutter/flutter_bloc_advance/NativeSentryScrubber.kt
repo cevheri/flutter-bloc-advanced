@@ -17,7 +17,7 @@ import io.sentry.protocol.User
  *
  * Masking is idempotent: a Dart breadcrumb reaches [beforeBreadcrumb] already masked when Sentry syncs it to the
  * native scope. When scrubbing throws, the hook drops the event or the breadcrumb and logs that it did, without its
- * content; it never sends one unmasked.
+ * content and without the message of the exception; it never sends one unmasked.
  */
 object NativeSentryScrubber {
     private const val TAG = "NativeSentryScrubber"
@@ -45,20 +45,23 @@ object NativeSentryScrubber {
         "app.lifecycle" to setOf("foreground", "background"),
     )
 
-    /** The `beforeSend` hook of the native SDK: [event] masked in place, or null when scrubbing it failed. */
-    fun beforeSend(event: SentryEvent, logError: (String, Throwable) -> Unit = ::logToLogcat): SentryEvent? = try {
+    /**
+     * The `beforeSend` hook of the native SDK: [event] masked in place, or null when scrubbing it failed. [logError]
+     * gets the line and the class name of the exception, never its message, which can hold the value it failed on.
+     */
+    fun beforeSend(event: SentryEvent, logError: (String, String) -> Unit = ::logToLogcat): SentryEvent? = try {
         scrubEvent(event)
     } catch (error: Throwable) {
-        logError("Dropped a native event: scrubbing it failed", error)
+        logError("Dropped a native event: scrubbing it failed", error.javaClass.name)
         null
     }
 
     /** The `beforeBreadcrumb` hook of the native SDK: [breadcrumb] masked in place, or null when scrubbing failed. */
-    fun beforeBreadcrumb(breadcrumb: Breadcrumb, logError: (String, Throwable) -> Unit = ::logToLogcat): Breadcrumb? =
+    fun beforeBreadcrumb(breadcrumb: Breadcrumb, logError: (String, String) -> Unit = ::logToLogcat): Breadcrumb? =
         try {
             scrubBreadcrumb(breadcrumb)
         } catch (error: Throwable) {
-            logError("Dropped a native breadcrumb: scrubbing it failed", error)
+            logError("Dropped a native breadcrumb: scrubbing it failed", error.javaClass.name)
             null
         }
 
@@ -202,7 +205,7 @@ object NativeSentryScrubber {
         return sensitiveHeaderNameSubstrings.any { lower.contains(it) }
     }
 
-    internal fun logToLogcat(message: String, error: Throwable) {
-        Log.e(TAG, message, error)
+    internal fun logToLogcat(message: String, errorClass: String) {
+        Log.e(TAG, "$message ($errorClass)")
     }
 }
