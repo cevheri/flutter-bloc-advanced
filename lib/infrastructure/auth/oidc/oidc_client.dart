@@ -268,7 +268,15 @@ final class OidcClient implements IOidcClient {
       _log.info('The tab came back from the identity provider without an answer, so the sign-in is cancelled');
       return const OidcSignInCancelled();
     }
-    if (!await _store.hasPendingResponse()) return null;
+    final bool pending;
+    try {
+      pending = await _store.hasPendingResponse();
+    } on FormatException {
+      // A malformed index would fail every later sign-in too, since the manager's init() reads it; clearing removes it.
+      await _store.clearTransactions();
+      rethrow;
+    }
+    if (!pending) return null;
 
     _http.getFailed = false;
     // The manager's init() exchanges the stored response. A manager that already ran init() in this run would not

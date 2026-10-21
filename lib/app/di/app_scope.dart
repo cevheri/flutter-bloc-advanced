@@ -24,6 +24,8 @@ import 'package:flutter_bloc_advance/features/account/domain/repositories/accoun
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/data/services/sso_session_startup_impl.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bloc.dart';
@@ -100,6 +102,7 @@ class AppScope extends StatelessWidget {
             create: (context) =>
                 dependencies.createOidcTokenRotation(context.read<IOidcClient>(), context.read<ISecureStorage>()),
           ),
+          RepositoryProvider<SsoAutoRedirectGate>(create: (_) => SsoAutoRedirectGate()),
         ],
         // Provided above ApiClient so a failed token refresh can end the session.
         BlocProvider<SessionCubit>(
@@ -107,15 +110,28 @@ class AppScope extends StatelessWidget {
             secureStorage: context.read<ISecureStorage>(),
             sessionRepository: context.read<IAuthSessionRepository>(),
             appConfig: context.read<AppConfig>(),
+            ssoStartup: oidcSettings == null
+                ? null
+                : SsoSessionStartup(
+                    auth: context.read<ISsoAuthRepository>(),
+                    rotation: context.read<TokenRotation>(),
+                    secureStorage: context.read<ISecureStorage>(),
+                    sessionRepository: context.read<IAuthSessionRepository>(),
+                    gate: context.read<SsoAutoRedirectGate>(),
+                  ),
           )..restore(),
         ),
         RepositoryProvider<ApiClient>(
           create: (context) {
             final session = context.read<SessionCubit>();
-            return dependencies.createApiClient(
-              context.read<ISecureStorage>(),
-              onSessionExpired: () => session.endSession(reason: SessionExpiredReason.expired),
-            );
+            void onSessionExpired() => session.endSession(reason: SessionExpiredReason.expired);
+            return oidcSettings == null
+                ? dependencies.createApiClient(context.read<ISecureStorage>(), onSessionExpired: onSessionExpired)
+                : dependencies.createOidcApiClient(
+                    context.read<ISecureStorage>(),
+                    onSessionExpired: onSessionExpired,
+                    tokenRotation: context.read<TokenRotation>(),
+                  );
           },
         ),
         RepositoryProvider<IAccountRepository>(

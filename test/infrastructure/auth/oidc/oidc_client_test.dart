@@ -425,6 +425,22 @@ void main() {
       expect(await reloaded.completePendingSignIn(), _failed(OidcFailure.discovery));
       await expectStoreEmpty();
     });
+
+    test(
+      'a malformed response index escapes the completion, which clears the store so the next sign-in starts',
+      () async {
+        final reloaded = await reloadAfterRedirect((request) => {'code': 'code-value', 'state': request.state!});
+        persistent.write('oidc.keys.response.state', '["state-secret-1",');
+
+        await expectLater(reloaded.completePendingSignIn(), throwsFormatException);
+
+        expect(persistent.read('oidc.keys.response.state'), isNull);
+        await expectStoreEmpty();
+        expect(provider.requests, isEmpty);
+        expect(await reloaded.completePendingSignIn(), isNull);
+        expect(await signIn(reloaded), isA<OidcSignInNavigatedAway>());
+      },
+    );
   });
 
   group('Android', () {

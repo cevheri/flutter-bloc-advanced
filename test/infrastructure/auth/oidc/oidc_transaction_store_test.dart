@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_key_value.dart';
 import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_transaction_store.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 import 'package:oidc/oidc.dart';
 
 const _stateId = 'state-1';
@@ -237,4 +238,32 @@ void main() {
     expect(error, isA<FormatException>());
     expect(error.toString(), isNot(contains('state-secret')));
   });
+
+  for (final indexKey in ['oidc.keys.response.state', 'oidc.keys.state']) {
+    test(
+      'clearTransactions removes a malformed $indexKey, logged without its content, so the next sign-in can start',
+      () async {
+        final errors = <String>[];
+        void record(OutputEvent event) {
+          if (event.level == Level.error) errors.addAll(event.lines);
+        }
+
+        Logger.addOutputListener(record);
+        addTearDown(() => Logger.removeOutputListener(record));
+        await _startSignIn(store);
+        persistent.write(indexKey, '["state-secret-1",');
+
+        await store.clearTransactions();
+
+        expect(persistent.read(indexKey), isNull);
+        expect(persistent.keys.where((key) => !key.startsWith('oidc.keys.')), isEmpty);
+        expect(tab.keys, isEmpty);
+        expect(errors, contains(allOf(contains('OidcTransactionStore'), contains(indexKey))));
+        expect(errors.join('\n'), isNot(contains('state-secret')));
+
+        await _startSignIn(store, state: 'state-2');
+        expect(await store.getAllKeys(OidcStoreNamespace.state), {'state-2'});
+      },
+    );
+  }
 }

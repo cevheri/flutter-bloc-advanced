@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:oidc/oidc.dart';
 
 import 'oidc_key_value.dart';
@@ -31,6 +32,8 @@ final class OidcTransactionStore implements OidcStore {
   factory OidcTransactionStore.forPlatform() => kIsWeb
       ? OidcTransactionStore(persistent: browserLocalStorage(), tab: browserSessionStorage())
       : OidcTransactionStore(persistent: MemoryKeyValue(), tab: MemoryKeyValue());
+
+  static final _log = AppLogger.getLogger('OidcTransactionStore');
 
   static const _prefix = 'oidc';
   static const _codeVerifierPrefix = '${OidcConstants_AuthParameters.codeVerifier}.';
@@ -96,7 +99,13 @@ final class OidcTransactionStore implements OidcStore {
   /// verifier, and then this tab's nonce.
   ///
   /// Another tab's state and response stay; the manager's `clearUnusedStates` ages them out.
+  ///
+  /// A malformed index is removed first, logged at error, instead of failing: every later sign-in would otherwise
+  /// fail on it again. This tab's entries are still found through its verifiers; another tab's entries that the index
+  /// listed stay behind.
   Future<void> clearTransactions() async {
+    _removeMalformedIndex(OidcStoreNamespace.state);
+    _removeMalformedIndex(OidcStoreNamespace.stateResponse);
     for (final state in _tabVerifierStates()) {
       _remove(OidcStoreNamespace.secureTokens, '$_codeVerifierPrefix$state');
       _remove(OidcStoreNamespace.state, state);
@@ -172,6 +181,16 @@ final class OidcTransactionStore implements OidcStore {
       throw FormatException('${_indexKey(namespace)} is not a JSON array of strings');
     }
     return decoded.cast<String>().toSet();
+  }
+
+  void _removeMalformedIndex(OidcStoreNamespace namespace) {
+    try {
+      _index(namespace);
+    } on FormatException {
+      // Only the key: the index lists state ids.
+      _log.error('{} is malformed, so it is removed', [_indexKey(namespace)]);
+      _persistent.delete(_indexKey(namespace));
+    }
   }
 
   void _writeIndex(OidcStoreNamespace namespace, Set<String> ids) =>
