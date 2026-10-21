@@ -13,7 +13,7 @@ How far each provider was verified:
 
 | Provider | Status |
 | --- | --- |
-| Keycloak | Verified through the local demo in `tool/oidc-demo` (Keycloak 26.8.1) |
+| Keycloak | Walked through by hand with the demo in `tool/oidc-demo` (Keycloak 26.8.1) on web, the Android emulator and the Linux desktop, where every check passed; not run on iOS, macOS or Windows (see [Tests](#tests)) |
 | Zitadel | Written from Zitadel's documentation; not yet run against a live tenant |
 | Auth0 | Written from Auth0's documentation; not yet run against a live tenant |
 | Microsoft Entra ID | Written from Microsoft's documentation; not yet run against a live tenant |
@@ -77,7 +77,7 @@ Sign in as `admin` / `admin` (realm role `admin`) or `user` / `user` (realm role
 The Keycloak admin console is at `http://localhost:8080/admin/` with `kcadmin` / `kcadmin`.
 
 What the walkthrough shows:
-- `admin` sees the admin pages and `user` does not.
+- `admin` opens the user list, and `user` gets the forbidden page on it; the sidebar still lists User Management for `user`, because `assets/mock/menus.json` grants those entries to `ROLE_USER` too.
 - With the default `OIDC_PROMPT=login`, every sign-in asks for the password, even while the Keycloak session lives.
 - Add `--dart-define=OIDC_PROMPT=omit` and the next sign-in completes without a form while the Keycloak session lives.
 - The realm gives access tokens a 60 second life, so an API call a minute after sign-in gets a 401 from the mock API, which answers 401 to an expired JWT bearer in dev mode, and the app refreshes at Keycloak and retries without signing out.
@@ -282,11 +282,17 @@ There is no `OIDC_CLIENT_SECRET`: the app is a public client, and a guard test f
 
 An invalid `oidc` configuration does not stop the app.
 It starts, the login page shows "Single sign-on is not configured correctly in this app. Contact your administrator." in place of the button, and the log names the variable and the rule it breaks.
+Such a build fails closed on a session that an earlier, correctly configured build stored: it never restores it, so the user starts signed out with that sentence, and it never refreshes through the backend's `jwt` refresh endpoint, so the provider's refresh token never reaches the backend.
+The stored session stays on the device unread, and is wiped if this build ends a session.
 
 To change the redirect scheme, change it in three places together:
-- `OidcSettings.defaultRedirectScheme` in `lib/infrastructure/config/auth_config.dart`, or `OIDC_REDIRECT_SCHEME` at build time;
+- `OidcSettings.defaultRedirectScheme` in `lib/infrastructure/config/auth_config.dart`;
 - `manifestPlaceholders["oidcRedirectScheme"]` in `android/app/build.gradle.kts`, which `test/architecture/oidc_platform_setup_test.dart` ties to the default;
 - the redirect URIs registered at your provider, and `redirectUris` and `post.logout.redirect.uris` in `tool/oidc-demo/docker-compose.yml` for the demo.
+
+On Android the scheme the app sends must equal the manifest placeholder, so an Android build changes it only through the default and the placeholder together.
+`OIDC_REDIRECT_SCHEME` at build time overrides the scheme the app sends, which is enough on iOS and macOS, where `ASWebAuthenticationSession` takes the scheme from the redirect URI; an Android build given a value other than the placeholder never receives its redirect.
+Web, Linux and Windows do not use the scheme.
 
 ### Automatic redirect
 
@@ -476,6 +482,9 @@ The predicate applies in both modes, and a 401 it does not match reaches the cal
 
 ## Troubleshooting
 
+The log lines below come from `AppLogger`.
+A `main_local.dart` build uses its development filter, which prints nothing once asserts are off, so a release build of the demo shows no app log line and the sign-in and refresh lines are seen only in a debug build; a `main_prod.dart` build prints info and above.
+
 **The app stops at startup with "AUTH_PROVIDER is ..., but it must be jwt or oidc".**
 `AUTH_PROVIDER` has a value other than `jwt` or `oidc`; an unknown value is never read as `jwt`.
 
@@ -519,13 +528,15 @@ Every refresh request sends the configured scope, as the `oidc` package does; a 
 **Logout leaves the provider session active.**
 The provider advertises no `end_session_endpoint`, such as Google, so only the app session ends; that is expected.
 When a provider logout fails, the app still signs out and says "You are signed out of this app, but your session at the identity provider may still be active."
+The app signs out on this device first and runs the provider logout after that, so the sentence can appear after the login page shows: on Linux and Windows a provider logout whose browser page is left alone ends only after the 5 minute flow timeout.
 With `OIDC_LOGOUT_HINT=false` Keycloak asks the user to confirm each logout.
 
 **Keycloak says "Restart login cookie not found" on iOS or macOS.**
-See [Known limitations](#known-limitations): WebKit may not send Keycloak's `Secure` cookies over plain http.
+See [Known limitations](#known-limitations): `ASWebAuthenticationSession` over plain http is unverified with Keycloak's login cookies.
 
 **The SSO button stays busy on Linux or Windows after the browser tab was closed.**
-The loopback listener waits up to 5 minutes; see [Known limitations](#known-limitations).
+The loopback listener waits up to 5 minutes, and the sign-in then ends as a cancel with no message; see [Known limitations](#known-limitations).
+A sign-in started while a provider logout's page is left alone stays busy the same way, because the client runs one operation at a time and the sign-in waits behind that logout.
 
 **The Android build fails in the manifest merger.**
 The `oidc_android` plugin needs the `oidcRedirectScheme` placeholder in `android/app/build.gradle.kts`, in every build, `jwt` included.
@@ -558,12 +569,14 @@ The two modes share the bearer slot of secure storage, so an `oidc` build reads 
 - **Front-channel logout is not supported:** the page's front-channel handler writes a marker that the app's store never reads, so do not register `redirect.html?requestType=front-channel-logout` as a front-channel logout URL.
 - **Keycloak's ID token is short-lived:** Keycloak gives the ID token the access token's lifespan, 60 seconds in the demo, so the stored ID token is usually expired.
   A refresh and a logout still work with it: the refresh does not check its expiry, and Keycloak 26.8.1 accepts an expired `id_token_hint` and ends the session.
-- **Linux and Windows wait for a closed browser tab:** the package has no way to cancel the loopback listener, so after the user closes the provider's tab the SSO button works again only after the 5 minute flow timeout.
-- **One client operation at a time:** sign-in, the web completion, refresh and provider logout run one after another, so a pending interactive sign-in holds back the others until it ends.
+- **Linux and Windows wait for a closed browser tab:** the package has no way to cancel the loopback listener, so after the user closes the provider's tab the SSO button works again only after the 300 second flow timeout, which ends the sign-in as a cancel with no message.
+- **A desktop provider logout can end late:** the app signs out on this device before the provider logout runs, so the login page shows at once.
+  On Linux and Windows a provider logout whose page is left alone ends only after the same 300 second flow timeout, and then shows "You are signed out of this app, but your session at the identity provider may still be active."
+- **One client operation at a time:** sign-in, the web completion, refresh and provider logout run one after another, so a pending interactive sign-in or provider logout holds back the others until it ends: a sign-in started while a desktop provider logout waits for its timeout waits behind it.
 - **The desktop end-session page is blank:** after a provider logout on Linux and Windows the browser shows an empty page, since a provider logout takes no message.
-- **WebKit and `Secure` cookies over http:** Keycloak sets its login cookies with `Secure; SameSite=None` even over plain http.
-  Chrome, Firefox and the Android Custom Tab send them to `http://localhost`; whether WebKit does (the iOS simulator and macOS `ASWebAuthenticationSession`) is unverified.
-  If it does not, the login form fails with "Restart login cookie not found", and the demo on Apple platforms needs TLS.
+- **Keycloak's cookies on Apple platforms:** Keycloak 26.8.1 chooses its cookie attributes by user agent: a Safari user agent gets its login cookies with `SameSite=Lax` and without `Secure`, and Chrome gets `Secure; SameSite=None`, even over plain http.
+  A sign-in in WebKit, driven through Playwright, worked over `http://localhost`; `ASWebAuthenticationSession` on iOS and macOS, whose user agent and cookie handling may differ, is unverified.
+  If it fails there with "Restart login cookie not found", the demo on Apple platforms needs TLS.
 - **iOS shows its system alert:** iOS and macOS use the shared browser session, so iOS asks "... Wants to Use ... to Sign In" on every sign-in and every logout.
 - **Roles are fixed at sign-in:** a role changed at the provider shows at the next sign-in.
 - **No user management:** the user list, the user editor and account editing still call the backend; with single sign-on, manage users at the provider.
@@ -578,7 +591,8 @@ The two modes share the bearer slot of secure storage, so an `oidc` build reads 
 An unknown `AUTH_PROVIDER` throws `AuthProviderConfigError`, which is logged and stops the app before any screen.
 `oidc` becomes `OidcAuthMode(settings)`, or `OidcMisconfiguredAuthMode(reason)` when the settings break a rule; the reason is logged at error.
 The mode is injected through `AppDependencies.authMode`, and `AppScope` provides it as `AuthMode`.
-Only `OidcAuthMode` builds the OIDC pieces: `IOidcClient`, `ISsoAuthRepository`, one `TokenRotation` shared by the startup step and the `ApiClient`, and `SsoAutoRedirectGate`.
+Only `OidcAuthMode` builds the OIDC pieces: `IOidcClient`, `ISsoAuthRepository`, one `TokenRotation` shared by the startup step and the `ApiClient`, `SsoSignOutAuthRepository` and `SsoAutoRedirectGate`.
+`OidcMisconfiguredAuthMode` builds no OIDC client and fails closed: `SessionCubit` gets `MisconfiguredSsoSessionStartup`, which answers `oidc_config` without reading the stored session, and the `ApiClient` gets `RefusingTokenRotation`, which refuses every refresh without a request, so a stored provider refresh token never reaches `BackendTokenRotation`.
 
 ### Sign-in on Android, iOS, macOS, Linux and Windows
 
@@ -594,6 +608,7 @@ Only `OidcAuthMode` builds the OIDC pieces: `IOidcClient`, `ISsoAuthRepository`,
 
 A closed provider page is a cancel: no message, logged at info, and the automatic redirect gate closes.
 On Android a closed Custom Tab tells the app nothing, so `OidcClient` cancels the pending flow whenever the app resumes; after a real redirect that cancel does nothing.
+On Linux and Windows the loopback listener cannot see a closed tab either, so a sign-in left alone ends after the 300 second flow timeout, also as a cancel with no message (`AppOidcUserManager.browserFlowTimedOut`); the flag is reset at the start of each sign-in.
 Every outcome ends with the transaction store cleared and the package's user manager forgetting its user, so the app's secure storage is the only place tokens live.
 
 ### Sign-in on web
@@ -602,11 +617,13 @@ The tab itself goes to the provider, so the sign-in completes after a page load:
 
 1. `OidcClient.signIn` writes the transaction and navigates the tab away; `LoginBloc` stays loading on `SsoSignInNavigatedAway`.
    The return path travels as the fragment of the package's `original_uri` (`<origin><base href>#<safe path>`), never in `state`.
-2. The provider redirects to `redirect.html`, which stores the redirect URL as the response of that `state` in `localStorage` and sends the tab back to the app.
+2. The provider redirects to `redirect.html`, which stores the redirect URL as the response of that `state` in `localStorage` and sends the tab back to the app with `location.replace`, so the callback URL does not stay in the tab history.
 3. At startup `SessionCubit.restore` runs `SsoSessionStartup.run`, which calls `completePendingSignIn`.
    A new user manager runs `init()`, which exchanges the stored response, and the session is persisted as above, before the router picks the first screen, so the login page does not flash.
 4. A rejected completion becomes `SessionUnauthenticated(reason: signInFailed, signInError: code)`, and the login page shows the sentence until the first SSO tap.
 5. A tab that comes back without a response (the user pressed Back) holds a verifier with no response; the client reports a cancel, clears it, and the gate closes, so no redirect loop starts.
+6. A browser may instead restore the page from its back-forward cache, with `LoginBloc` still loading.
+   The first web sign-in of a run registers a `pageshow` listener (`oidc_page_restore.dart`) that reloads a page restored that way, so the reload's startup step reports the cancel and Back from the provider is a cancel in that case too.
 
 ### Startup in `oidc` mode
 
@@ -623,28 +640,35 @@ What the step answers after its limit is acted on only while nothing has been em
 `TokenRefreshInterceptor` stays the only owner of refresh, with its single flight, its session-generation checks, its rollback and its cross-tab check of the stored refresh token.
 The package's own refresh timers are off (`AppOidcUserManager`).
 In `oidc` mode the refresh goes through `OidcTokenRotation`:
-1. Rotations run one at a time, and a refresh token is sent in at most one grant, so a provider with refresh token reuse detection never sees it twice.
+1. Rotations run one at a time, and a refresh token that the provider has replaced or refused is never sent in a second grant, so a provider with refresh token reuse detection never sees a used token twice.
+   A provider that does not rotate refresh tokens answers with no new one, or the same one, so that token stays the stored one and is sent again when the new access token expires.
 2. A refresh token that the store no longer holds gets `RotationUnavailable` without a request, and the interceptor retries with the stored tokens.
 3. `OidcClient.refresh` hands the stored access token, ID token and refresh token to the package for one `refresh_token` grant at the provider's token endpoint; the stored ID token may have expired.
-4. A new ID token's signature is verified against the provider's keys.
-5. The interceptor stores the new access token and its expiry, the new refresh token when the provider rotates it, and the new ID token when one is returned; roles are not re-mapped.
+4. A new ID token's signature is then verified against the provider's keys.
+   When the token endpoint has answered but the JWKS cannot be fetched for that check, the grant is not thrown away: the answer keeps the new access and refresh tokens, drops the unchecked ID token so the stored one stays, and a warning is logged.
+5. The interceptor stores the new access token and its expiry, the new refresh token when the provider rotates it, and the new ID token when one is returned and checked; roles are not re-mapped.
 
 | Answer | Result | Effect |
 | --- | --- | --- |
 | New tokens | `TokensRotated` | Stored, and the request is retried |
-| `invalid_grant`, `invalid_client` or another client or authentication error, or a new ID token that fails a check | `RotationRefused` | The session ends with reason expired, and the login page shows the button with no error |
-| `server_error`, `temporarily_unavailable`, another 5xx, a JWKS error status, or a transport failure | `RotationUnavailable` | The session is kept, the request fails as a network error, and the next 401 tries again |
+| New tokens, but the JWKS for the new ID token could not be fetched | `TokensRotated` without an ID token | The new access and refresh tokens are stored, the stored ID token stays, and the request is retried |
+| `invalid_grant`, `invalid_client` or another client or authentication error, or a new ID token whose signature or claims fail a check | `RotationRefused` | The session ends with reason expired, and the login page shows the button with no error |
+| A token endpoint status of 429 or 5xx whatever its error code, `server_error`, `temporarily_unavailable`, discovery that cannot be fetched, or a transport failure | `RotationUnavailable` | The session is kept, the request fails as a network error, and the next 401 tries again |
 
 `jwt` mode keeps `BackendTokenRotation`, today's `POST /api/token/refresh`, where any failure ends the session.
 
 ### Logout
 
-A logout the user starts goes through `SsoSignOutAuthRepository.logout`:
+A logout the user starts goes through `SsoSignOutUseCase` and `SsoSignOutAuthRepository.signOut`:
 1. It reads the stored ID token.
-2. It clears the local session exactly as in `jwt` mode, including the OIDC keys.
-3. `OidcClient.endProviderSession` uses the discovered `end_session_endpoint`, else Auth0's `/v2/logout` for an issuer on `auth0.com`, else no provider logout.
-4. It opens that endpoint with `client_id`, the platform's `post_logout_redirect_uri`, and the ID token as `id_token_hint` while `OIDC_LOGOUT_HINT` is on.
-5. A failed, cancelled or unopenable provider logout still signs the user out, and `MenuBloc` emits `providerSessionLeft`, which shows the `oidc_logout_incomplete` sentence.
+2. It clears the local session exactly as in `jwt` mode, including the OIDC keys, and answers at once with that result and the provider logout started (`SsoSignOut`).
+3. `MenuBloc` signs the app out on that answer, so the login page shows while the provider logout goes on.
+4. `OidcClient.endProviderSession` uses the discovered `end_session_endpoint`, else Auth0's `/v2/logout` for an issuer on `auth0.com`, else no provider logout.
+5. It opens that endpoint with `client_id`, the platform's `post_logout_redirect_uri`, and the ID token as `id_token_hint` while `OIDC_LOGOUT_HINT` is on.
+6. A failed, cancelled or unopenable provider logout leaves the user signed out; `MenuBloc` then emits `providerSessionLeft`, and `AppSessionListeners` shows the `oidc_logout_incomplete` sentence as a notice over the login page; when the local clear failed, only the notice about stored data left behind shows.
+
+On Linux and Windows a provider logout whose page is left alone ends after the 300 second flow timeout, as a failure with that sentence.
+The client runs one operation at a time, so a sign-in started meanwhile waits behind it.
 
 No automatic redirect fires in the same run after a user logout.
 An idle timeout or an unrefreshable 401 clears the local session only, through `SessionCubit`, because a provider logout needs a browser and the user is not there.
@@ -663,12 +687,13 @@ An idle timeout or an unrefreshable 401 clears the local session only, through `
 | `lib/infrastructure/storage/secure_storage.dart` | The `oidcIdToken` and `accessTokenExpiresAt` keys and the expiry encoding |
 | `lib/features/auth/domain/entities/auth_session.dart` | `AuthSession.oidcIdToken` and `accessTokenExpiresAt` |
 | `lib/features/auth/data/repositories/auth_session_repository_impl.dart` | Persist, rollback and clear of the OIDC keys, only with `oidcKeys: true` |
-| `lib/infrastructure/http/token_rotation.dart` | `TokenRotation`, `TokenRotationResult`, `BackendTokenRotation` and the `SessionExpiredPredicate` seam |
+| `lib/infrastructure/http/token_rotation.dart` | `TokenRotation`, `TokenRotationResult`, `BackendTokenRotation`, `RefusingTokenRotation` for a misconfigured build, and the `SessionExpiredPredicate` seam |
 | `lib/infrastructure/http/interceptors/token_refresh_interceptor.dart` | Refreshes through a `TokenRotation`, honors `RotationUnavailable`, stores the OIDC fields |
 | `lib/infrastructure/http/api_client.dart` | Passes the rotation and the 401 predicate to the interceptor |
 | `lib/infrastructure/http/interceptors/mock_interceptor.dart` | Answers 401 to an expired JWT bearer in dev mode |
 | `lib/infrastructure/auth/oidc/oidc_client.dart` | `IOidcClient` and `OidcClient`: sign-in, web completion, refresh, provider logout, error classification |
-| `lib/infrastructure/auth/oidc/app_oidc_user_manager.dart` | The package's `OidcUserManager` with timers off, a 5 minute transaction life and session adoption |
+| `lib/infrastructure/auth/oidc/oidc_page_restore.dart`, `oidc_page_restore_web.dart`, `oidc_page_restore_stub.dart` | The web `pageshow` listener that reloads a page restored from the back-forward cache; nothing on other platforms |
+| `lib/infrastructure/auth/oidc/app_oidc_user_manager.dart` | The package's `OidcUserManager` with timers off, a 5 minute transaction life, session adoption, the refreshed ID token check and the desktop flow timeout flag |
 | `lib/infrastructure/auth/oidc/oidc_transaction_store.dart` | The app-owned `OidcStore`, laid out as `redirect.html` expects |
 | `lib/infrastructure/auth/oidc/oidc_key_value.dart`, `oidc_key_value_browser_web.dart`, `oidc_key_value_browser_stub.dart` | Key-value storage over `localStorage` and `sessionStorage`, or memory |
 | `lib/infrastructure/auth/oidc/oidc_redirect_uris.dart` | The redirect and post-logout URIs per platform, and the web entry URI |
@@ -680,12 +705,14 @@ An idle timeout or an unrefreshable 401 clears the local session only, through `
 | `lib/features/auth/application/login_bloc.dart`, `login_event.dart` | `SsoSignInRequested` and its handler |
 | `lib/features/auth/domain/services/sso_session_startup.dart`, `lib/features/auth/data/services/sso_session_startup_impl.dart` | The startup step and its sealed result |
 | `lib/features/auth/domain/services/sso_auto_redirect_gate.dart` | `SsoAutoRedirectGate` |
-| `lib/features/auth/data/repositories/sso_sign_out_auth_repository.dart` | `SsoSignOutAuthRepository`, the provider logout |
+| `lib/features/auth/domain/repositories/sso_sign_out_repository.dart`, `lib/features/auth/application/usecases/sso_sign_out_usecase.dart` | `ISsoSignOutRepository`, `SsoSignOut` (the local clear and the pending provider logout) and `SsoSignOutUseCase` |
+| `lib/features/auth/data/repositories/sso_sign_out_auth_repository.dart` | `SsoSignOutAuthRepository`: the local clear, then the provider logout |
+| `lib/features/auth/data/services/misconfigured_sso_session_startup.dart` | `MisconfiguredSsoSessionStartup`, which answers `oidc_config` without reading the stored session |
 | `lib/app/session/session_cubit.dart` | Runs the startup step under its own limit, `SessionUnauthenticated.signInError` |
 | `lib/app/bootstrap/app_bootstrap.dart` | Reads the mode, stops on an unknown `AUTH_PROVIDER` |
-| `lib/app/bootstrap/app_session_listeners.dart` | Closes the gate on sign-in and logout, shows the logout notice |
-| `lib/app/di/app_dependencies.dart`, `lib/app/di/app_scope.dart` | Builds and provides the OIDC pieces in `OidcAuthMode` only, and `sessionExpiredPredicate` |
-| `lib/app/shell/menu_bloc/menu_bloc.dart`, `menu_state.dart` | `MenuStateStatus.providerSessionLeft` |
+| `lib/app/bootstrap/app_session_listeners.dart` | Closes the gate on sign-in, logout and a restore past the storage limit, and shows the logout notice, also when it follows the sign-out |
+| `lib/app/di/app_dependencies.dart`, `lib/app/di/app_scope.dart` | Builds and provides the OIDC pieces in `OidcAuthMode` only, the fail-closed startup and rotation of `OidcMisconfiguredAuthMode`, and `sessionExpiredPredicate` |
+| `lib/app/shell/menu_bloc/menu_bloc.dart`, `menu_state.dart` | Signs out on the local clear, then `MenuStateStatus.providerSessionLeft` when the provider logout fails |
 | `lib/features/auth/presentation/pages/login_page.dart` | The SSO variant of the login page, its error line and the automatic redirect |
 | `lib/features/auth/navigation/auth_routes.dart` | Only the `login` route in the `oidc` modes |
 | `lib/app/router/app_router.dart`, `lib/app/app.dart` | Routes by mode, and `/oauth2redirect` and `/logout` to `/login` with no `returnUrl` |
@@ -708,15 +735,19 @@ An idle timeout or an unrefreshable 401 clears the local session only, through `
   The package's store keeps no token: the manager's copy of the tokens, the discovery document and the request live in memory for one operation.
   The web build has the same exposure as `jwt` mode's tokens.
 - **Web transactions:** `state` and the provider's response are in `localStorage` (`oidc.state.<id>`, `oidc.response.state.<id>`, indexed by `oidc.keys.<namespace>`), where `redirect.html` reads and writes them.
-  The PKCE verifier and the nonce are in the tab's `sessionStorage`, so a sign-in stays with its tab, and one tab never consumes or deletes another tab's response.
+  The PKCE verifier is in the tab's `sessionStorage` only, so a sign-in stays with its tab, and one tab never consumes or deletes another tab's response.
+  The nonce is in `sessionStorage` too, but the package also keeps it inside the state entry in `localStorage`, and checks the ID token's nonce against that copy.
   A transaction expires after 5 minutes and is deleted on every outcome.
 - **Provider text:** never on screen.
   The error code picks a fixed sentence, classification goes by error type, and the log gets only the type, the provider's error code and the HTTP status.
-  `redirect.html` shows fixed copy for an error redirect.
+  `redirect.html` shows fixed copy for an error redirect, logs a `state` it cannot find without its value, and returns to the app with `location.replace`, so the callback URL with its code and `state` does not stay in the tab history.
 - **Logs:** no token, authorization code, verifier, `state`, `nonce`, `session_state` or `id_token_hint` reaches a log line, the dev console or Sentry.
   The scrubber masks the exact keys `code`, `code_verifier`, `state`, `nonce`, `session_state` and `id_token_hint` in bodies and query strings, while names such as `statusCode` keep their values.
-  The package's own records reach the dev console through go_router's root logging subscription, so the client avoids every record that carries a secret: UserInfo is off, and the desktop launcher never answers false, which would make the package log the authorization URL.
+  The package's own `package:logging` records do not reach the app's dev console, but go_router's root logging subscription (`debugLogDiagnostics` is on) sends them, unscrubbed, to `dart:developer`, which is the IDE and DevTools log, and a SEVERE one to `FlutterError.dumpErrorToConsole`.
+  So the client avoids every record that carries a secret: UserInfo is off, and the desktop launcher never answers false, which would make the package log the authorization URL.
+  `AuthInterceptor`'s request log keeps its existing masked preview of the bearer, the first and last four characters through `maskToken`, which predates this feature and applies in both modes.
 - **Router:** `/oauth2redirect` and `/logout` always go to `/login` with no `returnUrl`, so a callback URL never becomes a router location or a return path.
+- **Misconfigured build:** fails closed on a stored session: it never restores it and never refreshes, so a provider refresh token never reaches the backend's `jwt` refresh endpoint.
 - **Return path:** checked on the way in and on the way out with `safeReturnPath`: a local path only, at most 1024 UTF-8 bytes, no control characters, and not the login route; an unsafe value becomes `/`.
 - **`id_token_hint`:** always the current session's ID token, because it is written, rolled back and wiped together with the session it belongs to.
 - **Front-channel logout:** not supported; the `oidc.request.front-channel-logout` marker that `redirect.html` writes is never read, so a crafted link cannot make a pending sign-in skip its response.
@@ -726,6 +757,8 @@ An idle timeout or an unrefreshable 401 clears the local session only, through `
 
 - The startup step has its own 15 second limit, before the 10 second storage limit, and a timeout keeps the stored session and disables the automatic redirect.
 - The `id_token_hint` is the current session's stored ID token by construction; there is no comparison of its `sub` with a stored subject.
+- A logout the user starts signs the app out before the provider logout runs, instead of after it, so the login page shows at once and the `oidc_logout_incomplete` sentence can follow it.
+- A refresh whose new ID token cannot be checked because the JWKS cannot be fetched keeps the new access and refresh tokens and the stored ID token, since the provider has already traded the refresh token.
 - A sign-in whose token response has no `expires_in` fails with `oidc_failed`, because the session could never be refreshed in time.
 - The scrubber's exact OIDC keys apply in `jwt` mode too: a `state=` or `code=` value in a logged URL and a `{"code": ...}` member in a logged body now print `[REDACTED]`.
   Sentry navigation breadcrumbs keep their `didPush`, `didPop` or `didReplace` state.
@@ -736,41 +769,55 @@ Each code is an `AppErrorCode` in the `auth.` namespace, with one sentence in ea
 
 | Code | When | Sentence (English) |
 | --- | --- | --- |
-| `auth.oidc_config` | Invalid configuration, checked at bootstrap | Single sign-on is not configured correctly in this app. Contact your administrator. |
+| `auth.oidc_config` | Invalid configuration, checked at bootstrap; such a build starts signed out, whatever session is stored | Single sign-on is not configured correctly in this app. Contact your administrator. |
 | `auth.oidc_discovery` | Discovery, the JWKS or the token endpoint unreachable, a TLS failure, a response that is not JSON, or a discovery document naming another issuer | The identity provider could not be reached. Try again later, or contact your administrator if this continues. |
 | `auth.oidc_no_role` | Role mapping refused the account | Your account has no role that allows access to this app. Ask your administrator. |
 | `auth.oidc_no_claims` | The ID token has no string `sub` or `iss` | Sign-in failed. Please try again. |
 | `auth.oidc_failed` | Any other failure after the provider answered: a `state` mismatch, a failed code exchange, an invalid ID token, an answer without `expires_in`, or an error from the provider | Sign-in failed. Please try again. |
-| `auth.oidc_logout_incomplete` | The provider logout failed | You are signed out of this app, but your session at the identity provider may still be active. |
-| (none) | The user closed the provider page | No message |
+| `auth.oidc_logout_incomplete` | The provider logout failed, was cancelled or could not be opened, or on Linux and Windows reached the 300 second flow timeout; shown after the app has signed out, so it can follow the login page | You are signed out of this app, but your session at the identity provider may still be active. |
+| (none) | The user closed or left the provider page: a closed Custom Tab or system sheet, Back on web (also from the back-forward cache), or a Linux or Windows sign-in left alone until the 300 second flow timeout | No message |
 
 A sign-in whose session cannot be stored shows the existing `auth.session_persist_failed` sentence.
 
 ## Tests
 
-Every behavior has a test, written before the code.
+Each test file below names the behavior it pins.
 `test/infrastructure/auth/oidc/support/fake_provider.dart` is an OpenID provider behind `MockClient`, with discovery, JWKS and a token endpoint that sign RS256 ID tokens, so the client tests run the real package end to end without a network.
 
 | Test | What it pins |
 | --- | --- |
 | `test/infrastructure/config/auth_config_test.dart` | Every variable, default and spelling, and every refusal |
-| `test/app/di/app_dependencies_test.dart`, `test/app/di/app_scope_test.dart`, `test/app/di/app_scope_oidc_test.dart` | The mode's injection; a `jwt` build creates no OIDC client and touches no OIDC key |
+| `test/app/di/app_dependencies_test.dart`, `test/app/di/app_scope_test.dart`, `test/app/di/app_scope_oidc_test.dart` | The mode's injection; a `jwt` build creates no OIDC client and touches no OIDC key; a misconfigured build restores signed out with `oidc_config`, leaves the stored session alone and refreshes through a rotation that refuses |
 | `test/core/security/oidc_role_mapping_test.dart` | LibreDB Studio's `mapOIDCRole` cases, the literal key, the object and array-wrapped shapes |
 | `test/core/security/safe_redirect_test.dart` | Each return path rule |
 | `test/core/security/sensitive_data_scrubber_test.dart`, `test/infrastructure/analytics/sentry_scrub_test.dart` | The exact OIDC keys, and the navigation breadcrumb's `state` |
 | `test/shared/l10n/app_error_code_l10n_test.dart` | Each code's sentence in English and Turkish |
 | `test/features/auth/data/repositories/auth_session_repository_impl_test.dart`, `test/infrastructure/storage/secure_storage_test.dart`, `test/features/auth/domain/entities/auth_session_test.dart` | The OIDC keys are written, rolled back and cleared with the session, and never touched in `jwt` mode |
 | `test/infrastructure/http/interceptors/mock_interceptor_test.dart` | An expired JWT bearer gets a 401, and `MOCK_TOKEN` still passes |
-| `test/infrastructure/http/token_rotation_test.dart`, `test/infrastructure/http/interceptors/token_refresh_interceptor_test.dart` | The rotation seam, `RotationUnavailable`, the narrowed 401 predicate, and `jwt` refresh unchanged |
+| `test/infrastructure/http/token_rotation_test.dart`, `test/infrastructure/http/interceptors/token_refresh_interceptor_test.dart` | The rotation seam, `RotationUnavailable`, `RefusingTokenRotation`, the narrowed 401 predicate, and `jwt` refresh unchanged |
 | `test/infrastructure/auth/oidc/oidc_transaction_store_test.dart`, `oidc_redirect_uris_test.dart` | The store layout, two tabs, the 5 minute life, and the URIs per platform |
-| `test/infrastructure/auth/oidc/oidc_client_test.dart`, `oidc_token_rotation_test.dart` | Sign-in, web completion, Android cancel on resume, refresh classification, one operation at a time, provider logout and the Auth0 fallback |
-| `test/features/auth/data/repositories/sso_auth_repository_impl_test.dart`, `test/features/auth/application/login_bloc_test.dart`, `test/features/auth/application/usecases/sign_in_with_sso_usecase_test.dart` | Claims, roles and persist; each outcome in `LoginBloc`; dropped concurrent taps |
+| `test/infrastructure/auth/oidc/oidc_client_test.dart`, `oidc_token_rotation_test.dart` | Sign-in, web completion, Android cancel on resume, the desktop flow timeout as a cancel, the back-forward cache listener registered once on web, refresh classification (a 429 or 5xx token answer keeps the session, an unreachable JWKS after the grant keeps the new tokens and the stored ID token), a provider that does not rotate refresh tokens, one operation at a time, provider logout and the Auth0 fallback |
+| `test/infrastructure/auth/oidc/oidc_page_restore_test.dart` | A page restored from the back-forward cache is reloaded, and a fresh load is not |
+| `test/features/auth/data/repositories/sso_auth_repository_impl_test.dart`, `test/features/auth/application/login_bloc_test.dart`, `test/features/auth/application/usecases/sign_in_with_sso_usecase_test.dart` | Claims, roles and persist; the production log names the role but not the username; each outcome in `LoginBloc`; dropped concurrent taps |
 | `test/features/auth/data/services/sso_session_startup_impl_test.dart`, `test/features/auth/domain/services/sso_auto_redirect_gate_test.dart`, `test/app/session/session_cubit_test.dart` | The startup step, its time limit and late answers, and the gate |
-| `test/features/auth/data/repositories/sso_sign_out_auth_repository_test.dart`, `test/app/shell/menu_bloc/menu_bloc_test.dart`, `test/app/bootstrap/app_session_listeners_test.dart` | Provider logout, the incomplete-logout notice and the gate after logout |
+| `test/features/auth/data/repositories/sso_sign_out_auth_repository_test.dart`, `test/app/shell/menu_bloc/menu_bloc_test.dart`, `test/app/bootstrap/app_session_listeners_test.dart`, `test/app/bootstrap/app_session_listeners_sso_test.dart` | Provider logout; the sign-out answers before the provider logout ends, so the login page opens while it is pending; the incomplete-logout notice, also when it comes later; the gate after logout and after a restore past the storage limit |
 | `test/shared/utils/external_link_test.dart` | `launchExternalUri` throws instead of answering false |
 | `test/features/auth/presentation/pages/login_screen_test.dart`, `login_screen_golden_test.dart` | The SSO page, each error sentence, the Turkish text, the automatic redirect and the `login_screen_sso_light` golden |
-| `test/app/router/app_router_test.dart` | The password routes are absent in `oidc` mode, and a callback URL lands on `/login` with no `returnUrl` |
+| `test/app/router/app_router_test.dart` | The password routes are absent in `oidc` mode, and a callback URL, with or without a trailing slash, lands on `/login` with no `returnUrl` |
+| `test/features/settings/presentation/pages/settings_screen_test.dart`, `test/app/shell/command_palette/command_palette_widget_test.dart` | Change password offered only in `jwt` mode |
 | `test/features/auth/sso_log_hygiene_test.dart` | A full sign-in, refresh, logout and pushed callback route print no token, code, verifier, `state` or `nonce` |
 | `test/architecture/oidc_platform_setup_test.dart` | The Android placeholder equals the default scheme, `web/redirect.html` is the package page plus its patches, no client secret in `lib/` and only `.none` client authentication, and no intent filter for the scheme or its placeholder in any app manifest |
 
-The manual walkthrough of the Keycloak demo on each platform is recorded in the pull request.
+The Keycloak 26.8.1 demo was also walked through by hand on three platforms: web (Chromium, plus one sign-in in WebKit, both driven through Playwright), the Android emulator (a Pixel 3a image with API 36, under KVM) and the Linux desktop.
+Every check passed on each of them:
+- sign-in as `admin` and as `user`, with the route guard sending `user` to the forbidden page on the admin routes;
+- a refresh at Keycloak after the 60 second token life, with the app still signed in;
+- single sign-on with `OIDC_PROMPT=omit`, and a logout that really ends the Keycloak session, so the next sign-in shows the form again;
+- `OIDC_PROMPT=login` asking for the password every time, even while the Keycloak session lives;
+- leaving the provider page (web Back, a closed Custom Tab, a Linux sign-in left alone until the flow timeout) as a cancel, with the button usable, no sentence and no redirect loop;
+- a logout with an expired ID token, which Keycloak accepts;
+- the Android redirect returning to the running app instead of starting a new one;
+- no secret in any app log line.
+
+iOS, macOS and Windows were not run.
+The sidebar still lists User Management for `user` in the demo, because `assets/mock/menus.json` grants those entries to `ROLE_USER` as well, in `jwt` mode too; the route guard denies the routes.

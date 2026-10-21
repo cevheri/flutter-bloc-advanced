@@ -413,9 +413,9 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   A token may be printed through `maskToken`; a password or an OTP is printed as `secretMask`.
 - **`oidc_platform_setup_test.dart`** guards the platform setup of the `oidc` mode ([`docs/oidc.md`](oidc.md)).
   It fails if `defaultConfig` in `android/app/build.gradle.kts` does not set `manifestPlaceholders["oidcRedirectScheme"]` to `OidcSettings.defaultRedirectScheme`: the `oidc_android` manifest merge needs the placeholder in every build, and the redirect never reaches the app when it differs from the scheme the Dart side sends.
-  It fails if `web/redirect.html` is not the `oidc` package's `example/web/redirect.html` with its one documented patch, which shows fixed copy instead of the provider's `error_description` and `error_uri`; after an `oidc` upgrade, copy the page again and re-apply the patch.
-  It fails if a file in `lib/` mentions `client_secret` or `OIDC_CLIENT_SECRET`, since the app is a public PKCE client.
-  It fails if `android/app/src/main/AndroidManifest.xml` mentions the redirect scheme: an intent filter there would let Android offer `MainActivity` for the callback instead of the package's redirect activity.
+  It fails if `web/redirect.html` is not the `oidc` package's `example/web/redirect.html` with its three documented replacements: the error branch shows fixed copy instead of the provider's `error_description` and `error_uri`, a `state` the page cannot find is logged without its value, and the page returns to the app with `location.replace`; after an `oidc` upgrade, copy the page again and re-apply the replacements.
+  It fails if a line in `lib/` names a client secret in any spelling (`client_secret`, `OIDC_CLIENT_SECRET`, `clientSecret`, `clientSecretPost`), except the scrubber's doc comment, or if any `OidcClientAuthentication` in `lib/` is other than `.none`, since the app is a public PKCE client.
+  It fails if any `android/app/src/*/AndroidManifest.xml` mentions the redirect scheme or the `oidcRedirectScheme` placeholder: an intent filter there would let Android offer `MainActivity` for the callback instead of the package's redirect activity.
 
 The `oidc` mode has more guards next to the code they guard:
 
