@@ -1634,6 +1634,39 @@ void main() {
       },
     );
 
+    // The other tab rotates the session just before it signs out, and its rotation reaches this tab's copy after the
+    // end message and before the deletes. The refresh token of that rotation is deleted a moment later, so the wait
+    // for the copy does not end on it: a refresh with it would store its answer after the deletes.
+    test('sends no refresh with the rotation the other tab stored just before it signed out', () async {
+      final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+      final interceptor = interceptorOfThisTab(rotation: rotation);
+      await otherTab.write(SecureStorageKeys.jwtToken.key, 'other-rotated-jwt');
+      await otherTab.write(SecureStorageKeys.refreshToken.key, 'other-rotated-refresh');
+      await signOutInOtherTab();
+      await thisTabSignal.deliver();
+      thisTab.receive(count: 2);
+      await _settleTakeBack();
+      expect(thisTab.readNow(SecureStorageKeys.refreshToken.key), 'other-rotated-refresh');
+      // A request this tab sends now, with the JWT its copy shows, gets a 401 before the deletes arrive.
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer other-rotated-jwt'});
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+      thisTab.receive();
+      await _settleTakeBack();
+
+      expect(rotation.sent, isEmpty, reason: 'the refresh token the other tab deletes is not sent');
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull, reason: 'nothing is sent again');
+      expect(localStorage.values, isEmpty, reason: 'the session the other tab ended stays ended');
+      expect(sessionExpiredCalls, 0);
+      expect(SessionGeneration.hasEnded(SessionGeneration.current), isFalse, reason: 'the copy shows the deletes');
+    });
+
     test('refreshes nothing before or after this tab\'s copy shows the end of the other tab', () async {
       final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
       final interceptor = interceptorOfThisTab(rotation: rotation);
@@ -2337,11 +2370,12 @@ class _TabStorage implements ISecureStorage {
   final _received = StreamController<String>.broadcast(sync: true);
   Stream<String> get received => _received.stream;
 
-  /// Applies the changes the other tabs made since the last delivery, in their order. A change older than the one this
-  /// tab's copy holds for the key is skipped: the browser's copy holds the later one.
-  void receive() {
-    final changes = List.of(_undelivered);
-    _undelivered.clear();
+  /// Applies the changes the other tabs made since the last delivery, in their order, or only the first [count] of
+  /// them. A change older than the one this tab's copy holds for the key is skipped: the browser's copy holds the later
+  /// one.
+  void receive({int? count}) {
+    final changes = List.of(_undelivered.take(count ?? _undelivered.length));
+    _undelivered.removeRange(0, changes.length);
     for (final change in changes) {
       if ((_changeOfKey[change.key] ?? 0) > change.change) continue;
       _take(change.key, change.value, change.change);

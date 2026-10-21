@@ -206,7 +206,9 @@ When another tab has signed out meanwhile, the answer is dropped; when another t
 Each tab reads its own copy of the browser's storage, which takes another tab's change a moment later, so a sign-out in another tab just before or while a refresh stores its tokens can reach the storage before them.
 So a tab that ends the session first tells the other tabs over a `BroadcastChannel` (`ISessionEndSignal`, from `AuthSessionRepository.clear`).
 A tab that hears it ends its own session generation, so a refresh on its way drops its answer, and takes back the tokens its last refresh stored just then, where they are still stored (`RotatedTokensTakeBack`).
-The message usually arrives before the other tab's deletes reach this tab's copy of localStorage, so that wipe lasts until the copy shows the end: until its refresh token is gone, or is another one, which a sign-in since stores, for at most 5 seconds.
+The message usually arrives before the other tab's deletes reach this tab's copy of localStorage, so that wipe lasts until the copy shows the end: until its refresh token is gone, for at most 5 seconds.
+A refresh token that merely differs from the one the copy held when the message arrived does not end the wait.
+The browser applies the changes of all tabs to the shared storage in one order and reports them to every tab in that order, so a copy shows the deletes of a sign-out before any later sign-in, and a refresh token it shows before them is one the ending tab stored just before its deletes, such as its last rotation, and deletes a moment later.
 While it lasts no 401 in the tab is refreshed or sent again, so no refresh reads the refresh token the other tab deleted and stores a session that tab ended.
 When the copy does not show the end within the 5 seconds, such as when the other tab's deletes failed, the wipe ends, and a refresh may again read that copy.
 The take-back fails closed: a message that arrives after the copy already shows a session signed in to since may take back that session's rotated tokens, which signs it out in every tab, but it never brings back a session that was ended.

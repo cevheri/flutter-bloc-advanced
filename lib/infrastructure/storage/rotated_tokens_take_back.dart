@@ -28,10 +28,13 @@ typedef StoredTokens = List<(SecureStorageKeys, String)>;
 ///
 /// The message usually reaches this tab before the other tab's deletes reach its copy, and a refresh that ran in that
 /// gap would read the refresh token the other tab deleted and store its rotation after the wipe, with no later end to
-/// take it back. So the wipe lasts until this tab's copy shows the end: until its refresh token is gone, or is another
-/// one than the copy held when the end was heard, which a sign-in since stores. [SessionGeneration.hasEnded] holds for
-/// every generation while the wipe runs, so no 401 is refreshed or sent again and no refresh stores in that time. The
-/// wait follows [ISessionEndSignal.storeChanges], since timers are throttled in a background tab, and lasts at most
+/// take it back. So the wipe lasts until this tab's copy shows the end: until its refresh token is gone. A refresh
+/// token that merely differs from the one the copy held when the end was heard does not end the wait: the changes of
+/// the tabs reach every copy in one order, so a copy shows the deletes of a sign-out before any later sign-in, and a
+/// refresh token it shows before them is one that the ending tab stored just before its deletes, such as its last
+/// rotation, and deletes a moment later. [SessionGeneration.hasEnded] holds for every generation while the wipe runs,
+/// so no 401 is refreshed or sent again and no refresh stores in that time. The wait follows
+/// [ISessionEndSignal.storeChanges], since timers are throttled in a background tab, and lasts at most
 /// [copyCatchUpLimit]; past it the wipe ends, and a refresh in this tab may again read a copy that is still behind,
 /// such as when the other tab's deletes failed.
 ///
@@ -93,9 +96,8 @@ final class RotatedTokensTakeBack {
   Future<void> _onSessionEndedElsewhere(DateTime endedAt) => SessionGeneration.wipe(() async {
     final stored = _lastStored;
     _lastStored = null;
-    final heldWhenHeard = await _readRefreshToken();
     if (stored != null && !stored.storedAt.isBefore(endedAt.subtract(crossTabDelay))) await _takeBack(stored);
-    await _untilCopyShowsEnd(heldWhenHeard);
+    await _untilCopyShowsEnd();
   });
 
   /// Deletes what [stored] holds where it is still stored.
@@ -111,14 +113,14 @@ final class RotatedTokensTakeBack {
     }
   }
 
-  /// Waits until this tab's copy shows no refresh token, or another one than [heldWhenHeard], for at most
-  /// [copyCatchUpLimit]. A copy that cannot be read is taken to be behind, so the wait goes on.
-  Future<void> _untilCopyShowsEnd(_CopyRead heldWhenHeard) async {
+  /// Waits until this tab's copy shows no refresh token, for at most [copyCatchUpLimit]. A copy that cannot be read is
+  /// taken to be behind, so the wait goes on.
+  Future<void> _untilCopyShowsEnd() async {
     final shown = Completer<void>();
     Future<void> check() async {
       final now = await _readRefreshToken();
       final showsEnd = switch (now) {
-        _Read(:final value) => value == null || (heldWhenHeard is _Read && value != heldWhenHeard.value),
+        _Read(:final value) => value == null,
         _Unreadable() => false,
       };
       if (showsEnd && !shown.isCompleted) shown.complete();
