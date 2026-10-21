@@ -142,8 +142,9 @@ final class OidcSettings {
 
   static const _loopbackHosts = {'localhost', '127.0.0.1', '::1'};
 
-  /// RFC 3986 scheme: a letter, then letters, digits, `+`, `-` or `.`.
-  static final _scheme = RegExp(r'^[A-Za-z][A-Za-z0-9+.\-]*$');
+  /// An RFC 3986 scheme in lower case: a letter, then letters, digits, `+`, `-` or `.`. Upper case is refused because
+  /// `Uri` lower-cases the scheme of the redirect URI, while Android matches the intent-filter scheme case-sensitively.
+  static final _scheme = RegExp(r'^[a-z][a-z0-9+.\-]*$');
 
   /// Reads the `OIDC_*` values of [defines].
   ///
@@ -192,6 +193,10 @@ final class OidcSettings {
         'OIDC_ISSUER must be an absolute https URL, or http on localhost, 127.0.0.1 or [::1], but it is "$value"',
       );
     }
+    // OpenID Connect Discovery 1.0 section 2 forbids a query and a fragment in the issuer.
+    if (uri.hasQuery || uri.hasFragment) {
+      throw OidcConfigException('OIDC_ISSUER must have no query and no fragment, but it is "$value"');
+    }
     return uri;
   }
 
@@ -216,7 +221,8 @@ final class OidcSettings {
     if (value.isEmpty) return defaultRedirectScheme;
     if (!_scheme.hasMatch(value)) {
       throw OidcConfigException(
-        'OIDC_REDIRECT_SCHEME must start with a letter followed by letters, digits, +, - or ., but it is "$value"',
+        'OIDC_REDIRECT_SCHEME must start with a lower-case letter followed by lower-case letters, digits, +, - or ., '
+        'but it is "$value"',
       );
     }
     return value;

@@ -28,7 +28,11 @@ void main() {
         throwsA(
           isA<AuthProviderConfigError>()
               .having((error) => error.value, 'value', 'saml')
-              .having((error) => error.toString(), 'toString', allOf(contains('AUTH_PROVIDER'), contains('saml'))),
+              .having(
+                (error) => error.toString(),
+                'toString',
+                allOf(contains('AUTH_PROVIDER'), contains('saml'), contains('jwt'), contains('oidc')),
+              ),
         ),
       );
     });
@@ -82,6 +86,16 @@ void main() {
 
       expect(mode, isA<OidcMisconfiguredAuthMode>().having((m) => m.reason, 'reason', contains('OIDC_ISSUER')));
     });
+
+    for (final issuer in ['https://id.example.com/realms/demo?x=1', 'https://id.example.com/realms/demo#y']) {
+      test('is misconfigured for the issuer $issuer, which has a query or a fragment', () {
+        final mode = AuthMode.fromDefines(
+          AuthDefines(authProvider: 'oidc', oidcIssuer: issuer, oidcClientId: _clientId),
+        );
+
+        expect(mode, isA<OidcMisconfiguredAuthMode>().having((m) => m.reason, 'reason', contains('OIDC_ISSUER')));
+      });
+    }
 
     test('is misconfigured for a scope without openid', () {
       final mode = AuthMode.fromDefines(
@@ -266,7 +280,7 @@ void main() {
       expect(settings.loopbackPort, 0);
     });
 
-    for (final scheme in ['com.example_app', '9app']) {
+    for (final scheme in ['com.example_app', '9app', 'Com.Example.App']) {
       test('is misconfigured for the redirect scheme $scheme', () {
         final mode = AuthMode.fromDefines(
           AuthDefines(authProvider: 'oidc', oidcIssuer: _issuer, oidcClientId: _clientId, oidcRedirectScheme: scheme),
