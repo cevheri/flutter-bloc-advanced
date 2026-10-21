@@ -197,6 +197,10 @@ enum FakeAuthorization {
 
   /// Waits until [FakeOidcPlatform.completePending] answers.
   pending,
+
+  /// Throws what the Linux and Windows platform throws when the loopback listener gets no redirect within the flow
+  /// timeout: an [OidcException] that wraps a [TimeoutException].
+  flowTimeout,
 }
 
 /// How [FakeOidcPlatform] answers an end-session request.
@@ -255,6 +259,11 @@ final class FakeOidcPlatform extends OidcPlatform {
         return redirect(request, {'code': code, 'state': request.state!});
       case FakeAuthorization.accessDenied:
         return redirect(request, {'error': 'access_denied', 'state': request.state!});
+      case FakeAuthorization.flowTimeout:
+        throw OidcException(
+          'The authorization flow timed out after 300 seconds without receiving a redirect on the loopback listener.',
+          internalException: TimeoutException('Loopback listener timed out', const Duration(seconds: 300)),
+        );
     }
   }
 

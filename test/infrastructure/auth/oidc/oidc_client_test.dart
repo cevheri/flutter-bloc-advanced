@@ -47,6 +47,7 @@ void main() {
     FakeProvider? at,
     Future<void> Function()? cancelAndroidFlow,
     void Function(AppOidcUserManager manager)? onManagerCreated,
+    void Function()? reloadOnPageRestore,
   }) {
     final idp = at ?? provider;
     return OidcClient(
@@ -62,6 +63,7 @@ void main() {
       pageUri: _pageUri,
       cancelAndroidFlow: cancelAndroidFlow ?? () async => fail('cancelAndroidFlow was not expected'),
       onManagerCreated: onManagerCreated,
+      reloadOnPageRestore: reloadOnPageRestore,
     );
   }
 
@@ -173,6 +175,40 @@ void main() {
       provider.discoveryAnswer = null;
 
       expect(await signIn(client), isA<OidcSignedIn>());
+    });
+
+    test('a manager whose discovery failed is disposed', () async {
+      provider.discoveryAnswer = () => throw http.ClientException('connection refused');
+      final managers = <AppOidcUserManager>[];
+
+      expect(await signIn(newClient(onManagerCreated: managers.add)), _failed(OidcFailure.discovery));
+
+      expect(managers.single.isDisposed, isTrue, reason: 'the failed manager was left running');
+    });
+
+    test('a Linux browser flow that times out is OidcSignInCancelled', () async {
+      platform.authorization = FakeAuthorization.flowTimeout;
+
+      expect(await signIn(newClient(platformKind: OidcPlatformKind.linux)), isA<OidcSignInCancelled>());
+      expect(provider.tokenRequests, isEmpty);
+      await expectStoreEmpty();
+    });
+
+    test('a token endpoint that times out after the Linux browser answered is discovery', () async {
+      provider.codeAnswer = () => throw TimeoutException('no answer');
+
+      expect(await signIn(newClient(platformKind: OidcPlatformKind.linux)), _failed(OidcFailure.discovery));
+    });
+
+    test('a timeout after a flow that timed out is still discovery', () async {
+      final client = newClient(platformKind: OidcPlatformKind.linux);
+      platform.authorization = FakeAuthorization.flowTimeout;
+      expect(await signIn(client), isA<OidcSignInCancelled>());
+
+      platform.authorization = FakeAuthorization.code;
+      provider.codeAnswer = () => throw TimeoutException('no answer');
+
+      expect(await signIn(client), _failed(OidcFailure.discovery));
     });
 
     test('discovery naming another issuer is discovery', () async {
@@ -327,6 +363,24 @@ void main() {
         reason: 'redirect.html and the reloaded tab need the state and the verifier',
       );
       expect(store.hasAbandonedSignIn(), isTrue);
+    });
+
+    test('signIn watches for a back-forward cache restore once, before the tab leaves', () async {
+      platform.authorization = FakeAuthorization.navigateAway;
+      final authorizeRequestsWhenWatched = <int>[];
+      final client = newClient(
+        platformKind: OidcPlatformKind.web,
+        reloadOnPageRestore: () => authorizeRequestsWhenWatched.add(platform.authorizeRequests.length),
+      );
+
+      await signIn(client);
+      await signIn(client);
+
+      expect(authorizeRequestsWhenWatched, [0], reason: 'one pageshow listener, registered before the navigation');
+    });
+
+    test('a native sign-in does not watch for a back-forward cache restore', () async {
+      await signIn(newClient(reloadOnPageRestore: () => fail('a native sign-in has no page to restore')));
     });
 
     test('signIn sends the app entry URI with the return path and no id_token_hint', () async {
@@ -635,29 +689,56 @@ void main() {
       expect(provider.tokenRequests, isEmpty);
     });
 
-    test('the JWKS answering 500 with an HTML body during a refresh gives RotationUnavailable', () async {
-      provider.jwksAnswer = () => http.Response('<html>down</html>', 500);
-
-      expect(await refresh(newClient()), isA<RotationUnavailable>());
+    // The token endpoint has already answered, so the old refresh token is spent: the new tokens are kept, and the
+    // new ID token, which could not be checked, is left out so the stored one stays.
+    void expectRotatedWithoutIdToken(TokenRotationResult result) {
+      expect(result, isA<TokensRotated>());
+      final rotated = result as TokensRotated;
+      expect(rotated.accessToken, 'access-1-value');
+      expect(rotated.refreshToken, 'refresh-1-value');
+      expect(rotated.oidcIdToken, isNull);
+      expect(rotated.accessTokenExpiresAt, isNotNull);
       expect(provider.tokenRequests, hasLength(1));
-      await expectStoreEmpty();
-    });
+    }
 
-    test('the JWKS answering 503 with a JSON body during a refresh gives RotationUnavailable', () async {
-      provider.jwksAnswer = () =>
-          http.Response('{"error":"temporarily_unavailable"}', 503, headers: {'content-type': 'application/json'});
+    test(
+      'the JWKS answering 500 with an HTML body during a refresh keeps the new tokens and the old ID token',
+      () async {
+        provider.jwksAnswer = () => http.Response('<html>down</html>', 500);
 
-      expect(await refresh(newClient()), isA<RotationUnavailable>());
-      expect(provider.tokenRequests, hasLength(1));
-      await expectStoreEmpty();
-    });
+        expectRotatedWithoutIdToken(await refresh(newClient()));
+        await expectStoreEmpty();
+      },
+    );
 
-    test('the JWKS unreachable during a refresh gives RotationUnavailable', () async {
+    test(
+      'the JWKS answering 503 with a JSON body during a refresh keeps the new tokens and the old ID token',
+      () async {
+        provider.jwksAnswer = () =>
+            http.Response('{"error":"temporarily_unavailable"}', 503, headers: {'content-type': 'application/json'});
+
+        expectRotatedWithoutIdToken(await refresh(newClient()));
+        await expectStoreEmpty();
+      },
+    );
+
+    test('the JWKS unreachable during a refresh keeps the new tokens and the old ID token', () async {
       provider.jwksAnswer = () => throw http.ClientException('connection reset');
 
-      expect(await refresh(newClient()), isA<RotationUnavailable>());
-      expect(provider.tokenRequests, hasLength(1));
+      expectRotatedWithoutIdToken(await refresh(newClient()));
       await expectStoreEmpty();
+    });
+
+    test('a token endpoint 429 is RotationUnavailable, whatever its error code', () async {
+      provider.refreshAnswer = () => FakeProvider.errorAnswer('invalid_request', status: 429);
+
+      expect(await refresh(newClient()), isA<RotationUnavailable>());
+    });
+
+    test('a token endpoint 500 with an unknown error code is RotationUnavailable', () async {
+      provider.refreshAnswer = () => FakeProvider.errorAnswer('database_on_fire', status: 500);
+
+      expect(await refresh(newClient()), isA<RotationUnavailable>());
     });
 
     test('discovery unreachable during a refresh gives RotationUnavailable', () async {

@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:oidc/oidc.dart';
 
 import 'app_oidc_user_manager.dart';
+import 'oidc_page_restore.dart';
 import 'oidc_redirect_uris.dart';
 import 'oidc_transaction_store.dart';
 
@@ -139,8 +140,9 @@ abstract interface class IOidcClient {
 final class OidcClient implements IOidcClient {
   /// [launchUrl] opens the browser on Linux and Windows. It must throw rather than answer false, since the package
   /// logs the authorization URL when a launcher answers false. [pageUri] is the page a web build runs in, which the
-  /// web redirect URIs are built from; it defaults to `Uri.base`. [onManagerCreated] lets a test see each manager the
-  /// client builds.
+  /// web redirect URIs are built from; it defaults to `Uri.base`. [reloadOnPageRestore] registers the web page's
+  /// back-forward cache listener, `reloadWhenRestoredFromCache` by default. [onManagerCreated] lets a test see each
+  /// manager the client builds.
   OidcClient({
     required this._settings,
     required this._loginPath,
@@ -150,12 +152,14 @@ final class OidcClient implements IOidcClient {
     OidcPlatformKind? platform,
     Uri? pageUri,
     Future<void> Function()? cancelAndroidFlow,
+    void Function()? reloadOnPageRestore,
     @visibleForTesting this._onManagerCreated,
   }) : _store = store ?? OidcTransactionStore.forPlatform(),
        _http = _ProviderHttpClient(httpClient ?? http.Client()),
        _platform = platform ?? OidcPlatformKind.current(),
        _pageUri = pageUri ?? Uri.base,
-       _cancelAndroidFlow = cancelAndroidFlow ?? (() => OidcAndroidHostApi().cancel());
+       _cancelAndroidFlow = cancelAndroidFlow ?? (() => OidcAndroidHostApi().cancel()),
+       _reloadOnPageRestore = reloadOnPageRestore ?? reloadWhenRestoredFromCache;
 
   static final _log = AppLogger.getLogger('OidcClient');
 
@@ -176,12 +180,16 @@ final class OidcClient implements IOidcClient {
   final OidcPlatformKind _platform;
   final Uri _pageUri;
   final Future<void> Function() _cancelAndroidFlow;
+  final void Function() _reloadOnPageRestore;
   final void Function(AppOidcUserManager manager)? _onManagerCreated;
 
   late final _redirectUris = OidcRedirectUris.forPlatform(_settings, platform: _platform, pageUri: _pageUri);
 
   /// The run's manager once its `init()` has started, or null before that and after a failed `init()`.
   Future<AppOidcUserManager>? _ready;
+
+  /// Whether the web page's back-forward cache listener is registered; one serves the whole run.
+  bool _watchingPageRestore = false;
 
   /// Completes when the last operation queued has ended, whatever its result.
   Future<void> _idle = Future<void>.value();
@@ -233,11 +241,18 @@ final class OidcClient implements IOidcClient {
 
   /// Writes the transaction and sends the tab to the provider. The package answers null once the navigation has
   /// started; the transaction stays in the store for the tab that comes back.
+  ///
+  /// The login page stays in its loading state after the tab leaves, so the page is reloaded when the browser brings
+  /// it back from the back-forward cache: the reload's startup step then reports the abandoned sign-in as a cancel.
   Future<OidcSignInOutcome> _startWebSignIn(
     AppOidcUserManager manager,
     OidcPlatformSpecificOptions options,
     String? webReturnPath,
   ) async {
+    if (!_watchingPageRestore) {
+      _reloadOnPageRestore();
+      _watchingPageRestore = true;
+    }
     final OidcUser? user;
     try {
       user = await manager.loginAuthorizationCodeFlow(
@@ -346,10 +361,27 @@ final class OidcClient implements IOidcClient {
         _log.warn('The refresh answer has no access token');
         return const RotationRefused();
       }
+      var idTokenChecked = true;
+      // The flag now notes only the JWKS fetch.
+      _http.getFailed = false;
+      try {
+        await manager.verifyRefreshedIdToken(user);
+      } on Object catch (error) {
+        // A signature that does not verify against keys the provider served ends the session. Keys that could not be
+        // fetched say nothing about the token, and the provider has already traded the refresh token, so it must not
+        // be sent again: the new tokens are kept, and the unchecked ID token is dropped so the stored one stays.
+        if (!_http.getFailed && !_isTransportError(error)) rethrow;
+        _log.warn(
+          'The keys of the identity provider could not be fetched to check the refreshed ID token, so the '
+          'stored ID token is kept: {}',
+          [() => _describe(error)],
+        );
+        idTokenChecked = false;
+      }
       return TokensRotated(
         accessToken: newAccessToken,
         refreshToken: _nonEmpty(user.token.refreshToken),
-        oidcIdToken: user.token.idTokenRetainedFromPriorResponse ? null : _nonEmpty(user.idToken),
+        oidcIdToken: !idTokenChecked || user.token.idTokenRetainedFromPriorResponse ? null : _nonEmpty(user.idToken),
         accessTokenExpiresAt: user.token.calculateExpiresAt()?.toUtc(),
       );
     } on Object catch (error) {
@@ -417,14 +449,15 @@ final class OidcClient implements IOidcClient {
 
   Future<AppOidcUserManager> _initializedManager() => _ready ?? _initialize(_newManager());
 
-  /// Runs [manager]'s `init()` and makes it the run's manager, or drops it when `init()` fails: the package cannot
-  /// retry `init()` on the same instance.
+  /// Runs [manager]'s `init()` and makes it the run's manager, or disposes and drops it when `init()` fails: the
+  /// package cannot retry `init()` on the same instance.
   Future<AppOidcUserManager> _initialize(AppOidcUserManager manager) async {
     final ready = _ready = manager.init().then((_) => manager);
     try {
       return await ready;
     } on Object {
       if (identical(_ready, ready)) _ready = null;
+      await manager.dispose();
       rethrow;
     }
   }
@@ -527,8 +560,15 @@ final class OidcClient implements IOidcClient {
   static const _protocolClaims = {'nonce', 'at_hash', 'c_hash'};
 
   /// A transport failure, or a discovery or JWKS failure, is [OidcFailure.discovery]; an error answer or a failed
-  /// check, such as a bad signature or a nonce mismatch, is [OidcFailure.failed].
+  /// check, such as a bad signature or a nonce mismatch, is [OidcFailure.failed]. A Linux or Windows browser step that
+  /// timed out is the user not finishing at the provider, so it is a cancel.
   OidcSignInOutcome _signInFailed(Object error, AppOidcUserManager manager) {
+    if (manager.browserFlowTimedOut) {
+      _log.info('The sign-in was not finished in the browser within {} seconds, so it is cancelled', [
+        _desktopFlowTimeoutSeconds,
+      ]);
+      return const OidcSignInCancelled();
+    }
     final failure = !manager.discoveryLoaded || _http.getFailed || _isTransportError(error)
         ? OidcFailure.discovery
         : OidcFailure.failed;
@@ -537,11 +577,15 @@ final class OidcClient implements IOidcClient {
   }
 
   /// The provider refusing, or a refreshed ID token failing a check, ends the session; the provider being out of
-  /// reach keeps it. A JWKS error status comes first: jose_plus reads a JSON error body as an empty key set and then
-  /// reports a [JoseException], which would otherwise end the session over an outage.
+  /// reach keeps it. A GET error status comes first, and so does a token endpoint status of 429 or 5xx, whatever its
+  /// error code. The JWKS of a refreshed ID token is handled before this, since its grant has already been answered.
   TokenRotationResult _refreshFailed(Object error) {
     final TokenRotationResult result;
+    final status = error is OidcException ? error.rawResponse?.statusCode : null;
     if (_http.getFailed) {
+      result = const RotationUnavailable();
+    } else if (status != null && (status == 429 || status >= 500)) {
+      // Too many requests, or the provider failing, says nothing about the refresh token, whatever the error code.
       result = const RotationUnavailable();
     } else if (error is JoseException) {
       result = const RotationRefused();
@@ -553,9 +597,7 @@ final class OidcClient implements IOidcClient {
         OfflineAuthErrorType.serverError => const RotationUnavailable(),
         OfflineAuthErrorType.authenticationError || OfflineAuthErrorType.clientError => const RotationRefused(),
         OfflineAuthErrorType.unknown =>
-          _isTransportError(error) || (error is OidcException && (error.rawResponse?.statusCode ?? 0) >= 500)
-              ? const RotationUnavailable()
-              : const RotationRefused(),
+          _isTransportError(error) ? const RotationUnavailable() : const RotationRefused(),
       };
     }
     _log.warn('The refresh failed ({}): {}', [result.runtimeType, () => _describe(error)]);

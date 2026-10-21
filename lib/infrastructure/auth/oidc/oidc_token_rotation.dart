@@ -24,8 +24,8 @@ final class OidcTokenRotation implements TokenRotation {
   /// The end of the last rotation, which the next one waits for.
   Future<void> _previous = Future<void>.value();
 
-  /// The refresh token of the last grant and its answer, kept only while that answer used the token up: tokens or a
-  /// refusal. A rotation sent the same token gets that answer again without a grant.
+  /// The refresh token of the last grant and its answer, kept only while that answer used the token up: a refusal, or
+  /// tokens with a new refresh token. A rotation sent the same token gets that answer again without a grant.
   String? _spentRefreshToken;
   TokenRotationResult? _spentAnswer;
 
@@ -77,15 +77,17 @@ final class OidcTokenRotation implements TokenRotation {
       accessToken: accessToken,
       accessTokenExpiresAt: expiresAt,
     );
-    switch (result) {
-      case TokensRotated() || RotationRefused():
-        _spentRefreshToken = refreshToken;
-        _spentAnswer = result;
-      case RotationUnavailable():
-        // The provider may not have seen the token, so it can be sent again.
-        _spentRefreshToken = null;
-        _spentAnswer = null;
-    }
+    final spent = switch (result) {
+      // A provider that does not rotate refresh tokens answers none, or the same one: the token stays the stored one
+      // and is traded again when the new access token expires.
+      TokensRotated(refreshToken: final newRefreshToken) =>
+        newRefreshToken != null && newRefreshToken.isNotEmpty && newRefreshToken != refreshToken,
+      RotationRefused() => true,
+      // The provider may not have seen the token, so it can be sent again.
+      RotationUnavailable() => false,
+    };
+    _spentRefreshToken = spent ? refreshToken : null;
+    _spentAnswer = spent ? result : null;
     return result;
   }
 }

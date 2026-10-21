@@ -13,7 +13,9 @@ import 'oidc_key_value.dart';
 ///   JSON array index `oidc.keys.<namespace>`. That is the layout `web/redirect.html` reads and writes, so on web
 ///   [persistent] is `localStorage`: the page finds the state and stores the provider's redirect URL there.
 /// - the PKCE `code_verifier.<id>` and the `nonce` of `secureTokens` in [tab], under `oidc.secureTokens.<key>`. On
-///   web that is the tab's `sessionStorage`, so a sign-in survives the same-tab reload and stays with its tab.
+///   web that is the tab's `sessionStorage`, so a sign-in survives the same-tab reload and stays with its tab. Only
+///   the verifier is tab-only: the package also writes the nonce into the state's JSON at `oidc.state.<id>` in
+///   [persistent], and checks the ID token's nonce against that copy.
 /// - every other `secureTokens` key (the manager's copy of the tokens and claims), `discoveryDocument` and `request`
 ///   in a private map that lives only as long as this object. The app's session storage owns the tokens.
 ///

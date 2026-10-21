@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:clock/clock.dart';
 import 'package:oidc/oidc.dart';
 
@@ -16,11 +18,17 @@ final class AppOidcUserManager extends OidcUserManager {
   }) : super.lazy();
 
   bool _responseReceived = false;
+  bool _flowTimedOut = false;
   bool _discoveryLoaded = false;
 
   /// Whether the last sign-in got an authorization response from the platform. The manager answers null both for a
   /// cancel, which has no response, and for an ID token that fails a claim check after one.
   bool get authorizationResponseReceived => _responseReceived;
+
+  /// Whether the last sign-in's browser step ended because the Linux or Windows loopback listener got no redirect
+  /// within the flow timeout: the platform throws an [OidcException] that wraps a [TimeoutException]. That is the
+  /// user not finishing at the provider, not the provider being out of reach.
+  bool get browserFlowTimedOut => _flowTimedOut;
 
   /// Whether `init()` got as far as a valid discovery document, which tells a discovery failure of the same-tab web
   /// completion apart from a failure of its code exchange: both happen inside `init()`.
@@ -47,7 +55,14 @@ final class AppOidcUserManager extends OidcUserManager {
     Map<String, dynamic> preparationResult,
   ) async {
     _responseReceived = false;
-    final response = await super.getAuthorizationResponse(metadata, request, options, preparationResult);
+    _flowTimedOut = false;
+    final OidcAuthorizeResponse? response;
+    try {
+      response = await super.getAuthorizationResponse(metadata, request, options, preparationResult);
+    } on OidcException catch (error) {
+      _flowTimedOut = error.internalException is TimeoutException;
+      rethrow;
+    }
     _responseReceived = response != null;
     return response;
   }
@@ -72,14 +87,17 @@ final class AppOidcUserManager extends OidcUserManager {
     userSubject.add(await OidcUser.fromIdToken(token: token));
   }
 
-  /// Refreshes the adopted session, and verifies the signature of a new ID token against the provider's keys.
+  /// Refreshes the adopted session. Returns null when the new ID token fails a claim check.
   ///
   /// The package re-verifies a refreshed ID token only with the keys of the user it replaces, and the adopted user,
-  /// parsed without verification, has none. Throws [JoseException] when the signature does not verify. Returns null
-  /// when the new ID token fails a claim check.
-  Future<OidcUser?> refreshAdoptedSession() async {
-    final user = await refreshToken();
-    if (user == null || user.token.idTokenRetainedFromPriorResponse) return user;
+  /// parsed without verification, has none: the signature of a new ID token is checked by [verifyRefreshedIdToken].
+  Future<OidcUser?> refreshAdoptedSession() => refreshToken();
+
+  /// Verifies the signature of [user]'s new ID token, from [refreshAdoptedSession], against the provider's keys. Does
+  /// nothing when the answer had no new ID token. Throws [JoseException] when the signature does not verify, and the
+  /// JWKS fetch's own error when the keys cannot be fetched.
+  Future<void> verifyRefreshedIdToken(OidcUser user) async {
+    if (user.token.idTokenRetainedFromPriorResponse) return;
     await OidcUser.fromIdToken(
       token: user.token,
       keystore: keyStore,
@@ -88,6 +106,5 @@ final class AppOidcUserManager extends OidcUserManager {
       jwksCacheMaxAge: settings.jwksCacheMaxAge,
       httpClient: httpClient,
     );
-    return user;
   }
 }

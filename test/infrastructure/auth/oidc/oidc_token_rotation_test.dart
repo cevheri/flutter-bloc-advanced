@@ -130,6 +130,18 @@ void main() {
       expect(grants(), 1);
     });
 
+    for (final (name, newRefreshToken) in [('no refresh token', null), ('the same refresh token', 'refresh-value')]) {
+      test('an answer with $name leaves the refresh token unspent, so the next rotation sends a grant', () async {
+        // A provider that does not rotate refresh tokens: the store keeps refresh-value, and the next rotation must
+        // trade it again instead of getting the first answer's access token back.
+        stubRefresh(TokensRotated(accessToken: 'access-new-value', refreshToken: newRefreshToken));
+
+        expect(await rotation.rotate('refresh-value'), isA<TokensRotated>());
+        expect(await rotation.rotate('refresh-value'), isA<TokensRotated>());
+        expect(grants(), 2);
+      });
+    }
+
     test('a refresh token the provider could not be reached for is sent again', () async {
       stubRefresh(const RotationUnavailable());
 
