@@ -65,6 +65,12 @@ jobs:
         timeout-minutes: 15
         run: flutter test --coverage --concurrency=4 --reporter=compact
 
+      - name: Run browser-only tests
+        # The session end signal and the token refresh lock talk to the browser (test/browser_only/). The runner
+        # image ships Google Chrome, which flutter test finds on the PATH.
+        timeout-minutes: 10
+        run: flutter test --platform chrome test/browser_only/
+
       - name: Check coverage threshold
         # Excludes generated/bootstrap code from the metric (see scripts/check_coverage.sh, issue #149).
         run: scripts/check_coverage.sh coverage/lcov.info 65
