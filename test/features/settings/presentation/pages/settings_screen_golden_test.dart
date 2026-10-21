@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/shared/design_system/theme/app_theme.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -39,8 +40,11 @@ void main() {
     );
 
     // A project with a documentation website, so the screen shows its Help & Resources section.
-    return RepositoryProvider<ProjectLinks>.value(
-      value: const ProjectLinks(docs: 'https://docs.acme.example'),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<ProjectLinks>.value(value: const ProjectLinks(docs: 'https://docs.acme.example')),
+        RepositoryProvider<AuthMode>.value(value: const JwtAuthMode()),
+      ],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,
         theme: dark ? AppTheme.dark() : AppTheme.light(),

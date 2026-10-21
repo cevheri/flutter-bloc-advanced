@@ -17,16 +17,28 @@ import 'package:flutter_bloc_advance/features/settings/navigation/settings_route
 import 'package:flutter_bloc_advance/shared/design_system/components/app_page_transition.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/navigation/dynamic_forms_routes.dart';
 import 'package:flutter_bloc_advance/features/users/navigation/users_routes.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 class AppRouterFactory {
-  AppRouterFactory({required this._sessionCubit, List<NavigatorObserver>? observers}) : _observers = observers ?? [];
+  AppRouterFactory({
+    required this._sessionCubit,
+    this._authMode = const JwtAuthMode(),
+    List<NavigatorObserver>? observers,
+  }) : _observers = observers ?? [];
 
   static final _log = AppLogger.getLogger('AppRouterFactory');
 
+  /// The paths the identity provider sends its answer to: the native sign-in redirect and the desktop logout
+  /// redirect (see OidcRedirectUris). Their query carries the authorization code and state.
+  static const _appRedirectPaths = {'/oauth2redirect', '/logout'};
+
   final SessionCubit _sessionCubit;
+
+  /// An `oidc` build leaves out the password routes: the identity provider owns the password.
+  final AuthMode _authMode;
   final List<NavigatorObserver> _observers;
 
   GoRouter create() {
@@ -59,12 +71,18 @@ class AppRouterFactory {
             ...UsersFeatureRoutes.routes,
             ...SettingsFeatureRoutes.routes,
             ...DynamicFormsFeatureRoutes.routes,
-            ...AuthFeatureRoutes.authenticatedRoutes,
+            if (!_authMode.usesOidc) ...AuthFeatureRoutes.authenticatedRoutes,
           ],
         ),
         ...AuthFeatureRoutes.publicRoutes(
-          loginBuilder: (context) =>
-              LoginScreen(onToggleTheme: () => context.read<ThemeBloc>().add(const ToggleBrightness())),
+          loginBuilder: (context) => LoginScreen(
+            onToggleTheme: () => context.read<ThemeBloc>().add(const ToggleBrightness()),
+            startupSignInError: switch (_sessionCubit.state) {
+              SessionUnauthenticated(:final signInError) => signInError,
+              SessionUnknown() || SessionAuthenticated() => null,
+            },
+          ),
+          ssoOnly: _authMode.usesOidc,
         ),
         GoRoute(
           path: ApplicationRoutesConstants.forbidden,
@@ -78,6 +96,11 @@ class AppRouterFactory {
         final isPublic = _isPublicRoute(location);
 
         _log.debug('redirect - location: {}, session: {}', [location, sessionState.runtimeType]);
+
+        // In an oidc build, a callback URL reaching the router, such as a custom scheme link the platform pushes, must
+        // never become a router location or a returnUrl: its query holds the authorization code and state. A jwt build
+        // has no such paths and keeps its usual handling of them.
+        if (_authMode.usesOidc && _appRedirectPaths.contains(location)) return ApplicationRoutesConstants.login;
 
         // Authenticated user landing on a public route (login / register
         // / forgot-password / OTP), for example by opening /login while

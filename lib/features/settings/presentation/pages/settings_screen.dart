@@ -11,6 +11,7 @@ import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../generated/l10n.dart';
+import '../../../../infrastructure/config/auth_config.dart';
 import '../../../../infrastructure/config/project_links.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -50,19 +51,22 @@ class SettingsScreen extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              _SettingsSection(
-                title: S.of(context).change_password,
-                children: [
-                  _SettingsTile(
-                    key: settingsChangePasswordButtonKey,
-                    icon: Icons.lock_outline,
-                    title: S.of(context).change_password,
-                    subtitle: S.of(context).settings_change_password_subtitle,
-                    onTap: () => context.push(ApplicationRoutesConstants.changePassword),
-                  ),
-                ],
-              ),
+              // Change password, unless the identity provider of an oidc build owns the password
+              if (context.read<AuthMode>() is JwtAuthMode) ...[
+                const SizedBox(height: AppSpacing.sm),
+                _SettingsSection(
+                  title: S.of(context).change_password,
+                  children: [
+                    _SettingsTile(
+                      key: settingsChangePasswordButtonKey,
+                      icon: Icons.lock_outline,
+                      title: S.of(context).change_password,
+                      subtitle: S.of(context).settings_change_password_subtitle,
+                      onTap: () => context.push(ApplicationRoutesConstants.changePassword),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: AppSpacing.lg),
 
               // Appearance section

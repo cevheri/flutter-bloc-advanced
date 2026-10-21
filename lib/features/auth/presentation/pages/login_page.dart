@@ -1,7 +1,9 @@
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 // Uncomment to block screenshots / blur task-switcher snapshot on the login screen.
 // See lib/core/security/screen_capture_protection.dart for Android/iOS asymmetry.
@@ -12,6 +14,7 @@ import 'package:flutter_bloc_advance/shared/widgets/responsive_form_widget.dart'
 import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/core/security/safe_redirect.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:go_router/go_router.dart';
@@ -21,14 +24,19 @@ import 'package:form_builder_validators/form_builder_validators.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
 
 import '../../application/login_bloc.dart';
+import '../../domain/services/sso_auto_redirect_gate.dart';
 import '../../../../generated/l10n.dart';
 import '../widgets/community_section_widget.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key, this.onToggleTheme});
+  const LoginScreen({super.key, this.onToggleTheme, this.startupSignInError});
 
   /// Wired by the router; null = non-interactive badge (features cannot import app/theme).
   final VoidCallback? onToggleTheme;
+
+  /// Why the web sign-in that the app completed at startup failed, or null. Passed in by the router, which reads the
+  /// session (features cannot import app/session). The single sign-on page shows it until the first tap.
+  final AppErrorCode? startupSignInError;
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -42,11 +50,16 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   late AnimationController _animController;
   final FocusNode _forgotPwFocus = FocusNode(skipTraversal: true);
 
+  /// Whether the user has tapped the single sign-on button on this visit of the page, which hides
+  /// [LoginScreen.startupSignInError].
+  bool _ssoTapped = false;
+
   @override
   void initState() {
     super.initState();
     _animController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
     _animController.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _redirectAutomatically());
   }
 
   @override
@@ -60,20 +73,42 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      key: _scaffoldKey,
-      body: BlocListener<LoginBloc, LoginState>(
-        listener: _onLoginStateChange,
-        child: SafeArea(
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final isDesktop = constraints.maxWidth >= 1024;
-              return isDesktop ? _desktopLayout(context, isDark) : _mobileLayout(context, isDark);
-            },
-          ),
+    final Widget body = BlocListener<LoginBloc, LoginState>(
+      listener: _onLoginStateChange,
+      child: SafeArea(
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isDesktop = constraints.maxWidth >= 1024;
+            return isDesktop ? _desktopLayout(context, isDark) : _mobileLayout(context, isDark);
+          },
         ),
       ),
     );
+    return Scaffold(
+      key: _scaffoldKey,
+      body: switch (context.read<AuthMode>()) {
+        // A sign-in that ends without a session closes the gate, so the page never sends the user back on its own.
+        OidcAuthMode(:final settings) when settings.autoRedirect => BlocListener<LoginBloc, LoginState>(
+          listenWhen: (previous, current) =>
+              (previous is LoginLoadingState && current is LoginInitialState) || current is LoginErrorState,
+          listener: (context, _) => context.read<SsoAutoRedirectGate>().close(),
+          child: body,
+        ),
+        OidcAuthMode() || JwtAuthMode() || OidcMisconfiguredAuthMode() => body,
+      },
+    );
+  }
+
+  /// Sends the user to the identity provider without a tap, at most once per run: only in an [OidcAuthMode] with
+  /// `autoRedirect` on, while [SsoAutoRedirectGate] is open and no error shows on the page. The gate closes first.
+  void _redirectAutomatically() {
+    if (!mounted) return;
+    final mode = context.read<AuthMode>();
+    if (mode is! OidcAuthMode || !mode.settings.autoRedirect) return;
+    final gate = context.read<SsoAutoRedirectGate>();
+    if (!gate.isOpen || _ssoErrorCode(mode, context.read<LoginBloc>().state) != null) return;
+    gate.close();
+    _requestSso(context);
   }
 
   Widget _desktopLayout(BuildContext context, bool isDark) {
@@ -399,12 +434,23 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           style: tt.headlineMedium?.copyWith(fontWeight: FontWeight.w700, letterSpacing: -0.8, color: cs.onSurface),
         ),
         const SizedBox(height: 8),
-        Text(S.of(context).login_welcome_subtitle, style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant)),
+        Text(
+          context.read<AuthMode>().usesOidc ? S.of(context).login_sso_subtitle : S.of(context).login_welcome_subtitle,
+          style: tt.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+        ),
       ],
     );
   }
 
   Widget _formBody(BuildContext context, bool isDark, {required bool showCommunity}) {
+    return switch (context.read<AuthMode>()) {
+      JwtAuthMode() => _passwordFormBody(context, isDark, showCommunity: showCommunity),
+      final OidcAuthMode mode => _ssoFormBody(context, mode, showCommunity: showCommunity),
+      final OidcMisconfiguredAuthMode mode => _ssoFormBody(context, mode, showCommunity: showCommunity),
+    };
+  }
+
+  Widget _passwordFormBody(BuildContext context, bool isDark, {required bool showCommunity}) {
     final communityUrls = showCommunity ? _communityUrls(context) : null;
     return FormBuilder(
       key: _loginFormKey,
@@ -440,6 +486,95 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
           const SizedBox(height: 16),
           _versionText(context),
         ],
+      ),
+    );
+  }
+
+  /// The sign-in of an `oidc` build: the error line and the single sign-on button, which a misconfigured build leaves
+  /// out.
+  Widget _ssoFormBody(BuildContext context, AuthMode mode, {required bool showCommunity}) {
+    final communityUrls = showCommunity ? _communityUrls(context) : null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _ssoErrorLine(mode),
+        if (mode is OidcAuthMode) ...[
+          const SizedBox(height: 24),
+          SizedBox(width: double.infinity, child: _ssoButton(context)),
+        ],
+        const SizedBox(height: 28),
+        if (communityUrls != null) ...[
+          const SizedBox(height: 4),
+          CommunitySectionWidget(isDesktop: false, urls: communityUrls),
+        ],
+        const SizedBox(height: 16),
+        _versionText(context),
+      ],
+    );
+  }
+
+  /// The error that the single sign-on page shows in [state], or null: the sign-in's own error, else the startup
+  /// sign-in error until the first tap, else the configuration error of a misconfigured build. Nothing shows while a
+  /// sign-in runs or once it has succeeded.
+  AppErrorCode? _ssoErrorCode(AuthMode mode, LoginState state) => switch (state) {
+    LoginErrorState(:final errorCode) => errorCode,
+    LoginLoadingState() || LoginLoadedState() => null,
+    LoginInitialState() || LoginOtpSentState() || LoginOtpVerifiedState() =>
+      (_ssoTapped ? null : widget.startupSignInError) ??
+          (mode is OidcMisconfiguredAuthMode ? AppErrorCode.authOidcConfig : null),
+  };
+
+  Widget _ssoErrorLine(AuthMode mode) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      builder: (context, state) => switch (_ssoErrorCode(mode, state)) {
+        final errorCode? => Center(
+          child: Text(
+            errorCode.resolve(context),
+            style: TextStyle(fontSize: 14, color: Theme.of(context).colorScheme.error),
+            textAlign: TextAlign.center,
+          ),
+        ),
+        null => const SizedBox.shrink(),
+      },
+    );
+  }
+
+  Widget _ssoButton(BuildContext context) {
+    return BlocBuilder<LoginBloc, LoginState>(
+      buildWhen: (previous, current) => previous.runtimeType != current.runtimeType,
+      builder: (context, state) {
+        final isLoading = state is LoginLoadingState;
+        return FilledButton(
+          key: loginButtonSsoKey,
+          onPressed: isLoading ? null : () => _onSsoTapped(context),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 12),
+            child: isLoading
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2, color: Theme.of(context).colorScheme.onPrimary),
+                  )
+                : Text(S.of(context).login_sso_button),
+          ),
+        );
+      },
+    );
+  }
+
+  void _onSsoTapped(BuildContext context) {
+    setState(() => _ssoTapped = true);
+    _requestSso(context);
+  }
+
+  /// Starts the single sign-on. On web the tab comes back to the route's `returnUrl`, which the client checks before
+  /// it builds the entry URI; elsewhere the page reads it on the way out, as the password sign-in does.
+  void _requestSso(BuildContext context) {
+    final returnUrl = GoRouterState.of(context).uri.queryParameters['returnUrl'];
+    context.read<LoginBloc>().add(
+      SsoSignInRequested(
+        webReturnPath: kIsWeb ? returnUrl : null,
+        browserDoneMessage: S.of(context).login_sso_browser_done,
       ),
     );
   }
@@ -645,8 +780,13 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
       // Honor `?returnUrl=` from the redirect-to-login flow so deep
       // links survive the auth bounce. Open-redirect guard rejects
       // off-origin candidates; falls back to home.
+      // An `oidc` build also drops a returnUrl that is too long, holds a control character or is the login page.
       final returnUrl = GoRouterState.of(context).uri.queryParameters['returnUrl'];
-      final destination = safeRedirectTarget(returnUrl, fallback: ApplicationRoutesConstants.home);
+      final destination = switch (context.read<AuthMode>()) {
+        JwtAuthMode() => safeRedirectTarget(returnUrl, fallback: ApplicationRoutesConstants.home),
+        OidcAuthMode() || OidcMisconfiguredAuthMode() =>
+          safeReturnPath(returnUrl, loginPath: ApplicationRoutesConstants.login) ?? ApplicationRoutesConstants.home,
+      };
       context.go(destination);
       ScaffoldMessenger.of(_scaffoldKey.currentContext!).hideCurrentSnackBar();
       ScaffoldMessenger.of(_scaffoldKey.currentContext!).showSnackBar(

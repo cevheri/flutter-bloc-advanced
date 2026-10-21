@@ -6,11 +6,17 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
+import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
+import 'package:flutter_bloc_advance/app/router/not_found_page.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_widget.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/dashboard/presentation/pages/dashboard_home_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -65,6 +71,40 @@ class _FakeBrowserHistory {
     await _messenger.handlePlatformMessage(SystemChannels.navigation.name, message, (_) {});
     await _tester.pumpAndSettle();
   }
+}
+
+/// The identity provider of an oidc build that has no web sign-in pending. The router tests never sign in through it.
+class _IdleOidcClient implements IOidcClient {
+  @override
+  Future<OidcSignInOutcome?> completePendingSignIn() async => null;
+
+  @override
+  Future<OidcSignInOutcome> signIn({String? webReturnPath, required String browserDoneMessage}) =>
+      throw UnimplementedError('these tests never sign in through the provider');
+
+  @override
+  Future<TokenRotationResult> refresh({
+    required String refreshToken,
+    required String idToken,
+    required String accessToken,
+    required DateTime accessTokenExpiresAt,
+  }) => throw UnimplementedError('these tests store no expired session');
+
+  @override
+  Future<OidcLogoutOutcome> endProviderSession({String? idTokenHint}) =>
+      throw UnimplementedError('these tests never log out');
+}
+
+/// The test config in an oidc build.
+class _OidcDependencies extends AppDependencies {
+  _OidcDependencies()
+    : super(
+        appConfig: const AppConfig.test(),
+        authMode: OidcAuthMode(OidcSettings(issuer: Uri.parse('https://id.example.com'), clientId: 'app')),
+      );
+
+  @override
+  IOidcClient createOidcClient(OidcSettings settings) => _IdleOidcClient();
 }
 
 void main() {
@@ -299,6 +339,106 @@ void main() {
       expect(find.byType(DashboardHomePage), findsOneWidget);
       expect(routerFromApp(tester).state.uri.path, ApplicationRoutesConstants.home);
       expect(browser.location, ApplicationRoutesConstants.home);
+    });
+  });
+
+  group('AppRouterFactory in oidc mode', () {
+    for (final location in [
+      ApplicationRoutesConstants.register,
+      ApplicationRoutesConstants.forgotPassword,
+      ApplicationRoutesConstants.loginOtp,
+      '${ApplicationRoutesConstants.loginOtpVerify}/x@example.com',
+    ]) {
+      testWidgets('signed out, $location shows the not-found page', (tester) async {
+        setDesktopViewport(tester);
+        await tester.pumpWidget(App(language: 'en', dependencies: _OidcDependencies()));
+        await tester.pumpAndSettle();
+        expect(find.byType(LoginScreen), findsOneWidget);
+
+        routerFromApp(tester).go(location);
+        await tester.pumpAndSettle();
+
+        expect(find.byType(NotFoundPage), findsOneWidget);
+      });
+    }
+
+    testWidgets('signed in, the change-password page shows the not-found page', (tester) async {
+      setDesktopViewport(tester);
+      TestEnv.authenticate();
+      await tester.pumpWidget(App(language: 'en', dependencies: _OidcDependencies()));
+      await tester.pumpAndSettle();
+      expect(find.byType(DashboardHomePage), findsOneWidget);
+
+      routerFromApp(tester).go(ApplicationRoutesConstants.changePassword);
+      await tester.pumpAndSettle();
+
+      expect(find.byType(NotFoundPage), findsOneWidget);
+    });
+  });
+
+  // The app's own redirect paths carry the authorization code and state, which must never become a router location
+  // or a returnUrl. A jwt build has no such paths and keeps today's behavior for them.
+  group('AppRouterFactory - redirect paths of the identity provider', () {
+    for (final (mode, dependencies) in [
+      ('oidc', _OidcDependencies()),
+      (
+        'misconfigured oidc',
+        const AppDependencies(
+          appConfig: AppConfig.test(),
+          authMode: OidcMisconfiguredAuthMode('OIDC_ISSUER is required in oidc mode'),
+        ),
+      ),
+    ]) {
+      for (final path in ['/oauth2redirect', '/logout']) {
+        testWidgets('in $mode mode, signed out, $path lands on /login with no returnUrl', (tester) async {
+          setDesktopViewport(tester);
+          await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
+          await tester.pumpAndSettle();
+
+          routerFromApp(tester).go('$path?code=SECRETCODE&state=SECRETSTATE');
+          await tester.pumpAndSettle();
+
+          expect(find.byType(LoginScreen), findsOneWidget);
+          expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.login);
+        });
+      }
+
+      testWidgets('in $mode mode, a cold start on /oauth2redirect lands on /login with no returnUrl', (tester) async {
+        setDesktopViewport(tester);
+        startOn(tester, '/oauth2redirect?code=SECRETCODE&state=SECRETSTATE');
+        await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(LoginScreen), findsOneWidget);
+        expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.login);
+      });
+
+      testWidgets('in $mode mode, signed in, /oauth2redirect lands on the dashboard', (tester) async {
+        setDesktopViewport(tester);
+        TestEnv.authenticate();
+        await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
+        await tester.pumpAndSettle();
+        routerFromApp(tester).go(ApplicationRoutesConstants.settings);
+        await tester.pumpAndSettle();
+
+        routerFromApp(tester).go('/oauth2redirect?code=SECRETCODE&state=SECRETSTATE');
+        await tester.pumpAndSettle();
+
+        expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.home);
+        expect(find.byType(DashboardHomePage), findsOneWidget);
+      });
+    }
+
+    testWidgets('in jwt mode, signed in, /oauth2redirect still shows the not-found page', (tester) async {
+      setDesktopViewport(tester);
+      TestEnv.authenticate();
+      await tester.pumpWidget(const App(language: 'en'));
+      await tester.pumpAndSettle();
+
+      routerFromApp(tester).go('/oauth2redirect?code=SECRETCODE&state=SECRETSTATE');
+      await tester.pumpAndSettle();
+
+      expect(find.byType(NotFoundPage), findsOneWidget);
     });
   });
 }

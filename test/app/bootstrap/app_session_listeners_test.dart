@@ -22,6 +22,7 @@ import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/core/testing/app_key_constants.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
@@ -352,7 +353,7 @@ void main() {
 
         await _logOut(tester);
 
-        expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+        expect(find.byKey(loginButtonSsoKey), findsOneWidget);
         expect(
           find
               .text('You are signed out of this app, but your session at the identity provider may still be active.')
@@ -371,7 +372,7 @@ void main() {
 
         await _logOut(tester);
 
-        expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+        expect(find.byKey(loginButtonSsoKey), findsOneWidget);
         expect(client.logouts, 1);
         expect(find.byType(SnackBar), findsNothing);
       });
@@ -436,7 +437,8 @@ void main() {
 
         await _logOut(tester);
 
-        expect(find.byKey(loginButtonSubmitKey), findsOneWidget);
+        expect(find.byKey(loginButtonSubmitKey), authMode is JwtAuthMode ? findsOneWidget : findsNothing);
+        expect(find.byType(LoginScreen), findsOneWidget);
         expect(tester.takeException(), isNull);
       });
     }
