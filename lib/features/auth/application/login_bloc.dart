@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/clear_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/sign_in_with_sso_usecase.dart';
@@ -28,6 +29,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final VerifyOtpUseCase _verifyOtpUseCase;
   final GetAccountUseCase _getAccountUseCase;
   final PersistAuthSessionUseCase _persistAuthSessionUseCase;
+  final ClearAuthSessionUseCase _clearAuthSessionUseCase;
 
   /// Null in a build without single sign-on, where [SsoSignInRequested] is never sent.
   final SignInWithSsoUseCase? _signInWithSsoUseCase;
@@ -38,6 +40,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     required this._verifyOtpUseCase,
     required this._getAccountUseCase,
     required this._persistAuthSessionUseCase,
+    required this._clearAuthSessionUseCase,
     this._signInWithSsoUseCase,
   }) : super(const LoginInitialState()) {
     on<LoginFormSubmitted>(_onSubmit, transformer: EventTransformers.dropConcurrent());
@@ -229,6 +232,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   /// `AuthInterceptor` reads the JWT from storage to attach the
   /// Authorization header. After the account is resolved we re-persist
   /// with the user's authorities included.
+  ///
+  /// A failure after phase 1 ends the stored session before the error is
+  /// emitted, so the next launch does not open signed in as that user.
   Future<void> _completeLogin({
     required AuthTokenEntity token,
     required String username,
@@ -275,6 +281,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
             );
             _log.debug("session persisted for: {}", [username]);
           case Failure(:final error):
+            await _clearStoredSession();
             emit(
               LoginErrorState(
                 errorCode: AppErrorCode.authSessionPersistFailed,
@@ -286,6 +293,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
             _log.error("session roles-persist failed: {}", [error.message]);
         }
       case Failure(:final error):
+        await _clearStoredSession();
         emit(
           LoginErrorState(
             errorCode: AppErrorCode.fromKey(error.code) ?? AppErrorCode.authLoginFailed,
@@ -295,6 +303,15 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           ),
         );
         _log.error("getAccount failed: {}", [error.message]);
+    }
+  }
+
+  /// Removes the session phase 1 of [_completeLogin] stored. A clear that
+  /// fails is logged and the caller still emits its sign-in error.
+  Future<void> _clearStoredSession() async {
+    final result = await _clearAuthSessionUseCase();
+    if (result case Failure(:final error)) {
+      _log.error("session clear after a failed sign-in failed: {}", [error.message]);
     }
   }
 }

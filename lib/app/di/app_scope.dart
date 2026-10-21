@@ -17,6 +17,7 @@ import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart
 import 'package:flutter_bloc_advance/features/account/application/usecases/get_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/application/usecases/update_account_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/clear_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/logout_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
@@ -238,6 +239,7 @@ class AppScope extends StatelessWidget {
               verifyOtpUseCase: VerifyOtpUseCase(context.read<IAuthRepository>()),
               getAccountUseCase: GetAccountUseCase(context.read<IAccountRepository>()),
               persistAuthSessionUseCase: PersistAuthSessionUseCase(context.read<IAuthSessionRepository>()),
+              clearAuthSessionUseCase: ClearAuthSessionUseCase(context.read<IAuthSessionRepository>()),
               signInWithSsoUseCase: oidcSettings == null
                   ? null
                   : SignInWithSsoUseCase(context.read<ISsoAuthRepository>()),

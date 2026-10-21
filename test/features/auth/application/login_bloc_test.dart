@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart' show Change;
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
@@ -9,10 +10,12 @@ import 'package:flutter_bloc_advance/features/account/data/models/change_passwor
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/clear_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/sign_in_with_sso_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/sso_sign_in_result.dart';
@@ -20,8 +23,10 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repo
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 
 import '../../../mocks/fake_data.dart';
 import '../../../support/test_env.dart';
@@ -128,6 +133,7 @@ LoginBloc _buildBloc(
     verifyOtpUseCase: VerifyOtpUseCase(repository),
     getAccountUseCase: GetAccountUseCase(accountRepo),
     persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepo),
+    clearAuthSessionUseCase: ClearAuthSessionUseCase(sessionRepo),
   );
 }
 
@@ -153,6 +159,7 @@ LoginBloc _buildSsoBloc(_FakeSsoAuthRepository ssoRepository, _FakeAccountReposi
   verifyOtpUseCase: VerifyOtpUseCase(_FakeAuthRepository()),
   getAccountUseCase: GetAccountUseCase(accountRepository),
   persistAuthSessionUseCase: PersistAuthSessionUseCase(_FakeAuthSessionRepository()),
+  clearAuthSessionUseCase: ClearAuthSessionUseCase(_FakeAuthSessionRepository()),
   signInWithSsoUseCase: SignInWithSsoUseCase(ssoRepository),
 );
 
@@ -169,8 +176,86 @@ LoginBloc _buildBlocWithSendOtp(
     verifyOtpUseCase: VerifyOtpUseCase(repository),
     getAccountUseCase: GetAccountUseCase(accountRepo),
     persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepo),
+    clearAuthSessionUseCase: ClearAuthSessionUseCase(sessionRepo),
   );
 }
+
+/// The secure store the session lives in, held in memory, so a test can see what a sign-in leaves behind.
+class _MemorySecureStorage implements ISecureStorage {
+  final values = <String, String>{};
+
+  @override
+  Future<String?> read(String key) async => values[key];
+
+  @override
+  Future<void> write(String key, String value) async => values[key] = value;
+
+  @override
+  Future<void> delete(String key) async => values.remove(key);
+
+  @override
+  Future<void> deleteAll() async => values.clear();
+}
+
+/// Stores through [inner], but refuses the second write of a sign-in, the one that carries the roles, and can refuse
+/// the clear.
+class _StoreSessionRepository implements IAuthSessionRepository {
+  _StoreSessionRepository(this.inner);
+
+  final IAuthSessionRepository inner;
+  bool failRolesPersist = false;
+  Result<void>? clearResult;
+  int clears = 0;
+
+  @override
+  Future<Result<void>> persist(AuthSession session) async {
+    if (failRolesPersist && session.roles.isNotEmpty) return const Failure(UnknownError('roles write refused'));
+    return inner.persist(session);
+  }
+
+  @override
+  Future<Result<void>> clear() async {
+    clears++;
+    return clearResult ?? inner.clear();
+  }
+}
+
+/// Hands every state to [onStateChange] from inside emit, before any listener sees it, so a test can check what was
+/// stored at that instant.
+class _ObservedLoginBloc extends LoginBloc {
+  _ObservedLoginBloc({
+    required super.authenticateUserUseCase,
+    required super.sendOtpUseCase,
+    required super.verifyOtpUseCase,
+    required super.getAccountUseCase,
+    required super.persistAuthSessionUseCase,
+    required super.clearAuthSessionUseCase,
+    this.onStateChange,
+  });
+
+  final void Function(LoginState next)? onStateChange;
+
+  @override
+  void onChange(Change<LoginState> change) {
+    super.onChange(change);
+    onStateChange?.call(change.nextState);
+  }
+}
+
+LoginBloc _buildStoreBloc(
+  _FakeAuthRepository repository,
+  _FakeAccountRepository accountRepository,
+  IAuthSessionRepository sessionRepository, {
+  void Function(LoginState next)? onStateChange,
+}) => _ObservedLoginBloc(
+  authenticateUserUseCase: AuthenticateUserUseCase(repository),
+  sendOtpUseCase: SendOtpUseCase(repository),
+  verifyOtpUseCase: VerifyOtpUseCase(repository),
+  getAccountUseCase: GetAccountUseCase(accountRepository),
+  persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepository),
+  clearAuthSessionUseCase: ClearAuthSessionUseCase(sessionRepository),
+  onStateChange: onStateChange,
+);
 
 void main() {
   //region main setup
@@ -570,6 +655,144 @@ void main() {
         ),
       ],
     );
+  });
+
+  // Regression: the token is stored before GET /account so the request can carry it, and a sign-in whose account
+  // fetch, or whose second write, failed showed "sign-in failed" but left that token stored, so the next launch opened
+  // signed in as that user.
+  group('a sign-in that fails after the token is stored', () {
+    const token = AuthTokenEntity(idToken: 'MOCK_TOKEN', refreshToken: 'MOCK_REFRESH');
+    const accountDown = NetworkError('account down', code: 'network.cert_invalid');
+    late _MemorySecureStorage secureStorage;
+    late _StoreSessionRepository sessionRepository;
+    Map<String, String>? storeAtError;
+
+    setUp(() {
+      secureStorage = _MemorySecureStorage();
+      sessionRepository = _StoreSessionRepository(AuthSessionRepository(secureStorage: secureStorage));
+      storeAtError = null;
+    });
+
+    // The UI shows "sign-in failed" on the error state, so a reload from then on must find no token.
+    void copyStoreAtError(LoginState next) {
+      if (next is LoginErrorState) storeAtError = Map.of(secureStorage.values);
+    }
+
+    Future<void> expectNoStoredSession() async {
+      expect(secureStorage.values, isEmpty);
+      expect(await AppLocalStorage().read(StorageKeys.username.key), isNull);
+      expect(await AppLocalStorage().read(StorageKeys.roles.key), isNull);
+    }
+
+    blocTest<LoginBloc, LoginState>(
+      'a password sign-in whose account fetch fails leaves no session stored',
+      setUp: () {
+        repository.authenticateResult = const Success(token);
+        accountRepository.getAccountResult = const Failure(accountDown);
+      },
+      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository, onStateChange: copyStoreAtError),
+      act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
+      expect: () => [
+        const LoginLoadingState(username: 'username'),
+        const LoginErrorState(errorCode: AppErrorCode.networkCertInvalid, message: 'account down'),
+      ],
+      verify: (_) async {
+        expect(storeAtError, isEmpty, reason: 'the token must be gone when the error is emitted');
+        await expectNoStoredSession();
+      },
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'a password sign-in whose roles write fails leaves no session stored',
+      setUp: () {
+        repository.authenticateResult = const Success(token);
+        sessionRepository.failRolesPersist = true;
+      },
+      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository, onStateChange: copyStoreAtError),
+      act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
+      expect: () => [
+        const LoginLoadingState(username: 'username'),
+        const LoginErrorState(errorCode: AppErrorCode.authSessionPersistFailed, message: 'roles write refused'),
+      ],
+      verify: (_) async {
+        expect(storeAtError, isEmpty, reason: 'the token must be gone when the error is emitted');
+        await expectNoStoredSession();
+      },
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'an OTP sign-in whose account fetch fails leaves no session stored',
+      setUp: () {
+        repository.verifyResult = const Success(token);
+        accountRepository.getAccountResult = const Failure(accountDown);
+      },
+      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository),
+      act: (bloc) => bloc.add(const VerifyOtpSubmitted(email: 'test@example.com', otpCode: '123456')),
+      expect: () => [
+        const LoginLoadingState(username: 'test@example.com', loginMethod: LoginMethod.otp),
+        const LoginErrorState(
+          errorCode: AppErrorCode.networkCertInvalid,
+          message: 'account down',
+          loginMethod: LoginMethod.otp,
+        ),
+      ],
+      verify: (_) => expectNoStoredSession(),
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'a sign-in that succeeds keeps the session stored',
+      setUp: () => repository.authenticateResult = const Success(token),
+      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository),
+      act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
+      expect: () => [
+        const LoginLoadingState(username: 'username'),
+        const LoginLoadedState(username: 'username', roles: ['ROLE_USER']),
+      ],
+      verify: (_) async {
+        expect(sessionRepository.clears, 0);
+        expect(secureStorage.values, {
+          SecureStorageKeys.jwtToken.key: 'MOCK_TOKEN',
+          SecureStorageKeys.refreshToken.key: 'MOCK_REFRESH',
+        });
+        expect(await AppLocalStorage().read(StorageKeys.username.key), 'username');
+        expect(await AppLocalStorage().read(StorageKeys.roles.key), ['ROLE_USER']);
+      },
+    );
+
+    group('when the clear fails too', () {
+      late List<String> errorLines;
+
+      setUp(() {
+        errorLines = [];
+        void collect(OutputEvent event) {
+          if (event.level == Level.error) errorLines.addAll(event.lines);
+        }
+
+        Logger.addOutputListener(collect);
+        addTearDown(() => Logger.removeOutputListener(collect));
+      });
+
+      blocTest<LoginBloc, LoginState>(
+        'still emits the sign-in error and logs the clear failure at error level without the token',
+        setUp: () {
+          repository.authenticateResult = const Success(token);
+          accountRepository.getAccountResult = const Failure(accountDown);
+          sessionRepository.clearResult = const Failure(UnknownError('Session clear failed: jwt: keystore locked'));
+        },
+        build: () => _buildStoreBloc(repository, accountRepository, sessionRepository),
+        act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
+        expect: () => [
+          const LoginLoadingState(username: 'username'),
+          const LoginErrorState(errorCode: AppErrorCode.networkCertInvalid, message: 'account down'),
+        ],
+        verify: (_) {
+          expect(sessionRepository.clears, 1);
+          expect(errorLines.join('\n'), contains('Session clear failed: jwt: keystore locked'));
+          expect(errorLines.join('\n'), isNot(contains('MOCK_TOKEN')));
+          expect(errorLines.join('\n'), isNot(contains('MOCK_REFRESH')));
+        },
+      );
+    });
   });
 
   group('single sign-on', () {

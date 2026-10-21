@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/features/account/data/repositories/account_
 import 'package:flutter_bloc_advance/features/auth/application/change_password_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/clear_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
@@ -51,12 +52,14 @@ void main() {
     final secureStorage = FlutterSecureStorageAdapter();
     final loginRepository = LoginRepository(apiClient: api, secureStorage: secureStorage);
     final formRepository = DynamicFormRepository(api);
+    final sessionRepository = AuthSessionRepository(secureStorage: secureStorage);
     final login = LoginBloc(
       authenticateUserUseCase: AuthenticateUserUseCase(loginRepository),
       sendOtpUseCase: SendOtpUseCase(loginRepository),
       verifyOtpUseCase: VerifyOtpUseCase(loginRepository),
       getAccountUseCase: GetAccountUseCase(AccountRepository(api)),
-      persistAuthSessionUseCase: PersistAuthSessionUseCase(AuthSessionRepository(secureStorage: secureStorage)),
+      persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepository),
+      clearAuthSessionUseCase: ClearAuthSessionUseCase(sessionRepository),
     );
     final changePassword = ChangePasswordBloc(changePasswordUseCase: ChangePasswordUseCase(AccountRepository(api)));
     final form = DynamicFormBloc(
