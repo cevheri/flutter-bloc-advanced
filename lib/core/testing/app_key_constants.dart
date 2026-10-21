@@ -6,6 +6,7 @@ const Key loginButtonSubmitKey = Key("loginButtonSubmitKey");
 const Key loginButtonForgotPasswordKey = Key("loginButtonForgotPasswordKey");
 const Key loginButtonRegisterKey = Key("loginButtonRegisterKey");
 const Key loginButtonPasswordVisibilityKey = Key("loginButtonPasswordVisibilityKey");
+const Key loginButtonSsoKey = Key("loginButtonSsoKey");
 const Key forgotPasswordButtonSubmitKey = Key("forgotPasswordButtonSubmit");
 const Key forgotPasswordTextFieldEmailKey = Key("forgotPasswordTextFieldEmail");
 

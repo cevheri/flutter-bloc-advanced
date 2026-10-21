@@ -1490,6 +1490,71 @@ class S {
   String get dashboard_interceptor_mock {
     return Intl.message('Serves mock data in dev/test', name: 'dashboard_interceptor_mock', desc: '', args: []);
   }
+
+  /// `Single sign-on is not configured correctly in this app. Contact your administrator.`
+  String get error_auth_oidc_config {
+    return Intl.message(
+      'Single sign-on is not configured correctly in this app. Contact your administrator.',
+      name: 'error_auth_oidc_config',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The identity provider could not be reached. Try again later, or contact your administrator if this continues.`
+  String get error_auth_oidc_discovery {
+    return Intl.message(
+      'The identity provider could not be reached. Try again later, or contact your administrator if this continues.',
+      name: 'error_auth_oidc_discovery',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Your account has no role that allows access to this app. Ask your administrator.`
+  String get error_auth_oidc_no_role {
+    return Intl.message(
+      'Your account has no role that allows access to this app. Ask your administrator.',
+      name: 'error_auth_oidc_no_role',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign-in failed. Please try again.`
+  String get error_auth_oidc_failed {
+    return Intl.message('Sign-in failed. Please try again.', name: 'error_auth_oidc_failed', desc: '', args: []);
+  }
+
+  /// `You are signed out of this app, but your session at the identity provider may still be active.`
+  String get error_auth_oidc_logout_incomplete {
+    return Intl.message(
+      'You are signed out of this app, but your session at the identity provider may still be active.',
+      name: 'error_auth_oidc_logout_incomplete',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in with SSO`
+  String get login_sso_button {
+    return Intl.message('Sign in with SSO', name: 'login_sso_button', desc: '', args: []);
+  }
+
+  /// `Sign in with your organization account.`
+  String get login_sso_subtitle {
+    return Intl.message('Sign in with your organization account.', name: 'login_sso_subtitle', desc: '', args: []);
+  }
+
+  /// `Sign-in is complete. You can close this tab and return to the app.`
+  String get login_sso_browser_done {
+    return Intl.message(
+      'Sign-in is complete. You can close this tab and return to the app.',
+      name: 'login_sso_browser_done',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

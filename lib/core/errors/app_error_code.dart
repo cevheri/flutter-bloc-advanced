@@ -21,6 +21,12 @@ enum AppErrorCode {
   authSendOtpFailed('auth.send_otp_failed'),
   authOtpValidationError('auth.otp_validation_error'),
   authSessionPersistFailed('auth.session_persist_failed'),
+  authOidcConfig('auth.oidc_config'),
+  authOidcDiscovery('auth.oidc_discovery'),
+  authOidcNoRole('auth.oidc_no_role'),
+  authOidcNoClaims('auth.oidc_no_claims'),
+  authOidcFailed('auth.oidc_failed'),
+  authOidcLogoutIncomplete('auth.oidc_logout_incomplete'),
 
   // --- users ---
   userCannotDeleteAdmin('user.cannot_delete_admin'),

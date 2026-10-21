@@ -509,5 +509,21 @@
   "dashboard_interceptor_logging": "Structured request/response logging",
   "@dashboard_interceptor_logging": {},
   "dashboard_interceptor_mock": "Serves mock data in dev/test",
-  "@dashboard_interceptor_mock": {}
+  "@dashboard_interceptor_mock": {},
+  "error_auth_oidc_config": "Single sign-on is not configured correctly in this app. Contact your administrator.",
+  "@error_auth_oidc_config": {},
+  "error_auth_oidc_discovery": "The identity provider could not be reached. Try again later, or contact your administrator if this continues.",
+  "@error_auth_oidc_discovery": {},
+  "error_auth_oidc_no_role": "Your account has no role that allows access to this app. Ask your administrator.",
+  "@error_auth_oidc_no_role": {},
+  "error_auth_oidc_failed": "Sign-in failed. Please try again.",
+  "@error_auth_oidc_failed": {},
+  "error_auth_oidc_logout_incomplete": "You are signed out of this app, but your session at the identity provider may still be active.",
+  "@error_auth_oidc_logout_incomplete": {},
+  "login_sso_button": "Sign in with SSO",
+  "@login_sso_button": {},
+  "login_sso_subtitle": "Sign in with your organization account.",
+  "@login_sso_subtitle": {},
+  "login_sso_browser_done": "Sign-in is complete. You can close this tab and return to the app.",
+  "@login_sso_browser_done": {}
 }
