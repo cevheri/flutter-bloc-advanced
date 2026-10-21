@@ -8,6 +8,7 @@ import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/analytics/crash_reporter.dart';
 import 'package:flutter_bloc_advance/app/dev_console/time_travel/time_travel_bloc_observer.dart';
 import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
+import 'package:flutter_bloc_advance/infrastructure/analytics/native_sentry_start.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_scrub.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
@@ -91,12 +92,15 @@ class AppBootstrap {
     // drift between migration and runtime consumers, and overriding
     // for tests / alternate environments is a single hand-off.
     final dsn = appConfig.sentryDsn;
-    if (dsn != null) {
+    if (dsn != null && await nativeSdkReady()) {
       log.info('Initializing Sentry (release: {}+{})', [AppConstants.appVersion, AppConstants.appBuildNumber]);
       await SentryFlutter.init(
         (options) {
           options.dsn = dsn;
           installSentryScrubbers(options);
+          // On Android the host app starts the native SDK, so a native option set here must also be set in
+          // NativeSentry.kt of the Android host app (under android/app/src/main/kotlin).
+          configureNativeSdkStart(options);
           options.tracesSampleRate = 0.2;
           options.release = '${AppConstants.appVersion}+${AppConstants.appBuildNumber}';
         },

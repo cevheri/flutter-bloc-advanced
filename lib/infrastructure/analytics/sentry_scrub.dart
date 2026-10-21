@@ -89,6 +89,11 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
 /// place and returns it. Never drops one, and never edits the map the
 /// caller passed as its data.
 ///
+/// The breadcrumbs and events the native SDK records itself never pass
+/// through this hook. On Android the host app scrubs them with a Kotlin copy
+/// of these rules (`NativeSentryScrubber.kt`, started by
+/// `configureNativeSdkStart`); on iOS and macOS they are not scrubbed yet.
+///
 /// The key `state` is masked as an OIDC value, except in a navigation
 /// breadcrumb whose `state` is one of [sentryNavigationTypes]: there
 /// `RouteObserverBreadcrumb` writes the navigator event under it.
