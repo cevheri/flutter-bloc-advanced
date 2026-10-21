@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/app/router/forbidden_page.dart';
+import 'package:flutter_bloc_advance/app/router/not_found_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/register_page.dart';
+import 'package:flutter_bloc_advance/features/dashboard/presentation/pages/dashboard_home_page.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -185,6 +187,85 @@ void main() {
       expect(find.textContaining('GoException'), findsNothing);
       expect(warnings, contains(allOf(contains('/does-not-exist'), contains('no routes for location'))));
     });
+
+    // The two root pages outside the shell enter without a transition. While a root page that replaces the shell is
+    // still entering, the root navigator keeps the exiting shell page mounted, and a shell page that comes back in that
+    // window builds the shell Navigator a second time with the same GlobalKey: "Duplicate GlobalKey detected in widget
+    // tree" (flutter/flutter#148768). Once a go_router or Flutter release fixes that, the entering transition can return.
+    for (final (label, location, page) in [
+      ('the not-found page', '/does-not-exist', NotFoundPage),
+      ('the forbidden page', ApplicationRoutesConstants.forbidden, ForbiddenPage),
+    ]) {
+      testWidgets('returns to the shell 16 ms after leaving it for $label', (tester) async {
+        setDesktopViewport(tester);
+        TestEnv.authenticate();
+        await tester.pumpWidget(const App(language: 'en'));
+        await tester.pumpAndSettle();
+        final router = routerFromApp(tester);
+
+        router.go(location);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 16));
+        router.go(ApplicationRoutesConstants.home);
+        await tester.pumpAndSettle();
+
+        expect(router.state.uri.path, ApplicationRoutesConstants.home);
+        expect(find.byType(DashboardHomePage), findsOneWidget);
+      });
+
+      testWidgets('returns to the shell after $label has settled', (tester) async {
+        setDesktopViewport(tester);
+        TestEnv.authenticate();
+        await tester.pumpWidget(const App(language: 'en'));
+        await tester.pumpAndSettle();
+        final router = routerFromApp(tester);
+
+        router.go(location);
+        await tester.pumpAndSettle();
+        expect(find.byType(page), findsOneWidget);
+        router.go(ApplicationRoutesConstants.home);
+        await tester.pumpAndSettle();
+
+        expect(router.state.uri.path, ApplicationRoutesConstants.home);
+        expect(find.byType(DashboardHomePage), findsOneWidget);
+      });
+
+      testWidgets('shows $label without an entering transition', (tester) async {
+        setDesktopViewport(tester);
+        TestEnv.authenticate();
+        await tester.pumpWidget(const App(language: 'en'));
+        await tester.pumpAndSettle();
+
+        routerFromApp(tester).go(location);
+        await tester.pump();
+
+        // A page that animates in is still offstage on this frame.
+        final route = ModalRoute.of(tester.element(find.byType(page, skipOffstage: false)))!;
+        expect(route.animation!.value, 1.0);
+        expect(route.transitionDuration, Duration.zero);
+        // The page still leaves with the Material transition.
+        expect(route.reverseTransitionDuration, greaterThan(Duration.zero));
+        expect(rootPages(tester).last, isA<MaterialPage<void>>());
+      });
+    }
+
+    testWidgets('pops a pushed forbidden page with the iOS back swipe', (tester) async {
+      setDesktopViewport(tester);
+      TestEnv.authenticate();
+      await tester.pumpWidget(const App(language: 'en'));
+      await tester.pumpAndSettle();
+
+      routerFromApp(tester).push(ApplicationRoutesConstants.forbidden);
+      await tester.pumpAndSettle();
+      expect(find.byType(ForbiddenPage), findsOneWidget);
+
+      // A fast drag across 75% of the width, so the pop never hinges on the 50% threshold.
+      await tester.timedDragFrom(const Offset(5, 400), const Offset(1200, 0), const Duration(milliseconds: 150));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(ForbiddenPage), findsNothing);
+      expect(find.byType(DashboardHomePage), findsOneWidget);
+    }, variant: TargetPlatformVariant.only(TargetPlatform.iOS));
 
     testWidgets('declares every route with a pageBuilder', (tester) async {
       setDesktopViewport(tester);
