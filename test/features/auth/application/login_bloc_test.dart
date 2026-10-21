@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:bloc_test/bloc_test.dart';
+import 'package:flutter_bloc/flutter_bloc.dart' show Change;
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
@@ -219,17 +220,41 @@ class _StoreSessionRepository implements IAuthSessionRepository {
   }
 }
 
+/// Hands every state to [onStateChange] from inside emit, before any listener sees it, so a test can check what was
+/// stored at that instant.
+class _ObservedLoginBloc extends LoginBloc {
+  _ObservedLoginBloc({
+    required super.authenticateUserUseCase,
+    required super.sendOtpUseCase,
+    required super.verifyOtpUseCase,
+    required super.getAccountUseCase,
+    required super.persistAuthSessionUseCase,
+    required super.clearAuthSessionUseCase,
+    this.onStateChange,
+  });
+
+  final void Function(LoginState next)? onStateChange;
+
+  @override
+  void onChange(Change<LoginState> change) {
+    super.onChange(change);
+    onStateChange?.call(change.nextState);
+  }
+}
+
 LoginBloc _buildStoreBloc(
   _FakeAuthRepository repository,
   _FakeAccountRepository accountRepository,
-  IAuthSessionRepository sessionRepository,
-) => LoginBloc(
+  IAuthSessionRepository sessionRepository, {
+  void Function(LoginState next)? onStateChange,
+}) => _ObservedLoginBloc(
   authenticateUserUseCase: AuthenticateUserUseCase(repository),
   sendOtpUseCase: SendOtpUseCase(repository),
   verifyOtpUseCase: VerifyOtpUseCase(repository),
   getAccountUseCase: GetAccountUseCase(accountRepository),
   persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepository),
   clearAuthSessionUseCase: ClearAuthSessionUseCase(sessionRepository),
+  onStateChange: onStateChange,
 );
 
 void main() {
@@ -640,11 +665,18 @@ void main() {
     const accountDown = NetworkError('account down', code: 'network.cert_invalid');
     late _MemorySecureStorage secureStorage;
     late _StoreSessionRepository sessionRepository;
+    Map<String, String>? storeAtError;
 
     setUp(() {
       secureStorage = _MemorySecureStorage();
       sessionRepository = _StoreSessionRepository(AuthSessionRepository(secureStorage: secureStorage));
+      storeAtError = null;
     });
+
+    // The UI shows "sign-in failed" on the error state, so a reload from then on must find no token.
+    void copyStoreAtError(LoginState next) {
+      if (next is LoginErrorState) storeAtError = Map.of(secureStorage.values);
+    }
 
     Future<void> expectNoStoredSession() async {
       expect(secureStorage.values, isEmpty);
@@ -658,13 +690,16 @@ void main() {
         repository.authenticateResult = const Success(token);
         accountRepository.getAccountResult = const Failure(accountDown);
       },
-      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository),
+      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository, onStateChange: copyStoreAtError),
       act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
       expect: () => [
         const LoginLoadingState(username: 'username'),
         const LoginErrorState(errorCode: AppErrorCode.networkCertInvalid, message: 'account down'),
       ],
-      verify: (_) => expectNoStoredSession(),
+      verify: (_) async {
+        expect(storeAtError, isEmpty, reason: 'the token must be gone when the error is emitted');
+        await expectNoStoredSession();
+      },
     );
 
     blocTest<LoginBloc, LoginState>(
@@ -673,13 +708,16 @@ void main() {
         repository.authenticateResult = const Success(token);
         sessionRepository.failRolesPersist = true;
       },
-      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository),
+      build: () => _buildStoreBloc(repository, accountRepository, sessionRepository, onStateChange: copyStoreAtError),
       act: (bloc) => bloc.add(const LoginFormSubmitted(username: 'username', password: 'password')),
       expect: () => [
         const LoginLoadingState(username: 'username'),
         const LoginErrorState(errorCode: AppErrorCode.authSessionPersistFailed, message: 'roles write refused'),
       ],
-      verify: (_) => expectNoStoredSession(),
+      verify: (_) async {
+        expect(storeAtError, isEmpty, reason: 'the token must be gone when the error is emitted');
+        await expectNoStoredSession();
+      },
     );
 
     blocTest<LoginBloc, LoginState>(
