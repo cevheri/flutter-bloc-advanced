@@ -102,5 +102,11 @@ jobs:
       - name: Build APK
         run: flutter build apk --release --target lib/main/main_prod.dart
 
+      # The Kotlin scrubber of native Sentry events and breadcrumbs (android/app/src/test). The APK build above wrote
+      # the Gradle wrapper.
+      - name: Run Android unit tests
+        working-directory: android
+        run: ./gradlew :app:testDebugUnitTest -Ptarget=lib/main/main_prod.dart --console=plain
+
       - name: Build App Bundle
         run: flutter build appbundle --release --target lib/main/main_prod.dart

@@ -19,10 +19,18 @@ library;
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 /// Header names whose values no log or view may show (compared
 /// lower-cased). [scrubHeaders] drops them, and [maskHeaders] keeps them
 /// with a masked value.
 const Set<String> sensitiveHeaderNames = {'authorization', 'cookie', 'set-cookie'};
+
+/// Parts of a header name that name a credential the body keys do not, such
+/// as `Proxy-Authorization` and the api-key headers (`X-Api-Key`, `Api-Key`,
+/// `x_api_key`). The crash-report scrubbers mask the whole value of a header
+/// whose lower-cased name contains one.
+const Set<String> sensitiveHeaderNameSubstrings = {'authorization', 'api-key', 'api_key', 'apikey'};
 
 /// Body keys whose values are masked when any of these appears as a
 /// lower-cased substring (so `accessToken`, `refreshToken`, `newPassword`
@@ -56,17 +64,51 @@ final RegExp jwtPattern = RegExp(r'eyJ[A-Za-z0-9_-]{4,}\.[A-Za-z0-9_-]{4,}\.[A-Z
 /// Replace every JWT-shaped token inside [input] with [jwtMask].
 String maskJwts(String input) => input.replaceAll(jwtPattern, jwtMask);
 
+/// Whitespace in a separator: the characters Dart's `\s` matches and U+0085,
+/// which ICU's `\s` adds, so a character that either engine reads as
+/// whitespace separates on Dart and on Android alike. OpenJDK, the JVM of the
+/// Android unit tests, reads `\s` as ASCII only, so no pattern uses `\s`.
+const String _separatorSpace = r'[\t\n\u000b\f\r \u0085\u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]';
+
+/// The characters Dart's `\s` matches, as the part of a class of the
+/// characters a value may not hold. A value ends at one of them on every
+/// engine and runs on over U+0085 as it did in Dart, so no engine masks a
+/// value shorter than Dart did.
+const String _valueSpace = r'\t\n\u000b\f\r \u00a0\u1680\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff';
+
 /// A JSON member whose value is a string or a number: its name, the colon
 /// with the spaces around it, and its value.
-final RegExp _jsonMember = RegExp(r'"([^"\\]{1,64})"(\s*:\s*)("(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)');
+///
+/// This pattern, [namedValuePattern] and [bearerPattern] are public only so
+/// that `test/architecture/sentry_native_scrub_patterns_test.dart` can
+/// compare them with the copies the Android host scrubs native Sentry events
+/// with. They spell out the classes instead of `\w`, `\d`, `\b`, `\s` and
+/// `.`, which ICU, the regex engine of Android, and OpenJDK read differently
+/// from Dart, and they take no case-insensitive flag, which Kotlin turns into
+/// Unicode case folding.
+@visibleForTesting
+final RegExp jsonMemberPattern = RegExp(
+  '${r'"([^"\\]{1,64})"('}$_separatorSpace*:$_separatorSpace'
+  r'*)("(?:[^"\\]|\\[^\n\r\u2028\u2029])*"|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)',
+);
 
 /// A `name=value` pair, as in a query string or a form body. A value that
 /// starts with `[` is already a mask.
-final RegExp _namedValue = RegExp(r'''(?<![\w.\-])([A-Za-z_][\w.\-]{0,63})=([^\[&\s#"',;)}\]][^&\s#"',;)}\]]*)''');
+@visibleForTesting
+final RegExp namedValuePattern = RegExp(
+  r'(?<![A-Za-z0-9_.\-])([A-Za-z_][A-Za-z0-9_.\-]{0,63})=([^\[&'
+  '$_valueSpace'
+  r'''#"',;)}\]][^&'''
+  '$_valueSpace'
+  r'''#"',;)}\]]*)''',
+);
 
-/// The credentials of a Bearer authorization. A mask starts with `[`, so it
-/// is not matched again.
-final RegExp _bearer = RegExp(r'\b(bearer)\s+[A-Za-z0-9\-._~+/]+=*', caseSensitive: false);
+/// The credentials of a Bearer authorization, the word in any case. A mask
+/// starts with `[`, so it is not matched again.
+@visibleForTesting
+final RegExp bearerPattern = RegExp(
+  '${r'(?<![A-Za-z0-9_])([Bb][Ee][Aa][Rr][Ee][Rr])'}$_separatorSpace${r'+[A-Za-z0-9\-._~+/]+=*'}',
+);
 
 /// Masks the secrets that [input] holds in a shape that names them: the
 /// value of a JSON member or of a `name=value` pair whose name contains one
@@ -80,17 +122,17 @@ final RegExp _bearer = RegExp(r'\b(bearer)\s+[A-Za-z0-9\-._~+/]+=*', caseSensiti
 String maskSecrets(String input) {
   var text = input.contains('eyJ') ? maskJwts(input) : input;
   final lower = text.toLowerCase();
-  if (lower.contains('bearer')) text = text.replaceAllMapped(_bearer, (match) => '${match[1]} $secretMask');
+  if (lower.contains('bearer')) text = text.replaceAllMapped(bearerPattern, (match) => '${match[1]} $secretMask');
   if (!sensitiveBodyKeySubstrings.any(lower.contains) && !sensitiveExactKeys.any(lower.contains)) return text;
   if (text.contains('"')) {
-    text = text.replaceAllMapped(_jsonMember, (match) {
+    text = text.replaceAllMapped(jsonMemberPattern, (match) {
       final value = match[3]!;
       if (!_isSensitiveKey(match[1]) || value.startsWith('"[REDACTED')) return match[0]!;
       return '"${match[1]}"${match[2]}${value.startsWith('"') ? '"$secretMask"' : secretMask}';
     });
   }
   if (text.contains('=')) {
-    text = text.replaceAllMapped(_namedValue, (m) => _isSensitiveKey(m[1]) ? '${m[1]}=$secretMask' : m[0]!);
+    text = text.replaceAllMapped(namedValuePattern, (m) => _isSensitiveKey(m[1]) ? '${m[1]}=$secretMask' : m[0]!);
   }
   return text;
 }

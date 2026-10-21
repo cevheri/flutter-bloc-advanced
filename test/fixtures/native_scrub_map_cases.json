@@ -1,0 +1,47 @@
+[
+  {
+    "field": "headers",
+    "input": {
+      "Authorization": "Bearer at-opaque-0a1b2c3d",
+      "Proxy-Authorization": "Basic dXNlcjpwYXNz",
+      "X-Api-Key": "k-0a1b2c3d4e",
+      "Api-Key": "k-9f8e7d6c",
+      "x_api_key": "k-5a6b7c",
+      "X-APIKEY": "k-1a2b",
+      "X-Auth-Token": "at-opaque-0a1b2c3d",
+      "X-Debug-Context": "session eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart",
+      "X-Keyboard-Layout": "tr-q",
+      "Accept": "application/json"
+    },
+    "expected": {
+      "Proxy-Authorization": "[REDACTED]",
+      "X-Api-Key": "[REDACTED]",
+      "Api-Key": "[REDACTED]",
+      "x_api_key": "[REDACTED]",
+      "X-APIKEY": "[REDACTED]",
+      "X-Auth-Token": "[REDACTED]",
+      "X-Debug-Context": "session [REDACTED_JWT]",
+      "X-Keyboard-Layout": "tr-q",
+      "Accept": "application/json"
+    }
+  },
+  {
+    "field": "tags",
+    "input": {
+      "otp": "493817",
+      "refreshToken": "rt-9f8e7d6c",
+      "state": "st4te999",
+      "login": "jane.doe@example.com",
+      "event.origin": "android",
+      "release_channel": "beta"
+    },
+    "expected": {
+      "otp": "[REDACTED]",
+      "refreshToken": "[REDACTED]",
+      "state": "[REDACTED]",
+      "login": "[REDACTED_EMAIL]",
+      "event.origin": "android",
+      "release_channel": "beta"
+    }
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "input": "user jane.doe@example.com signed in",
+    "expected": "user [REDACTED_EMAIL] signed in"
+  },
+  {
+    "input": "an encoded address jane%2Btag%40example.com in a query",
+    "expected": "an encoded address [REDACTED_EMAIL] in a query"
+  },
+  {
+    "input": "session eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart expired",
+    "expected": "session [REDACTED_JWT] expired"
+  },
+  {
+    "input": "{\"password\":\"hunter2\",\"n\":1}",
+    "expected": "{\"password\":\"[REDACTED]\",\"n\":1}"
+  },
+  {
+    "input": "{\"refresh_token\" : \"rt-9f8e7d6c\", \"count\": 12}",
+    "expected": "{\"refresh_token\" : \"[REDACTED]\", \"count\": 12}"
+  },
+  {
+    "input": "{\"otp\":493817,\"step\":2}",
+    "expected": "{\"otp\":[REDACTED],\"step\":2}"
+  },
+  {
+    "input": "{\"clientSecret\":\"a\\\"b\",\"ok\":\"y\"}",
+    "expected": "{\"clientSecret\":\"[REDACTED]\",\"ok\":\"y\"}"
+  },
+  {
+    "input": "{\"code\": \"4f2a9c\", \"statusCode\": 500}",
+    "expected": "{\"code\": \"[REDACTED]\", \"statusCode\": 500}"
+  },
+  {
+    "input": "callback?code=4f2a9c&state=st4te999&statusCode=200",
+    "expected": "callback?code=[REDACTED]&state=[REDACTED]&statusCode=200"
+  },
+  {
+    "input": "id_token_hint=abc; nonce=n0nce",
+    "expected": "id_token_hint=[REDACTED]; nonce=[REDACTED]"
+  },
+  {
+    "input": "x.password=abc&user.name=jane",
+    "expected": "x.password=[REDACTED]&user.name=jane"
+  },
+  {
+    "input": "çpassword=abc",
+    "expected": "çpassword=[REDACTED]"
+  },
+  {
+    "input": "Authorization: bearer abc.def",
+    "expected": "Authorization: bearer [REDACTED]"
+  },
+  {
+    "input": "retry with BEARER at-opaque-0a1b2c3d==",
+    "expected": "retry with BEARER [REDACTED]"
+  },
+  {
+    "input": "xbearer abc",
+    "expected": "xbearer abc"
+  },
+  {
+    "input": "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart",
+    "expected": "Authorization: Bearer [REDACTED_JWT]"
+  },
+  {
+    "input": "password=[REDACTED] [REDACTED_EMAIL] [REDACTED_JWT]",
+    "expected": "password=[REDACTED] [REDACTED_EMAIL] [REDACTED_JWT]"
+  },
+  {
+    "input": "line one\npassword=abc",
+    "expected": "line one\npassword=[REDACTED]"
+  },
+  {
+    "input": "{\"secret\":\"line\\nbreak\"}",
+    "expected": "{\"secret\":\"[REDACTED]\"}"
+  },
+  {
+    "input": "Session: {\"session_state\":\"9a8b\"} user=jane@example.org",
+    "expected": "Session: {\"session_state\":\"[REDACTED]\"} user=[REDACTED_EMAIL]"
+  },
+  {
+    "input": "Server returned 500 with body {\"error\":\"oops\"}",
+    "expected": "Server returned 500 with body {\"error\":\"oops\"}"
+  },
+  {
+    "input": "statusCode=404 countryCode=TR",
+    "expected": "statusCode=404 countryCode=TR"
+  },
+  {
+    "input": "\u017fBearer abcdef123",
+    "expected": "\u017fBearer [REDACTED]"
+  },
+  {
+    "input": "\u212aBearer abcdef123",
+    "expected": "\u212aBearer [REDACTED]"
+  },
+  {
+    "input": "Bearer\ufeffat-opaque-0a1b2c3d",
+    "expected": "Bearer [REDACTED]"
+  },
+  {
+    "input": "Bearer\u00a0at-opaque-0a1b2c3d",
+    "expected": "Bearer [REDACTED]"
+  },
+  {
+    "input": "Bearer\u0085at-opaque-0a1b2c3d",
+    "expected": "Bearer [REDACTED]"
+  },
+  {
+    "input": "{\"token\"\u00a0:\u0085\"rt-9f8e7d6c\"}",
+    "expected": "{\"token\"\u00a0:\u0085\"[REDACTED]\"}"
+  },
+  {
+    "input": "password=abc\u0085def",
+    "expected": "password=[REDACTED]"
+  },
+  {
+    "input": "password=abc\u3000def",
+    "expected": "password=[REDACTED]\u3000def"
+  }
+]

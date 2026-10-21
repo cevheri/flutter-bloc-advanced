@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
 import 'package:flutter_bloc_advance/app/bootstrap/app_bootstrap_config.dart';
+import 'package:flutter_bloc_advance/app/bootstrap/sentry_start.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/app/analytics/crash_reporter.dart';
 import 'package:flutter_bloc_advance/app/dev_console/time_travel/time_travel_bloc_observer.dart';
 import 'package:flutter_bloc_advance/core/logging/app_bloc_observer.dart';
-import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_scrub.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
@@ -16,10 +16,13 @@ import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_se
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_migration.dart';
 import 'package:flutter_bloc_advance/shared/utils/app_constants.dart';
-import 'package:sentry_flutter/sentry_flutter.dart';
 
 class AppBootstrap {
-  static Future<void> run(AppBootstrapConfig config) async {
+  /// Starts the app as [config] says. [sentry] decides whether Sentry starts and starts it; a test passes its own.
+  static Future<void> run(
+    AppBootstrapConfig config, {
+    @visibleForTesting SentryStart sentry = const SentryStart(),
+  }) async {
     WidgetsFlutterBinding.ensureInitialized();
 
     await AppConstants.initPackageInfo();
@@ -40,7 +43,9 @@ class AppBootstrap {
       log.error('OIDC configuration is invalid: {}', [reason]);
     }
 
-    final appConfig = AppConfig.fromEnvironment(config.environment);
+    // Decided before anything reads the config: when Sentry may not start (a release build whose Android host did not
+    // start the native SDK), the config loses its DSN, so the app runs exactly as without one.
+    final appConfig = await sentry.gate(AppConfig.fromEnvironment(config.environment));
     final dependencies = AppDependencies(appConfig: appConfig, authMode: authMode);
     final secureStorage = dependencies.createSecureStorage();
 
@@ -90,34 +95,20 @@ class AppBootstrap {
     // the entire widget tree shares one adapter instance — no config
     // drift between migration and runtime consumers, and overriding
     // for tests / alternate environments is a single hand-off.
-    final dsn = appConfig.sentryDsn;
-    if (dsn != null) {
-      log.info('Initializing Sentry (release: {}+{})', [AppConstants.appVersion, AppConstants.appBuildNumber]);
-      await SentryFlutter.init(
-        (options) {
-          options.dsn = dsn;
-          installSentryScrubbers(options);
-          options.tracesSampleRate = 0.2;
-          options.release = '${AppConstants.appVersion}+${AppConstants.appBuildNumber}';
-        },
-        appRunner: () => runApp(
-          App(
-            language: config.defaultLanguage,
-            dependencies: dependencies,
-            secureStorage: secureStorage,
-            analytics: analytics,
-          ),
-        ),
-      );
-    } else {
-      runApp(
+    // The Sentry options are configureSentryOptions (lib/app/bootstrap/sentry_start.dart). On Android the host app
+    // starts the native SDK, so a native option set there must also be set in NativeSentry.kt of the Android host app
+    // (under android/app/src/main/kotlin).
+    await sentry.run(
+      appConfig.sentryDsn,
+      release: '${AppConstants.appVersion}+${AppConstants.appBuildNumber}',
+      appRunner: () => runApp(
         App(
           language: config.defaultLanguage,
           dependencies: dependencies,
           secureStorage: secureStorage,
           analytics: analytics,
         ),
-      );
-    }
+      ),
+    );
   }
 }

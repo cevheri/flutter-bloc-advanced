@@ -67,10 +67,12 @@ test/
 │   ├── mock_asset_coverage_test.dart # every repository method succeeds on the mock
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
 │   ├── oidc_platform_setup_test.dart # OIDC scheme placeholder, web/redirect.html, no client secret
+│   ├── sentry_native_scrub_patterns_test.dart # Kotlin scrub patterns equal the Dart ones, Gradle DSN gate
 │   ├── test_file_naming_test.dart    # forbids *.test.dart (dot) files
 │   ├── web_history_test.dart         # web/index.html leaves the browser history to Flutter
 │   ├── web_placeholders_test.dart    # demo values cover every web/ and build-time placeholder
 │   └── web_sitemap_test.dart         # sitemap lists only the canonical root page
+├── fixtures/                  # inputs and expected outputs shared with the Android JVM tests
 ├── app/                       # app/ layer tests (router, shell, theme, di, ...)
 ├── core/                      # core/ tests (errors, logging, security, result, ...)
 ├── features/<feature>/        # application/ data/ domain/ navigation/ presentation/
@@ -423,6 +425,10 @@ for genuine stateful behavior; Dio handlers are always hand-written:
   It fails if `web/redirect.html` is not the `oidc` package's `example/web/redirect.html` with its three documented replacements: the error branch shows fixed copy instead of the provider's `error_description` and `error_uri`, a `state` the page cannot find is logged without its value, and the page returns to the app with `location.replace`; after an `oidc` upgrade, copy the page again and re-apply the replacements.
   It fails if a line in `lib/` names a client secret in any spelling (`client_secret`, `OIDC_CLIENT_SECRET`, `clientSecret`, `clientSecretPost`), except the scrubber's doc comment, or if any `OidcClientAuthentication` in `lib/` is other than `.none`, since the app is a public PKCE client.
   It fails if any `android/app/src/*/AndroidManifest.xml` mentions the redirect scheme or the `oidcRedirectScheme` placeholder: an intent filter there would let Android offer `MainActivity` for the callback instead of the package's redirect activity.
+- **`sentry_native_scrub_patterns_test.dart`** guards the Kotlin copy of the scrub policy that the Android host masks native Sentry events and breadcrumbs with (`NativeScrubPatterns.kt`, `NativeSentryScrubber.kt` under `android/app/src/main/kotlin`).
+  It fails if a Kotlin pattern, set or mask differs from the Dart one in `lib/core/security/sensitive_data_scrubber.dart` or `lib/infrastructure/analytics/sentry_scrub.dart`, if a shared pattern uses `\w`, `\d`, `\b`, `\s`, a bare `.` or a case-insensitive flag, which ICU, OpenJDK and Dart read differently, or if the Kotlin scrubber compiles a pattern with an option.
+  It fails if `android/app/build.gradle.kts` passes `SENTRY_DSN` to the native SDK other than through the check on the target file name, or if that file is not the only entry point that selects the prod environment, and if `MainActivity.kt` stops answering the channel `nativeSdkReady` asks.
+  The logic of the two copies is held equal by `test/fixtures/native_scrub_cases.json` and `test/fixtures/native_scrub_map_cases.json`, which the Dart tests and the Android JVM tests (`android/app/src/test/kotlin`) both run; see "Running tests" for the JVM command.
 
 The `oidc` mode has more guards next to the code they guard:
 
@@ -503,6 +509,13 @@ fvm flutter test --platform chrome test/browser_only/                   # the br
 
 `flutter test --platform chrome` finds Chrome on the `PATH`, or takes the browser that `CHROME_EXECUTABLE` names.
 
+The Android JVM unit tests (`android/app/src/test/kotlin`) cover the Kotlin scrubber of native Sentry events and run in the Build Android job of CI.
+They need JDK 17 and the Gradle wrapper, which is not committed: any Flutter Android build writes it, for example `fvm flutter build apk --config-only --target lib/main/main_prod.dart`.
+
+```shell
+cd android && ./gradlew :app:testDebugUnitTest -Ptarget=lib/main/main_prod.dart
+```
+
 ---
 
 ## Adding tests for a new feature
@@ -548,6 +561,8 @@ fvm flutter test --platform chrome test/browser_only/                   # the br
 | Log secrets guard | `test/architecture/log_secrets_test.dart` |
 | Credential text guard | `test/architecture/credential_to_string_test.dart` |
 | OIDC platform setup guard | `test/architecture/oidc_platform_setup_test.dart` |
+| Native Sentry scrub guard | `test/architecture/sentry_native_scrub_patterns_test.dart` |
+| Fixtures shared with the Android JVM tests | `test/fixtures/` |
 | OIDC log hygiene | `test/features/auth/sso_log_hygiene_test.dart` |
 | Fake OpenID provider | `test/infrastructure/auth/oidc/support/fake_provider.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |

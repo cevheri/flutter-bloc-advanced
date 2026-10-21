@@ -9,7 +9,7 @@
          res/xml keep shared preferences out of them, and out of backups if backup is ever turned on. -->
     <application
         android:label="flutter_bloc_advance"
-        android:name="${applicationName}"
+        android:name=".MainApplication"
         android:icon="@mipmap/ic_launcher"
         android:allowBackup="false"
         android:fullBackupContent="@xml/backup_rules"
