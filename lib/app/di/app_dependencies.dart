@@ -1,12 +1,15 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/sso_auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/data/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
@@ -18,6 +21,8 @@ import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
@@ -28,6 +33,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/shared_preferences_activity_store.dart';
+import 'package:flutter_bloc_advance/shared/utils/external_link.dart';
 
 class AppDependencies {
   const AppDependencies({
@@ -95,6 +101,22 @@ class AppDependencies {
     cacheStorage: SharedPrefsCacheStorage(),
     oidcKeys: authMode.usesOidc,
   );
+
+  /// The OpenID Connect client of an `oidc` build. The provider redirects back to the login page, and Linux and
+  /// Windows open the provider's page in the external browser.
+  IOidcClient createOidcClient(OidcSettings settings) =>
+      OidcClient(settings: settings, loginPath: ApplicationRoutesConstants.login, launchUrl: launchExternalUri);
+
+  /// The single sign-on of an `oidc` build, which stores the session through [sessionRepository].
+  ISsoAuthRepository createSsoAuthRepository(
+    IOidcClient client,
+    IAuthSessionRepository sessionRepository,
+    OidcSettings settings,
+  ) => SsoAuthRepository(client: client, sessionRepository: sessionRepository, settings: settings);
+
+  /// The token refresh of an `oidc` build, through [client] at the provider's token endpoint.
+  TokenRotation createOidcTokenRotation(IOidcClient client, ISecureStorage secureStorage) =>
+      OidcTokenRotation(client: client, secureStorage: secureStorage);
 
   IAuthorityRepository createAuthorityRepository(ApiClient apiClient) => AuthorityRepositoryImpl(apiClient);
 

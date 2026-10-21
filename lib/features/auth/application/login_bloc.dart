@@ -11,9 +11,11 @@ import 'package:flutter_bloc_advance/features/account/application/usecases/get_a
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/sign_in_with_sso_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/entities/sso_sign_in_result.dart';
 import 'package:flutter_bloc_advance/shared/utils/event_transformers.dart';
 
 part 'login_event.dart';
@@ -27,18 +29,23 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
   final GetAccountUseCase _getAccountUseCase;
   final PersistAuthSessionUseCase _persistAuthSessionUseCase;
 
+  /// Null in a build without single sign-on, where [SsoSignInRequested] is never sent.
+  final SignInWithSsoUseCase? _signInWithSsoUseCase;
+
   LoginBloc({
     required this._authenticateUserUseCase,
     required this._sendOtpUseCase,
     required this._verifyOtpUseCase,
     required this._getAccountUseCase,
     required this._persistAuthSessionUseCase,
+    this._signInWithSsoUseCase,
   }) : super(const LoginInitialState()) {
     on<LoginFormSubmitted>(_onSubmit, transformer: EventTransformers.dropConcurrent());
     on<TogglePasswordVisibility>(_onTogglePasswordVisibility);
     on<ChangeLoginMethod>(_onChangeLoginMethod);
     on<SendOtpRequested>(_onSendOtpRequested, transformer: EventTransformers.dropConcurrent());
     on<VerifyOtpSubmitted>(_onVerifyOtpSubmitted, transformer: EventTransformers.dropConcurrent());
+    on<SsoSignInRequested>(_onSsoSignInRequested, transformer: EventTransformers.dropConcurrent());
     on<LoginReset>(_onReset);
   }
 
@@ -173,6 +180,42 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           ),
         );
         _log.error("END: onVerifyOtpSubmitted error: {}", [error.message]);
+    }
+  }
+
+  /// The single sign-on stores the session itself and takes the roles from the ID token, so unlike [_completeLogin] it
+  /// sends no `GET /account`.
+  Future<void> _onSsoSignInRequested(SsoSignInRequested event, Emitter<LoginState> emit) async {
+    final signInWithSso = _signInWithSsoUseCase;
+    if (signInWithSso == null) throw StateError('single sign-on is not enabled in this build');
+    _log.debug('BEGIN: onSsoSignInRequested');
+    emit(LoginLoadingState(loginMethod: state.loginMethod, passwordVisible: state.passwordVisible));
+    final result = await signInWithSso(
+      webReturnPath: event.webReturnPath,
+      browserDoneMessage: event.browserDoneMessage,
+    );
+    switch (result) {
+      case SsoSignInSucceeded(:final username, :final roles):
+        emit(
+          LoginLoadedState(
+            username: username,
+            roles: roles,
+            loginMethod: state.loginMethod,
+            passwordVisible: state.passwordVisible,
+          ),
+        );
+        _log.debug('END: onSsoSignInRequested signed in: {}', [username]);
+      case SsoSignInCancelled():
+        emit(const LoginInitialState());
+        _log.info('END: onSsoSignInRequested the user left the provider page without signing in');
+      case SsoSignInRejected(:final errorCode):
+        emit(
+          LoginErrorState(errorCode: errorCode, loginMethod: state.loginMethod, passwordVisible: state.passwordVisible),
+        );
+        _log.error('END: onSsoSignInRequested error: {}', [errorCode.key]);
+      case SsoSignInNavigatedAway():
+        // The tab is leaving for the provider; the sign-in completes when it comes back.
+        _log.debug('END: onSsoSignInRequested on the way to the provider');
     }
   }
 

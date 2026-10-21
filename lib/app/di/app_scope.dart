@@ -18,10 +18,12 @@ import 'package:flutter_bloc_advance/features/auth/application/usecases/authenti
 import 'package:flutter_bloc_advance/features/auth/application/usecases/logout_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/sign_in_with_sso_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
 import 'package:flutter_bloc_advance/features/dashboard/application/dashboard_cubit.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/application/lifecycle_bloc.dart';
@@ -30,10 +32,12 @@ import 'package:flutter_bloc_advance/features/lifecycle/application/usecases/fet
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/features/users/application/usecases/list_authorities_usecase.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/connectivity/connectivity_service.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
@@ -64,6 +68,10 @@ class AppScope extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final secure = secureStorage;
+    final oidcSettings = switch (dependencies.authMode) {
+      OidcAuthMode(:final settings) => settings,
+      JwtAuthMode() || OidcMisconfiguredAuthMode() => null,
+    };
     return MultiRepositoryProvider(
       providers: [
         if (secure != null)
@@ -77,6 +85,22 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<IAuthSessionRepository>(
           create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
         ),
+        // Only an oidc build signs in through the provider. These come before SessionCubit, which completes a web
+        // sign-in and refreshes the session at startup, and the one TokenRotation is shared with the ApiClient.
+        if (oidcSettings != null) ...[
+          RepositoryProvider<IOidcClient>(create: (_) => dependencies.createOidcClient(oidcSettings)),
+          RepositoryProvider<ISsoAuthRepository>(
+            create: (context) => dependencies.createSsoAuthRepository(
+              context.read<IOidcClient>(),
+              context.read<IAuthSessionRepository>(),
+              oidcSettings,
+            ),
+          ),
+          RepositoryProvider<TokenRotation>(
+            create: (context) =>
+                dependencies.createOidcTokenRotation(context.read<IOidcClient>(), context.read<ISecureStorage>()),
+          ),
+        ],
         // Provided above ApiClient so a failed token refresh can end the session.
         BlocProvider<SessionCubit>(
           create: (context) => SessionCubit(
@@ -125,6 +149,9 @@ class AppScope extends StatelessWidget {
               verifyOtpUseCase: VerifyOtpUseCase(context.read<IAuthRepository>()),
               getAccountUseCase: GetAccountUseCase(context.read<IAccountRepository>()),
               persistAuthSessionUseCase: PersistAuthSessionUseCase(context.read<IAuthSessionRepository>()),
+              signInWithSsoUseCase: oidcSettings == null
+                  ? null
+                  : SignInWithSsoUseCase(context.read<ISsoAuthRepository>()),
             ),
           ),
           BlocProvider<AuthorityBloc>(

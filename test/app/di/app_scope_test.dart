@@ -20,10 +20,13 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repo
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/data/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/entities/app_config_entity.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -272,6 +275,66 @@ Future<void> _pumpUntil(WidgetTester tester, bool Function() done) async {
     await tester.pump(const Duration(milliseconds: 100));
   }
   expect(done(), isTrue);
+}
+
+final _oidcSettings = OidcSettings(issuer: Uri.parse('https://id.example.com/realms/demo'), clientId: 'app');
+
+/// Signs in with [outcome], as a provider would after the user signed in on its page.
+class _FakeOidcClient implements IOidcClient {
+  _FakeOidcClient(this.outcome);
+
+  final OidcSignInOutcome outcome;
+
+  @override
+  Future<OidcSignInOutcome> signIn({String? webReturnPath, required String browserDoneMessage}) async => outcome;
+
+  @override
+  Future<OidcSignInOutcome?> completePendingSignIn() async => null;
+
+  @override
+  Future<TokenRotationResult> refresh({
+    required String refreshToken,
+    required String idToken,
+    required String accessToken,
+    required DateTime accessTokenExpiresAt,
+  }) => throw UnimplementedError('these tests never refresh');
+
+  @override
+  Future<OidcLogoutOutcome> endProviderSession({String? idTokenHint}) =>
+      throw UnimplementedError('these tests never log out');
+}
+
+/// The test config in [authMode], counting the OIDC clients it creates; each one is [client].
+class _OidcClientDependencies extends AppDependencies {
+  _OidcClientDependencies({required super.authMode, required this.client}) : super(appConfig: const AppConfig.test());
+
+  final IOidcClient client;
+  int oidcClientsCreated = 0;
+
+  @override
+  IOidcClient createOidcClient(OidcSettings settings) {
+    oidcClientsCreated++;
+    return client;
+  }
+}
+
+/// Pumps [AppScope] over [dependencies] and returns a context below it.
+Future<BuildContext> _pumpScope(WidgetTester tester, AppDependencies dependencies) async {
+  late BuildContext scope;
+  await tester.pumpWidget(
+    AppScope(
+      dependencies: dependencies,
+      defaultLocale: const Locale('en'),
+      child: Builder(
+        builder: (context) {
+          scope = context;
+          return const SizedBox();
+        },
+      ),
+    ),
+  );
+  await tester.pumpAndSettle();
+  return scope;
 }
 
 /// The server's answer to a refresh, which a sign-in must never ask for.
@@ -644,6 +707,63 @@ void main() {
       ]);
       expect(dependencies.sessionExpiredCalls, 0, reason: 'ending the session would sign out the user signed in now');
       expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.jwtToken.key), signedInJwt);
+    });
+  });
+
+  group('AppScope single sign-on', () {
+    testWidgets('an oidc build signs in through the OIDC client and stores the whole session', (tester) async {
+      final expiresAt = DateTime.utc(2100);
+      final dependencies = _OidcClientDependencies(
+        authMode: OidcAuthMode(_oidcSettings),
+        client: _FakeOidcClient(
+          OidcSignedIn(
+            tokens: OidcTokens(
+              accessToken: 'sso-access-token',
+              idToken: 'sso-id-token',
+              refreshToken: 'sso-refresh-token',
+              accessTokenExpiresAt: expiresAt,
+            ),
+            claims: const {
+              'iss': 'https://id.example.com/realms/demo',
+              'sub': 'subject-1',
+              'email': 'jdoe@example.com',
+            },
+          ),
+        ),
+      );
+      final scope = await _pumpScope(tester, dependencies);
+
+      final login = scope.read<LoginBloc>();
+      login.add(const SsoSignInRequested(browserDoneMessage: 'done'));
+      await _pumpUntil(tester, () => login.state is LoginLoadedState);
+
+      expect(login.state, const LoginLoadedState(username: 'jdoe@example.com', roles: ['ROLE_USER']));
+      expect(dependencies.oidcClientsCreated, 1);
+      final secure = FlutterSecureStorageAdapter();
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), 'sso-access-token');
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), 'sso-refresh-token');
+      expect(await secure.read(SecureStorageKeys.oidcIdToken.key), 'sso-id-token');
+      expect(readAccessTokenExpiry(await secure.read(SecureStorageKeys.accessTokenExpiresAt.key)), expiresAt);
+      expect(scope.read<TokenRotation>(), isA<OidcTokenRotation>());
+    });
+
+    testWidgets('a jwt build creates no OIDC client', (tester) async {
+      final dependencies = _OidcClientDependencies(
+        authMode: const JwtAuthMode(),
+        client: _FakeOidcClient(const OidcSignInCancelled()),
+      );
+      final scope = await _pumpScope(tester, dependencies);
+
+      // LoginBloc is created on first read, which is when an oidc build reads the OIDC client.
+      expect(scope.read<LoginBloc>().state, const LoginInitialState());
+
+      expect(dependencies.oidcClientsCreated, 0);
+    });
+
+    testWidgets('a jwt build provides no OIDC client', (tester) async {
+      final scope = await _pumpScope(tester, const AppDependencies(appConfig: AppConfig.test()));
+
+      expect(() => scope.read<IOidcClient>(), throwsA(isA<ProviderNotFoundException>()));
     });
   });
 }
