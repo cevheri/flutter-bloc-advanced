@@ -1,3 +1,6 @@
+import 'dart:typed_data';
+
+import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/app/di/app_dependencies.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
@@ -5,6 +8,9 @@ import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repo
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -31,6 +37,66 @@ class _MemorySecureStorage implements ISecureStorage {
   Future<void> delete(String key) async => store.remove(key);
   @override
   Future<void> deleteAll() async => store.clear();
+}
+
+/// Dependencies whose 401 predicate accepts no 401, as an app on a backend that narrows it does.
+class _NoSessionExpiryDependencies extends AppDependencies {
+  const _NoSessionExpiryDependencies() : super(appConfig: _prodConfig);
+
+  @override
+  SessionExpiredPredicate get sessionExpiredPredicate =>
+      (_) => false;
+}
+
+/// A production config, so no MockInterceptor answers in place of the adapter the tests install.
+const _prodConfig = AppConfig(
+  environment: Environment.prod,
+  apiBaseUrl: 'https://api.example.test',
+  certificatePins: [],
+  idleTimeout: null,
+);
+
+/// A TokenRotation that records each refresh token it is asked to rotate and refuses it.
+class _FakeRotation implements TokenRotation {
+  final sent = <String>[];
+
+  @override
+  Future<TokenRotationResult> rotate(String refreshToken) async {
+    sent.add(refreshToken);
+    return const RotationRefused();
+  }
+}
+
+/// Answers every request with 401, and records each request as `METHOD path`.
+class _UnauthorizedAdapter implements HttpClientAdapter {
+  final requests = <String>[];
+
+  @override
+  Future<ResponseBody> fetch(
+    RequestOptions options,
+    Stream<Uint8List>? requestStream,
+    Future<void>? cancelFuture,
+  ) async {
+    requests.add('${options.method} ${options.path}');
+    return ResponseBody.fromString('', 401);
+  }
+
+  @override
+  void close({bool force = false}) {}
+}
+
+/// A secure store holding a signed-in session with a refresh token.
+Future<_MemorySecureStorage> _signedInStorage() async {
+  final storage = _MemorySecureStorage();
+  await storage.write(SecureStorageKeys.jwtToken.key, 'ACCESS');
+  await storage.write(SecureStorageKeys.refreshToken.key, 'REFRESH');
+  return storage;
+}
+
+/// Sends a GET through [client], whose server answers [adapter]'s 401, and waits for it to fail.
+Future<void> _getUnauthorized(ApiClient client, _UnauthorizedAdapter adapter) async {
+  client.instance.httpClientAdapter = adapter;
+  await expectLater(client.get('/api/users').timeout(const Duration(seconds: 5)), throwsA(anything));
 }
 
 final _oidcSession = AuthSession(
@@ -74,6 +140,69 @@ void main() {
     await dependencies.createAuthSessionRepository(secureStorage).persist(_oidcSession);
 
     expect(secureStorage.store.keys, unorderedEquals([SecureStorageKeys.jwtToken.key]));
+  });
+
+  test('the default 401 predicate is any 401', () {
+    expect(dependencies.sessionExpiredPredicate, same(isUnauthorized));
+  });
+
+  test('createApiClient ends the session on a 401 its refresh cannot fix', () async {
+    final adapter = _UnauthorizedAdapter();
+    var sessionExpiredCalls = 0;
+    final client = const AppDependencies(appConfig: _prodConfig)
+        .createApiClient(await _signedInStorage(), onSessionExpired: () => sessionExpiredCalls++);
+
+    await _getUnauthorized(client, adapter);
+
+    expect(adapter.requests, ['GET /api/users', 'POST /api/token/refresh']);
+    expect(sessionExpiredCalls, 1);
+  });
+
+  test('createApiClient uses sessionExpiredPredicate', () async {
+    final adapter = _UnauthorizedAdapter();
+    var sessionExpiredCalls = 0;
+    final client = const _NoSessionExpiryDependencies().createApiClient(
+      await _signedInStorage(),
+      onSessionExpired: () => sessionExpiredCalls++,
+    );
+
+    await _getUnauthorized(client, adapter);
+
+    expect(adapter.requests, ['GET /api/users'], reason: 'a 401 the predicate refuses starts no refresh');
+    expect(sessionExpiredCalls, 0);
+  });
+
+  test('createOidcApiClient routes a 401 to the given rotation', () async {
+    final adapter = _UnauthorizedAdapter();
+    final rotation = _FakeRotation();
+    var sessionExpiredCalls = 0;
+    final client = const AppDependencies(appConfig: _prodConfig).createOidcApiClient(
+      await _signedInStorage(),
+      onSessionExpired: () => sessionExpiredCalls++,
+      tokenRotation: rotation,
+    );
+
+    await _getUnauthorized(client, adapter);
+
+    expect(rotation.sent, ['REFRESH']);
+    expect(adapter.requests, ['GET /api/users'], reason: 'the backend refresh endpoint is not called');
+    expect(sessionExpiredCalls, 1, reason: 'the fake rotation refuses');
+  });
+
+  test('createOidcApiClient uses sessionExpiredPredicate', () async {
+    final adapter = _UnauthorizedAdapter();
+    final rotation = _FakeRotation();
+    var sessionExpiredCalls = 0;
+    final client = const _NoSessionExpiryDependencies().createOidcApiClient(
+      await _signedInStorage(),
+      onSessionExpired: () => sessionExpiredCalls++,
+      tokenRotation: rotation,
+    );
+
+    await _getUnauthorized(client, adapter);
+
+    expect(rotation.sent, isEmpty);
+    expect(sessionExpiredCalls, 0);
   });
 
   test('app dependencies expose lifecycle repository contract', () {

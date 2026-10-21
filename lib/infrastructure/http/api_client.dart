@@ -17,6 +17,7 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/mock_inter
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/sensitive_keys.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/transport_errors.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
@@ -59,8 +60,19 @@ class InterceptorChainEntry {
 /// whose values are secrets though their names hold no credential word. The
 /// request carries them in its extra ([sensitiveKeysOf]), so the dev
 /// console, the verbose log and the error text mask those values too.
+///
+/// `tokenRotation` replaces the backend's refresh endpoint ([BackendTokenRotation]) as the way
+/// [TokenRefreshInterceptor] refreshes the session, and `isSessionExpired` decides which 401 starts
+/// that refresh ([isUnauthorized], every 401, when it is null).
 class ApiClient {
-  ApiClient({required this._appConfig, this._secureStorage, this._onSessionExpired, this._dio});
+  ApiClient({
+    required this._appConfig,
+    this._secureStorage,
+    this._onSessionExpired,
+    this._dio,
+    this._tokenRotation,
+    this._isSessionExpired,
+  });
 
   static final _log = AppLogger.getLogger('ApiClient');
 
@@ -69,6 +81,8 @@ class ApiClient {
   final AppConfig _appConfig;
   final ISecureStorage? _secureStorage;
   final OnSessionExpired? _onSessionExpired;
+  final TokenRotation? _tokenRotation;
+  final SessionExpiredPredicate? _isSessionExpired;
   Dio? _dio;
   List<InterceptorChainEntry> _chainSnapshot = const [];
 
@@ -141,6 +155,8 @@ class ApiClient {
           onSessionExpired: _onSessionExpired,
           secureStorage: _secureStorage,
           refreshDioFactory: _appConfig.isProduction ? null : _mockRefreshDio,
+          rotation: _tokenRotation,
+          isSessionExpired: _isSessionExpired ?? isUnauthorized,
         ),
         meta: const InterceptorChainEntry(name: 'TokenRefreshInterceptor', detail: 'Refreshes expired access tokens'),
       ),

@@ -24,6 +24,7 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/shared_preferences_activity_store.dart';
@@ -54,9 +55,32 @@ class AppDependencies {
     return LogAnalyticsService();
   }
 
+  /// Which 401 means that the bearer is no longer valid, so the HTTP layer refreshes the session and ends it when the
+  /// refresh cannot fix the 401. Every 401 by default. An app on a backend that also answers 401 for other reasons
+  /// overrides it: LibreDB Studio, for one, means an ended session only by its `AUTH_REQUIRED` code.
+  SessionExpiredPredicate get sessionExpiredPredicate => isUnauthorized;
+
   /// [onSessionExpired] runs when a 401 cannot be fixed by a token refresh; the caller ends the session there.
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
-      ApiClient(appConfig: appConfig, secureStorage: secureStorage, onSessionExpired: onSessionExpired);
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) => ApiClient(
+    appConfig: appConfig,
+    secureStorage: secureStorage,
+    onSessionExpired: onSessionExpired,
+    isSessionExpired: sessionExpiredPredicate,
+  );
+
+  /// The [ApiClient] of an `oidc` build, which refreshes the session through [tokenRotation] instead of the backend's
+  /// refresh endpoint. [onSessionExpired] runs when a 401 cannot be fixed by a token refresh.
+  ApiClient createOidcApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    required TokenRotation tokenRotation,
+  }) => ApiClient(
+    appConfig: appConfig,
+    secureStorage: secureStorage,
+    onSessionExpired: onSessionExpired,
+    tokenRotation: tokenRotation,
+    isSessionExpired: sessionExpiredPredicate,
+  );
 
   IAccountRepository createAccountRepository(ApiClient apiClient) => AccountRepository(apiClient);
 
