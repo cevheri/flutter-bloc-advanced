@@ -82,14 +82,27 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
 /// own crash reports is scrubbed too. Mutates the passed-in [Breadcrumb] in
 /// place and returns it. Never drops one, and never edits the map the
 /// caller passed as its data.
+///
+/// The key `state` is masked as an OIDC value, except in a navigation
+/// breadcrumb whose `state` is one of [_navigationTypes]: there
+/// `RouteObserverBreadcrumb` writes the navigator event under it.
 Breadcrumb? sentryBeforeBreadcrumb(Breadcrumb? breadcrumb) {
   if (breadcrumb == null) return null;
   final message = breadcrumb.message;
   if (message != null) breadcrumb.message = _maskText(message);
   final data = breadcrumb.data;
-  if (data != null) breadcrumb.data = _maskMap(scrubBodyKeys(data) as Map<String, dynamic>);
+  if (data != null) {
+    final masked = _maskMap(scrubBodyKeys(data) as Map<String, dynamic>);
+    final state = data['state'];
+    if (breadcrumb.category == 'navigation' && _navigationTypes.contains(state)) masked['state'] = state;
+    breadcrumb.data = masked;
+  }
   return breadcrumb;
 }
+
+/// The navigator events `SentryNavigatorObserver` records, which
+/// `RouteObserverBreadcrumb` writes under the key `state`.
+const Set<String> _navigationTypes = {'didPush', 'didPop', 'didReplace'};
 
 /// Installs [sentryBeforeSend] as the `beforeSend` hook and
 /// [sentryBeforeBreadcrumb] as the `beforeBreadcrumb` hook of [options].

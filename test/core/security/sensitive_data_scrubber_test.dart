@@ -34,7 +34,7 @@ void main() {
     test('masks the value of a credential name=value pair', () {
       expect(
         maskSecrets('GET /cb?state=x&access_token=at-0a1b&code=7 refresh_token=rt-9f8e'),
-        'GET /cb?state=x&access_token=[REDACTED]&code=7 refresh_token=[REDACTED]',
+        'GET /cb?state=[REDACTED]&access_token=[REDACTED]&code=[REDACTED] refresh_token=[REDACTED]',
       );
     });
 
@@ -268,6 +268,47 @@ void main() {
 
       expect(scrubErrorBody(body, requestBody: {'login': 'alice'}), body);
       expect(scrubErrorBody(null), '');
+    });
+  });
+
+  group('exact OIDC keys', () {
+    test('masks the code, state and session_state of a redirect query and keeps the other pairs', () {
+      final text = maskSecrets('redirect?code=abc123XYZ&state=st4te999&session_state=ss1&iss=x');
+
+      expect(text, isNot(contains('abc123XYZ')));
+      expect(text, isNot(contains('st4te999')));
+      expect(text, isNot(contains('ss1')));
+      expect(text, contains('iss=x'));
+    });
+
+    test('masks the code, state, nonce and code_verifier members of JSON', () {
+      final text = maskSecrets('{"code":"abc123XYZ","state":"st4te999","nonce":"n0nce","code_verifier":"v3rif"}');
+
+      for (final value in ['abc123XYZ', 'st4te999', 'n0nce', 'v3rif']) {
+        expect(text, isNot(contains(value)));
+      }
+    });
+
+    test('masks a key that matches whole, in any case, and keeps a key that only contains one', () {
+      final result = scrubBodyKeys({
+        'code': 'c1',
+        'State': 's1',
+        'nonce': 'n1',
+        'statusCode': 401,
+        'countryCode': 'TR',
+        'stateName': 'x',
+        'errorCode': 'E1',
+      });
+
+      expect(result, {
+        'code': '[REDACTED]',
+        'State': '[REDACTED]',
+        'nonce': '[REDACTED]',
+        'statusCode': 401,
+        'countryCode': 'TR',
+        'stateName': 'x',
+        'errorCode': 'E1',
+      });
     });
   });
 }
