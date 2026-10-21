@@ -73,7 +73,7 @@ class AuthFeatureRoutes {
     ],
   ];
 
-  /// Authenticated routes (change-password) — inside ShellRoute. A single
+  /// Authenticated routes (change-password), inside ShellRoute. A single
   /// sign-on build leaves them out.
   static final List<GoRoute> authenticatedRoutes = [
     GoRoute(

@@ -501,7 +501,7 @@ class SessionCubit extends Cubit<SessionState> {
   }
 
   /// Re-run [restore] from current secure-storage state. Fire-and-
-  /// forget safe — see [restore] for the failure semantics. In an `oidc`
+  /// forget safe: see [restore] for the failure semantics. In an `oidc`
   /// build this runs the startup step again first, through [restore]: it
   /// completes a pending web sign-in, normally none by then, and refreshes
   /// the access token when it has expired.

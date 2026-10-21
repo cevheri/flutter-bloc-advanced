@@ -84,7 +84,7 @@ void main() {
   // The single sign-on page of an oidc build, which sends the user to the provider only on a tap. Pumped past the
   // page's 600 ms fade-in, which the first frame of the images above shows blank, so the image shows the form.
   goldenTest(
-    'LoginScreen — single sign-on, light',
+    'LoginScreen: single sign-on, light',
     fileName: 'login_screen_sso_light',
     pumpBeforeTest: (tester) => tester.pump(const Duration(milliseconds: 600)),
     builder: () => GoldenTestGroup(
