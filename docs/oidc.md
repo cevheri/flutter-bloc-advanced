@@ -632,7 +632,7 @@ The step completes a pending web sign-in, then checks the stored access token ex
 An expired access token with a stored refresh token is refreshed through the shared `TokenRotation`.
 The refresh takes its turn at the lock that the token refreshes of every browser tab share (`ITokenRefreshLock`): the expiry is read first without the lock, so a valid session waits for no other tab, and once this tab holds the lock the expiry and the refresh token are read again, so a session another tab refreshed meanwhile is used as it is and no grant is sent.
 A turn the lock cannot give keeps the stored session.
-The 15 second limit below counts the wait for the lock too.
+The step's 15 second limit counts the wait for the lock too.
 The refresh follows the session-generation rules of `TokenRefreshInterceptor`: an answer that comes after the session ended is dropped, and what it stored while the session ended is taken back.
 It records what it stored, so an end that another tab reports just then takes it back (`RotatedTokensTakeBack`).
 A refused refresh, an expired access token without a refresh token, or a failed write of the refreshed tokens clears the session, and the user starts signed out.
