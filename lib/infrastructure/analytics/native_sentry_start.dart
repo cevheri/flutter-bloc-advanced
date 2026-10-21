@@ -35,8 +35,8 @@ bool hostStartsNativeSdkOn({required bool isWeb, required bool isAndroid}) => is
 /// on Android. Any native option set on the Dart side, such as
 /// `enableAutoNativeBreadcrumbs`, `enableNativeCrashHandling`,
 /// `maxBreadcrumbs`, `sendDefaultPii` or the replay options, must be set in
-/// `NativeSentry.kt` of the Android host app (under `android/app/src/main/kotlin`)
-/// as well, or it does nothing there.
+/// `NativeSentry.kt` of the Android host app (under
+/// `android/app/src/main/kotlin`) as well, or it does nothing there.
 void configureNativeSdkStart(SentryFlutterOptions options, {bool? hostStarts}) {
   options.autoInitializeNativeSdk = !(hostStarts ?? hostStartsNativeSdk(options));
 }
