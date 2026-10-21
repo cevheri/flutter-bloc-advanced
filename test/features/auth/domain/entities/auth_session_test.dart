@@ -39,6 +39,41 @@ void main() {
       expect(rendered, contains('oidcIdToken: ${maskToken('eyJhbGciOiJSUzI1NiJ9.oidc-payload.oidc-signature')}'));
       expect(rendered, contains('accessTokenExpiresAt: 2026-10-21 12:00:00.000Z'));
     });
+
+    // A jwt session never carries the OIDC fields, and its logs print it as they did before the fields existed.
+    test('prints a session without the OIDC fields as it did before they existed', () {
+      const session = AuthSession(
+        idToken: 'eyJhbGc.payload.signature',
+        refreshToken: 'refresh-token-value-12345',
+        username: 'alice',
+        roles: ['ROLE_USER'],
+      );
+
+      expect(
+        session.toString(),
+        'AuthSession(idToken: eyJh…ture, refreshToken: refr…2345, username: alice, roles: [ROLE_USER])',
+      );
+    });
+
+    test('prints only the OIDC field that is set', () {
+      expect(
+        const AuthSession(
+          idToken: 'eyJhbGc.payload.signature',
+          username: 'alice',
+          oidcIdToken: 'oidc-id-token-value',
+        ).toString(),
+        'AuthSession(idToken: eyJh…ture, refreshToken: <empty>, username: alice, roles: [], oidcIdToken: oidc…alue)',
+      );
+      expect(
+        AuthSession(
+          idToken: 'eyJhbGc.payload.signature',
+          username: 'alice',
+          accessTokenExpiresAt: DateTime.utc(2026, 10, 21, 12),
+        ).toString(),
+        'AuthSession(idToken: eyJh…ture, refreshToken: <empty>, username: alice, roles: [], '
+        'accessTokenExpiresAt: 2026-10-21 12:00:00.000Z)',
+      );
+    });
   });
 
   group('AuthSession equality', () {

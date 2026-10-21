@@ -131,6 +131,16 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
             }
           },
         ),
+        // The logout of an oidc build signs out before the provider logout has ended, and sets the
+        // providerSessionLeft status afterwards when the provider logout failed.
+        BlocListener<MenuBloc, MenuState>(
+          listenWhen: (previous, current) =>
+              previous.isLogout &&
+              current.isLogout &&
+              previous.status != MenuStateStatus.providerSessionLeft &&
+              current.status == MenuStateStatus.providerSessionLeft,
+          listener: (context, state) => _showNotice((strings) => strings.error_auth_oidc_logout_incomplete),
+        ),
         BlocListener<SessionCubit, SessionState>(
           listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
           listener: (context, state) {
@@ -147,6 +157,9 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
                 if (reason == SessionExpiredReason.idleTimeout) {
                   _showNotice((strings) => strings.idle_timeout_signed_out);
                 }
+                // The stored session is still being read and may open the app when it answers, so the login page
+                // must not send the user to the identity provider meanwhile.
+                if (reason == SessionExpiredReason.storageTimeout) _closeSsoAutoRedirect(context);
               case SessionUnknown():
                 break;
             }
@@ -176,8 +189,8 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
   }
 
   /// Stops the login page of an `oidc` build from sending the user to the identity provider on its own for the rest of
-  /// the run, once the run has been signed in or the user has logged out. Only [OidcAuthMode] provides the gate; a
-  /// misconfigured `oidc` build can still restore a session that an earlier build stored.
+  /// the run, once the run has been signed in, the user has logged out, or the stored session is read past the restore
+  /// time limit. Only [OidcAuthMode] provides the gate, so the other modes skip it.
   void _closeSsoAutoRedirect(BuildContext context) {
     if (context.read<AuthMode>() is OidcAuthMode) context.read<SsoAutoRedirectGate>().close();
   }

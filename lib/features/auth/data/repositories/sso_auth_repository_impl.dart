@@ -72,7 +72,10 @@ class SsoAuthRepository implements ISsoAuthRepository {
     );
     switch (persisted) {
       case Success():
-        _log.info('Signed in through the identity provider as {} with role {}', [username, role.name]);
+        // The username only at debug, which production does not print: the email mask covers neither a preferred
+        // username nor a subject.
+        _log.info('Signed in through the identity provider with role {}', [role.name]);
+        _log.debug('Signed in through the identity provider as {}', [username]);
         return SsoSignInSucceeded(username: username, roles: roles);
       case Failure(:final error):
         _log.error('The single sign-on session could not be stored: {}', [error.message]);

@@ -1,5 +1,6 @@
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/sso_auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart' show Logger, OutputEvent;
 
 /// Answers [signIn] and [completePendingSignIn] with the configured outcomes, and records the arguments of each sign-in.
 class _FakeOidcClient implements IOidcClient {
@@ -318,5 +320,33 @@ void main() {
       client.pendingOutcome = const OidcSignInCancelled();
       expect(await repository.completePendingSignIn(), isA<SsoSignInCancelled>());
     });
+  });
+
+  // A production build prints the info level, and the email mask does not cover a preferred username or a subject.
+  group('SsoAuthRepository log output in production', () {
+    late List<String> lines;
+
+    setUp(() {
+      AppLogger.configure(isProduction: true);
+      lines = [];
+      void collect(OutputEvent event) => lines.addAll(event.lines);
+      Logger.addOutputListener(collect);
+      addTearDown(() => Logger.removeOutputListener(collect));
+    });
+
+    tearDown(() => AppLogger.configure(isProduction: false));
+
+    for (final (name, extra, username) in <(String, Map<String, Object?>, String)>[
+      ('the preferred username', {'preferred_username': 'jdoe-identifier'}, 'jdoe-identifier'),
+      ('the subject', {}, 'subject-1'),
+    ]) {
+      test('a sign-in whose username is $name logs the role but not the username', () async {
+        final result = await signInWith(_claims(extra: extra));
+
+        expect(result, isA<SsoSignInSucceeded>().having((r) => r.username, 'username', username));
+        expect(lines.join('\n'), contains('with role user'));
+        expect(lines.join('\n'), isNot(contains(username)));
+      });
+    }
   });
 }

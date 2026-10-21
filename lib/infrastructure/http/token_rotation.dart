@@ -64,6 +64,22 @@ abstract interface class TokenRotation {
   Future<TokenRotationResult> rotate(String refreshToken);
 }
 
+/// A [TokenRotation] that refuses every refresh and sends nothing, so the 401 ends the session.
+///
+/// A misconfigured `oidc` build cannot reach the identity provider, and a session that an earlier `oidc` build stored
+/// holds the provider's refresh token, which [BackendTokenRotation] would post to the backend.
+final class RefusingTokenRotation implements TokenRotation {
+  const RefusingTokenRotation();
+
+  static final _log = AppLogger.getLogger('RefusingTokenRotation');
+
+  @override
+  Future<TokenRotationResult> rotate(String refreshToken) async {
+    _log.warn('The session cannot be refreshed: single sign-on is not configured correctly in this build');
+    return const RotationRefused();
+  }
+}
+
 /// Factory for the bare [Dio] instance used to POST the refresh
 /// request. A separate Dio is needed so the refresh call bypasses the
 /// production interceptor chain (otherwise a 401 on [refreshEndpointPath]

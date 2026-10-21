@@ -415,11 +415,9 @@ void main() {
       });
     });
 
-    // Neither build provides the gate, so reading it would throw ProviderNotFoundException.
-    for (final (build, authMode) in <(String, AuthMode)>[
-      ('a jwt build', const JwtAuthMode()),
-      ('a misconfigured oidc build', const OidcMisconfiguredAuthMode('OIDC_ISSUER is required in oidc mode')),
-    ]) {
+    // A jwt build provides no gate, so reading it would throw ProviderNotFoundException. A misconfigured oidc build
+    // never restores a session an earlier build left, see app_session_listeners_sso_test.dart.
+    for (final (build, authMode) in <(String, AuthMode)>[('a jwt build', const JwtAuthMode())]) {
       testWidgets('in $build, a session left by an earlier build and a logout read no gate', (tester) async {
         TestEnv.authenticate();
         await tester.pumpWidget(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
@@ -98,6 +99,21 @@ class _FakeOidcClient implements IOidcClient {
     required String accessToken,
     required DateTime accessTokenExpiresAt,
   }) => throw UnimplementedError('a logout never refreshes');
+}
+
+/// Ends the provider session when the test completes [logout], as a desktop browser flow does once the loopback
+/// redirect arrives; records each call in [calls].
+class _PendingLogoutClient extends _FakeOidcClient {
+  _PendingLogoutClient(super.calls);
+
+  final logout = Completer<OidcLogoutOutcome>();
+
+  @override
+  Future<OidcLogoutOutcome> endProviderSession({String? idTokenHint}) {
+    calls.add('endProviderSession');
+    hints.add(idTokenHint);
+    return logout.future;
+  }
 }
 
 OidcSettings _settings({bool logoutHint = true}) =>
@@ -214,6 +230,68 @@ void main() {
         expect(await repository().logout(), wipeFailure);
       });
     });
+  });
+
+  // On Linux and Windows the provider logout waits for the browser for up to five minutes.
+  group('SsoSignOutAuthRepository.signOut', () {
+    late _PendingLogoutClient pending;
+
+    SsoSignOutAuthRepository pendingRepository() =>
+        SsoSignOutAuthRepository(inner: inner, client: pending, secureStorage: storage, settings: _settings());
+
+    setUp(() => pending = _PendingLogoutClient(calls));
+
+    test('answers once the wipe has returned, with the provider logout started and not yet ended', () async {
+      final signedOut = await pendingRepository().signOut();
+      var providerLogoutEnded = false;
+      unawaited(signedOut.providerLogout.then((_) => providerLogoutEnded = true));
+      await Future<void>.delayed(Duration.zero);
+
+      expect(signedOut.cleared, const Success<void>(null));
+      expect(calls, ['read ${SecureStorageKeys.oidcIdToken.key}', 'wipe', 'endProviderSession']);
+      expect(pending.hints, ['stored-id-token']);
+      expect(providerLogoutEnded, isFalse);
+
+      pending.logout.complete(const ProviderSessionEnded());
+      expect(await signedOut.providerLogout, const Success<void>(null));
+    });
+
+    test('answers the wipe failure as cleared', () async {
+      const wipeFailure = Failure<void>(UnknownError('Session clear failed: jwtToken'));
+      inner.logoutResult = wipeFailure;
+
+      final signedOut = await pendingRepository().signOut();
+
+      expect(signedOut.cleared, wipeFailure);
+      pending.logout.complete(const ProviderSessionEnded());
+      await signedOut.providerLogout;
+    });
+
+    test('ends the provider logout with the incomplete provider logout when it failed', () async {
+      final signedOut = await pendingRepository().signOut();
+      pending.logout.complete(const ProviderLogoutFailed());
+
+      expect(
+        await signedOut.providerLogout,
+        isA<Failure<void>>().having(
+          (failure) => failure.error,
+          'error',
+          isA<AuthError>().having((error) => error.code, 'code', AppErrorCode.authOidcLogoutIncomplete.key),
+        ),
+      );
+    });
+
+    for (final (name, outcome) in <(String, OidcLogoutOutcome)>[
+      ('the provider has no logout', const NoProviderLogout()),
+      ('the web tab left for the provider logout', const ProviderLogoutNavigatedAway()),
+    ]) {
+      test('ends the provider logout with success when $name', () async {
+        final signedOut = await pendingRepository().signOut();
+        pending.logout.complete(outcome);
+
+        expect(await signedOut.providerLogout, const Success<void>(null));
+      });
+    }
   });
 
   group('SsoSignOutAuthRepository delegates the password sign-in to the repository it wraps', () {

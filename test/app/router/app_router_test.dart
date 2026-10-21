@@ -389,7 +389,8 @@ void main() {
         ),
       ),
     ]) {
-      for (final path in ['/oauth2redirect', '/logout']) {
+      // A pushed or crafted link may carry a trailing slash.
+      for (final path in ['/oauth2redirect', '/logout', '/oauth2redirect/', '/logout/']) {
         testWidgets('in $mode mode, signed out, $path lands on /login with no returnUrl', (tester) async {
           setDesktopViewport(tester);
           await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
@@ -413,20 +414,33 @@ void main() {
         expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.login);
       });
 
-      testWidgets('in $mode mode, signed in, /oauth2redirect lands on the dashboard', (tester) async {
+      testWidgets('in $mode mode, a cold start on /oauth2redirect/ lands on /login with no returnUrl', (tester) async {
         setDesktopViewport(tester);
-        TestEnv.authenticate();
+        startOn(tester, '/oauth2redirect/?code=SECRETCODE&state=SECRETSTATE');
         await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
         await tester.pumpAndSettle();
-        routerFromApp(tester).go(ApplicationRoutesConstants.settings);
-        await tester.pumpAndSettle();
 
-        routerFromApp(tester).go('/oauth2redirect?code=SECRETCODE&state=SECRETSTATE');
-        await tester.pumpAndSettle();
-
-        expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.home);
-        expect(find.byType(DashboardHomePage), findsOneWidget);
+        expect(find.byType(LoginScreen), findsOneWidget);
+        expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.login);
       });
+
+      // A misconfigured oidc build can neither sign in nor restore a stored session.
+      if (dependencies.authMode is OidcAuthMode) {
+        testWidgets('in $mode mode, signed in, /oauth2redirect lands on the dashboard', (tester) async {
+          setDesktopViewport(tester);
+          TestEnv.authenticate();
+          await tester.pumpWidget(App(language: 'en', dependencies: dependencies));
+          await tester.pumpAndSettle();
+          routerFromApp(tester).go(ApplicationRoutesConstants.settings);
+          await tester.pumpAndSettle();
+
+          routerFromApp(tester).go('/oauth2redirect?code=SECRETCODE&state=SECRETSTATE');
+          await tester.pumpAndSettle();
+
+          expect(routerFromApp(tester).state.uri.toString(), ApplicationRoutesConstants.home);
+          expect(find.byType(DashboardHomePage), findsOneWidget);
+        });
+      }
     }
 
     testWidgets('in jwt mode, signed in, /oauth2redirect still shows the not-found page', (tester) async {

@@ -19,12 +19,15 @@ import 'package:flutter_bloc_advance/features/auth/application/usecases/logout_u
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/sign_in_with_sso_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/sso_sign_out_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_sign_out_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/sso_sign_out_auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/data/services/misconfigured_sso_session_startup.dart';
 import 'package:flutter_bloc_advance/features/auth/data/services/sso_session_startup_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/domain/repositories/dynamic_form_repository.dart';
@@ -111,28 +114,42 @@ class AppScope extends StatelessWidget {
             secureStorage: context.read<ISecureStorage>(),
             sessionRepository: context.read<IAuthSessionRepository>(),
             appConfig: context.read<AppConfig>(),
-            ssoStartup: oidcSettings == null
-                ? null
-                : SsoSessionStartup(
-                    auth: context.read<ISsoAuthRepository>(),
-                    rotation: context.read<TokenRotation>(),
-                    secureStorage: context.read<ISecureStorage>(),
-                    sessionRepository: context.read<IAuthSessionRepository>(),
-                    gate: context.read<SsoAutoRedirectGate>(),
-                  ),
+            ssoStartup: switch (dependencies.authMode) {
+              OidcAuthMode() => SsoSessionStartup(
+                auth: context.read<ISsoAuthRepository>(),
+                rotation: context.read<TokenRotation>(),
+                secureStorage: context.read<ISecureStorage>(),
+                sessionRepository: context.read<IAuthSessionRepository>(),
+                gate: context.read<SsoAutoRedirectGate>(),
+              ),
+              // Fails closed: a session that an earlier oidc build stored is never restored.
+              OidcMisconfiguredAuthMode() => const MisconfiguredSsoSessionStartup(),
+              JwtAuthMode() => null,
+            },
           )..restore(),
         ),
         RepositoryProvider<ApiClient>(
           create: (context) {
             final session = context.read<SessionCubit>();
             void onSessionExpired() => session.endSession(reason: SessionExpiredReason.expired);
-            return oidcSettings == null
-                ? dependencies.createApiClient(context.read<ISecureStorage>(), onSessionExpired: onSessionExpired)
-                : dependencies.createOidcApiClient(
-                    context.read<ISecureStorage>(),
-                    onSessionExpired: onSessionExpired,
-                    tokenRotation: context.read<TokenRotation>(),
-                  );
+            return switch (dependencies.authMode) {
+              JwtAuthMode() => dependencies.createApiClient(
+                context.read<ISecureStorage>(),
+                onSessionExpired: onSessionExpired,
+              ),
+              OidcAuthMode() => dependencies.createOidcApiClient(
+                context.read<ISecureStorage>(),
+                onSessionExpired: onSessionExpired,
+                tokenRotation: context.read<TokenRotation>(),
+              ),
+              // A session that an earlier oidc build stored holds the provider's refresh token, which the backend's
+              // refresh endpoint must never receive.
+              OidcMisconfiguredAuthMode() => dependencies.createOidcApiClient(
+                context.read<ISecureStorage>(),
+                onSessionExpired: onSessionExpired,
+                tokenRotation: const RefusingTokenRotation(),
+              ),
+            };
           },
         ),
         RepositoryProvider<IAccountRepository>(
@@ -141,23 +158,27 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<IAuthorityRepository>(
           create: (context) => dependencies.createAuthorityRepository(context.read<ApiClient>()),
         ),
-        // A logout the user starts in an oidc build also ends the session at the identity provider.
-        RepositoryProvider<IAuthRepository>(
-          create: (context) {
-            final auth = dependencies.createAuthRepository(
-              context.read<IAuthSessionRepository>(),
-              context.read<ApiClient>(),
-            );
-            return oidcSettings == null
-                ? auth
-                : SsoSignOutAuthRepository(
-                    inner: auth,
-                    client: context.read<IOidcClient>(),
-                    secureStorage: context.read<ISecureStorage>(),
-                    settings: oidcSettings,
-                  );
-          },
-        ),
+        if (oidcSettings == null)
+          RepositoryProvider<IAuthRepository>(
+            create: (context) =>
+                dependencies.createAuthRepository(context.read<IAuthSessionRepository>(), context.read<ApiClient>()),
+          )
+        else ...[
+          // A logout the user starts in an oidc build also ends the session at the identity provider.
+          RepositoryProvider<SsoSignOutAuthRepository>(
+            create: (context) => SsoSignOutAuthRepository(
+              inner: dependencies.createAuthRepository(
+                context.read<IAuthSessionRepository>(),
+                context.read<ApiClient>(),
+              ),
+              client: context.read<IOidcClient>(),
+              secureStorage: context.read<ISecureStorage>(),
+              settings: oidcSettings,
+            ),
+          ),
+          RepositoryProvider<IAuthRepository>(create: (context) => context.read<SsoSignOutAuthRepository>()),
+          RepositoryProvider<ISsoSignOutRepository>(create: (context) => context.read<SsoSignOutAuthRepository>()),
+        ],
         RepositoryProvider<IDynamicFormRepository>(
           create: (context) => dependencies.createDynamicFormRepository(context.read<ApiClient>()),
         ),
@@ -210,6 +231,7 @@ class AppScope extends StatelessWidget {
             create: (context) => MenuBloc(
               logoutUseCase: LogoutUseCase(context.read<IAuthRepository>()),
               menuRepository: context.read<MenuRepository>(),
+              ssoSignOutUseCase: oidcSettings == null ? null : SsoSignOutUseCase(context.read<ISsoSignOutRepository>()),
             ),
           ),
           // Created with the app instead of on first use, so the stored collapse state is restored before the shell

@@ -89,6 +89,33 @@ void main() {
       expect(noToken, isNot(equals(expired)));
     });
 
+    test('SessionUnauthenticated equality includes the sign-in error', () {
+      const failed = SessionUnauthenticated(reason: SessionExpiredReason.signInFailed);
+      const failedWithError = SessionUnauthenticated(
+        reason: SessionExpiredReason.signInFailed,
+        signInError: AppErrorCode.authOidcFailed,
+      );
+      expect(failed, isNot(equals(failedWithError)));
+    });
+
+    // A jwt build never sets a sign-in error, and its logs print this state as they did before the field existed.
+    test('SessionUnauthenticated without a sign-in error prints only the reason', () {
+      expect(
+        const SessionUnauthenticated(reason: SessionExpiredReason.noToken).toString(),
+        'SessionUnauthenticated(SessionExpiredReason.noToken)',
+      );
+    });
+
+    test('SessionUnauthenticated with a sign-in error prints the reason and the error', () {
+      expect(
+        const SessionUnauthenticated(
+          reason: SessionExpiredReason.signInFailed,
+          signInError: AppErrorCode.authOidcFailed,
+        ).toString(),
+        'SessionUnauthenticated(SessionExpiredReason.signInFailed, AppErrorCode.authOidcFailed)',
+      );
+    });
+
     test('exhaustive switch covers all variants without a default', () {
       // Compiler-enforced exhaustiveness — if a new variant is added
       // without updating callers, the analyzer fails this build.

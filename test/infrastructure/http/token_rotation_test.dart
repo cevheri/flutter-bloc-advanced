@@ -14,6 +14,13 @@ import 'package:flutter_test/flutter_test.dart';
 }
 
 void main() {
+  // A misconfigured oidc build may hold a refresh token of the identity provider, which no backend may receive.
+  group('RefusingTokenRotation', () {
+    test('refuses every refresh', () async {
+      expect(await const RefusingTokenRotation().rotate('provider-refresh-token'), isA<RotationRefused>());
+    });
+  });
+
   group('BackendTokenRotation', () {
     test('posts the refresh token to the refresh endpoint', () async {
       final (:rotation, :sent) = _rotationAnsweredBy(_StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}'));

@@ -34,14 +34,21 @@ class AuthSession extends Equatable {
   @override
   List<Object?> get props => [idToken, refreshToken, username, roles, oidcIdToken, accessTokenExpiresAt];
 
-  /// Tokens are masked so this is safe to embed in log output.
+  /// Whether this is the session of an `oidc` sign-in that carries the
+  /// provider's ID token, outside [toString], which names the token only
+  /// inside `maskToken`.
+  bool get _hasOidcIdToken => oidcIdToken != null;
+
+  /// Tokens are masked so this is safe to embed in log output. An OIDC
+  /// field that is null is left out, so a `jwt` session prints as it did
+  /// before the fields existed.
   @override
   String toString() =>
       'AuthSession('
       'idToken: ${maskToken(idToken)}, '
       'refreshToken: ${maskToken(refreshToken)}, '
       'username: $username, '
-      'roles: $roles, '
-      'oidcIdToken: ${maskToken(oidcIdToken)}, '
-      'accessTokenExpiresAt: $accessTokenExpiresAt)';
+      'roles: $roles'
+      '${_hasOidcIdToken ? ', oidcIdToken: ${maskToken(oidcIdToken)}' : ''}'
+      '${accessTokenExpiresAt == null ? '' : ', accessTokenExpiresAt: $accessTokenExpiresAt'})';
 }

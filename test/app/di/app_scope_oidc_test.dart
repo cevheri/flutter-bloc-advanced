@@ -11,6 +11,7 @@ import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -55,6 +56,31 @@ class _OidcDependencies extends AppDependencies {
   @override
   ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
       throw StateError('an oidc build must create its ApiClient through createOidcApiClient');
+
+  @override
+  ApiClient createOidcApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    required TokenRotation tokenRotation,
+  }) {
+    apiClientRotations.add(tokenRotation);
+    return super.createOidcApiClient(secureStorage, onSessionExpired: onSessionExpired, tokenRotation: tokenRotation);
+  }
+}
+
+/// The test config in a misconfigured oidc build, recording the rotation its ApiClient is given.
+class _MisconfiguredDependencies extends AppDependencies {
+  _MisconfiguredDependencies()
+    : super(
+        appConfig: const AppConfig.test(),
+        authMode: const OidcMisconfiguredAuthMode('OIDC_SCOPE must hold openid'),
+      );
+
+  final apiClientRotations = <TokenRotation>[];
+
+  @override
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
+      throw StateError('a misconfigured oidc build must never refresh through the backend refresh endpoint');
 
   @override
   ApiClient createOidcApiClient(
@@ -144,6 +170,45 @@ void main() {
 
       expect(dependencies.apiClientRotations, hasLength(1));
       expect(dependencies.apiClientRotations.single, same(scope.read<TokenRotation>()));
+    });
+  });
+
+  // A session that an earlier, correctly configured oidc build stored holds the provider's tokens.
+  group('AppScope in a misconfigured oidc build, with a session an earlier oidc build stored', () {
+    setUp(() async {
+      final storage = FlutterSecureStorageAdapter();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'provider-access-token');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'provider-refresh-token');
+      await storage.write(SecureStorageKeys.oidcIdToken.key, 'provider-id-token');
+      await AppLocalStorage().save(StorageKeys.roles.key, <String>['ROLE_ADMIN', 'ROLE_USER']);
+    });
+
+    testWidgets('restores signed out with the configuration error, and leaves the stored session alone', (
+      tester,
+    ) async {
+      final scope = await _pumpScope(tester, _MisconfiguredDependencies());
+
+      expect(
+        await _restoredSession(tester, scope),
+        const SessionUnauthenticated(
+          reason: SessionExpiredReason.signInFailed,
+          signInError: AppErrorCode.authOidcConfig,
+        ),
+      );
+      expect(await FlutterSecureStorageAdapter().read(SecureStorageKeys.refreshToken.key), 'provider-refresh-token');
+    });
+
+    // The backend refresh endpoint must never receive the provider's refresh token.
+    testWidgets('the ApiClient refreshes through a rotation that refuses every refresh', (tester) async {
+      final dependencies = _MisconfiguredDependencies();
+      final scope = await _pumpScope(tester, dependencies);
+
+      scope.read<ApiClient>();
+
+      expect(dependencies.apiClientRotations, hasLength(1));
+      final rotation = dependencies.apiClientRotations.single;
+      expect(rotation, isNot(isA<BackendTokenRotation>()));
+      expect(await rotation.rotate('provider-refresh-token'), isA<RotationRefused>());
     });
   });
 

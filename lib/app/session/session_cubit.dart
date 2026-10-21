@@ -72,6 +72,14 @@ final class SessionUnauthenticated extends SessionState {
 
   @override
   List<Object?> get props => [reason, signInError];
+
+  /// Leaves out a null [signInError], so a `jwt` build, which never sets
+  /// one, prints this state as it did before the field existed.
+  @override
+  String toString() {
+    if (signInError != null || !(stringify ?? EquatableConfig.stringify)) return super.toString();
+    return '$runtimeType($reason)';
+  }
 }
 
 /// Why the cubit emitted [SessionUnauthenticated]. Drives log fidelity
