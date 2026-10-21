@@ -167,6 +167,17 @@ class SessionCubit extends Cubit<SessionState> {
   /// The time limits of the startup steps in flight, cancelled by [close].
   final _ssoStartupTimers = <Timer>{};
 
+  /// How many states this cubit has emitted, counting a state equal to the
+  /// current one, so a late startup answer can tell that nothing has been
+  /// emitted since the state it would change.
+  int _emitCount = 0;
+
+  @override
+  void emit(SessionState state) {
+    _emitCount++;
+    super.emit(state);
+  }
+
   /// Reads the stored session and settles [state] from it.
   ///
   /// The read is bounded by the restore time limit
@@ -195,12 +206,24 @@ class SessionCubit extends Cubit<SessionState> {
   /// step owns the expiry. A step that does not answer in time is taken
   /// as a provider that cannot be reached: the stored session is read as
   /// it is.
+  ///
+  /// The step goes on after its limit, and what it answers then is acted
+  /// on only while the state is still the one that the read after the
+  /// limit settled, see [_settleLateSsoStartup].
   Future<void> restore() async {
     final ssoStartup = _ssoStartup;
     if (ssoStartup != null) {
+      // Completes with the emit count once the stored read after a timed-out step has settled the state.
+      final settledAfterLimit = Completer<int>();
       final SessionState? settled;
+      final bool timedOut;
       try {
-        settled = switch (await _runSsoStartup(ssoStartup)) {
+        final SsoStartupResult result;
+        (:result, :timedOut) = await _runSsoStartup(
+          ssoStartup,
+          onLateAnswer: (late) => unawaited(_settleLateSsoStartup(late, settledAfterLimit.future)),
+        );
+        settled = switch (result) {
           SsoStartupSignedIn(:final roles) => SessionAuthenticated(roles: roles.toSet()),
           SsoStartupSignInFailed(:final errorCode) => SessionUnauthenticated(
             reason: SessionExpiredReason.signInFailed,
@@ -228,14 +251,21 @@ class SessionCubit extends Cubit<SessionState> {
         emit(settled);
         return;
       }
+      await _restoreStoredSession(checkJwtExpiry: false);
+      if (timedOut) settledAfterLimit.complete(_emitCount);
+      return;
     }
-    await _restoreStoredSession(checkJwtExpiry: ssoStartup == null);
+    await _restoreStoredSession(checkJwtExpiry: true);
   }
 
   /// Runs [startup] for at most [_ssoStartupTimeLimit], after which it
-  /// answers [SsoStartupUseStoredSession].
-  Future<SsoStartupResult> _runSsoStartup(ISsoSessionStartup startup) {
-    final result = Completer<SsoStartupResult>();
+  /// answers [SsoStartupUseStoredSession] with `timedOut` set, and hands
+  /// what the step answers later to [onLateAnswer].
+  Future<({SsoStartupResult result, bool timedOut})> _runSsoStartup(
+    ISsoSessionStartup startup, {
+    required void Function(SsoStartupResult late) onLateAnswer,
+  }) {
+    final result = Completer<({SsoStartupResult result, bool timedOut})>();
     late final Timer timer;
     timer = Timer(_ssoStartupTimeLimit, () {
       _ssoStartupTimers.remove(timer);
@@ -243,19 +273,19 @@ class SessionCubit extends Cubit<SessionState> {
         _ssoStartupTimeLimit.inMilliseconds,
       ]);
       startup.giveUp();
-      result.complete(const SsoStartupUseStoredSession());
+      result.complete((result: const SsoStartupUseStoredSession(), timedOut: true));
     });
     _ssoStartupTimers.add(timer);
     unawaited(
       startup.run().then(
         (value) {
           if (result.isCompleted) {
-            _log.info('restore: the startup step answered after its time limit, ignored: {}', [value.runtimeType]);
+            onLateAnswer(value);
             return;
           }
           timer.cancel();
           _ssoStartupTimers.remove(timer);
-          result.complete(value);
+          result.complete((result: value, timedOut: false));
         },
         onError: (Object error, StackTrace stackTrace) {
           if (result.isCompleted) {
@@ -269,6 +299,41 @@ class SessionCubit extends Cubit<SessionState> {
       ),
     );
     return result.future;
+  }
+
+  /// Acts on [late], what the startup step answered after its time limit,
+  /// once [settledAfterLimit] gives the emit count at which the stored read
+  /// after the limit settled the state, and only while nothing has been
+  /// emitted since. A late [SsoStartupSessionEnded] has already cleared the
+  /// stored session, so the session ends; a late [SsoStartupSignedIn] has
+  /// stored a session the cubit has not read, so it is read now and the
+  /// roles match the stored bearer. Any other late answer, or one that
+  /// comes after the state has changed, is only logged: the automatic
+  /// redirect gate closed at the limit.
+  Future<void> _settleLateSsoStartup(SsoStartupResult late, Future<int> settledAfterLimit) async {
+    final settledAt = await settledAfterLimit;
+    if (isClosed || _emitCount != settledAt) {
+      _log.warn('restore: the startup step answered after its time limit, the state changed since, ignored: {}', [
+        late.runtimeType,
+      ]);
+      return;
+    }
+    _log.info('restore: the startup step answered after its time limit: {}', [late.runtimeType]);
+    switch (late) {
+      case SsoStartupSessionEnded():
+        await endSession(reason: SessionExpiredReason.expired);
+      case SsoStartupSignedIn():
+        final stored = await _readStoredSession(checkJwtExpiry: false);
+        if (isClosed || _emitCount != settledAt) {
+          _log.warn('restore: the session stored after the time limit was read after the state changed, ignored: {}', [
+            stored,
+          ]);
+          return;
+        }
+        emit(stored);
+      case SsoStartupSignInFailed() || SsoStartupUseStoredSession():
+        break;
+    }
   }
 
   /// Settles [state] from the stored session, see [restore].
@@ -428,7 +493,10 @@ class SessionCubit extends Cubit<SessionState> {
   }
 
   /// Re-run [restore] from current secure-storage state. Fire-and-
-  /// forget safe — see [restore] for the failure semantics.
+  /// forget safe — see [restore] for the failure semantics. In an `oidc`
+  /// build this runs the startup step again first, through [restore]: it
+  /// completes a pending web sign-in, normally none by then, and refreshes
+  /// the access token when it has expired.
   Future<void> refresh() => restore();
 
   @override

@@ -295,6 +295,19 @@ void main() {
       expect(await newStartup().run(), isA<SsoStartupSessionEnded>());
       expect(errors, contains(contains('SsoSessionStartup')));
     });
+
+    test('a failed clear is logged by its type, not by the storage error text', () async {
+      final errors = _recordLogs(Level.error);
+      storeSession(expiresAt: _now.subtract(const Duration(minutes: 1)));
+      when(() => rotation.rotate('stored-refresh')).thenAnswer((_) async => const RotationRefused());
+      when(() => sessionRepository.clear())
+          .thenAnswer((_) async => const Failure(UnknownError('jwt: platform-detail-text')));
+
+      await newStartup().run();
+
+      expect(errors, contains(allOf(contains('SsoSessionStartup'), contains('UnknownError'))));
+      expect(errors.join('\n'), isNot(contains('platform-detail-text')));
+    });
   });
 }
 

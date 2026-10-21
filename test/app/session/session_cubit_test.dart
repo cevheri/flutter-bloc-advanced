@@ -629,6 +629,151 @@ void main() {
       });
     });
 
+    group('an answer after the time limit', () {
+      // Built after the startup step has stored its session, so the cubit only sees it through the late answer.
+      SessionCubit lateCubit(_MemorySecureStorage storage, Completer<SsoStartupResult> startup) => SessionCubit(
+        secureStorage: storage,
+        appConfig: const AppConfig.prod(),
+        ssoStartup: _FakeSsoStartup(startup.future),
+        ssoStartupTimeLimit: timeLimit,
+      );
+
+      test('a late SessionEnded ends the session the stored read opened, with reason expired', () {
+        fakeAsync((async) {
+          final storage = _MemorySecureStorage().._store[SecureStorageKeys.jwtToken.key] = 'opaque-access-token';
+          final startup = Completer<SsoStartupResult>();
+          final cubit = lateCubit(storage, startup);
+          final states = <SessionState>[];
+          cubit.stream.listen(states.add);
+
+          unawaited(cubit.restore());
+          async.elapse(timeLimit);
+          expect(states, [const SessionAuthenticated()]);
+
+          // The refresh was refused after the limit: the step has cleared the stored session.
+          storage._store.clear();
+          startup.complete(const SsoStartupSessionEnded());
+          async.flushMicrotasks();
+
+          expect(states, [
+            const SessionAuthenticated(),
+            const SessionUnauthenticated(reason: SessionExpiredReason.expired),
+          ]);
+          unawaited(cubit.close());
+        });
+      });
+
+      test('a late SignedIn reads the session the step stored, so the roles match the stored bearer', () async {
+        await AppLocalStorage().save(StorageKeys.roles.key, ['ROLE_ADMIN']);
+        fakeAsync((async) {
+          final storage = _MemorySecureStorage();
+          final startup = Completer<SsoStartupResult>();
+          final cubit = lateCubit(storage, startup);
+          final states = <SessionState>[];
+          cubit.stream.listen(states.add);
+
+          unawaited(cubit.restore());
+          async.elapse(timeLimit);
+          expect(states, [const SessionUnauthenticated(reason: SessionExpiredReason.noToken)]);
+
+          storage._store[SecureStorageKeys.jwtToken.key] = 'opaque-access-token';
+          startup.complete(const SsoStartupSignedIn(roles: ['ROLE_USER']));
+          async.flushMicrotasks();
+
+          expect(states, [
+            const SessionUnauthenticated(reason: SessionExpiredReason.noToken),
+            const SessionAuthenticated(roles: {'ROLE_ADMIN'}),
+          ]);
+          unawaited(cubit.close());
+        });
+      });
+
+      for (final (name, late) in [
+        ('SignInFailed', const SsoStartupSignInFailed(AppErrorCode.authOidcNoRole) as SsoStartupResult),
+        ('UseStoredSession', const SsoStartupUseStoredSession()),
+      ]) {
+        test('a late $name only logs', () {
+          final infos = _recordLogs(Level.info);
+          fakeAsync((async) {
+            final storage = _MemorySecureStorage().._store[SecureStorageKeys.jwtToken.key] = 'opaque-access-token';
+            final startup = Completer<SsoStartupResult>();
+            final cubit = lateCubit(storage, startup);
+            final states = <SessionState>[];
+            cubit.stream.listen(states.add);
+
+            unawaited(cubit.restore());
+            async.elapse(timeLimit);
+            startup.complete(late);
+            async.flushMicrotasks();
+
+            expect(states, [const SessionAuthenticated()]);
+            expect(infos, contains(allOf(contains('SessionCubit : restore'), contains('after its time limit'))));
+            unawaited(cubit.close());
+          });
+        });
+      }
+
+      for (final (name, late) in [
+        ('SessionEnded', const SsoStartupSessionEnded() as SsoStartupResult),
+        ('SignedIn', const SsoStartupSignedIn(roles: ['ROLE_USER'])),
+      ]) {
+        test('a late $name after the user has signed in or out only logs', () {
+          final warnings = _recordLogs(Level.warning);
+          fakeAsync((async) {
+            final storage = _MemorySecureStorage().._store[SecureStorageKeys.jwtToken.key] = 'opaque-access-token';
+            final startup = Completer<SsoStartupResult>();
+            final cubit = lateCubit(storage, startup);
+            final states = <SessionState>[];
+            cubit.stream.listen(states.add);
+
+            unawaited(cubit.restore());
+            async.elapse(timeLimit);
+            // The same state the timeout settled, emitted again by a sign-in: the late answer must still be ignored.
+            cubit.markAuthenticated();
+            startup.complete(late);
+            async.flushMicrotasks();
+
+            expect(states, [const SessionAuthenticated()]);
+            expect(warnings, contains(allOf(contains('SessionCubit : restore'), contains('state changed'))));
+            unawaited(cubit.close());
+          });
+        });
+      }
+
+      test('a late answer that comes while the stored read is in flight waits for that read', () {
+        fakeAsync((async) {
+          final token = Completer<String?>();
+          final storage = MockISecureStorage();
+          when(() => storage.read(any())).thenAnswer((_) async => null);
+          when(() => storage.read(SecureStorageKeys.jwtToken.key)).thenAnswer((_) => token.future);
+          final startup = Completer<SsoStartupResult>();
+          final cubit = SessionCubit(
+            secureStorage: storage,
+            appConfig: const AppConfig.prod(),
+            ssoStartup: _FakeSsoStartup(startup.future),
+            ssoStartupTimeLimit: timeLimit,
+          );
+          final states = <SessionState>[];
+          cubit.stream.listen(states.add);
+
+          unawaited(cubit.restore());
+          async.elapse(timeLimit);
+          startup.complete(const SsoStartupSessionEnded());
+          async.flushMicrotasks();
+          expect(states, isEmpty);
+
+          token.complete('opaque-access-token');
+          async.flushMicrotasks();
+
+          expect(states, [
+            const SessionAuthenticated(),
+            const SessionUnauthenticated(reason: SessionExpiredReason.expired),
+          ]);
+          unawaited(cubit.close());
+        });
+      });
+    });
+
     test('the stored read after the startup step keeps its own time limit', () {
       fakeAsync((async) {
         final storage = MockISecureStorage();

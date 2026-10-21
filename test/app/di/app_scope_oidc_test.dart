@@ -85,14 +85,13 @@ Future<BuildContext> _pumpScope(WidgetTester tester, AppDependencies dependencie
   return scope;
 }
 
-/// Reads [SessionCubit], which starts its restore, and pumps until the restore has settled the session.
+/// Reads [SessionCubit], which starts its restore, and waits for the first state the restore settles.
 Future<SessionState> _restoredSession(WidgetTester tester, BuildContext scope) async {
   final session = scope.read<SessionCubit>();
-  for (var i = 0; i < 50 && session.state is SessionUnknown; i++) {
-    await tester.runAsync(() => Future<void>.delayed(const Duration(milliseconds: 10)));
-    await tester.pump();
-  }
-  return session.state;
+  if (session.state is! SessionUnknown) return session.state;
+  final settled = await tester.runAsync(() => session.stream.firstWhere((state) => state is! SessionUnknown));
+  expect(settled, isNotNull, reason: 'the restore never settled the session');
+  return settled!;
 }
 
 void main() {

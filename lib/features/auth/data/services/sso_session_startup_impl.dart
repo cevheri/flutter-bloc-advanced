@@ -126,7 +126,8 @@ class SsoSessionStartup implements ISsoSessionStartup {
       case Success():
         break;
       case Failure(:final error):
-        _log.error('startup: the stored session was not fully cleared: {}', [error]);
+        // Only the type: AuthSessionRepository.clear has logged the storage errors themselves.
+        _log.error('startup: the stored session was not fully cleared: {}', [error.runtimeType]);
     }
     return const SsoStartupSessionEnded();
   }
