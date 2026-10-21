@@ -131,7 +131,7 @@ const Set<String> sentryNavigationTypes = {'didPush', 'didPop', 'didReplace'};
 
 /// Installs [sentryBeforeSend] as the `beforeSend` hook and
 /// [sentryBeforeBreadcrumb] as the `beforeBreadcrumb` hook of [options].
-/// `AppBootstrap` calls it when it starts Sentry. Both are needed: an
+/// `configureSentryOptions` calls it when Sentry starts. Both are needed: an
 /// error event takes its breadcrumbs from the scope, and only
 /// `beforeBreadcrumb` scrubs them there.
 ///

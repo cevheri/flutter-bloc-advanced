@@ -24,9 +24,9 @@ import io.sentry.protocol.SdkVersion
  * The other options it sets keep the sentry-java default, which equals the Dart default (session tracking, ANR,
  * tombstones, threads, stack traces, breadcrumbs, cache and attachment limits, client reports, sendDefaultPii).
  * Not mirrored: the Dart SDK's integrations and packages, which sentry_flutter adds to the native SDK version, and
- * Session Replay, whose recorder callbacks are created in Dart. A native option set on the Dart side (the
- * SentryFlutter.init options callback in lib/app/bootstrap/app_bootstrap.dart) must be set here too, or it does
- * nothing on Android.
+ * Session Replay, whose recorder callbacks are created in Dart. A native option set on the Dart side
+ * (configureSentryOptions in lib/app/bootstrap/sentry_start.dart) must be set here too, or it does nothing on
+ * Android.
  */
 object NativeSentry {
     private const val JAVA_SDK_NAME = "sentry.java.android.flutter"

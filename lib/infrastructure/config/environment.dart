@@ -9,25 +9,29 @@ final class AppConfig {
     required this.apiBaseUrl,
     required this.certificatePins,
     required this.idleTimeout,
+    this.sentryDsnDefine = const String.fromEnvironment('SENTRY_DSN'),
   });
 
   const AppConfig.dev()
     : environment = Environment.dev,
       apiBaseUrl = null,
       certificatePins = const <String>[],
-      idleTimeout = null;
+      idleTimeout = null,
+      sentryDsnDefine = const String.fromEnvironment('SENTRY_DSN');
 
   const AppConfig.test()
     : environment = Environment.test,
       apiBaseUrl = null,
       certificatePins = const <String>[],
-      idleTimeout = null;
+      idleTimeout = null,
+      sentryDsnDefine = const String.fromEnvironment('SENTRY_DSN');
 
   const AppConfig.prod()
     : environment = Environment.prod,
       apiBaseUrl = TemplateConfig.prodApiUrl,
       certificatePins = const <String>[],
-      idleTimeout = const Duration(minutes: 15);
+      idleTimeout = const Duration(minutes: 15),
+      sentryDsnDefine = const String.fromEnvironment('SENTRY_DSN');
 
   factory AppConfig.fromEnvironment(Environment environment) => switch (environment) {
     Environment.dev => const AppConfig.dev(),
@@ -40,6 +44,10 @@ final class AppConfig {
   final List<String> certificatePins;
   final Duration? idleTimeout;
 
+  /// The `--dart-define=SENTRY_DSN=...` value, empty when it is absent.
+  /// [sentryDsn] reads it in the prod environment only.
+  final String sentryDsnDefine;
+
   bool get isProduction => environment == Environment.prod;
   bool get isDevelopment => environment == Environment.dev;
   bool get isTest => environment == Environment.test;
@@ -49,7 +57,17 @@ final class AppConfig {
   /// **Never** commit a DSN to source (public template).
   String? get sentryDsn {
     if (!isProduction) return null;
-    const dsn = String.fromEnvironment('SENTRY_DSN');
-    return dsn.isEmpty ? null : dsn;
+    return sentryDsnDefine.isEmpty ? null : sentryDsnDefine;
   }
+
+  /// This config without a Sentry DSN, for a run that must behave exactly
+  /// as one without the define: no Sentry SDK, the log-only analytics and
+  /// no Sentry navigator observer.
+  AppConfig withoutSentry() => AppConfig(
+    environment: environment,
+    apiBaseUrl: apiBaseUrl,
+    certificatePins: certificatePins,
+    idleTimeout: idleTimeout,
+    sentryDsnDefine: '',
+  );
 }

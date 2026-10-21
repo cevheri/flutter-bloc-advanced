@@ -53,19 +53,29 @@ void configureNativeSdkStart(SentryFlutterOptions options, {bool? hostStarts}) {
 /// with one (`AppConfig.sentryDsn`), and the two gates disagree when a fork
 /// changes one of them. A debug or profile build then throws a [StateError]
 /// that names the mismatch; a release build logs it and returns false, so the
-/// app runs without Sentry.
+/// app runs without Sentry. A host app that does not answer on
+/// [nativeSentryChannelName], such as a fork without the handler, or whose
+/// handler fails, is treated the same way.
 Future<bool> nativeSdkReady({
   bool? hostStarts,
   MethodChannel channel = const MethodChannel(nativeSentryChannelName),
   bool releaseMode = kReleaseMode,
 }) async {
   if (!(hostStarts ?? hostStartsNativeSdk(SentryFlutterOptions()))) return true;
-  final enabled = await channel.invokeMethod<bool>('isEnabled');
-  if (enabled == true) return true;
+  String problem;
+  try {
+    final enabled = await channel.invokeMethod<bool>('isEnabled');
+    if (enabled == true) return true;
+    problem = 'the host app did not start the native Sentry SDK (it answered $enabled)';
+  } on MissingPluginException {
+    problem = 'the host app does not answer on $nativeSentryChannelName';
+  } on PlatformException catch (error) {
+    // Only the code: the message of a host error can hold anything.
+    problem = 'the host app failed to answer on $nativeSentryChannelName (${error.code})';
+  }
   final error = StateError(
-    'Sentry has a DSN on the Dart side, but the host app did not start the native Sentry SDK (it answered $enabled), '
-    'so every Dart event would be dropped. The host starts it only for a lib/main/main_prod.dart build with a '
-    'SENTRY_DSN define: see android/app/build.gradle.kts.',
+    'Sentry has a DSN on the Dart side, but $problem, so every Dart event would be dropped. The host starts it only '
+    'for a lib/main/main_prod.dart build with a SENTRY_DSN define: see android/app/build.gradle.kts.',
   );
   if (!releaseMode) throw error;
   _log.error('Sentry stays off: {}', [error.message]);

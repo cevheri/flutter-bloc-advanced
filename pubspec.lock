@@ -910,7 +910,7 @@ packages:
     source: hosted
     version: "1.5.3"
   sentry:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: sentry
       sha256: a3d9e4442958e24c03630b2d8123cd7ad42212c5fde09ebe127936428c57432a
