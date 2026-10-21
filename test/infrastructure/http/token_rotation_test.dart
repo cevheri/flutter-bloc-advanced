@@ -28,8 +28,25 @@ void main() {
       await rotation.rotate('valid-refresh');
 
       expect(sent.map((options) => '${options.method} ${options.path} ${options.data}'), [
-        'POST /api/token/refresh {"refresh_token":"valid-refresh"}',
+        'POST /token/refresh {"refresh_token":"valid-refresh"}',
       ]);
+    });
+
+    // The API base URL of the documented backend ends in /api, and every request path is relative to it.
+    test('sends the refresh to the refresh endpoint under an API base URL that ends in /api', () async {
+      final sent = <RequestOptions>[];
+      final rotation = BackendTokenRotation(
+        dio: Dio(BaseOptions(baseUrl: 'http://localhost:8080/api')),
+        refreshDioFactory: (source) => defaultRefreshDio(source)
+          ..interceptors.addAll([
+            _RecordingInterceptor(sent),
+            _StubInterceptor()..stubSuccess(data: '{"id_token":"new-jwt"}'),
+          ]),
+      );
+
+      await rotation.rotate('valid-refresh');
+
+      expect(sent.map((options) => options.uri), [Uri.parse('http://localhost:8080/api/token/refresh')]);
     });
 
     test('a 200 with id_token and refresh_token gives TokensRotated with both', () async {

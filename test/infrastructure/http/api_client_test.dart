@@ -666,7 +666,7 @@ void main() {
       expect(response.statusCode, 200);
       expect(adapter.requests, [
         (method: 'GET', path: '/api/transport/refresh', authorization: 'Bearer MOCK_TOKEN', body: null),
-        (method: 'POST', path: '/api/token/refresh', authorization: null, body: '{"refresh_token":"REFRESH_TOKEN"}'),
+        (method: 'POST', path: '/token/refresh', authorization: null, body: '{"refresh_token":"REFRESH_TOKEN"}'),
         (method: 'GET', path: '/api/transport/refresh', authorization: 'Bearer NEW_JWT', body: null),
       ]);
       expect(adapter.closed, isFalse);
@@ -998,7 +998,7 @@ void main() {
       expect(sessionExpiredCalls, 1);
       expect(adapter.requests.map((r) => '${r.method} ${r.path} ${r.authorization}'), [
         'GET /api/refresh/retry-401 Bearer MOCK_TOKEN',
-        'POST /api/token/refresh null',
+        'POST /token/refresh null',
         'GET /api/refresh/retry-401 Bearer NEW_JWT',
       ], reason: 'a second 401 must not start another refresh');
     });
@@ -1091,7 +1091,7 @@ void main() {
       ]).timeout(bound);
 
       expect(responses.map((r) => r.statusCode), [200, 200, 200]);
-      expect(routing.requests.where((r) => r.startsWith('POST /api/token/refresh')), hasLength(1));
+      expect(routing.requests.where((r) => r.startsWith('POST /token/refresh')), hasLength(1));
       expect(routing.requests.where((r) => r.endsWith('Bearer NEW_JWT')), hasLength(3));
       expect(sessionExpiredCalls, 0);
     });

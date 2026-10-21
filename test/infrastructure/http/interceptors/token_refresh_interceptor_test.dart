@@ -198,7 +198,7 @@ void main() {
       var sessionExpiredCalled = false;
       final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
       final handler = _TestErrorHandler();
-      final requestOptions = RequestOptions(path: '/api/token/refresh');
+      final requestOptions = RequestOptions(path: '/token/refresh');
 
       final error = DioException(
         requestOptions: requestOptions,
@@ -214,7 +214,7 @@ void main() {
     test('should call handler.next (not reject) for 401 on refresh endpoint', () async {
       final interceptor = TokenRefreshInterceptor(dio: dio);
       final handler = _TestErrorHandler();
-      final requestOptions = RequestOptions(path: '/api/token/refresh');
+      final requestOptions = RequestOptions(path: '/token/refresh');
 
       final error = DioException(
         requestOptions: requestOptions,
@@ -228,13 +228,13 @@ void main() {
       expect(handler.resolveCalled, isFalse);
     });
 
-    test('should detect refresh endpoint path containing /api/token/refresh', () async {
+    test('should detect refresh endpoint path containing /token/refresh', () async {
       var sessionExpiredCalled = false;
       final interceptor = TokenRefreshInterceptor(dio: dio, onSessionExpired: () => sessionExpiredCalled = true);
       final handler = _TestErrorHandler();
 
       // Path that contains the refresh path
-      final requestOptions = RequestOptions(path: '/v2/api/token/refresh');
+      final requestOptions = RequestOptions(path: '/v2/token/refresh');
 
       final error = DioException(
         requestOptions: requestOptions,
@@ -376,7 +376,7 @@ void main() {
         response: Response(requestOptions: requestOptions, statusCode: 401),
       );
 
-      // The interceptor creates a fresh Dio to call /api/token/refresh.
+      // The interceptor creates a fresh Dio to call /token/refresh.
       // Since there is no real server, the refresh will fail with a DioException,
       // triggering the session expired callback.
       await interceptor.onError(error, handler);
@@ -540,7 +540,7 @@ void main() {
     test('should not crash when onSessionExpired is null on refresh endpoint 401', () async {
       final interceptor = TokenRefreshInterceptor(dio: dio);
       final handler = _TestErrorHandler();
-      final requestOptions = RequestOptions(path: '/api/token/refresh');
+      final requestOptions = RequestOptions(path: '/token/refresh');
 
       final error = DioException(
         requestOptions: requestOptions,

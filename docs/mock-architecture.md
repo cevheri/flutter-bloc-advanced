@@ -192,9 +192,9 @@ Always runs, in every mode.
 
 ### Token refresh
 
-`TokenRefreshInterceptor` sends the refresh, `POST /api/token/refresh`, through a Dio of its own, so a 401 on the refresh cannot come back into the chain.
+`TokenRefreshInterceptor` sends the refresh, `POST /token/refresh`, through a Dio of its own, so a 401 on the refresh cannot come back into the chain.
 That Dio skips the `MockInterceptor` at the end of the chain, so outside production `ApiClient` gives it a `MockInterceptor` of its own (`_mockRefreshDio`).
-The mock answers the refresh from `POST_api_token_refresh.json`, the request that got the 401 is sent again with the new token, and the session continues, as it does against the server.
+The mock answers the refresh from `POST_token_refresh.json`, the request that got the 401 is sent again with the new token, and the session continues, as it does against the server.
 In production the refresh Dio has no interceptors and uses the adapter of the client's Dio, so the refresh token keeps the certificate pinning.
 
 `AuthInterceptor` records on each request the session generation it goes out under, before it reads the token (`SessionGeneration` in `lib/infrastructure/storage/session_generation.dart`).
@@ -307,7 +307,7 @@ Each file contains the exact JSON the real API would return.
 }
 ```
 
-**Refreshed token** (`POST_api_token_refresh.json`) has the same shape.
+**Refreshed token** (`POST_token_refresh.json`) has the same shape.
 `TokenRefreshInterceptor` stores `id_token` as the new JWT and, when present, `refresh_token` as the new refresh token:
 ```json
 {
@@ -327,7 +327,7 @@ Each file contains the exact JSON the real API would return.
 | `POST` | `/authenticate/verify-otp` | OTP sign-in, `LoginRepository.verifyOtp` |
 | `POST` | `/register` | Registration, `AccountRepository.register` |
 | `POST` | `/account/reset-password/init` | Password reset, `AccountRepository.resetPassword` |
-| `POST` | `/api/token/refresh` | Token refresh, `TokenRefreshInterceptor` |
+| `POST` | `/token/refresh` | Token refresh, `TokenRefreshInterceptor` |
 | `GET` | `/app/config` | Lifecycle checks before sign-in, `LifecycleRepository.fetchAppConfig` |
 
 The path is the one the `ApiClient` method is called with, before any path parameters.
