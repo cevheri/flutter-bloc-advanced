@@ -19,6 +19,8 @@ library;
 
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart' show visibleForTesting;
+
 /// Header names whose values no log or view may show (compared
 /// lower-cased). [scrubHeaders] drops them, and [maskHeaders] keeps them
 /// with a masked value.
@@ -58,15 +60,28 @@ String maskJwts(String input) => input.replaceAll(jwtPattern, jwtMask);
 
 /// A JSON member whose value is a string or a number: its name, the colon
 /// with the spaces around it, and its value.
-final RegExp _jsonMember = RegExp(r'"([^"\\]{1,64})"(\s*:\s*)("(?:[^"\\]|\\.)*"|-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?)');
+///
+/// This pattern, [namedValuePattern] and [bearerPattern] are public only so
+/// that `test/architecture/sentry_native_scrub_patterns_test.dart` can
+/// compare them with the copies the Android host scrubs native Sentry events
+/// with. They spell out the ASCII classes instead of `\w`, `\d`, `\b` and
+/// `.`, which ICU, the regex engine of Android, reads differently from Dart.
+@visibleForTesting
+final RegExp jsonMemberPattern = RegExp(
+  r'"([^"\\]{1,64})"(\s*:\s*)("(?:[^"\\]|\\[^\n\r\u2028\u2029])*"|-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)',
+);
 
 /// A `name=value` pair, as in a query string or a form body. A value that
 /// starts with `[` is already a mask.
-final RegExp _namedValue = RegExp(r'''(?<![\w.\-])([A-Za-z_][\w.\-]{0,63})=([^\[&\s#"',;)}\]][^&\s#"',;)}\]]*)''');
+@visibleForTesting
+final RegExp namedValuePattern = RegExp(
+  r'''(?<![A-Za-z0-9_.\-])([A-Za-z_][A-Za-z0-9_.\-]{0,63})=([^\[&\s#"',;)}\]][^&\s#"',;)}\]]*)''',
+);
 
 /// The credentials of a Bearer authorization. A mask starts with `[`, so it
 /// is not matched again.
-final RegExp _bearer = RegExp(r'\b(bearer)\s+[A-Za-z0-9\-._~+/]+=*', caseSensitive: false);
+@visibleForTesting
+final RegExp bearerPattern = RegExp(r'(?<![A-Za-z0-9_])(bearer)\s+[A-Za-z0-9\-._~+/]+=*', caseSensitive: false);
 
 /// Masks the secrets that [input] holds in a shape that names them: the
 /// value of a JSON member or of a `name=value` pair whose name contains one
@@ -80,17 +95,17 @@ final RegExp _bearer = RegExp(r'\b(bearer)\s+[A-Za-z0-9\-._~+/]+=*', caseSensiti
 String maskSecrets(String input) {
   var text = input.contains('eyJ') ? maskJwts(input) : input;
   final lower = text.toLowerCase();
-  if (lower.contains('bearer')) text = text.replaceAllMapped(_bearer, (match) => '${match[1]} $secretMask');
+  if (lower.contains('bearer')) text = text.replaceAllMapped(bearerPattern, (match) => '${match[1]} $secretMask');
   if (!sensitiveBodyKeySubstrings.any(lower.contains) && !sensitiveExactKeys.any(lower.contains)) return text;
   if (text.contains('"')) {
-    text = text.replaceAllMapped(_jsonMember, (match) {
+    text = text.replaceAllMapped(jsonMemberPattern, (match) {
       final value = match[3]!;
       if (!_isSensitiveKey(match[1]) || value.startsWith('"[REDACTED')) return match[0]!;
       return '"${match[1]}"${match[2]}${value.startsWith('"') ? '"$secretMask"' : secretMask}';
     });
   }
   if (text.contains('=')) {
-    text = text.replaceAllMapped(_namedValue, (m) => _isSensitiveKey(m[1]) ? '${m[1]}=$secretMask' : m[0]!);
+    text = text.replaceAllMapped(namedValuePattern, (m) => _isSensitiveKey(m[1]) ? '${m[1]}=$secretMask' : m[0]!);
   }
   return text;
 }

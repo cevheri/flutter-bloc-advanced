@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show visibleForTesting;
 import 'package:flutter_bloc_advance/core/security/sensitive_data_scrubber.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
@@ -89,7 +90,7 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
 /// caller passed as its data.
 ///
 /// The key `state` is masked as an OIDC value, except in a navigation
-/// breadcrumb whose `state` is one of [_navigationTypes]: there
+/// breadcrumb whose `state` is one of [sentryNavigationTypes]: there
 /// `RouteObserverBreadcrumb` writes the navigator event under it.
 Breadcrumb? sentryBeforeBreadcrumb(Breadcrumb? breadcrumb) {
   if (breadcrumb == null) return null;
@@ -99,15 +100,18 @@ Breadcrumb? sentryBeforeBreadcrumb(Breadcrumb? breadcrumb) {
   if (data != null) {
     final masked = _maskMap(scrubBodyKeys(data) as Map<String, dynamic>);
     final state = data['state'];
-    if (breadcrumb.category == 'navigation' && _navigationTypes.contains(state)) masked['state'] = state;
+    if (breadcrumb.category == 'navigation' && sentryNavigationTypes.contains(state)) masked['state'] = state;
     breadcrumb.data = masked;
   }
   return breadcrumb;
 }
 
 /// The navigator events `SentryNavigatorObserver` records, which
-/// `RouteObserverBreadcrumb` writes under the key `state`.
-const Set<String> _navigationTypes = {'didPush', 'didPop', 'didReplace'};
+/// `RouteObserverBreadcrumb` writes under the key `state`. Public only so
+/// that `test/architecture/sentry_native_scrub_patterns_test.dart` can
+/// compare it with the copy of the Android host.
+@visibleForTesting
+const Set<String> sentryNavigationTypes = {'didPush', 'didPop', 'didReplace'};
 
 /// Installs [sentryBeforeSend] as the `beforeSend` hook and
 /// [sentryBeforeBreadcrumb] as the `beforeBreadcrumb` hook of [options].
