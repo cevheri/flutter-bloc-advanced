@@ -1,0 +1,355 @@
+<!--
+    This HTML page works as a redirect_uri, post_logout_redirect_uri and
+    frontchannel_logout_uri for `package:oidc` / `package:oidc_web_core`.
+
+    For it to work as a frontchannel_logout_uri, it must be called like this:
+
+        /redirect.html?requestType=front-channel-logout
+
+    The javascript below speaks the structured "wire v2" protocol with the app:
+      1. it posts the incoming redirect to the app on a BroadcastChannel as
+         {"v":2,"type":"redirect","uri":"<full redirect url>"} , and
+      2. it waits for the app to post back an acknowledgement
+         {"v":2,"type":"ack","status":"ok"|"error","message":<string?>} ,
+         and only then shows a success / failure state.
+
+    It stays backward compatible: the app also still understands a bare redirect
+    URL string, but this page requires the matching (v2-aware) package version.
+    If you upgrade the package you should RE-COPY this file.
+
+    The page is fully customizable, but it's preferred to keep the javascript as
+    is, since it's tightly integrated with the plugin. All user-visible copy
+    lives in the `messages` object below and is safe to translate.
+-->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Sign-in redirect</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            color-scheme: light dark;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            line-height: 1.5;
+        }
+
+        .oidc-card {
+            max-width: 32rem;
+            text-align: center;
+        }
+
+        .oidc-card h3 {
+            margin: 0 0 0.5rem;
+            font-weight: 600;
+        }
+
+        .oidc-card p {
+            margin: 0.25rem 0;
+            opacity: 0.85;
+        }
+
+        .oidc-card[data-state="error"] h3 {
+            color: #c0392b;
+        }
+    </style>
+</head>
+
+<body>
+    <main class="oidc-card" id="oidc-card" role="status" aria-live="polite">
+        <h3 id="oidc-title">Completing your request...</h3>
+        <p id="oidc-detail"></p>
+        <p id="oidc-error-uri" hidden></p>
+    </main>
+
+    <script type="text/javascript">
+        (function () {
+            'use strict';
+
+            // --- protocol / storage constants (keep in sync with the plugin) ---
+            const WIRE_VERSION = 2;
+            const requestBroadcastChannel = 'oidc_flutter_web/request';
+            const redirectBroadcastChannel = 'oidc_flutter_web/redirect';
+            const stateNamespace = 'state';
+            const stateResponseNamespace = 'response.state';
+            const requestNamespace = 'request';
+
+            // How long to wait for the app's ack before falling back to a
+            // neutral "return to the app" state. Covers older app versions that
+            // never ack.
+            const ACK_TIMEOUT_MS = 10000;
+
+            // --- user-visible copy (localize here) ---
+            const messages = {
+                working: 'Completing your request...',
+                redirecting: 'Redirecting...',
+                success: 'All done. You can now close this tab and return to the app.',
+                loggedOut: 'You have been signed out. You can now close this tab and return to the app.',
+                safeToClose: 'You can now close this tab and return to the app.',
+                errorTitle: 'Something went wrong',
+                appError: 'The request could not be completed. Please return to the app and try again.',
+                noChannel: 'Your browser does not support cross-tab messaging. Please return to the app; it will continue automatically.',
+            };
+
+            const channelSupported = typeof BroadcastChannel !== 'undefined';
+
+            // Front-channel logout takes precedence; otherwise handle a redirect.
+            if (!handleFrontChannelLogout()) {
+                handleRedirect();
+            }
+
+            // --- redirect (redirect_uri / post_logout_redirect_uri) ---
+            function handleRedirect() {
+                render('status', messages.working, '');
+
+                const errorInfo = parseError();
+                let bc = null;
+                let settled = false;
+                let timer = null;
+
+                function finish(state, title, detail, errorUri, close) {
+                    if (settled) {
+                        return;
+                    }
+                    settled = true;
+                    if (timer !== null) {
+                        clearTimeout(timer);
+                    }
+                    if (bc) {
+                        try { bc.close(); } catch (e) { /* ignore */ }
+                    }
+                    render(state, title, detail, errorUri);
+                    if (close) {
+                        attemptClose();
+                    }
+                }
+
+                // Open the channel BEFORE posting so an immediate ack isn't
+                // missed; a BroadcastChannel never receives its own messages, so
+                // our own "redirect" post won't come back to us.
+                if (channelSupported) {
+                    try {
+                        bc = new BroadcastChannel(redirectBroadcastChannel);
+                        bc.onmessage = function (event) {
+                            let msg;
+                            try { msg = JSON.parse(event.data); } catch (e) { return; }
+                            if (!msg || msg.v !== WIRE_VERSION || msg.type !== 'ack') {
+                                return;
+                            }
+                            if (msg.status === 'ok') {
+                                finish('status', messages.success, '', null, true);
+                            } else {
+                                finish('error', messages.errorTitle, msg.message || messages.appError, null, false);
+                            }
+                        };
+                        bc.postMessage(JSON.stringify({
+                            v: WIRE_VERSION,
+                            type: 'redirect',
+                            uri: window.location.toString(),
+                        }));
+                    } catch (e) {
+                        bc = null;
+                    }
+                }
+
+                // If this is a same-page launch, the SPA is navigated back to
+                // its original url and reads the response from storage; the page
+                // unloads, so there is no ack to await.
+                if (maybeSelfNavigate()) {
+                    if (timer !== null) {
+                        clearTimeout(timer);
+                    }
+                    render('status', messages.redirecting, '');
+                    return;
+                }
+
+                // The OP returned an error in the url (RFC 6749 sec 4.1.2.1): show
+                // it immediately, we already know the outcome.
+                if (errorInfo) {
+                    finish('error', messages.errorTitle, errorInfo.description || errorInfo.error, errorInfo.uri, true);
+                    return;
+                }
+
+                if (!bc) {
+                    // No channel: nothing to await, surface a neutral state.
+                    render('status', messages.working, messages.noChannel);
+                    attemptClose();
+                    return;
+                }
+
+                // Await the app's ack, with a timeout for old app versions.
+                timer = setTimeout(function () {
+                    finish('status', messages.safeToClose, '', null, true);
+                }, ACK_TIMEOUT_MS);
+            }
+
+            // --- front-channel logout (frontchannel_logout_uri) ---
+            function handleFrontChannelLogout() {
+                const queryParams = new URLSearchParams(window.location.search);
+                if (queryParams.get('requestType') !== 'front-channel-logout') {
+                    return false;
+                }
+                if (channelSupported) {
+                    try {
+                        // Legacy plain-string wire: the front-channel listener
+                        // consumes a bare url.
+                        const bc = new BroadcastChannel(requestBroadcastChannel);
+                        bc.postMessage(window.location.toString());
+                        bc.close();
+                    } catch (e) { /* ignore */ }
+                }
+                // Marker for the flutter app: if this exists we don't auth the
+                // cached user in `UserManager.init()`, and we clear cached data.
+                setLocalStorage(requestNamespace, 'front-channel-logout', window.location.toString());
+                render('status', messages.loggedOut, '');
+                attemptClose();
+                return true;
+            }
+
+            // Handles the same-page launch mode: stores the response for the app
+            // and, when webLaunchMode == samePage, navigates back to the
+            // original url. Returns true if it navigated the page away.
+            function maybeSelfNavigate() {
+                let dataSrc = new URLSearchParams(window.location.search);
+                let state = dataSrc.get('state');
+                if (!state && window.location.hash) {
+                    dataSrc = new URLSearchParams(window.location.hash.substring(1));
+                    state = dataSrc.get('state');
+                }
+                if (!state) {
+                    return false;
+                }
+                const stateDataRaw = getLocalStorage(stateNamespace, state);
+                if (!stateDataRaw) {
+                    console.error('state not found, key: ' + state);
+                    return false;
+                }
+                setLocalStorage(stateResponseNamespace, state, window.location.toString());
+                const parsedStateString = JSON.parse(stateDataRaw);
+                if (!parsedStateString) {
+                    console.error('parsed state is null');
+                    return false;
+                }
+                const webLaunchMode = parsedStateString.options?.webLaunchMode;
+                if (webLaunchMode !== 'samePage') {
+                    return false;
+                }
+                const original_uri = parsedStateString.original_uri;
+                if (!original_uri) {
+                    console.warn("it's preferred that original_uri is used when webLaunchMode is samePage.");
+                    return false;
+                }
+                window.location.assign(original_uri);
+                return true;
+            }
+
+            // Parses error/error_description/error_uri from both the query and
+            // the fragment (RFC 6749 sec 4.1.2.1). Returns null when there is none.
+            function parseError() {
+                function read(params) {
+                    const error = params.get('error');
+                    if (!error) {
+                        return null;
+                    }
+                    return {
+                        error: error,
+                        description: params.get('error_description'),
+                        uri: params.get('error_uri'),
+                    };
+                }
+                const fromQuery = read(new URLSearchParams(window.location.search));
+                if (fromQuery) {
+                    return fromQuery;
+                }
+                if (window.location.hash) {
+                    return read(new URLSearchParams(window.location.hash.substring(1)));
+                }
+                return null;
+            }
+
+            // Best-effort close. Only works for tabs the script itself opened
+            // (newPage / popup); for email-link orphan tabs it's a silent no-op,
+            // so the visible copy always tells the user they may close manually.
+            function attemptClose() {
+                try { window.close(); } catch (e) { /* ignore */ }
+            }
+
+            // Renders a state. `title`/`detail` are set with textContent so the
+            // attacker-influenced error params can never inject markup.
+            function render(state, title, detail, errorUri) {
+                const card = document.getElementById('oidc-card');
+                const titleEl = document.getElementById('oidc-title');
+                const detailEl = document.getElementById('oidc-detail');
+                const errUriEl = document.getElementById('oidc-error-uri');
+                if (card) {
+                    card.setAttribute('data-state', state);
+                }
+                if (titleEl) {
+                    titleEl.textContent = title || '';
+                }
+                if (detailEl) {
+                    detailEl.textContent = detail || '';
+                }
+                if (!errUriEl) {
+                    return;
+                }
+                // Only render http(s) error_uri values, and as text/link only.
+                if (errorUri && /^https?:\/\//i.test(errorUri)) {
+                    errUriEl.textContent = '';
+                    const a = document.createElement('a');
+                    a.href = errorUri;
+                    a.textContent = errorUri;
+                    a.rel = 'noopener noreferrer';
+                    errUriEl.appendChild(a);
+                    errUriEl.hidden = false;
+                } else if (errorUri) {
+                    errUriEl.textContent = errorUri;
+                    errUriEl.hidden = false;
+                } else {
+                    errUriEl.textContent = '';
+                    errUriEl.hidden = true;
+                }
+            }
+
+            function getLocalStorage(namespace, key) {
+                const rawRes = localStorage.getItem('oidc.' + namespace + '.' + key);
+                if (!rawRes) {
+                    return null;
+                }
+                return rawRes;
+            }
+
+            function setLocalStorage(namespace, key, value) {
+                const keysEntryKey = 'oidc.keys.' + namespace;
+                var keys = localStorage.getItem(keysEntryKey);
+                if (!keys) {
+                    keys = "[]";
+                }
+                const parsedKeys = JSON.parse(keys);
+                if (!(parsedKeys instanceof Array)) {
+                    console.error('parsedKeys is not an array.', parsedKeys);
+                }
+                parsedKeys.push(key);
+                localStorage.setItem(keysEntryKey, JSON.stringify(parsedKeys));
+                localStorage.setItem('oidc.' + namespace + '.' + key, value);
+            }
+        })();
+    </script>
+</body>
+
+</html>
