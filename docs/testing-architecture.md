@@ -66,6 +66,7 @@ test/
 │   ├── macos_entitlements_test.dart  # macOS sandbox keeps network.client
 │   ├── mock_asset_coverage_test.dart # every repository method succeeds on the mock
 │   ├── mock_asset_naming_test.dart   # mock asset names use '_', never '-'
+│   ├── oidc_platform_setup_test.dart # OIDC scheme placeholder, web/redirect.html, no client secret
 │   ├── test_file_naming_test.dart    # forbids *.test.dart (dot) files
 │   ├── web_history_test.dart         # web/index.html leaves the browser history to Flutter
 │   ├── web_placeholders_test.dart    # demo values cover every web/ and build-time placeholder
@@ -410,6 +411,18 @@ for genuine stateful behavior; Dio handlers are always hand-written:
 - **`credential_to_string_test.dart`** fails if a class in `lib/` has a `String` field whose name contains one of `sensitiveBodyKeySubstrings`, such as `password`, `otpCode` or `refreshToken`, and its `toString` is not overridden, prints such a field, or prints the props.
   A log line, the dev console and a Sentry event print an object through `toString`, and an Equatable prints its props there whenever `stringify` is on, the default of every debug build.
   A token may be printed through `maskToken`; a password or an OTP is printed as `secretMask`.
+- **`oidc_platform_setup_test.dart`** guards the platform setup of the `oidc` mode ([`docs/oidc.md`](oidc.md)).
+  It fails if `defaultConfig` in `android/app/build.gradle.kts` does not set `manifestPlaceholders["oidcRedirectScheme"]` to `OidcSettings.defaultRedirectScheme`: the `oidc_android` manifest merge needs the placeholder in every build, and the redirect never reaches the app when it differs from the scheme the Dart side sends.
+  It fails if `web/redirect.html` is not the `oidc` package's `example/web/redirect.html` with its one documented patch, which shows fixed copy instead of the provider's `error_description` and `error_uri`; after an `oidc` upgrade, copy the page again and re-apply the patch.
+  It fails if a file in `lib/` mentions `client_secret` or `OIDC_CLIENT_SECRET`, since the app is a public PKCE client.
+  It fails if `android/app/src/main/AndroidManifest.xml` mentions the redirect scheme: an intent filter there would let Android offer `MainActivity` for the callback instead of the package's redirect activity.
+
+The `oidc` mode has more guards next to the code they guard:
+
+- `test/app/di/app_scope_test.dart` fails if a `jwt` build creates or provides an OIDC client, and `test/app/di/app_dependencies_test.dart` if its session repository touches an OIDC key.
+- `test/features/auth/data/repositories/auth_session_repository_impl_test.dart` fails if the session clear of an `oidc` build leaves the OIDC ID token or the access token expiry behind, since the clear deletes keys one by one and is not exhaustive.
+- `test/app/router/app_router_test.dart` fails if a callback URL such as `/oauth2redirect?code=...&state=...` becomes a router location or a `returnUrl`, since the router logs locations.
+- `test/features/auth/sso_log_hygiene_test.dart` drives a full sign-in, refresh, logout and pushed callback route against the fake provider of `test/infrastructure/auth/oidc/support/fake_provider.dart`, and fails if AppLogger, `printedLines` or a `package:logging` record shows a token, the code, the verifier, `state` or the nonce.
 
 ---
 
@@ -524,6 +537,9 @@ fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush 
 | Log placeholder guard | `test/architecture/log_placeholders_test.dart` |
 | Log secrets guard | `test/architecture/log_secrets_test.dart` |
 | Credential text guard | `test/architecture/credential_to_string_test.dart` |
+| OIDC platform setup guard | `test/architecture/oidc_platform_setup_test.dart` |
+| OIDC log hygiene | `test/features/auth/sso_log_hygiene_test.dart` |
+| Fake OpenID provider | `test/infrastructure/auth/oidc/support/fake_provider.dart` |
 | Coverage gate | `scripts/check_coverage.sh` |
 | Mock data layer | [`docs/mock-architecture.md`](mock-architecture.md) |
 | Conventions | `CLAUDE.md` → Testing |
