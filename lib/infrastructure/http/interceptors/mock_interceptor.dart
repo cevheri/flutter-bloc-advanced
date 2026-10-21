@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/core/security/security_utils.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 
@@ -21,8 +22,11 @@ import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 /// with `callFollowingErrorInterceptor: true` for the same reason: a server
 /// 401 runs every onError handler, so [TokenRefreshInterceptor] ends the
 /// session when the token cannot be refreshed, and the dev console and
-/// logging record the failure. A public endpoint ([isPublicEndpoint]),
-/// sign-in among them, is never rejected.
+/// logging record the failure. A bearer that is a JWT whose `exp` has passed
+/// gets the same 401, so an OIDC session in dev exercises a real refresh; an
+/// opaque token such as `MOCK_TOKEN` is not shaped like a JWT and passes.
+/// A public endpoint ([isPublicEndpoint]), sign-in among them, is never
+/// rejected.
 ///
 /// A request whose mock file is missing fails with 501 Not Implemented, also
 /// rejected with `callFollowingErrorInterceptor: true`, so the dev console
@@ -49,7 +53,8 @@ class MockInterceptor extends Interceptor {
     final basePath = options.extra['_basePath'] as String? ?? options.path;
     if (!isPublicEndpoint(options)) {
       _log.debug('mockRequest: checking auth for endpoint: {}', [basePath]);
-      if (options.headers['Authorization'] == null) {
+      final authorization = options.headers['Authorization'];
+      if (authorization == null || _isExpiredJwtBearer(authorization.toString())) {
         handler.reject(
           DioException(
             requestOptions: options,
@@ -107,5 +112,18 @@ class MockInterceptor extends Interceptor {
     }
     _log.debug('Mock data loaded: {} {} (body length: {})', [options.method, basePath, responseBody.length]);
     handler.resolve(Response(requestOptions: options, data: responseBody, statusCode: statusCode), true);
+  }
+
+  /// Whether [authorization] carries a JWT whose `exp` has passed. Only a JWT-shaped bearer (three non-empty dot
+  /// parts) with an `exp` claim is checked, so an opaque token such as `MOCK_TOKEN`, or a JWT without `exp`, is
+  /// accepted as before.
+  static bool _isExpiredJwtBearer(String authorization) {
+    final token = authorization.startsWith('Bearer ') ? authorization.substring('Bearer '.length) : authorization;
+    final parts = token.split('.');
+    if (parts.length != 3 || parts.any((part) => part.isEmpty)) return false;
+    final expiration = SecurityUtils.getTokenExpiration(token);
+    final expired = expiration != null && !expiration.isAfter(DateTime.now());
+    if (expired) _log.debug('mockRequest: the JWT bearer has expired');
+    return expired;
   }
 }
