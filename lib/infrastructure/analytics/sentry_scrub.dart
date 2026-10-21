@@ -17,6 +17,11 @@ import 'package:sentry_flutter/sentry_flutter.dart';
 /// `core/security/sensitive_data_scrubber.dart` so this crash-report exit
 /// and the debug-log exit share one definition and cannot drift apart.
 ///
+/// Of the request headers, `Authorization`, `Cookie` and `Set-Cookie` are
+/// dropped, a header whose name names a credential keeps its name with its
+/// whole value masked, and every other header value and every env value is
+/// masked like the text of the event.
+///
 /// Deterministic and free of external side effects, but **mutates the
 /// passed-in [SentryEvent] in place** (replacing `event.request` and editing
 /// the message and the exception values) before returning it, matching the
@@ -38,8 +43,8 @@ SentryEvent sentryBeforeSend(SentryEvent event) {
       fragment: _scrubUrlPart(request.fragment),
       apiTarget: request.apiTarget,
       data: _maskValue(scrubBodyKeys(request.data)),
-      headers: scrubHeaders(request.headers),
-      env: request.env,
+      headers: _scrubHeaderValues(request.headers),
+      env: {for (final MapEntry(:key, :value) in request.env.entries) key: _maskText(value)},
     );
   }
 
@@ -127,6 +132,15 @@ void installSentryScrubbers(SentryOptions options) {
 /// the request, so the email in `/login-otp-verify/:email` would reach
 /// Sentry, and a link such as `?token=` or `#access_token=` holds a JWT.
 String? _scrubUrlPart(String? value) => value == null ? null : _maskText(value);
+
+/// Returns [headers] without the [sensitiveHeaderNames], with the whole value
+/// of a header whose name names a credential replaced by [secretMask] (an
+/// opaque `X-Auth-Token` has no shape to find), and every other value masked
+/// as [_maskText] masks text. The names stay as they were.
+Map<String, String> _scrubHeaderValues(Map<String, String> headers) => {
+  for (final MapEntry(:key, :value) in (scrubBodyKeys(scrubHeaders(headers)) as Map<String, dynamic>).entries)
+    key: _maskText(value as String),
+};
 
 /// Masks emails, JWTs and the other secrets [maskSecrets] finds in [value].
 String _maskText(String value) => maskEmails(maskSecrets(value));

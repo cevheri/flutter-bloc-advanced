@@ -45,6 +45,51 @@ void main() {
     });
   });
 
+  // Regression: only the Authorization, Cookie and Set-Cookie headers were dropped by name, and every other header
+  // value and every env value reached Sentry as it was, so a JWT or an email in a custom header or in the env did too.
+  group('sentryBeforeSend', () {
+    const jwt = 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhYmMifQ.signaturepart';
+
+    test('masks emails and JWTs in header values', () {
+      final result = sentryBeforeSend(
+        _eventWithHeaders({'X-Debug-Context': 'session $jwt', 'X-User-Email': 'jane.doe@example.com'}),
+      );
+      expect(result.request?.headers, {
+        'X-Debug-Context': 'session [REDACTED_JWT]',
+        'X-User-Email': '[REDACTED_EMAIL]',
+      });
+    });
+
+    test('masks emails and JWTs in env values', () {
+      final result = sentryBeforeSend(
+        SentryEvent(
+          request: SentryRequest(
+            env: {'REMOTE_USER': 'jane.doe@example.com', 'SESSION': jwt, 'QUERY_STRING': 'code=4f2a9c&state=st4te999'},
+          ),
+        ),
+      );
+      expect(result.request?.env, {
+        'REMOTE_USER': '[REDACTED_EMAIL]',
+        'SESSION': '[REDACTED_JWT]',
+        'QUERY_STRING': 'code=[REDACTED]&state=[REDACTED]',
+      });
+    });
+
+    test('keeps a header value without a secret as it was', () {
+      final result = sentryBeforeSend(_eventWithHeaders({'Accept': 'application/json', 'X-Request-Id': 'abc-123'}));
+      expect(result.request?.headers, {'Accept': 'application/json', 'X-Request-Id': 'abc-123'});
+    });
+
+    // An opaque token has no JWT shape and names no key inside its value, so only the name of its header says what it
+    // is.
+    test('masks the whole value of a header named like a credential', () {
+      final result = sentryBeforeSend(
+        _eventWithHeaders({'X-Auth-Token': 'at-opaque-0a1b2c3d', 'Accept': 'text/plain'}),
+      );
+      expect(result.request?.headers, {'X-Auth-Token': '[REDACTED]', 'Accept': 'text/plain'});
+    });
+  });
+
   group('sentryBeforeSend — body scrubbing (Map shape)', () {
     test('masks the values of password, otp, token, refreshToken keys', () {
       final body = {
@@ -386,6 +431,19 @@ void main() {
         sent,
         contains(r'"value":"Error During Communication: Not found: {\"path\":\"/api/admin/users/[REDACTED_EMAIL]\"}"'),
       );
+    });
+
+    test('sends an event without the JWT in a custom request header', () async {
+      await Sentry.captureEvent(
+        SentryEvent(
+          message: SentryMessage('request failed'),
+          request: SentryRequest(url: 'https://api.example.test/', headers: {'X-Debug-Context': jwt}),
+        ),
+      );
+
+      final sent = sentEvents.single;
+      expect(sent, isNot(contains(jwt)));
+      expect(sent, contains('"X-Debug-Context":"[REDACTED_JWT]"'));
     });
   });
 
