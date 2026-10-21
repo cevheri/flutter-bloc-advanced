@@ -4,12 +4,17 @@ import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:logger/logger.dart';
 
@@ -1427,6 +1432,557 @@ void main() {
     });
   });
 
+  // A tab sees another tab's change to localStorage only some time after it was made. A refresh that checked the stored
+  // session before the other tab's sign-out reached this tab stored its rotated tokens after that sign-out, and the
+  // session came back for every tab.
+  group('TokenRefreshInterceptor - session end told by another browser tab', () {
+    late _SharedLocalStorage localStorage;
+    late _TabStorage thisTab;
+    late _TabStorage otherTab;
+    late _SessionEndChannel channel;
+    late _TabSessionEndSignal thisTabSignal;
+    late _TabSessionEndSignal otherTabSignal;
+    late _CapturingSuccessStub retryStub;
+    late int sessionExpiredCalls;
+
+    setUp(() async {
+      localStorage = _SharedLocalStorage();
+      thisTab = localStorage.openTab();
+      otherTab = localStorage.openTab();
+      await thisTab.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await thisTab.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      otherTab.receive();
+      channel = _SessionEndChannel();
+      thisTabSignal = channel.openTab(storage: thisTab);
+      otherTabSignal = channel.openTab();
+      retryStub = _CapturingSuccessStub();
+      dio.interceptors.add(retryStub);
+      sessionExpiredCalls = 0;
+    });
+
+    /// The interceptor of this tab, whose rotation answers [rotated] once [whileRotating] has run. With [rotation],
+    /// that rotation instead.
+    TokenRefreshInterceptor interceptorOfThisTab({
+      Future<void> Function()? whileRotating,
+      TokensRotated rotated = const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'),
+      TokenRotation? rotation,
+      Duration copyCatchUpLimit = RotatedTokensTakeBack.defaultCopyCatchUpLimit,
+    }) {
+      final takeBack = RotatedTokensTakeBack(
+        secureStorage: thisTab,
+        sessionEndSignal: thisTabSignal,
+        copyCatchUpLimit: copyCatchUpLimit,
+      );
+      // A wipe still waiting for this tab's copy would end the session generation of the next test too.
+      addTearDown(takeBack.dispose);
+      return TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: thisTab,
+        rotation: rotation ?? _FakeRotation(rotated, whileRotating: whileRotating),
+        takeBack: takeBack,
+        onSessionExpired: () => sessionExpiredCalls++,
+      );
+    }
+
+    /// What a sign-out in the other tab does: it tells the other tabs, then wipes the stored session, [keys] in their
+    /// order. The wipe runs in that tab's own session generation, so the test deletes the keys without
+    /// SessionGeneration.wipe, which would end the generation of this tab too.
+    Future<void> signOutInOtherTab({
+      DateTime? at,
+      List<SecureStorageKeys> keys = const [SecureStorageKeys.jwtToken, SecureStorageKeys.refreshToken],
+    }) async {
+      otherTabSignal.notifyEndedAt(at ?? DateTime.now());
+      for (final key in keys) {
+        await otherTab.delete(key.key);
+      }
+    }
+
+    Future<void> signInInOtherTab() async {
+      await otherTab.write(SecureStorageKeys.jwtToken.key, 'signed-in-jwt');
+      await otherTab.write(SecureStorageKeys.refreshToken.key, 'signed-in-refresh');
+    }
+
+    DioException unauthorized() {
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      return DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+    }
+
+    test('drops the answer when the end reaches this tab before the wipe does', () async {
+      final interceptor = interceptorOfThisTab(
+        whileRotating: () async {
+          await signOutInOtherTab();
+          await thisTabSignal.deliver();
+        },
+      );
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(localStorage.values, isEmpty, reason: 'the session the other tab ended stays ended');
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull);
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('takes back the rotated tokens it stored after the wipe when the end reaches this tab', () async {
+      // The wipe reaches the browser's copy before the rotated tokens, but not this tab's copy before the check.
+      final interceptor = interceptorOfThisTab(whileRotating: signOutInOtherTab);
+      await interceptor.onError(unauthorized(), _TestErrorHandler());
+      expect(localStorage.values, isNotEmpty, reason: 'the rotated tokens landed after the wipe');
+
+      await thisTabSignal.deliver();
+
+      expect(localStorage.values, isEmpty, reason: 'the session the other tab ended stays ended');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('takes back the ID token and expiry an oidc refresh stored after the wipe', () async {
+      const oidcKeys = [
+        SecureStorageKeys.jwtToken,
+        SecureStorageKeys.refreshToken,
+        SecureStorageKeys.oidcIdToken,
+        SecureStorageKeys.accessTokenExpiresAt,
+      ];
+      await thisTab.write(SecureStorageKeys.oidcIdToken.key, 'old-id-token');
+      await thisTab.write(SecureStorageKeys.accessTokenExpiresAt.key, '1');
+      otherTab.receive();
+      final interceptor = interceptorOfThisTab(
+        rotated: TokensRotated(
+          accessToken: 'new-access',
+          refreshToken: 'new-refresh',
+          oidcIdToken: 'new-id-token',
+          accessTokenExpiresAt: DateTime.utc(2026, 10, 21, 12, 30),
+        ),
+        whileRotating: () => signOutInOtherTab(keys: oidcKeys),
+      );
+      await interceptor.onError(unauthorized(), _TestErrorHandler());
+      expect(localStorage.values.keys, containsAll(oidcKeys.map((key) => key.key)));
+
+      await thisTabSignal.deliver();
+
+      expect(localStorage.values, isEmpty, reason: 'every key the refresh stored is taken back');
+    });
+
+    test('leaves the session the other tab signed in to since alone', () async {
+      final interceptor = interceptorOfThisTab(whileRotating: signOutInOtherTab);
+      await interceptor.onError(unauthorized(), _TestErrorHandler());
+      await signInInOtherTab();
+      thisTab.receive();
+
+      await thisTabSignal.deliver();
+
+      expect(localStorage.values, {
+        SecureStorageKeys.jwtToken.key: 'signed-in-jwt',
+        SecureStorageKeys.refreshToken.key: 'signed-in-refresh',
+      });
+    });
+
+    test('leaves tokens stored well before the wipe to the wipe, even when this tab has not seen it yet', () async {
+      final interceptor = interceptorOfThisTab();
+      await interceptor.onError(unauthorized(), _TestErrorHandler());
+      // Later the user signs out and in again in the other tab, while this tab, in the background, has not taken the
+      // changes yet. Its copy still holds the tokens it stored.
+      otherTab.receive();
+      await signOutInOtherTab(at: DateTime.now().add(const Duration(minutes: 5)));
+      await signInInOtherTab();
+
+      await thisTabSignal.deliver();
+
+      expect(localStorage.values, {
+        SecureStorageKeys.jwtToken.key: 'signed-in-jwt',
+        SecureStorageKeys.refreshToken.key: 'signed-in-refresh',
+      });
+    });
+
+    test('ends the session here when the rotated tokens cannot be taken back', () async {
+      final interceptor = interceptorOfThisTab(whileRotating: signOutInOtherTab);
+      await interceptor.onError(unauthorized(), _TestErrorHandler());
+      thisTab.failDeletes = true;
+
+      await thisTabSignal.deliver();
+
+      expect(sessionExpiredCalls, 1, reason: 'ending the session wipes what is stored');
+    });
+
+    // The end message and the other tab's deletes reach this tab on separate channels, and the message usually comes
+    // first. A 401 in that gap must not refresh with the refresh token this tab's copy still shows: the other tab has
+    // deleted it, and the rotated tokens would land after the wipe, with no later end to take them back.
+    test(
+      'sends no refresh for a 401 that comes after the end was heard and before this tab\'s copy shows it',
+      () async {
+        final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+        final interceptor = interceptorOfThisTab(rotation: rotation);
+        await signOutInOtherTab();
+        await thisTabSignal.deliver();
+        // A request this tab sends now, still with the JWT its copy shows, gets a 401 before the deletes arrive.
+        final error = unauthorized();
+        final handler = _TestErrorHandler();
+
+        await interceptor.onError(error, handler);
+        thisTab.receive();
+        await _settleTakeBack();
+
+        expect(rotation.sent, isEmpty, reason: 'the refresh token the other tab deleted is not sent');
+        expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+        expect(retryStub.lastAuthorization, isNull, reason: 'nothing is sent again');
+        expect(localStorage.values, isEmpty, reason: 'the session the other tab ended stays ended');
+        expect(sessionExpiredCalls, 0);
+      },
+    );
+
+    // The other tab rotates the session just before it signs out, and its rotation reaches this tab's copy after the
+    // end message and before the deletes. The refresh token of that rotation is deleted a moment later, so the wait
+    // for the copy does not end on it: a refresh with it would store its answer after the deletes.
+    test('sends no refresh with the rotation the other tab stored just before it signed out', () async {
+      final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+      final interceptor = interceptorOfThisTab(rotation: rotation);
+      await otherTab.write(SecureStorageKeys.jwtToken.key, 'other-rotated-jwt');
+      await otherTab.write(SecureStorageKeys.refreshToken.key, 'other-rotated-refresh');
+      await signOutInOtherTab();
+      await thisTabSignal.deliver();
+      thisTab.receive(count: 2);
+      await _settleTakeBack();
+      expect(thisTab.readNow(SecureStorageKeys.refreshToken.key), 'other-rotated-refresh');
+      // A request this tab sends now, with the JWT its copy shows, gets a 401 before the deletes arrive.
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer other-rotated-jwt'});
+      final error = DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+      thisTab.receive();
+      await _settleTakeBack();
+
+      expect(rotation.sent, isEmpty, reason: 'the refresh token the other tab deletes is not sent');
+      expect(handler.nextError, same(error), reason: 'the request fails with its 401');
+      expect(retryStub.lastAuthorization, isNull, reason: 'nothing is sent again');
+      expect(localStorage.values, isEmpty, reason: 'the session the other tab ended stays ended');
+      expect(sessionExpiredCalls, 0);
+      expect(SessionGeneration.hasEnded(SessionGeneration.current), isFalse, reason: 'the copy shows the deletes');
+    });
+
+    test('refreshes nothing before or after this tab\'s copy shows the end of the other tab', () async {
+      final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+      final interceptor = interceptorOfThisTab(rotation: rotation);
+      await signOutInOtherTab();
+      await thisTabSignal.deliver();
+      final whileBehind = _TestErrorHandler();
+      await interceptor.onError(unauthorized(), whileBehind);
+
+      thisTab.receive();
+      await _settleTakeBack();
+      final error = unauthorized();
+      final onceCaughtUp = _TestErrorHandler();
+      await interceptor.onError(error, onceCaughtUp);
+
+      expect(rotation.sent, isEmpty);
+      expect(whileBehind.nextCalled, isTrue);
+      expect(onceCaughtUp.nextError, same(error), reason: 'no refresh token is stored, so the session cannot go on');
+      expect(retryStub.lastAuthorization, isNull);
+      expect(localStorage.values, isEmpty);
+    });
+
+    test('keeps a session the other tab signs in to while this tab waits for its copy to show the end', () async {
+      final rotation = _FakeRotation(const TokensRotated(accessToken: 'new-jwt', refreshToken: 'new-refresh'));
+      final interceptor = interceptorOfThisTab(rotation: rotation);
+      await signOutInOtherTab();
+      await thisTabSignal.deliver();
+      await signInInOtherTab();
+
+      thisTab.receive();
+      await _settleTakeBack();
+
+      expect(localStorage.values, {
+        SecureStorageKeys.jwtToken.key: 'signed-in-jwt',
+        SecureStorageKeys.refreshToken.key: 'signed-in-refresh',
+      });
+      expect(
+        SessionGeneration.hasEnded(SessionGeneration.current),
+        isFalse,
+        reason: 'the wipe ended once the copy showed the end',
+      );
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer signed-in-jwt'});
+      await interceptor.onError(
+        DioException(
+          requestOptions: requestOptions,
+          response: Response(requestOptions: requestOptions, statusCode: 401),
+        ),
+        _TestErrorHandler(),
+      );
+      expect(rotation.sent, ['signed-in-refresh'], reason: 'the session signed in to since refreshes as usual');
+    });
+
+    test('ends its wipe after copyCatchUpLimit when this tab\'s copy never shows the end', () async {
+      final warnings = _recordLogs(Level.warning);
+      interceptorOfThisTab(copyCatchUpLimit: const Duration(milliseconds: 20));
+      // The other tab told the end, but its deletes failed, so they never reach this tab.
+      otherTabSignal.notifyEndedAt(DateTime.now());
+      await thisTabSignal.deliver();
+      expect(SessionGeneration.hasEnded(SessionGeneration.current), isTrue, reason: 'the wipe waits for the copy');
+
+      await Future<void>.delayed(const Duration(milliseconds: 60));
+
+      expect(SessionGeneration.hasEnded(SessionGeneration.current), isFalse);
+      expect(warnings.join('\n'), contains('did not show the end of another tab within 20 ms'));
+    });
+  });
+
+  // On web two tabs that get a 401 at about the same time both refresh. A server that accepts each refresh token once
+  // refuses the second, and a tab that cannot see the winner's write yet ends the session, which the session end
+  // signal then carries to the winner too. The refreshes take turns across the tabs instead.
+  group('TokenRefreshInterceptor - one refresh at a time across browser tabs', () {
+    late _SharedLocalStorage localStorage;
+    late _TabStorage thisTab;
+    late _TabStorage otherTab;
+    late _BrowserLock browserLock;
+    late int sessionExpiredCalls;
+
+    setUp(() async {
+      localStorage = _SharedLocalStorage();
+      thisTab = localStorage.openTab();
+      otherTab = localStorage.openTab();
+      await thisTab.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await thisTab.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      otherTab.receive();
+      browserLock = _BrowserLock();
+      sessionExpiredCalls = 0;
+    });
+
+    /// The interceptor of the tab that reads and writes [storage], with its own Dio, refreshing through [rotation]
+    /// under [lock], the tab's view of [browserLock] unless given.
+    _TabUnderTest tab(_TabStorage storage, TokenRotation rotation, {ITokenRefreshLock? lock}) {
+      final retries = _CapturingSuccessStub();
+      final tabDio = Dio(BaseOptions(baseUrl: 'https://test.api'))..interceptors.add(retries);
+      addTearDown(tabDio.close);
+      return _TabUnderTest(
+        TokenRefreshInterceptor(
+          dio: tabDio,
+          secureStorage: storage,
+          rotation: rotation,
+          refreshLock: lock ?? browserLock.openTab(storage),
+          onSessionExpired: () => sessionExpiredCalls++,
+        ),
+        retries,
+      );
+    }
+
+    test('sends one refresh for two tabs that get a 401 at the same time', () async {
+      final server = _OneTimeRefreshServer();
+      final first = tab(thisTab, server);
+      final second = tab(otherTab, server);
+
+      await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+      expect(server.sent, ['valid-refresh']);
+      expect(first.retries.lastAuthorization, 'Bearer jwt-1');
+      expect(second.retries.lastAuthorization, 'Bearer jwt-1');
+    });
+
+    test('retries with the JWT another tab stored while this tab waited for the lock, without a refresh', () async {
+      // A server that does not rotate refresh tokens: the stored refresh token stays the same, only the JWT changes.
+      final server = _OneTimeRefreshServer(rotatesRefreshTokens: false);
+      final first = tab(thisTab, server);
+      final second = tab(otherTab, server);
+
+      await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+      expect(server.sent, ['valid-refresh'], reason: 'the second tab sees the new JWT once granted');
+      expect(second.retries.lastAuthorization, 'Bearer jwt-1');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('does not sign out the second tab when the server allows each refresh token once', () async {
+      final server = _OneTimeRefreshServer();
+      final first = tab(thisTab, server);
+      final second = tab(otherTab, server);
+
+      await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+      expect(sessionExpiredCalls, 0);
+      expect(_tokensIn(localStorage), {
+        SecureStorageKeys.jwtToken.key: 'jwt-1',
+        SecureStorageKeys.refreshToken.key: 'refresh-1',
+      });
+    });
+
+    test(
+      'does not sign out the second tab when its copy shows the other tab\'s refresh only after the grant',
+      () async {
+        // Measured in Chromium: about one grant in ten reaches the tab before the previous holder's writes do.
+        final server = _OneTimeRefreshServer();
+        final first = tab(thisTab, server);
+        final second = tab(
+          otherTab,
+          server,
+          lock: browserLock.openTab(
+            otherTab,
+            catchUpOnGrant: false,
+            onGranted: () => Timer(const Duration(milliseconds: 5), otherTab.receive),
+          ),
+        );
+
+        await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+        expect(server.sent, ['valid-refresh']);
+        expect(sessionExpiredCalls, 0);
+        expect(second.retries.lastAuthorization, 'Bearer jwt-1');
+      },
+    );
+
+    test('fails the request and keeps the session when this tab\'s copy does not catch up in time', () async {
+      final server = _OneTimeRefreshServer();
+      final first = tab(thisTab, server);
+      final second = tab(
+        otherTab,
+        server,
+        lock: browserLock.openTab(otherTab, catchUpOnGrant: false, catchUpLimit: const Duration(milliseconds: 20)),
+      );
+
+      await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+      expect(server.sent, ['valid-refresh'], reason: 'a refresh from a copy that is behind could send a spent token');
+      expect(second.handler.rejectedError?.error, isA<TokenRefreshLockException>());
+      expect(second.handler.nextCalled, isFalse, reason: 'rejected, so no later interceptor sends it again');
+      expect(second.retries.lastAuthorization, isNull);
+      expect(sessionExpiredCalls, 0, reason: 'nothing was sent for this request, so nothing refused the session');
+      expect(_tokensIn(localStorage), {
+        SecureStorageKeys.jwtToken.key: 'jwt-1',
+        SecureStorageKeys.refreshToken.key: 'refresh-1',
+      });
+    });
+
+    test('fails the request and keeps the session when the lock cannot be taken', () async {
+      final server = _OneTimeRefreshServer();
+      final only = tab(thisTab, server, lock: browserLock.openTab(thisTab, refuse: true));
+
+      await only.unauthorized();
+
+      expect(server.sent, isEmpty);
+      expect(only.handler.rejectedError?.error, isA<TokenRefreshLockException>());
+      expect(only.handler.nextCalled, isFalse);
+      expect(sessionExpiredCalls, 0);
+      expect(_tokensIn(localStorage), {
+        SecureStorageKeys.jwtToken.key: 'old-jwt',
+        SecureStorageKeys.refreshToken.key: 'valid-refresh',
+      });
+    });
+
+    test('sends no refresh and ends nothing when this tab\'s session ended while it waited for the lock', () async {
+      final server = _OneTimeRefreshServer();
+      // A logout in this tab while another tab held the lock: the turn starts after the session ended.
+      final only = tab(thisTab, server, lock: browserLock.openTab(thisTab, onGranted: _wipeTheSession));
+
+      await only.unauthorized();
+
+      expect(server.sent, isEmpty, reason: 'a refresh now could spend the refresh token of a session signed in since');
+      expect(only.handler.nextError?.response?.statusCode, 401, reason: 'the request fails with its 401');
+      expect(only.retries.lastAuthorization, isNull);
+      expect(sessionExpiredCalls, 0, reason: 'the session is over already, and every tab was told once');
+    });
+
+    test('sends no refresh and ends nothing when this tab\'s session ends while its turn reads the JWT', () async {
+      final server = _OneTimeRefreshServer();
+      final retries = _CapturingSuccessStub();
+      final tabDio = Dio(BaseOptions(baseUrl: 'https://test.api'))..interceptors.add(retries);
+      addTearDown(tabDio.close);
+      // The 401 reads the JWT once before the lock and once in its turn; the logout starts during the second read.
+      final only = _TabUnderTest(
+        TokenRefreshInterceptor(
+          dio: tabDio,
+          secureStorage: _WipeOnReadStorage(thisTab, SecureStorageKeys.jwtToken.key, readNumber: 2),
+          rotation: server,
+          refreshLock: browserLock.openTab(thisTab),
+          onSessionExpired: () => sessionExpiredCalls++,
+        ),
+        retries,
+      );
+
+      await only.unauthorized();
+
+      expect(server.sent, isEmpty);
+      expect(only.handler.nextError?.response?.statusCode, 401);
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('sends no refresh and keeps the session when this tab\'s copy stays behind for two 401s in a row', () async {
+      final server = _OneTimeRefreshServer();
+      final first = tab(thisTab, server);
+      final second = tab(
+        otherTab,
+        server,
+        lock: browserLock.openTab(otherTab, catchUpOnGrant: false, catchUpLimit: const Duration(milliseconds: 20)),
+      );
+      await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+      // Another request of the lagging tab gets its 401 after the first turn gave up; the copy still shows valid-refresh.
+      final again = _TestErrorHandler();
+      final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      await second.interceptor.onError(
+        DioException(
+          requestOptions: requestOptions,
+          response: Response(requestOptions: requestOptions, statusCode: 401),
+        ),
+        again,
+      );
+
+      expect(server.sent, ['valid-refresh'], reason: 'the lagging copy would send the spent refresh token');
+      expect(again.rejectedError?.error, isA<TokenRefreshLockException>());
+      expect(sessionExpiredCalls, 0, reason: 'a refusal of the spent token would sign out every tab');
+      expect(_tokensIn(localStorage), {
+        SecureStorageKeys.jwtToken.key: 'jwt-1',
+        SecureStorageKeys.refreshToken.key: 'refresh-1',
+      });
+
+      // Once the other tab's writes reach the copy, the next 401 retries with the JWT they hold.
+      otherTab.receive();
+      final caughtUp = _TestErrorHandler();
+      final laterOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+      await second.interceptor.onError(
+        DioException(
+          requestOptions: laterOptions,
+          response: Response(requestOptions: laterOptions, statusCode: 401),
+        ),
+        caughtUp,
+      );
+
+      expect(caughtUp.resolveCalled, isTrue);
+      expect(second.retries.lastAuthorization, 'Bearer jwt-1');
+      expect(server.sent, ['valid-refresh']);
+    });
+
+    test('sends one oidc grant for two tabs, and stores the ID token and expiry once', () async {
+      final expiresAt = DateTime.utc(2026, 10, 21, 12, 30);
+      await thisTab.write(SecureStorageKeys.oidcIdToken.key, 'old-id-token');
+      await thisTab.write(
+        SecureStorageKeys.accessTokenExpiresAt.key,
+        encodeAccessTokenExpiry(DateTime.utc(2026, 10, 21, 12)),
+      );
+      otherTab.receive();
+      final provider = _OneTimeOidcProvider(expiresAt);
+      final first = tab(thisTab, OidcTokenRotation(client: _OidcClientOf(provider), secureStorage: thisTab));
+      final second = tab(otherTab, OidcTokenRotation(client: _OidcClientOf(provider), secureStorage: otherTab));
+
+      await Future.wait([first.unauthorized(), second.unauthorized()]);
+
+      expect(provider.grants, ['valid-refresh']);
+      expect(sessionExpiredCalls, 0);
+      expect(first.retries.lastAuthorization, 'Bearer access-1');
+      expect(second.retries.lastAuthorization, 'Bearer access-1');
+      expect(_tokensIn(localStorage), {
+        SecureStorageKeys.jwtToken.key: 'access-1',
+        SecureStorageKeys.refreshToken.key: 'refresh-1',
+        SecureStorageKeys.oidcIdToken.key: 'id-token-1',
+        SecureStorageKeys.accessTokenExpiresAt.key: encodeAccessTokenExpiry(expiresAt),
+      });
+    });
+  });
+
   // The interceptor sends the refresh through a TokenRotation: BackendTokenRotation in jwt mode, the OIDC client in
   // oidc mode. Its result decides what happens to the session: TokensRotated stores them, RotationRefused ends the
   // session, and RotationUnavailable keeps the session and fails the request as a network error.
@@ -1810,15 +2366,28 @@ class _TabStorage implements ISecureStorage {
   final _changeOfKey = <String, int>{};
   final _undelivered = <({String key, String? value, int change})>[];
 
-  /// Applies the changes the other tabs made since the last delivery, in their order. A change older than the one this
-  /// tab's copy holds for the key is skipped: the browser's copy holds the later one.
-  void receive() {
-    for (final change in _undelivered) {
+  /// The key of each change [receive] applies, once it is applied, as the browser's `storage` event in the tab.
+  final _received = StreamController<String>.broadcast(sync: true);
+  Stream<String> get received => _received.stream;
+
+  /// Applies the changes the other tabs made since the last delivery, in their order, or only the first [count] of
+  /// them. A change older than the one this tab's copy holds for the key is skipped: the browser's copy holds the later
+  /// one.
+  void receive({int? count}) {
+    final changes = List.of(_undelivered.take(count ?? _undelivered.length));
+    _undelivered.removeRange(0, changes.length);
+    for (final change in changes) {
       if ((_changeOfKey[change.key] ?? 0) > change.change) continue;
       _take(change.key, change.value, change.change);
+      _received.add(change.key);
     }
-    _undelivered.clear();
   }
+
+  /// Reads [key] from this tab's copy at once, as `localStorage.getItem` does.
+  String? readNow(String key) => _copy[key];
+
+  /// Writes [key] at once, as `localStorage.setItem` does.
+  void writeNow(String key, String value) => _change(key, value);
 
   void _take(String key, String? value, int change) {
     if (value == null) {
@@ -1848,8 +2417,14 @@ class _TabStorage implements ISecureStorage {
   @override
   Future<void> write(String key, String value) async => _change(key, value);
 
+  /// When true, every delete throws, as a store that fails does.
+  bool failDeletes = false;
+
   @override
-  Future<void> delete(String key) async => _change(key, null);
+  Future<void> delete(String key) async {
+    if (failDeletes) throw StateError('boom on delete $key');
+    _change(key, null);
+  }
 
   @override
   Future<void> deleteAll() async {
@@ -2005,6 +2580,7 @@ class _TestErrorHandler extends ErrorInterceptorHandler {
   bool rejectCalled = false;
   bool resolveCalled = false;
   DioException? nextError;
+  DioException? rejectedError;
 
   @override
   void next(DioException err) {
@@ -2015,6 +2591,7 @@ class _TestErrorHandler extends ErrorInterceptorHandler {
   @override
   void reject(DioException err, [bool callFollowingErrorInterceptor = false]) {
     rejectCalled = true;
+    rejectedError = err;
   }
 
   @override
@@ -2064,4 +2641,277 @@ class _KeyRecordingSecureStorage extends _InterleavingSecureStorage {
     touched.add(key);
     return super.delete(key);
   }
+}
+
+/// The browser's channel between the [ISessionEndSignal]s of the app's tabs: an end that one tab tells reaches every
+/// other tab when [_TabSessionEndSignal.deliver] runs there.
+class _SessionEndChannel {
+  final _tabs = <_TabSessionEndSignal>[];
+
+  /// The end of the channel of the tab whose copy of localStorage is [storage], whose changes are its store changes.
+  _TabSessionEndSignal openTab({_TabStorage? storage}) {
+    final tab = _TabSessionEndSignal._(this, storage);
+    _tabs.add(tab);
+    return tab;
+  }
+}
+
+/// A browser tab's end of [_SessionEndChannel].
+class _TabSessionEndSignal implements ISessionEndSignal {
+  _TabSessionEndSignal._(this._channel, this._storage);
+
+  final _SessionEndChannel _channel;
+  final _TabStorage? _storage;
+  final _endedElsewhere = StreamController<DateTime>.broadcast(sync: true);
+  final _undelivered = <DateTime>[];
+
+  @override
+  void notifyEnded() => notifyEndedAt(DateTime.now());
+
+  /// Tells the other tabs that this tab began to end the session at [at].
+  void notifyEndedAt(DateTime at) {
+    for (final tab in _channel._tabs) {
+      if (!identical(tab, this)) tab._undelivered.add(at);
+    }
+  }
+
+  /// Delivers the ends the other tabs told since the last delivery, and waits until this tab has acted on them.
+  Future<void> deliver() async {
+    final ends = List.of(_undelivered);
+    _undelivered.clear();
+    ends.forEach(_endedElsewhere.add);
+    await Future<void>.delayed(Duration.zero);
+  }
+
+  @override
+  Stream<DateTime> get endedElsewhere => _endedElsewhere.stream;
+
+  @override
+  Stream<void> get storeChanges => _storage?.received.map((_) {}) ?? const Stream.empty();
+
+  @override
+  void dispose() {}
+}
+
+/// Lets the take-back of a tab act on the changes its copy has just received.
+Future<void> _settleTakeBack() => Future<void>.delayed(Duration.zero);
+
+/// Collects the lines logged at [level] until the test ends.
+List<String> _recordLogs(Level level) {
+  final lines = <String>[];
+  void record(OutputEvent event) {
+    if (event.level == level) lines.addAll(event.lines);
+  }
+
+  Logger.addOutputListener(record);
+  addTearDown(() => Logger.removeOutputListener(record));
+  return lines;
+}
+
+/// Ends the session of this tab, as a logout does, without deleting anything.
+void _wipeTheSession() => unawaited(SessionGeneration.wipe(() async {}));
+
+/// [ISecureStorage] over a tab's storage that ends the session when [key] is read for the [readNumber]th time.
+class _WipeOnReadStorage implements ISecureStorage {
+  _WipeOnReadStorage(this._inner, this._key, {required this.readNumber});
+
+  final ISecureStorage _inner;
+  final String _key;
+  final int readNumber;
+  int _reads = 0;
+
+  @override
+  Future<String?> read(String key) async {
+    final value = await _inner.read(key);
+    if (key == _key && ++_reads == readNumber) _wipeTheSession();
+    return value;
+  }
+
+  @override
+  Future<void> write(String key, String value) => _inner.write(key, value);
+
+  @override
+  Future<void> delete(String key) => _inner.delete(key);
+
+  @override
+  Future<void> deleteAll() => _inner.deleteAll();
+}
+
+/// The stored session without the hand-over stamp of the token refresh lock.
+Map<String, String> _tokensIn(_SharedLocalStorage localStorage) =>
+    Map.of(localStorage.values)..remove(_TabStampCopy.key);
+
+/// A browser tab's [TokenRefreshInterceptor] under test, and what its requests were sent again with.
+class _TabUnderTest {
+  _TabUnderTest(this.interceptor, this.retries);
+
+  final TokenRefreshInterceptor interceptor;
+  final _CapturingSuccessStub retries;
+  final handler = _TestErrorHandler();
+
+  /// A request this tab sent with `old-jwt` gets a 401.
+  Future<void> unauthorized() {
+    final requestOptions = _sentRequest('/api/users', headers: {'Authorization': 'Bearer old-jwt'});
+    return interceptor.onError(
+      DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      ),
+      handler,
+    );
+  }
+}
+
+/// The Web Lock of one name and the IndexedDB hand-over record that the browser tabs share.
+class _BrowserLock {
+  Future<void> _tail = Future<void>.value();
+  HandOver? _record;
+
+  /// The token refresh lock of the tab that reads and writes [storage]. With [catchUpOnGrant], the tab's copy of
+  /// localStorage takes the other tabs' changes before the grant, as when the browser delivers them first; without it
+  /// they come only when the test delivers them, from [onGranted] for one. With [refuse], the lock is never granted,
+  /// as when the page has no Web Locks API.
+  ITokenRefreshLock openTab(
+    _TabStorage storage, {
+    bool catchUpOnGrant = true,
+    void Function()? onGranted,
+    Duration catchUpLimit = HandOverTokenRefreshLock.defaultCatchUpLimit,
+    bool refuse = false,
+  }) => HandOverTokenRefreshLock(
+    mutex: _TabMutex(this, storage, catchUpOnGrant: catchUpOnGrant, onGranted: onGranted, refuse: refuse),
+    record: _SharedHandOverRecord(this),
+    copy: _TabStampCopy(storage),
+    catchUpLimit: catchUpLimit,
+  );
+}
+
+/// A tab's view of the Web Lock of [_BrowserLock]: holders run one at a time, in the order they asked.
+class _TabMutex implements CrossTabMutex {
+  _TabMutex(this._lock, this._storage, {required this.catchUpOnGrant, this.onGranted, required this.refuse});
+
+  final _BrowserLock _lock;
+  final _TabStorage _storage;
+  final bool catchUpOnGrant;
+  final void Function()? onGranted;
+  final bool refuse;
+
+  @override
+  Future<T> run<T>(Future<T> Function() body) {
+    if (refuse) return Future.error(StateError('navigator.locks is not available'));
+    final previous = _lock._tail;
+    final released = Completer<void>();
+    _lock._tail = released.future;
+    return previous.then((_) async {
+      if (catchUpOnGrant) _storage.receive();
+      onGranted?.call();
+      try {
+        return await body();
+      } finally {
+        released.complete();
+      }
+    });
+  }
+}
+
+/// The IndexedDB hand-over record of [_BrowserLock]: every tab reads what was committed last.
+class _SharedHandOverRecord implements HandOverRecord {
+  _SharedHandOverRecord(this._lock);
+
+  final _BrowserLock _lock;
+
+  @override
+  Future<HandOver?> read() async => _lock._record;
+
+  @override
+  Future<void> write(HandOver handOver) async => _lock._record = handOver;
+}
+
+/// The hand-over stamp in a [_TabStorage], next to the tokens, as in the tab's copy of localStorage.
+class _TabStampCopy implements HandOverStampCopy {
+  _TabStampCopy(this._storage);
+
+  static const key = 'tokenRefreshHandOver';
+
+  final _TabStorage _storage;
+
+  @override
+  String? read() => _storage.readNow(key);
+
+  @override
+  void write(String stamp) => _storage.writeNow(key, stamp);
+
+  @override
+  Stream<void> get changes => _storage.received.where((changed) => changed == key);
+
+  @override
+  void dispose() {}
+}
+
+/// A token server that accepts each refresh token once, as Keycloak with "Revoke Refresh Token" and "Refresh Token Max
+/// Reuse" 0 does: a spent one is refused. Without [rotatesRefreshTokens] it answers only a new JWT, and accepts the
+/// same refresh token again. Shared by the tabs' interceptors as their rotation.
+class _OneTimeRefreshServer implements TokenRotation {
+  _OneTimeRefreshServer({this.rotatesRefreshTokens = true});
+
+  final bool rotatesRefreshTokens;
+  final sent = <String>[];
+  final _spent = <String>{};
+
+  @override
+  Future<TokenRotationResult> rotate(String refreshToken) async {
+    sent.add(refreshToken);
+    final answer = sent.length;
+    // Unless the refreshes take turns, both tabs have read the stored refresh token before either stores.
+    await Future<void>.delayed(Duration.zero);
+    if (!rotatesRefreshTokens) return TokensRotated(accessToken: 'jwt-$answer');
+    if (!_spent.add(refreshToken)) return const RotationRefused();
+    return TokensRotated(accessToken: 'jwt-$answer', refreshToken: 'refresh-$answer');
+  }
+}
+
+/// An identity provider whose token endpoint accepts each refresh token once, shared by the tabs' OIDC clients.
+class _OneTimeOidcProvider {
+  _OneTimeOidcProvider(this.expiresAt);
+
+  final DateTime expiresAt;
+  final grants = <String>[];
+  final _spent = <String>{};
+
+  Future<TokenRotationResult> refresh(String refreshToken) async {
+    grants.add(refreshToken);
+    final answer = grants.length;
+    await Future<void>.delayed(Duration.zero);
+    if (!_spent.add(refreshToken)) return const RotationRefused();
+    return TokensRotated(
+      accessToken: 'access-$answer',
+      refreshToken: 'refresh-$answer',
+      oidcIdToken: 'id-token-$answer',
+      accessTokenExpiresAt: expiresAt,
+    );
+  }
+}
+
+/// A tab's [IOidcClient], which refreshes at [_OneTimeOidcProvider] and does nothing else.
+class _OidcClientOf implements IOidcClient {
+  _OidcClientOf(this._provider);
+
+  final _OneTimeOidcProvider _provider;
+
+  @override
+  Future<TokenRotationResult> refresh({
+    required String refreshToken,
+    required String idToken,
+    required String accessToken,
+    required DateTime accessTokenExpiresAt,
+  }) => _provider.refresh(refreshToken);
+
+  @override
+  Future<OidcSignInOutcome> signIn({String? webReturnPath, required String browserDoneMessage}) =>
+      throw UnimplementedError();
+
+  @override
+  Future<OidcSignInOutcome?> completePendingSignIn() => throw UnimplementedError();
+
+  @override
+  Future<OidcLogoutOutcome> endProviderSession({String? idTokenHint}) => throw UnimplementedError();
 }

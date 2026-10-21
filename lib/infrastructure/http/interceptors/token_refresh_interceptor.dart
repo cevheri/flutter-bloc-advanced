@@ -6,8 +6,10 @@ import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_inter
 import 'package:flutter_bloc_advance/infrastructure/http/public_endpoint.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart' as token_rotation show defaultRefreshDio;
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 
 export 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart' show RefreshDioFactory;
 
@@ -60,6 +62,14 @@ final class _SessionEnded extends _RefreshOutcome {
   const _SessionEnded();
 }
 
+/// On web, the refresh did not get its turn at the lock the browser tabs share, or the turn could not be prepared
+/// ([TokenRefreshLockException]), so nothing was sent: the session is kept, and the request fails.
+final class _RefreshTurnFailed extends _RefreshOutcome {
+  const _RefreshTurnFailed(this.error);
+
+  final TokenRefreshLockException error;
+}
+
 /// Intercepts 401 responses and attempts a silent token refresh.
 ///
 /// Which 401 means an expired bearer is [SessionExpiredPredicate]'s call,
@@ -80,6 +90,16 @@ final class _SessionEnded extends _RefreshOutcome {
 /// with the already-rotated token instead of triggering a refresh
 /// storm against the refresh endpoint.
 ///
+/// Below that coalescing the refresh takes its turn at an
+/// [ITokenRefreshLock], which on web the token refreshes of every browser
+/// tab share, so one tab at a time reads the refresh token, sends it and
+/// stores the answer, and a server that accepts each refresh token once
+/// never sees it twice. Once granted, the refresh checks this tab's
+/// generation and the stored JWT again, and a JWT another tab stored
+/// meanwhile is sent instead of a refresh. A turn the lock cannot give
+/// or prepare fails the request and keeps the session: nothing was sent,
+/// so nothing refused it.
+///
 /// A 401 for a request sent under a session that a logout or the end of
 /// the session has wiped since, or is wiping, is neither sent again nor
 /// refreshed, so within one app process, which on web is one browser tab,
@@ -99,11 +119,15 @@ final class _SessionEnded extends _RefreshOutcome {
 /// that tab had already used it. Each tab reads its own copy of the
 /// browser's storage, which takes another tab's change a moment later, so
 /// a sign-out in another tab just before or while this tab stores the
-/// rotated tokens can still be undone by them. A sign-out in another tab
-/// does not end this tab's generation, so a request this tab sent before
-/// that sign-out can still go out again with the JWT of a different user
-/// who signed in since: when its 401 comes after that sign-in, and when
-/// that sign-in comes while this tab's refresh is on its way.
+/// rotated tokens can reach the storage before them. That tab tells this
+/// one of the end (`ISessionEndSignal`), and [RotatedTokensTakeBack] ends
+/// this tab's generation and takes back what the refresh stored. A
+/// sign-out in another tab ends this tab's generation only once its
+/// message arrives, so a request this tab sent before that sign-out can
+/// still go out again with the JWT of a different user who signed in
+/// since: when its 401 comes after that sign-in and before the message,
+/// and when that sign-in comes while this tab's refresh is on its way or
+/// waits for its turn at the lock, a wait that makes this window longer.
 ///
 /// Deliberately not a [QueuedInterceptor]: the retry goes back through
 /// the client's [Dio], so a failed retry reaches [onError] while the
@@ -124,6 +148,8 @@ class TokenRefreshInterceptor extends Interceptor {
   final ISecureStorage _secureStorage;
   final TokenRotation _rotation;
   final SessionExpiredPredicate _isSessionExpired;
+  final RotatedTokensTakeBack? _takeBack;
+  final ITokenRefreshLock _refreshLock;
 
   /// Shared in-flight refresh. Non-null while a refresh is in progress;
   /// concurrent 401s await the same Future. Cleared on completion (success
@@ -137,6 +163,8 @@ class TokenRefreshInterceptor extends Interceptor {
     RefreshDioFactory? refreshDioFactory,
     TokenRotation? rotation,
     SessionExpiredPredicate isSessionExpired = isUnauthorized,
+    RotatedTokensTakeBack? takeBack,
+    ITokenRefreshLock? refreshLock,
     // ignore: prefer_initializing_formals
   }) : _dio = dio,
        // ignore: prefer_initializing_formals
@@ -146,7 +174,10 @@ class TokenRefreshInterceptor extends Interceptor {
        _rotation =
            rotation ?? BackendTokenRotation(dio: dio, refreshDioFactory: refreshDioFactory ?? defaultRefreshDio),
        // ignore: prefer_initializing_formals
-       _isSessionExpired = isSessionExpired;
+       _isSessionExpired = isSessionExpired,
+       // ignore: prefer_initializing_formals
+       _takeBack = takeBack,
+       _refreshLock = refreshLock ?? const InProcessTokenRefreshLock();
 
   /// The default [RefreshDioFactory], which [BackendTokenRotation] uses unless it is given another one: see
   /// [token_rotation.defaultRefreshDio].
@@ -282,7 +313,7 @@ class TokenRefreshInterceptor extends Interceptor {
       return;
     }
 
-    switch (await _refreshOnce(sentUnder)) {
+    switch (await _refreshOnce(sentUnder, requestToken)) {
       case _Refreshed(:final idToken):
         await _retryWithToken(err, idToken, handler);
       case _RefreshFailed():
@@ -303,6 +334,16 @@ class TokenRefreshInterceptor extends Interceptor {
         // The session is already over, so there is no token to send the request again with. It is not ended again:
         // the user may have signed in since, and that session must stay.
         handler.next(err);
+      case _RefreshTurnFailed(:final error):
+        // Nothing was sent, so nothing refused the session, and it is kept. Rejected, so that ResilienceInterceptor
+        // does not send the request again behind the same lock.
+        handler.reject(
+          DioException(
+            requestOptions: err.requestOptions,
+            error: error,
+            message: 'The token refresh did not get its turn across the browser tabs',
+          ),
+        );
     }
   }
 
@@ -350,11 +391,23 @@ class TokenRefreshInterceptor extends Interceptor {
 
   /// Returns a single in-flight refresh Future. The first caller starts
   /// the refresh; concurrent callers await the same Future. Cleared on
-  /// completion so subsequent refresh windows start fresh.
-  Future<_RefreshOutcome> _refreshOnce(int generation) {
-    return _inFlightRefresh ??= _performRefresh(generation).whenComplete(() {
+  /// completion so subsequent refresh windows start fresh. [requestToken]
+  /// is the JWT the first caller's request was sent with.
+  Future<_RefreshOutcome> _refreshOnce(int generation, String? requestToken) {
+    return _inFlightRefresh ??= _refreshInTurn(generation, requestToken).whenComplete(() {
       _inFlightRefresh = null;
     });
+  }
+
+  /// Runs the refresh while this tab holds [_refreshLock], which on web the token refreshes of every browser tab take
+  /// turns at, so a refresh token is sent by one tab at a time.
+  Future<_RefreshOutcome> _refreshInTurn(int generation, String? requestToken) async {
+    try {
+      return await _refreshLock.hold(() => _performRefresh(generation, requestToken));
+    } on TokenRefreshLockException catch (e) {
+      _log.error('Token refresh did not get its turn across the browser tabs, so the session is kept: {}', [e]);
+      return _RefreshTurnFailed(e);
+    }
   }
 
   /// Performs the actual refresh call + persistence. Returns [_Refreshed]
@@ -365,9 +418,20 @@ class TokenRefreshInterceptor extends Interceptor {
   /// could not reach its server, and [_RefreshFailed] on any other failure
   /// (missing refresh token, refused rotation, failed persist) of the
   /// session that is still stored. [generation] is the session generation
-  /// of the request that asked for the refresh.
-  Future<_RefreshOutcome> _performRefresh(int generation) async {
+  /// of the request that asked for the refresh, and [requestToken] the JWT
+  /// it was sent with.
+  Future<_RefreshOutcome> _performRefresh(int generation, String? requestToken) async {
     try {
+      // On web another tab may have held the lock while this refresh waited for it: what the 401 checked before the
+      // refresh is checked again. The lock hands over that tab's writes, so this tab's copy shows them.
+      if (SessionGeneration.hasEnded(generation)) return const _SessionEnded();
+      final storedIdToken = await _readStoredJwt();
+      if (SessionGeneration.hasEnded(generation)) return const _SessionEnded();
+      if (storedIdToken != null && storedIdToken.isNotEmpty && requestToken != null && storedIdToken != requestToken) {
+        _log.info('JWT rotated while this refresh waited for its turn: retrying with it, no refresh is sent');
+        return _Refreshed(storedIdToken);
+      }
+
       final refreshToken = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
       if (refreshToken == null || refreshToken.isEmpty) {
         _log.warn('No refresh token available — session expired');
@@ -397,6 +461,13 @@ class TokenRefreshInterceptor extends Interceptor {
       final hasNewOidcIdToken = newOidcIdToken != null && newOidcIdToken.isNotEmpty;
       final expiresAt = rotated.accessTokenExpiresAt;
       final newExpiry = expiresAt == null ? null : encodeAccessTokenExpiry(expiresAt);
+      // What this refresh writes, in the order it writes it, for the take-backs: the JWT first, as a wipe deletes it.
+      final stored = <(SecureStorageKeys, String)>[
+        (SecureStorageKeys.jwtToken, newIdToken),
+        if (hasNewRefreshToken) (SecureStorageKeys.refreshToken, newRefreshToken),
+        if (hasNewOidcIdToken) (SecureStorageKeys.oidcIdToken, newOidcIdToken),
+        if (newExpiry != null) (SecureStorageKeys.accessTokenExpiresAt, newExpiry),
+      ];
 
       // Persist the rotated tokens. AuthInterceptor reads JWT from
       // secure storage on every request, so the next outgoing call
@@ -439,18 +510,29 @@ class TokenRefreshInterceptor extends Interceptor {
       // here reaches the catch below as a failed refresh, which ends the session and so wipes what is stored.
       if (SessionGeneration.hasEnded(generation)) {
         _log.warn('Session ended while the rotated tokens were stored: taking them back');
-        await _deleteIfStored(SecureStorageKeys.jwtToken, newIdToken);
-        if (hasNewRefreshToken) await _deleteIfStored(SecureStorageKeys.refreshToken, newRefreshToken);
-        if (hasNewOidcIdToken) await _deleteIfStored(SecureStorageKeys.oidcIdToken, newOidcIdToken);
-        if (newExpiry != null) await _deleteIfStored(SecureStorageKeys.accessTokenExpiresAt, newExpiry);
+        for (final (key, value) in stored) {
+          await _deleteIfStored(key, value);
+        }
         return const _SessionEnded();
       }
+      // No await since the check above, so an end that another tab reports from here on finds these tokens.
+      _takeBack?.record(stored, onTakeBackFailed: _triggerLogout);
 
       _log.info('Token refresh successful');
       return _Refreshed(newIdToken);
     } catch (e) {
       _log.error('Unexpected error during token refresh: {}', [e]);
       return const _RefreshFailed();
+    }
+  }
+
+  /// The stored JWT for the check of a stale header, or null when it cannot be read, as in [onError].
+  Future<String?> _readStoredJwt() async {
+    try {
+      return await _secureStorage.read(SecureStorageKeys.jwtToken.key);
+    } catch (e) {
+      _log.warn('Stale-header check after the wait for the lock skipped, the secure read failed: {}', [e]);
+      return null;
     }
   }
 

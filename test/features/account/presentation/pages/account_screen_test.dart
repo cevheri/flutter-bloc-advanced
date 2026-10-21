@@ -33,6 +33,8 @@ import '../../../../mocks/mock_classes.dart';
 import '../../../../support/test_env.dart';
 
 import 'package:flutter_bloc_advance/shared/widgets/unsaved_changes_guard.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 
 import '../../../../support/unsaved_changes_host.dart';
 
@@ -676,8 +678,17 @@ class _PinnedDependencies extends AppDependencies {
   final HttpClientAdapter adapter;
 
   @override
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
-      super.createApiClient(secureStorage, onSessionExpired: onSessionExpired)..instance.httpClientAdapter = adapter;
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) => super.createApiClient(
+    secureStorage,
+    onSessionExpired: onSessionExpired,
+    tokenRefreshLock: tokenRefreshLock,
+    rotatedTokensTakeBack: rotatedTokensTakeBack,
+  )..instance.httpClientAdapter = adapter;
 }
 
 /// Pumps for [duration] and collects the text and the display duration of every snack bar shown meanwhile. The page
@@ -702,8 +713,18 @@ class _RecordingDependencies extends AppDependencies {
   final Map<String, Object> answers;
 
   @override
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) {
-    final apiClient = super.createApiClient(secureStorage, onSessionExpired: onSessionExpired);
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) {
+    final apiClient = super.createApiClient(
+      secureStorage,
+      onSessionExpired: onSessionExpired,
+      tokenRefreshLock: tokenRefreshLock,
+      rotatedTokensTakeBack: rotatedTokensTakeBack,
+    );
     // MockInterceptor comes last and answers in place of the server, so the recorder and the stub go right before it.
     final interceptors = apiClient.instance.interceptors;
     interceptors.insert(interceptors.length - 1, _RequestRecorder(requests));

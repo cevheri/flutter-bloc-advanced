@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/result/result.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
@@ -6,9 +8,12 @@ import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -90,6 +95,25 @@ class _CallRecordingSecureStorage extends _MemorySecureStorage {
     calls.add('delete $key');
     return super.delete(key);
   }
+}
+
+/// [ISessionEndSignal] that runs [onNotify] when told that the session ends.
+class _RecordingSessionEndSignal implements ISessionEndSignal {
+  _RecordingSessionEndSignal(this.onNotify);
+
+  final void Function() onNotify;
+
+  @override
+  void notifyEnded() => onNotify();
+
+  @override
+  Stream<DateTime> get endedElsewhere => const Stream.empty();
+
+  @override
+  Stream<void> get storeChanges => const Stream.empty();
+
+  @override
+  void dispose() {}
 }
 
 /// Storage fake that lets a test choose which key's `save` should fail.
@@ -397,6 +421,39 @@ void main() {
     });
   });
 
+  // On web the other browser tabs share the stored session but count their own generation. A refresh on its way in one
+  // of them stores its rotated tokens after this wipe unless it hears of the end.
+  group('AuthSessionRepository and the other browser tabs', () {
+    test('clear tells the other tabs that the session ends, before its first storage call', () async {
+      final recording = _CallRecordingSecureStorage();
+      await recording.write(SecureStorageKeys.jwtToken.key, 'TOKEN');
+      recording.calls.clear();
+      final signal = _RecordingSessionEndSignal(() => recording.calls.add('told the other tabs'));
+
+      await AuthSessionRepository(secureStorage: recording, storage: storage, sessionEndSignal: signal).clear();
+
+      expect(recording.calls.first, 'told the other tabs');
+      expect(recording.calls.where((call) => call == 'told the other tabs'), hasLength(1));
+      expect(recording.calls[1], 'delete ${SecureStorageKeys.jwtToken.key}');
+    });
+
+    test('clear still wipes the session when telling the other tabs fails, and reports it', () async {
+      await secure.write(SecureStorageKeys.jwtToken.key, 'TOKEN');
+      await secure.write(SecureStorageKeys.refreshToken.key, 'REFRESH');
+      final signal = _RecordingSessionEndSignal(() => throw StateError('channel closed'));
+
+      final result = await AuthSessionRepository(
+        secureStorage: secure,
+        storage: storage,
+        sessionEndSignal: signal,
+      ).clear();
+
+      expect(result, isA<Failure<void>>());
+      expect(await secure.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), isNull);
+    });
+  });
+
   group('AuthSessionRepository with the OIDC keys', () {
     final expiresAt = DateTime.utc(2026, 10, 21, 12);
     final idTokenKey = SecureStorageKeys.oidcIdToken.key;
@@ -620,6 +677,37 @@ void main() {
       expect(await secure.read(SecureStorageKeys.refreshToken.key), 'signed-in-refresh');
       expect(sessionExpiredCalls, 0);
     });
+
+    // On web the refreshes of all browser tabs take turns at one lock. A logout must never wait behind a refresh that
+    // a slow server holds it for: nothing on the wipe path takes the lock.
+    test('does not make logout wait for a refresh that holds the lock', () async {
+      await secure.write(SecureStorageKeys.jwtToken.key, 'old-jwt');
+      await secure.write(SecureStorageKeys.refreshToken.key, 'old-refresh');
+      final rotation = _HangingRotation();
+      final sent = await _send(AuthInterceptor(secureStorage: secure), RequestOptions(path: '/account'));
+      final unauthorized = DioException(
+        requestOptions: sent,
+        response: Response(requestOptions: sent, statusCode: 401),
+      );
+      final handled = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secure,
+        rotation: rotation,
+        refreshLock: _OneAtATimeLock(),
+        onSessionExpired: () => sessionExpiredCalls++,
+      ).onError(unauthorized, _TestErrorHandler());
+      await rotation.started.future;
+
+      final cleared = await AuthSessionRepository(
+        secureStorage: secure,
+        storage: storage,
+      ).clear().timeout(const Duration(seconds: 1));
+
+      expect(cleared, isA<Success<void>>());
+      expect(await secure.read(SecureStorageKeys.refreshToken.key), isNull);
+      rotation.answer.complete(const RotationRefused());
+      await handled;
+    });
   });
 }
 
@@ -744,4 +832,32 @@ class _OkStub extends Interceptor {
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) =>
       handler.resolve(Response(requestOptions: options, statusCode: 200, data: '{}'));
+}
+
+/// A rotation whose server takes the refresh token and answers only when the test completes [answer].
+class _HangingRotation implements TokenRotation {
+  final started = Completer<void>();
+  final answer = Completer<TokenRotationResult>();
+
+  @override
+  Future<TokenRotationResult> rotate(String refreshToken) {
+    started.complete();
+    return answer.future;
+  }
+}
+
+/// An [ITokenRefreshLock] that runs its holders one at a time, as the Web Lock of the browser tabs does.
+class _OneAtATimeLock implements ITokenRefreshLock {
+  Future<void> _tail = Future<void>.value();
+
+  @override
+  Future<T> hold<T>(Future<T> Function() body) {
+    final previous = _tail;
+    final released = Completer<void>();
+    _tail = released.future;
+    return previous.then((_) => body().whenComplete(released.complete));
+  }
+
+  @override
+  void dispose() {}
 }

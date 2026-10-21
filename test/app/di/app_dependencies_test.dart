@@ -118,7 +118,7 @@ void main() {
   });
 
   test('app dependencies expose auth repository contract', () {
-    final sessionRepository = dependencies.createAuthSessionRepository(_StubSecureStorage());
+    final sessionRepository = dependencies.createAuthSessionRepository(_StubSecureStorage(), sessionEndSignal: null);
     expect(dependencies.createAuthRepository(sessionRepository, TestEnv.apiClient()), isA<IAuthRepository>());
   });
 
@@ -128,7 +128,7 @@ void main() {
     );
     final secureStorage = _MemorySecureStorage();
 
-    await oidc.createAuthSessionRepository(secureStorage).persist(_oidcSession);
+    await oidc.createAuthSessionRepository(secureStorage, sessionEndSignal: null).persist(_oidcSession);
 
     expect(secureStorage.store[SecureStorageKeys.oidcIdToken.key], 'ID_TOKEN');
     expect(secureStorage.store[SecureStorageKeys.accessTokenExpiresAt.key], isNotNull);
@@ -137,7 +137,7 @@ void main() {
   test('the session repository of a jwt build leaves the OIDC keys alone', () async {
     final secureStorage = _MemorySecureStorage();
 
-    await dependencies.createAuthSessionRepository(secureStorage).persist(_oidcSession);
+    await dependencies.createAuthSessionRepository(secureStorage, sessionEndSignal: null).persist(_oidcSession);
 
     expect(secureStorage.store.keys, unorderedEquals([SecureStorageKeys.jwtToken.key]));
   });
@@ -149,8 +149,12 @@ void main() {
   test('createApiClient ends the session on a 401 its refresh cannot fix', () async {
     final adapter = _UnauthorizedAdapter();
     var sessionExpiredCalls = 0;
-    final client = const AppDependencies(appConfig: _prodConfig)
-        .createApiClient(await _signedInStorage(), onSessionExpired: () => sessionExpiredCalls++);
+    final client = const AppDependencies(appConfig: _prodConfig).createApiClient(
+      await _signedInStorage(),
+      onSessionExpired: () => sessionExpiredCalls++,
+      tokenRefreshLock: null,
+      rotatedTokensTakeBack: null,
+    );
 
     await _getUnauthorized(client, adapter);
 
@@ -164,6 +168,8 @@ void main() {
     final client = const _NoSessionExpiryDependencies().createApiClient(
       await _signedInStorage(),
       onSessionExpired: () => sessionExpiredCalls++,
+      tokenRefreshLock: null,
+      rotatedTokensTakeBack: null,
     );
 
     await _getUnauthorized(client, adapter);
@@ -180,6 +186,8 @@ void main() {
       await _signedInStorage(),
       onSessionExpired: () => sessionExpiredCalls++,
       tokenRotation: rotation,
+      tokenRefreshLock: null,
+      rotatedTokensTakeBack: null,
     );
 
     await _getUnauthorized(client, adapter);
@@ -197,6 +205,8 @@ void main() {
       await _signedInStorage(),
       onSessionExpired: () => sessionExpiredCalls++,
       tokenRotation: rotation,
+      tokenRefreshLock: null,
+      rotatedTokensTakeBack: null,
     );
 
     await _getUnauthorized(client, adapter);

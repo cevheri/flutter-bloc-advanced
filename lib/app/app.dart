@@ -56,6 +56,20 @@ class _AppState extends State<App> {
   /// [AppDependencies.createSharedActivityStore].
   late final _sharedActivity = widget.dependencies.createSharedActivityStore();
 
+  /// This tab's session end signal and token refresh lock, one of each per tab; see
+  /// [AppDependencies.createSessionEndSignal] and [AppDependencies.createTokenRefreshLock].
+  late final _sessionEndSignal = widget.dependencies.createSessionEndSignal();
+  late final _tokenRefreshLock = widget.dependencies.createTokenRefreshLock();
+
+  /// Releases the tab's signal and lock, so an App mounted again in this tab does not leave the listeners of this one,
+  /// which would run a second wipe for one end.
+  @override
+  void dispose() {
+    _sessionEndSignal?.dispose();
+    _tokenRefreshLock.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final analytics = widget._analytics ?? LogAnalyticsService();
@@ -63,6 +77,8 @@ class _AppState extends State<App> {
       dependencies: widget.dependencies,
       secureStorage: widget.secureStorage,
       defaultLocale: Locale(widget.language),
+      sessionEndSignal: _sessionEndSignal,
+      tokenRefreshLock: _tokenRefreshLock,
       child: AppSessionListeners(
         scaffoldMessengerKey: _scaffoldMessengerKey,
         sharedActivity: _sharedActivity,

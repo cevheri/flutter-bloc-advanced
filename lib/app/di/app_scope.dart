@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/app/connectivity/connectivity_cubit.dart';
@@ -48,7 +50,10 @@ import 'package:flutter_bloc_advance/core/feature_flags/feature_flag_service.dar
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 
 class AppScope extends StatelessWidget {
   const AppScope({
@@ -57,9 +62,16 @@ class AppScope extends StatelessWidget {
     this.secureStorage,
     required this.defaultLocale,
     required this.child,
+    this.sessionEndSignal,
+    this.tokenRefreshLock,
   });
 
   final AppDependencies dependencies;
+
+  /// This browser tab's [ISessionEndSignal] and [ITokenRefreshLock], which `App` creates once per tab; on mobile and
+  /// desktop no signal, and a lock that runs a refresh at once, which is also what a scope built without them gets.
+  final ISessionEndSignal? sessionEndSignal;
+  final ITokenRefreshLock? tokenRefreshLock;
 
   /// Pre-constructed ISecureStorage from bootstrap. When provided, it is
   /// shared via `.value` so migration and runtime consumers use the same
@@ -87,9 +99,21 @@ class AppScope extends StatelessWidget {
         RepositoryProvider<AppConfig>.value(value: dependencies.appConfig),
         RepositoryProvider<ProjectLinks>.value(value: dependencies.projectLinks),
         RepositoryProvider<AuthMode>.value(value: dependencies.authMode),
+        // Created when the tab starts, not with the HTTP client, so it hears another tab's end before anything stores
+        // rotated tokens: the startup refresh of an oidc build may store before the first request.
+        RepositoryProvider<RotatedTokensTakeBack>(
+          lazy: false,
+          create: (context) =>
+              RotatedTokensTakeBack(secureStorage: context.read<ISecureStorage>(), sessionEndSignal: sessionEndSignal),
+          // A scope mounted again creates its own, so this one stops hearing: one end, one wipe.
+          dispose: (takeBack) => unawaited(takeBack.dispose()),
+        ),
         // Provided above SessionCubit and IAuthRepository, which clear the stored session when they end one.
         RepositoryProvider<IAuthSessionRepository>(
-          create: (context) => dependencies.createAuthSessionRepository(context.read<ISecureStorage>()),
+          create: (context) => dependencies.createAuthSessionRepository(
+            context.read<ISecureStorage>(),
+            sessionEndSignal: sessionEndSignal,
+          ),
         ),
         // Only an oidc build signs in through the provider. These come before SessionCubit, which completes a web
         // sign-in and refreshes the session at startup, and the one TokenRotation is shared with the ApiClient.
@@ -110,23 +134,31 @@ class AppScope extends StatelessWidget {
         ],
         // Provided above ApiClient so a failed token refresh can end the session.
         BlocProvider<SessionCubit>(
-          create: (context) => SessionCubit(
-            secureStorage: context.read<ISecureStorage>(),
-            sessionRepository: context.read<IAuthSessionRepository>(),
-            appConfig: context.read<AppConfig>(),
-            ssoStartup: switch (dependencies.authMode) {
-              OidcAuthMode() => SsoSessionStartup(
-                auth: context.read<ISsoAuthRepository>(),
-                rotation: context.read<TokenRotation>(),
-                secureStorage: context.read<ISecureStorage>(),
-                sessionRepository: context.read<IAuthSessionRepository>(),
-                gate: context.read<SsoAutoRedirectGate>(),
-              ),
-              // Fails closed: a session that an earlier oidc build stored is never restored.
-              OidcMisconfiguredAuthMode() => const MisconfiguredSsoSessionStartup(),
-              JwtAuthMode() => null,
-            },
-          )..restore(),
+          create: (context) {
+            late final SessionCubit session;
+            session = SessionCubit(
+              secureStorage: context.read<ISecureStorage>(),
+              sessionRepository: context.read<IAuthSessionRepository>(),
+              appConfig: context.read<AppConfig>(),
+              ssoStartup: switch (dependencies.authMode) {
+                OidcAuthMode() => SsoSessionStartup(
+                  auth: context.read<ISsoAuthRepository>(),
+                  rotation: context.read<TokenRotation>(),
+                  secureStorage: context.read<ISecureStorage>(),
+                  sessionRepository: context.read<IAuthSessionRepository>(),
+                  gate: context.read<SsoAutoRedirectGate>(),
+                  refreshLock: tokenRefreshLock ?? const InProcessTokenRefreshLock(),
+                  takeBack: context.read<RotatedTokensTakeBack>(),
+                  // What the startup refresh stored and cannot take back ends the session as an unfixable 401 does.
+                  onSessionExpired: () => session.endSession(reason: SessionExpiredReason.expired),
+                ),
+                // Fails closed: a session that an earlier oidc build stored is never restored.
+                OidcMisconfiguredAuthMode() => const MisconfiguredSsoSessionStartup(),
+                JwtAuthMode() => null,
+              },
+            );
+            return session..restore();
+          },
         ),
         RepositoryProvider<ApiClient>(
           create: (context) {
@@ -136,11 +168,15 @@ class AppScope extends StatelessWidget {
               JwtAuthMode() => dependencies.createApiClient(
                 context.read<ISecureStorage>(),
                 onSessionExpired: onSessionExpired,
+                tokenRefreshLock: tokenRefreshLock,
+                rotatedTokensTakeBack: context.read<RotatedTokensTakeBack>(),
               ),
               OidcAuthMode() => dependencies.createOidcApiClient(
                 context.read<ISecureStorage>(),
                 onSessionExpired: onSessionExpired,
                 tokenRotation: context.read<TokenRotation>(),
+                tokenRefreshLock: tokenRefreshLock,
+                rotatedTokensTakeBack: context.read<RotatedTokensTakeBack>(),
               ),
               // A session that an earlier oidc build stored holds the provider's refresh token, which the backend's
               // refresh endpoint must never receive.
@@ -148,6 +184,8 @@ class AppScope extends StatelessWidget {
                 context.read<ISecureStorage>(),
                 onSessionExpired: onSessionExpired,
                 tokenRotation: const RefusingTokenRotation(),
+                tokenRefreshLock: tokenRefreshLock,
+                rotatedTokensTakeBack: context.read<RotatedTokensTakeBack>(),
               ),
             };
           },

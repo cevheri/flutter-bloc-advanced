@@ -31,7 +31,12 @@ import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/rotated_tokens_take_back.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal_platform.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock_platform.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/shared_preferences_activity_store.dart';
 import 'package:flutter_bloc_advance/shared/utils/external_link.dart';
 
@@ -66,26 +71,40 @@ class AppDependencies {
   /// overrides it: LibreDB Studio, for one, means an ended session only by its `AUTH_REQUIRED` code.
   SessionExpiredPredicate get sessionExpiredPredicate => isUnauthorized;
 
-  /// [onSessionExpired] runs when a 401 cannot be fixed by a token refresh; the caller ends the session there.
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) => ApiClient(
+  /// [onSessionExpired] runs when a 401 cannot be fixed by a token refresh; the caller ends the session there. The
+  /// token refresh takes turns at [tokenRefreshLock] and records what it stores in [rotatedTokensTakeBack], both of
+  /// this browser tab.
+  ApiClient createApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
+  }) => ApiClient(
     appConfig: appConfig,
     secureStorage: secureStorage,
     onSessionExpired: onSessionExpired,
     isSessionExpired: sessionExpiredPredicate,
+    tokenRefreshLock: tokenRefreshLock,
+    rotatedTokensTakeBack: rotatedTokensTakeBack,
   );
 
   /// The [ApiClient] of an `oidc` build, which refreshes the session through [tokenRotation] instead of the backend's
-  /// refresh endpoint. [onSessionExpired] runs when a 401 cannot be fixed by a token refresh.
+  /// refresh endpoint. [onSessionExpired] runs when a 401 cannot be fixed by a token refresh. [tokenRefreshLock] and
+  /// [rotatedTokensTakeBack] are this browser tab's, as for [createApiClient].
   ApiClient createOidcApiClient(
     ISecureStorage secureStorage, {
     required OnSessionExpired onSessionExpired,
     required TokenRotation tokenRotation,
+    required ITokenRefreshLock? tokenRefreshLock,
+    required RotatedTokensTakeBack? rotatedTokensTakeBack,
   }) => ApiClient(
     appConfig: appConfig,
     secureStorage: secureStorage,
     onSessionExpired: onSessionExpired,
     tokenRotation: tokenRotation,
     isSessionExpired: sessionExpiredPredicate,
+    tokenRefreshLock: tokenRefreshLock,
+    rotatedTokensTakeBack: rotatedTokensTakeBack,
   );
 
   IAccountRepository createAccountRepository(ApiClient apiClient) => AccountRepository(apiClient);
@@ -94,12 +113,17 @@ class AppDependencies {
   IAuthRepository createAuthRepository(IAuthSessionRepository sessionRepository, ApiClient apiClient) =>
       LoginRepository(sessionRepository: sessionRepository, apiClient: apiClient);
 
-  /// Ending a session also clears the cache of GET responses that [ApiClient] keeps in SharedPreferences. Only an
-  /// `oidc` build stores the OIDC ID token and the access token expiry.
-  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) => AuthSessionRepository(
+  /// Ending a session also clears the cache of GET responses that [ApiClient] keeps in SharedPreferences, and tells
+  /// the other browser tabs through [sessionEndSignal]. Only an `oidc` build stores the OIDC ID token and the access
+  /// token expiry.
+  IAuthSessionRepository createAuthSessionRepository(
+    ISecureStorage secureStorage, {
+    required ISessionEndSignal? sessionEndSignal,
+  }) => AuthSessionRepository(
     secureStorage: secureStorage,
     cacheStorage: SharedPrefsCacheStorage(),
     oidcKeys: authMode.usesOidc,
+    sessionEndSignal: sessionEndSignal,
   );
 
   /// The OpenID Connect client of an `oidc` build. The provider redirects back to the login page, and Linux and
@@ -137,6 +161,16 @@ class AppDependencies {
   /// browser tabs share the session, so the activity of every tab counts; null on mobile and desktop, where one instance
   /// holds the session.
   ISharedActivityStore? createSharedActivityStore() => kIsWeb ? SharedPreferencesActivityStore() : null;
+
+  /// Tells and hears the end of the stored session between the browser tabs of the app, on web; null on mobile and
+  /// desktop, where one instance holds the session. Created once per tab: a second one in the same tab would hear the
+  /// tab's own ends.
+  ISessionEndSignal? createSessionEndSignal() => createPlatformSessionEndSignal();
+
+  /// Lets one token refresh at a time run across the browser tabs of the app, on web; runs it at once on mobile and
+  /// desktop. Created once per tab. A refresh that waits longer than [ApiClient.tokenRefreshLockWaitLimit] fails.
+  ITokenRefreshLock createTokenRefreshLock() =>
+      createPlatformTokenRefreshLock(waitLimit: ApiClient.tokenRefreshLockWaitLimit);
 
   IUserRepository createUserRepository(ApiClient apiClient) => UserRepository(apiClient);
 }

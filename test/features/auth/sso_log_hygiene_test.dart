@@ -128,7 +128,7 @@ void main() {
     final dependencies = _OidcDependencies(provider);
     final secureStorage = FlutterSecureStorageAdapter();
     final client = dependencies.createOidcClient(_settings);
-    final sessions = dependencies.createAuthSessionRepository(secureStorage);
+    final sessions = dependencies.createAuthSessionRepository(secureStorage, sessionEndSignal: null);
     final rotation = dependencies.createOidcTokenRotation(client, secureStorage);
     var sessionsExpired = 0;
     final apiClient = dependencies.createOidcApiClient(
@@ -138,6 +138,8 @@ void main() {
         await sessions.clear();
       },
       tokenRotation: rotation,
+      tokenRefreshLock: null,
+      rotatedTokensTakeBack: null,
     );
     final server = _ServerStub();
     final dio = apiClient.instance;

@@ -7,13 +7,13 @@
 /// stored session through [wipe], so a refresh still on its way drops the rotated tokens instead of storing a session
 /// the user ended, which a relaunch would restore.
 ///
-/// The generation lives in memory, so it counts the wipes of one app process, which on web is one browser tab: a logout
-/// in another tab does not end the generation of this one. For the other tabs, which share the stored session,
-/// `TokenRefreshInterceptor` also reads the stored refresh token again before it acts on the answer of a refresh: it
-/// drops the answer when another tab signed out meanwhile, and keeps the tokens of a tab that refreshed the session.
-/// Each tab reads its own copy of the browser's storage, which takes another tab's change a moment later, so a sign-out
-/// in another tab just before or while a refresh stores its tokens can still be undone by them; closing that needs a
-/// message between the tabs.
+/// The generation lives in memory, so it counts the wipes of one app process, which on web is one browser tab. For the
+/// other tabs, which share the stored session, `TokenRefreshInterceptor` also reads the stored refresh token again
+/// before it acts on the answer of a refresh: it drops the answer when another tab signed out meanwhile, and keeps the
+/// tokens of a tab that refreshed the session. Each tab reads its own copy of the browser's storage, which takes another
+/// tab's change a moment later, so a tab that ends the session also tells the other tabs (`ISessionEndSignal`), and each
+/// of them runs a [wipe] of its own when it hears it (`RotatedTokensTakeBack`): its generation ends, the tokens its
+/// last refresh stored just then are taken back, and the wipe lasts until its copy shows the end, for a bound.
 abstract final class SessionGeneration {
   static int _current = 0;
   static int _wipesRunning = 0;

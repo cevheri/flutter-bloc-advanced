@@ -7,6 +7,7 @@ import 'package:flutter_bloc_advance/infrastructure/cache/cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/storage/session_end_signal.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 
 /// Persistence-layer implementation of [IAuthSessionRepository].
@@ -25,6 +26,9 @@ import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.d
 /// [clear] removes what belongs to the session: both tokens, every [StorageKeys] value of [StorageScope.session]
 /// and the HTTP responses cached in [ICacheStorage]. Device preferences such as the language and theme stay.
 ///
+/// On web, `sessionEndSignal` tells the other browser tabs of the app that [clear] ends the stored session, which they
+/// share, so a token refresh on its way in one of them takes back what it stores after the wipe; null elsewhere.
+///
 /// With `oidcKeys` on, as in an `oidc` build, the session also owns [SecureStorageKeys.oidcIdToken] and
 /// [SecureStorageKeys.accessTokenExpiresAt]: [persist] writes them after the refresh token, and the rollback and
 /// [clear] cover them. With it off, as in a `jwt` build, those keys are never read, written or deleted.
@@ -34,6 +38,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
     AppLocalStorage? storage,
     ICacheStorage? cacheStorage,
     this._oidcKeys = false,
+    this._sessionEndSignal,
   })
     // ignore: prefer_initializing_formals
     : _secureStorage = secureStorage,
@@ -46,6 +51,7 @@ class AuthSessionRepository implements IAuthSessionRepository {
   final AppLocalStorage _storage;
   final ICacheStorage _cacheStorage;
   final bool _oidcKeys;
+  final ISessionEndSignal? _sessionEndSignal;
 
   @override
   Future<Result<void>> persist(AuthSession session) async {
@@ -138,6 +144,13 @@ class AuthSessionRepository implements IAuthSessionRepository {
     // leftover token would let AuthInterceptor re-attach it on the
     // next request and silently defeat a clear/logout.
     final errors = <String>[];
+    // Before the first storage call: the other browser tabs count their own generation, and a refresh on its way in
+    // one of them takes back what it stores after this wipe only when it hears of the end.
+    try {
+      _sessionEndSignal?.notifyEnded();
+    } catch (e) {
+      errors.add('signal: $e');
+    }
     try {
       await _secureStorage.delete(SecureStorageKeys.jwtToken.key);
     } catch (e) {

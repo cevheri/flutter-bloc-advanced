@@ -78,8 +78,15 @@ test/
 ├── features/<feature>/        # application/ data/ domain/ navigation/ presentation/
 ├── infrastructure/            # config, http (+ interceptors), storage, cache, ...
 ├── shared/                    # design_system, dynamic_forms, models, utils, widgets
-└── main/                      # app_test.dart (root widget smoke test)
+├── main/                      # app_test.dart (root widget smoke test)
+└── browser_only/              # @TestOn('browser') tests of the web interop, with a bootstrap of their own
 ```
+
+`test/browser_only/` holds the tests that need a real browser: the `BroadcastChannel` of the session end signal and the Web Lock, IndexedDB and localStorage of the token refresh lock.
+Each file is `@TestOn('browser')`, so the VM run skips it without compiling it, and the folder has its own `flutter_test_config.dart`, which only configures `AppLogger`, because the global bootstrap imports alchemist, which does not compile for the web.
+So these tests get neither `TestEnv`, the mocktail fallbacks nor the per-test reset.
+Two objects in one page stand for two tabs there, and they share one copy of localStorage, so the lag between tabs that the hand-over of the lock exists for is modelled by the VM tests in `test/infrastructure/` instead.
+CI runs the folder in Chrome after the VM suite.
 
 ---
 
@@ -497,7 +504,10 @@ fvm flutter test test/features/users               # a subtree
 fvm flutter test test/path/to/specific_test.dart   # one file
 fvm flutter test --coverage                         # with coverage
 fvm flutter test --concurrency=1 --test-randomize-ordering-seed=random  # flush order/leak bugs
+fvm flutter test --platform chrome test/browser_only/                   # the browser-only tests, in Chrome
 ```
+
+`flutter test --platform chrome` finds Chrome on the `PATH`, or takes the browser that `CHROME_EXECUTABLE` names.
 
 The Android JVM unit tests (`android/app/src/test/kotlin`) cover the Kotlin scrubber of native Sentry events and run in the Build Android job of CI.
 They need JDK 17 and the Gradle wrapper, which is not committed: any Flutter Android build writes it, for example `fvm flutter build apk --config-only --target lib/main/main_prod.dart`.
