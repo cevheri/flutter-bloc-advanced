@@ -138,6 +138,27 @@ void main() {
     expect(prodEntryPoints, [gate.single]);
   });
 
+  // Without this a Gradle file that feeds SENTRY_DSN straight from the define passes the test above, and a
+  // main_local.dart build with a DSN starts sentry-android while the Dart side never starts Sentry.
+  test('the native SDK gets the DSN only through the Gradle gate', () {
+    final gradle = File('android/app/build.gradle.kts').readAsStringSync();
+
+    final problems = _dsnGateProblems(gradle);
+
+    expect(problems, isEmpty, reason: problems.join('\n'));
+  });
+
+  test('an ungated DSN in the Gradle file is reported', () {
+    final gradle = File('android/app/build.gradle.kts').readAsStringSync();
+    final ungated = gradle.replaceFirst(
+      'if (isProdTarget) dartDefines["SENTRY_DSN"].orEmpty() else ""',
+      'dartDefines["SENTRY_DSN"].orEmpty()',
+    );
+
+    expect(ungated, isNot(gradle));
+    expect(_dsnGateProblems(ungated), isNotEmpty);
+  });
+
   test('MainActivity answers on the channel that nativeSdkReady asks', () {
     final activity = File('android/app/src/main/kotlin/com/cevheri/flutter/flutter_bloc_advance/MainActivity.kt')
         .readAsStringSync();
@@ -145,6 +166,26 @@ void main() {
     expect(activity, contains('"$nativeSentryChannelName"'));
     expect(activity, contains('"isEnabled" -> result.success(Sentry.isEnabled())'));
   });
+}
+
+/// What is wrong with how [gradle] passes SENTRY_DSN to the native SDK: the BuildConfig field must take a value that is
+/// the define only when `isProdTarget`, `isProdTarget` must be the file name check, and the define must be read nowhere
+/// else.
+List<String> _dsnGateProblems(String gradle) {
+  final problems = <String>[];
+  final field = RegExp(r'buildConfigField\("String", "SENTRY_DSN", buildConfigString\(([A-Za-z_][A-Za-z0-9_]*)\)\)')
+      .allMatches(gradle)
+      .toList();
+  if (field.length != 1) return ['SENTRY_DSN must be one buildConfigField fed by a val, found ${field.length}'];
+  final name = field.single[1]!;
+  final gated = 'val $name = if (isProdTarget) dartDefines["SENTRY_DSN"].orEmpty() else ""';
+  if (!gradle.contains(gated)) problems.add('$name must be set as: $gated');
+  if (!RegExp(r'val isProdTarget = File\([^\n]*\)\.name == "[^"]+"').hasMatch(gradle)) {
+    problems.add('isProdTarget must compare the file name of the target');
+  }
+  final reads = 'dartDefines["SENTRY_DSN"]'.allMatches(gradle).length;
+  if (reads != 1) problems.add('the SENTRY_DSN define must be read once, in the gate, found $reads reads');
+  return problems;
 }
 
 bool _sameSet(List<String> kotlin, Set<String> dart) =>
