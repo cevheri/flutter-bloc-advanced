@@ -592,6 +592,31 @@ void main() {
       expect(provider.tokenRequests, isEmpty);
     });
 
+    test('the JWKS answering 500 with an HTML body during a refresh gives RotationUnavailable', () async {
+      provider.jwksAnswer = () => http.Response('<html>down</html>', 500);
+
+      expect(await refresh(newClient()), isA<RotationUnavailable>());
+      expect(provider.tokenRequests, hasLength(1));
+      await expectStoreEmpty();
+    });
+
+    test('the JWKS answering 503 with a JSON body during a refresh gives RotationUnavailable', () async {
+      provider.jwksAnswer = () =>
+          http.Response('{"error":"temporarily_unavailable"}', 503, headers: {'content-type': 'application/json'});
+
+      expect(await refresh(newClient()), isA<RotationUnavailable>());
+      expect(provider.tokenRequests, hasLength(1));
+      await expectStoreEmpty();
+    });
+
+    test('the JWKS unreachable during a refresh gives RotationUnavailable', () async {
+      provider.jwksAnswer = () => throw http.ClientException('connection reset');
+
+      expect(await refresh(newClient()), isA<RotationUnavailable>());
+      expect(provider.tokenRequests, hasLength(1));
+      await expectStoreEmpty();
+    });
+
     test('discovery unreachable during a refresh gives RotationUnavailable', () async {
       provider.discoveryAnswer = () => throw http.ClientException('connection refused');
 

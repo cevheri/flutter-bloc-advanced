@@ -484,13 +484,14 @@ final class OidcClient implements IOidcClient {
   }
 
   /// The provider refusing, or a refreshed ID token failing a check, ends the session; the provider being out of
-  /// reach keeps it.
+  /// reach keeps it. A JWKS error status comes first: jose_plus reads a JSON error body as an empty key set and then
+  /// reports a [JoseException], which would otherwise end the session over an outage.
   TokenRotationResult _refreshFailed(Object error) {
     final TokenRotationResult result;
-    if (error is JoseException) {
-      result = const RotationRefused();
-    } else if (_http.getFailed) {
+    if (_http.getFailed) {
       result = const RotationUnavailable();
+    } else if (error is JoseException) {
+      result = const RotationRefused();
     } else {
       result = switch (OidcOfflineAuthErrorHandler.categorizeError(error)) {
         OfflineAuthErrorType.networkUnavailable ||
