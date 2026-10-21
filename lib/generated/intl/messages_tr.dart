@@ -157,6 +157,19 @@ class MessageLookup extends MessageLookupByLibrary {
     "error_account_passwords_same": MessageLookupByLibrary.simpleMessage("Yeni şifre mevcut şifreden farklı olmalıdır"),
     "error_auth_invalid_access_token": MessageLookupByLibrary.simpleMessage("Geçersiz erişim belirteci"),
     "error_auth_login_failed": MessageLookupByLibrary.simpleMessage("Giriş başarısız"),
+    "error_auth_oidc_config": MessageLookupByLibrary.simpleMessage(
+      "Bu uygulamada tek oturum açma doğru yapılandırılmamış. Yöneticinize başvurun.",
+    ),
+    "error_auth_oidc_discovery": MessageLookupByLibrary.simpleMessage(
+      "Kimlik sağlayıcıya ulaşılamadı. Daha sonra yeniden deneyin; sorun sürerse yöneticinize başvurun.",
+    ),
+    "error_auth_oidc_failed": MessageLookupByLibrary.simpleMessage("Giriş başarısız oldu. Lütfen yeniden deneyin."),
+    "error_auth_oidc_logout_incomplete": MessageLookupByLibrary.simpleMessage(
+      "Bu uygulamadan çıkış yaptınız, ancak kimlik sağlayıcıdaki oturumunuz hâlâ açık olabilir.",
+    ),
+    "error_auth_oidc_no_role": MessageLookupByLibrary.simpleMessage(
+      "Hesabınızın bu uygulamaya erişim veren bir rolü yok. Yöneticinize başvurun.",
+    ),
     "error_auth_otp_validation": MessageLookupByLibrary.simpleMessage("OTP doğrulaması başarısız"),
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("OTP kodu gönderilemedi"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Oturum kaydedilemedi"),
@@ -231,6 +244,11 @@ class MessageLookup extends MessageLookupByLibrary {
       "OTP kodunu almak için e-posta adresinizi girin",
     ),
     "login_password": MessageLookupByLibrary.simpleMessage("Şifre"),
+    "login_sso_browser_done": MessageLookupByLibrary.simpleMessage(
+      "Giriş tamamlandı. Bu sekmeyi kapatıp uygulamaya dönebilirsiniz.",
+    ),
+    "login_sso_button": MessageLookupByLibrary.simpleMessage("SSO ile giriş yap"),
+    "login_sso_subtitle": MessageLookupByLibrary.simpleMessage("Kurumsal hesabınızla giriş yapın."),
     "login_switch_to_dark_mode": MessageLookupByLibrary.simpleMessage("Koyu temaya geç"),
     "login_switch_to_light_mode": MessageLookupByLibrary.simpleMessage("Açık temaya geç"),
     "login_user_name": MessageLookupByLibrary.simpleMessage("Kullanıcı adı"),

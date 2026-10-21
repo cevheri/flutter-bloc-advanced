@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
@@ -9,11 +11,14 @@ import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/authenticate_user_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/persist_auth_session_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/send_otp_usecase.dart';
+import 'package:flutter_bloc_advance/features/auth/application/usecases/sign_in_with_sso_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/application/usecases/verify_otp_usecase.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_entity.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/entities/auth_session.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/entities/sso_sign_in_result.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/shared/models/user_entity.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -89,12 +94,16 @@ class _FakeAuthSessionRepository implements IAuthSessionRepository {
 class _FakeAccountRepository implements IAccountRepository {
   UserEntity? account;
   Result<UserEntity>? getAccountResult;
+  int getAccountCalls = 0;
 
   @override
   Future<Result<void>> changePassword(PasswordChangeDTO passwordChangeDTO) async => const Success(null);
 
   @override
-  Future<Result<UserEntity>> getAccount() async => getAccountResult ?? Success(account ?? mockUserFullPayload);
+  Future<Result<UserEntity>> getAccount() async {
+    getAccountCalls++;
+    return getAccountResult ?? Success(account ?? mockUserFullPayload);
+  }
 
   @override
   Future<Result<UserEntity>> register(UserEntity newUser) async => Success(newUser);
@@ -121,6 +130,31 @@ LoginBloc _buildBloc(
     persistAuthSessionUseCase: PersistAuthSessionUseCase(sessionRepo),
   );
 }
+
+/// Answers each sign-in with [result], or with [pending] once it completes when it is set, and counts the sign-ins.
+class _FakeSsoAuthRepository implements ISsoAuthRepository {
+  SsoSignInResult result = const SsoSignInCancelled();
+  Completer<SsoSignInResult>? pending;
+  int signIns = 0;
+
+  @override
+  Future<SsoSignInResult> signIn({String? webReturnPath, required String browserDoneMessage}) async {
+    signIns++;
+    return pending?.future ?? result;
+  }
+
+  @override
+  Future<SsoSignInResult?> completePendingSignIn() => throw UnimplementedError('LoginBloc never completes a sign-in');
+}
+
+LoginBloc _buildSsoBloc(_FakeSsoAuthRepository ssoRepository, _FakeAccountRepository accountRepository) => LoginBloc(
+  authenticateUserUseCase: AuthenticateUserUseCase(_FakeAuthRepository()),
+  sendOtpUseCase: SendOtpUseCase(_FakeAuthRepository()),
+  verifyOtpUseCase: VerifyOtpUseCase(_FakeAuthRepository()),
+  getAccountUseCase: GetAccountUseCase(accountRepository),
+  persistAuthSessionUseCase: PersistAuthSessionUseCase(_FakeAuthSessionRepository()),
+  signInWithSsoUseCase: SignInWithSsoUseCase(ssoRepository),
+);
 
 LoginBloc _buildBlocWithSendOtp(
   _FakeAuthRepositoryWithSendOtp repository, [
@@ -536,5 +570,90 @@ void main() {
         ),
       ],
     );
+  });
+
+  group('single sign-on', () {
+    late _FakeSsoAuthRepository ssoRepository;
+
+    setUp(() => ssoRepository = _FakeSsoAuthRepository());
+
+    blocTest<LoginBloc, LoginState>(
+      'emits the signed-in state with the username and roles the sign-in gives, without reading the account',
+      setUp: () => ssoRepository.result = const SsoSignInSucceeded(
+        username: 'admin@example.com',
+        roles: ['ROLE_ADMIN', 'ROLE_USER'],
+      ),
+      build: () => _buildSsoBloc(ssoRepository, accountRepository),
+      act: (bloc) => bloc.add(const SsoSignInRequested(browserDoneMessage: 'done')),
+      expect: () => [
+        const LoginLoadingState(),
+        const LoginLoadedState(username: 'admin@example.com', roles: ['ROLE_ADMIN', 'ROLE_USER']),
+      ],
+      verify: (_) => expect(accountRepository.getAccountCalls, 0),
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'returns to the blank sign-in when the user cancels',
+      setUp: () => ssoRepository.result = const SsoSignInCancelled(),
+      build: () => _buildSsoBloc(ssoRepository, accountRepository),
+      act: (bloc) => bloc.add(const SsoSignInRequested(browserDoneMessage: 'done')),
+      expect: () => [const LoginLoadingState(), const LoginInitialState()],
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'emits the error code of a rejected sign-in',
+      setUp: () => ssoRepository.result = const SsoSignInRejected(AppErrorCode.authOidcNoRole),
+      build: () => _buildSsoBloc(ssoRepository, accountRepository),
+      act: (bloc) => bloc.add(const SsoSignInRequested(browserDoneMessage: 'done')),
+      expect: () => [const LoginLoadingState(), const LoginErrorState(errorCode: AppErrorCode.authOidcNoRole)],
+      verify: (_) => expect(accountRepository.getAccountCalls, 0),
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'stays loading while the web tab is on its way to the provider',
+      setUp: () => ssoRepository.result = const SsoSignInNavigatedAway(),
+      build: () => _buildSsoBloc(ssoRepository, accountRepository),
+      act: (bloc) => bloc.add(const SsoSignInRequested(webReturnPath: '/users', browserDoneMessage: 'done')),
+      expect: () => [const LoginLoadingState()],
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'drops a second request while the first sign-in is running',
+      setUp: () => ssoRepository.pending = Completer<SsoSignInResult>(),
+      build: () => _buildSsoBloc(ssoRepository, accountRepository),
+      act: (bloc) async {
+        bloc.add(const SsoSignInRequested(browserDoneMessage: 'done'));
+        await Future<void>.delayed(Duration.zero);
+        bloc.add(const SsoSignInRequested(browserDoneMessage: 'done'));
+        await Future<void>.delayed(Duration.zero);
+        ssoRepository.pending!.complete(const SsoSignInSucceeded(username: 'jdoe', roles: ['ROLE_USER']));
+      },
+      expect: () => [
+        const LoginLoadingState(),
+        const LoginLoadedState(username: 'jdoe', roles: ['ROLE_USER']),
+      ],
+      verify: (_) => expect(ssoRepository.signIns, 1),
+    );
+
+    blocTest<LoginBloc, LoginState>(
+      'throws when the build has no single sign-on',
+      build: () => _buildBloc(repository),
+      act: (bloc) => bloc.add(const SsoSignInRequested(browserDoneMessage: 'done')),
+      expect: () => <LoginState>[],
+      errors: () => [
+        isA<StateError>().having((e) => e.message, 'message', 'single sign-on is not enabled in this build'),
+      ],
+    );
+
+    test('SsoSignInRequested compares by its return path and browser message', () {
+      expect(
+        const SsoSignInRequested(webReturnPath: '/users', browserDoneMessage: 'done'),
+        const SsoSignInRequested(webReturnPath: '/users', browserDoneMessage: 'done'),
+      );
+      expect(
+        const SsoSignInRequested(webReturnPath: '/users', browserDoneMessage: 'done'),
+        isNot(const SsoSignInRequested(browserDoneMessage: 'done')),
+      );
+    });
   });
 }

@@ -19,56 +19,62 @@ import 'package:go_router/go_router.dart';
 class AuthFeatureRoutes {
   /// Public routes (login, register, forgot-password) — outside ShellRoute.
   /// [loginBuilder] lets the router inject app-level bindings (e.g. ThemeBloc)
-  /// without making this file import `app/`.
-  static List<GoRoute> publicRoutes({Widget Function(BuildContext context)? loginBuilder}) => [
+  /// without making this file import `app/`. With [ssoOnly], as in an `oidc`
+  /// build where the identity provider owns the password, only the login route
+  /// is returned.
+  static List<GoRoute> publicRoutes({Widget Function(BuildContext context)? loginBuilder, bool ssoOnly = false}) => [
     GoRoute(
       name: 'login',
       path: ApplicationRoutesConstants.login,
       pageBuilder: (context, state) =>
           appPlatformPage(state: state, child: loginBuilder?.call(context) ?? const LoginScreen()),
     ),
-    GoRoute(
-      name: 'login-otp',
-      path: ApplicationRoutesConstants.loginOtp,
-      pageBuilder: (context, state) => appPlatformPage(state: state, child: OtpEmailScreen()),
-    ),
-    GoRoute(
-      name: 'login-otp-verify',
-      path: '/login-otp-verify/:email',
-      pageBuilder: (context, state) => appPlatformPage(
-        state: state,
-        child: OtpVerifyScreen(email: state.pathParameters['email']!),
+    // The password routes, which a single sign-on build leaves out.
+    if (!ssoOnly) ...[
+      GoRoute(
+        name: 'login-otp',
+        path: ApplicationRoutesConstants.loginOtp,
+        pageBuilder: (context, state) => appPlatformPage(state: state, child: OtpEmailScreen()),
       ),
-    ),
-    GoRoute(
-      name: 'forgot-password',
-      path: ApplicationRoutesConstants.forgotPassword,
-      onExit: confirmLeavingUnsavedChanges,
-      pageBuilder: (context, state) => appPlatformPage(
-        state: state,
-        child: BlocProvider(
-          create: (_) =>
-              ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(context.read<IAccountRepository>())),
-          child: ForgotPasswordScreen(),
+      GoRoute(
+        name: 'login-otp-verify',
+        path: '/login-otp-verify/:email',
+        pageBuilder: (context, state) => appPlatformPage(
+          state: state,
+          child: OtpVerifyScreen(email: state.pathParameters['email']!),
         ),
       ),
-    ),
-    GoRoute(
-      name: 'register',
-      path: ApplicationRoutesConstants.register,
-      onExit: confirmLeavingUnsavedChanges,
-      pageBuilder: (context, state) => appPlatformPage(
-        state: state,
-        child: BlocProvider(
-          create: (_) =>
-              RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(context.read<IAccountRepository>())),
-          child: RegisterScreen(),
+      GoRoute(
+        name: 'forgot-password',
+        path: ApplicationRoutesConstants.forgotPassword,
+        onExit: confirmLeavingUnsavedChanges,
+        pageBuilder: (context, state) => appPlatformPage(
+          state: state,
+          child: BlocProvider(
+            create: (_) =>
+                ForgotPasswordBloc(resetPasswordUseCase: ResetPasswordUseCase(context.read<IAccountRepository>())),
+            child: ForgotPasswordScreen(),
+          ),
         ),
       ),
-    ),
+      GoRoute(
+        name: 'register',
+        path: ApplicationRoutesConstants.register,
+        onExit: confirmLeavingUnsavedChanges,
+        pageBuilder: (context, state) => appPlatformPage(
+          state: state,
+          child: BlocProvider(
+            create: (_) =>
+                RegisterBloc(registerAccountUseCase: RegisterAccountUseCase(context.read<IAccountRepository>())),
+            child: RegisterScreen(),
+          ),
+        ),
+      ),
+    ],
   ];
 
-  /// Authenticated routes (change-password) — inside ShellRoute
+  /// Authenticated routes (change-password), inside ShellRoute. A single
+  /// sign-on build leaves them out.
   static final List<GoRoute> authenticatedRoutes = [
     GoRoute(
       name: 'change-password',

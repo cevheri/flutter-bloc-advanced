@@ -9,6 +9,7 @@ import 'package:flutter_bloc_advance/generated/l10n.dart';
 import 'package:flutter_bloc_advance/features/settings/presentation/pages/settings_screen.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/app/shell/sidebar/sidebar_nav_item.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/app/app.dart';
@@ -49,8 +50,12 @@ class _LocalStorageDependencies extends AppDependencies {
 }
 
 void main() {
-  // The build gives the documentation website [docs].
-  Widget buildTestableWidget({String docs = _docs, Locale locale = const Locale('en')}) {
+  // The build gives the documentation website [docs] and signs in as [authMode] says.
+  Widget buildTestableWidget({
+    String docs = _docs,
+    Locale locale = const Locale('en'),
+    AuthMode authMode = const JwtAuthMode(),
+  }) {
     final router = GoRouter(
       initialLocation: ApplicationRoutesConstants.settings,
       routes: [
@@ -65,8 +70,11 @@ void main() {
       ],
     );
 
-    return RepositoryProvider<ProjectLinks>.value(
-      value: ProjectLinks(docs: docs),
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<ProjectLinks>.value(value: ProjectLinks(docs: docs)),
+        RepositoryProvider<AuthMode>.value(value: authMode),
+      ],
       child: MaterialApp.router(
         routerConfig: router,
         locale: locale,
@@ -148,6 +156,25 @@ void main() {
       expect(find.byType(Placeholder), findsOneWidget);
       expect(find.byType(SettingsScreen), findsNothing);
     });
+  });
+
+  group('SettingsScreen in oidc mode', () {
+    for (final (build, authMode) in <(String, AuthMode)>[
+      ('an oidc build', OidcAuthMode(OidcSettings(issuer: Uri.parse('https://id.example.com'), clientId: 'app'))),
+      ('a misconfigured oidc build', const OidcMisconfiguredAuthMode('OIDC_ISSUER is required in oidc mode')),
+    ]) {
+      // The identity provider owns the password, so the app has no page to change it.
+      testWidgets('in $build, shows no change-password entry', (WidgetTester tester) async {
+        TestEnv.authenticate();
+        await tester.pumpWidget(buildTestableWidget(authMode: authMode));
+        await tester.pumpAndSettle();
+
+        expect(find.byKey(settingsChangePasswordButtonKey), findsNothing);
+        expect(find.text('Change Password'), findsNothing);
+        expect(find.byKey(settingsChangeLanguageButtonKey), findsOneWidget);
+        expect(find.byKey(settingsWebsiteButtonKey), findsOneWidget);
+      });
+    }
   });
 
   group('SettingsScreen - Turkish', () {

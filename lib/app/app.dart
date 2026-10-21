@@ -12,6 +12,7 @@ import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/presentation/pages/lifecycle_gate.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
@@ -91,6 +92,7 @@ class _AppViewState extends State<_AppView> {
     if (_router != null) return;
     final routerFactory = AppRouterFactory(
       sessionCubit: context.read<SessionCubit>(),
+      authMode: context.read<AuthMode>(),
       observers: [
         AnalyticsRouteObserver(widget.analytics),
         // Sentry breadcrumbs from navigation. Only meaningful when the

@@ -509,5 +509,21 @@
   "dashboard_interceptor_logging": "Yapılandırılmış istek ve yanıt günlüğü",
   "@dashboard_interceptor_logging": {},
   "dashboard_interceptor_mock": "Geliştirme ve testte sahte veri sunar",
-  "@dashboard_interceptor_mock": {}
+  "@dashboard_interceptor_mock": {},
+  "error_auth_oidc_config": "Bu uygulamada tek oturum açma doğru yapılandırılmamış. Yöneticinize başvurun.",
+  "@error_auth_oidc_config": {},
+  "error_auth_oidc_discovery": "Kimlik sağlayıcıya ulaşılamadı. Daha sonra yeniden deneyin; sorun sürerse yöneticinize başvurun.",
+  "@error_auth_oidc_discovery": {},
+  "error_auth_oidc_no_role": "Hesabınızın bu uygulamaya erişim veren bir rolü yok. Yöneticinize başvurun.",
+  "@error_auth_oidc_no_role": {},
+  "error_auth_oidc_failed": "Giriş başarısız oldu. Lütfen yeniden deneyin.",
+  "@error_auth_oidc_failed": {},
+  "error_auth_oidc_logout_incomplete": "Bu uygulamadan çıkış yaptınız, ancak kimlik sağlayıcıdaki oturumunuz hâlâ açık olabilir.",
+  "@error_auth_oidc_logout_incomplete": {},
+  "login_sso_button": "SSO ile giriş yap",
+  "@login_sso_button": {},
+  "login_sso_subtitle": "Kurumsal hesabınızla giriş yapın.",
+  "@login_sso_subtitle": {},
+  "login_sso_browser_done": "Giriş tamamlandı. Bu sekmeyi kapatıp uygulamaya dönebilirsiniz.",
+  "@login_sso_browser_done": {}
 }

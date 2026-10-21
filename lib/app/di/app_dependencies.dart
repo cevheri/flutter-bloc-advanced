@@ -1,12 +1,15 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/features/users/data/repositories/authority_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/features/auth/data/repositories/auth_session_repository_impl.dart';
+import 'package:flutter_bloc_advance/features/auth/data/repositories/sso_auth_repository_impl.dart';
 import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart';
 import 'package:flutter_bloc_advance/features/account/data/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/data/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/shared/dynamic_forms/data/repositories/dynamic_form_repository_impl.dart';
@@ -18,22 +21,34 @@ import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 import 'package:flutter_bloc_advance/core/analytics/log_analytics_service.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/infrastructure/analytics/sentry_analytics_service.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_client.dart';
+import 'package:flutter_bloc_advance/infrastructure/auth/oidc/oidc_token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/cache/shared_prefs_cache_storage.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/api_client.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/local_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/shared_preferences_activity_store.dart';
+import 'package:flutter_bloc_advance/shared/utils/external_link.dart';
 
 class AppDependencies {
-  const AppDependencies({this.appConfig = const AppConfig.dev(), this.projectLinks = const ProjectLinks()});
+  const AppDependencies({
+    this.appConfig = const AppConfig.dev(),
+    this.projectLinks = const ProjectLinks(),
+    this.authMode = const JwtAuthMode(),
+  });
 
   final AppConfig appConfig;
 
   /// The project's repository, documentation and sponsor links that the app shows.
   final ProjectLinks projectLinks;
+
+  /// How the user signs in, read from `AUTH_PROVIDER` at bootstrap.
+  final AuthMode authMode;
 
   /// Returns the analytics implementation appropriate for the active
   /// environment. Production + non-empty DSN → [SentryAnalyticsService]
@@ -46,9 +61,32 @@ class AppDependencies {
     return LogAnalyticsService();
   }
 
+  /// Which 401 means that the bearer is no longer valid, so the HTTP layer refreshes the session and ends it when the
+  /// refresh cannot fix the 401. Every 401 by default. An app on a backend that also answers 401 for other reasons
+  /// overrides it: LibreDB Studio, for one, means an ended session only by its `AUTH_REQUIRED` code.
+  SessionExpiredPredicate get sessionExpiredPredicate => isUnauthorized;
+
   /// [onSessionExpired] runs when a 401 cannot be fixed by a token refresh; the caller ends the session there.
-  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) =>
-      ApiClient(appConfig: appConfig, secureStorage: secureStorage, onSessionExpired: onSessionExpired);
+  ApiClient createApiClient(ISecureStorage secureStorage, {required OnSessionExpired onSessionExpired}) => ApiClient(
+    appConfig: appConfig,
+    secureStorage: secureStorage,
+    onSessionExpired: onSessionExpired,
+    isSessionExpired: sessionExpiredPredicate,
+  );
+
+  /// The [ApiClient] of an `oidc` build, which refreshes the session through [tokenRotation] instead of the backend's
+  /// refresh endpoint. [onSessionExpired] runs when a 401 cannot be fixed by a token refresh.
+  ApiClient createOidcApiClient(
+    ISecureStorage secureStorage, {
+    required OnSessionExpired onSessionExpired,
+    required TokenRotation tokenRotation,
+  }) => ApiClient(
+    appConfig: appConfig,
+    secureStorage: secureStorage,
+    onSessionExpired: onSessionExpired,
+    tokenRotation: tokenRotation,
+    isSessionExpired: sessionExpiredPredicate,
+  );
 
   IAccountRepository createAccountRepository(ApiClient apiClient) => AccountRepository(apiClient);
 
@@ -56,9 +94,29 @@ class AppDependencies {
   IAuthRepository createAuthRepository(IAuthSessionRepository sessionRepository, ApiClient apiClient) =>
       LoginRepository(sessionRepository: sessionRepository, apiClient: apiClient);
 
-  /// Ending a session also clears the cache of GET responses that [ApiClient] keeps in SharedPreferences.
-  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) =>
-      AuthSessionRepository(secureStorage: secureStorage, cacheStorage: SharedPrefsCacheStorage());
+  /// Ending a session also clears the cache of GET responses that [ApiClient] keeps in SharedPreferences. Only an
+  /// `oidc` build stores the OIDC ID token and the access token expiry.
+  IAuthSessionRepository createAuthSessionRepository(ISecureStorage secureStorage) => AuthSessionRepository(
+    secureStorage: secureStorage,
+    cacheStorage: SharedPrefsCacheStorage(),
+    oidcKeys: authMode.usesOidc,
+  );
+
+  /// The OpenID Connect client of an `oidc` build. The provider redirects back to the login page, and Linux and
+  /// Windows open the provider's page in the external browser.
+  IOidcClient createOidcClient(OidcSettings settings) =>
+      OidcClient(settings: settings, loginPath: ApplicationRoutesConstants.login, launchUrl: launchExternalUri);
+
+  /// The single sign-on of an `oidc` build, which stores the session through [sessionRepository].
+  ISsoAuthRepository createSsoAuthRepository(
+    IOidcClient client,
+    IAuthSessionRepository sessionRepository,
+    OidcSettings settings,
+  ) => SsoAuthRepository(client: client, sessionRepository: sessionRepository, settings: settings);
+
+  /// The token refresh of an `oidc` build, through [client] at the provider's token endpoint.
+  TokenRotation createOidcTokenRotation(IOidcClient client, ISecureStorage secureStorage) =>
+      OidcTokenRotation(client: client, secureStorage: secureStorage);
 
   IAuthorityRepository createAuthorityRepository(ApiClient apiClient) => AuthorityRepositoryImpl(apiClient);
 

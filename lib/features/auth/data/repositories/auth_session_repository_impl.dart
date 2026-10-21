@@ -24,18 +24,28 @@ import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.d
 ///
 /// [clear] removes what belongs to the session: both tokens, every [StorageKeys] value of [StorageScope.session]
 /// and the HTTP responses cached in [ICacheStorage]. Device preferences such as the language and theme stay.
+///
+/// With `oidcKeys` on, as in an `oidc` build, the session also owns [SecureStorageKeys.oidcIdToken] and
+/// [SecureStorageKeys.accessTokenExpiresAt]: [persist] writes them after the refresh token, and the rollback and
+/// [clear] cover them. With it off, as in a `jwt` build, those keys are never read, written or deleted.
 class AuthSessionRepository implements IAuthSessionRepository {
-  AuthSessionRepository({required ISecureStorage secureStorage, AppLocalStorage? storage, ICacheStorage? cacheStorage})
+  AuthSessionRepository({
+    required ISecureStorage secureStorage,
+    AppLocalStorage? storage,
+    ICacheStorage? cacheStorage,
+    this._oidcKeys = false,
+  })
     // ignore: prefer_initializing_formals
     : _secureStorage = secureStorage,
-      _storage = storage ?? AppLocalStorage(),
-      _cacheStorage = cacheStorage ?? SharedPrefsCacheStorage();
+       _storage = storage ?? AppLocalStorage(),
+       _cacheStorage = cacheStorage ?? SharedPrefsCacheStorage();
 
   static final _log = AppLogger.getLogger('AuthSessionRepository');
 
   final ISecureStorage _secureStorage;
   final AppLocalStorage _storage;
   final ICacheStorage _cacheStorage;
+  final bool _oidcKeys;
 
   @override
   Future<Result<void>> persist(AuthSession session) async {
@@ -50,11 +60,17 @@ class AuthSessionRepository implements IAuthSessionRepository {
     // returns a Result — never propagates a raw exception.
     String? priorJwt;
     String? priorRefresh;
+    String? priorOidcIdToken;
+    String? priorExpiry;
     dynamic priorUsername;
     dynamic priorRoles;
     try {
       priorJwt = await _secureStorage.read(SecureStorageKeys.jwtToken.key);
       priorRefresh = await _secureStorage.read(SecureStorageKeys.refreshToken.key);
+      if (_oidcKeys) {
+        priorOidcIdToken = await _secureStorage.read(SecureStorageKeys.oidcIdToken.key);
+        priorExpiry = await _secureStorage.read(SecureStorageKeys.accessTokenExpiresAt.key);
+      }
       priorUsername = await _storage.read(StorageKeys.username.key);
       priorRoles = await _storage.read(StorageKeys.roles.key);
 
@@ -77,6 +93,16 @@ class AuthSessionRepository implements IAuthSessionRepository {
       } else {
         await _secureStorage.delete(SecureStorageKeys.refreshToken.key);
       }
+      if (_oidcKeys) {
+        // Same owner-of-keys contract: a session without an ID token or an expiry must not inherit the previous one.
+        final expiresAt = session.accessTokenExpiresAt;
+        await _writeOrDelete(SecureStorageKeys.oidcIdToken, session.oidcIdToken, mutatedSecure);
+        await _writeOrDelete(
+          SecureStorageKeys.accessTokenExpiresAt,
+          expiresAt == null ? null : encodeAccessTokenExpiry(expiresAt),
+          mutatedSecure,
+        );
+      }
       await _writeLocal(StorageKeys.username, session.username, mutatedLocal);
       await _writeLocal(StorageKeys.roles, session.roles, mutatedLocal);
       _log.info('persist: session written ({} secure + {} local)', [mutatedSecure.length, mutatedLocal.length]);
@@ -92,6 +118,8 @@ class AuthSessionRepository implements IAuthSessionRepository {
         mutatedLocal: mutatedLocal,
         priorJwt: priorJwt,
         priorRefresh: priorRefresh,
+        priorOidcIdToken: priorOidcIdToken,
+        priorExpiry: priorExpiry,
         priorUsername: priorUsername,
         priorRoles: priorRoles,
       );
@@ -120,6 +148,18 @@ class AuthSessionRepository implements IAuthSessionRepository {
     } catch (e) {
       errors.add('refresh: $e');
     }
+    if (_oidcKeys) {
+      try {
+        await _secureStorage.delete(SecureStorageKeys.oidcIdToken.key);
+      } catch (e) {
+        errors.add('oidcIdToken: $e');
+      }
+      try {
+        await _secureStorage.delete(SecureStorageKeys.accessTokenExpiresAt.key);
+      } catch (e) {
+        errors.add('accessTokenExpiresAt: $e');
+      }
+    }
     // Only the session keys: the device preferences, such as the language and theme, stay for whoever signs in next.
     final sessionKeys = StorageKeys.values.where((key) => key.scope == StorageScope.session).toList();
     for (final key in sessionKeys) {
@@ -144,6 +184,17 @@ class AuthSessionRepository implements IAuthSessionRepository {
     return const Success(null);
   }
 
+  /// Writes [value] under [key], or deletes [key] when [value] is null. The key is recorded as mutated before the
+  /// call, as for the tokens, so a call that fails after changing the platform store is still rolled back.
+  Future<void> _writeOrDelete(SecureStorageKeys key, String? value, Set<SecureStorageKeys> mutated) async {
+    mutated.add(key);
+    if (value != null) {
+      await _secureStorage.write(key.key, value);
+    } else {
+      await _secureStorage.delete(key.key);
+    }
+  }
+
   Future<void> _writeLocal(StorageKeys key, dynamic value, Set<StorageKeys> mutated) async {
     final ok = await _storage.save(key.key, value);
     if (!ok) {
@@ -157,6 +208,8 @@ class AuthSessionRepository implements IAuthSessionRepository {
     required Set<StorageKeys> mutatedLocal,
     required String? priorJwt,
     required String? priorRefresh,
+    required String? priorOidcIdToken,
+    required String? priorExpiry,
     required dynamic priorUsername,
     required dynamic priorRoles,
   }) async {
@@ -165,6 +218,8 @@ class AuthSessionRepository implements IAuthSessionRepository {
         final prior = switch (key) {
           SecureStorageKeys.jwtToken => priorJwt,
           SecureStorageKeys.refreshToken => priorRefresh,
+          SecureStorageKeys.oidcIdToken => priorOidcIdToken,
+          SecureStorageKeys.accessTokenExpiresAt => priorExpiry,
         };
         if (prior == null) {
           await _secureStorage.delete(key.key);

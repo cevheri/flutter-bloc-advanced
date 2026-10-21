@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc_advance/core/analytics/analytics_service.dart';
 
 // Infrastructure imports
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 
 // BLoC imports
@@ -30,6 +31,8 @@ import 'package:flutter_bloc_advance/app/shell/repositories/menu_repository.dart
 // Repository imports (interfaces)
 import 'package:flutter_bloc_advance/features/account/domain/repositories/account_repository.dart';
 import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/auth_session_repository.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/repositories/sso_auth_repository.dart';
 import 'package:flutter_bloc_advance/features/lifecycle/domain/repositories/lifecycle_repository.dart';
 import 'package:flutter_bloc_advance/features/users/domain/repositories/user_repository.dart';
 // Entity/model imports for fallback values
@@ -48,6 +51,10 @@ class MockMenuRepository extends Mock implements MenuRepository {}
 class MockIAccountRepository extends Mock implements IAccountRepository {}
 
 class MockIAuthRepository extends Mock implements IAuthRepository {}
+
+class MockIAuthSessionRepository extends Mock implements IAuthSessionRepository {}
+
+class MockISsoAuthRepository extends Mock implements ISsoAuthRepository {}
 
 class MockIUserRepository extends Mock implements IUserRepository {}
 
@@ -81,6 +88,8 @@ class MockAnalyticsService extends Mock implements IAnalyticsService {}
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 class MockISecureStorage extends Mock implements ISecureStorage {}
+
+class MockTokenRotation extends Mock implements TokenRotation {}
 
 // Fake classes for fallback values
 class FakeUserEntity extends Fake implements UserEntity {}

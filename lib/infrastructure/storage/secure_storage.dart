@@ -138,11 +138,30 @@ class FlutterSecureStorageAdapter implements ISecureStorage {
 /// these can be renamed to e.g. `'secure.jwt'` / `'secure.refresh'`
 /// with a one-shot migration step that copies the value forward —
 /// TODO(#129-follow-up): close the legacy-name reuse loop.
+///
+/// [oidcIdToken] and [accessTokenExpiresAt] are used only in an `oidc`
+/// build. The OIDC ID token has its own name so it cannot be confused
+/// with [jwtToken], which holds the bearer under the legacy name. The
+/// expiry is stored with [encodeAccessTokenExpiry] and read with
+/// [readAccessTokenExpiry].
 enum SecureStorageKeys {
   jwtToken('jwtToken'),
-  refreshToken('refreshToken');
+  refreshToken('refreshToken'),
+  oidcIdToken('oidcIdToken'),
+  accessTokenExpiresAt('accessTokenExpiresAt');
 
   const SecureStorageKeys(this.key);
 
   final String key;
+}
+
+/// The stored form of an access token expiry: milliseconds since the epoch in UTC, as a decimal string.
+String encodeAccessTokenExpiry(DateTime expiresAt) => expiresAt.toUtc().millisecondsSinceEpoch.toString();
+
+/// Reads an expiry stored by [encodeAccessTokenExpiry] as a UTC [DateTime]; null when none is stored.
+///
+/// Throws [FormatException] when [stored] is not an integer.
+DateTime? readAccessTokenExpiry(String? stored) {
+  if (stored == null) return null;
+  return DateTime.fromMillisecondsSinceEpoch(int.parse(stored), isUtc: true);
 }

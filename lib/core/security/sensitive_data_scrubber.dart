@@ -29,6 +29,12 @@ const Set<String> sensitiveHeaderNames = {'authorization', 'cookie', 'set-cookie
 /// and `clientSecret` all match).
 const Set<String> sensitiveBodyKeySubstrings = {'password', 'otp', 'token', 'refreshtoken', 'secret'};
 
+/// Keys of the OpenID Connect protocol whose values are masked too: the
+/// authorization code, the PKCE verifier, `state`, `nonce`, `session_state`
+/// and `id_token_hint`. Compared whole and lower-cased, so `statusCode`,
+/// `countryCode`, `errorCode` and `stateName` keep their values.
+const Set<String> sensitiveExactKeys = {'code', 'code_verifier', 'state', 'nonce', 'session_state', 'id_token_hint'};
+
 /// Keys under which a validation error repeats a value the request sent:
 /// Spring's `rejectedValue`, Pydantic's `input` and express-validator's
 /// `value`. Compared whole and lower-cased, and only in an error body.
@@ -64,8 +70,9 @@ final RegExp _bearer = RegExp(r'\b(bearer)\s+[A-Za-z0-9\-._~+/]+=*', caseSensiti
 
 /// Masks the secrets that [input] holds in a shape that names them: the
 /// value of a JSON member or of a `name=value` pair whose name contains one
-/// of [sensitiveBodyKeySubstrings], the credentials of a `Bearer`
-/// authorization, and every JWT. A value that is already a mask is kept.
+/// of [sensitiveBodyKeySubstrings] or is one of [sensitiveExactKeys], the
+/// credentials of a `Bearer` authorization, and every JWT. A value that is
+/// already a mask is kept.
 ///
 /// [AppLogger] runs every line it prints through this, and the Sentry
 /// scrubbers every text they send. A secret in free text has no shape to
@@ -74,7 +81,7 @@ String maskSecrets(String input) {
   var text = input.contains('eyJ') ? maskJwts(input) : input;
   final lower = text.toLowerCase();
   if (lower.contains('bearer')) text = text.replaceAllMapped(_bearer, (match) => '${match[1]} $secretMask');
-  if (!sensitiveBodyKeySubstrings.any(lower.contains)) return text;
+  if (!sensitiveBodyKeySubstrings.any(lower.contains) && !sensitiveExactKeys.any(lower.contains)) return text;
   if (text.contains('"')) {
     text = text.replaceAllMapped(_jsonMember, (match) {
       final value = match[3]!;
@@ -132,9 +139,10 @@ Map<K, V> scrubHeaders<K, V>(Map<K, V> headers) {
 }
 
 /// Return a copy of [body] in which the value of every key that contains
-/// one of [sensitiveBodyKeySubstrings] is replaced by [secretMask], in
-/// nested maps and lists too. The key stays, so a reader still sees that
-/// the field was there, and a null value stays null.
+/// one of [sensitiveBodyKeySubstrings], or is one of [sensitiveExactKeys],
+/// is replaced by [secretMask], in nested maps and lists too. The key
+/// stays, so a reader still sees that the field was there, and a null value
+/// stays null.
 ///
 /// A body that is not a Map or a List (raw String, multipart) passes
 /// through untouched, since it would require shape-specific scrubbing;
@@ -193,7 +201,7 @@ const int _minEchoedLength = 4;
 
 bool _isSensitiveKey(Object? key) {
   final lower = '$key'.toLowerCase();
-  return sensitiveBodyKeySubstrings.any(lower.contains);
+  return sensitiveBodyKeySubstrings.any(lower.contains) || sensitiveExactKeys.contains(lower);
 }
 
 /// [_isSensitiveKey], which also matches each of [sensitiveKeys], compared

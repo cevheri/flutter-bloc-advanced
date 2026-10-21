@@ -11,6 +11,7 @@ import 'package:flutter_bloc_advance/shared/widgets/submit_button_widget.dart';
 import 'package:flutter_bloc_advance/core/errors/app_error_code.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/presentation/pages/login_page.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/project_links.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
@@ -58,6 +59,8 @@ void main() {
         BlocProvider<LoginBloc>.value(value: mockLoginBloc),
         // The login page reads the project's links.
         RepositoryProvider<ProjectLinks>.value(value: const ProjectLinks()),
+        // The login page shows the sign-in of the build's mode.
+        RepositoryProvider<AuthMode>.value(value: const JwtAuthMode()),
       ],
       child: MaterialApp.router(
         theme: ThemeData(useMaterial3: false, brightness: Brightness.light, colorSchemeSeed: Colors.blueGrey),

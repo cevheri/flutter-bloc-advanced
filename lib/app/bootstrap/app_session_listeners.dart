@@ -7,8 +7,10 @@ import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/core/security/idle_timeout_observer.dart';
 import 'package:flutter_bloc_advance/features/account/application/account_bloc.dart';
 import 'package:flutter_bloc_advance/features/auth/application/login_bloc.dart';
+import 'package:flutter_bloc_advance/features/auth/domain/services/sso_auto_redirect_gate.dart';
 import 'package:flutter_bloc_advance/features/users/application/authority_bloc.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:flutter_bloc_advance/infrastructure/config/environment.dart';
 
 class AppSessionListeners extends StatefulWidget {
@@ -118,12 +120,26 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
           listener: (context, state) {
             if (state.isLogout) {
               context.read<SessionCubit>().markLoggedOut();
-              // MenuBloc signs out with the error status when the logout could not remove all stored data.
+              _closeSsoAutoRedirect(context);
+              // MenuBloc signs out with the error status when the logout could not remove all stored data, and with
+              // the providerSessionLeft status when an oidc build could not end the session at the identity provider.
               if (state.status == MenuStateStatus.error) {
                 _showNotice((strings) => strings.logout_stored_data_left);
+              } else if (state.status == MenuStateStatus.providerSessionLeft) {
+                _showNotice((strings) => strings.error_auth_oidc_logout_incomplete);
               }
             }
           },
+        ),
+        // The logout of an oidc build signs out before the provider logout has ended, and sets the
+        // providerSessionLeft status afterwards when the provider logout failed.
+        BlocListener<MenuBloc, MenuState>(
+          listenWhen: (previous, current) =>
+              previous.isLogout &&
+              current.isLogout &&
+              previous.status != MenuStateStatus.providerSessionLeft &&
+              current.status == MenuStateStatus.providerSessionLeft,
+          listener: (context, state) => _showNotice((strings) => strings.error_auth_oidc_logout_incomplete),
         ),
         BlocListener<SessionCubit, SessionState>(
           listenWhen: (previous, current) => previous.runtimeType != current.runtimeType,
@@ -131,6 +147,7 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
             switch (state) {
               case SessionAuthenticated():
                 _startIdleObserver();
+                _closeSsoAutoRedirect(context);
                 // Loaded here rather than by one page, since a sign-in can return the user to any page and the top
                 // bar shows the account on all of them.
                 context.read<AccountBloc>().add(const AccountFetchEvent());
@@ -140,6 +157,9 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
                 if (reason == SessionExpiredReason.idleTimeout) {
                   _showNotice((strings) => strings.idle_timeout_signed_out);
                 }
+                // The stored session is still being read and may open the app when it answers, so the login page
+                // must not send the user to the identity provider meanwhile.
+                if (reason == SessionExpiredReason.storageTimeout) _closeSsoAutoRedirect(context);
               case SessionUnknown():
                 break;
             }
@@ -166,6 +186,13 @@ class _AppSessionListenersState extends State<AppSessionListeners> {
     context.read<AccountBloc>().add(const AccountResetEvent());
     context.read<AuthorityBloc>().add(const AuthorityReset());
     context.read<LoginBloc>().add(const LoginReset());
+  }
+
+  /// Stops the login page of an `oidc` build from sending the user to the identity provider on its own for the rest of
+  /// the run, once the run has been signed in, the user has logged out, or the stored session is read past the restore
+  /// time limit. Only [OidcAuthMode] provides the gate, so the other modes skip it.
+  void _closeSsoAutoRedirect(BuildContext context) {
+    if (context.read<AuthMode>() is OidcAuthMode) context.read<SsoAutoRedirectGate>().close();
   }
 
   /// Shows the [message] of a session ending through the ScaffoldMessenger of the MaterialApp, so it stays on screen

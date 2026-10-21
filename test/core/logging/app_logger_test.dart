@@ -121,7 +121,7 @@ void main() {
       expect(
         lines,
         anyElement(
-          contains('MaskTest : Authorization: Bearer [REDACTED] -> /callback?state=1&access_token=[REDACTED]'),
+          contains('MaskTest : Authorization: Bearer [REDACTED] -> /callback?state=[REDACTED]&access_token=[REDACTED]'),
         ),
       );
     });

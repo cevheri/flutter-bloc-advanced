@@ -1,6 +1,8 @@
 part of 'menu_bloc.dart';
 
-enum MenuStateStatus { initial, loading, success, error }
+/// [providerSessionLeft] is a logout that ended the app session in an `oidc` build, but not the session at the identity
+/// provider.
+enum MenuStateStatus { initial, loading, success, error, providerSessionLeft }
 
 class MenuState extends Equatable {
   const MenuState({this.menus = const [], this.isLogout = false, this.status = MenuStateStatus.initial});

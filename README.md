@@ -43,6 +43,9 @@ The screenshots below are included to help contributors and adopters understand 
 - Registration flow
 - Forgot password flow
 - OTP send and verify flow
+- **Single sign-on (opt-in)**: the sign-in method is chosen at build time with `AUTH_PROVIDER`.
+  `jwt`, the default, is the password and OTP sign-in above against the template's backend, and `oidc` signs users in through any OpenID Connect provider, such as Keycloak, Zitadel, Auth0 or Microsoft Entra ID.
+  See [Single Sign-On](#single-sign-on-oidc-opt-in) and [docs/oidc.md](docs/oidc.md).
 - **Token storage** — JWT and refresh tokens are persisted via `flutter_secure_storage`
   (iOS Keychain, Android custom AES-GCM ciphers). Keychain accessibility is pinned to
   `first_unlock_this_device` so tokens stay on the device (no iCloud Keychain sync).
@@ -147,6 +150,35 @@ Key rotation procedure:
 3. In a later release, remove the old pin.
 
 This avoids a window where in-flight users with the old app version cannot reach the new cert.
+
+### Single Sign-On (OIDC, opt-in)
+
+A build with `AUTH_PROVIDER=oidc` replaces the password sign-in with a single "Sign in with SSO" button that signs the user in through an OpenID Connect provider.
+The app is a public client: it uses the Authorization Code flow with PKCE (S256), keeps no client secret, holds the provider's tokens in secure storage, and sends the provider's access token to the backend as the bearer.
+Without `AUTH_PROVIDER`, or with `AUTH_PROVIDER=jwt`, the app behaves exactly as before and never calls the OIDC code.
+
+```shell
+fvm flutter run --target lib/main/main_prod.dart \
+  --dart-define=AUTH_PROVIDER=oidc \
+  --dart-define=OIDC_ISSUER=https://id.example.com/realms/acme \
+  --dart-define=OIDC_CLIENT_ID=acme-app \
+  --dart-define=OIDC_ROLE_CLAIM=realm_access.roles
+```
+
+- **Every platform:** Android through a Custom Tab, iOS and macOS through `ASWebAuthenticationSession`, web in the same tab through `web/redirect.html`, and Linux and Windows through the system browser with a loopback redirect.
+- **Roles** come from a claim of the ID token (`OIDC_ROLE_CLAIM`, `OIDC_ADMIN_ROLES`, `OIDC_USER_ROLES`) and map to `ROLE_ADMIN` and `ROLE_USER`.
+- **Refresh** goes to the provider's token endpoint through the same `TokenRefreshInterceptor`, and a logout the user starts also ends the session at the provider.
+- **Registration, forgot password, OTP sign-in and change password** belong to the provider, so their routes and entry points are left out.
+
+Try it locally with the bundled Keycloak demo, which needs no backend because `main_local.dart` answers API calls from the mock data:
+
+```shell
+docker compose -f tool/oidc-demo/docker-compose.yml up -d --wait
+fvm flutter run -d chrome --web-port 8081 --target lib/main/main_local.dart --dart-define-from-file=tool/oidc-demo/oidc-demo.env
+```
+
+Sign in as `admin` / `admin` or `user` / `user`, and stop the demo with `docker compose -f tool/oidc-demo/docker-compose.yml down -v`.
+[docs/oidc.md](docs/oidc.md) has the provider setup for Keycloak, Zitadel, Auth0 and Entra ID, the configuration reference, the backend contract with Next.js and Spring Boot examples, troubleshooting and the known limitations.
 
 ### Inactivity Auto-Logout
 
@@ -457,6 +489,8 @@ These platform identifiers still name the template and its author, so rename the
 - **Issue templates**: the Discussions links in `.github/ISSUE_TEMPLATE/config.yml` and `.github/ISSUE_TEMPLATE/tech_debt.yml`.
 - **SonarCloud**: `sonar.projectKey` and `sonar.organization` in `sonar-project.properties` and `scripts/run_sonar_scanner.sh`.
 - **GitHub Pages**: `--base-href` in `.github/workflows/build-web.yml` and `scripts/deploy_web.sh`, the same path as `__WEB_BASE_PATH__`.
+- **Single sign-on**: the redirect scheme `com.example.flutterblocadvance` in `OidcSettings.defaultRedirectScheme` (`lib/infrastructure/config/auth_config.dart`) and in `manifestPlaceholders["oidcRedirectScheme"]` (`android/app/build.gradle.kts`), which must stay equal, and in the demo realm of `tool/oidc-demo/docker-compose.yml`.
+  The URIs registered at your provider change with it; see [docs/oidc.md](docs/oidc.md#configuration-reference).
 
 `lib/infrastructure/config/template_config.dart` holds the template values the Dart code reads: the app name shown in the developer console, the production API URL, and the repository, docs and sponsor links.
 
@@ -604,6 +638,7 @@ If you are unsure where to start, documentation improvements, screenshot refresh
 | [Feature-First Boundaries](docs/feature-first-clean-boundaries.md) | Clean architecture design document |
 | [Upgrade Guide — Flutter 3.44.0](docs/upgrade_flutter_3.44.0.md) | Flutter 3.41.8 → 3.44.0 upgrade notes (v0.21.0) |
 | [Upgrade Guide - Flutter 3.47.7](docs/upgrade_flutter_3.47.7.md) | Flutter 3.44.3 → 3.47.7 upgrade notes |
+| [Single Sign-On (OIDC)](docs/oidc.md) | `AUTH_PROVIDER=oidc` setup per provider, the Keycloak demo, the backend contract and the internals |
 
 ## References
 

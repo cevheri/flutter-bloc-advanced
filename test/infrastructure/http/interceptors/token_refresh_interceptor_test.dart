@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/auth_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/interceptors/resilience_interceptor.dart';
 import 'package:flutter_bloc_advance/infrastructure/http/interceptors/token_refresh_interceptor.dart';
+import 'package:flutter_bloc_advance/infrastructure/http/token_rotation.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/secure_storage.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/session_generation.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -1423,6 +1426,312 @@ void main() {
       expect(handler.nextError, same(error));
     });
   });
+
+  // The interceptor sends the refresh through a TokenRotation: BackendTokenRotation in jwt mode, the OIDC client in
+  // oidc mode. Its result decides what happens to the session: TokensRotated stores them, RotationRefused ends the
+  // session, and RotationUnavailable keeps the session and fails the request as a network error.
+  group('TokenRefreshInterceptor - with a rotation strategy', () {
+    final expiresAt = DateTime.utc(2026, 10, 21, 12, 30);
+    final priorExpiresAt = DateTime.utc(2026, 10, 21, 12);
+    late _KeyRecordingSecureStorage storage;
+    late _CapturingSuccessStub retryStub;
+    late int sessionExpiredCalls;
+
+    setUp(() async {
+      storage = _KeyRecordingSecureStorage();
+      await storage.write(SecureStorageKeys.jwtToken.key, 'old-access');
+      await storage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      storage.writes.clear();
+      storage.touched.clear();
+      retryStub = _CapturingSuccessStub();
+      sessionExpiredCalls = 0;
+    });
+
+    /// Seeds the OIDC ID token and the expiry of the session that is stored before the refresh.
+    Future<void> seedOidcKeys() async {
+      await storage.write(SecureStorageKeys.oidcIdToken.key, 'prior-id');
+      await storage.write(SecureStorageKeys.accessTokenExpiresAt.key, encodeAccessTokenExpiry(priorExpiresAt));
+      storage.writes.clear();
+      storage.touched.clear();
+    }
+
+    TokenRefreshInterceptor interceptorWith(TokenRotation rotation) => TokenRefreshInterceptor(
+      dio: dio,
+      secureStorage: storage,
+      onSessionExpired: () => sessionExpiredCalls++,
+      rotation: rotation,
+    );
+
+    DioException unauthorized([String path = '/api/users']) {
+      final requestOptions = _sentRequest(path, headers: {'Authorization': 'Bearer old-access'});
+      return DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401),
+      );
+    }
+
+    /// What the wipe of an oidc session does: it deletes every stored key inside [SessionGeneration.wipe].
+    Future<void> endSession() => SessionGeneration.wipe(() async {
+      for (final key in SecureStorageKeys.values) {
+        await storage.delete(key.key);
+      }
+    });
+
+    final rotatedWithOidcKeys = TokensRotated(
+      accessToken: 'new-access',
+      refreshToken: 'new-refresh',
+      oidcIdToken: 'new-id',
+      accessTokenExpiresAt: expiresAt,
+    );
+
+    test('TokensRotated with an ID token and an expiry stores all four keys, then retries', () async {
+      dio.interceptors.add(retryStub);
+      final rotation = _FakeRotation(rotatedWithOidcKeys);
+      final handler = _TestErrorHandler();
+
+      await interceptorWith(rotation).onError(unauthorized(), handler);
+
+      expect(rotation.sent, ['valid-refresh']);
+      expect(storage.writes, [
+        'jwtToken=new-access',
+        'refreshToken=new-refresh',
+        'oidcIdToken=new-id',
+        'accessTokenExpiresAt=${encodeAccessTokenExpiry(expiresAt)}',
+      ], reason: 'the bearer, the refresh token, the ID token and the expiry, in this order');
+      expect(handler.resolveCalled, isTrue);
+      expect(retryStub.lastAuthorization, 'Bearer new-access');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('RotationRefused ends the session once and fails the request with its 401', () async {
+      final rotation = _FakeRotation(const RotationRefused());
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptorWith(rotation).onError(error, handler);
+
+      expect(rotation.sent, hasLength(1));
+      expect(sessionExpiredCalls, 1);
+      expect(handler.nextError, same(error));
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), 'old-access');
+    });
+
+    test('RotationUnavailable keeps the session and fails the request as a network error', () async {
+      final rotation = _FakeRotation(const RotationUnavailable());
+      final server = _UnauthorizedServerStub();
+      dio.interceptors.addAll([AuthInterceptor(secureStorage: storage), interceptorWith(rotation), server]);
+
+      await expectLater(
+        dio.get<String>('/api/users').timeout(const Duration(seconds: 5)),
+        throwsA(
+          isA<DioException>()
+              .having((e) => e.type, 'type', DioExceptionType.connectionError)
+              .having((e) => e.message, 'message', 'The identity provider could not be reached'),
+        ),
+      );
+
+      expect(sessionExpiredCalls, 0);
+      expect(rotation.sent, hasLength(1));
+      expect(server.authorizations, ['Bearer old-access'], reason: 'the request is not sent again');
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), 'old-access');
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), 'valid-refresh');
+    });
+
+    // The network error would otherwise reach ResilienceInterceptor, which sends a GET again: its 401 would start
+    // another rotation, against a provider that has just not answered.
+    test('RotationUnavailable for a GET is not retried by ResilienceInterceptor', () async {
+      addTearDown(ResilienceInterceptor.instance.resetAll);
+      final rotation = _FakeRotation(const RotationUnavailable());
+      final server = _UnauthorizedServerStub();
+      dio.interceptors.addAll([
+        AuthInterceptor(secureStorage: storage),
+        interceptorWith(rotation),
+        ResilienceInterceptor.instance.forDio(dio),
+        server,
+      ]);
+
+      await expectLater(
+        dio.get<String>('/api/users').timeout(const Duration(seconds: 10)),
+        throwsA(isA<DioException>().having((e) => e.type, 'type', DioExceptionType.connectionError)),
+      );
+
+      expect(rotation.sent, hasLength(1));
+      expect(server.authorizations, hasLength(1));
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('a failed write of the expiry restores the prior bearer, refresh token, ID token and expiry', () async {
+      await seedOidcKeys();
+      storage.failWriteOf = SecureStorageKeys.accessTokenExpiresAt.key;
+      dio.interceptors.add(retryStub);
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptorWith(_FakeRotation(rotatedWithOidcKeys)).onError(error, handler);
+
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), 'old-access');
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), 'valid-refresh');
+      expect(await storage.read(SecureStorageKeys.oidcIdToken.key), 'prior-id');
+      expect(await storage.read(SecureStorageKeys.accessTokenExpiresAt.key), encodeAccessTokenExpiry(priorExpiresAt));
+      expect(sessionExpiredCalls, 1);
+      expect(handler.nextError, same(error));
+      expect(retryStub.lastAuthorization, isNull);
+    });
+
+    test('a session ended while the rotated tokens are stored takes back the ID token and the expiry', () async {
+      await seedOidcKeys();
+      // The wipe runs while the rotated bearer is being written, so the rest of the rotated tokens land after it.
+      storage.onWrite = (key) async {
+        if (key == SecureStorageKeys.jwtToken.key) await endSession();
+      };
+      dio.interceptors.add(retryStub);
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptorWith(_FakeRotation(rotatedWithOidcKeys)).onError(error, handler);
+
+      expect(storage.writes, contains('oidcIdToken=new-id'), reason: 'the ID token landed after the wipe');
+      expect(storage.writes, contains('accessTokenExpiresAt=${encodeAccessTokenExpiry(expiresAt)}'));
+      for (final key in SecureStorageKeys.values) {
+        expect(await storage.read(key.key), isNull, reason: '${key.key} must be taken back');
+      }
+      expect(sessionExpiredCalls, 0);
+      expect(handler.nextError, same(error));
+      expect(retryStub.lastAuthorization, isNull);
+    });
+
+    test('TokensRotated without an ID token or an expiry touches only the bearer and the refresh token', () async {
+      dio.interceptors.add(retryStub);
+
+      await interceptorWith(_FakeRotation(const TokensRotated(accessToken: 'new-access', refreshToken: 'new-refresh')))
+          .onError(unauthorized(), _TestErrorHandler());
+
+      expect(storage.writes, ['jwtToken=new-access', 'refreshToken=new-refresh']);
+      expect(storage.touched, {SecureStorageKeys.jwtToken.key, SecureStorageKeys.refreshToken.key});
+    });
+
+    test('TokensRotated without an ID token or an expiry rolls back only the bearer and the refresh token', () async {
+      storage.failWriteOf = SecureStorageKeys.refreshToken.key;
+
+      await interceptorWith(_FakeRotation(const TokensRotated(accessToken: 'new-access', refreshToken: 'new-refresh')))
+          .onError(unauthorized(), _TestErrorHandler());
+
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), 'old-access');
+      expect(sessionExpiredCalls, 1);
+      expect(storage.touched, {SecureStorageKeys.jwtToken.key, SecureStorageKeys.refreshToken.key});
+    });
+
+    test('TokensRotated without an ID token or an expiry takes back only the bearer and the refresh token', () async {
+      storage.onWrite = (key) async {
+        if (key != SecureStorageKeys.jwtToken.key) return;
+        await SessionGeneration.wipe(() async {
+          await storage.delete(SecureStorageKeys.jwtToken.key);
+          await storage.delete(SecureStorageKeys.refreshToken.key);
+        });
+      };
+
+      await interceptorWith(_FakeRotation(const TokensRotated(accessToken: 'new-access', refreshToken: 'new-refresh')))
+          .onError(unauthorized(), _TestErrorHandler());
+
+      expect(await storage.read(SecureStorageKeys.jwtToken.key), isNull);
+      expect(await storage.read(SecureStorageKeys.refreshToken.key), isNull);
+      expect(storage.touched, {SecureStorageKeys.jwtToken.key, SecureStorageKeys.refreshToken.key});
+    });
+
+    test('two concurrent 401s share one rotation', () async {
+      dio.interceptors.add(retryStub);
+      final release = Completer<void>();
+      final rotation = _FakeRotation(rotatedWithOidcKeys, whileRotating: () => release.future);
+      final interceptor = interceptorWith(rotation);
+      final first = _TestErrorHandler();
+      final second = _TestErrorHandler();
+
+      final both = Future.wait([
+        interceptor.onError(unauthorized('/api/users'), first),
+        interceptor.onError(unauthorized('/api/authorities'), second),
+      ]);
+      await pumpEventQueue();
+      release.complete();
+      await both;
+
+      expect(rotation.sent, hasLength(1));
+      expect(first.resolveCalled, isTrue);
+      expect(second.resolveCalled, isTrue);
+    });
+
+    test('with no stored refresh token a 401 ends the session and never calls rotate', () async {
+      await storage.delete(SecureStorageKeys.refreshToken.key);
+      final rotation = _FakeRotation(rotatedWithOidcKeys);
+      final error = unauthorized();
+      final handler = _TestErrorHandler();
+
+      await interceptorWith(rotation).onError(error, handler);
+
+      expect(rotation.sent, isEmpty);
+      expect(sessionExpiredCalls, 1);
+      expect(handler.nextError, same(error));
+    });
+  });
+
+  // A backend such as LibreDB Studio also answers 401 when a database or a model refuses its own credentials. Only its
+  // AUTH_REQUIRED code means the bearer is no longer valid, so the app narrows the predicate to it.
+  group('TokenRefreshInterceptor - with a narrowed 401 predicate', () {
+    bool authRequired(DioException error) {
+      final body = error.response?.data;
+      if (error.response?.statusCode != 401 || body is! String || body.isEmpty) return false;
+      final decoded = jsonDecode(body);
+      return decoded is Map<String, dynamic> && decoded['code'] == 'AUTH_REQUIRED';
+    }
+
+    late _FakeRotation rotation;
+    late int sessionExpiredCalls;
+    late TokenRefreshInterceptor interceptor;
+
+    setUp(() async {
+      await secureStorage.write(SecureStorageKeys.jwtToken.key, 'old-access');
+      await secureStorage.write(SecureStorageKeys.refreshToken.key, 'valid-refresh');
+      dio.interceptors.add(_CapturingSuccessStub());
+      rotation = _FakeRotation(const TokensRotated(accessToken: 'new-access'));
+      sessionExpiredCalls = 0;
+      interceptor = TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        onSessionExpired: () => sessionExpiredCalls++,
+        rotation: rotation,
+        isSessionExpired: authRequired,
+      );
+    });
+
+    DioException unauthorizedWith(String body) {
+      final requestOptions = _sentRequest('/api/db/query', headers: {'Authorization': 'Bearer old-access'});
+      return DioException(
+        requestOptions: requestOptions,
+        response: Response(requestOptions: requestOptions, statusCode: 401, data: body),
+      );
+    }
+
+    test('passes a 401 the predicate refuses on with no rotation and no end of the session', () async {
+      final error = unauthorizedWith('{"code":"AUTH_ERROR"}');
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(error, handler);
+
+      expect(handler.nextError, same(error));
+      expect(rotation.sent, isEmpty);
+      expect(secureStorage.refreshTokenReadCount, 0, reason: 'the refresh-token read is the proxy for a refresh');
+      expect(sessionExpiredCalls, 0);
+    });
+
+    test('still refreshes a 401 the predicate accepts', () async {
+      final handler = _TestErrorHandler();
+
+      await interceptor.onError(unauthorizedWith('{"code":"AUTH_REQUIRED"}'), handler);
+
+      expect(rotation.sent, ['valid-refresh']);
+      expect(handler.resolveCalled, isTrue);
+      expect(sessionExpiredCalls, 0);
+    });
+  });
 }
 
 /// In-memory ISecureStorage that records its writes as `key=value` and runs [onWrite], once, after it applies a write
@@ -1711,5 +2020,48 @@ class _TestErrorHandler extends ErrorInterceptorHandler {
   @override
   void resolve(Response response) {
     resolveCalled = true;
+  }
+}
+
+/// A [TokenRotation] that answers every rotation with [result], once [whileRotating] has run, and records the refresh
+/// token of each call in [sent].
+class _FakeRotation implements TokenRotation {
+  _FakeRotation(this.result, {this.whileRotating});
+
+  final TokenRotationResult result;
+  final Future<void> Function()? whileRotating;
+  final sent = <String>[];
+
+  @override
+  Future<TokenRotationResult> rotate(String refreshToken) async {
+    sent.add(refreshToken);
+    await whileRotating?.call();
+    return result;
+  }
+}
+
+/// An [_InterleavingSecureStorage] that records every key it reads, writes or deletes in [touched], and throws on the
+/// write of [failWriteOf].
+class _KeyRecordingSecureStorage extends _InterleavingSecureStorage {
+  final touched = <String>{};
+  String? failWriteOf;
+
+  @override
+  Future<String?> read(String key) {
+    touched.add(key);
+    return super.read(key);
+  }
+
+  @override
+  Future<void> write(String key, String value) async {
+    touched.add(key);
+    if (key == failWriteOf) throw StateError('boom on write $key');
+    await super.write(key, value);
+  }
+
+  @override
+  Future<void> delete(String key) {
+    touched.add(key);
+    return super.delete(key);
   }
 }

@@ -21,6 +21,11 @@ fvm flutter run --target lib/main/main_local.dart
 # Run production (real API)
 fvm flutter run --target lib/main/main_prod.dart
 
+# Single sign-on against the local Keycloak demo (docs/oidc.md); web must run on localhost:8081
+docker compose -f tool/oidc-demo/docker-compose.yml up -d --wait
+fvm flutter run -d chrome --web-port 8081 --target lib/main/main_local.dart --dart-define-from-file=tool/oidc-demo/oidc-demo.env
+docker compose -f tool/oidc-demo/docker-compose.yml down -v
+
 # Analysis & formatting
 fvm dart analyze
 fvm dart fix --apply
@@ -150,6 +155,8 @@ When in doubt, prefer sealed and split the BLoC instead of growing the single st
 
 - **dev/test** → mock data from `assets/mock/*.json`
 - **prod** → real API (configured in `lib/infrastructure/config/environment.dart`)
+- **Sign-in mode** is a separate build-time switch, `AUTH_PROVIDER`: unset or `jwt` is the password and OTP sign-in against the backend, and `oidc` signs in through an OpenID Connect provider configured by the `OIDC_*` defines (`lib/infrastructure/config/auth_config.dart`, [`docs/oidc.md`](docs/oidc.md)).
+  Both entry points accept both modes, and `jwt` mode must never construct or call anything from the OIDC path.
 
 ## Adding a New Feature
 

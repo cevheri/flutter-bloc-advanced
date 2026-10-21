@@ -21,6 +21,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // The oidc_android redirect activity listens on this scheme; it must match OidcSettings.defaultRedirectScheme.
+        manifestPlaceholders["oidcRedirectScheme"] = "com.example.flutterblocadvance"
     }
 
     buildTypes {

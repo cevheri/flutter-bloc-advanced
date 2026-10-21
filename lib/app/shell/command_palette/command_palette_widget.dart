@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_radius.dart';
 import 'package:flutter_bloc_advance/shared/design_system/tokens/app_spacing.dart';
 import 'package:flutter_bloc_advance/app/router/app_routes_constants.dart';
 import 'package:flutter_bloc_advance/generated/l10n.dart';
+import 'package:flutter_bloc_advance/infrastructure/config/auth_config.dart';
 import 'package:go_router/go_router.dart';
 
 /// [text] in lower case for a search in [language]. String.toLowerCase follows English, where I is the capital of i;
@@ -21,8 +23,9 @@ class _CommandEntry {
   const _CommandEntry({required this.label, this.description, required this.icon, required this.route});
 }
 
-/// All available commands for navigation, in the language of [l10n].
-List<_CommandEntry> _commands(S l10n) => [
+/// All available commands for navigation, in the language of [l10n]. Change password is offered only with
+/// [passwordSignIn]: in an `oidc` build the identity provider owns the password.
+List<_CommandEntry> _commands(S l10n, {required bool passwordSignIn}) => [
   _CommandEntry(
     label: l10n.dashboard,
     description: l10n.command_palette_home_description,
@@ -53,12 +56,13 @@ List<_CommandEntry> _commands(S l10n) => [
     icon: Icons.settings_outlined,
     route: ApplicationRoutesConstants.settings,
   ),
-  _CommandEntry(
-    label: l10n.change_password,
-    description: l10n.command_palette_change_password_description,
-    icon: Icons.lock_outline,
-    route: ApplicationRoutesConstants.changePassword,
-  ),
+  if (passwordSignIn)
+    _CommandEntry(
+      label: l10n.change_password,
+      description: l10n.command_palette_change_password_description,
+      icon: Icons.lock_outline,
+      route: ApplicationRoutesConstants.changePassword,
+    ),
 ];
 
 /// Keyboard shortcut wrapper that listens for Ctrl+K / Cmd+K to open the command palette.
@@ -149,7 +153,8 @@ class _CommandPaletteDialogState extends State<_CommandPaletteDialog> {
     // Filtered in build, so the search matches the commands in the language the user reads.
     final language = Localizations.localeOf(context).languageCode;
     final query = _foldCase(_query, language);
-    final filtered = _commands(S.of(context)).where((c) {
+    final commands = _commands(S.of(context), passwordSignIn: context.read<AuthMode>() is JwtAuthMode);
+    final filtered = commands.where((c) {
       return _foldCase(c.label, language).contains(query) ||
           (c.description != null && _foldCase(c.description!, language).contains(query));
     }).toList();

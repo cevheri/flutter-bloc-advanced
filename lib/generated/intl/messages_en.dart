@@ -159,6 +159,19 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "error_auth_invalid_access_token": MessageLookupByLibrary.simpleMessage("Invalid access token"),
     "error_auth_login_failed": MessageLookupByLibrary.simpleMessage("Login failed"),
+    "error_auth_oidc_config": MessageLookupByLibrary.simpleMessage(
+      "Single sign-on is not configured correctly in this app. Contact your administrator.",
+    ),
+    "error_auth_oidc_discovery": MessageLookupByLibrary.simpleMessage(
+      "The identity provider could not be reached. Try again later, or contact your administrator if this continues.",
+    ),
+    "error_auth_oidc_failed": MessageLookupByLibrary.simpleMessage("Sign-in failed. Please try again."),
+    "error_auth_oidc_logout_incomplete": MessageLookupByLibrary.simpleMessage(
+      "You are signed out of this app, but your session at the identity provider may still be active.",
+    ),
+    "error_auth_oidc_no_role": MessageLookupByLibrary.simpleMessage(
+      "Your account has no role that allows access to this app. Ask your administrator.",
+    ),
     "error_auth_otp_validation": MessageLookupByLibrary.simpleMessage("OTP validation failed"),
     "error_auth_send_otp_failed": MessageLookupByLibrary.simpleMessage("Could not send the OTP code"),
     "error_auth_session_persist_failed": MessageLookupByLibrary.simpleMessage("Could not save the session"),
@@ -229,6 +242,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "login_or": MessageLookupByLibrary.simpleMessage("or"),
     "login_otp_email_instructions": MessageLookupByLibrary.simpleMessage("Enter your email to receive OTP code"),
     "login_password": MessageLookupByLibrary.simpleMessage("Password"),
+    "login_sso_browser_done": MessageLookupByLibrary.simpleMessage(
+      "Sign-in is complete. You can close this tab and return to the app.",
+    ),
+    "login_sso_button": MessageLookupByLibrary.simpleMessage("Sign in with SSO"),
+    "login_sso_subtitle": MessageLookupByLibrary.simpleMessage("Sign in with your organization account."),
     "login_switch_to_dark_mode": MessageLookupByLibrary.simpleMessage("Switch to dark mode"),
     "login_switch_to_light_mode": MessageLookupByLibrary.simpleMessage("Switch to light mode"),
     "login_user_name": MessageLookupByLibrary.simpleMessage("Username"),

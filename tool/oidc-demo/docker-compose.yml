@@ -1,0 +1,127 @@
+# Local Keycloak for trying the app's oidc sign-in mode. NOT A PRODUCTION CONFIGURATION.
+#
+#   docker compose -f tool/oidc-demo/docker-compose.yml up -d --wait
+#   fvm flutter run -d chrome --web-port 8081 --target lib/main/main_local.dart \
+#     --dart-define-from-file=tool/oidc-demo/oidc-demo.env
+#
+# Sign in as admin / admin (realm role admin) or user / user (realm role user).
+# Android emulator: run `adb reverse tcp:8080 tcp:8080` once per emulator boot, so the
+# emulator's localhost:8080 reaches this Keycloak and the issuer stays http://localhost:8080.
+#
+# Unfit for production on purpose: start-dev with the embedded H2 store (all state is lost
+# when the container is removed), plain http, and the user passwords and the Keycloak admin
+# account (kcadmin / kcadmin) committed in this file.
+# Needs Docker Compose v2.23.1 or newer for inline `configs` content.
+
+name: flutter-bloc-advance-oidc-demo
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    command:
+      - start-dev
+      - --import-realm
+      # One issuer for every client: the browser, the emulator through adb reverse and the
+      # app's own discovery and token requests all use http://localhost:8080.
+      - --hostname=http://localhost:8080
+      - --health-enabled=true
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: kcadmin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: kcadmin
+    ports:
+      # Loopback only, so the admin console, whose password is in this file, is not offered
+      # to the network.
+      - "127.0.0.1:8080:8080"
+    configs:
+      - source: keycloak-realm
+        target: /opt/keycloak/data/import/flutter-bloc-advance-realm.json
+    healthcheck:
+      # The image has no curl; ask the management port's readiness endpoint over bash.
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          printf 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"status": "UP"' <&3
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 20s
+
+configs:
+  keycloak-realm:
+    content: |
+      {
+        "realm": "flutter-bloc-advance",
+        "enabled": true,
+        "sslRequired": "external",
+        "accessTokenLifespan": 60,
+        "roles": {
+          "realm": [
+            { "name": "admin", "description": "Flutter BLoC Advance admin" },
+            { "name": "user", "description": "Flutter BLoC Advance user" }
+          ]
+        },
+        "clients": [
+          {
+            "clientId": "flutter-bloc-advance",
+            "name": "Flutter BLoC Advance",
+            "enabled": true,
+            "protocol": "openid-connect",
+            "publicClient": true,
+            "standardFlowEnabled": true,
+            "implicitFlowEnabled": false,
+            "directAccessGrantsEnabled": false,
+            "serviceAccountsEnabled": false,
+            "frontchannelLogout": false,
+            "redirectUris": [
+              "com.example.flutterblocadvance:/oauth2redirect",
+              "http://localhost:8081/redirect.html",
+              "http://127.0.0.1/*"
+            ],
+            "webOrigins": ["+"],
+            "attributes": {
+              "pkce.code.challenge.method": "S256",
+              "post.logout.redirect.uris": "com.example.flutterblocadvance:/oauth2redirect##http://localhost:8081/##http://localhost:8081/redirect.html##http://127.0.0.1/*"
+            },
+            "protocolMappers": [
+              {
+                "name": "realm roles in every token",
+                "protocol": "openid-connect",
+                "protocolMapper": "oidc-usermodel-realm-role-mapper",
+                "consentRequired": false,
+                "config": {
+                  "claim.name": "realm_access.roles",
+                  "jsonType.label": "String",
+                  "multivalued": "true",
+                  "id.token.claim": "true",
+                  "access.token.claim": "true",
+                  "userinfo.token.claim": "true"
+                }
+              }
+            ]
+          }
+        ],
+        "users": [
+          {
+            "username": "admin",
+            "enabled": true,
+            "email": "admin@example.com",
+            "emailVerified": true,
+            "firstName": "Demo",
+            "lastName": "Admin",
+            "credentials": [{ "type": "password", "value": "admin", "temporary": false }],
+            "realmRoles": ["admin", "default-roles-flutter-bloc-advance"]
+          },
+          {
+            "username": "user",
+            "enabled": true,
+            "email": "user@example.com",
+            "emailVerified": true,
+            "firstName": "Demo",
+            "lastName": "User",
+            "credentials": [{ "type": "password", "value": "user", "temporary": false }],
+            "realmRoles": ["user", "default-roles-flutter-bloc-advance"]
+          }
+        ]
+      }

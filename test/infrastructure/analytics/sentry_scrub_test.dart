@@ -301,6 +301,20 @@ void main() {
       expect(result?.data?['to_arguments'], isA<Map<String, dynamic>>());
     });
 
+    // The key state also carries the OIDC state, so only the navigator event names that RouteObserverBreadcrumb writes
+    // under it are kept, and only in a navigation breadcrumb.
+    test('masks the state of a navigation breadcrumb that is not a navigator event name', () {
+      final result = sentryBeforeBreadcrumb(
+        Breadcrumb(category: 'navigation', type: 'navigation', data: {'state': 'st4te999', 'to': 'callback'}),
+      );
+      expect(result?.data, {'state': '[REDACTED]', 'to': 'callback'});
+    });
+
+    test('masks a navigator event name under state in a breadcrumb that is not a navigation one', () {
+      final result = sentryBeforeBreadcrumb(Breadcrumb(category: 'event', data: {'state': 'didPop'}));
+      expect(result?.data, {'state': '[REDACTED]'});
+    });
+
     test('masks an email in the message and the data of a ui breadcrumb', () {
       final result = sentryBeforeBreadcrumb(
         Breadcrumb.userInteraction(

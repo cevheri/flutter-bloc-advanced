@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "103.0.0"
+  adaptive_number:
+    dependency: transitive
+    description:
+      name: adaptive_number
+      sha256: "3a567544e9b5c9c803006f51140ad544aedc79604fd4f3f2c1380003f97c1d77"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   alchemist:
     dependency: "direct dev"
     description:
@@ -41,6 +49,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.7.0"
+  asn1lib:
+    dependency: transitive
+    description:
+      name: asn1lib
+      sha256: "9a8f69025044eb466b9b60ef3bc3ac99b4dc6c158ae9c56d25eeccf5bc56d024"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.6.5"
   async:
     dependency: transitive
     description:
@@ -153,6 +169,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.2"
+  copy_with_extension:
+    dependency: transitive
+    description:
+      name: copy_with_extension
+      sha256: "4e37b3a0376fc7e981be911efba812845c75447b0d17c931faca9d972d335d1d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "15.0.1"
   coverage:
     dependency: transitive
     description:
@@ -169,6 +193,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.7"
+  crypto_keys_plus:
+    dependency: transitive
+    description:
+      name: crypto_keys_plus
+      sha256: cfbca6a1e706bc6c964d6e766cfc5ecd5f8c5a77c073b273afbd785be045ebda
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   cupertino_ui:
     dependency: transitive
     description:
@@ -217,6 +249,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.2"
+  ed25519_edwards:
+    dependency: transitive
+    description:
+      name: ed25519_edwards
+      sha256: f3c3b109a0e470ee35f6346a155cab290578660852237fce10df6bbd92758534
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.2"
   equatable:
     dependency: "direct main"
     description:
@@ -398,7 +438,7 @@ packages:
     source: hosted
     version: "2.2.0"
   http:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: http
       sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
@@ -469,6 +509,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.0"
+  jose_plus:
+    dependency: transitive
+    description:
+      name: jose_plus
+      sha256: "5f291ba7ca92e67277ad74e787c8719520bc64442c75c62d7465d3cbe0f4a7dd"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
+  json_annotation:
+    dependency: transitive
+    description:
+      name: json_annotation
+      sha256: "2a743920d81b7910627f68ee2c9ac1fc0bfee32b9fc3403587d7c6791ca12f80"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.12.0"
   leak_tracker:
     dependency: transitive
     description:
@@ -510,7 +566,7 @@ packages:
     source: hosted
     version: "2.8.0"
   logging:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: logging
       sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61
@@ -589,6 +645,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.2"
+  nonce:
+    dependency: transitive
+    description:
+      name: nonce
+      sha256: bd279f698c9f641a64375a17040bd899061e46bdb9aa65bf846838bd3b8b437f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.0"
   objective_c:
     dependency: transitive
     description:
@@ -597,6 +661,94 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.6.2"
+  oidc:
+    dependency: "direct main"
+    description:
+      name: oidc
+      sha256: "46c894bc64423c13769e2b0b01f3446d79f08385b9c43c8fd1a51fbf62abf10e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.0.2"
+  oidc_android:
+    dependency: transitive
+    description:
+      name: oidc_android
+      sha256: "4ccaccb210ed9bb8c81388e474840eb0ee0c09235c54fbf17bd23047f4a2bd08"
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.1"
+  oidc_core:
+    dependency: transitive
+    description:
+      name: oidc_core
+      sha256: ba12f2b23c05f54f3f7fa22498386e96fde9c099c2e91a5bc3d0050b4f335d48
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
+  oidc_darwin:
+    dependency: transitive
+    description:
+      name: oidc_darwin
+      sha256: "645bf3fec90b01f3c288332a9ba39114aae7273f0b5193ddbe2d2c398224f5aa"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.3"
+  oidc_desktop:
+    dependency: transitive
+    description:
+      name: oidc_desktop
+      sha256: c45c1c992b5a952b63d8df0a6ff86da996893278aea5608f3459aa2cc8b07510
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
+  oidc_linux:
+    dependency: transitive
+    description:
+      name: oidc_linux
+      sha256: "1d3fc9890d924253c19b6a1265a707ef59758b8b28758e11537a87aed936e986"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
+  oidc_loopback_listener:
+    dependency: transitive
+    description:
+      name: oidc_loopback_listener
+      sha256: "24bd1802a4860622eb3c03e2b3abc08390cd58c30b3be1b221e1a0fa7a4f3acc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
+  oidc_platform_interface:
+    dependency: transitive
+    description:
+      name: oidc_platform_interface
+      sha256: "367cbe54cd5c312bdc7175e8929a680b973cf857210b339b99fdcf38b6de4d35"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
+  oidc_web:
+    dependency: transitive
+    description:
+      name: oidc_web
+      sha256: "05cf594cf9a102a0b4d03f8f68e9fdb4304f38317d02ddf8784c8e3b43bbadd7"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.5"
+  oidc_web_core:
+    dependency: transitive
+    description:
+      name: oidc_web_core
+      sha256: "6f52606b663c7cf79b73bb3eee10cf6c1a93b9c5d8f891415a50f7fd50577e77"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.2.2"
+  oidc_windows:
+    dependency: transitive
+    description:
+      name: oidc_windows
+      sha256: "497f75d964b1fdd7c57bd3b9b1f5aec1adeb09ddb9ffdef5136bcf422f264d39"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.4"
   package_config:
     dependency: transitive
     description:
@@ -701,6 +853,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.8"
+  pointycastle:
+    dependency: transitive
+    description:
+      name: pointycastle
+      sha256: "92aa3841d083cc4b0f4709b5c74fd6409a3e6ba833ffc7dc6a8fee096366acf5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.0"
   pool:
     dependency: transitive
     description:
@@ -1059,7 +1219,7 @@ packages:
     source: hosted
     version: "1.2.1"
   web:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: web
       sha256: "868d88a33d8a87b18ffc05f9f030ba328ffefba92d6c127917a2ba740f9cfe4a"
@@ -1098,6 +1258,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.4.0"
+  window_to_front:
+    dependency: transitive
+    description:
+      name: window_to_front
+      sha256: "14fad8984db4415e2eeb30b04bb77140b180e260d6cb66b26de126a8657a9241"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.0.4"
+  x509_plus:
+    dependency: transitive
+    description:
+      name: x509_plus
+      sha256: "7ee0fe9516f02ad9541f7731b82477b88c712806b145879bda2cdde9b8254116"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   xdg_directories:
     dependency: transitive
     description:
