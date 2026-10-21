@@ -278,7 +278,7 @@ Strings are trimmed; flags and `OIDC_PROMPT` are also lower-cased.
 | `OIDC_LOOPBACK_PORT` | No | `0` (any free port) | Port of the loopback redirect on Linux and Windows, from 0 to 65535 |
 
 An empty role list, or one made only of commas, counts as unset.
-There is no `OIDC_CLIENT_SECRET`: the app is a public client, and a guard test fails when anything in `lib/` reads a client secret.
+There is no `OIDC_CLIENT_SECRET`: the app is a public client, and a guard test fails when anything in `lib/` names a client secret or builds a client authentication other than `OidcClientAuthentication.none`.
 
 An invalid `oidc` configuration does not stop the app.
 It starts, the login page shows "Single sign-on is not configured correctly in this app. Contact your administrator." in place of the button, and the log names the variable and the rule it breaks.
@@ -552,9 +552,9 @@ The two modes share the bearer slot of secure storage, so an `oidc` build reads 
 
 ## Known limitations
 
-- **The web redirect page:** `web/redirect.html` is the `oidc` package's page with one documented change: an error redirect never shows the provider's error text or its `error_uri` link, only fixed English copy.
+- **The web redirect page:** `web/redirect.html` is the `oidc` package's page with three documented changes: an error redirect never shows the provider's error text or its `error_uri` link, only fixed English copy; a `state` the page cannot find is logged without its value; and the page returns to the app with `location.replace`, so the callback URL leaves the tab history and Back skips it.
   Its other text is English only.
-  `test/architecture/oidc_platform_setup_test.dart` compares the page with the package's copy and re-checks it after every `oidc` upgrade; copy the new page and re-apply that one change when it fails.
+  `test/architecture/oidc_platform_setup_test.dart` compares the page with the package's copy and re-checks it after every `oidc` upgrade; copy the new page and re-apply those three changes when it fails.
 - **Front-channel logout is not supported:** the page's front-channel handler writes a marker that the app's store never reads, so do not register `redirect.html?requestType=front-channel-logout` as a front-channel logout URL.
 - **Keycloak's ID token is short-lived:** Keycloak gives the ID token the access token's lifespan, 60 seconds in the demo, so the stored ID token is usually expired.
   A refresh and a logout still work with it: the refresh does not check its expiry, and Keycloak 26.8.1 accepts an expired `id_token_hint` and ends the session.
@@ -691,14 +691,14 @@ An idle timeout or an unrefreshable 401 clears the local session only, through `
 | `lib/app/router/app_router.dart`, `lib/app/app.dart` | Routes by mode, and `/oauth2redirect` and `/logout` to `/login` with no `returnUrl` |
 | `lib/features/settings/presentation/pages/settings_screen.dart`, `lib/app/shell/command_palette/command_palette_widget.dart` | Change password hidden outside `jwt` mode |
 | `android/app/build.gradle.kts` | The `oidcRedirectScheme` manifest placeholder |
-| `web/redirect.html` | The package's redirect page with the error patch |
+| `web/redirect.html` | The package's redirect page with its three patches |
 | `linux/flutter/`, `macos/Flutter/`, `windows/flutter/` | Generated plugin registrants |
 | `pubspec.yaml`, `pubspec.lock` | `oidc` 5.0.2, `web` 1.1.1, `http` 1.6.0, and `logging` 1.3.0 for tests |
 | `tool/oidc-demo/docker-compose.yml`, `tool/oidc-demo/oidc-demo.env` | The local Keycloak demo |
 
 ## Security model
 
-- **Public client:** PKCE S256 on every sign-in, and no client secret in the binary; a guard test fails on `client_secret` or `OIDC_CLIENT_SECRET` in `lib/`.
+- **Public client:** PKCE S256 on every sign-in, and no client secret in the binary; a guard test fails on any `client_secret`, `OIDC_CLIENT_SECRET` or `clientSecret` spelling in `lib/`, and on any client authentication other than `.none`.
 - **State and nonce:** always sent and checked by the package.
 - **ID token validation:** the package verifies the signature against the JWKS, never hand-written code.
   A refreshed ID token is verified against the provider's keys too, because the package re-verifies it only with the keys of the user it replaces.
@@ -771,6 +771,6 @@ Every behavior has a test, written before the code.
 | `test/features/auth/presentation/pages/login_screen_test.dart`, `login_screen_golden_test.dart` | The SSO page, each error sentence, the Turkish text, the automatic redirect and the `login_screen_sso_light` golden |
 | `test/app/router/app_router_test.dart` | The password routes are absent in `oidc` mode, and a callback URL lands on `/login` with no `returnUrl` |
 | `test/features/auth/sso_log_hygiene_test.dart` | A full sign-in, refresh, logout and pushed callback route print no token, code, verifier, `state` or `nonce` |
-| `test/architecture/oidc_platform_setup_test.dart` | The Android placeholder equals the default scheme, `web/redirect.html` is the package page plus its patch, no client secret in `lib/`, and no intent filter for the scheme in the app manifest |
+| `test/architecture/oidc_platform_setup_test.dart` | The Android placeholder equals the default scheme, `web/redirect.html` is the package page plus its patches, no client secret in `lib/` and only `.none` client authentication, and no intent filter for the scheme or its placeholder in any app manifest |
 
 The manual walkthrough of the Keycloak demo on each platform is recorded in the pull request.

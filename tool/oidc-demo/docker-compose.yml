@@ -73,7 +73,7 @@ configs:
             "implicitFlowEnabled": false,
             "directAccessGrantsEnabled": false,
             "serviceAccountsEnabled": false,
-            "frontchannelLogout": true,
+            "frontchannelLogout": false,
             "redirectUris": [
               "com.example.flutterblocadvance:/oauth2redirect",
               "http://localhost:8081/redirect.html",

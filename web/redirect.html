@@ -237,7 +237,8 @@
                 }
                 const stateDataRaw = getLocalStorage(stateNamespace, state);
                 if (!stateDataRaw) {
-                    console.error('state not found, key: ' + state);
+                    // The state value never reaches the console.
+                    console.error('state not found');
                     return false;
                 }
                 setLocalStorage(stateResponseNamespace, state, window.location.toString());
@@ -255,7 +256,8 @@
                     console.warn("it's preferred that original_uri is used when webLaunchMode is samePage.");
                     return false;
                 }
-                window.location.assign(original_uri);
+                // replace, not assign: the callback URL with its code and state leaves the tab history.
+                window.location.replace(original_uri);
                 return true;
             }
 
