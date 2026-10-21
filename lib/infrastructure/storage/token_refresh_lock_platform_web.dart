@@ -68,11 +68,11 @@ final class IndexedDbHandOverRecord implements HandOverRecord {
     if (value == null || value.isUndefinedOrNull) return null;
     final record = value.dartify();
     if (record is! Map || record['stamp'] is! String || record['committedAt'] is! num) {
-      throw StateError('The hand-over record does not hold a stamp and its commit time');
+      throw const HandOverRecordMalformed('The hand-over record does not hold a stamp and its commit time');
     }
     final committedAt = record['committedAt'] as num;
     if (!committedAt.isFinite || committedAt.abs() > _latestTime) {
-      throw StateError('The hand-over record holds a commit time out of range');
+      throw const HandOverRecordMalformed('The hand-over record holds a commit time out of range');
     }
     return HandOver(record['stamp'] as String, DateTime.fromMillisecondsSinceEpoch(committedAt.toInt()));
   }
@@ -118,6 +118,11 @@ final class IndexedDbHandOverRecord implements HandOverRecord {
     }).toJS;
     request.onsuccess = ((web.Event _) {
       final database = request.result as web.IDBDatabase;
+      // An open that was blocked has failed already, and the next turn opens again.
+      if (opened.isCompleted) {
+        database.close();
+        return;
+      }
       // Lets another tab upgrade or delete the database, such as when the user clears the site's data.
       database.onversionchange = ((web.Event _) {
         database.close();
@@ -125,7 +130,13 @@ final class IndexedDbHandOverRecord implements HandOverRecord {
       }).toJS;
       opened.complete(database);
     }).toJS;
-    request.onerror = ((web.Event _) => opened.completeError(_failure('open', request.error))).toJS;
+    request.onerror = ((web.Event _) {
+      if (!opened.isCompleted) opened.completeError(_failure('open', request.error));
+    }).toJS;
+    // Another connection of the origin keeps an older version open: this one would wait until it closes.
+    request.onblocked = ((web.Event _) {
+      if (!opened.isCompleted) opened.completeError(StateError('IndexedDB open of the hand-over is blocked'));
+    }).toJS;
     return opened.future;
   }
 

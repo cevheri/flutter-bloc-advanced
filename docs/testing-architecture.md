@@ -81,7 +81,8 @@ test/
 ```
 
 `test/browser_only/` holds the tests that need a real browser: the `BroadcastChannel` of the session end signal and the Web Lock, IndexedDB and localStorage of the token refresh lock.
-Each file is `@TestOn('browser')`, so the VM run skips it without compiling it, and the folder has its own `flutter_test_config.dart`, which does nothing, because the global bootstrap imports alchemist, which does not compile for the web.
+Each file is `@TestOn('browser')`, so the VM run skips it without compiling it, and the folder has its own `flutter_test_config.dart`, which only configures `AppLogger`, because the global bootstrap imports alchemist, which does not compile for the web.
+So these tests get neither `TestEnv`, the mocktail fallbacks nor the per-test reset.
 Two objects in one page stand for two tabs there, and they share one copy of localStorage, so the lag between tabs that the hand-over of the lock exists for is modelled by the VM tests in `test/infrastructure/` instead.
 CI runs the folder in Chrome after the VM suite.
 

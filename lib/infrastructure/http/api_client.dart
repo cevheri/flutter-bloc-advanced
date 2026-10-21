@@ -85,11 +85,18 @@ class ApiClient {
   static const int _timeoutSeconds = 30;
 
   /// How long a browser tab waits for its turn at the token refresh lock it shares with the other tabs
-  /// ([ITokenRefreshLock]) before the request fails. It is longer than the longest turn that has a bound: a backend
-  /// refresh, whose Dio takes this client's connect and receive timeouts ([defaultRefreshDio]), after a wait of at most
-  /// [HandOverTokenRefreshLock.defaultCatchUpLimit] for the previous holder's writes, plus 10 seconds for the
-  /// secure-storage writes and the hand-over. An `oidc` grant has no time limit of its own, so a grant that hangs keeps
-  /// the other tabs waiting this long.
+  /// ([ITokenRefreshLock]) before the request fails.
+  ///
+  /// It is sized for a backend refresh whose Dio takes this client's connect and receive timeouts
+  /// ([defaultRefreshDio]): twice [_timeoutSeconds], plus [HandOverTokenRefreshLock.defaultCatchUpLimit] for the wait
+  /// for the previous holder's writes, plus 10 seconds, which the read and the commit of the hand-over, each bounded
+  /// by that limit too, can use up: the secure-storage writes, usually milliseconds, have no share of their own.
+  ///
+  /// It does not bound the turn. The refresh Dio sets no `sendTimeout`, so sending the request has no limit, and
+  /// Dio's `receiveTimeout` limits each wait for the next part of the response, not the whole response, which a
+  /// server that sends it slowly can stretch past this wait. The secure-storage writes have no limit, and an `oidc`
+  /// grant has no time limit of its own. A turn that runs longer makes the other tabs' refreshes fail after this wait,
+  /// with their sessions kept.
   static final tokenRefreshLockWaitLimit =
       const Duration(seconds: 2 * _timeoutSeconds) +
       HandOverTokenRefreshLock.defaultCatchUpLimit +

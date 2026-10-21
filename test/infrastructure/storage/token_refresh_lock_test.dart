@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:logger/logger.dart' show Level, Logger, OutputEvent;
 
 void main() {
   group('InProcessTokenRefreshLock', () {
@@ -47,11 +48,11 @@ void main() {
       expect(events, ['A in', 'A out', 'B in']);
     });
 
-    test('ends a turn with a stamp in localStorage after the body\'s writes, committed to IndexedDB before the '
-        'release', () async {
+    test('commits a turn\'s stamp to IndexedDB before the body, and writes it to localStorage after the body\'s '
+        'writes', () async {
       await tabA.lock().hold(() async => tabA.write('refreshToken', 'refresh-1'));
 
-      expect(browser.events, ['A granted', 'A wrote refreshToken', 'A wrote stamp', 'A committed', 'A released']);
+      expect(browser.events, ['A granted', 'A committed', 'A wrote refreshToken', 'A wrote stamp', 'A released']);
       expect(browser.record, isNotNull);
       expect(browser.localStorage['stamp'], browser.record);
     });
@@ -194,7 +195,130 @@ void main() {
 
       expect(browser.events.last, 'A released');
     });
+
+    // Committed after the body, a failed commit left the previous stamp in the record, which every caught-up copy
+    // shows, so the next holder ran at once on a copy behind the failed turn's token writes.
+    test('runs no body whose turn cannot commit its hand-over, so the next holder reads no copy behind it', () async {
+      await tabA.lock().hold(() async => tabA.write('refreshToken', 'refresh-1'));
+      tabB.receive();
+      browser.failRecordWrites = true;
+      var ran = false;
+
+      await expectLater(
+        tabA.lock().hold(() async {
+          ran = true;
+          tabA.write('refreshToken', 'refresh-2');
+        }),
+        throwsA(isA<TokenRefreshLockException>()),
+      );
+      browser.failRecordWrites = false;
+
+      expect(ran, isFalse, reason: 'nothing is sent or stored for a turn with no hand-over');
+      expect(await tabB.lock().hold(() async => tabB.read('refreshToken')), 'refresh-1');
+    });
+
+    test('answers what the body answered when its stamp cannot be written to the copy, and logs it', () async {
+      final errors = _recordLogs(Level.error);
+      tabA.failStampWrites = true;
+
+      final answer = await tabA.lock().hold(() async {
+        tabA.write('refreshToken', 'refresh-1');
+        return 'stored';
+      });
+
+      expect(answer, 'stored', reason: 'the tokens are stored, so the requests that wait for them go on');
+      expect(errors.join('\n'), contains('could not be written to this tab\'s copy'));
+      expect(errors.join('\n'), isNot(contains('refresh-1')));
+    });
+
+    test('passes on what the body threw when its stamp cannot be written to the copy', () async {
+      final refusal = StateError('refused');
+      tabA.failStampWrites = true;
+
+      await expectLater(tabA.lock().hold<void>(() async => throw refusal), throwsA(same(refusal)));
+    });
+
+    test(
+      'runs the next holder only on a copy that shows a turn whose stamp could not be written to its copy',
+      () async {
+        tabA.failStampWrites = true;
+        await tabA.lock().hold(() async => tabA.write('refreshToken', 'refresh-1'));
+        tabB.onGranted = () => Timer.run(tabB.receive);
+        var ran = false;
+
+        await expectLater(
+          tabB.lock(catchUpLimit: const Duration(milliseconds: 20)).hold(() async => ran = true),
+          throwsA(isA<TokenRefreshLockException>()),
+        );
+
+        expect(ran, isFalse, reason: 'the copy never shows the stamp, so it cannot show that it caught up');
+      },
+    );
+
+    test('takes a record that is not a hand-over for none, runs the turn, replaces the record and logs it', () async {
+      final errors = _recordLogs(Level.error);
+      browser.malformedRecord = true;
+
+      expect(await tabA.lock().hold(() async => 'ran'), 'ran');
+
+      expect(browser.malformedRecord, isFalse, reason: 'the turn\'s commit replaced it');
+      expect(browser.record, isNotNull);
+      expect(errors.join('\n'), contains('The hand-over record is not one'));
+    });
+
+    test(
+      'still waits for the copy when it takes a record for abandoned, and runs on the copy that caught up',
+      () async {
+        var now = DateTime.utc(2026, 10, 21, 12);
+        DateTime clock() => now;
+        await tabA.lock(now: clock).hold(() async => tabA.write('refreshToken', 'refresh-1'));
+        now = now.add(const Duration(seconds: 31));
+        // A tab that resumes from the background takes the changes it missed a moment after its grant.
+        tabB.onGranted = () => Timer(const Duration(milliseconds: 10), tabB.receive);
+
+        final seen = await tabB.lock(now: clock).hold(() async => tabB.read('refreshToken'));
+
+        expect(seen, 'refresh-1');
+      },
+    );
+
+    test('fails the turn without running the body when the record is not read in time', () async {
+      browser.hangRecordReads = true;
+      var ran = false;
+
+      await expectLater(
+        tabA.lock(catchUpLimit: const Duration(milliseconds: 20)).hold(() async => ran = true),
+        throwsA(isA<TokenRefreshLockException>()),
+      );
+
+      expect(ran, isFalse);
+    });
+
+    test('fails the turn without running the body when the record is not committed in time', () async {
+      browser.hangRecordWrites = true;
+      var ran = false;
+
+      await expectLater(
+        tabA.lock(catchUpLimit: const Duration(milliseconds: 20)).hold(() async => ran = true),
+        throwsA(isA<TokenRefreshLockException>()),
+      );
+
+      expect(ran, isFalse);
+      expect(browser.events.last, 'A released', reason: 'the lock is not held by a commit that never ends');
+    });
   });
+}
+
+/// Collects the lines logged at [level] until the test ends.
+List<String> _recordLogs(Level level) {
+  final lines = <String>[];
+  void record(OutputEvent event) {
+    if (event.level == level) lines.addAll(event.lines);
+  }
+
+  Logger.addOutputListener(record);
+  addTearDown(() => Logger.removeOutputListener(record));
+  return lines;
 }
 
 /// Lets the microtasks and zero timers that are due run.
@@ -210,6 +334,13 @@ class _Browser {
   DateTime? committedAt;
   bool failRecordReads = false;
   bool failRecordWrites = false;
+
+  /// Reads or commits of the record that never complete, as an IndexedDB open that hangs.
+  bool hangRecordReads = false;
+  bool hangRecordWrites = false;
+
+  /// The record holds something that is not a hand-over, until a turn commits one.
+  bool malformedRecord = false;
 
   /// The browser's copy of localStorage, which takes every change at once.
   final localStorage = <String, String>{};
@@ -237,6 +368,9 @@ class _Tab {
   /// Runs once this tab is granted the lock, before its turn starts.
   void Function()? onGranted;
   bool refuseLock = false;
+
+  /// The stamp cannot be written to this tab's copy, as when localStorage is full.
+  bool failStampWrites = false;
 
   HandOverTokenRefreshLock lock({
     Duration catchUpLimit = HandOverTokenRefreshLock.defaultCatchUpLimit,
@@ -309,6 +443,8 @@ class _TabRecord implements HandOverRecord {
   Future<HandOver?> read() async {
     final browser = _tab._browser;
     if (browser.failRecordReads) throw StateError('IndexedDB read failed');
+    if (browser.hangRecordReads) return Completer<HandOver?>().future;
+    if (browser.malformedRecord) throw const HandOverRecordMalformed('not a hand-over');
     final stamp = browser.record;
     return stamp == null ? null : HandOver(stamp, browser.committedAt!);
   }
@@ -317,6 +453,8 @@ class _TabRecord implements HandOverRecord {
   Future<void> write(HandOver handOver) async {
     final browser = _tab._browser;
     if (browser.failRecordWrites) throw StateError('IndexedDB write failed');
+    if (browser.hangRecordWrites) return Completer<void>().future;
+    browser.malformedRecord = false;
     browser.record = handOver.stamp;
     browser.committedAt = handOver.committedAt;
     browser.events.add('${_tab._name} committed');
@@ -335,7 +473,10 @@ class _TabStampCopy implements HandOverStampCopy {
   String? read() => _tab.read(key);
 
   @override
-  void write(String stamp) => _tab.write(key, stamp);
+  void write(String stamp) {
+    if (_tab.failStampWrites) throw StateError('QuotaExceededError');
+    _tab.write(key, stamp);
+  }
 
   @override
   Stream<void> get changes => _tab._stampChanges.stream;

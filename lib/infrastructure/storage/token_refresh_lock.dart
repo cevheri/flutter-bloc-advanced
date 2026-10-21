@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:flutter_bloc_advance/core/logging/app_logger.dart';
+
 /// Lets one token refresh at a time run across the browser tabs of the app, which share the stored session.
 ///
 /// On web every tab reads and writes the same stored session in localStorage, and a server that accepts each refresh
@@ -9,8 +11,8 @@ import 'dart:math';
 abstract interface class ITokenRefreshLock {
   /// Runs [body] while this tab holds the lock, and answers what [body] answers, or throws what it throws.
   ///
-  /// Throws [TokenRefreshLockException] when [body] did not run because the lock could not be taken, or when the turn
-  /// could not be handed over to the next holder after [body] ran.
+  /// Throws [TokenRefreshLockException] when [body] did not run because the lock could not be taken or the turn could
+  /// not be prepared.
   Future<T> hold<T>(Future<T> Function() body);
 }
 
@@ -23,9 +25,9 @@ final class InProcessTokenRefreshLock implements ITokenRefreshLock {
   Future<T> hold<T>(Future<T> Function() body) => body();
 }
 
-/// The cross-tab lock did not give this tab a turn, or the turn could not be handed over: nothing was sent to the
-/// server for it, or what was stored is not handed over to the next holder. [cause] is the error of the browser
-/// primitive, if any. Neither carries token material.
+/// The cross-tab lock did not give this tab a turn, or the turn could not be prepared, so its body did not run and
+/// nothing was sent to the server for it. [cause] is the error of the browser primitive, if any. Neither carries token
+/// material.
 final class TokenRefreshLockException implements Exception {
   const TokenRefreshLockException(this.message, [this.cause]);
 
@@ -58,10 +60,23 @@ final class HandOver {
 /// ordered with the lock. A [write] that has completed before the lock is released is seen by a [read] that the next
 /// holder makes once it is granted, in any tab.
 abstract interface class HandOverRecord {
+  /// The hand-over committed last, or null when none was. Throws [HandOverRecordMalformed] when what is stored is not
+  /// a hand-over.
   Future<HandOver?> read();
 
   /// Completes once [handOver] is committed.
   Future<void> write(HandOver handOver);
+}
+
+/// What [HandOverRecord] holds is not a hand-over, such as after a script of the origin wrote there. It carries no
+/// part of what is stored.
+final class HandOverRecordMalformed implements Exception {
+  const HandOverRecordMalformed(this.message);
+
+  final String message;
+
+  @override
+  String toString() => 'HandOverRecordMalformed: $message';
 }
 
 /// This tab's copy of the hand-over stamp in the storage that holds the session, next to the tokens: localStorage on
@@ -72,7 +87,7 @@ abstract interface class HandOverStampCopy {
 
   void write(String stamp);
 
-  /// Fires when another tab's change to the stamp reaches this tab's copy.
+  /// Fires when another tab's change to the stamp, or a clear of the store, reaches this tab's copy.
   Stream<void> get changes;
 }
 
@@ -80,25 +95,33 @@ abstract interface class HandOverStampCopy {
 ///
 /// A lock grant does not bring the previous holder's localStorage writes with it: the browser delivers the grant and
 /// those writes to this tab on separate channels, and in Chromium the grant often comes first. A holder that read its
-/// copy at once could see the refresh token the previous holder spent and send it again. So each turn ends with a
-/// fresh random stamp, which carries no token material: it is written to this tab's [HandOverStampCopy] after the
-/// body's writes, then committed to the [HandOverRecord] before the lock is released. The next holder reads the record
-/// once granted and, when its copy shows another stamp, waits for the copy to catch up before its body runs.
+/// copy at once could see the refresh token the previous holder spent and send it again. So each turn hands over a
+/// fresh random stamp, which carries no token material: it is committed to the [HandOverRecord] before the body runs,
+/// and written to this tab's [HandOverStampCopy] after the body's writes. The next holder reads the record once
+/// granted and, when its copy shows another stamp, waits for the copy to catch up before its body runs. A commit that
+/// fails, or does not complete within [catchUpLimit], fails the turn before the body runs, so no turn's writes go
+/// without a hand-over in the record.
 ///
 /// The wait listens for the copy's [HandOverStampCopy.changes], since timers are throttled in a background tab, and
 /// lasts at most [catchUpLimit]. When the limit passes the body does not run, [hold] throws
 /// [TokenRefreshLockException], and the record is left as it was: a stamp of this tab's own would show in its copy at
-/// once, and its next turn would run on the copy that is still behind. A turn whose body did not run hands over
-/// nothing, since it wrote nothing.
+/// once, and its next turn would run on the copy that is still behind.
 ///
-/// A stamp that no copy will show, such as one left when the user cleared localStorage alone, would then stop every
-/// later turn. So a record that this tab's copy does not show, and that was committed more than [abandonedAfter]
-/// before or after now, is taken for an abandoned one: the body runs at once, and its turn hands over a fresh stamp.
-/// A copy that is that far behind the commit, or a clock set back by that much just after it, is taken for abandoned
-/// too, and its body may read a refresh token that was spent.
+/// A record that this tab's copy does not show, and that was committed more than [abandonedAfter] before or after
+/// now, is taken for an abandoned one: its copy may never show it, such as when the user cleared localStorage alone,
+/// and it would stop every later turn. The holder still waits up to [catchUpLimit] for its copy, as a tab that resumes
+/// from the background takes the changes it missed then, and its body runs when that wait passes. A copy that is
+/// behind the commit for longer still, or a clock set back by that much just after it, is taken for abandoned too, and
+/// its body may read a refresh token that was spent.
 ///
-/// A holder that closes during its body, after its token writes and before its stamp, leaves no hand-over: the next
-/// holder may then read a copy that has not caught up yet.
+/// A holder that closes or hangs during its body leaves a stamp in the record that no copy shows, so the next
+/// holders fail their turns, a request each, until the record is taken for abandoned. When the stamp cannot be
+/// written to the copy after the body, such as when localStorage is full, the body's outcome still stands, since its
+/// tokens may be stored or the server may have refused them, and the next holders wait for that stamp in the same way.
+///
+/// A record that is not a hand-over ([HandOverRecordMalformed]) is taken for none, as on first use: the turn runs, and
+/// its commit replaces it. Reading the record, as committing it, fails the turn when it does not complete within
+/// [catchUpLimit].
 final class HandOverTokenRefreshLock implements ITokenRefreshLock {
   HandOverTokenRefreshLock({
     required this._mutex,
@@ -114,13 +137,16 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
   /// the copy within milliseconds of the grant.
   static const defaultCatchUpLimit = Duration(seconds: 5);
 
+  static final _log = AppLogger.getLogger('HandOverTokenRefreshLock');
+
   final CrossTabMutex _mutex;
   final HandOverRecord _record;
   final HandOverStampCopy _copy;
   final Random _random;
   final DateTime Function() _now;
 
-  /// How long a holder waits for its copy to catch up with the hand-over before it gives up its turn.
+  /// How long a holder waits for its copy to catch up with the hand-over before it gives up its turn, and for a read or
+  /// a commit of the record.
   final Duration catchUpLimit;
 
   /// How long after its commit a record that this tab's copy does not show is taken for an abandoned one.
@@ -146,12 +172,14 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
     };
   }
 
-  /// One turn of the lock: catch up with the previous holder, run [body], hand over to the next holder. A turn that
-  /// did not catch up throws before [body] runs and leaves the record as it was.
+  /// One turn of the lock: catch up with the previous holder, commit this turn's stamp, run [body], then show the
+  /// stamp in this tab's copy. A turn that did not catch up or commit throws before [body] runs.
   Future<_BodyOutcome<T>> _turn<T>(Future<T> Function() body) async {
     await _catchUp();
+    final stamp = _newStamp();
+    await _commit(stamp);
     final outcome = await _run(body);
-    await _handOver();
+    _showInCopy(stamp);
     return outcome;
   }
 
@@ -168,7 +196,17 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
   Future<void> _catchUp() async {
     final HandOver? handedOver;
     try {
-      handedOver = await _record.read();
+      handedOver = await _record.read().timeout(
+        catchUpLimit,
+        onTimeout: () => throw TokenRefreshLockException(
+          'The hand-over of the previous token refresh was not read within ${catchUpLimit.inMilliseconds} ms',
+        ),
+      );
+    } on TokenRefreshLockException {
+      rethrow;
+    } on HandOverRecordMalformed catch (error) {
+      _log.error('The hand-over record is not one, so this turn runs as the first and replaces it: {}', [error]);
+      return;
     } catch (error) {
       throw TokenRefreshLockException('The hand-over of the previous token refresh could not be read', error);
     }
@@ -181,7 +219,14 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
     });
     try {
       if (_copy.read() == stamp) return;
-      if (_now().difference(handedOver.committedAt).abs() > abandonedAfter) return;
+      if (_now().difference(handedOver.committedAt).abs() > abandonedAfter) {
+        await caughtUp.future.timeout(
+          catchUpLimit,
+          onTimeout: () =>
+              _log.warn('The hand-over of an earlier token refresh is taken for abandoned: this turn runs'),
+        );
+        return;
+      }
       await caughtUp.future.timeout(
         catchUpLimit,
         onTimeout: () => throw TokenRefreshLockException(
@@ -193,15 +238,31 @@ final class HandOverTokenRefreshLock implements ITokenRefreshLock {
     }
   }
 
-  /// Leaves a fresh stamp for the next holder: in this tab's copy after the body's writes, then committed to the
-  /// record before the lock is released.
-  Future<void> _handOver() async {
-    final stamp = _newStamp();
+  /// Commits [stamp] for the next holder before the body runs, so a turn whose writes have no hand-over never runs.
+  Future<void> _commit(String stamp) async {
+    try {
+      await _record
+          .write(HandOver(stamp, _now()))
+          .timeout(
+            catchUpLimit,
+            onTimeout: () => throw TokenRefreshLockException(
+              'The hand-over of this token refresh was not committed within ${catchUpLimit.inMilliseconds} ms',
+            ),
+          );
+    } on TokenRefreshLockException {
+      rethrow;
+    } catch (error) {
+      throw TokenRefreshLockException('The token refresh could not commit its hand-over for the next holder', error);
+    }
+  }
+
+  /// Writes [stamp] to this tab's copy after the body's writes, so a copy that shows it shows them too. A failure
+  /// leaves the body's outcome as it is: the next holders wait for the stamp until it is taken for abandoned.
+  void _showInCopy(String stamp) {
     try {
       _copy.write(stamp);
-      await _record.write(HandOver(stamp, _now()));
     } catch (error) {
-      throw TokenRefreshLockException('The token refresh could not hand over to the next holder', error);
+      _log.error('The hand-over stamp of this token refresh could not be written to this tab\'s copy: {}', [error]);
     }
   }
 

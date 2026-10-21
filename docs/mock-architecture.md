@@ -212,9 +212,12 @@ When the copy does not show the end within the 5 seconds, such as when the other
 The take-back fails closed: a message that arrives after the copy already shows a session signed in to since may take back that session's rotated tokens, which signs it out in every tab, but it never brings back a session that was ended.
 A message that is not a whole number of milliseconds, which no tab of the app sends, is ignored with a warning.
 The refreshes of all tabs also take turns at one Web Lock (`ITokenRefreshLock`), so a server that accepts each refresh token once never sees it twice.
-A lock grant can reach a tab before the previous holder's writes do, so each turn ends with a random stamp in localStorage and IndexedDB, and the next holder waits until its copy of localStorage shows that stamp.
+A lock grant can reach a tab before the previous holder's writes do, so each turn commits a random stamp to IndexedDB before its refresh and writes it to localStorage after its token writes, and the next holder waits until its copy of localStorage shows that stamp.
+A turn whose commit fails, or does not complete within 5 seconds, sends nothing, and the request fails with the session kept.
 When its copy does not show the stamp within 5 seconds, the request fails, the session is kept, and the stamp stays as it was, so the next turn of that tab waits for it again.
-A stamp that no copy has shown 30 seconds after its commit is taken for an abandoned one, such as after the user cleared localStorage alone, and the next turn runs.
+A stamp that no copy has shown 30 seconds after its commit is taken for an abandoned one, such as after the user cleared localStorage alone or a tab closed during its refresh: the next holder still waits up to 5 seconds for its copy, then runs.
+Until then the turns of the other tabs fail, a request each, with the session kept.
+A record in IndexedDB that is not a hand-over is logged as an error and taken for none, and the next turn replaces it.
 Off web there is no signal, and the lock runs each refresh at once.
 A sign-out in one tab ends the session generation of the other tabs only once its message arrives, so a request one of them sent before the sign-out can still be sent again with the JWT of a different user who signed in since: when its 401 comes after that sign-in and before the message, and when that sign-in comes while the tab's refresh is on its way or waits for the lock, which makes this window longer.
 `CacheInterceptor` checks the same generation before it stores a response, so a GET still on its way when the session ends does not put the data of the user who signed out back into the cache the wipe cleared.

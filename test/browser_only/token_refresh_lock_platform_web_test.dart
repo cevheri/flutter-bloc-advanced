@@ -2,10 +2,12 @@
 library;
 
 import 'dart:async';
+import 'dart:js_interop';
 
 import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock.dart';
 import 'package:flutter_bloc_advance/infrastructure/storage/token_refresh_lock_platform_web.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:web/web.dart' as web;
 
 void main() {
   // Two lock objects in one page stand for two tabs: the Web Lock is shared by every holder of the origin. They share
@@ -80,4 +82,32 @@ void main() {
     release.complete();
     await holding;
   });
+
+  test(
+    'a record in IndexedDB that is not a hand-over is reported as such, and the next turn runs and replaces it',
+    () async {
+      await newLock().hold(() async {});
+      await _putRecord({'stamp': 7, 'committedAt': 'yesterday'}.jsify());
+
+      await expectLater(IndexedDbHandOverRecord().read(), throwsA(isA<HandOverRecordMalformed>()));
+      expect(await newLock().hold(() async => 'ran'), 'ran');
+      expect((await IndexedDbHandOverRecord().read())?.stamp, LocalStorageStampCopy().read());
+    },
+  );
+}
+
+/// Writes [value] where [IndexedDbHandOverRecord] keeps its record, as a script of the origin could.
+Future<void> _putRecord(JSAny? value) async {
+  final opened = Completer<web.IDBDatabase>();
+  final request = web.window.indexedDB.open(IndexedDbHandOverRecord.databaseName, 1);
+  request.onsuccess = ((web.Event _) => opened.complete(request.result as web.IDBDatabase)).toJS;
+  request.onerror = ((web.Event _) => opened.completeError(StateError('open failed'))).toJS;
+  final database = await opened.future;
+  final transaction = database.transaction(IndexedDbHandOverRecord.storeName.toJS, 'readwrite');
+  transaction.objectStore(IndexedDbHandOverRecord.storeName).put(value, IndexedDbHandOverRecord.recordKey.toJS);
+  final completed = Completer<void>();
+  transaction.oncomplete = ((web.Event _) => completed.complete()).toJS;
+  transaction.onabort = ((web.Event _) => completed.completeError(StateError('put failed'))).toJS;
+  await completed.future;
+  database.close();
 }

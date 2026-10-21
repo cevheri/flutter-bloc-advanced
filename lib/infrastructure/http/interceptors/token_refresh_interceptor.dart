@@ -62,8 +62,8 @@ final class _SessionEnded extends _RefreshOutcome {
   const _SessionEnded();
 }
 
-/// On web, the refresh did not get its turn at the lock the browser tabs share, or could not hand it over
-/// ([TokenRefreshLockException]): the session is kept, and the request fails.
+/// On web, the refresh did not get its turn at the lock the browser tabs share, or the turn could not be prepared
+/// ([TokenRefreshLockException]), so nothing was sent: the session is kept, and the request fails.
 final class _RefreshTurnFailed extends _RefreshOutcome {
   const _RefreshTurnFailed(this.error);
 
@@ -96,9 +96,9 @@ final class _RefreshTurnFailed extends _RefreshOutcome {
 /// stores the answer, and a server that accepts each refresh token once
 /// never sees it twice. Once granted, the refresh checks this tab's
 /// generation and the stored JWT again, and a JWT another tab stored
-/// meanwhile is sent instead of a refresh. A turn the lock cannot give,
-/// or cannot hand over, fails the request and keeps the session: nothing
-/// refused it.
+/// meanwhile is sent instead of a refresh. A turn the lock cannot give
+/// or prepare fails the request and keeps the session: nothing was sent,
+/// so nothing refused it.
 ///
 /// A 401 for a request sent under a session that a logout or the end of
 /// the session has wiped since, or is wiping, is neither sent again nor
@@ -335,8 +335,8 @@ class TokenRefreshInterceptor extends Interceptor {
         // the user may have signed in since, and that session must stay.
         handler.next(err);
       case _RefreshTurnFailed(:final error):
-        // Nothing was sent, or the refresh stored its tokens and could not hand over: nothing refused the session, so
-        // it is kept. Rejected, so that ResilienceInterceptor does not send the request again behind the same lock.
+        // Nothing was sent, so nothing refused the session, and it is kept. Rejected, so that ResilienceInterceptor
+        // does not send the request again behind the same lock.
         handler.reject(
           DioException(
             requestOptions: err.requestOptions,
