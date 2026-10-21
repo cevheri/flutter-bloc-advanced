@@ -1,4 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_bloc_advance/app/router/app_root_page.dart';
 import 'package:flutter_bloc_advance/app/router/app_router_refresh_notifier.dart';
 import 'package:flutter_bloc_advance/app/router/forbidden_page.dart';
 import 'package:flutter_bloc_advance/app/router/not_found_page.dart';
@@ -52,7 +53,7 @@ class AppRouterFactory {
       errorPageBuilder: (context, state) {
         // The page tells the user in the app language; the router's own error, in English, goes to the log.
         _log.warn('No page for location {}: {}', [state.uri, state.error]);
-        return appPlatformPage(
+        return appRootPage(
           state: state,
           // An error state has no route name or path, and an unnamed page is invisible to analytics.
           name: ApplicationRoutesConstants.notFound,
@@ -86,7 +87,7 @@ class AppRouterFactory {
         ),
         GoRoute(
           path: ApplicationRoutesConstants.forbidden,
-          pageBuilder: (context, state) => appPlatformPage(state: state, child: const ForbiddenPage()),
+          pageBuilder: (context, state) => appRootPage(state: state, child: const ForbiddenPage()),
         ),
       ],
       redirect: (context, state) {
